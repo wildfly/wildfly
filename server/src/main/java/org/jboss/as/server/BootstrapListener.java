@@ -28,6 +28,8 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.server.mgmt.HttpManagementService;
+import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -143,6 +145,9 @@ public class BootstrapListener extends AbstractServiceListener<Object> {
 
     protected void done(ServiceContainer container, long elapsedTime, int started, int failed, EnumMap<ServiceController.Mode, AtomicInteger> map, Set<ServiceName> missingDepsSet) {
         futureContainer.done(container);
+
+        logAdminConsole(container);
+
         final int active = map.get(ServiceController.Mode.ACTIVE).get();
         final int passive = map.get(ServiceController.Mode.PASSIVE).get();
         final int onDemand = map.get(ServiceController.Mode.ON_DEMAND).get();
@@ -151,6 +156,23 @@ public class BootstrapListener extends AbstractServiceListener<Object> {
             ServerLogger.AS_ROOT_LOGGER.startedClean(prettyVersion, elapsedTime, started, active + passive + onDemand + never, onDemand + passive);
         } else {
             ServerLogger.AS_ROOT_LOGGER.startedWitErrors(prettyVersion, elapsedTime, started, active + passive + onDemand + never, failed, onDemand + passive);
+        }
+    }
+
+    private void logAdminConsole(ServiceContainer container) {
+        ServiceController<?> controller = container.getService(HttpManagementService.SERVICE_NAME);
+        if (controller != null) {
+            HttpManagement mgmt = (HttpManagement)controller.getValue();
+
+            boolean hasHttp = mgmt.getHttpNetworkInterfaceBinding() != null && mgmt.getHttpPort() > 0;
+            boolean hasHttps = mgmt.getHttpsNetworkInterfaceBinding() != null && mgmt.getHttpsPort() > 0;
+            if (hasHttp && hasHttps) {
+                ServerLogger.AS_ROOT_LOGGER.logHttpAndHttpsConsole(mgmt.getHttpNetworkInterfaceBinding().getAddress(), mgmt.getHttpPort(), mgmt.getHttpsNetworkInterfaceBinding().getAddress(), mgmt.getHttpsPort());
+            } else if (hasHttp) {
+                ServerLogger.AS_ROOT_LOGGER.logHttpConsole(mgmt.getHttpNetworkInterfaceBinding().getAddress(), mgmt.getHttpPort());
+            } else if (hasHttps) {
+                ServerLogger.AS_ROOT_LOGGER.logHttpsConsole(mgmt.getHttpsNetworkInterfaceBinding().getAddress(), mgmt.getHttpsPort());
+            }
         }
     }
 }

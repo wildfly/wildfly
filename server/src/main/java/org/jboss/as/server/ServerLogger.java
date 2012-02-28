@@ -22,6 +22,11 @@
 
 package org.jboss.as.server;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
+import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.util.jar.Attributes;
 
@@ -38,10 +43,6 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.modules.ModuleIdentifier;
-
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * This module is using message IDs in the range 15700-15999.
@@ -316,4 +317,17 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 15950, value = "%s stopped in %dms")
     void serverStopped(String prettyVersion, int time);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15951, value= "Admin console listening on http://%s:%d")
+    void logHttpConsole(InetAddress httpAddr, int httpPort);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15952, value= "Admin console listening on http://%s:%d")
+    void logHttpsConsole(InetAddress httpsAddr, int httpsPort);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15953, value= "Admin console listening on http://%s:%d and https://%s:%d")
+    void logHttpAndHttpsConsole(InetAddress httpAddr, int httpPort, InetAddress httpsAddr, int httpsPort);
+
 }
