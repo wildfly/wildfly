@@ -416,4 +416,7 @@ public interface ServerMessages {
 
     @Message(id = 18716, value = "Could not create server base directory: %s")
     IllegalStateException couldNotCreateServerBaseDirectory(File file);
+
+    @Message(id = 18717, value = "No deployment content with hash %s is available in the deployment content repository for deployment '%s'. This is a fatal boot error. To correct the problem, either restart with the --admin-only switch set and use the CLI to install the missing content or remove it from the configuration, or remove the deployment from the xml configuraiton file and restart..")
+    OperationFailedException noSuchDeploymentContentAtBoot(String contentHash, String deploymentName);
 }

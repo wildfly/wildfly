@@ -533,4 +533,17 @@ public interface DomainControllerMessages {
      */
     @Message(id = 10875, value = "No profile called: %s")
     OperationFailedException noProfileCalled(String profile);
+
+    /**
+     * Error message indicating the content for a configured deployment was unavailable at boot, which is a fatal error.
+     *
+     *
+     *
+     * @param contentHash    the content hash that could not be found.
+     *
+     * @param deploymentName the deployment name.
+     * @return the error message
+     */
+    @Message(id = 10876, value = "No deployment content with hash %s is available in the deployment content repository for deployment '%s'. This is a fatal boot error. To correct the problem, either restart with the --admin-only switch set and use the CLI to install the missing content or remove it from the configuration, or remove the deployment from the xml configuraiton file and restart.")
+    String noDeploymentContentWithHashAtBoot(String contentHash, String deploymentName);
 }

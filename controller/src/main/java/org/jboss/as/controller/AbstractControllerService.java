@@ -157,8 +157,6 @@ public abstract class AbstractControllerService implements Service<ModelControll
                                 return target;
                             }
                         });
-                    } catch (ConfigurationPersistenceException e) {
-                        throw new RuntimeException(e);
                     } finally {
                         processState.setRunning();
                     }
@@ -184,12 +182,12 @@ public abstract class AbstractControllerService implements Service<ModelControll
      *          if the configuration failed to be loaded
      */
     protected void boot(final BootContext context) throws ConfigurationPersistenceException {
-        boot(configurationPersister.load());
+        boot(configurationPersister.load(), false);
         finishBoot();
     }
 
-    protected void boot(List<ModelNode> bootOperations) throws ConfigurationPersistenceException {
-        controller.boot(bootOperations, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT);
+    protected boolean boot(List<ModelNode> bootOperations, boolean rollbackOnRuntimeFailure) throws ConfigurationPersistenceException {
+        return controller.boot(bootOperations, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT, false);
     }
 
     protected void finishBoot() throws ConfigurationPersistenceException {

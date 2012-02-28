@@ -753,12 +753,12 @@ public abstract class AbstractSubsystemTest {
         }
 
         @Override
-        protected void boot(List<ModelNode> bootOperations) throws ConfigurationPersistenceException {
+        protected boolean boot(List<ModelNode> bootOperations, boolean rollbackOnRuntimeFailure) throws ConfigurationPersistenceException {
             try {
                 if (validateOps) {
                     new OperationValidator(rootRegistration).validateOperations(bootOperations);
                 }
-                super.boot(persister.bootOperations);
+                return super.boot(persister.bootOperations, rollbackOnRuntimeFailure);
             } catch (Exception e) {
                 error = e;
             } catch (Throwable t) {
@@ -767,6 +767,8 @@ public abstract class AbstractSubsystemTest {
                 DeployerChainAddHandler.INSTANCE.clearDeployerMap();
                 latch.countDown();
             }
+
+            return false;
         }
 
         @Override

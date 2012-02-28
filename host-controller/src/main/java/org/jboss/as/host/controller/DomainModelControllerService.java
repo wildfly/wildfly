@@ -308,93 +308,118 @@ public class DomainModelControllerService extends AbstractControllerService impl
     protected void boot(final BootContext context) throws ConfigurationPersistenceException {
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
+        boolean ok = false;
+        boolean reachedServers = false;
         try {
-            boot(hostControllerConfigurationPersister.load()); // This parses the host.xml and invokes all ops
+            // Parse the host.xml and invoke all the ops. The ops should rollback on any Stage.RUNTIME failure
+            ok = boot(hostControllerConfigurationPersister.load(), true);
 
             final RunningMode currentRunningMode = runningModeControl.getRunningMode();
 
-            // Install the core remoting endpoint and listener
-            ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                    hostControllerInfo.getLocalHostName(), EndpointService.EndpointType.MANAGEMENT, null, null);
+            if (ok) {
+                // Install the core remoting endpoint and listener
+                ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
+                        hostControllerInfo.getLocalHostName(), EndpointService.EndpointType.MANAGEMENT, null, null);
 
-            // Now we know our management interface configuration. Install the server inventory
-            ManagementChannelRegistryService.addService(serviceTarget);
-            Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, runningModeControl, environment,
-                    hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
+                // Now we know our management interface configuration. Install the server inventory
+                ManagementChannelRegistryService.addService(serviceTarget);
+                Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, runningModeControl, environment,
+                        hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
 
-            if (!hostControllerInfo.isMasterDomainController() && !environment.isUseCachedDc()) {
-                serverInventory = getFuture(inventoryFuture);
+                if (!hostControllerInfo.isMasterDomainController() && !environment.isUseCachedDc()) {
+                    serverInventory = getFuture(inventoryFuture);
 
-                if (hostControllerInfo.getRemoteDomainControllerHost() != null) {
-                    Future<MasterDomainControllerClient> clientFuture = RemoteDomainConnectionService.install(serviceTarget,
-                            getValue(),
-                            hostControllerInfo,
-                            environment.getProductConfig(),
-                            hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
-                            remoteFileRepository);
-                    MasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
-                    //Registers us with the master and gets down the master copy of the domain model to our DC
-                    //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
-                    // BES 2012/02/04 Comment ^^^ implies the semantic is to use isUseCachedDC as a fallback to
-                    // a failure to connect as opposed to being an instruction to not connect at all. I believe
-                    // the current impl is the latter. Don't change this without a discussion first, as the
-                    // current semantic is a reasonable one.
-                    try {
-                        masterDomainControllerClient.register();
-                    } catch (Exception e) {
-                        //We could not connect to the host
-                        ROOT_LOGGER.cannotConnectToMaster(e);
-                        System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
-                    }
-                } else if (currentRunningMode != RunningMode.ADMIN_ONLY) {
-                        //We could not connect to the host
-                        ROOT_LOGGER.noDomainControllerConfigurationProvided(currentRunningMode,
-                                CommandLineConstants.ADMIN_ONLY, RunningMode.ADMIN_ONLY);
-                        System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
-                }
-
-            } else {
-
-                if(environment.isUseCachedDc()) {
-                    remoteFileRepository.setRemoteFileRepositoryExecutor(new RemoteDomainConnectionService.RemoteFileRepositoryExecutor() {
-                        @Override
-                        public File getFile(String relativePath, byte repoId, HostFileRepository localFileRepository) {
-                            return localFileRepository.getFile(relativePath);
+                    if (hostControllerInfo.getRemoteDomainControllerHost() != null) {
+                        Future<MasterDomainControllerClient> clientFuture = RemoteDomainConnectionService.install(serviceTarget,
+                                getValue(),
+                                hostControllerInfo,
+                                environment.getProductConfig(),
+                                hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
+                                remoteFileRepository);
+                        MasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
+                        //Registers us with the master and gets down the master copy of the domain model to our DC
+                        //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
+                        // BES 2012/02/04 Comment ^^^ implies the semantic is to use isUseCachedDC as a fallback to
+                        // a failure to connect as opposed to being an instruction to not connect at all. I believe
+                        // the current impl is the latter. Don't change this without a discussion first, as the
+                        // current semantic is a reasonable one.
+                        try {
+                            masterDomainControllerClient.register();
+                        } catch (Exception e) {
+                            //We could not connect to the host
+                            ROOT_LOGGER.cannotConnectToMaster(e);
+                            System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
                         }
-                    });
+                    } else if (currentRunningMode != RunningMode.ADMIN_ONLY) {
+                            //We could not connect to the host
+                            ROOT_LOGGER.noDomainControllerConfigurationProvided(currentRunningMode,
+                                    CommandLineConstants.ADMIN_ONLY, RunningMode.ADMIN_ONLY);
+                            System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
+                    }
+
+                } else {
+
+                    if (environment.isUseCachedDc()) {
+                        remoteFileRepository.setRemoteFileRepositoryExecutor(new RemoteDomainConnectionService.RemoteFileRepositoryExecutor() {
+                            @Override
+                            public File getFile(String relativePath, byte repoId, HostFileRepository localFileRepository) {
+                                return localFileRepository.getFile(relativePath);
+                            }
+                        });
+                    }
+
+                    // parse the domain.xml and load the steps
+                    // TODO look at having LocalDomainControllerAdd do this, using Stage.IMMEDIATE for the steps
+                    ConfigurationPersister domainPersister = hostControllerConfigurationPersister.getDomainPersister();
+                    ok = boot(domainPersister.load(), false);
+
+                    if (!ok && runningModeControl.getRunningMode().equals(RunningMode.ADMIN_ONLY)) {
+                        ROOT_LOGGER.reportAdminOnlyDomainXmlFailure();
+                        ok = true;
+                    }
+
+                    if (ok) {
+                        ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
+                                new MasterDomainControllerOperationHandlerService(this),
+                                DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL, null, null);
+                        serverInventory = getFuture(inventoryFuture);
+                    }
                 }
-                // TODO look at having LocalDomainControllerAdd do this, using Stage.IMMEDIATE for the steps
-                // parse the domain.xml and load the steps
-                ConfigurationPersister domainPersister = hostControllerConfigurationPersister.getDomainPersister();
-                boot(domainPersister.load());
-
-                ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                        new MasterDomainControllerOperationHandlerService(this),
-                        DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL, null, null);
-                serverInventory = getFuture(inventoryFuture);
             }
 
-            // TODO look into adding some of these services in the handlers, but ON-DEMAND.
-            // Then here just add some simple service that demands them
+            if (ok) {
+                // TODO look into adding some of these services in the handlers, but ON-DEMAND.
+                // Then here just add some simple service that demands them
 
-            ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME, proxyExecutor, localFileRepository);
+                ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME, proxyExecutor, localFileRepository);
 
-            NativeManagementAddHandler.installNativeManagementServices(serviceTarget, hostControllerInfo, null, null);
+                NativeManagementAddHandler.installNativeManagementServices(serviceTarget, hostControllerInfo, null, null);
 
-            if (hostControllerInfo.getHttpManagementInterface() != null) {
-                HttpManagementAddHandler.installHttpManagementServices(currentRunningMode, serviceTarget, hostControllerInfo, environment, null);
+                if (hostControllerInfo.getHttpManagementInterface() != null) {
+                    HttpManagementAddHandler.installHttpManagementServices(currentRunningMode, serviceTarget, hostControllerInfo, environment, null);
+                }
+                reachedServers = true;
+                if (currentRunningMode == RunningMode.NORMAL) {
+                    startServers();
+                }
             }
 
-            if (currentRunningMode == RunningMode.NORMAL) {
-                startServers();
+        } catch (Exception e) {
+            ROOT_LOGGER.caughtExceptionDuringBoot(e);
+            if (!reachedServers) {
+                ok = false;
             }
-
-            // TODO when to call hostControllerConfigurationPersister.successful boot? Look into this for standalone as well; may be broken now
         } finally {
-            try {
-                finishBoot();
-            } finally {
-                bootstrapListener.tick();
+            if (ok) {
+                try {
+                    finishBoot();
+                } finally {
+                    bootstrapListener.tick();
+                }
+            } else {
+                // Die!
+                ROOT_LOGGER.unsuccessfulBoot();
+                System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
             }
         }
     }
