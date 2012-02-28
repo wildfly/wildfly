@@ -22,47 +22,67 @@
 
 package org.jboss.as.test.integration.jca.security;
 
-import static org.jboss.as.test.integration.ejb.security.SecurityTest.*;
-import static org.junit.Assert.*;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import javax.annotation.Resource;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertNotNull;
+
 /**
  * Test for RA with security domain JBQA-5953
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com"> Vladimir Rastseluev</a>
- * 
  */
 @RunWith(Arquillian.class)
+@ServerSetup(RaWithSecurityDomainTestCase.RaWithSecurityDomainTestCaseSetup.class)
 public class RaWithSecurityDomainTestCase {
 
-    @Deployment
-    public static Archive<?> deploymentSingleton() {
-        try {
-            Map<String,String> moduleOptions = new HashMap<String,String>();
+    static class RaWithSecurityDomainTestCaseSetup extends AbstractLoginModuleSecurityDomainTestCaseSetup {
+
+        @Override
+        protected String getSecurityDomainName() {
+            return "RaRealm";
+        }
+
+        @Override
+        protected String getLoginModuleName() {
+            return "ConfiguredIdentity";
+        }
+
+        @Override
+        protected boolean isRequired() {
+            return true;
+        }
+
+        @Override
+        protected Map<String, String> getModuleOptions() {
+            Map<String, String> moduleOptions = new HashMap<String, String>();
             moduleOptions.put("userName", "sa");
             moduleOptions.put("password", "sa");
             moduleOptions.put("principal", "sa");
-            createSecurityDomain("RaRealm","ConfiguredIdentity",true,moduleOptions);
-        } catch (Exception e) {
-            e.printStackTrace();
+            return moduleOptions;
         }
+    }
+
+    @Deployment
+    public static Archive<?> deploymentSingleton() {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar").addClass(RaWithSecurityDomainTestCase.class)
                 .addPackage(MultipleConnectionFactory1.class.getPackage());
+        jar.addClasses(AbstractLoginModuleSecurityDomainTestCaseSetup.class, AbstractSecurityDomainSetup.class);
         final ResourceAdapterArchive rar = ShrinkWrap.create(ResourceAdapterArchive.class, "test.rar").addAsLibrary(jar)
                 .addAsResource(RaWithSecurityDomainTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(RaWithSecurityDomainTestCase.class.getPackage(), "roles.properties", "roles.properties")
@@ -70,11 +90,6 @@ public class RaWithSecurityDomainTestCase {
                 .addAsManifestResource("jca/security/ra/ironjacamar.xml", "ironjacamar.xml");
 
         return rar;
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        removeSecurityDomain("RaRealm");
     }
 
     @Resource(mappedName = "java:jboss/name1")

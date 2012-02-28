@@ -34,10 +34,10 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
-import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -71,10 +71,10 @@ public class EjbRemoveUnitTestCase {
 
     public static final CountDownLatch CDL = new CountDownLatch(10);
 
-    static class EjbRemoveUnitTestCaseSetup extends AbstractMgmtServerSetupTask {
+    static class EjbRemoveUnitTestCaseSetup implements ServerSetupTask {
 
         @Override
-        protected void doSetup(final ManagementClient managementClient) throws Exception {
+        public void setup(final ManagementClient managementClient) throws Exception {
             EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), POOL_NAME2, 5, 10 * 1000, TimeUnit.MILLISECONDS);
             EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), POOL_NAME3, 5, 10 * 1000, TimeUnit.MILLISECONDS);
         }
