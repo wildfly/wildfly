@@ -24,6 +24,7 @@ package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -35,6 +36,13 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.txn.service.ArjunaObjectStoreEnvironmentService;
+import org.jboss.as.txn.service.TxnServices;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistry;
+
+import javax.management.MBeanServer;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
@@ -54,9 +62,14 @@ public class TransactionExtension implements Extension {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, TransactionExtension.class.getClassLoader(), true, true);
     }
 
+    static MBeanServer getMBeanServer(OperationContext context) {
+        final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+        final ServiceController<?> serviceController = serviceRegistry.getService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT);
+        final ArjunaObjectStoreEnvironmentService osService = (ArjunaObjectStoreEnvironmentService) serviceController.getService();
+        return osService.getMbeanServer().getValue();
+    }
 
     /** {@inheritDoc} */
-    @Override
     public void initialize(ExtensionContext context) {
         ROOT_LOGGER.debug("Initializing Transactions Extension");
 
@@ -66,28 +79,30 @@ public class TransactionExtension implements Extension {
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new TransactionSubsystemRootResourceDefinition(registerRuntimeOnly));
         registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
-        PathElement logStorePath = PathElement.pathElement(LogStoreConstans.LOG_STORE, LogStoreConstans.LOG_STORE);
+        PathElement logStorePath = PathElement.pathElement(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE);
         ManagementResourceRegistration logStoreChild = registration.registerSubModel(logStorePath, LogStoreProviders.LOG_STORE_MODEL_CHILD);
         logStoreChild.registerOperationHandler(ModelDescriptionConstants.ADD, LogStoreAddHandler.INSTANCE, LogStoreProviders.ADD_LOG_STORE_MODEL_CHILD);
         logStoreChild.registerOperationHandler(ModelDescriptionConstants.REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, LogStoreProviders.REMOVE_LOG_STORE_MODEL_CHILD);
-        logStoreChild.registerOperationHandler(LogStoreConstans.PROBE, LogStoreProbeHandler.INSTANCE, LogStoreProviders.PROBE_OPERATION);
+        logStoreChild.registerOperationHandler(LogStoreConstants.PROBE, LogStoreProbeHandler.INSTANCE, LogStoreProviders.PROBE_OPERATION);
 
-
-        PathElement transactionPath = PathElement.pathElement(LogStoreConstans.TRANSACTIONS);
+        PathElement transactionPath = PathElement.pathElement(LogStoreConstants.TRANSACTIONS);
         ManagementResourceRegistration transactionChild = logStoreChild.registerSubModel(transactionPath, LogStoreProviders.TRANSACTION_CHILD);
+        transactionChild.registerOperationHandler(LogStoreConstants.DELETE, LogStoreTransactionDeleteHandler.INSTANCE, LogStoreProviders.DELETE_OPERATION);
 
-        PathElement partecipantPath = PathElement.pathElement(LogStoreConstans.PARTECIPANTS);
+        PathElement partecipantPath = PathElement.pathElement(LogStoreConstants.PARTICIPANTS);
         ManagementResourceRegistration partecipantChild = transactionChild.registerSubModel(partecipantPath, LogStoreProviders.PARTECIPANT_CHILD);
 
         for (final SimpleAttributeDefinition attribute : LogStoreProviders.PARTECIPANT_RW_ATTRIBUTE) {
-            partecipantChild.registerReadWriteAttribute(attribute, null, new PartecipantWriteAttributeHandler(attribute));
+            partecipantChild.registerReadWriteAttribute(attribute, null, new ParticipantWriteAttributeHandler(attribute));
         }
+
+        partecipantChild.registerOperationHandler(LogStoreConstants.RECOVER, LogStoreParticipantRecoveryHandler.INSTANCE, LogStoreProviders.RECOVER_OPERATION);
+        partecipantChild.registerOperationHandler(LogStoreConstants.REFRESH, LogStoreParticipantRefreshHandler.INSTANCE, LogStoreProviders.REFRESH_OPERATION);
 
         subsystem.registerXMLElementWriter(TransactionSubsystem11Parser.INSTANCE);
     }
 
     /** {@inheritDoc} */
-    @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_0.getUriString(), TransactionSubsystem10Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_1.getUriString(), TransactionSubsystem11Parser.INSTANCE);

@@ -44,6 +44,7 @@
             <xs:element name="coordinator-environment" type="coordinator-environment" minOccurs="0"/>
             <xs:element name="object-store" type="object-store" minOccurs="0"/>
             <xs:element name="jts" type="jts-Type" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="use-hornetq-store" type="use-hornetq-store-Type" minOccurs="0" maxOccurs="1" />
         </xs:all>
     </xs:complexType>
 
@@ -174,6 +175,16 @@
             ]]>
             </xs:documentation>
         </xs:annotation>
+    </xs:complexType>
+
+    <xs:complexType name="use-hornetq-store-Type">
+            <xs:annotation>
+                <xs:documentation>
+                <![CDATA[
+                    The flag to enable the hornetq transaction log store.
+                ]]>
+                </xs:documentation>
+            </xs:annotation>
     </xs:complexType>
 
 </xs:schema>
