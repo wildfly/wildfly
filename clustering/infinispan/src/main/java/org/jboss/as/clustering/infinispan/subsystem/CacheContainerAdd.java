@@ -129,8 +129,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             }
         }
 
-        ServiceController.Mode initialMode = (startMode != null) ? StartMode.valueOf(startMode).getMode() : ServiceController.Mode.ON_DEMAND;
-
         ServiceTarget target = context.getServiceTarget();
         ServiceName configServiceName = EmbeddedCacheManagerConfigurationService.getServiceName(name);
         ServiceBuilder<EmbeddedCacheManagerConfiguration> configBuilder = target.addService(configServiceName, new EmbeddedCacheManagerConfigurationService(name, defaultCache, dependencies))
@@ -138,6 +136,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
                 .addDependency(DependencyType.OPTIONAL, EmbeddedCacheManagerConfigurationService.getClassLoaderServiceName(name), ClassLoader.class, dependencies.getClassLoaderInjector())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
+
+        ServiceController.Mode initialMode = (startMode != null) ? StartMode.valueOf(startMode).getMode() : ServiceController.Mode.ON_DEMAND;
 
         ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(name);
         InjectedValue<EmbeddedCacheManagerConfiguration> config = new InjectedValue<EmbeddedCacheManagerConfiguration>();
@@ -170,7 +170,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             final String executor = ((resolvedValue = CommonAttributes.EXECUTOR.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : null ;
 
             transportConfig.setLockTimeout(lockTimeout);
-            addExecutorDependency(containerBuilder, executor, transportConfig.getExecutorInjector());
+            addExecutorDependency(configBuilder, executor, transportConfig.getExecutorInjector());
 
             // AS7-1751 decouple channel service name (name) and name used to create channel id (cluster)
             ServiceName channelServiceName = ChannelService.getServiceName(name);
@@ -184,22 +184,22 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             newControllers.add(channelBuilder.install());
         }
 
-        addExecutorDependency(containerBuilder, listenerExecutor, dependencies.getListenerExecutorInjector());
-        addScheduledExecutorDependency(containerBuilder, evictionExecutor, dependencies.getEvictionExecutorInjector());
-        addScheduledExecutorDependency(containerBuilder, replicationQueueExecutor, dependencies.getReplicationQueueExecutorInjector());
+        addExecutorDependency(configBuilder, listenerExecutor, dependencies.getListenerExecutorInjector());
+        addScheduledExecutorDependency(configBuilder, evictionExecutor, dependencies.getEvictionExecutorInjector());
+        addScheduledExecutorDependency(configBuilder, replicationQueueExecutor, dependencies.getReplicationQueueExecutorInjector());
 
         newControllers.add(configBuilder.install());
 
         log.debugf("%s cache container installed", name);
      }
 
-    private void addExecutorDependency(ServiceBuilder<EmbeddedCacheManager> builder, String executor, Injector<Executor> injector) {
+    private void addExecutorDependency(ServiceBuilder<EmbeddedCacheManagerConfiguration> builder, String executor, Injector<Executor> injector) {
         if (executor != null) {
             builder.addDependency(ThreadsServices.executorName(executor), Executor.class, injector);
         }
     }
 
-    private void addScheduledExecutorDependency(ServiceBuilder<EmbeddedCacheManager> builder, String executor, Injector<ScheduledExecutorService> injector) {
+    private void addScheduledExecutorDependency(ServiceBuilder<EmbeddedCacheManagerConfiguration> builder, String executor, Injector<ScheduledExecutorService> injector) {
         if (executor != null) {
             builder.addDependency(ThreadsServices.executorName(executor), ScheduledExecutorService.class, injector);
         }
