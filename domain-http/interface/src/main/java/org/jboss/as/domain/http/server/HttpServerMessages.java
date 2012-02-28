@@ -177,4 +177,10 @@ public interface HttpServerMessages {
      */
     @Message(id = 15131, value = "Unexpected characters being dropped from header '%s' for %s")
     IllegalArgumentException unexpectedHeaderChar(String dropping, String key);
+
+    /*
+     * Message IDs 15100 to 15199 Reserved for the HTTP management interface, HttpServerLogger also contains messages in this
+     * range commencing at 15100.
+     */
+
 }
