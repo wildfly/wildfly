@@ -90,6 +90,28 @@
                                 <phase>none</phase>
                             </execution>
 
+                            <!-- Multi node clustering tests with manual containers with unmanaged deployment. -->
+                            <execution>
+                                <id>tests-clustering-multi-node-unmanaged.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.launch>clustering-udp</arquillian.launch>
+                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+
                             <!-- Single node clustering tests. TODO: move from clustering TS. -->
                             <execution>
                                 <id>tests-clustering-single-node.surefire</id>
@@ -112,28 +134,6 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Multi node clustering tests with manual containers with unmanaged deployment. -->
-                            <execution>
-                                <id>tests-clustering-multi-node-unmanaged.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <arquillian.launch>clustering-udp</arquillian.launch>
-                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
-                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
-                            
                         </executions>
                     </plugin>
                 </plugins>
