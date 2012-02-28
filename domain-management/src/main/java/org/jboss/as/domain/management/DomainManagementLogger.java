@@ -49,4 +49,10 @@ public interface DomainManagementLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 15200, value = "Properties file defined with default user and password, this will be easy to guess.")
     void userAndPasswordWarning();
+
+    /*
+     * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementMessages
+     * also contains messages in this range commencing 15220.
+     */
+
 }

@@ -161,6 +161,10 @@ public class AddPropertiesUser {
 
     private class PropertyFilePrompt implements State {
 
+        private static final int MANAGEMENT = 0;
+        private static final int APPLICATION = 1;
+        private static final int INVALID = 2;
+
         @Override
         public State execute() {
 
@@ -173,24 +177,25 @@ public class AddPropertiesUser {
                 String temp = theConsole.readLine("(a): ");
                 if (temp == null) {
                     /*
-                     * This will return user to the command prompt so add a new line to
-                     * ensure the command prompt is on the next line.
+                     * This will return user to the command prompt so add a new line to ensure the command prompt is on the next
+                     * line.
                      */
                     theConsole.printf(NEW_LINE);
                     return null;
                 }
+
                 if (temp.length() > 0) {
-                    switch (temp.charAt(0)) {
-                        case 'a':
-                        case 'A':
+                    switch (convertResponse(temp)) {
+                        case MANAGEMENT:
                             values.management = true;
                             values.realm = DEFAULT_MANAGEMENT_REALM;
                             return new PropertyFileFinder(values);
-                        case 'b':
-                        case 'B':
+                        case APPLICATION:
                             values.management = false;
                             values.realm = DEFAULT_APPLICATION_REALM;
                             return new PropertyFileFinder(values);
+                        default:
+                            return new ErrorState(MESSAGES.invalidChoiceResponse(), this);
                     }
                 } else {
                     values.management = true;
@@ -199,6 +204,20 @@ public class AddPropertiesUser {
                 }
             }
         }
+
+        private int convertResponse(final String response) {
+            String temp = response.toLowerCase();
+            if ("A".equals(temp) || "a".equals(temp)) {
+                return MANAGEMENT;
+            }
+
+            if ("B".equals(temp) || "b".equals(temp)) {
+                return APPLICATION;
+            }
+
+            return INVALID;
+        }
+
     }
 
     /**
