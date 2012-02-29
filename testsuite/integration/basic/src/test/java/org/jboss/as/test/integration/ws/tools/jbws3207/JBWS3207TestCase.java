@@ -60,12 +60,14 @@ public class JBWS3207TestCase {
     public static void setProperties() {
         System.setProperty("jbossws.deployer.authentication.username", Authentication.USERNAME);
         System.setProperty("jbossws.deployer.authentication.password", Authentication.PASSWORD);
+        System.setProperty("jbossws.deployer.host", TestSuiteEnvironment.getServerAddress());
     }
 
     @AfterClass
     public static void clearProperties() {
         System.clearProperty("jbossws.deployer.authentication.username");
         System.clearProperty("jbossws.deployer.authentication.password");
+        System.clearProperty("jbossws.deployer.host");
     }
 
     @Test

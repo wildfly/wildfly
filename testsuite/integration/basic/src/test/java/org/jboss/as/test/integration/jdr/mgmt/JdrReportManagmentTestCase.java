@@ -26,91 +26,61 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.UnknownHostException;
-import java.security.MessageDigest;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.jdr.JdrReportDescriptions;
 import org.jboss.dmr.ModelNode;
-
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * Tests the JDR Report subsystem management interfaces.
- * 
+ *
  * @author Mike M. Clark
  */
-@RunAsClient()
+@RunAsClient
 @RunWith(Arquillian.class)
 public class JdrReportManagmentTestCase {
 
-	private static ModelControllerClient modelControllerClient = null;
-	
-	@BeforeClass
-	public static void connectModelControllerClient() {
-		final String host = "localhost";
-		final int port = 9999;
-		
-		try {
-			modelControllerClient = ModelControllerClient.Factory.create(host, port);
-		} catch (UnknownHostException e) {
-			throw new RuntimeException("Cannot create model controller client for host, " + host + " and port " + port, e);
-		}
-	}
-	
-	@AfterClass
-	public static void closeModelControllerClient() {
-		try {
-			modelControllerClient.close();
-		} catch (IOException e) {
-			throw new RuntimeException("Unable to close model controller client.", e);
-		}
-	}
-	
+	@ContainerResource
+    private ManagementClient managementClient;
+
 	@Test
 	public void generateStandaloneJdrReport() throws Exception {
 		// Create the generate-jdr-report operation
 		final ModelNode address = new ModelNode();
 		address.add("subsystem", "jdr");
 		ModelNode operation = Util.getEmptyOperation("generate-jdr-report", address);
-		
+
 		// Execute generate-jdr-report operation
-		ModelNode response = modelControllerClient.execute(operation);
+		ModelNode response = managementClient.getControllerClient().execute(operation);
 		String outcome = response.get("outcome").asString();
 		Assert.assertEquals("JDR Generation failed. Failed response: " + response.asString(), "success", outcome);
-		
+
 		ModelNode result = response.get("result");
 		validateJdrTimeStamps(result);
-		
+
 		String location = result.get("report-location").asString();
 		Assert.assertNotNull("JDR report location was null", location);
-	    
+
 		// Validate report itself.
 		File reportFile = new File(location);
 		Assert.assertTrue("JDR report missing, not located at " + location, reportFile.exists());
 		validateJdrReportContents(reportFile);
-		
+
 		// Validate md5 file
 		String md5FileName = location + ".md5";
 		File md5File = new File(md5FileName);
 		Assert.assertTrue("JDR md5 file missing, not located at " + md5FileName, md5File.exists());
 		validateJdrMd5(reportFile, md5File);
-		
+
 		// Clean up report files
 		reportFile.delete();
 		md5File.delete();
@@ -120,17 +90,17 @@ public class JdrReportManagmentTestCase {
         String md5FromMd5File = readMd5File(md5File);
         Assert.assertNotNull("MD5 file contents null", md5FromMd5File);
         Assert.assertEquals("MD5 file contents wrong size", md5FromMd5File.length(), 32);
-        
+
         String md5OfReportArchive = getMd5(reportFile);
         Assert.assertEquals("JDR Report has incorrect checksum", md5FromMd5File, md5OfReportArchive);
 	}
-    
+
     private String getMd5(File file) throws Exception {
         FileInputStream in = new FileInputStream(file);
         String md5 = DigestUtils.md5Hex(in);
         return md5;
     }
-    
+
     private String readMd5File(File file) throws Exception {
         String md5 = null;
         FileReader fileReader = new FileReader(file);
@@ -140,13 +110,13 @@ public class JdrReportManagmentTestCase {
         } finally {
             bufferedReader.close();
         }
-        
+
         return md5;
     }
 
 	private void validateJdrReportContents(File reportFile) {
 	    String reportName = reportFile.getName().replace(".zip","");
-	    
+
 		ZipFile reportZip = null;
 		try {
 			reportZip = new ZipFile(reportFile);
@@ -174,7 +144,7 @@ public class JdrReportManagmentTestCase {
 		Assert.assertNotNull("JDR start time was null.", result.get("start-time").asString());
 		Assert.assertNotNull("JDR end time was null.", result.get("end-time").asString());
 	}
-	
+
 	private void validateEntryNotEmpty(String fileName, ZipFile reportZip, String reportName) {
 	    String entryInZip = reportName + "/" + fileName;
 	    ZipEntry entry = reportZip.getEntry(entryInZip);

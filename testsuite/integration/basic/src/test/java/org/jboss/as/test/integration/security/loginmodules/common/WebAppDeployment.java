@@ -12,6 +12,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.loginmodules.common.servlets.AbstractLoginModuleTestServlet;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -29,15 +30,13 @@ import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.test.integration.security.common.Utils.applyUpdates;
 
 /**
+ * TODO: delete this class and turn it into a ServerSetupTask
+ *
  * @author jlanik
  */
 public class WebAppDeployment {
 
     private String deploymentName;
-
-    private String modelControllerHost = "localhost";
-
-    private int modelControllerPort = 9999;
 
     private Class servletClass;
 
@@ -60,16 +59,6 @@ public class WebAppDeployment {
         this.loginModuleClass = loginModule;
         this.classes = Arrays.asList(classes);
     }
-
-    public WebAppDeployment(String deploymentName, Class servletClass, Class loginModule, String modelControllerHost, int modelControllerPort, Class... classes) {
-        this.deploymentName = deploymentName;
-        this.servletClass = servletClass;
-        this.loginModuleClass = loginModule;
-        this.modelControllerHost = modelControllerHost;
-        this.modelControllerPort = modelControllerPort;
-        this.classes = Arrays.asList(classes);
-    }
-
 
     public String getDeploymentName() {
         return deploymentName;
@@ -119,56 +108,51 @@ public class WebAppDeployment {
     private void createSecurityDomain() throws Exception {
         log.debug("entering createSecurityDomain()");
         final ModelControllerClient client = getModelControllerClient();
+        try {
+            List<ModelNode> updates = new ArrayList<ModelNode>();
+            ModelNode op = new ModelNode();
 
-        List<ModelNode> updates = new ArrayList<ModelNode>();
-        ModelNode op = new ModelNode();
+            op.get(OP).set(ADD);
+            op.get(OP_ADDR).add(SUBSYSTEM, "security");
+            op.get(OP_ADDR).add(SECURITY_DOMAIN, getSecurityDomainName());
+            updates.add(op);
 
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, getSecurityDomainName());
-        updates.add(op);
+            op = new ModelNode();
+            op.get(OP).set(ADD);
+            op.get(OP_ADDR).add(SUBSYSTEM, "security");
+            op.get(OP_ADDR).add(SECURITY_DOMAIN, getSecurityDomainName());
+            op.get(OP_ADDR).add(Constants.AUTHENTICATION, Constants.CLASSIC);
 
-        op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, getSecurityDomainName());
-        op.get(OP_ADDR).add(Constants.AUTHENTICATION, Constants.CLASSIC);
+            ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
+            loginModule.get(ModelDescriptionConstants.CODE).set(loginModuleClass.getName());
+            loginModule.get(FLAG).set("required");
+            op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
 
-        ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
-        loginModule.get(ModelDescriptionConstants.CODE).set(loginModuleClass.getName());
-        loginModule.get(FLAG).set("required");
-        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            ModelNode moduleOptions = loginModule.get("module-options");
+            for (Map.Entry<String, String> entry : moduleOptionsCache.entrySet()) {
+                moduleOptions.get(entry.getKey()).set(entry.getValue());
+                log.debug("module option added: " + entry.getKey() + "=" + entry.getValue());
+            }
 
-        ModelNode moduleOptions = loginModule.get("module-options");
-        for (Map.Entry<String, String> entry : moduleOptionsCache.entrySet()) {
-            moduleOptions.get(entry.getKey()).set(entry.getValue());
-            log.debug("module option added: " + entry.getKey() + "=" + entry.getValue());
+            updates.add(op);
+            applyUpdates(updates, client);
+
+            //clear cache
+            moduleOptionsCache = new HashMap<String, String>();
+
+            log.debug("leaving createSecurityDomain()");
+        } finally {
+            client.close();
         }
-
-        updates.add(op);
-        applyUpdates(updates, client);
-
-        //clear cache
-        moduleOptionsCache = new HashMap<String, String>();
-
-        log.debug("leaving createSecurityDomain()");
     }
 
     private ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        return ModelControllerClient.Factory.create(InetAddress.getByName(modelControllerHost), modelControllerPort,
+        return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()), TestSuiteEnvironment.getServerPort(),
                 org.jboss.as.arquillian.container.Authentication.getCallbackHandler());
     }
 
     public void addModuleOption(String name, String value) {
         moduleOptionsCache.put(name, value);
-    }
-
-    public String getModelControllerHost() {
-        return modelControllerHost;
-    }
-
-    public int getModelControllerPort() {
-        return modelControllerPort;
     }
 
     public Class getServletClass() {

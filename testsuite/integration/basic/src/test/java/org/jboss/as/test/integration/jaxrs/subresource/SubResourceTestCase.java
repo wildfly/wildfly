@@ -74,7 +74,7 @@ public class SubResourceTestCase {
     @Test
     public void testSubResource() throws Exception {
         assertEquals("Jozef", performCall("api/person/Jozef"));
-        assertEquals("Jozef's address is unknown.", performCall("subresource/api/person/Jozef/address"));
+        assertEquals("Jozef's address is unknown.", performCall("api/person/Jozef/address"));
     }
 
 

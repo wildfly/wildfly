@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.xerces.unit;
 
+import java.net.URL;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -32,6 +34,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.xerces.JSFManagedBean;
 import org.jboss.as.test.integration.xerces.XercesUsageServlet;
 import org.jboss.logging.Logger;
@@ -55,9 +58,15 @@ public class XercesUsageTestCase {
 
     private static final String JSF_WEB_APP_CONTEXT = "xerces-jsf-webapp";
 
-    private static final String BASE_URL = "http://localhost:8080/";
-
     private static final Logger logger = Logger.getLogger(XercesUsageTestCase.class);
+
+    @ArquillianResource
+    @OperateOnDeployment("app-without-jsf")
+    private URL withoutJsf;
+
+    @ArquillianResource
+    @OperateOnDeployment("app-with-jsf")
+    private URL withJsf;
 
     /**
      * Create a .ear, containing a web application (without any JSF constructs) and also the xerces jar in the .ear/lib
@@ -116,7 +125,7 @@ public class XercesUsageTestCase {
         final HttpClient httpClient = new DefaultHttpClient();
         final String xml = "dummy.xml";
 
-        final String requestURL = BASE_URL + WEB_APP_CONTEXT + XercesUsageServlet.URL_PATTERN
+        final String requestURL = withoutJsf.toExternalForm() + XercesUsageServlet.URL_PATTERN
                 + "?" + XercesUsageServlet.XML_RESOURCE_NAME_PARAMETER + "=" + xml;
         final HttpGet request = new HttpGet(requestURL);
         final HttpResponse response = httpClient.execute(request);
@@ -140,7 +149,7 @@ public class XercesUsageTestCase {
         final HttpClient httpClient = new DefaultHttpClient();
         final String xml = "dummy.xml";
 
-        final String requestURL = BASE_URL + JSF_WEB_APP_CONTEXT + XercesUsageServlet.URL_PATTERN
+        final String requestURL = withJsf.toExternalForm()+ XercesUsageServlet.URL_PATTERN
                 + "?" + XercesUsageServlet.XML_RESOURCE_NAME_PARAMETER + "=" + xml;
         final HttpGet request = new HttpGet(requestURL);
         final HttpResponse response = httpClient.execute(request);

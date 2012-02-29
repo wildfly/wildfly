@@ -21,7 +21,6 @@
         <soap:binding style='rpc' transport='http://schemas.xmlsoap.org/soap/http'/>
         <operation name='echo'>
             <soap:operation soapAction=''/>
-
             <input>
                 <soap:body namespace='http://www.openuri.org/2004/04/HelloWorld' use='literal'/>
             </input>
@@ -31,9 +30,8 @@
         </operation>
     </binding>
     <service name='EndpointService'>
-
         <port binding='tns:EndpointInterfaceBinding' name='EJB3BeanPort'>
-            <soap:address location='http://${node0}:8080/ws-serviceref-example/EndpointService/EJB3Bean'/>
+            <soap:address location='http://localhost:8080/ws-serviceref-example/EndpointService/EJB3Bean'/>
         </port>
     </service>
 </definitions>

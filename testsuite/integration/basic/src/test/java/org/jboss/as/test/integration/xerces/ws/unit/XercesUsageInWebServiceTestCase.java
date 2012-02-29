@@ -22,10 +22,16 @@
 
 package org.jboss.as.test.integration.xerces.ws.unit;
 
+import java.net.URL;
+
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.xerces.ws.XercesUsageWSEndpoint;
 import org.jboss.as.test.integration.xerces.ws.XercesUsageWebService;
 import org.jboss.logging.Logger;
@@ -34,10 +40,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
-import java.net.URL;
 
 /**
  * Tests that packaging a xerces jar within a web application containing a webservice implementation, doesn't break the
@@ -51,9 +53,10 @@ public class XercesUsageInWebServiceTestCase {
 
     private static final String WEBSERVICE_WEB_APP_CONTEXT = "xerces-webservice-webapp";
 
-    private static final String BASE_URL = "http://localhost:8080/";
-
     private static final Logger logger = Logger.getLogger(XercesUsageInWebServiceTestCase.class);
+
+    @ArquillianResource
+    private URL url;
 
     /**
      * Creates a .war file, containing a webservice implementation and also packages the xerces jar within the
@@ -87,7 +90,7 @@ public class XercesUsageInWebServiceTestCase {
     public void testXercesUsageInWebService() throws Exception {
 
         final QName serviceName = new QName("org.jboss.as.test.integration.xerces.ws", "XercesUsageWebService");
-        final URL wsdlURL = new URL(BASE_URL + WEBSERVICE_WEB_APP_CONTEXT + "/XercesUsageWebService?wsdl");
+        final URL wsdlURL = new URL(url.toExternalForm() + "XercesUsageWebService?wsdl");
         final Service service = Service.create(wsdlURL, serviceName);
         final XercesUsageWSEndpoint port = service.getPort(XercesUsageWSEndpoint.class);
         final String xml = "dummy.xml";
