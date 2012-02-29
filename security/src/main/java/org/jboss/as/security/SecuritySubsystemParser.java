@@ -37,7 +37,6 @@ import static org.jboss.as.security.Constants.*;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -191,7 +190,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     }
 
     private void writeSecurityDomainContent(XMLExtendedStreamWriter writer, ModelNode policyDetails) throws XMLStreamException {
-        Set<String> keys = new HashSet<String>(policyDetails.keys());
+        Set<String> keys = policyDetails.keys();
         keys.remove(NAME);
         keys.remove(CACHE_TYPE);
 
