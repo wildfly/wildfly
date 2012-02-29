@@ -29,6 +29,7 @@ public class ModelKeys {
     static final String ACQUIRE_TIMEOUT = "acquire-timeout";
     static final String ALIAS = "alias";
     static final String ALIASES = "aliases";
+    static final String ASYNC_MARSHALLING = "async-marshalling";
     static final String BATCH_SIZE = "batch-size";
     static final String BATCHING = "batching";
     static final String BUCKET_TABLE = "bucket-table";

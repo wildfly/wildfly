@@ -293,6 +293,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         final long queueFlushInterval = CommonAttributes.QUEUE_FLUSH_INTERVAL.resolveModelAttribute(context, cache).asLong();
         final long remoteTimeout = CommonAttributes.REMOTE_TIMEOUT.resolveModelAttribute(context, cache).asLong();
         final boolean batching = CommonAttributes.BATCHING.resolveModelAttribute(context, cache).asBoolean();
+        final boolean asyncMarshalling = CommonAttributes.ASYNC_MARSHALLING.resolveModelAttribute(context, cache).asBoolean();
 
         builder.classLoader(this.getClass().getClassLoader());
         // set the cache mode
@@ -309,6 +310,11 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         } else  {
             builder.clustering().async().replQueueMaxElements(queueSize).useReplQueue(queueSize > 0);
             builder.clustering().async().replQueueInterval(queueFlushInterval);
+            if(asyncMarshalling) {
+                builder.clustering().async().asyncMarshalling();
+            } else {
+                builder.clustering().async().syncMarshalling();
+            }
         }
 
         // locking is a child resource

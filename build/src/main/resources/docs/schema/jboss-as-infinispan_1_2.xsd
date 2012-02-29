@@ -337,6 +337,13 @@
     <xs:complexType name="clustered-cache" abstract="true">
         <xs:complexContent>
             <xs:extension base="tns:cache">
+                <xs:attribute name="async-marshalling" type="xs:boolean" default="false">
+                    <xs:annotation>
+                        <xs:documentation>
+                           Enables the use of asynchronous marshalling
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
                 <xs:attribute name="mode" type="tns:mode" use="required">
                     <xs:annotation>
                         <xs:documentation></xs:documentation>
