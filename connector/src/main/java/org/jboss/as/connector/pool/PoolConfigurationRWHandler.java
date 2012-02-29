@@ -47,10 +47,12 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.jca.common.api.metadata.common.FlushStrategy;
 import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
 import org.jboss.jca.core.api.management.Connector;
 import org.jboss.jca.core.api.management.DataSource;
@@ -111,6 +113,8 @@ public class PoolConfigurationRWHandler {
                 return boolValidator;
             } else if ( USE_FAST_FAIL.getName().equals(attributeName)) {
                 return boolValidator;
+            } else if (POOL_FLUSH_STRATEGY.getName().equals(attributeName)) {
+                return new EnumValidator(FlushStrategy.class, true, true);
             } else {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidParameterName(attributeName)));
             }
@@ -145,7 +149,7 @@ public class PoolConfigurationRWHandler {
 
             return ( IDLETIMEOUTMINUTES.getName().equals(parameterName) ||  BACKGROUNDVALIDATION.getName().equals(parameterName)
                     ||  BACKGROUNDVALIDATIONMILLIS.getName().equals(parameterName)
-                    ||  POOL_PREFILL.getName().equals(parameterName));
+                    ||  POOL_PREFILL.getName().equals(parameterName) || POOL_FLUSH_STRATEGY.getName().equals(parameterName));
 
         }
 
