@@ -28,8 +28,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -64,10 +64,10 @@ public class StatefulUnitTestCase {
     static boolean deployed = false;
     static int test = 0;
 
-    static class StatefulUnitTestCaseSetup extends AbstractMgmtServerSetupTask {
+    static class StatefulUnitTestCaseSetup implements ServerSetupTask {
 
         @Override
-        protected void doSetup(final ManagementClient managementClient) throws Exception {
+        public void setup(final ManagementClient managementClient) throws Exception {
             ModelNode address = getAddress();
 
             ModelNode operation = new ModelNode();
@@ -75,9 +75,10 @@ public class StatefulUnitTestCase {
             operation.get(OP_ADDR).set(address);
             operation.get("name").set("idle-timeout");
             operation.get("value").set(1);
-            ModelNode result = getModelControllerClient().execute(operation);
+            ModelNode result = managementClient.getControllerClient().execute(operation);
             log.info("modelnode operation write-attribute idle-timeout=1: " + result);
             Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
         }
 
         @Override
@@ -87,7 +88,7 @@ public class StatefulUnitTestCase {
             operation.get(OP).set("undefine-attribute");
             operation.get(OP_ADDR).set(address);
             operation.get("name").set("idle-timeout");
-            ModelNode result = getModelControllerClient().execute(operation);
+            ModelNode result = managementClient.getControllerClient().execute(operation);
             Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         }
     }

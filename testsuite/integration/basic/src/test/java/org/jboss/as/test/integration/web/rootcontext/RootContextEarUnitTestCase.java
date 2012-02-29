@@ -62,6 +62,7 @@ public class RootContextEarUnitTestCase {
 
         @Override
         public void tearDown(final ManagementClient managementClient) throws Exception {
+            RootContextUtil.undeploy(managementClient.getControllerClient(), "root-web.ear");
             RootContextUtil.removeVirtualServer(managementClient.getControllerClient(), HOST);
         }
     }

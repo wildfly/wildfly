@@ -63,6 +63,7 @@ public class RootContextWarUnitTestCase {
 
         @Override
         public void tearDown(final ManagementClient managementClient) throws Exception {
+            RootContextUtil.undeploy(managementClient.getControllerClient(), "root-context.war");
             RootContextUtil.removeVirtualServer(managementClient.getControllerClient(), HOST);
         }
     }
