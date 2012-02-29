@@ -6,7 +6,7 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.server.services.path.AbstractPathService;
+import org.jboss.as.controller.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 

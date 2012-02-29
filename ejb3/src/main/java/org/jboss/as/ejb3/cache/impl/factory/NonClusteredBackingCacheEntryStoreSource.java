@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.cache.impl.factory;
 import java.io.File;
 import java.io.Serializable;
 
+import org.jboss.as.controller.services.path.AbstractPathService;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.impl.backing.SimpleBackingCacheEntryStore;
@@ -36,7 +37,6 @@ import org.jboss.as.ejb3.cache.spi.impl.FilePersistentObjectStore;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;

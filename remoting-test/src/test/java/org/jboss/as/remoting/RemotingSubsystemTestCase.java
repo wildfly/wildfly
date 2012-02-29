@@ -42,8 +42,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import java.io.File;
 import java.io.IOException;
 
+import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;

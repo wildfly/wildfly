@@ -31,10 +31,10 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.services.path.AbsolutePathService;
+import org.jboss.as.controller.services.path.RelativePathService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
-import org.jboss.as.server.services.path.AbsolutePathService;
-import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;

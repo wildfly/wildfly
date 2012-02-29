@@ -71,7 +71,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.as.connector.subsystems.datasources.Util;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.PathAddress;

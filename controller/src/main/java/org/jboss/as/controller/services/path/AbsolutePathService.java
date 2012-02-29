@@ -20,11 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.services.path;
+package org.jboss.as.controller.services.path;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+
+import java.io.File;
 import java.util.List;
 
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
@@ -35,43 +39,62 @@ import org.jboss.msc.service.ServiceTarget;
  * to other paths.
  *
  * @author Brian Stansberry
- * @author Kabir Khan
- * @deprecated Use {@link org.jboss.as.controller.services.path.AbsolutePathService} instead. This class is here for backwards compatibility with third-party subsystems
  */
-public class AbsolutePathService extends org.jboss.as.controller.services.path.AbsolutePathService {
+public class AbsolutePathService extends AbstractPathService {
 
-    @Deprecated
+    private final String absolutePath;
+
     public static ServiceController<String> addService(final String name, final String abstractPath, final ServiceTarget serviceTarget) {
-        return org.jboss.as.controller.services.path.AbsolutePathService.addService(name, abstractPath, serviceTarget);
+        return addService(pathNameOf(name), abstractPath, serviceTarget, null);
     }
 
-    @Deprecated
     public static ServiceController<String> addService(final String name, final String abstractPath,
                                                        final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers,
                                                        final ServiceListener... listeners) {
-        return org.jboss.as.controller.services.path.AbsolutePathService.addService(name, abstractPath, serviceTarget, newControllers, listeners);
+        return addService(pathNameOf(name), abstractPath, serviceTarget, newControllers, listeners);
     }
 
-    @Deprecated
     public static ServiceController<String> addService(final ServiceName sname, final String abstractPath, final ServiceTarget serviceTarget) {
-        return org.jboss.as.controller.services.path.AbsolutePathService.addService(sname, abstractPath, serviceTarget);
+        return addService(sname, abstractPath, serviceTarget, null);
     }
 
-    @Deprecated
     public static ServiceController<String> addService(final ServiceName sname, final String abstractPath,
                                                        final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers,
                                                        final ServiceListener... listeners) {
-        return org.jboss.as.controller.services.path.AbsolutePathService.addService(sname, abstractPath, serviceTarget, newControllers, listeners);
+        AbsolutePathService service = new AbsolutePathService(abstractPath);
+        ServiceBuilder<String> builder = serviceTarget.addService(sname, service);
+        if (listeners != null) {
+            for (ServiceListener listener : listeners) {
+                builder.addListener(listener);
+            }
+        }
+        ServiceController<String> svc = builder.install();
+        if (newControllers != null) {
+            newControllers.add(svc);
+        }
+        return svc;
     }
 
-    @Deprecated
     public static void addService(final ServiceName name, final ModelNode element, final ServiceTarget serviceTarget) {
-        org.jboss.as.controller.services.path.AbsolutePathService.addService(name, element, serviceTarget);
+        final String path = element.require(PATH).asString();
+        addService(name, path, serviceTarget, null);
     }
 
-    @Deprecated
     public AbsolutePathService(final String abstractPath) {
-        super(abstractPath);
+        if (abstractPath == null) {
+            throw new IllegalArgumentException("abstractPath is null");
+        }
+        if (abstractPath.length() == 0) {
+            throw new IllegalArgumentException("abstractPath is empty");
+        }
+        // Use File.getAbsolutePath() to make relative paths absolute
+        File f = new File(abstractPath);
+        absolutePath = f.getAbsolutePath();
+    }
+
+    @Override
+    protected String resolvePath() {
+        return absolutePath;
     }
 
 }

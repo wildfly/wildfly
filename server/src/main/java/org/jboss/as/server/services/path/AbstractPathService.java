@@ -22,93 +22,25 @@
 
 package org.jboss.as.server.services.path;
 
-import java.io.File;
-
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 
 /**
  * Abstract superclass for services that return a path.
  *
  * @author Brian Stansberry
+ * @author Kabir Khan
+ * @deprecated Use {@link org.jboss.as.controller.services.path.AbsolutePathService} instead. This class is here for backwards compatibility with third-party subsystems
  */
-public abstract class AbstractPathService implements Service<String> {
+@Deprecated
+public abstract class AbstractPathService extends org.jboss.as.controller.services.path.AbstractPathService {
 
-    private static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("server", "path");
-
+    @Deprecated
     public static ServiceName pathNameOf(String pathName) {
-        if (pathName == null) {
-            throw new IllegalArgumentException("pathName is null");
-        }
-        return SERVICE_NAME_BASE.append(pathName);
+        return org.jboss.as.controller.services.path.AbstractPathService.pathNameOf(pathName);
     }
 
-    /**
-     * Checks whether the given path looks like an absolute Unix or Windows filesystem pathname <strong>without
-     * regard for what the filesystem is underlying the Java Virtual Machine</strong>. A UNIX pathname is
-     * absolute if its prefix is <code>"/"</code>.  A Microsoft Windows pathname is absolute if its prefix is a drive
-     * specifier followed by <code>"\\"</code>, or if its prefix is <code>"\\\\"</code>.
-     * <p>
-     * <strong>This method differs from simply creating a new {@code File} and calling {@link File#isAbsolute()} in that
-     * its results do not change depending on what the filesystem underlying the Java Virtual Machine is. </strong>
-     * </p>
-     *
-     * @param path the path
-     *
-     * @return  {@code true} if {@code path} looks like an absolute Unix or Windows pathname
-     */
+    @Deprecated
     public static boolean isAbsoluteUnixOrWindowsPath(final String path) {
-        if (path != null) {
-            int length = path.length();
-            if (length > 0) {
-                char c0 = path.charAt(0);
-                if (c0 == '/') {
-                    return true;   // Absolute Unix path
-                } else if (length > 1) {
-                    char c1 = path.charAt(1);
-                    if (c0 == '\\' && c1 == '\\') {
-                        return true;   // Absolute UNC pathname "\\\\foo"
-                    } else if (length > 2 && c1 == ':' && path.charAt(2) == '\\' && isDriveLetter(c0) ) {
-                        return true; // Absolute local pathname "z:\\foo"
-                    }
-                }
-
-            }
-        }
-        return false;
+        return org.jboss.as.controller.services.path.AbstractPathService.isAbsoluteUnixOrWindowsPath(path);
     }
-
-    private static boolean isDriveLetter(char c) {
-        return ((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z'));
-    }
-
-
-    private String path;
-
-    // ------------------------------------------------------------  Service
-
-    @Override
-    public void start(StartContext context) throws StartException {
-        path = resolvePath();
-    }
-
-    @Override
-    public void stop(StopContext context) {
-    }
-
-    @Override
-    public String getValue() throws IllegalStateException {
-        final String path = this.path;
-        if(path == null) {
-            throw new IllegalStateException();
-        }
-        return path;
-    }
-
-    // ------------------------------------------------------------  Protected
-
-    protected abstract String resolvePath();
 }

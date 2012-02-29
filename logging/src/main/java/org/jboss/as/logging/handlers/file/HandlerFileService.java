@@ -22,7 +22,7 @@
 
 package org.jboss.as.logging.handlers.file;
 
-import org.jboss.as.server.services.path.AbstractPathService;
+import org.jboss.as.controller.services.path.AbstractPathService;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
