@@ -16,8 +16,6 @@
  */
 package org.jboss.as.arquillian.container;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,12 +31,15 @@ import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.core.api.InstanceProducer;
+import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.jboss.util.NotImplementedException;
+
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
  * A JBossAS deployable container
@@ -59,7 +60,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     private InstanceProducer<ArchiveDeployer> archiveDeployerInst;
 
     @Inject
-    @ContainerScoped
+    @ApplicationScoped
     private InstanceProducer<Context> jndiContext;
 
     @Inject

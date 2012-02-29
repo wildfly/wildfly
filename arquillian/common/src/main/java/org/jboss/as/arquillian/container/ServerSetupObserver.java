@@ -75,12 +75,13 @@ public class ServerSetupObserver {
     }
 
     public synchronized void handleAfterClass(@Observes AfterClass event) throws Exception {
-        if (current != null) {
+        try {
             for(final ManagementClient client : active) {
                 for(final ServerSetupTask instance : current) {
                     instance.tearDown(client);
                 }
             }
+        } finally {
             active.clear();
             current.clear();
         }
