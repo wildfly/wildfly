@@ -143,7 +143,7 @@ public class ManagementClient {
             return SUCCESS.equals(rsp.get(OUTCOME).asString())
                     && !ControlledProcessState.State.STARTING.toString().equals(rsp.get(RESULT).asString())
                     && !ControlledProcessState.State.STOPPING.toString().equals(rsp.get(RESULT).asString());
-        } catch (Exception ignored) {
+        } catch (Throwable ignored) {
             return false;
         }
     }
