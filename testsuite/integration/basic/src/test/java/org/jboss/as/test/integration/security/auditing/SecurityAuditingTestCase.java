@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.security.auditing;
 
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -66,7 +67,6 @@ import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 @RunWith(Arquillian.class)
 @ServerSetup(SecurityAuditingTestCase.SecurityAuditingTestCaseSetup.class)
 public class SecurityAuditingTestCase {
-
 
     static class SecurityAuditingTestCaseSetup extends AbstractMgmtServerSetupTask {
 
@@ -133,8 +133,15 @@ public class SecurityAuditingTestCase {
 
     @Deployment
     public static WebArchive deploy() {
-        URL warURL = Thread.currentThread().getContextClassLoader().getResource("security/auditing/form-auth.war");
-        WebArchive war = ShrinkWrap.createFromZipFile(WebArchive.class, new File(warURL.getFile()));
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "form-auth.war");
+        war.setWebXML("org/jboss/as/test/integration/security/auditing/form-auth/web.xml");
+        war.addAsWebInfResource("org/jboss/as/test/integration/security/auditing/form-auth/jboss-web.xml");
+        war.addAsWebResource("org/jboss/as/test/integration/security/auditing/form-auth/index.jsp");
+        war.addAsWebResource("org/jboss/as/test/integration/security/auditing/form-auth/login.jsp");
+        war.addAsWebResource("org/jboss/as/test/integration/security/auditing/form-auth/loginerror.jsp");
+        war.addAsWebResource("org/jboss/as/test/integration/security/auditing/form-auth/logout.jsp");
+        war.addAsResource("org/jboss/as/test/integration/security/auditing/form-auth/users.properties", "/users.properties");
+        war.addAsResource("org/jboss/as/test/integration/security/auditing/form-auth/roles.properties", "/roles.properties");
         return war;
     }
 
