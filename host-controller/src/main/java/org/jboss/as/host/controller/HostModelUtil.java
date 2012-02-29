@@ -51,9 +51,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 
 import java.util.EnumSet;
 
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
@@ -127,6 +131,7 @@ import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.as.server.services.security.VaultAddHandler;
 import org.jboss.as.server.services.security.VaultRemoveHandler;
 import org.jboss.as.server.services.security.VaultWriteAttributeHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -135,6 +140,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author <a href="mailto:jperkins@jboss.com">James R. Perkins</a>
  */
 public class HostModelUtil {
 
@@ -175,6 +181,8 @@ public class HostModelUtil {
         // Host root resource operations
         XmlMarshallingHandler xmh = new HostXmlMarshallingHandler(configurationPersister.getHostPersister(), hostControllerInfo);
         hostRegistration.registerOperationHandler(XmlMarshallingHandler.OPERATION_NAME, xmh, xmh, false, OperationEntry.EntryType.PUBLIC, flags);
+
+        hostRegistration.registerReadWriteAttribute(HostRootDescription.DIRECTORY_GROUPING, null, new ReloadRequiredWriteAttributeHandler(HostRootDescription.DIRECTORY_GROUPING));
 
         hostRegistration.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);
         hostRegistration.registerOperationHandler(NamespaceRemoveHandler.OPERATION_NAME, NamespaceRemoveHandler.INSTANCE, NamespaceRemoveHandler.INSTANCE, false);

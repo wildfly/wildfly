@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<domain xmlns="urn:jboss:domain:1.1">
+<domain xmlns="urn:jboss:domain:1.2">
 
     <extensions>
         <?EXTENSIONS?>
@@ -38,7 +38,7 @@
         <interface name="public"/>
         <interface name="unsecure"/>
     </interfaces>
-   
+
     <socket-binding-groups>
         <socket-binding-group name="standard-sockets" default-interface="public">
             <!-- Needed for server groups using the 'default' profile  -->
@@ -57,7 +57,7 @@
             <?SOCKET-BINDINGS?>
         </socket-binding-group>
     </socket-binding-groups>
-    
+
     <server-groups>
         <server-group name="main-server-group" profile="full">
             <jvm name="default">
@@ -72,5 +72,5 @@
             <socket-binding-group ref="ha-sockets"/>
         </server-group>
     </server-groups>
-    
+
 </domain>

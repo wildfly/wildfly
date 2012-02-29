@@ -43,12 +43,14 @@ public enum Namespace {
     // domain versions, oldest to newest
     DOMAIN_1_0("urn:jboss:domain:1.0"),
 
-    DOMAIN_1_1("urn:jboss:domain:1.1"), ;
+    DOMAIN_1_1("urn:jboss:domain:1.1"),
+
+    DOMAIN_1_2("urn:jboss:domain:1.2"), ;
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = DOMAIN_1_1;
+    public static final Namespace CURRENT = DOMAIN_1_2;
 
     private final String name;
 

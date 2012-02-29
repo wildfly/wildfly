@@ -1,6 +1,6 @@
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:d="urn:jboss:domain:1.1">
+                xmlns:d="urn:jboss:domain:1.2">
     <xsl:output method="xml" indent="yes"/>
 
     <xsl:param name="realmName"/>
@@ -23,7 +23,7 @@
             <xsl:apply-templates select="node()|@*"/>
         </xsl:copy>
     </xsl:template>
-     
+
     <!-- Prevent duplicates -->
     <xsl:template match="//d:management/d:security-realms/d:security-realm[@name=$realmName]"/>
 

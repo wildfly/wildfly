@@ -29,6 +29,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectInputValidation;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -54,6 +55,7 @@ import org.jboss.threads.AsyncFuture;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Mike M. Clark
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public final class ServerStartTask implements ServerTask, Serializable, ObjectInputValidation {
 
@@ -68,7 +70,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     private final Properties properties = new Properties();
 
     public ServerStartTask(final String hostControllerName, final String serverName, final int portOffset,
-                           final List<ServiceActivator> startServices, final List<ModelNode> updates) {
+                           final List<ServiceActivator> startServices, final List<ModelNode> updates, final Map<String, String> launchProperties) {
         if (serverName == null || serverName.length() == 0) {
             throw new IllegalArgumentException("Server name \"" + serverName + "\" is invalid; cannot be null or blank");
         }
@@ -90,6 +92,11 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         properties.setProperty(ServerEnvironment.CONTROLLER_TEMP_DIR, SecurityActions.getSystemProperty("jboss.domain.temp.dir"));
         properties.setProperty(ServerEnvironment.DOMAIN_BASE_DIR, SecurityActions.getSystemProperty(ServerEnvironment.DOMAIN_BASE_DIR));
         properties.setProperty(ServerEnvironment.DOMAIN_CONFIG_DIR, SecurityActions.getSystemProperty(ServerEnvironment.DOMAIN_CONFIG_DIR));
+
+        // Set the optional properties
+        setPropertyIfFound(launchProperties, ServerEnvironment.SERVER_DATA_DIR, properties);
+        setPropertyIfFound(launchProperties, ServerEnvironment.SERVER_LOG_DIR, properties);
+        setPropertyIfFound(launchProperties, ServerEnvironment.SERVER_TEMP_DIR, properties);
     }
 
     @Override
@@ -156,5 +163,11 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
         ois.defaultReadObject();
         ois.registerValidation(this, 100);
+    }
+
+    static void setPropertyIfFound(final Map<String, String> launchProperties, final String key, final Properties properties) {
+        if (launchProperties.containsKey(key)) {
+            properties.setProperty(key, launchProperties.get(key));
+        }
     }
 }

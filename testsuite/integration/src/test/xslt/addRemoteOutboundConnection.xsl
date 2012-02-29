@@ -1,6 +1,6 @@
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:d="urn:jboss:domain:1.1"
+                xmlns:d="urn:jboss:domain:1.2"
                 xmlns:r="urn:jboss:domain:remoting:1.1">
     <xsl:output method="xml" indent="yes"/>
 
