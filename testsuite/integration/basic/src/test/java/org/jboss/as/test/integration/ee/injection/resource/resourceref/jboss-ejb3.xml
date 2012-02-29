@@ -27,7 +27,7 @@
             <ejb-name>ResUrlCheckerBean</ejb-name>
             <resource-ref>
 	        	<res-ref-name>url2</res-ref-name>
-	        	<res-url>http://localhost/url2</res-url>
+	        	<res-url>http://somewhere/url2</res-url>
 	        </resource-ref>
         </session>
         

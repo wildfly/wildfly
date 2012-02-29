@@ -16,10 +16,23 @@
  */
 package org.jboss.as.test.smoke.stilts;
 
+import static org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet.DESTINATION_QUEUE_ONE;
+
+import java.io.InputStream;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import javax.inject.Inject;
+
 import junit.framework.Assert;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet;
 import org.jboss.as.test.smoke.stilts.bundle.SimpleStompletActivator;
 import org.jboss.logging.Logger;
@@ -45,15 +58,6 @@ import org.projectodd.stilts.stomp.client.StompClient;
 import org.projectodd.stilts.stomp.client.SubscriptionBuilder;
 import org.projectodd.stilts.stomplet.Stomplet;
 
-import javax.inject.Inject;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import static org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet.DESTINATION_QUEUE_ONE;
-
 /**
  * A simple {@link Stomplet} test case.
  *
@@ -66,6 +70,9 @@ public class SimpleStompletTestCase {
 
     @Inject
     public BundleContext context;
+
+    @ArquillianResource
+    public URL url;
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
@@ -90,7 +97,7 @@ public class SimpleStompletTestCase {
     @Test
     public void testSendWithNoTx() throws Exception {
 
-        StompClient client = new StompClient("stomp://localhost");
+        StompClient client = new StompClient("stomp://" + url.getHost());
         client.connect();
 
         final Set<String> outbound = new HashSet<String>();
@@ -119,7 +126,7 @@ public class SimpleStompletTestCase {
     @Test
     public void testSendWithTxCommit() throws Exception {
 
-        StompClient client = new StompClient("stomp://localhost");
+        StompClient client = new StompClient("stomp://" + url.getHost());
         client.connect();
 
         final Set<String> outbound = new HashSet<String>();
