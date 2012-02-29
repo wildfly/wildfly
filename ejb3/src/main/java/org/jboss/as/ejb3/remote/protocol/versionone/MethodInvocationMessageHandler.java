@@ -136,11 +136,11 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                 throw new RuntimeException(e);
             }
             final String viewClassName = locator.getViewType().getName();
-            if (!ejbDeploymentInformation.getViewNames().contains(viewClassName)) {
+            // Make sure it's a remote view
+            if (!ejbDeploymentInformation.isRemoteView(viewClassName)) {
                 this.writeNoSuchEJBFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
                 return;
             }
-            // TODO: Add a check for remote view
             final ComponentView componentView = ejbDeploymentInformation.getView(viewClassName);
             final Method invokedMethod = this.findMethod(componentView, methodName, methodParamTypes);
             if (invokedMethod == null) {

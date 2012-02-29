@@ -11,6 +11,8 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.EJBViewDescription;
+import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
@@ -61,10 +63,22 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
 
                 final InjectedValue<EJBComponent> componentInjectedValue = new InjectedValue<EJBComponent>();
                 injectedValues.put(component.getCreateServiceName(), componentInjectedValue);
-                final Map<String, InjectedValue<ComponentView>> views = new HashMap<String, InjectedValue<ComponentView>>();
-                for (ViewDescription view : ejbComponentDescription.getViews()) {
+                final Map<String, InjectedValue<ComponentView>> remoteViews = new HashMap<String, InjectedValue<ComponentView>>();
+                final Map<String, InjectedValue<ComponentView>> localViews = new HashMap<String, InjectedValue<ComponentView>>();
+                for (final ViewDescription view : ejbComponentDescription.getViews()) {
+                    boolean remoteView = false;
+                    if (view instanceof EJBViewDescription) {
+                        final MethodIntf viewType = ((EJBViewDescription) view).getMethodIntf();
+                        if (viewType == MethodIntf.HOME || viewType == MethodIntf.REMOTE) {
+                            remoteView = true;
+                        }
+                    }
                     final InjectedValue<ComponentView> componentViewInjectedValue = new InjectedValue<ComponentView>();
-                    views.put(view.getViewClassName(), componentViewInjectedValue);
+                    if (remoteView) {
+                        remoteViews.put(view.getViewClassName(), componentViewInjectedValue);
+                    } else {
+                        localViews.put(view.getViewClassName(), componentViewInjectedValue);
+                    }
                     injectedValues.put(view.getServiceName(), componentViewInjectedValue);
                 }
                 final InjectedValue<EjbIIOPService> iorFactory = new InjectedValue<EjbIIOPService>();
@@ -72,7 +86,7 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
                     injectedValues.put(ejbComponentDescription.getServiceName().append(EjbIIOPService.SERVICE_NAME), iorFactory);
                 }
 
-                EjbDeploymentInformation info = new EjbDeploymentInformation(ejbComponentDescription.getEJBName(), componentInjectedValue, views, module.getClassLoader(), iorFactory);
+                final EjbDeploymentInformation info = new EjbDeploymentInformation(ejbComponentDescription.getEJBName(), componentInjectedValue, remoteViews, localViews, module.getClassLoader(), iorFactory);
                 deploymentInformationMap.put(ejbComponentDescription.getEJBName(), info);
             }
         }
