@@ -80,10 +80,6 @@
             <artifactId>jbosgi-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.osgi.testing</groupId>
-            <artifactId>jbosgi-testing</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.shrinkwrap.resolver</groupId>
             <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
         </dependency>
