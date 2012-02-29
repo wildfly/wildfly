@@ -313,9 +313,9 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                     return Collections.emptyMap();
                 }
 
-                if(descr == null || !descr.has(Util.REQUEST_PROPERTIES)) {
-                    opProps = Collections.emptyMap();
-                } else {
+                opProps = new HashMap<String,CommandArgument>();
+                opProps.put(this.headers.getFullName(), this.headers);
+                if(descr != null && descr.has(Util.REQUEST_PROPERTIES)) {
                     final List<Property> propList = descr.get(Util.REQUEST_PROPERTIES).asPropertyList();
                     opProps = new HashMap<String,CommandArgument>(propList.size());
                     for (Property prop : propList) {
@@ -352,7 +352,6 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                         }
                         final CommandArgument arg = new ArgumentWithValue(GenericTypeOperationHandler.this, valueCompleter, valueConverter, "--" + prop.getName());
                         opProps.put(arg.getFullName(), arg);
-                        opProps.put(this.headers.getFullName(), this.headers);
                     }
                 }
                 propsByOp.put(op, opProps);
