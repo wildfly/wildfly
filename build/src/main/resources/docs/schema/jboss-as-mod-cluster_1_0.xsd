@@ -80,9 +80,34 @@
         <xs:documentation>Timeout (in seconds) for proxy connections to a node. That is the time mod_cluster will wait for the back-end response before returning error.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="max-attempts" type="xs:int" use="optional" default="1">
+      <xs:annotation>
+        <xs:documentation>Number of times an httpd proxy will attempt to send a given request to a worker before giving up.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="flush-packets" type="xs:boolean" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation>Enables/disables packet flushing.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="flush-wait" type="xs:int" use="optional" default="-1">
+      <xs:annotation>
+        <xs:documentation>Time to wait before flushing packets in millseconds.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="ping" type="xs:int" use="optional" default="10">
       <xs:annotation>
         <xs:documentation>Time (in seconds) in which to wait for a pong answer to a ping.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="smax" type="xs:int" use="optional" default="-1">
+      <xs:annotation>
+        <xs:documentation>Soft maximum idle connection count.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ttl" type="xs:int" use="optional" default="-1">
+      <xs:annotation>
+        <xs:documentation>Time to live (in seconds) for idle connections above smax.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
