@@ -111,7 +111,7 @@ public class WebSecurityProgrammaticLoginTestCase {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {
             // test hitting programmatic login servlet
-            HttpGet httpget = new HttpGet("http://" + managementClient.getMgmtAddress() + ":8080/" + getContextPath()  + "/login/?username=" + user + "&password=" + pass);
+            HttpGet httpget = new HttpGet(managementClient.getWebUri() + "/" + getContextPath()  + "/login/?username=" + user + "&password=" + pass);
 
             System.out.println("executing request" + httpget.getRequestLine());
             HttpResponse response = httpclient.execute(httpget);

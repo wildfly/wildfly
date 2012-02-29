@@ -59,7 +59,7 @@ public class EjbLocalRefInjectionTestCase {
     }
 
     private String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/war-example/" + urlPattern, 5, TimeUnit.SECONDS);
+        return HttpRequest.get(managementClient.getWebUri() + "/war-example/" + urlPattern, 5, TimeUnit.SECONDS);
     }
 
     @Test

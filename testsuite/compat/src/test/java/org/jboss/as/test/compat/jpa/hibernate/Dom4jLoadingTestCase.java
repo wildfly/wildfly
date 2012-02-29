@@ -177,7 +177,7 @@ public class Dom4jLoadingTestCase {
     }
 
     private String performCall(String urlPattern, String param) throws Exception {
-        return HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/" + ARCHIVE_NAME + "/" + urlPattern + "?input=" + param, 10, SECONDS);
+        return HttpRequest.get(managementClient.getWebUri() + "/" + ARCHIVE_NAME + "/" + urlPattern + "?input=" + param, 10, SECONDS);
     }
 
     @Test

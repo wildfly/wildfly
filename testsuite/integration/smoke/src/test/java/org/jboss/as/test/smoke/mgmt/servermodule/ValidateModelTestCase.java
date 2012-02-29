@@ -30,7 +30,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.remoting.RemotingExtension;
@@ -41,9 +40,7 @@ import org.jboss.as.threads.ThreadsExtension;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.xnio.IoUtils;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -67,7 +64,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Arquillian.class)
@@ -151,23 +147,17 @@ public class ValidateModelTestCase {
     }
 
     protected ModelNode getDescription() throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create(managementClient.getMgmtAddress(), managementClient.getMgmtPort(), getCallbackHandler());
-        try {
-            ModelNode op = new ModelNode();
-            op.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
-            //op.get(OP_ADDR).setEmptyList();
-            op.get(OP_ADDR).setEmptyList();
-            op.get(RECURSIVE).set(true);
-            op.get(INHERITED).set(false);
-            op.get(OPERATIONS).set(true);
-            ModelNode result = client.execute(op);
-            if (result.hasDefined(FAILURE_DESCRIPTION)) {
-                throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
-            }
-            return result.require(RESULT);
-
-        } finally {
-            IoUtils.safeClose(client);
+        ModelNode op = new ModelNode();
+        op.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
+        //op.get(OP_ADDR).setEmptyList();
+        op.get(OP_ADDR).setEmptyList();
+        op.get(RECURSIVE).set(true);
+        op.get(INHERITED).set(false);
+        op.get(OPERATIONS).set(true);
+        ModelNode result = managementClient.getControllerClient().execute(op);
+        if (result.hasDefined(FAILURE_DESCRIPTION)) {
+            throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
         }
+        return result.require(RESULT);
     }
 }

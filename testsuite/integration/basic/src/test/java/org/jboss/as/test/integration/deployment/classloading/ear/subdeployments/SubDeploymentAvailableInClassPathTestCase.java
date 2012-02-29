@@ -65,7 +65,6 @@ public class SubDeploymentAvailableInClassPathTestCase {
     private static final String WEB_APP_CONTEXT_TWO = "war-access-to-war";
 
     private static final String OTHER_WEB_APP_CONTEXT = "other-war";
-    public static final String PORT = ":8080/";
 
     @ContainerResource
     private ManagementClient managementClient;
@@ -134,7 +133,7 @@ public class SubDeploymentAvailableInClassPathTestCase {
         final HttpClient httpClient = new DefaultHttpClient();
         final String message = "JBossAS7";
 
-        final String requestURL = "http://" + managementClient.getMgmtAddress() + PORT + WEB_APP_CONTEXT_ONE + HelloWorldServlet.URL_PATTERN + "?" + HelloWorldServlet.PARAMETER_NAME + "=" + message;
+        final String requestURL = managementClient.getWebUri() + "/" + WEB_APP_CONTEXT_ONE + HelloWorldServlet.URL_PATTERN + "?" + HelloWorldServlet.PARAMETER_NAME + "=" + message;
         final HttpGet request = new HttpGet(requestURL);
         final HttpResponse response = httpClient.execute(request);
         final HttpEntity entity = response.getEntity();
@@ -162,7 +161,7 @@ public class SubDeploymentAvailableInClassPathTestCase {
     public void testServletClassNotAvailableToEjbInEar() throws Exception {
         final HttpClient httpClient = new DefaultHttpClient();
         final String classInWar = HelloWorldServlet.class.getName();
-        final String requestURL = "http://" + managementClient.getMgmtAddress() + PORT  + WEB_APP_CONTEXT_ONE + EjbInvokingServlet.URL_PATTERN + "?" + EjbInvokingServlet.CLASS_IN_WAR_PARAMETER + "=" + classInWar;
+        final String requestURL = managementClient.getWebUri() + "/"  + WEB_APP_CONTEXT_ONE + EjbInvokingServlet.URL_PATTERN + "?" + EjbInvokingServlet.CLASS_IN_WAR_PARAMETER + "=" + classInWar;
         final HttpGet request = new HttpGet(requestURL);
         final HttpResponse response = httpClient.execute(request);
         final HttpEntity entity = response.getEntity();
@@ -190,7 +189,7 @@ public class SubDeploymentAvailableInClassPathTestCase {
     public void testWarsDontSeeEachOtherInEar() throws Exception {
         final HttpClient httpClient = new DefaultHttpClient();
         final String classInOtherWar = HelloWorldServlet.class.getName();
-        final String requestURL = "http://" + managementClient.getMgmtAddress() + PORT  + OTHER_WEB_APP_CONTEXT + ServletInOtherWar.URL_PATTERN +
+        final String requestURL = managementClient.getWebUri() + "/"  + OTHER_WEB_APP_CONTEXT + ServletInOtherWar.URL_PATTERN +
                 "?" + ServletInOtherWar.CLASS_IN_OTHER_WAR_PARAMETER + "=" + classInOtherWar;
         final HttpGet request = new HttpGet(requestURL);
         final HttpResponse response = httpClient.execute(request);

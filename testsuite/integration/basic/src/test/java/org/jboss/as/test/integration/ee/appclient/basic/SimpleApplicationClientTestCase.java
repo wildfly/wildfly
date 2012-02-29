@@ -107,7 +107,7 @@ public class SimpleApplicationClientTestCase {
         final StatelessEJBLocator<AppClientSingletonRemote> locator = new StatelessEJBLocator(AppClientSingletonRemote.class, APP_NAME, MODULE_NAME, AppClientStateSingleton.class.getSimpleName(), "");
         final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
         remote.reset();
-        final AppClientWrapper wrapper = new AppClientWrapper(archive, "--host=remote://" + managementClient.getMgmtAddress() + ":4447", "client-annotation.jar", "cmdLineParam");
+        final AppClientWrapper wrapper = new AppClientWrapper(archive, "--host=" + managementClient.getRemoteEjbURL(), "client-annotation.jar", "cmdLineParam");
         try {
             final String result = remote.awaitAppClientCall();
             assertTrue("App client call failed. App client output: " + wrapper.readAllUnformated(1000), result != null);
@@ -127,7 +127,7 @@ public class SimpleApplicationClientTestCase {
         final StatelessEJBLocator<AppClientSingletonRemote> locator = new StatelessEJBLocator(AppClientSingletonRemote.class, APP_NAME, MODULE_NAME, AppClientStateSingleton.class.getSimpleName(), "");
         final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
         remote.reset();
-        final AppClientWrapper wrapper = new AppClientWrapper(archive, "--host=remote://" + managementClient.getMgmtAddress() + ":4447", "client-dd.jar", "");
+        final AppClientWrapper wrapper = new AppClientWrapper(archive, "--host=" + managementClient.getRemoteEjbURL(), "client-dd.jar", "");
         try {
             final String result = remote.awaitAppClientCall();
             assertTrue("App client call failed. App client output: " + wrapper.readAllUnformated(1000), result != null);
