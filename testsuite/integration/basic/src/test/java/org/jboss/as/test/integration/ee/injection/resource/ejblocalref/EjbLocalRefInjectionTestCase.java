@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.ejblocalref;
 
-import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.InitialContext;
@@ -29,6 +28,7 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -47,7 +47,7 @@ import static org.junit.Assert.assertEquals;
 public class EjbLocalRefInjectionTestCase {
 
     @ArquillianResource
-    private URL url;
+    private ManagementClient managementClient;
 
     @Deployment
     public static WebArchive deployment() {
@@ -59,7 +59,7 @@ public class EjbLocalRefInjectionTestCase {
     }
 
     private String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get(url.toExternalForm() + urlPattern, 5, TimeUnit.SECONDS);
+        return HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/war-example/" + urlPattern, 5, TimeUnit.SECONDS);
     }
 
     @Test

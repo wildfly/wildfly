@@ -148,7 +148,7 @@ public class SimpleApplicationClientTestCase {
         final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
         remote.reset();
         URL props = getClass().getClassLoader().getResource("jboss-ejb-client.properties");
-        final AppClientWrapper wrapper = new AppClientWrapper(archive, "--ejb-client-properties=" + props, "client-override.jar", "");
+        final AppClientWrapper wrapper = new AppClientWrapper(archive, " -Dnode0=" + managementClient.getMgmtAddress() + " --ejb-client-properties=" + props, "client-override.jar", "");
         try {
             final String result = remote.awaitAppClientCall();
             assertTrue("App client call failed. App client output: " + wrapper.readAllUnformated(1000), result != null);

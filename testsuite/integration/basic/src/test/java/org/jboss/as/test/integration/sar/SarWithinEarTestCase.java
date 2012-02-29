@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.sar;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -34,17 +33,12 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
  * Test that a service configured in a .sar within a .ear deployment works fine, both when the .ear contains a application.xml
@@ -59,18 +53,7 @@ public class SarWithinEarTestCase {
     private static final String EAR_WITHOUT_APPLICATION_XML = "sar-within-ear-without-application-xml.ear";
 
     private static final String EAR_WITH_APPLICATION_XML = "sar-within-ear-with-application-xml.ear";
-    private ModelControllerClient client;
 
-
-    @Before
-    public void init() throws UnknownHostException {
-        client = ModelControllerClient.Factory.create("localhost", 9999, getCallbackHandler());
-    }
-
-    @After
-    public void destroy() throws IOException {
-        client.close();
-    }
     /**
      * Create a .ear, without an application.xml, with a nested .sar deployment
      *

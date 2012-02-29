@@ -139,13 +139,13 @@ public class ServletUnitTestCase {
 
     @Test
     public void testEJBServletEar() throws Exception {
-        String res = HttpRequest.get( servletUrl.toExternalForm() + "servlet/EJBServlet", 2, TimeUnit.SECONDS);
+        String res = HttpRequest.get( servletUrl.toExternalForm() + "EJBServlet", 2, TimeUnit.SECONDS);
         Assert.assertEquals("EJBServlet OK", res);
     }
 
     @Test
     public void testEJBServlet() throws Exception {
-        String res = HttpRequest.get( ejbServletUrl.toExternalForm() + "/EJBServlet", 2, TimeUnit.SECONDS);
+        String res = HttpRequest.get( ejbServletUrl.toExternalForm() + "EJBServlet", 2, TimeUnit.SECONDS);
         Assert.assertEquals("EJBServlet OK", res);
     }
 }

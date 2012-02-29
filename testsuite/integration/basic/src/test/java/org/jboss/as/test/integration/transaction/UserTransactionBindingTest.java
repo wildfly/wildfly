@@ -21,8 +21,12 @@
  */
 package org.jboss.as.test.integration.transaction;
 
+import java.net.URL;
+
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -38,7 +42,11 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 public class UserTransactionBindingTest {
+
+    @ArquillianResource
+    private URL url;
 
     @Deployment
     public static WebArchive deployment() {
@@ -49,8 +57,8 @@ public class UserTransactionBindingTest {
     }
 
 
-    private static String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get("http://localhost:8080/tranaction/" + urlPattern, 10, SECONDS);
+    private String performCall(String urlPattern) throws Exception {
+        return HttpRequest.get(url.toExternalForm() + urlPattern, 10, SECONDS);
     }
 
     @Test
