@@ -4,7 +4,7 @@
    A simple configuration for a Host Controller that only acts as the master domain controller
    and does not itself directly control any servers.
 -->
-<host name="master" xmlns="urn:jboss:domain:1.1">
+<host name="master" xmlns="urn:jboss:domain:1.2">
 
     <management>
         <security-realms>

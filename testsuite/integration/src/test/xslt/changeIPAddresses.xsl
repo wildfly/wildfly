@@ -1,8 +1,8 @@
 
 <xsl:stylesheet version="2.0"
 		xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-		xmlns="urn:jboss:domain:1.1"
-		xmlns:d="urn:jboss:domain:1.1"
+		xmlns="urn:jboss:domain:1.2"
+		xmlns:d="urn:jboss:domain:1.2"
         xmlns:ws11="urn:jboss:domain:webservices:1.1"
                 >
 
@@ -98,13 +98,13 @@
             <xsl:apply-templates select="node()|@*"/>
         </xsl:copy>
     </xsl:template>
-    
+
     <!-- Change WSDL host. -->
     <xsl:template match="//ws11:wsdl-host">
         <xsl:copy>${jboss.bind.address:<xsl:value-of select="$publicIPAddress"/>}</xsl:copy>
     </xsl:template>
-    
-    
+
+
 
     <!-- Copy everything else. -->
     <xsl:template match="node()|@*">

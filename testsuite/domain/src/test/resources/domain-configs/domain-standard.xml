@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<domain xmlns="urn:jboss:domain:1.1"
+<domain xmlns="urn:jboss:domain:1.2"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <extensions>

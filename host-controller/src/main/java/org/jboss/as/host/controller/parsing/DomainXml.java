@@ -116,7 +116,8 @@ public class DomainXml extends CommonXml {
                 readDomainElement1_0(reader, new ModelNode(), readerNS, nodes);
                 break;
             }
-            case DOMAIN_1_1: {
+            case DOMAIN_1_1:
+            case DOMAIN_1_2: {
                 readDomainElement1_1(reader, new ModelNode(), readerNS, nodes);
                 break;
             }
@@ -338,6 +339,7 @@ public class DomainXml extends CommonXml {
                             this.parseSocketBindingGroup_1_0(reader, interfaces, address, expectedNs, list);
                             break;
                         case DOMAIN_1_1:
+                        case DOMAIN_1_2:
                             // parse 1.1 socket binding group
                             this.parseSocketBindingGroup_1_1(reader, interfaces, address, expectedNs, list);
                             break;
@@ -620,7 +622,8 @@ public class DomainXml extends CommonXml {
                         break;
                     }
                     case DOMAIN_1_0:
-                    case DOMAIN_1_1: {
+                    case DOMAIN_1_1:
+                    case DOMAIN_1_2: {
                         requireNamespace(reader, expectedNs);
                         // include should come first
                         if (configuredSubsystemTypes.size() > 0) {

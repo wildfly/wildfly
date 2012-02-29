@@ -91,8 +91,9 @@ public class AppClientXml extends CommonXml {
                 readServerElement_1_0(reader, address, operationList);
                 break;
             }
-            case DOMAIN_1_1: {
-                readServerElement_1_1(reader, address, operationList);
+            case DOMAIN_1_1:
+            case DOMAIN_1_2: {
+                readServerElement_1_1(readerNS, reader, address, operationList);
                 break;
             }
             default: {
@@ -203,7 +204,7 @@ public class AppClientXml extends CommonXml {
      * @param list the list of boot operations to which any new operations should be added
      * @throws XMLStreamException if a parsing error occurs
      */
-    private void readServerElement_1_1(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+    private void readServerElement_1_1(final Namespace namespace, final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
             throws XMLStreamException {
 
         parseNamespaces(reader, address, list);
@@ -252,41 +253,41 @@ public class AppClientXml extends CommonXml {
 
         // elements - sequence
 
-        Element element = nextElement(reader, DOMAIN_1_1);
+        Element element = nextElement(reader, namespace);
         if (element == Element.EXTENSIONS) {
-            extensionXml.parseExtensions(reader, address, DOMAIN_1_1, list);
-            element = nextElement(reader, DOMAIN_1_1);
+            extensionXml.parseExtensions(reader, address, namespace, list);
+            element = nextElement(reader, namespace);
         }
         // System properties
         if (element == Element.SYSTEM_PROPERTIES) {
-            parseSystemProperties(reader, address, DOMAIN_1_1, list, true);
-            element = nextElement(reader, DOMAIN_1_1);
+            parseSystemProperties(reader, address, namespace, list, true);
+            element = nextElement(reader, namespace);
         }
         if (element == Element.PATHS) {
-            parsePaths(reader, address, DOMAIN_1_1, list, true);
-            element = nextElement(reader, DOMAIN_1_1);
+            parsePaths(reader, address, namespace, list, true);
+            element = nextElement(reader, namespace);
         }
 
         if (element == Element.VAULT) {
-            parseVault(reader, address, DOMAIN_1_1, list);
-            element = nextElement(reader, DOMAIN_1_1);
+            parseVault(reader, address, namespace, list);
+            element = nextElement(reader, namespace);
         }
         // Single profile
         if (element == Element.PROFILE) {
             parseServerProfile(reader, address, list);
-            element = nextElement(reader, DOMAIN_1_1);
+            element = nextElement(reader, namespace);
         }
 
         // Interfaces
         final Set<String> interfaceNames = new HashSet<String>();
         if (element == Element.INTERFACES) {
-            parseInterfaces(reader, interfaceNames, address, DOMAIN_1_1, list, true);
-            element = nextElement(reader, DOMAIN_1_1);
+            parseInterfaces(reader, interfaceNames, address, namespace, list, true);
+            element = nextElement(reader, namespace);
         }
         // Single socket binding group
         if (element == Element.SOCKET_BINDING_GROUP) {
-            parseSocketBindingGroup(reader, interfaceNames, address, DOMAIN_1_1, list);
-            element = nextElement(reader, DOMAIN_1_1);
+            parseSocketBindingGroup(reader, interfaceNames, address, namespace, list);
+            element = nextElement(reader, namespace);
         }
 
         if (element != null) {
