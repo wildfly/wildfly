@@ -16,22 +16,9 @@
  */
 package org.jboss.as.arquillian.container;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
-import java.util.Map;
 
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
@@ -49,6 +36,18 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 /**
  * A helper class to join management related operations, like extract sub system ip/port (web/jmx)
  * and deployment introspection.
@@ -58,8 +57,8 @@ import org.jboss.dmr.ModelNode;
 public class ManagementClient {
 
     private static final String SUBDEPLOYMENT = "subdeployment";
-    private static final String WEB = "web";
 
+    private static final String WEB = "web";
     private static final String NAME = "name";
     private static final String SERVLET = "servlet";
 
@@ -69,7 +68,9 @@ public class ManagementClient {
     private final String mgmtAddress;
     private final int mgmtPort;
     private final ModelControllerClient client;
-    private final Map<String, URI> subsystemURICache;
+
+    private URI webUri;
+    private URI ejbUri;
 
     // cache static RootNode
     private ModelNode rootNode = null;
@@ -83,7 +84,6 @@ public class ManagementClient {
         }
         this.client = client;
         this.mgmtAddress = mgmtAddress;
-        this.subsystemURICache = new HashMap<String, URI>();
         this.mgmtPort = managementPort;
     }
 
@@ -95,18 +95,26 @@ public class ManagementClient {
         return client;
     }
 
-    public URI getSubSystemURI(String subsystem) {
-        URI subsystemURI = subsystemURICache.get(subsystem);
-        if (subsystemURI != null) {
-            return subsystemURI;
+    /**
+     * @return The base URI or the web susbsystem. Usually http://localhost:8080
+     */
+    public URI getWebUri() {
+        if (webUri == null) {
+            try {
+                if (rootNode == null) {
+                    readRootNode();
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            String socketBinding = rootNode.get("subsystem").get("web").get("connector").get("http").get("socket-binding").asString();
+            webUri = getBinding("http", socketBinding);
         }
-        subsystemURI = extractSubSystemURI(subsystem);
-        subsystemURICache.put(subsystem, subsystemURI);
-        return subsystemURI;
+        return webUri;
     }
 
     public ProtocolMetaData getDeploymentMetaData(String deploymentName) {
-        URI webURI = getSubSystemURI(WEB);
+        URI webURI = getWebUri();
 
         ProtocolMetaData metaData = new ProtocolMetaData();
         metaData.addContext(new JMXContext(getConnection()));
@@ -346,15 +354,17 @@ public class ManagementClient {
     }
 
     public URI getRemoteEjbURL() {
-        if (rootNode == null) {
-            try {
-                readRootNode();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        if (ejbUri == null) {
+            if (rootNode == null) {
+                try {
+                    readRootNode();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
+            String socketBinding = rootNode.get("subsystem").get("remoting").get("connector").get("remoting-connector").get("socket-binding").asString();
+            ejbUri = getBinding("remote", socketBinding);
         }
-        String socketBinding = rootNode.get("subsystem").get("remoting").get("connector").get("remoting-connector").get("socket-binding").asString();
-        return getBinding("remote", socketBinding);
-
+        return ejbUri;
     }
 }

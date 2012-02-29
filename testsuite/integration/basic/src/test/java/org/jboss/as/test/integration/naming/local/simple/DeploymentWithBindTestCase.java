@@ -72,7 +72,7 @@ public class DeploymentWithBindTestCase {
     }
 
     private String performCall(String urlPattern, String op) throws Exception {
-        return HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/test/" + urlPattern + "?op=" + op, 10, SECONDS);
+        return HttpRequest.get(managementClient.getWebUri() + "/test/" + urlPattern + "?op=" + op, 10, SECONDS);
     }
 
     @Test

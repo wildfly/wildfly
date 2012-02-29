@@ -209,7 +209,7 @@ public class Hibernate3EmbeddedProviderTestCase {
     }
 
     private String performCall(String urlPattern, String param) throws Exception {
-        return HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/hibernate3_test/" + urlPattern + "?input=" + param, 10, SECONDS);
+        return HttpRequest.get(managementClient.getWebUri() + "/hibernate3_test/" + urlPattern + "?input=" + param, 10, SECONDS);
     }
 
     @Test

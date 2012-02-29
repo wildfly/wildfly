@@ -210,28 +210,28 @@ public class AuthenticationTestCase {
 
     @Test
     public void testAuthentication_ViaServlet() throws Exception {
-        final String result = HttpRequest.get( "http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=whoAmI", "user1", "password1",
+        final String result = HttpRequest.get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=whoAmI", "user1", "password1",
                 10, SECONDS);
         assertEquals("user1", result);
     }
 
     @Test
     public void testAuthentication_ReAuth_ViaServlet() throws Exception {
-        final String result = HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=whoAmI&username=user2&password=password2", "user1",
+        final String result = HttpRequest.get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=whoAmI&username=user2&password=password2", "user1",
                 "password1", 10, SECONDS);
         assertEquals("user2", result);
     }
 
     @Test
     public void testAuthentication_TwoBeans_ViaServlet() throws Exception {
-        final String result = HttpRequest.get( "http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doubleWhoAmI", "user1",
+        final String result = HttpRequest.get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=doubleWhoAmI", "user1",
                 "password1", 10, SECONDS);
         assertEquals("user1,user1", result);
     }
 
     @Test
     public void testAuthentication_TwoBeans_ReAuth_ViaServlet() throws Exception {
-        final String result = HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doubleWhoAmI&username=user2&password=password2", "user1",
+        final String result = HttpRequest.get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=doubleWhoAmI&username=user2&password=password2", "user1",
                 "password1", 10, SECONDS);
         assertEquals("user1,user2", result);
     }
@@ -239,7 +239,7 @@ public class AuthenticationTestCase {
     @Test
     public void testAuthentication_TwoBeans_ReAuth__BadPwd_ViaServlet() throws Exception {
         try {
-            HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doubleWhoAmI&username=user2&password=bad_password",
+            HttpRequest.get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=doubleWhoAmI&username=user2&password=bad_password",
                     "user1", "password1", 10, SECONDS);
             fail("Expected IOException");
         } catch (IOException e) {
@@ -310,39 +310,39 @@ public class AuthenticationTestCase {
 
     @Test
     public void testICIR_ViaServlet() throws Exception {
-        String result = HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doIHaveRole&role=Users", "user1",
+        String result = HttpRequest.get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=doIHaveRole&role=Users", "user1",
                 "password1", 10, SECONDS);
         assertEquals("true", result);
-        result = HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doIHaveRole&role=Role1", "user1",
+        result = HttpRequest.get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=doIHaveRole&role=Role1", "user1",
                 "password1", 10, SECONDS);
         assertEquals("true", result);
-        result = HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doIHaveRole&role=Role2", "user1",
+        result = HttpRequest.get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=doIHaveRole&role=Role2", "user1",
                 "password1", 10, SECONDS);
         assertEquals("false", result);
     }
 
     @Test
     public void testICIR_ReAuth_ViaServlet() throws Exception {
-        String result = HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doIHaveRole&role=Users&username=user2&password=password2",
+        String result = HttpRequest.get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=doIHaveRole&role=Users&username=user2&password=password2",
                 "user1", "password1", 10, SECONDS);
         assertEquals("true", result);
-        result = HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doIHaveRole&role=Role1&username=user2&password=password2",
+        result = HttpRequest.get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=doIHaveRole&role=Role1&username=user2&password=password2",
                 "user1", "password1", 10, SECONDS);
         assertEquals("false", result);
-        result = HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doIHaveRole&role=Role2&username=user2&password=password2",
+        result = HttpRequest.get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=doIHaveRole&role=Role2&username=user2&password=password2",
                 "user1", "password1", 10, SECONDS);
         assertEquals("true", result);
     }
 
     @Test
     public void testICIR_TwoBeans_ViaServlet() throws Exception {
-        String result = HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Users",
+        String result = HttpRequest.get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Users",
                 "user1", "password1", 10, SECONDS);
         assertEquals("true,true", result);
-        result = HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role1", "user1",
+        result = HttpRequest.get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role1", "user1",
                 "password1", 10, SECONDS);
         assertEquals("true,true", result);
-        result = HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role2", "user1",
+        result = HttpRequest.get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role2", "user1",
                 "password1", 10, SECONDS);
         assertEquals("false,false", result);
     }
@@ -350,15 +350,15 @@ public class AuthenticationTestCase {
     @Test
     public void testICIR_TwoBeans_ReAuth_ViaServlet() throws Exception {
         String result = HttpRequest
-                .get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Users&username=user2&password=password2",
+                .get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Users&username=user2&password=password2",
                         "user1", "password1", 10, SECONDS);
         assertEquals("true,true", result);
         result = HttpRequest
-                .get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role1&username=user2&password=password2",
+                .get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role1&username=user2&password=password2",
                         "user1", "password1", 10, SECONDS);
         assertEquals("true,false", result);
         result = HttpRequest
-                .get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role2&username=user2&password=password2",
+                .get(managementClient.getWebUri() + "/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role2&username=user2&password=password2",
                         "user1", "password1", 10, SECONDS);
         assertEquals("false,true", result);
     }
