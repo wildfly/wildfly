@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.security.auditing;
 
 import static junit.framework.Assert.assertTrue;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -130,8 +131,16 @@ public class SecurityAuditingTestCase {
          throw new RuntimeException(ex);
       }
 
-      URL warURL = Thread.currentThread().getContextClassLoader().getResource("security/auditing/form-auth.war");
-      WebArchive war = ShrinkWrap.createFromZipFile(WebArchive.class, new File(warURL.getFile()));
+      WebArchive war = ShrinkWrap.create(WebArchive.class, "form-auth.war");
+      war.setWebXML("org/jboss/as/test/integration/security/auditing/form-auth/web.xml");
+      war.addAsWebInfResource("org/jboss/as/test/integration/security/auditing/form-auth/jboss-web.xml");
+      war.addAsWebResource("org/jboss/as/test/integration/security/auditing/form-auth/index.jsp");
+      war.addAsWebResource("org/jboss/as/test/integration/security/auditing/form-auth/login.jsp");
+      war.addAsWebResource("org/jboss/as/test/integration/security/auditing/form-auth/loginerror.jsp");
+      war.addAsWebResource("org/jboss/as/test/integration/security/auditing/form-auth/logout.jsp");
+      war.addAsResource("org/jboss/as/test/integration/security/auditing/form-auth/users.properties","/users.properties");
+      war.addAsResource("org/jboss/as/test/integration/security/auditing/form-auth/roles.properties","/roles.properties");
+
       return war;
    }
 
