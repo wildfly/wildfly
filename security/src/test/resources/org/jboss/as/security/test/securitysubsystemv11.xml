@@ -1,9 +1,17 @@
 <subsystem xmlns="urn:jboss:domain:security:1.1">
 	<security-domains>
-		<security-domain name="other">
-			<authentication>
-				<login-module code="UsersRoles" flag="required" />
-			</authentication>
+		<security-domain name="other" cache-type="default">
+             <authentication>
+                <login-module code="Remoting" flag="optional">
+                  <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+                <login-module code="RealmUsersRoles" flag="required">
+                  <module-option name="usersProperties" value="${jboss.server.config.dir}/application-users.properties"/>
+                  <module-option name="rolesProperties" value="${jboss.server.config.dir}/application-roles.properties"/>
+                  <module-option name="realm" value="ApplicationRealm"/>
+                  <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+              </authentication>
 			<authorization>
 			   <policy-module code="DenyAll" flag="required">
                  <module-option name="a" value="c"/>
@@ -24,9 +32,18 @@
                   keystore-url="../standalone/configuration/keystores/clientcert.jks"
                   keystore-password="changeit"/> 
 		</security-domain>
+		<security-domain name="DsRealm" cache-type="default">
+            <authentication>
+               <login-module code="ConfiguredIdentity" flag="required">
+                  <module-option name="userName" value="sa"/>
+                <module-option name="principal" value="sa"/>
+                <module-option name="password" value="sa"/>
+              </login-module>
+           </authentication>
+        </security-domain>
 	</security-domains>
 	<vault code="somevault">
 	  <vault-option name="xyz" value="zxc"/>
 	  <vault-option name="abc" value="def"/>
-	</vault>
+    </vault>
 </subsystem>
