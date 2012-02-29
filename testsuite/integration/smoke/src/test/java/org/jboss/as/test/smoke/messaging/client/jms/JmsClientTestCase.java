@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.smoke.messaging.client.jms;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -44,15 +43,15 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import junit.framework.Assert;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.test.shared.setup.JMSTestSetup;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -108,14 +107,7 @@ public class JmsClientTestCase {
         boolean actionsApplied = false;
         try {
 
-            // Create the queue using the management API
-            ModelNode op = new ModelNode();
-            op.get("operation").set("add");
-            op.get("address").add("subsystem", "messaging");
-            op.get("address").add("hornetq-server", "default");
-            op.get("address").add("jms-queue", QUEUE_NAME);
-            op.get("entries").add(EXPORTED_QUEUE_NAME);
-            applyUpdate(op, client);
+            JMSTestSetup.createQueue(client, QUEUE_NAME, EXPORTED_QUEUE_NAME);
             actionsApplied = true;
 
             QueueConnectionFactory qcf = (QueueConnectionFactory) remoteContext.lookup("jms/RemoteConnectionFactory");
@@ -172,30 +164,8 @@ public class JmsClientTestCase {
             }
 
             if(actionsApplied) {
-                // Remove the queue using the management API
-                ModelNode op = new ModelNode();
-                op.get("operation").set("remove");
-                op.get("address").add("subsystem", "messaging");
-                op.get("address").add("hornetq-server", "default");
-                op.get("address").add("jms-queue", QUEUE_NAME);
-                applyUpdate(op, client);
+                JMSTestSetup.deleteQueue(client, QUEUE_NAME);
             }
         }
     }
-
-    static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
-        ModelNode result = client.execute(new OperationBuilder(update).build());
-        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-            if (result.hasDefined("result")) {
-                System.out.println(result.get("result"));
-            }
-        }
-        else if (result.hasDefined("failure-description")){
-            throw new RuntimeException(result.get("failure-description").toString());
-        }
-        else {
-            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
-        }
-    }
-
 }

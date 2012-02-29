@@ -32,6 +32,8 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.shared.setup.TestTopicSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -45,12 +47,13 @@ import org.junit.runner.RunWith;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
+@ServerSetup(TestTopicSetupTask.class)
 public class SimpleTimerMDBTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "testTimerServiceSimple.war");
-        war.addPackage(SimpleTimerMDBTestCase.class.getPackage());
+        war.addPackage(SimpleTimerMDBTestCase.class.getPackage()).addPackage(TestTopicSetupTask.class.getPackage());
         return war;
 
     }
