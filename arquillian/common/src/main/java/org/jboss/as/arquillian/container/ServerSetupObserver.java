@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.arquillian.container.spi.Container;
+import org.jboss.arquillian.container.spi.event.container.AfterUnDeploy;
 import org.jboss.arquillian.container.spi.event.container.BeforeDeploy;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.test.spi.context.ClassContext;
-import org.jboss.arquillian.test.spi.event.suite.AfterClass;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 
@@ -31,8 +31,9 @@ public class ServerSetupObserver {
 
     private Set<ContainerClassHolder> alreadyRun = new HashSet<ContainerClassHolder>();
 
-    private final List<ManagementClient> active = new ArrayList<ManagementClient>();
     private final List<ServerSetupTask> current = new ArrayList<ServerSetupTask>();
+
+    private int count = 0;
 
     public synchronized void handleBeforeDeployment(@Observes BeforeDeploy event, Container container) throws Exception {
 
@@ -53,37 +54,36 @@ public class ServerSetupObserver {
         }
         final Class<? extends ServerSetupTask>[] classes = setup.value();
         if (current.isEmpty()) {
-            for(Class<? extends ServerSetupTask> clazz : classes) {
+            for (Class<? extends ServerSetupTask> clazz : classes) {
                 Constructor<? extends ServerSetupTask> ctor = clazz.getDeclaredConstructor();
                 ctor.setAccessible(true);
                 current.add(ctor.newInstance());
             }
         } else {
             //this should never happen
-            for(int i = 0; i < current.size(); ++ i) {
-                if(classes[i] != current.get(i).getClass()) {
+            for (int i = 0; i < current.size(); ++i) {
+                if (classes[i] != current.get(i).getClass()) {
                     throw new RuntimeException("Mismatched ServerSetupTask current is " + current + " but " + currentClass + " is expecting " + Arrays.asList(classes));
                 }
             }
         }
 
         final ManagementClient client = managementClient.get();
-        for(ServerSetupTask instance : current) {
+        for (ServerSetupTask instance : current) {
             instance.setup(client);
         }
-        active.add(client);
+        count++;
     }
 
-    public synchronized void handleAfterClass(@Observes AfterClass event) throws Exception {
+    public synchronized void handleAfterClass(@Observes AfterUnDeploy afterDeploy) throws Exception {
         try {
-            for(final ManagementClient client : active) {
-                for(final ServerSetupTask instance : current) {
-                    instance.tearDown(client);
-                }
+            for (final ServerSetupTask instance : current) {
+                instance.tearDown(managementClient.get());
             }
         } finally {
-            active.clear();
-            current.clear();
+            if (--count == 0) {
+                current.clear();
+            }
         }
     }
 
