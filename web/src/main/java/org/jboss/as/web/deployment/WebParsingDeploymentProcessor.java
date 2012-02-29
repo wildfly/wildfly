@@ -87,6 +87,7 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
                 inputFactory.setXMLResolver(dtdInfo);
                 final XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
                 WebMetaData webMetaData = WebMetaDataParser.parse(xmlReader, dtdInfo);
+                WebXmlPropertiesResolver.process(webMetaData);
 
                 if (schemaValidation && webMetaData.getSchemaLocation() != null) {
                     XMLSchemaValidator validator = new XMLSchemaValidator(new XMLResourceResolver());
