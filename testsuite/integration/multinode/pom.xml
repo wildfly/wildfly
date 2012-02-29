@@ -63,7 +63,6 @@
                                     <target>
                                         <!-- Build the UDP server configs in target. -->
                                         <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/multinode-build.xml">
-
                                             <property name="node1" value="${node1}" />
                                             <property name="node0" value="${node0}" />
                                             <target name="build-multinode"/>
