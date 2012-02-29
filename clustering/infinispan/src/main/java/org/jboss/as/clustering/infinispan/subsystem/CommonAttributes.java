@@ -12,6 +12,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -160,7 +161,7 @@ public interface CommonAttributes {
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new EnumValidator<Indexing>(Indexing.class, true, false))
-                    .setDefaultValue(new ModelNode().set("NONE"))
+                    .setDefaultValue(new ModelNode().set(Indexing.NONE.name()))
                     .build();
     SimpleAttributeDefinition INTERVAL =
             new SimpleAttributeDefinitionBuilder(ModelKeys.INTERVAL, ModelType.LONG, true)
@@ -176,7 +177,7 @@ public interface CommonAttributes {
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new EnumValidator<IsolationLevel>(IsolationLevel.class, true, false))
-                    .setDefaultValue(new ModelNode().set("REPEATABLE_READ"))
+                    .setDefaultValue(new ModelNode().set(IsolationLevel.REPEATABLE_READ.name()))
                     .build();
     SimpleAttributeDefinition JNDI_NAME =
             new SimpleAttributeDefinitionBuilder(ModelKeys.JNDI_NAME, ModelType.STRING, true)
@@ -212,7 +213,7 @@ public interface CommonAttributes {
                     .setAllowExpression(false)
                     .setValidator(new EnumValidator<LockingMode>(LockingMode.class, true, false))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set("OPTIMISTIC"))
+                    .setDefaultValue(new ModelNode().set(LockingMode.OPTIMISTIC.name()))
                     .build();
     SimpleAttributeDefinition LOCK_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(ModelKeys.LOCK_TIMEOUT, ModelType.LONG, true)
@@ -250,7 +251,7 @@ public interface CommonAttributes {
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new EnumValidator<TransactionMode>(TransactionMode.class, true, false))
-                    .setDefaultValue(new ModelNode().set("NONE"))
+                    .setDefaultValue(new ModelNode().set(TransactionMode.NONE.name()))
                     .build();
     SimpleAttributeDefinition NAME =
             new SimpleAttributeDefinitionBuilder(ModelKeys.NAME, ModelType.STRING, true)
@@ -330,7 +331,7 @@ public interface CommonAttributes {
                     .setXmlName(Attribute.RELATIVE_TO.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set("jboss.server.data.dir"))
+                    .setDefaultValue(new ModelNode().set(ServerEnvironment.SERVER_DATA_DIR))
                     .build();
     SimpleAttributeDefinition REMOTE_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(ModelKeys.REMOTE_TIMEOUT, ModelType.LONG, true)
@@ -387,7 +388,7 @@ public interface CommonAttributes {
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new EnumValidator<StartMode>(StartMode.class, true, false))
-                    .setDefaultValue(new ModelNode().set("LAZY"))
+                    .setDefaultValue(new ModelNode().set(StartMode.LAZY.name()))
                     .build();
     SimpleAttributeDefinition STOP_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(ModelKeys.STOP_TIMEOUT, ModelType.LONG, true)
@@ -397,13 +398,13 @@ public interface CommonAttributes {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(30000))
                     .build();
-    SimpleAttributeDefinition STRATEGY =
+    SimpleAttributeDefinition EVICTION_STRATEGY =
             new SimpleAttributeDefinitionBuilder(ModelKeys.STRATEGY, ModelType.STRING, true)
                     .setXmlName(Attribute.STRATEGY.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new EnumValidator<EvictionStrategy>(EvictionStrategy.class, true, false))
-                    .setDefaultValue(new ModelNode().set("NONE"))
+                    .setDefaultValue(new ModelNode().set(EvictionStrategy.NONE.name()))
                     .build();
     SimpleAttributeDefinition STRIPING =
             new SimpleAttributeDefinitionBuilder(ModelKeys.STRIPING, ModelType.BOOLEAN, true)
@@ -459,7 +460,7 @@ public interface CommonAttributes {
 
     AttributeDefinition[] LOCKING_ATTRIBUTES = {ISOLATION, STRIPING, ACQUIRE_TIMEOUT, CONCURRENCY_LEVEL};
     AttributeDefinition[] TRANSACTION_ATTRIBUTES = {MODE, STOP_TIMEOUT, LOCKING};
-    AttributeDefinition[] EVICTION_ATTRIBUTES = {STRATEGY, MAX_ENTRIES};
+    AttributeDefinition[] EVICTION_ATTRIBUTES = {EVICTION_STRATEGY, MAX_ENTRIES};
     AttributeDefinition[] EXPIRATION_ATTRIBUTES = {MAX_IDLE, LIFESPAN, INTERVAL};
     AttributeDefinition[] STATE_TRANSFER_ATTRIBUTES = {ENABLED, TIMEOUT, CHUNK_SIZE};
 

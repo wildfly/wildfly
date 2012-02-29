@@ -606,7 +606,7 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case STRATEGY: {
-                    CommonAttributes.STRATEGY.parseAndSetParameter(value, eviction, reader);
+                    CommonAttributes.EVICTION_STRATEGY.parseAndSetParameter(value, eviction, reader);
                     break;
                 }
                 case MAX_ENTRIES: {

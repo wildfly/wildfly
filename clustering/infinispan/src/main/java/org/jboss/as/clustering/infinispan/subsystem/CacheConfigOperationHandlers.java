@@ -34,7 +34,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * Common code for handling the following cache configuration elements
@@ -267,12 +266,12 @@ public class CacheConfigOperationHandlers {
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
 
                     // shorten this by providing static getServiceName methods which take an OP_ADDR
-                    PathAddress elementAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-                    PathAddress cacheAddress = elementAddress.subAddress(0, elementAddress.size() - 1);
-                    PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size() - 2);
-                    String cacheName = cacheAddress.getLastElement().getValue();
-                    String containerName = containerAddress.getLastElement().getValue();
-                    ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
+//                    PathAddress elementAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+//                    PathAddress cacheAddress = elementAddress.subAddress(0, elementAddress.size() - 1);
+//                    PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size() - 2);
+//                    String cacheName = cacheAddress.getLastElement().getValue();
+//                    String containerName = containerAddress.getLastElement().getValue();
+//                    ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
 
 //                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(cacheConfigurationServiceName);
 //                    if(controller != null) {
