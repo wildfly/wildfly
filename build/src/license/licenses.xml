@@ -364,16 +364,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <licenses>
-        <license>
-          <name>Common Public License, Version 1.0</name>
-          <url>http://repository.jboss.org/licenses/cpl-1.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
       <licenses>

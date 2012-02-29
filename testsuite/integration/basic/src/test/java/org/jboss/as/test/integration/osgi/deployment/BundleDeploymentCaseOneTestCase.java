@@ -26,11 +26,11 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.osgi.xservice.bundle.SimpleActivator;
 import org.jboss.as.test.integration.osgi.xservice.bundle.SimpleService;
-import org.jboss.osgi.testing.OSGiManifestBuilder;
-import org.jboss.osgi.testing.OSGiTestHelper;
+import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -76,18 +76,18 @@ public class BundleDeploymentCaseOneTestCase {
         Bundle bundle = context.installBundle("test-bundle", input);
         try {
             // Assert that the bundle is in state INSTALLED
-            OSGiTestHelper.assertBundleState(Bundle.INSTALLED, bundle.getState());
+            Assert.assertEquals(Bundle.INSTALLED, bundle.getState());
 
             // Start the bundle
             bundle.start();
-            OSGiTestHelper.assertBundleState(Bundle.ACTIVE, bundle.getState());
+            Assert.assertEquals(Bundle.ACTIVE, bundle.getState());
 
             // Stop the bundle
             bundle.stop();
-            OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+            Assert.assertEquals(Bundle.RESOLVED, bundle.getState());
         } finally {
             bundle.uninstall();
-            OSGiTestHelper.assertBundleState(Bundle.UNINSTALLED, bundle.getState());
+            Assert.assertEquals(Bundle.UNINSTALLED, bundle.getState());
         }
     }
 

@@ -1126,10 +1126,6 @@
             <maven-resource group="joda-time" artifact="joda-time"/>
         </module-def>
 
-        <module-def name="org.junit">
-            <maven-resource group="junit" artifact="junit"/>
-        </module-def>
-
         <module-def name="org.omg.api" />
 
         <module-def name="org.osgi.core">

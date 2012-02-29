@@ -24,7 +24,7 @@ package org.jboss.as.osgi.deployment;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.osgi.spi.util.BundleInfo;
+import org.jboss.osgi.spi.BundleInfo;
 
 /**
  * Utility to help attach and retrieve a BundleInfo from a deployment context.
