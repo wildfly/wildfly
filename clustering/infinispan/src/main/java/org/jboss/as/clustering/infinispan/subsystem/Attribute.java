@@ -38,6 +38,7 @@ public enum Attribute {
     UNKNOWN((String) null),
     ACQUIRE_TIMEOUT(ModelKeys.ACQUIRE_TIMEOUT),
     ALIASES(ModelKeys.ALIASES),
+    ASYNC_MARSHALLING(ModelKeys.ASYNC_MARSHALLING),
     BATCH_SIZE(ModelKeys.BATCH_SIZE),
     BATCHING(ModelKeys.BATCHING),
     CACHE(ModelKeys.CACHE),

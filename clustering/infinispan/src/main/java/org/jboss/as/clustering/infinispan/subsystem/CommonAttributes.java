@@ -40,6 +40,13 @@ public interface CommonAttributes {
     SimpleListAttributeDefinition ALIASES = SimpleListAttributeDefinition.Builder.of(ModelKeys.ALIASES, ALIAS).
             setAllowNull(true).
             build();
+    SimpleAttributeDefinition ASYNC_MARSHALLING =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.ASYNC_MARSHALLING, ModelType.BOOLEAN, true)
+                    .setXmlName(Attribute.ASYNC_MARSHALLING.getLocalName())
+                    .setAllowExpression(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode().set(false))
+                    .build();
     SimpleAttributeDefinition BATCH_SIZE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.BATCH_SIZE, ModelType.INT, true)
                     .setXmlName(Attribute.BATCH_SIZE.getLocalName())
@@ -447,7 +454,7 @@ public interface CommonAttributes {
     AttributeDefinition[] TRANSPORT_ATTRIBUTES = {STACK, CLUSTER, EXECUTOR, LOCK_TIMEOUT, SITE, RACK, MACHINE};
 
     AttributeDefinition[] CACHE_ATTRIBUTES = { START, BATCHING, INDEXING, JNDI_NAME};
-    AttributeDefinition[] CLUSTERED_CACHE_ATTRIBUTES = {ClusteredCacheAdd.MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT};
+    AttributeDefinition[] CLUSTERED_CACHE_ATTRIBUTES = { ASYNC_MARSHALLING, ClusteredCacheAdd.MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT};
     AttributeDefinition[] DISTRIBUTED_CACHE_ATTRIBUTES = {OWNERS, VIRTUAL_NODES, L1_LIFESPAN};
 
     AttributeDefinition[] LOCKING_ATTRIBUTES = {ISOLATION, STRIPING, ACQUIRE_TIMEOUT, CONCURRENCY_LEVEL};
