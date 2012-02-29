@@ -21,16 +21,15 @@
  */
 package org.jboss.as.test.smoke.mgmt.servermodule;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import java.net.InetAddress;
 
 import junit.framework.Assert;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.test.shared.TestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,7 +51,7 @@ public class ServerInModuleStartupTestCase  {
      */
     @Test
     public void testReadConfigAsXml() throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        ModelControllerClient client = TestUtils.getModelControllerClient();
         try {
             ModelNode request = new ModelNode();
             request.get("operation").set("read-config-as-xml");
@@ -72,7 +71,7 @@ public class ServerInModuleStartupTestCase  {
      */
     @Test
     public void testReadResourceDescription() throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        ModelControllerClient client = TestUtils.getModelControllerClient();
         try {
             ModelNode request = new ModelNode();
             request.get("operation").set("read-resource");

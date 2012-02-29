@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.deployment.xml.datasource;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.concurrent.Future;
@@ -40,6 +39,7 @@ import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.as.test.shared.TestUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -49,7 +49,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
  * Test deployment of -ds.xml files
@@ -77,7 +76,7 @@ public class DeployedXmlDataSourceTestCase {
     @BeforeClass
     public static void deployDatasource() throws Throwable {
         try {
-            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+            client = TestUtils.getModelControllerClient();
             manager = ServerDeploymentManager.Factory.create(client);
             final String packageName = DeployedXmlDataSourceTestCase.class.getPackage().getName().replace(".", "/");
             final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlDataSourceTestCase.class.getResource("/" + packageName + "/" + TEST_DS_XML)).andDeploy().build();

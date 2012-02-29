@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.smoke.mgmt.servermodule;
 
+import org.jboss.as.test.shared.TestUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -178,7 +179,7 @@ public class ServerInModuleDeploymentTestCase {
     public void testFilesystemScannerRegistration() throws Exception {
         final File deployDir = createDeploymentDir("dummy");
 
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        ModelControllerClient client = TestUtils.getModelControllerClient();
         final String scannerName = "dummy";
         addDeploymentScanner(deployDir, client, scannerName, false);
         removeDeploymentScanner(client, scannerName);
