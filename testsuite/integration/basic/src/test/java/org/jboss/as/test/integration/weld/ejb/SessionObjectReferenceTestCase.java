@@ -21,14 +21,11 @@
  */
 package org.jboss.as.test.integration.weld.ejb;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -36,7 +33,9 @@ import java.util.concurrent.TimeoutException;
 import javax.ejb.ConcurrentAccessException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -46,28 +45,37 @@ import org.jboss.stdio.WriterOutputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Test two things:
  * 1. EJBTHREE-697: First concurrent call doesn't throw exception
  * 2. make sure the SFSB is instantiated in the same thread as the Servlet, so propagation works
- *
+ * <p/>
  * Make sure a concurrent call to a SFSB proxy over Weld gets a ConcurrentAccessException.
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 public class SessionObjectReferenceTestCase {
+
+    @ArquillianResource
+    private URL url;
+
     @Deployment
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war")
-            .addClasses(HttpRequest.class, SimpleServlet.class, SimpleStatefulSessionBean.class, WriterOutputStream.class)
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-            .addAsWebInfResource(new StringAsset(WEB_XML),"web.xml");
+                .addClasses(HttpRequest.class, SimpleServlet.class, SimpleStatefulSessionBean.class, WriterOutputStream.class)
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml");
         return war;
     }
 
-    private static String performCall(String urlPattern, String param) {
-        String spec = "http://localhost:8080/war-example/" + urlPattern + "?input=" + param;
+    private String performCall(String urlPattern, String param) {
+        String spec = url.toExternalForm() + urlPattern + "?input=" + param;
         try {
             return HttpRequest.get(spec, 30, SECONDS);
         } catch (ExecutionException e) {

@@ -182,7 +182,7 @@ public class DeploymentTestCase {
 
     private void assertServletAccess(String context) throws IOException {
         // Check that we can access the servlet
-        URL servletURL = new URL("http://localhost:8080/" + context);
+        URL servletURL = new URL("http://" + managementClient.getMgmtAddress() + ":8080/" + context);
         BufferedReader br = new BufferedReader(new InputStreamReader(servletURL.openStream()));
         String message = br.readLine();
         assertEquals("Hello World!", message);

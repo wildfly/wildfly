@@ -22,27 +22,29 @@
 
 package org.jboss.as.test.integration.naming.local.simple;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author John Bailey
  */
 @RunWith(Arquillian.class)
 public class DeploymentWithBindTestCase {
+
     @Deployment
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war");
@@ -52,6 +54,9 @@ public class DeploymentWithBindTestCase {
 
     @ArquillianResource
     private InitialContext iniCtx;
+
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     protected <T> T lookup(Class<T> beanType) throws NamingException {
         return beanType.cast(iniCtx.lookup("java:global/test/" + beanType.getSimpleName() + "!" + beanType.getName()));
@@ -66,8 +71,8 @@ public class DeploymentWithBindTestCase {
         bean.checkBind();
     }
 
-    private static String performCall(String urlPattern, String op) throws Exception {
-        return HttpRequest.get("http://localhost:8080/test/" + urlPattern + "?op=" + op, 10, SECONDS);
+    private String performCall(String urlPattern, String op) throws Exception {
+        return HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/test/" + urlPattern + "?op=" + op, 10, SECONDS);
     }
 
     @Test

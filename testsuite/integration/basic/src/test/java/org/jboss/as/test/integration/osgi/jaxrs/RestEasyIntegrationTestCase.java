@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.osgi.jaxrs;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -36,6 +35,7 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.osgi.xservice.api.Echo;
 import org.jboss.as.test.integration.osgi.xservice.bundle.TargetBundleActivator;
@@ -72,7 +72,7 @@ public class RestEasyIntegrationTestCase {
     public Bundle bundle;
 
     @ArquillianResource
-    private URL url;
+    private ManagementClient managementClient;
 
     @Deployment
     public static JavaArchive createDeployment() {
@@ -122,7 +122,7 @@ public class RestEasyIntegrationTestCase {
     }
 
     private String getHttpResponse(String message) throws IOException, ExecutionException, TimeoutException {
-        String reqPath = url.toExternalForm() + "rest/echo/" + message;
+        String reqPath = "http://" + managementClient.getMgmtAddress() +":8080/resteasy-osgi-client/rest/echo/" + message;
         return HttpRequest.get(reqPath, 10, TimeUnit.SECONDS);
     }
 
