@@ -598,6 +598,9 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
             request.get(propName).set(toSet);
         }
 
+        if(this.lastHeaderName != null) {
+            throw new OperationFormatException("Header '" + this.lastHeaderName + "' is not complete.");
+        }
         if(headers != null) {
             final ModelNode headersNode = request.get(Util.OPERATION_HEADERS);
             for(ParsedOperationRequestHeader header : headers.values()) {

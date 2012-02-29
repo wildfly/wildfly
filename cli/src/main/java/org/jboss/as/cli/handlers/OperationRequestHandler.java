@@ -70,7 +70,7 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
         }
 
         validateRequest(ctx, request);
-System.out.println("request:\n" + request);
+
         try {
             final ModelNode result = client.execute(request);
             if(Util.isSuccess(result)) {
