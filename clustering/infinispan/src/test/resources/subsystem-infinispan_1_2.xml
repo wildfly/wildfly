@@ -11,7 +11,7 @@
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="true"/>
         </local-cache>
-        <invalidation-cache name="invalid" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="1000" start="LAZY">
+        <invalidation-cache name="invalid" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="1000" start="LAZY" async-marshalling="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
             <transaction mode="NON_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="LRU"/>
@@ -22,7 +22,7 @@
                 <remote-server outbound-socket-binding="hotrod-server-2" />
             </remote-store>
         </invalidation-cache>
-        <replicated-cache name="repl" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="1000" start="EAGER">
+        <replicated-cache name="repl" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="1000" start="EAGER"  async-marshalling="false">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="FIFO"/>
@@ -32,7 +32,7 @@
                 <property name="location">${java.io.tmpdir}</property>
             </store>
         </replicated-cache>
-        <distributed-cache name="dist" mode="SYNC" batching="true" indexing="ALL" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" virtual-nodes="2">
+        <distributed-cache name="dist" mode="SYNC" batching="true" indexing="ALL" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" virtual-nodes="2"  async-marshalling="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="UNORDERED"/>

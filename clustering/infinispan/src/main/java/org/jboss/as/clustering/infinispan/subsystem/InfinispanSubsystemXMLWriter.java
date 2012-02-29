@@ -117,6 +117,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                             // write identifier before other attributes
                             this.writeRequired(writer, Attribute.NAME, cache, ModelKeys.NAME);
                         }
+                        this.writeOptional(writer, Attribute.ASYNC_MARSHALLING, cache, ModelKeys.ASYNC_MARSHALLING);
                         writer.writeAttribute(Attribute.MODE.getLocalName(), Mode.forCacheMode(mode).name());
                         this.writeOptional(writer, Attribute.QUEUE_SIZE, cache, ModelKeys.QUEUE_SIZE);
                         this.writeOptional(writer, Attribute.QUEUE_FLUSH_INTERVAL, cache, ModelKeys.QUEUE_FLUSH_INTERVAL);

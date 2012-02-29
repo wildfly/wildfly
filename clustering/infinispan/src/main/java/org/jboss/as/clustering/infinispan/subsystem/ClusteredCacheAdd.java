@@ -47,6 +47,7 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
     void populate(ModelNode fromModel, ModelNode toModel) throws OperationFailedException {
         super.populate(fromModel, toModel);
 
+        CommonAttributes.ASYNC_MARSHALLING.validateAndSet(fromModel, toModel);
         CommonAttributes.QUEUE_SIZE.validateAndSet(fromModel, toModel);
         CommonAttributes.QUEUE_FLUSH_INTERVAL.validateAndSet(fromModel, toModel);
         CommonAttributes.REMOTE_TIMEOUT.validateAndSet(fromModel, toModel);
@@ -71,6 +72,7 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
         final long remoteTimeout = CommonAttributes.REMOTE_TIMEOUT.resolveModelAttribute(context, cache).asLong();
         final int queueSize = CommonAttributes.QUEUE_SIZE.resolveModelAttribute(context, cache).asInt();
         final long queueFlushInterval = CommonAttributes.QUEUE_FLUSH_INTERVAL.resolveModelAttribute(context, cache).asLong();
+        final boolean asyncMarshalling = CommonAttributes.ASYNC_MARSHALLING.resolveModelAttribute(context, cache).asBoolean();
 
         // process clustered cache attributes and elements
         if (CacheMode.valueOf(cache.get(ModelKeys.MODE).asString()).isSynchronous()) {
@@ -78,6 +80,10 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
         } else {
             builder.clustering().async().replQueueMaxElements(queueSize);
             builder.clustering().async().replQueueInterval(queueFlushInterval);
+            if(asyncMarshalling)
+                builder.clustering().async().asyncMarshalling();
+            else
+                builder.clustering().async().syncMarshalling();
         }
     }
 }
