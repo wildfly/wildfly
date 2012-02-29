@@ -21,14 +21,16 @@
  */
 package org.jboss.as.security.test;
 
+import java.io.IOException;
+
 import org.jboss.as.security.SecurityExtension;
-import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
-public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemTest {
+public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemBaseTest {
 
     public SecurityDomainModelv11UnitTestCase() {
         super(SecurityExtension.SUBSYSTEM_NAME, new SecurityExtension());
@@ -55,5 +57,46 @@ public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemTest {
         super.compare(modelA, modelB);
 
         assertRemoveSubsystemResources(servicesA);
+    }
+
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return readResource("securitysubsystemv11.xml");
+        /*return "<subsystem xmlns=\"urn:jboss:domain:security:1.1\">" +
+                " <security-domains> " +
+                  " <security-domain name=\"other\" cache-type=\"default\">" +
+                  "  <authentication>" +
+                   "     <login-module code=\"Remoting\" flag=\"optional\">" +
+                    "        <module-option name=\"password-stacking\" value=\"useFirstPass\"/>" +
+                     "   </login-module>" +
+                      "  <login-module code=\"RealmUsersRoles\" flag=\"required\">" +
+                       "     <module-option name=\"usersProperties\" value=\"${jboss.server.config.dir}/application-users.properties\"/>" +
+                        "    <module-option name=\"rolesProperties\" value=\"${jboss.server.config.dir}/application-roles.properties\"/>" +
+                         "   <module-option name=\"realm\" value=\"ApplicationRealm\"/>" +
+                          "  <module-option name=\"password-stacking\" value=\"useFirstPass\"/> " +
+                       " </login-module>" +
+                    "</authentication>" +
+                "</security-domain>" +
+                "<security-domain name=\"jboss-web-policy\" cache-type=\"default\">" +
+                 "   <authorization>" +
+                  "      <policy-module code=\"Delegating\" flag=\"required\"/>" +
+                   " </authorization>" +
+                "</security-domain>" +
+                "<security-domain name=\"jboss-ejb-policy\" cache-type=\"default\">" +
+                 "   <authorization>" +
+                  "      <policy-module code=\"Delegating\" flag=\"required\"/>" +
+                   " </authorization>" +
+                "</security-domain>" +
+                "<security-domain name=\"DsRealm\" cache-type=\"default\">" +
+                     "<authentication>" +
+                           "<login-module code=\"ConfiguredIdentity\" flag=\"required\">" +
+                               "<module-option name=\"userName\" value=\"sa\"/>" +
+                               "<module-option name=\"principal\" value=\"sa\"/>" +
+                               "<module-option name=\"password\" value=\"sa\"/>" +
+                            "</login-module>" +
+                     "</authentication>" +
+                "</security-domain>" +
+            "</security-domains>" +
+        "</subsystem>";*/
     }
 }
