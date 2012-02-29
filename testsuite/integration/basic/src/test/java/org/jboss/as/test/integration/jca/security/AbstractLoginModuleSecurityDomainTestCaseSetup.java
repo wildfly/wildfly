@@ -37,7 +37,7 @@ public abstract class AbstractLoginModuleSecurityDomainTestCaseSetup extends Abs
     protected abstract Map<String, String> getModuleOptions();
 
     @Override
-    public void setup(final ManagementClient managementClient) throws Exception {
+    public void setup(final ManagementClient managementClient, String containerId) throws Exception {
             final List<ModelNode> updates = new ArrayList<ModelNode>();
             ModelNode op = new ModelNode();
             op.get(OP).set(ADD);
