@@ -76,7 +76,7 @@ public class EJBClientDescriptorTestCase {
     static class EJBClientDescriptorTestCaseSetup implements ServerSetupTask {
 
         @Override
-        public void setup(final ManagementClient managementClient) throws Exception {
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             final String socketBindingRef = "remoting";
             EJBManagementUtil.createLocalOutboundSocket(managementClient.getControllerClient(), "standard-sockets", outboundSocketName, socketBindingRef, Authentication.getCallbackHandler());
             outboundSocketCreated = true;
@@ -90,7 +90,7 @@ public class EJBClientDescriptorTestCase {
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws Exception {
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             EJBManagementUtil.removeLocalOutboundSocket(managementClient.getControllerClient(), "standard-sockets", outboundSocketName, Authentication.getCallbackHandler());
             logger.info("Removed local outbound socket " + outboundSocketName);
 

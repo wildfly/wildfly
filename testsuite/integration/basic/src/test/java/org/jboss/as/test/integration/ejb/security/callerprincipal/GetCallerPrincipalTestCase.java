@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.ejb.security.callerprincipal;
 
 import java.security.Principal;
-import java.util.Hashtable;
 
 import javax.ejb.EJBHome;
 import javax.jms.DeliveryMode;
@@ -38,7 +37,6 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
-import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -108,16 +106,19 @@ public class GetCallerPrincipalTestCase  {
     @ArquillianResource
     Deployer deployer;
 
+    @ArquillianResource
+    private InitialContext initialContext;
+
     static class JmsQueueSetup extends AbstractMgmtServerSetupTask {
 
         @Override
         protected void doSetup(final ManagementClient managementClient) throws Exception {
-            createQueue("queue/callerPrincipal");
+            createQueue(QUEUE_NAME);
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws Exception {
-            destroyQueue("queue/callerPrincipal");
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            destroyQueue(QUEUE_NAME);
         }
         private void createQueue(String queueName) throws Exception {
             ModelNode addJmsQueue = getQueueAddr(queueName);
@@ -133,12 +134,6 @@ public class GetCallerPrincipalTestCase  {
         }
     }
 
-    private InitialContext getInitialContext() throws NamingException {
-        final Hashtable<String,String> jndiProperties = new Hashtable<String,String>();
-        jndiProperties.put(Context.INITIAL_CONTEXT_FACTORY,"org.jboss.as.naming.InitialContextFactory");
-        jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        return new InitialContext(jndiProperties);
-    }
 
     @Deployment(managed=true, testable = false, name = "single", order = 0)
     public static Archive<?> deploymentSingleton()  {
@@ -227,7 +222,7 @@ public class GetCallerPrincipalTestCase  {
     }
 
     private ITestResultsSingleton getResultsSingleton() throws NamingException {
-        return (ITestResultsSingleton) getInitialContext().lookup("ejb:/single//" + TestResultsSingleton.class.getSimpleName() + "!" + ITestResultsSingleton.class.getName());
+        return (ITestResultsSingleton) initialContext.lookup("ejb:/single//" + TestResultsSingleton.class.getSimpleName() + "!" + ITestResultsSingleton.class.getName());
     }
 
     private SecurityClient login() throws Exception {
@@ -244,7 +239,7 @@ public class GetCallerPrincipalTestCase  {
     @Test
     public void testUnauthenticatedNoSecurityDomain() throws Exception {
         try {
-            ISLSBWithoutSecurityDomain bean = (ISLSBWithoutSecurityDomain) getInitialContext().lookup("ejb:/callerprincipal-test//" + SLSBWithoutSecurityDomain.class.getSimpleName() + "!" + ISLSBWithoutSecurityDomain.class.getName());
+            ISLSBWithoutSecurityDomain bean = (ISLSBWithoutSecurityDomain) initialContext.lookup("ejb:/callerprincipal-test//" + SLSBWithoutSecurityDomain.class.getSimpleName() + "!" + ISLSBWithoutSecurityDomain.class.getName());
             final Principal principal = bean.getCallerPrincipal();
             assertNotNull("EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.",
                     principal);
@@ -263,7 +258,7 @@ public class GetCallerPrincipalTestCase  {
         SecurityClient client = this.login();
         try {
             ITestResultsSingleton results = this.getResultsSingleton();
-            IBeanLifecycleCallback bean = (IBeanLifecycleCallback) getInitialContext().lookup("ejb:/slsb//" + SLSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName());
+            IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/slsb//" + SLSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName());
             log.debug("Stateless bean returns: " + bean.get());
 
             Assert.assertEquals(OK + "start", results.getSlsb("postconstruct"));
@@ -282,7 +277,7 @@ public class GetCallerPrincipalTestCase  {
         SecurityClient client = this.login();
         ITestResultsSingleton results = this.getResultsSingleton();
         try {
-            IBeanLifecycleCallback bean = (IBeanLifecycleCallback) getInitialContext().lookup("ejb:/sfsb//" + SFSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName() + "?stateful");
+            IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/sfsb//" + SFSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName() + "?stateful");
             log.debug("Stateful bean returns: " + bean.get());
 
             Assert.assertEquals(ANONYMOUS + "start", results.getSfsb("postconstruct"));

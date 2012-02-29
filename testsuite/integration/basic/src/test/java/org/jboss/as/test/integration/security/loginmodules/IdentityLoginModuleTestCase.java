@@ -71,7 +71,7 @@ public class IdentityLoginModuleTestCase {
         }
 
         @Override
-        public void setup(final ManagementClient managementClient) throws Exception {
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             log.debug("adding module options");
             Map<String,String> moduleOptionsMap = new HashMap<String,String>();
             moduleOptionsMap.put("roles", "role1,role2");
@@ -89,7 +89,7 @@ public class IdentityLoginModuleTestCase {
         }
 
         @Override
-        public void setup(final ManagementClient managementClient) throws Exception {
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
 
             log.debug("adding module options");
             Map<String,String> moduleOptionsMap = new HashMap<String,String>();

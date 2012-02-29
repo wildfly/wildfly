@@ -145,7 +145,7 @@ public class WebSecurityProgrammaticLoginTestCase {
         }
 
         @Override
-        public void setup(final ManagementClient managementClient) {
+        public void setup(final ManagementClient managementClient, final String containerId) {
             final List<ModelNode> updates = new ArrayList<ModelNode>();
             ModelNode op = new ModelNode();
             String securityDomain = "web-programmatic-login";

@@ -57,12 +57,12 @@ public class RootContextWarUnitTestCase {
     static class RootContextWarSetup implements ServerSetupTask {
 
         @Override
-        public void setup(final ManagementClient managementClient) throws Exception {
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             RootContextUtil.createVirtualServer(managementClient.getControllerClient(), HOST);
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws Exception {
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             RootContextUtil.removeVirtualServer(managementClient.getControllerClient(), HOST);
         }
     }

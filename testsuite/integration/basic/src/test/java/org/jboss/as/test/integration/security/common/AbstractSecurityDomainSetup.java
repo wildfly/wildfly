@@ -52,7 +52,7 @@ public abstract class AbstractSecurityDomainSetup implements ServerSetupTask {
     }
 
     @Override
-    public void tearDown(final ManagementClient managementClient) {
+    public void tearDown(final ManagementClient managementClient, final String containerId) {
 
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);

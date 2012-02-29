@@ -110,7 +110,7 @@ public class SendMessagesTestCase {
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws Exception {
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             destroyQueue(QUEUE_SEND);
             destroyQueue(QUEUE_REPLY);
         }

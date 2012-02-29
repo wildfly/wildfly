@@ -61,7 +61,7 @@ public class PassivationSucceedsUnitTestCase {
     static class PassivationSucceedsUnitTestCaseSetup implements ServerSetupTask {
 
         @Override
-        public void setup(final ManagementClient managementClient) throws Exception {
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             ModelNode address = getAddress();
             ModelNode operation = new ModelNode();
             operation.get(OP).set("write-attribute");
@@ -83,7 +83,7 @@ public class PassivationSucceedsUnitTestCase {
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws Exception {
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             ModelNode address = getAddress();
             ModelNode operation = new ModelNode();
             operation.get(OP).set("undefine-attribute");
