@@ -5487,13 +5487,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jbossweb-native</artifactId>
-                <version>${version.org.jboss.as.jbossweb-native}</version>
-            </dependency>
-
-
-            <dependency>
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-core</artifactId>
                 <version>${version.org.jboss.weld.weld}</version>
