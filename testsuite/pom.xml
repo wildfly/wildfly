@@ -75,6 +75,16 @@
     <!-- Global testsuite system properties defaults. -->
 
     <properties>
+        <!-- Current module's directory. Will automatically pick up sub-module's basedir. -->
+        <jbossas.ts.submodule.dir>${basedir}</jbossas.ts.submodule.dir>
+        <!-- Integration module's directory. To be overriden in sub-modules. -->
+        <jbossas.ts.integ.dir>${basedir}/integration</jbossas.ts.integ.dir>
+        <!-- This project's testsuite dir. To be changed for every submodule (until we figure out how to do it automatically). -->
+        <jbossas.ts.dir>${basedir}</jbossas.ts.dir>
+        <!-- This project's root dir. -->
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        
+        
         <!-- Used to provide an absolute location for the distribution under test. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <jboss.dist>${project.basedir}/../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
@@ -82,7 +92,7 @@
 
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
-        <xslt.scripts.dir>${basedir}/integration/src/test/xslt</xslt.scripts.dir>
+        <xslt.scripts.dir>${jbossas.ts.integ.dir}/src/test/xslt</xslt.scripts.dir>
 
         <!-- IP address defaults. -->
         <node0>127.0.0.1</node0>
