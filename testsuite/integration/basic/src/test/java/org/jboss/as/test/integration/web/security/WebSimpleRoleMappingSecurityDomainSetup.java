@@ -34,7 +34,7 @@ public class WebSimpleRoleMappingSecurityDomainSetup extends AbstractSecurityDom
     protected static final String WEB_SECURITY_DOMAIN = "web-tests";
 
     @Override
-    public void setup(final ManagementClient managementClient) {
+    public void setup(final ManagementClient managementClient, final String containerId) {
         log.debug("start of the domain creation");
 
 

@@ -54,7 +54,7 @@ public class RemoteInvocationByReferenceTestCase {
     static class RemoteInvocationByReferenceTestCaseSetup implements ServerSetupTask {
 
         @Override
-        public void setup(final ManagementClient managementClient) throws Exception {
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             // setup pass-by-reference semantics
             // we do this here instead of a separate @BeforeClass method because of some weirdness
             // with the ordering of the @BeforeClass execution and deploying the deployment by Arquillian
@@ -62,7 +62,7 @@ public class RemoteInvocationByReferenceTestCase {
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws Exception {
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             // switch back to the default pass-by-value semantics
             EJBManagementUtil.enablePassByValueForRemoteInterfaceInvocations(managementClient);
         }

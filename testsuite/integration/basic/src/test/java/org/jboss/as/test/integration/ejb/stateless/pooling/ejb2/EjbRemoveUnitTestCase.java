@@ -74,13 +74,13 @@ public class EjbRemoveUnitTestCase {
     static class EjbRemoveUnitTestCaseSetup implements ServerSetupTask {
 
         @Override
-        public void setup(final ManagementClient managementClient) throws Exception {
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), POOL_NAME2, 5, 10 * 1000, TimeUnit.MILLISECONDS);
             EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), POOL_NAME3, 5, 10 * 1000, TimeUnit.MILLISECONDS);
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws Exception {
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
 
             EJBManagementUtil.removeStrictMaxPool(managementClient.getControllerClient(), POOL_NAME2);
             EJBManagementUtil.removeStrictMaxPool(managementClient.getControllerClient(), POOL_NAME3);

@@ -70,7 +70,7 @@ public class MultipleActivationTestCase extends ArquillianResourceMgmtTestBase {
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws IOException, MgmtOperationException {
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws IOException, MgmtOperationException {
 
             final ModelNode address = new ModelNode();
             address.add("subsystem", "resource-adapters");

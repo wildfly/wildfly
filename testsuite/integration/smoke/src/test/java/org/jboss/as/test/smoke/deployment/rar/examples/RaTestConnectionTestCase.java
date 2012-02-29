@@ -57,7 +57,7 @@ import java.util.List;
 public class RaTestConnectionTestCase extends  ArquillianResourceMgmtTestBase {
     private static ModelNode address;
     private static String deploymentName = "archive_mult.rar";
-    
+
     static class RaTestConnectionTestCaseSetup extends AbstractMgmtServerSetupTask {
 
         @Override
@@ -73,11 +73,11 @@ public class RaTestConnectionTestCase extends  ArquillianResourceMgmtTestBase {
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws Exception {
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             remove(address);
         }
     }
-    
+
 
     /**
      * Define the deployment
@@ -86,7 +86,7 @@ public class RaTestConnectionTestCase extends  ArquillianResourceMgmtTestBase {
      */
    @Deployment
     public static ResourceAdapterArchive createDeployment()  throws Exception{
-        
+
 
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
@@ -97,7 +97,7 @@ public class RaTestConnectionTestCase extends  ArquillianResourceMgmtTestBase {
         return raa;
     }
 
-    
+
     @Test
     public void testConnection() throws Exception{
         ModelNode testAddress=address.clone();
@@ -106,9 +106,9 @@ public class RaTestConnectionTestCase extends  ArquillianResourceMgmtTestBase {
         op.get(OP).set("test-connection-in-pool");
         op.get(OP_ADDR).set(testAddress);
         assertTrue(executeOperation(op).asBoolean());
-        
+
     }
-    
+
     @Test
     public void flushConnections() throws Exception{
         ModelNode testAddress=address.clone();
@@ -116,6 +116,6 @@ public class RaTestConnectionTestCase extends  ArquillianResourceMgmtTestBase {
         ModelNode op=new ModelNode();
         op.get(OP).set("flush-idle-connection-in-pool");
         op.get(OP_ADDR).set(testAddress);
-        executeOperation(op);        
+        executeOperation(op);
     }
 }
