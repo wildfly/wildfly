@@ -22,11 +22,20 @@
 
 package org.jboss.as.test.integration.osgi.jaxrs;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.jar.JarFile;
+
+import javax.inject.Inject;
+
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.HttpTestSupport;
+import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.osgi.xservice.api.Echo;
 import org.jboss.as.test.integration.osgi.xservice.bundle.TargetBundleActivator;
 import org.jboss.logging.Logger;
@@ -41,11 +50,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
-
-import javax.inject.Inject;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.jar.JarFile;
 
 import static org.junit.Assert.assertEquals;
 
@@ -69,7 +73,7 @@ public class RestEasyIntegrationTestCase {
     @Deployment
     public static JavaArchive createDeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "jaxrs-osgi-target");
-        archive.addClasses(HttpTestSupport.class, Echo.class, TargetBundleActivator.class);
+        archive.addClasses(HttpRequest.class, Echo.class, TargetBundleActivator.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
@@ -113,9 +117,9 @@ public class RestEasyIntegrationTestCase {
         }
     }
 
-    private String getHttpResponse(String message) throws IOException {
-        String reqPath = "/resteasy-osgi-client/rest/echo/" + message;
-        return HttpTestSupport.getHttpResponse("localhost", 8080, reqPath, 2000);
+    private String getHttpResponse(String message) throws IOException, ExecutionException, TimeoutException {
+        String reqPath = "http://localhost:8080/resteasy-osgi-client/rest/echo/" + message;
+        return HttpRequest.get(reqPath, 10, TimeUnit.SECONDS);
     }
 
 }

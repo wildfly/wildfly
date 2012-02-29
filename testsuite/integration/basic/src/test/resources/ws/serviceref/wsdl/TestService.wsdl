@@ -3,37 +3,35 @@
              xmlns:soap='http://schemas.xmlsoap.org/wsdl/soap/'
              xmlns:tns='http://www.openuri.org/2004/04/HelloWorld'
              xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
-   <types></types>
-   <message name='EndpointInterface_echoResponse'>
-      <part name='return' type='xsd:string'></part>
-   </message>
-   <message name='EndpointInterface_echo'>
-      <part name='arg0' type='xsd:string'></part>
-   </message>
-   <portType name='EndpointInterface'>
+    <types></types>
+    <message name='EndpointInterface_echoResponse'>
+        <part name='return' type='xsd:string'></part>
+    </message>
+    <message name='EndpointInterface_echo'>
+        <part name='arg0' type='xsd:string'></part>
+    </message>
+    <portType name='EndpointInterface'>
 
-      <operation name='echo' parameterOrder='arg0'>
-         <input message='tns:EndpointInterface_echo'></input>
-         <output message='tns:EndpointInterface_echoResponse'></output>
-      </operation>
-   </portType>
-   <binding name='EndpointInterfaceBinding' type='tns:EndpointInterface'>
-      <soap:binding style='rpc' transport='http://schemas.xmlsoap.org/soap/http'/>
-      <operation name='echo'>
-         <soap:operation soapAction=''/>
-
-         <input>
-            <soap:body namespace='http://www.openuri.org/2004/04/HelloWorld' use='literal'/>
-         </input>
-         <output>
-            <soap:body namespace='http://www.openuri.org/2004/04/HelloWorld' use='literal'/>
-         </output>
-      </operation>
-   </binding>
-   <service name='EndpointService'>
-
-      <port binding='tns:EndpointInterfaceBinding' name='EJB3BeanPort'>
-         <soap:address location='http://localhost:8080/ws-serviceref-example/EndpointService/EJB3Bean'/>
-      </port>
-   </service>
+        <operation name='echo' parameterOrder='arg0'>
+            <input message='tns:EndpointInterface_echo'></input>
+            <output message='tns:EndpointInterface_echoResponse'></output>
+        </operation>
+    </portType>
+    <binding name='EndpointInterfaceBinding' type='tns:EndpointInterface'>
+        <soap:binding style='rpc' transport='http://schemas.xmlsoap.org/soap/http'/>
+        <operation name='echo'>
+            <soap:operation soapAction=''/>
+            <input>
+                <soap:body namespace='http://www.openuri.org/2004/04/HelloWorld' use='literal'/>
+            </input>
+            <output>
+                <soap:body namespace='http://www.openuri.org/2004/04/HelloWorld' use='literal'/>
+            </output>
+        </operation>
+    </binding>
+    <service name='EndpointService'>
+        <port binding='tns:EndpointInterfaceBinding' name='EJB3BeanPort'>
+            <soap:address location='http://localhost:8080/ws-serviceref-example/EndpointService/EJB3Bean'/>
+        </port>
+    </service>
 </definitions>

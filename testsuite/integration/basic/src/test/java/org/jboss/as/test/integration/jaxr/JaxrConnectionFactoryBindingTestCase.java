@@ -21,14 +21,17 @@
  */
 package org.jboss.as.test.integration.jaxr;
 
+import java.net.URL;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.HttpTestSupport;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,9 +43,12 @@ import org.junit.runner.RunWith;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-public class JaxrConnectionFactoryBindingTestCase
-{
-    @Deployment(testable = false)
+public class JaxrConnectionFactoryBindingTestCase {
+
+    @ArquillianResource
+    private URL url;
+
+    @Deployment
     public static WebArchive deployment() {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "jaxr-connection-test.war");
         archive.addClasses(JaxrServlet.class);
@@ -52,18 +58,16 @@ public class JaxrConnectionFactoryBindingTestCase
     }
 
     @Test
-    public void testConnectionFactoryLookup() throws Exception
-    {
-        String reqpath = "/jaxr-connection-test?method=lookup";
-        String response = HttpTestSupport.getHttpResponse("localhost", 8080, reqpath);
-        Assert.assertEquals("org.apache.ws.scout.registry.ConnectionFactoryImpl", response);
+    public void testConnectionFactoryLookup() throws Exception {
+        String reqpath = url.toExternalForm() + "?method=lookup";
+        String response = HttpRequest.get(reqpath, 10, TimeUnit.SECONDS);
+        Assert.assertEquals("org.apache.ws.scout.registry.ConnectionFactoryImpl", response.trim());
     }
 
     @Test
-    public void testConnectionFactoryNewInstance() throws Exception
-    {
-        String reqpath = "/jaxr-connection-test?method=new";
-        String response = HttpTestSupport.getHttpResponse("localhost", 8080, reqpath);
-        Assert.assertEquals("org.apache.ws.scout.registry.ConnectionFactoryImpl", response);
+    public void testConnectionFactoryNewInstance() throws Exception {
+        String reqpath = url.toExternalForm() + "?method=new";
+        String response = HttpRequest.get(reqpath, 10, TimeUnit.SECONDS);
+        Assert.assertEquals("org.apache.ws.scout.registry.ConnectionFactoryImpl", response.trim());
     }
 }

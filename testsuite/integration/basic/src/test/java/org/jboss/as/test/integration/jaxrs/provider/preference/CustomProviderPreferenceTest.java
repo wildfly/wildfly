@@ -21,12 +21,13 @@
  */
 package org.jboss.as.test.integration.jaxrs.provider.preference;
 
-import static junit.framework.Assert.assertEquals;
-
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
@@ -36,6 +37,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static junit.framework.Assert.assertEquals;
+
 /**
  * Tests that user-provided providers are given priority over built-in providers.
  *
@@ -44,6 +47,7 @@ import org.junit.runner.RunWith;
  * @author Jozef Hartinger
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 public class CustomProviderPreferenceTest {
 
     @Deployment(testable = false)
@@ -57,8 +61,15 @@ public class CustomProviderPreferenceTest {
         return war;
     }
 
+    @ArquillianResource
+    private URL url;
+
+    private String performCall(String urlPattern) throws Exception {
+        return HttpRequest.get(url + urlPattern, 10, TimeUnit.SECONDS);
+    }
+
     @Test
     public void testCustomMessageBodyWriterIsUsed() throws Exception {
-        assertEquals("true", HttpRequest.get("http://localhost:8080/providers/api/user", 10, TimeUnit.SECONDS));
+        assertEquals("true", performCall("api/user"));
     }
 }

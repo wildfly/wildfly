@@ -22,48 +22,86 @@
 
 package org.jboss.as.test.integration.ejb.stateful.passivation;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import javax.naming.InitialContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.container.Authentication;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.integration.ejb.HostnameResolver;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 /**
  * Tests that passivation succeeds, and invocation is possible upon reactivation
- * 
+ *
  * @author ALR, Stuart Douglas, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
+@ServerSetup(PassivationSucceedsUnitTestCase.PassivationSucceedsUnitTestCaseSetup.class)
 public class PassivationSucceedsUnitTestCase {
     private static final Logger log = Logger.getLogger(PassivationSucceedsUnitTestCase.class);
 
     @ArquillianResource
-    InitialContext ctx;
+    private InitialContext ctx;
 
-    private static ModelControllerClient client;
+    static class PassivationSucceedsUnitTestCaseSetup implements ServerSetupTask {
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            ModelNode address = getAddress();
+            ModelNode operation = new ModelNode();
+            operation.get(OP).set("write-attribute");
+            operation.get(OP_ADDR).set(address);
+            operation.get("name").set("max-size");
+            operation.get("value").set(1);
+            ModelNode result = managementClient.getControllerClient().execute(operation);
+            log.info("modelnode operation write attribute max-size=1: " + result);
+            Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+            operation = new ModelNode();
+            operation.get(OP).set("write-attribute");
+            operation.get(OP_ADDR).set(address);
+            operation.get("name").set("idle-timeout");
+            operation.get("value").set(1);
+            result = managementClient.getControllerClient().execute(operation);
+            log.info("modelnode operation write-attribute idle-timeout=1: " + result);
+            Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            ModelNode address = getAddress();
+            ModelNode operation = new ModelNode();
+            operation.get(OP).set("undefine-attribute");
+            operation.get(OP_ADDR).set(address);
+            operation.get("name").set("max-size");
+            managementClient.getControllerClient().execute(operation);
+            operation = new ModelNode();
+            operation.get(OP).set("undefine-attribute");
+            operation.get(OP_ADDR).set(address);
+            operation.get("name").set("idle-timeout");
+            ModelNode result = managementClient.getControllerClient().execute(operation);
+            Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        }
+    }
+
 
     @Deployment
     public static Archive<?> deploy() throws Exception {
-        setPassivationAttributes();
-
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "passivation-test.jar");
         jar.addPackage(PassivationSucceedsUnitTestCase.class.getPackage());
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"),
@@ -73,13 +111,6 @@ public class PassivationSucceedsUnitTestCase {
         return jar;
     }
 
-    private static ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        if (client == null) {
-            client = ModelControllerClient.Factory.create(InetAddress.getByName(HostnameResolver.getHostname()),
-                    HostnameResolver.getManagementPort(), Authentication.getCallbackHandler());
-        }
-        return client;
-    }
 
     private static ModelNode getAddress() {
         ModelNode address = new ModelNode();
@@ -87,43 +118,6 @@ public class PassivationSucceedsUnitTestCase {
         address.add("file-passivation-store", "file");
         address.protect();
         return address;
-    }
-
-    private static void setPassivationAttributes() throws Exception {
-        ModelNode address = getAddress();
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set("write-attribute");
-        operation.get(OP_ADDR).set(address);
-        operation.get("name").set("max-size");
-        operation.get("value").set(1);
-        ModelNode result = getModelControllerClient().execute(operation);
-        log.info("modelnode operation write attribute max-size=1: " + result);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        operation = new ModelNode();
-        operation.get(OP).set("write-attribute");
-        operation.get(OP_ADDR).set(address);
-        operation.get("name").set("idle-timeout");
-        operation.get("value").set(1);
-        result = getModelControllerClient().execute(operation);
-        log.info("modelnode operation write-attribute idle-timeout=1: " + result);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-    }
-
-    @AfterClass
-    public static void unsetPassivationAttributes() throws Exception {
-        ModelNode address = getAddress();
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set("undefine-attribute");
-        operation.get(OP_ADDR).set(address);
-        operation.get("name").set("max-size");
-        ModelNode result = getModelControllerClient().execute(operation);
-        operation = new ModelNode();
-        operation.get(OP).set("undefine-attribute");
-        operation.get(OP_ADDR).set(address);
-        operation.get("name").set("idle-timeout");
-        result = getModelControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        getModelControllerClient().close();
     }
 
     @Test

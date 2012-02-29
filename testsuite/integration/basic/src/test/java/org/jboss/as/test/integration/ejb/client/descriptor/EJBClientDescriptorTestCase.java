@@ -23,12 +23,10 @@
 package org.jboss.as.test.integration.ejb.client.descriptor;
 
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 import javax.ejb.EJBException;
 import javax.naming.Context;
-import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -36,15 +34,16 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.Authentication;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,6 +54,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(EJBClientDescriptorTestCase.EJBClientDescriptorTestCaseSetup.class)
 public class EJBClientDescriptorTestCase {
 
     private static final Logger logger = Logger.getLogger(EJBClientDescriptorTestCase.class);
@@ -66,7 +66,6 @@ public class EJBClientDescriptorTestCase {
     private static final String MODULE_NAME_TWO = "ejb-client-descriptor-with-no-receiver-test";
     private static final String MODULE_NAME_THREE = "ejb-client-descriptor-with-local-and-remote-receivers-test";
 
-    private static Context context;
 
     private static final String outboundSocketName = "ejb-client-descriptor-test-outbound-socket";
     private static final String outboundConnectionName = "ejb-client-descriptor-test-remote-outbound-connection";
@@ -74,8 +73,37 @@ public class EJBClientDescriptorTestCase {
     private static boolean outboundSocketCreated;
     private static boolean outboundConnectionCreated;
 
+    static class EJBClientDescriptorTestCaseSetup implements ServerSetupTask {
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            final String socketBindingRef = "remoting";
+            EJBManagementUtil.createLocalOutboundSocket(managementClient.getControllerClient(), "standard-sockets", outboundSocketName, socketBindingRef, Authentication.getCallbackHandler());
+            outboundSocketCreated = true;
+            logger.info("Created local outbound socket " + outboundSocketName);
+
+            final Map<String, String> connectionCreationOptions = new HashMap<String, String>();
+            logger.info("Creatng remote outbound connection " + outboundConnectionName);
+            EJBManagementUtil.createRemoteOutboundConnection(managementClient.getControllerClient(), outboundConnectionName, outboundSocketName, connectionCreationOptions, Authentication.getCallbackHandler());
+            outboundConnectionCreated = true;
+            logger.info("Created remote outbound connection " + outboundConnectionName);
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            EJBManagementUtil.removeLocalOutboundSocket(managementClient.getControllerClient(), "standard-sockets", outboundSocketName, Authentication.getCallbackHandler());
+            logger.info("Removed local outbound socket " + outboundSocketName);
+
+            EJBManagementUtil.removeRemoteOutboundConnection(managementClient.getControllerClient(), outboundConnectionName, Authentication.getCallbackHandler());
+            logger.info("Removed remote outbound connection " + outboundConnectionName);
+        }
+    }
+
     @ArquillianResource
     private Deployer deployer;
+
+    @ArquillianResource
+    private Context context;
 
     @Deployment(name = "good-client-config", testable = false, managed = false)
     public static Archive createDeployment() throws Exception {
@@ -102,43 +130,6 @@ public class EJBClientDescriptorTestCase {
         jar.addPackage(EchoBean.class.getPackage());
         jar.addAsManifestResource("ejb/client/descriptor/local-and-remote-receiver-jboss-ejb-client.xml", "jboss-ejb-client.xml");
         return jar;
-    }
-
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        final Hashtable props = new Hashtable();
-        props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        context = new InitialContext(props);
-        setupRemoteOutboundConnection();
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-        if (outboundSocketCreated) {
-            EJBManagementUtil.removeLocalOutboundSocket("localhost", 9999, "standard-sockets", outboundSocketName, Authentication.getCallbackHandler());
-            logger.info("Removed local outbound socket " + outboundSocketName);
-        }
-        if (outboundConnectionCreated) {
-            EJBManagementUtil.removeRemoteOutboundConnection("localhost", 9999, outboundConnectionName, Authentication.getCallbackHandler());
-            logger.info("Removed remote outbound connection " + outboundConnectionName);
-        }
-    }
-
-    private static void setupRemoteOutboundConnection() throws Exception {
-        if (!outboundSocketCreated) {
-            final String socketBindingRef = "remoting";
-            EJBManagementUtil.createLocalOutboundSocket("localhost", 9999, "standard-sockets", outboundSocketName, socketBindingRef, Authentication.getCallbackHandler());
-            outboundSocketCreated = true;
-            logger.info("Created local outbound socket " + outboundSocketName);
-        }
-
-        if (!outboundConnectionCreated) {
-            final Map<String, String> connectionCreationOptions = new HashMap<String, String>();
-            logger.info("Creatng remote outbound connection " + outboundConnectionName);
-            EJBManagementUtil.createRemoteOutboundConnection("localhost", 9999, outboundConnectionName, outboundSocketName, connectionCreationOptions, Authentication.getCallbackHandler());
-            outboundConnectionCreated = true;
-            logger.info("Created remote outbound connection " + outboundConnectionName);
-        }
     }
 
     /**

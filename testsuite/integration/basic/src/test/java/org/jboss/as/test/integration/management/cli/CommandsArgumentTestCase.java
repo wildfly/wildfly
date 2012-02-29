@@ -129,6 +129,7 @@ public class CommandsArgumentTestCase {
         command.add(modulePath);
         command.add("org.jboss.as.cli");
         command.add("-c");
+        command.add("--controller=" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getServerPort());
         command.add(cmd);
         builder.command(command);
         Process cliProc = null;

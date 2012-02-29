@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.pool.override;
 
-import javax.ejb.EJBException;
-import javax.naming.InitialContext;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -31,14 +29,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import javax.ejb.EJBException;
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,35 +53,35 @@ import org.junit.runner.RunWith;
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
+@ServerSetup(PoolOverrideTestCase.PoolOverrideTestCaseSetup.class)
 public class PoolOverrideTestCase {
 
     private static final Logger logger = Logger.getLogger(PoolOverrideTestCase.class);
 
-    private static final String MANAGEMENT_HOST = "localhost";
-    private static final int MANAGEMENT_PORT = 9999;
+    static class PoolOverrideTestCaseSetup implements ServerSetupTask {
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), PoolAnnotatedEJB.POOL_NAME, 1, 10, TimeUnit.MILLISECONDS);
+            EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), PoolSetInDDBean.POOL_NAME_IN_DD, 1, 10, TimeUnit.MILLISECONDS);
+            EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), PoolAnnotatedAndSetInDDBean.POOL_NAME, 1, 10, TimeUnit.MILLISECONDS);
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            EJBManagementUtil.removeStrictMaxPool(managementClient.getControllerClient(), PoolAnnotatedEJB.POOL_NAME);
+            EJBManagementUtil.removeStrictMaxPool(managementClient.getControllerClient(), PoolSetInDDBean.POOL_NAME_IN_DD);
+            EJBManagementUtil.removeStrictMaxPool(managementClient.getControllerClient(), PoolAnnotatedAndSetInDDBean.POOL_NAME);
+        }
+    }
 
     @Deployment
     public static Archive createDeployment() {
-        // create the pools
-        createPools();
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb-pool-override-test.jar");
         jar.addPackage(PoolAnnotatedEJB.class.getPackage());
         jar.addAsManifestResource("ejb/pool/override/jboss-ejb3.xml", "jboss-ejb3.xml");
         return jar;
-    }
-
-    @AfterClass
-    public static void afterClass() {
-        EJBManagementUtil.removeStrictMaxPool(MANAGEMENT_HOST, MANAGEMENT_PORT, PoolAnnotatedEJB.POOL_NAME);
-        EJBManagementUtil.removeStrictMaxPool(MANAGEMENT_HOST, MANAGEMENT_PORT, PoolSetInDDBean.POOL_NAME_IN_DD);
-        EJBManagementUtil.removeStrictMaxPool(MANAGEMENT_HOST, MANAGEMENT_PORT, PoolAnnotatedAndSetInDDBean.POOL_NAME);
-    }
-
-    private static void createPools() {
-        EJBManagementUtil.createStrictMaxPool(MANAGEMENT_HOST, MANAGEMENT_PORT, PoolAnnotatedEJB.POOL_NAME, 1, 10, TimeUnit.MILLISECONDS);
-        EJBManagementUtil.createStrictMaxPool(MANAGEMENT_HOST, MANAGEMENT_PORT, PoolSetInDDBean.POOL_NAME_IN_DD, 1, 10, TimeUnit.MILLISECONDS);
-        EJBManagementUtil.createStrictMaxPool(MANAGEMENT_HOST, MANAGEMENT_PORT, PoolAnnotatedAndSetInDDBean.POOL_NAME, 1, 10, TimeUnit.MILLISECONDS);
     }
 
     /**

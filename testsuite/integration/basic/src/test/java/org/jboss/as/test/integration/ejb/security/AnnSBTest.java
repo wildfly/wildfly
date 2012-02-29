@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.ejb.security;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 
 import javax.ejb.EJBAccessException;
@@ -37,6 +36,8 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
 
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.security.authorization.AnnOnlyCheckSFSBForInjection;
 import org.jboss.as.test.integration.ejb.security.authorization.AnnOnlyCheckSLSBForInjection;
 import org.jboss.as.test.integration.ejb.security.authorization.ParentAnnOnlyCheck;
@@ -66,7 +67,11 @@ import org.xnio.Sequence;
  *
  * @author <a href="mailto:jan.lanik@redhat.com">Jan Lanik</a>
  */
-public abstract class AnnSBTest extends SecurityTest {
+public abstract class AnnSBTest {
+
+    @ContainerResource
+    private ManagementClient managementClient;
+
 
     public static Archive<JavaArchive> testAppDeployment(final Logger LOG, final String MODULE, final Class SB_TO_TEST) {
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
@@ -300,12 +305,8 @@ public abstract class AnnSBTest extends SecurityTest {
         // create the endpoint
         final Endpoint endpoint = Remoting.createEndpoint("remoting-test", OptionMap.create(Options.THREAD_DAEMON, true));
         endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, false));
-        final URI connectionURI;
-        try {
-            connectionURI = new URI("remote://localhost:4447");
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException(e);
-        }
+        final URI connectionURI = managementClient.getRemoteEjbURL();
+
         OptionMap.Builder builder = OptionMap.builder().set(Options.SASL_POLICY_NOANONYMOUS, true);
         builder.set(Options.SASL_POLICY_NOPLAINTEXT, false);
         if (password != null) {

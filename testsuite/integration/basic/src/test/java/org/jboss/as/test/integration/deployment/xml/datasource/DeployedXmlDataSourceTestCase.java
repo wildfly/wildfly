@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.deployment.xml.datasource;
 
-import java.io.IOException;
-import java.net.InetAddress;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.concurrent.Future;
@@ -35,7 +33,9 @@ import javax.sql.DataSource;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
@@ -43,13 +43,10 @@ import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanRes
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
  * Test deployment of -ds.xml files
@@ -57,11 +54,34 @@ import static org.jboss.as.arquillian.container.Authentication.getCallbackHandle
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
+@ServerSetup(DeployedXmlDataSourceTestCase.DeployedXmlDataSourceTestCaseSetup.class)
 public class DeployedXmlDataSourceTestCase {
 
+    static class DeployedXmlDataSourceTestCaseSetup implements ServerSetupTask {
 
-    private static ModelControllerClient client;
-    private static ServerDeploymentManager manager;
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
+            final String packageName = DeployedXmlDataSourceTestCase.class.getPackage().getName().replace(".", "/");
+            final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlDataSourceTestCase.class.getResource("/" + packageName + "/" + TEST_DS_XML)).andDeploy().build();
+            final Future<ServerDeploymentPlanResult> future = manager.execute(plan);
+            final ServerDeploymentPlanResult result = future.get(20, TimeUnit.SECONDS);
+            final ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
+            if (actionResult != null) {
+                if (actionResult.getDeploymentException() != null) {
+                    throw new  RuntimeException(actionResult.getDeploymentException());
+                }
+            }
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
+            final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_DS_XML).andRemoveUndeployed().build();
+            manager.execute(undeployPlan);
+        }
+    }
+
     public static final String TEST_DS_XML = "test-ds.xml";
 
     @Deployment
@@ -73,39 +93,6 @@ public class DeployedXmlDataSourceTestCase {
 
     @ArquillianResource
     private InitialContext initialContext;
-
-    @BeforeClass
-    public static void deployDatasource() throws Throwable {
-        try {
-            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
-            manager = ServerDeploymentManager.Factory.create(client);
-            final String packageName = DeployedXmlDataSourceTestCase.class.getPackage().getName().replace(".", "/");
-            final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlDataSourceTestCase.class.getResource("/" + packageName + "/" + TEST_DS_XML)).andDeploy().build();
-            final Future<ServerDeploymentPlanResult> future = manager.execute(plan);
-            final ServerDeploymentPlanResult result = future.get(20, TimeUnit.SECONDS);
-            final ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
-            if (actionResult != null) {
-                if (actionResult.getDeploymentException() != null) {
-                    throw actionResult.getDeploymentException();
-                }
-            }
-        } catch (Throwable e) {
-            if (client != null) {
-                client.close();
-            }
-        }
-    }
-
-    @AfterClass
-    public static void undeployDatasource() throws IOException {
-        if (client != null) {
-            final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_DS_XML).andRemoveUndeployed().build();
-            manager.execute(undeployPlan);
-            client.close();
-            client = null;
-            manager = null;
-        }
-    }
 
     @Test
     public void testDeployedDataSource() throws Throwable {

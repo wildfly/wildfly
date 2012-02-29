@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.messaging.xmldeployment;
 
-import java.io.IOException;
-import java.net.InetAddress;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -34,7 +32,9 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
@@ -43,13 +43,10 @@ import org.jboss.as.test.integration.deployment.xml.datasource.DeployedXmlDataSo
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
  * Test deployment of -jms.xml files
@@ -57,11 +54,35 @@ import static org.jboss.as.arquillian.container.Authentication.getCallbackHandle
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
+@ServerSetup(DeployedXmlJMSTestCase.DeployedXmlJMSTestCaseSetup.class)
 public class DeployedXmlJMSTestCase {
 
-
-    private static ServerDeploymentManager manager;
     public static final String TEST_JMS_XML = "test-jms.xml";
+
+    static class DeployedXmlJMSTestCaseSetup implements ServerSetupTask {
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
+            final String packageName = DeployedXmlJMSTestCase.class.getPackage().getName().replace(".", "/");
+            final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlJMSTestCase.class.getResource("/" + packageName + "/" + TEST_JMS_XML)).andDeploy().build();
+            final Future<ServerDeploymentPlanResult> future = manager.execute(plan);
+            final ServerDeploymentPlanResult result = future.get(20, TimeUnit.SECONDS);
+            final ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
+            if (actionResult != null) {
+                if (actionResult.getDeploymentException() != null) {
+                    throw new RuntimeException(actionResult.getDeploymentException());
+                }
+            }
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
+            final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_JMS_XML).andRemoveUndeployed().build();
+            manager.execute(undeployPlan);
+        }
+    }
 
     @Deployment
     public static Archive<?> deploy() {
@@ -72,41 +93,6 @@ public class DeployedXmlJMSTestCase {
 
     @ArquillianResource
     private InitialContext initialContext;
-
-    private static ModelControllerClient client;
-
-    @BeforeClass
-    public static void deployJms() throws Throwable {
-        try {
-            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
-            manager = ServerDeploymentManager.Factory.create(client);
-            final String packageName = DeployedXmlJMSTestCase.class.getPackage().getName().replace(".", "/");
-            final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlJMSTestCase.class.getResource("/" + packageName + "/" + TEST_JMS_XML)).andDeploy().build();
-            final Future<ServerDeploymentPlanResult> future = manager.execute(plan);
-            final ServerDeploymentPlanResult result = future.get(20, TimeUnit.SECONDS);
-            final ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
-            if (actionResult != null) {
-                if (actionResult.getDeploymentException() != null) {
-                    throw actionResult.getDeploymentException();
-                }
-            }
-        } catch (Throwable e) {
-            if (client != null) {
-                client.close();
-            }
-        }
-    }
-
-    @AfterClass
-    public static void undeployJms() throws IOException {
-        if (client != null) {
-            final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_JMS_XML).andRemoveUndeployed().build();
-            manager.execute(undeployPlan);
-            client.close();
-            client = null;
-            manager = null;
-        }
-    }
 
     @Test
     public void testDeployedQueue() throws Throwable {

@@ -27,16 +27,13 @@ import java.util.Collection;
 import java.util.List;
 
 import junit.framework.Assert;
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -77,14 +74,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 @RunAsClient
 public class BasicOperationsUnitTestCase {
 
-    @ArquillianResource
+    @ContainerResource
     private ManagementClient managementClient;
-
-    @Deployment
-    public static Archive<?> getDeployment() {
-        return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
-    }
-
 
     @Test
     public void testSocketBindingsWildcards() throws IOException {

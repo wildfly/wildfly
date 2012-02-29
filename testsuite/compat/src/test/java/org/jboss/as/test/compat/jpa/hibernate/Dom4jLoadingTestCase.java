@@ -22,6 +22,7 @@
 package org.jboss.as.test.compat.jpa.hibernate;
 
 import java.io.File;
+
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
@@ -30,6 +31,7 @@ import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -49,138 +51,142 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 public class Dom4jLoadingTestCase {
+
+    @ArquillianResource
+    private ManagementClient managementClient;
+
     private static final String ARCHIVE_NAME = "hibernate_dom4j";
 
-       private static final String persistence_xml =
-           "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-               "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-               "  <persistence-unit name=\"hibernate3_pc\">" +
-               "    <description>Persistence Unit." +
-               "    </description>" +
-               "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-               "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-               "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
-               "</properties>" +
-               "  </persistence-unit>" +
-               "</persistence>";
+    private static final String persistence_xml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
+                    "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
+                    "  <persistence-unit name=\"hibernate3_pc\">" +
+                    "    <description>Persistence Unit." +
+                    "    </description>" +
+                    "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
+                    "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
+                    "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
+                    "</properties>" +
+                    "  </persistence-unit>" +
+                    "</persistence>";
 
-       private static final String web_persistence_xml =
-           "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-               "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-               "  <persistence-unit name=\"web_hibernate3_pc\">" +
-               "    <description>Persistence Unit." +
-               "    </description>" +
-               "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-               "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-               "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
-               "</properties>" +
-               "  </persistence-unit>" +
-               "</persistence>";
+    private static final String web_persistence_xml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
+                    "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
+                    "  <persistence-unit name=\"web_hibernate3_pc\">" +
+                    "    <description>Persistence Unit." +
+                    "    </description>" +
+                    "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
+                    "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
+                    "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
+                    "</properties>" +
+                    "  </persistence-unit>" +
+                    "</persistence>";
 
-       private static void addDom4jJarToEar(EnterpriseArchive ear) {
-           final String basedir = System.getProperty("basedir");
-           final String testdir = basedir + File.separatorChar + "target" + File.separatorChar + "test-libs";
-           File dom4j = new File(testdir, "dom4j.jar");
-           ear.addAsLibrary( dom4j );
-       }
+    private static void addDom4jJarToEar(EnterpriseArchive ear) {
+        final String basedir = System.getProperty("basedir");
+        final String testdir = basedir + File.separatorChar + "target" + File.separatorChar + "test-libs";
+        File dom4j = new File(testdir, "dom4j.jar");
+        ear.addAsLibrary(dom4j);
+    }
 
-       @Deployment
-       public static Archive<?> deploy() throws Exception {
+    @Deployment
+    public static Archive<?> deploy() throws Exception {
 
-           EnterpriseArchive ear = ShrinkWrap.create( EnterpriseArchive.class, ARCHIVE_NAME + ".ear" );
-           addDom4jJarToEar( ear );
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
+        addDom4jJarToEar(ear);
 
-           JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
-           lib.addClasses(SFSB1.class, HttpRequest.class);
-           ear.addAsModule(lib);
+        JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
+        lib.addClasses(SFSB1.class, HttpRequest.class);
+        ear.addAsModule(lib);
 
-           lib = ShrinkWrap.create(JavaArchive.class, "entities.jar");
-           lib.addClasses(Employee.class);
-           lib.addAsManifestResource(new StringAsset(persistence_xml), "persistence.xml");
-           ear.addAsLibraries(lib);
+        lib = ShrinkWrap.create(JavaArchive.class, "entities.jar");
+        lib.addClasses(Employee.class);
+        lib.addAsManifestResource(new StringAsset(persistence_xml), "persistence.xml");
+        ear.addAsLibraries(lib);
 
-           final WebArchive main = ShrinkWrap.create(WebArchive.class, "main.war");
-           main.addClasses(Dom4jLoadingTestCase.class);
-           ear.addAsModule(main);
+        final WebArchive main = ShrinkWrap.create(WebArchive.class, "main.war");
+        main.addClasses(Dom4jLoadingTestCase.class);
+        ear.addAsModule(main);
 
-           // add war that contains its own pu
-           WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
-           war.addClasses(SimpleServlet.class, WebLink.class);
-           war.addAsResource(new StringAsset(web_persistence_xml), "META-INF/persistence.xml");
+        // add war that contains its own pu
+        WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
+        war.addClasses(SimpleServlet.class, WebLink.class);
+        war.addAsResource(new StringAsset(web_persistence_xml), "META-INF/persistence.xml");
 
-           war.addAsWebInfResource(
-               new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                   "\n" +
-                   "<web-app version=\"3.0\"\n" +
-                   "         xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
-                   "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-                   "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n" +
-                   "         metadata-complete=\"false\">\n" +
-                   "<servlet-mapping>\n" +
-                   "        <servlet-name>SimpleServlet</servlet-name>\n" +
-                   "        <url-pattern>/simple/*</url-pattern>\n" +
-                   "    </servlet-mapping>\n" +
-                   "</web-app>"),
-               "web.xml");
+        war.addAsWebInfResource(
+                new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                        "\n" +
+                        "<web-app version=\"3.0\"\n" +
+                        "         xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
+                        "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                        "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n" +
+                        "         metadata-complete=\"false\">\n" +
+                        "<servlet-mapping>\n" +
+                        "        <servlet-name>SimpleServlet</servlet-name>\n" +
+                        "        <url-pattern>/simple/*</url-pattern>\n" +
+                        "    </servlet-mapping>\n" +
+                        "</web-app>"),
+                "web.xml");
 
-           ear.addAsModule(war);
+        ear.addAsModule(war);
 
-           return ear;
-       }
+        return ear;
+    }
 
-       @ArquillianResource
-       private InitialContext iniCtx;
+    @ArquillianResource
+    private InitialContext iniCtx;
 
-       protected <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
-           try {
-               return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + "beans/" + beanName + "!" + interfaceType.getName()));
-           } catch (NamingException e) {
-               dumpJndi("");
-               throw e;
-           }
-       }
+    protected <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
+        try {
+            return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + "beans/" + beanName + "!" + interfaceType.getName()));
+        } catch (NamingException e) {
+            dumpJndi("");
+            throw e;
+        }
+    }
 
-       // TODO: move this logic to a common base class (might be helpful for writing new tests)
-       private void dumpJndi(String s) {
-           try {
-               dumpTreeEntry(iniCtx.list(s), s);
-           } catch (NamingException ignore) {
-           }
-       }
+    // TODO: move this logic to a common base class (might be helpful for writing new tests)
+    private void dumpJndi(String s) {
+        try {
+            dumpTreeEntry(iniCtx.list(s), s);
+        } catch (NamingException ignore) {
+        }
+    }
 
-       private void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {
-           System.out.println("\ndump " + s);
-           while (list.hasMore()) {
-               NameClassPair ncp = list.next();
-               System.out.println(ncp.toString());
-               if (s.length() == 0) {
-                   dumpJndi(ncp.getName());
-               } else {
-                   dumpJndi(s + "/" + ncp.getName());
-               }
-           }
-       }
+    private void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {
+        System.out.println("\ndump " + s);
+        while (list.hasMore()) {
+            NameClassPair ncp = list.next();
+            System.out.println(ncp.toString());
+            if (s.length() == 0) {
+                dumpJndi(ncp.getName());
+            } else {
+                dumpJndi(s + "/" + ncp.getName());
+            }
+        }
+    }
 
-       @Test
-       public void testSimpleCreateAndLoadEntities() throws Exception {
-           SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
-           sfsb1.createEmployee("Kelly Smith", "Watford, England", 10);
-           sfsb1.createEmployee("Alex Scott", "London, England", 20);
-           sfsb1.getEmployeeNoTX(10);
-           sfsb1.getEmployeeNoTX(20);
-       }
+    @Test
+    public void testSimpleCreateAndLoadEntities() throws Exception {
+        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        sfsb1.createEmployee("Kelly Smith", "Watford, England", 10);
+        sfsb1.createEmployee("Alex Scott", "London, England", 20);
+        sfsb1.getEmployeeNoTX(10);
+        sfsb1.getEmployeeNoTX(20);
+    }
 
-       private static String performCall(String urlPattern, String param) throws Exception {
-           return HttpRequest.get("http://localhost:8080/"+ ARCHIVE_NAME + "/" + urlPattern + "?input=" + param, 10, SECONDS);
-       }
+    private String performCall(String urlPattern, String param) throws Exception {
+        return HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/" + ARCHIVE_NAME + "/" + urlPattern + "?input=" + param, 10, SECONDS);
+    }
 
-       @Test
-       public void testServletSubDeploymentRead() throws Exception {
-           String result = performCall("simple", "Hello+world");
-           assertEquals("0", result);
+    @Test
+    public void testServletSubDeploymentRead() throws Exception {
+        String result = performCall("simple", "Hello+world");
+        assertEquals("0", result);
 
-           result = performCall("simple", "Hello+world");
-           assertEquals("0", result);
-       }
+        result = performCall("simple", "Hello+world");
+        assertEquals("0", result);
+    }
 
 }

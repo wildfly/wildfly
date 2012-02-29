@@ -17,7 +17,7 @@ public abstract class AbstractMgmtServerSetupTask extends AbstractMgmtTestBase i
     }
 
     @Override
-    public final void setup(final ManagementClient managementClient) throws Exception {
+    public final void setup(final ManagementClient managementClient, final String containerId) throws Exception {
         this.managementClient = managementClient;
         doSetup(managementClient);
     }

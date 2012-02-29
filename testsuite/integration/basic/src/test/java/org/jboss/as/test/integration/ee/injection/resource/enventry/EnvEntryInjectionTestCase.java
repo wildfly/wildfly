@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.enventry;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.InitialContext;
@@ -30,6 +28,8 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -38,6 +38,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * A test for injection via env-entry in web.xml
  *
@@ -45,6 +47,10 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class EnvEntryInjectionTestCase {
+
+    @ArquillianResource
+    private ManagementClient managementClient;
+
     @Deployment
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
@@ -58,8 +64,8 @@ public class EnvEntryInjectionTestCase {
         return war;
     }
 
-    private static String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get("http://localhost:8080/war-example/" + urlPattern, 5, TimeUnit.SECONDS);
+    private String performCall(String urlPattern) throws Exception {
+        return HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/war-example/" + urlPattern, 5, TimeUnit.SECONDS);
     }
 
     @Test

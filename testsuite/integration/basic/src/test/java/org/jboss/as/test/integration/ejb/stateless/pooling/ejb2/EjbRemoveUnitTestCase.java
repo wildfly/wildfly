@@ -22,60 +22,78 @@
 
 package org.jboss.as.test.integration.ejb.stateless.pooling.ejb2;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.Authentication;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 /**
  * Test that bean is pooled and ejbRemove is correctly called.
  * Part of the migration of tests from EJB3 testsuite to AS7 testsuite [JBQA-5483].
- * 
+ *
  * Dimitris Andreadis, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
+@ServerSetup(EjbRemoveUnitTestCase.EjbRemoveUnitTestCaseSetup.class)
 public class EjbRemoveUnitTestCase {
     private static final Logger log = Logger.getLogger(EjbRemoveUnitTestCase.class.getName());
 
     private static final String POOL_NAME2 = "CustomConfig2";
     private static final String POOL_NAME3 = "CustomConfig3";
-    private static final String MANAGEMENT_HOST = "localhost";
-    private static final int MANAGEMENT_PORT = 9999;
     private static String DEFAULT_POOL;
     private static final String DEFAULT_POOL_ATTR = "default-slsb-instance-pool";
-    
+
     public static final CountDownLatch CDL = new CountDownLatch(10);
 
+    static class EjbRemoveUnitTestCaseSetup implements ServerSetupTask {
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), POOL_NAME2, 5, 10 * 1000, TimeUnit.MILLISECONDS);
+            EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), POOL_NAME3, 5, 10 * 1000, TimeUnit.MILLISECONDS);
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+
+            EJBManagementUtil.removeStrictMaxPool(managementClient.getControllerClient(), POOL_NAME2);
+            EJBManagementUtil.removeStrictMaxPool(managementClient.getControllerClient(), POOL_NAME3);
+        }
+    }
+
+
     @ArquillianResource
-    InitialContext ctx;
-    
-    private static ModelControllerClient client;
+    private InitialContext ctx;
+
+    @ArquillianResource
+    private ManagementClient managementClient;
+
 
     @Deployment(managed=true, testable = false, name = "single", order = 0)
     public static Archive<?> deploymentSingleton()  {
@@ -84,11 +102,9 @@ public class EjbRemoveUnitTestCase {
         log.info(jar.toString(true));
         return jar;
     }
-        
+
     @Deployment(managed=true, testable = true, name = "beans", order = 1)
     public static Archive<?> deploy() {
-        EJBManagementUtil.createStrictMaxPool(MANAGEMENT_HOST, MANAGEMENT_PORT, POOL_NAME2, 5, 10 * 1000, TimeUnit.MILLISECONDS);
-        EJBManagementUtil.createStrictMaxPool(MANAGEMENT_HOST, MANAGEMENT_PORT, POOL_NAME3, 5, 10 * 1000, TimeUnit.MILLISECONDS);
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test-session-remove.jar");
         jar.addClasses(
@@ -102,64 +118,50 @@ public class EjbRemoveUnitTestCase {
         return jar;
     }
 
-    @AfterClass
-    public static void afterClass() throws Exception {
-        EJBManagementUtil.removeStrictMaxPool(MANAGEMENT_HOST, MANAGEMENT_PORT, POOL_NAME2);
-        EJBManagementUtil.removeStrictMaxPool(MANAGEMENT_HOST, MANAGEMENT_PORT, POOL_NAME3);
-        getModelControllerClient().close();
-    }
-
-    private static ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        if (client == null) {
-            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, Authentication.getCallbackHandler());
-        }
-        return client;
-    }    
-
     private static ModelNode getAddress() {
         ModelNode address = new ModelNode();
         address.add("subsystem", "ejb3");
         address.protect();
         return address;
     }
-    
-    private static void removePoolRef() throws Exception {
+
+    private void removePoolRef() throws Exception {
         ModelNode address = getAddress();
-        
+
         ModelNode operation = new ModelNode();
         operation.get(OP).set("read-attribute");
         operation.get(OP_ADDR).set(address);
         operation.get("name").set(DEFAULT_POOL_ATTR);
-        ModelNode result = getModelControllerClient().execute(operation);
+        ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         DEFAULT_POOL = result.get(RESULT).asString();
         log.info("Default pool was: " + DEFAULT_POOL + ", " + result);
-        
+
         operation = new ModelNode();
         operation.get(OP).set("undefine-attribute");
         operation.get(OP_ADDR).set(address);
         operation.get("name").set(DEFAULT_POOL_ATTR);
-        result = getModelControllerClient().execute(operation);
+        result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
     }
-    
-    private static void getBackPoolRef() throws Exception {
+
+    private void getBackPoolRef() throws Exception {
         ModelNode address = getAddress();
-        
+
         ModelNode operation = new ModelNode();
         operation.get(OP).set("write-attribute");
         operation.get(OP_ADDR).set(address);
         operation.get("name").set(DEFAULT_POOL_ATTR);
         operation.get("value").set(DEFAULT_POOL);
-        ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());       
+        ModelNode result = managementClient.getControllerClient().execute(operation);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
     }
 
     /**
      * In this test, pooling is disabled so call to the CountedSession bean should create a new instance,
      * (ejbCreate()) use it but then throw it away (ejbRemove()) rather than putting it back to the pool.
-     * 
-     * For deactivation of the pooling we need to remove whole reference to pool in 
+     *
+     * For deactivation of the pooling we need to remove whole reference to pool in
      *    <session-bean>
      *      <stateless>
      *       <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
@@ -171,10 +173,10 @@ public class EjbRemoveUnitTestCase {
     @OperateOnDeployment("beans")
     public void testEjbRemoveCalledForEveryCall() throws Exception {
         removePoolRef();
-        
+
         CountedSessionHome countedHome = (CountedSessionHome) ctx.lookup("java:module/CountedSession1!"
                 + CountedSessionHome.class.getName());
-      
+
         CountedSession counted = countedHome.create();
         counted.doSomething(1);
         Assert.assertEquals("createCounter", 1, CounterSingleton.createCounter1.get());
@@ -183,7 +185,7 @@ public class EjbRemoveUnitTestCase {
         counted.remove();
         Assert.assertEquals("createCounter", 2, CounterSingleton.createCounter1.get());
         Assert.assertEquals("removeCounter", 2, CounterSingleton.removeCounter1.get());
-     
+
         getBackPoolRef();
     }
 
@@ -192,7 +194,7 @@ public class EjbRemoveUnitTestCase {
      * the pool, and only removed when the app gets undeployed
      */
     @Test
-    @OperateOnDeployment("beans")    
+    @OperateOnDeployment("beans")
     public void testEjbRemoveNotCalledForEveryCall() throws Exception {
         CountedSessionHome countedHome = (CountedSessionHome) ctx.lookup("java:module/CountedSession2!"
                 + CountedSessionHome.class.getName());
@@ -207,11 +209,11 @@ public class EjbRemoveUnitTestCase {
     }
 
     @Test
-    @OperateOnDeployment("beans")    
+    @OperateOnDeployment("beans")
     public void testEjbRemoveMultiThread() throws Exception {
         CountedSessionHome countedHome = (CountedSessionHome) ctx.lookup("java:module/CountedSession3!"
                 + CountedSessionHome.class.getName());
-        
+
         final CountedSession counted = countedHome.create();
 
         Runnable runnable = new Runnable() {

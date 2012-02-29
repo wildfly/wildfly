@@ -22,26 +22,22 @@
 
 package org.jboss.as.test.integration.sar.injection;
 
-import java.io.IOException;
-import java.net.InetAddress;
-
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.sar.injection.pojos.A;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
  * [AS7-2574] setter declared in a superclass prevents SAR deployments from being deployed
@@ -51,6 +47,9 @@ import static org.jboss.as.arquillian.container.Authentication.getCallbackHandle
 @RunWith(Arquillian.class)
 @RunAsClient
 public final class SarInjectionTestCase {
+
+    @ContainerResource
+    private ManagementClient managementClient;
 
     @Deployment
     public static JavaArchive createDeployment() throws Exception {
@@ -62,18 +61,14 @@ public final class SarInjectionTestCase {
 
     @Test
     public void testMBean() throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999, getCallbackHandler());
-        try {
-            final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://localhost:9999")).getMBeanServerConnection();
-            final ObjectName objectName = new ObjectName("jboss:name=POJOService");
-            Assert.assertTrue(2 == (Integer) mbeanServer.getAttribute(objectName, "Count"));
-            Assert.assertTrue((Boolean) mbeanServer.getAttribute(objectName, "CreateCalled"));
-            Assert.assertTrue((Boolean) mbeanServer.getAttribute(objectName, "StartCalled"));
-            Assert.assertFalse((Boolean) mbeanServer.getAttribute(objectName, "StopCalled"));
-            Assert.assertFalse((Boolean) mbeanServer.getAttribute(objectName, "DestroyCalled"));
-        } finally {
-            try { client.close(); } catch (IOException ignore) {}
-        }
+        final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL()).getMBeanServerConnection();
+        final ObjectName objectName = new ObjectName("jboss:name=POJOService");
+        Assert.assertTrue(2 == (Integer) mbeanServer.getAttribute(objectName, "Count"));
+        Assert.assertTrue((Boolean) mbeanServer.getAttribute(objectName, "CreateCalled"));
+        Assert.assertTrue((Boolean) mbeanServer.getAttribute(objectName, "StartCalled"));
+        Assert.assertFalse((Boolean) mbeanServer.getAttribute(objectName, "StopCalled"));
+        Assert.assertFalse((Boolean) mbeanServer.getAttribute(objectName, "DestroyCalled"));
+
     }
 
 }

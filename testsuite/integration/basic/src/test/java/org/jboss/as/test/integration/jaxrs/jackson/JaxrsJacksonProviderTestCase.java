@@ -21,8 +21,13 @@
  */
 package org.jboss.as.test.integration.jaxrs.jackson;
 
+import java.net.URL;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
@@ -32,17 +37,16 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Tests the resteasy multipart provider
  *
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 public class JaxrsJacksonProviderTestCase {
 
-      @Deployment
+    @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrsnoap.war");
         war.addPackage(HttpRequest.class.getPackage());
@@ -51,13 +55,15 @@ public class JaxrsJacksonProviderTestCase {
                 "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +
-                "\n"),"web.xml");
+                "\n"), "web.xml");
         return war;
     }
 
+    @ArquillianResource
+    private URL url;
 
-    private static String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get("http://localhost:8080/jaxrsnoap/" + urlPattern, 5, TimeUnit.SECONDS);
+    private String performCall(String urlPattern) throws Exception {
+        return HttpRequest.get(url + urlPattern, 10, TimeUnit.SECONDS);
     }
 
     @Test

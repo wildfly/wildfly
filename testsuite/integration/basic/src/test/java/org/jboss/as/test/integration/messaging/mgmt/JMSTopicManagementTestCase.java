@@ -23,8 +23,7 @@
 package org.jboss.as.test.integration.messaging.mgmt;
 
 import java.io.IOException;
-import java.lang.Exception;
-import java.net.InetAddress;
+import java.util.HashMap;
 
 import javax.jms.MessageProducer;
 import javax.jms.Topic;
@@ -39,10 +38,12 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.container.Authentication;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.integration.common.JMSAdminOperations;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.After;
@@ -77,6 +78,9 @@ public class JMSTopicManagementTestCase {
         }
     }
 
+    @ContainerResource
+    private ManagementClient managementClient;
+
     private TopicConnection conn;
     private Topic topic;
     private TopicSession session;
@@ -91,8 +95,10 @@ public class JMSTopicManagementTestCase {
         final String jndiName = getTopicJndiName();
         adminSupport.createJmsTopic(getTopicName(), jndiName);
 
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("host", TestSuiteEnvironment.getServerAddress());
         TransportConfiguration transportConfiguration =
-                     new TransportConfiguration(NettyConnectorFactory.class.getName());
+                new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
         HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
         cf.setClientID("sender");
         conn = cf.createTopicConnection("guest", "guest");
@@ -110,7 +116,6 @@ public class JMSTopicManagementTestCase {
     @Before
     public void addSecuritySettings() throws Exception
     {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, Authentication.getCallbackHandler());
         //subsystem=messaging/hornetq-server=default/security-setting=#/role=guest:write-attribute(name=create-durable-queue, value=TRUE)
         ModelNode op = new ModelNode();
         op.get("operation").set("write-attribute");
@@ -120,7 +125,7 @@ public class JMSTopicManagementTestCase {
         op.get("address").add("role", "guest");
         op.get("name").set("create-durable-queue");
         op.get("value").set(true);
-        applyUpdate(op, client);
+        applyUpdate(op, managementClient.getControllerClient());
 
         op = new ModelNode();
         op.get("operation").set("write-attribute");
@@ -130,7 +135,7 @@ public class JMSTopicManagementTestCase {
         op.get("address").add("role", "guest");
         op.get("name").set("delete-durable-queue");
         op.get("value").set(true);
-        applyUpdate(op, client);
+        applyUpdate(op, managementClient.getControllerClient());
     }
 
     @After
@@ -162,7 +167,6 @@ public class JMSTopicManagementTestCase {
     @After
     public void removeSecuritySetting() throws Exception
     {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, Authentication.getCallbackHandler());
         //subsystem=messaging/hornetq-server=default/security-setting=#/role=guest:write-attribute(name=create-durable-queue, value=FALSE)
         ModelNode op = new ModelNode();
         op.get("operation").set("write-attribute");
@@ -172,7 +176,7 @@ public class JMSTopicManagementTestCase {
         op.get("address").add("role", "guest");
         op.get("name").set("create-durable-queue");
         op.get("value").set(false);
-        applyUpdate(op, client);
+        applyUpdate(op, managementClient.getControllerClient());
 
         op = new ModelNode();
         op.get("operation").set("write-attribute");
@@ -182,7 +186,7 @@ public class JMSTopicManagementTestCase {
         op.get("address").add("role", "guest");
         op.get("name").set("delete-durable-queue");
         op.get("value").set(false);
-        applyUpdate(op, client);
+        applyUpdate(op, managementClient.getControllerClient());
     }
 
     @Test

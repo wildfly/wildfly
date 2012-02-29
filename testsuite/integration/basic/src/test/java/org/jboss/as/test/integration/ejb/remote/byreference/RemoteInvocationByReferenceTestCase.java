@@ -22,20 +22,22 @@
 
 package org.jboss.as.test.integration.ejb.remote.byreference;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 /**
  * Tests that the EJB subsystem can be configured for pass-by-reference semantics for in-vm invocations on
@@ -44,28 +46,35 @@ import javax.naming.NamingException;
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
+@ServerSetup(RemoteInvocationByReferenceTestCase.RemoteInvocationByReferenceTestCaseSetup.class)
 public class RemoteInvocationByReferenceTestCase {
 
     private static final String ARCHIVE_NAME = "in-vm-remote-interface-pass-by-reference-test";
 
+    static class RemoteInvocationByReferenceTestCaseSetup implements ServerSetupTask {
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            // setup pass-by-reference semantics
+            // we do this here instead of a separate @BeforeClass method because of some weirdness
+            // with the ordering of the @BeforeClass execution and deploying the deployment by Arquillian
+            EJBManagementUtil.disablePassByValueForRemoteInterfaceInvocations(managementClient);
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            // switch back to the default pass-by-value semantics
+            EJBManagementUtil.enablePassByValueForRemoteInterfaceInvocations(managementClient);
+        }
+    }
+
     @ArquillianResource
     private InitialContext iniCtx;
 
-    @AfterClass
-    public static void afterClass() {
-        // switch back to the default pass-by-value semantics
-        EJBManagementUtil.enablePassByValueForRemoteInterfaceInvocations("localhost", 9999);
-    }
-
     @Deployment
     public static Archive<?> createDeployment() {
-        // setup pass-by-reference semantics
-        // we do this here instead of a separate @BeforeClass method because of some weirdness
-        // with the ordering of the @BeforeClass execution and deploying the deployment by Arquillian
-        EJBManagementUtil.disablePassByValueForRemoteInterfaceInvocations("localhost", 9999);
-
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(StatelessRemoteBean.class, RemoteInterface.class);
+        jar.addClasses(StatelessRemoteBean.class, RemoteInterface.class, RemoteInvocationByReferenceTestCaseSetup.class);
         return jar;
     }
 

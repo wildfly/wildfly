@@ -22,9 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.security.callerprincipal;
 
-import java.net.InetAddress;
 import java.security.Principal;
-import java.util.Hashtable;
 
 import javax.ejb.EJBHome;
 import javax.jms.DeliveryMode;
@@ -39,7 +37,6 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
-import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -49,10 +46,15 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.common.JMSAdminOperations;
-import org.jboss.as.test.integration.ejb.security.SecurityTest;
+import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
+import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
@@ -64,13 +66,12 @@ import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.util.Base64;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -90,7 +91,8 @@ import static org.junit.Assert.fail;
  * @author Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
-public class GetCallerPrincipalTestCase extends SecurityTest {
+@ServerSetup({EjbSecurityDomainSetup.class, GetCallerPrincipalTestCase.JmsQueueSetup.class})
+public class GetCallerPrincipalTestCase  {
 
     private static final String QUEUE_NAME = "queue/callerPrincipal";
 
@@ -99,22 +101,42 @@ public class GetCallerPrincipalTestCase extends SecurityTest {
     private static final String ANONYMOUS = "anonymous"; //TODO: is this constant configured somewhere?
     private static final String OK = "OK";
 
-    private static ModelControllerClient modelControllerClient;
     public static final String LOCAL_USER = "$local";
 
     @ArquillianResource
     Deployer deployer;
 
+    @ArquillianResource
+    private InitialContext initialContext;
+
+    static class JmsQueueSetup extends AbstractMgmtServerSetupTask {
+
+        @Override
+        protected void doSetup(final ManagementClient managementClient) throws Exception {
+            createQueue(QUEUE_NAME);
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            destroyQueue(QUEUE_NAME);
+        }
+        private void createQueue(String queueName) throws Exception {
+            ModelNode addJmsQueue = getQueueAddr(queueName);
+            addJmsQueue.get(ClientConstants.OP).set("add");
+            addJmsQueue.get("entries").add("java:jboss/" + queueName);
+            executeOperation(addJmsQueue);
+        }
+
+        private void destroyQueue(String queueName) throws Exception {
+            ModelNode removeJmsQueue = getQueueAddr(queueName);
+            removeJmsQueue.get(ClientConstants.OP).set("remove");
+            executeOperation(removeJmsQueue);
+        }
+    }
+
 
     @Deployment(managed=true, testable = false, name = "single", order = 0)
     public static Archive<?> deploymentSingleton()  {
-        // to get things prepared before the deployment happens (@see  org.jboss.as.test.integration.ejb.security.AuthenticationTestCase)
-        // and be sure that this will be called on first deployment (order=0) (btw. deployment without order has order == 0)
-        try {
-            createSecurityDomain();
-        } catch (Exception e) {
-            // ignore
-        }
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar")
                 .addClass(TestResultsSingleton.class)
@@ -176,51 +198,19 @@ public class GetCallerPrincipalTestCase extends SecurityTest {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "callerprincipal-test.jar")
                 .addClass(GetCallerPrincipalTestCase.class)
                 .addClass(Base64.class)
-                .addClass(SecurityTest.class)
                 .addClass(JMSAdminOperations.class)
                 .addClass(SLSBWithoutSecurityDomain.class)
                 .addClass(ISLSBWithoutSecurityDomain.class)
                 .addClass(ShrinkWrapUtils.class)
                 .addClass(PollingUtils.class)
                 .addClass(EntityBean.class)
+                .addClasses(JmsQueueSetup.class, EjbSecurityDomainSetup.class, AbstractSecurityDomainSetup.class, AbstractMgmtTestBase.class)
+                .addPackage(AbstractMgmtTestBase.class.getPackage()).addClasses(MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class)
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-test", "MANIFEST.MF");
         log.info(jar.toString(true));
         return jar;
-    }
-
-    @BeforeClass
-    public static void init() throws Exception {
-        modelControllerClient = ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999, getCallbackHandler());
-        createQueue(modelControllerClient, "queue/callerPrincipal");
-    }
-
-    @AfterClass
-    public static void clearUp() throws Exception {
-        destroyQueue(modelControllerClient, "queue/callerPrincipal");
-        modelControllerClient.close();
-        removeSecurityDomain();
-    }
-
-    private InitialContext getInitialContext() throws NamingException {
-        final Hashtable<String,String> jndiProperties = new Hashtable<String,String>();
-        jndiProperties.put(Context.INITIAL_CONTEXT_FACTORY,"org.jboss.as.naming.InitialContextFactory");
-        jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        return new InitialContext(jndiProperties);
-    }
-
-    private static void createQueue(ModelControllerClient modelClient, String queueName) throws Exception {
-        ModelNode addJmsQueue = getQueueAddr(queueName);
-        addJmsQueue.get(ClientConstants.OP).set("add");
-        addJmsQueue.get("entries").add("java:jboss/" + queueName);
-        applyUpdate(addJmsQueue, modelClient);
-    }
-
-    private static void destroyQueue(ModelControllerClient modelClient, String queueName) throws Exception {
-        ModelNode removeJmsQueue = getQueueAddr(queueName);
-        removeJmsQueue.get(ClientConstants.OP).set("remove");
-        applyUpdate(removeJmsQueue, modelClient);
     }
 
     private static ModelNode getQueueAddr(String name) {
@@ -232,7 +222,7 @@ public class GetCallerPrincipalTestCase extends SecurityTest {
     }
 
     private ITestResultsSingleton getResultsSingleton() throws NamingException {
-        return (ITestResultsSingleton) getInitialContext().lookup("ejb:/single//" + TestResultsSingleton.class.getSimpleName() + "!" + ITestResultsSingleton.class.getName());
+        return (ITestResultsSingleton) initialContext.lookup("ejb:/single//" + TestResultsSingleton.class.getSimpleName() + "!" + ITestResultsSingleton.class.getName());
     }
 
     private SecurityClient login() throws Exception {
@@ -249,7 +239,7 @@ public class GetCallerPrincipalTestCase extends SecurityTest {
     @Test
     public void testUnauthenticatedNoSecurityDomain() throws Exception {
         try {
-            ISLSBWithoutSecurityDomain bean = (ISLSBWithoutSecurityDomain) getInitialContext().lookup("ejb:/callerprincipal-test//" + SLSBWithoutSecurityDomain.class.getSimpleName() + "!" + ISLSBWithoutSecurityDomain.class.getName());
+            ISLSBWithoutSecurityDomain bean = (ISLSBWithoutSecurityDomain) initialContext.lookup("ejb:/callerprincipal-test//" + SLSBWithoutSecurityDomain.class.getSimpleName() + "!" + ISLSBWithoutSecurityDomain.class.getName());
             final Principal principal = bean.getCallerPrincipal();
             assertNotNull("EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.",
                     principal);
@@ -268,7 +258,7 @@ public class GetCallerPrincipalTestCase extends SecurityTest {
         SecurityClient client = this.login();
         try {
             ITestResultsSingleton results = this.getResultsSingleton();
-            IBeanLifecycleCallback bean = (IBeanLifecycleCallback) getInitialContext().lookup("ejb:/slsb//" + SLSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName());
+            IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/slsb//" + SLSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName());
             log.debug("Stateless bean returns: " + bean.get());
 
             Assert.assertEquals(OK + "start", results.getSlsb("postconstruct"));
@@ -287,7 +277,7 @@ public class GetCallerPrincipalTestCase extends SecurityTest {
         SecurityClient client = this.login();
         ITestResultsSingleton results = this.getResultsSingleton();
         try {
-            IBeanLifecycleCallback bean = (IBeanLifecycleCallback) getInitialContext().lookup("ejb:/sfsb//" + SFSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName() + "?stateful");
+            IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/sfsb//" + SFSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName() + "?stateful");
             log.debug("Stateful bean returns: " + bean.get());
 
             Assert.assertEquals(ANONYMOUS + "start", results.getSfsb("postconstruct"));

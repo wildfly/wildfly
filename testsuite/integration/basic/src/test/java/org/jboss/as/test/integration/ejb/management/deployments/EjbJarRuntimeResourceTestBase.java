@@ -22,20 +22,14 @@
 
 package org.jboss.as.test.integration.ejb.management.deployments;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.junit.Assert.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.*;
-import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.*;
-
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.List;
 
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition;
@@ -44,9 +38,35 @@ import org.jboss.dmr.ModelType;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.COMPONENT_CLASS_NAME;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.DECLARED_ROLES;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_AVAILABLE_COUNT;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_CREATE_COUNT;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_CURRENT_SIZE;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_MAX_SIZE;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_REMOVE_COUNT;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.RUN_AS_ROLE;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.SECURITY_DOMAIN;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.CALENDAR_TIMER;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.DAY_OF_MONTH;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.DAY_OF_WEEK;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.END;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.HOUR;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.MINUTE;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.NEXT_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.TIMEZONE;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.TIME_REMAINING;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.YEAR;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Base class for tests of management resources exposed by runtime EJB components.
@@ -63,6 +83,9 @@ public class EjbJarRuntimeResourceTestBase {
     private static final String[] TIMER_ATTRIBUTES = { TIME_REMAINING, NEXT_TIMEOUT, CALENDAR_TIMER};
     private static final String[] SCHEDULE_ATTRIBUTES = { DAY_OF_MONTH, DAY_OF_WEEK, HOUR, MINUTE, YEAR, TIMEZONE, TimerAttributeDefinition.START, END };
 
+    @ContainerResource
+    private ManagementClient managementClient;
+
     public static Archive<?> getEJBJar() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JAR_NAME);
         jar.addPackage(EjbJarRuntimeResourcesTestCase.class.getPackage());
@@ -70,24 +93,9 @@ public class EjbJarRuntimeResourceTestBase {
     }
 
     private final PathAddress baseAddress;
-    private  ModelControllerClient client;
 
     protected EjbJarRuntimeResourceTestBase(final PathAddress baseAddress) {
         this.baseAddress = baseAddress;
-    }
-
-    @Before
-    public void setup() throws Exception {
-        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        try {
-            client.close();
-        } catch (Exception ignored) {
-            //
-        }
     }
 
     @Test
@@ -249,7 +257,7 @@ public class EjbJarRuntimeResourceTestBase {
         op.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
         op.get(ModelDescriptionConstants.OPERATIONS).set(true);
 
-        ModelNode response = client.execute(op);
+        ModelNode response = managementClient.getControllerClient().execute(op);
         assertTrue(response.isDefined());
         ModelNode outcome = response.get(ModelDescriptionConstants.OUTCOME);
         assertTrue(outcome.isDefined());

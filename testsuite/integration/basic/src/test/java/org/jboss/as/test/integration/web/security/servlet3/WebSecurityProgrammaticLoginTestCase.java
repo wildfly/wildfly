@@ -32,6 +32,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.security.Constants;
@@ -63,7 +64,8 @@ import static org.junit.Assert.assertEquals;
 @ServerSetup(WebSecurityProgrammaticLoginTestCase.SecurityDomainSetup.class)
 public class WebSecurityProgrammaticLoginTestCase {
 
-    protected final String URL = "http://localhost:8080/" + getContextPath() + "/login/";
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     @Deployment(testable = true)
     public static WebArchive deployment() {
@@ -109,7 +111,7 @@ public class WebSecurityProgrammaticLoginTestCase {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {
             // test hitting programmatic login servlet
-            HttpGet httpget = new HttpGet(URL + "?username=" + user + "&password=" + pass);
+            HttpGet httpget = new HttpGet("http://" + managementClient.getMgmtAddress() + ":8080/" + getContextPath()  + "/login/?username=" + user + "&password=" + pass);
 
             System.out.println("executing request" + httpget.getRequestLine());
             HttpResponse response = httpclient.execute(httpget);
@@ -143,7 +145,7 @@ public class WebSecurityProgrammaticLoginTestCase {
         }
 
         @Override
-        public void setup(final ManagementClient managementClient) {
+        public void setup(final ManagementClient managementClient, final String containerId) {
             final List<ModelNode> updates = new ArrayList<ModelNode>();
             ModelNode op = new ModelNode();
             String securityDomain = "web-programmatic-login";

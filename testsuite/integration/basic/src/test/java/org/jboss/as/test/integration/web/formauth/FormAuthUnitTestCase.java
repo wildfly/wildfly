@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.web.formauth;
 
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,13 +43,15 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,7 +59,6 @@ import org.junit.runner.RunWith;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.security.Constants.AUTHENTICATION;
 import static org.jboss.as.security.Constants.CODE;
@@ -76,6 +76,7 @@ import static org.junit.Assert.fail;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(FormAuthUnitTestCase.FormAuthUnitTestCaseSetup.class)
 public class FormAuthUnitTestCase {
 
     private static Logger log = Logger.getLogger(FormAuthUnitTestCase.class);
@@ -83,19 +84,42 @@ public class FormAuthUnitTestCase {
     @ArquillianResource
     private URL baseURLNoAuth;
 
+    static class FormAuthUnitTestCaseSetup  extends AbstractSecurityDomainSetup {
+
+        @Override
+        protected String getSecurityDomainName() {
+            return "jbossweb-form-auth";
+        }
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            final List<ModelNode> updates = new ArrayList<ModelNode>();
+
+            ModelNode op = new ModelNode();
+            op.get(OP).set(ADD);
+            op.get(OP_ADDR).add(SUBSYSTEM, "security");
+            op.get(OP_ADDR).add(SECURITY_DOMAIN, getSecurityDomainName());
+
+            ModelNode rolesmodule = new ModelNode();
+            rolesmodule.get(CODE).set("org.jboss.security.auth.spi.UsersRolesLoginModule");
+            rolesmodule.get(FLAG).set("required");
+            rolesmodule.get(MODULE_OPTIONS).add("unauthenticatedIdentity", "nobody");
+            rolesmodule.get(MODULE_OPTIONS).add("usersProperties", "users.properties");
+            rolesmodule.get(MODULE_OPTIONS).add("rolesProperties", "roles.properties");
+
+            op.get(AUTHENTICATION).set(Arrays.asList(rolesmodule));
+            updates.add(op);
+
+            applyUpdates(managementClient.getControllerClient(), updates);
+        }
+    }
+
     DefaultHttpClient httpclient = new DefaultHttpClient();
 
     @Deployment(name="form-auth.war", testable = false)
     public static WebArchive deployment() {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         String resourcesLocation = "org/jboss/as/test/integration/web/formauth/resources/";
-
-        try {
-            ModelControllerClient mcc = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-            createSecurityDomains(mcc);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "form-auth.war");
         war.setWebXML(tccl.getResource(resourcesLocation + "web.xml"));
@@ -113,49 +137,6 @@ public class FormAuthUnitTestCase {
 
         log.info(war.toString(true));
         return war;
-    }
-
-    @AfterClass
-    public static void undeployment() {
-        try {
-            ModelControllerClient mcc = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-            removeSecurityDomains(mcc);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-    }
-
-    private static void createSecurityDomains(ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-
-        ModelNode op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, "jbossweb-form-auth");
-
-        ModelNode rolesmodule = new ModelNode();
-        rolesmodule.get(CODE).set("org.jboss.security.auth.spi.UsersRolesLoginModule");
-        rolesmodule.get(FLAG).set("required");
-        rolesmodule.get(MODULE_OPTIONS).add("unauthenticatedIdentity", "nobody");
-        rolesmodule.get(MODULE_OPTIONS).add("usersProperties", "users.properties");
-        rolesmodule.get(MODULE_OPTIONS).add("rolesProperties", "roles.properties");
-
-        op.get(AUTHENTICATION).set(Arrays.asList(rolesmodule));
-        updates.add(op);
-
-        applyUpdates(updates, client);
-    }
-
-    public static void removeSecurityDomains(final ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-
-        ModelNode op = new ModelNode();
-        op.get(OP).set(REMOVE);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, "jbossweb-form-auth");
-        updates.add(op);
-
-        applyUpdates(updates, client);
     }
 
     public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {

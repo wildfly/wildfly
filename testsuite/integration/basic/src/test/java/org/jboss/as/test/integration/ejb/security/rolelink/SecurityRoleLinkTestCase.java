@@ -27,34 +27,42 @@ import javax.security.auth.login.LoginContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.ejb.security.SecurityTest;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * Tests that the security role linking via the ejb-jar.xml and the jboss-ejb3.xml works as expected
- * 
+ *
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
+@ServerSetup(SecurityRoleLinkTestCase.SecurityRoleLinkTestCaseSetup.class)
 public class SecurityRoleLinkTestCase {
 
     private static final String MODULE_NAME = "security-role-link-test";
 
+    static class SecurityRoleLinkTestCaseSetup extends EjbSecurityDomainSetup {
+        @Override
+        protected String getSecurityDomainName() {
+            return CallerRoleCheckerBean.SECURITY_DOMAIN_NAME;
+        }
+    }
+
     @Deployment
     public static Archive createDeployment() throws Exception {
-        // setup the security-domain
-        SecurityTest.createSecurityDomain(CallerRoleCheckerBean.SECURITY_DOMAIN_NAME);
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackage(CallerRoleCheckerBean.class.getPackage());
-        jar.addClasses(Util.class, SecurityTest.class);
+        jar.addClasses(Util.class, SecurityRoleLinkTestCaseSetup.class);
+        jar.addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class);
         jar.addAsResource("ejb/security/rolelink/users.properties", "users.properties");
         jar.addAsResource("ejb/security/rolelink/roles.properties", "roles.properties");
         jar.addAsManifestResource("ejb/security/rolelink/ejb-jar.xml", "ejb-jar.xml");
@@ -63,15 +71,11 @@ public class SecurityRoleLinkTestCase {
         return jar;
     }
 
-    @AfterClass
-    public static void afterClass() throws Exception {
-        SecurityTest.removeSecurityDomain(CallerRoleCheckerBean.SECURITY_DOMAIN_NAME);
-    }
 
     /**
      * Test that when the security role linking via the security-role-ref element in the ejb-jar.xml
      * takes into account the security-role mapping between the principal and the role name in the jboss-ejb3.xml.
-     * 
+     *
      * @throws Exception
      */
     @Test

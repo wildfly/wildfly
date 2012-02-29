@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.web.security.basic;
 
+import java.net.URL;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
@@ -32,6 +34,7 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
@@ -67,14 +70,16 @@ public class WebSecurityBASICTestCase extends WebSecurityPasswordBasedBase {
         return war;
     }
 
+    @ArquillianResource
+    private URL url;
 
     protected void makeCall(String user, String pass, int expectedStatusCode) throws Exception {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {
-            httpclient.getCredentialsProvider().setCredentials(new AuthScope("localhost", 8080),
+            httpclient.getCredentialsProvider().setCredentials(new AuthScope(url.getHost(), url.getPort()),
                     new UsernamePasswordCredentials(user, pass));
 
-            HttpGet httpget = new HttpGet(URL);
+            HttpGet httpget = new HttpGet(url.toExternalForm() + "secured/");
 
             System.out.println("executing request" + httpget.getRequestLine());
             HttpResponse response = httpclient.execute(httpget);

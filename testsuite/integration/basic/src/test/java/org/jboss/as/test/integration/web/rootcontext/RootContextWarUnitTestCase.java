@@ -21,9 +21,6 @@
  */
 package org.jboss.as.test.integration.web.rootcontext;
 
-import static org.junit.Assert.assertTrue;
-
-import java.net.InetAddress;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -31,37 +28,47 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * This class tests a root context deployed as an EAR or a WAR.
- * 
+ *
  * @author Stan.Silvert@jboss.org
  * @author lbarreiro@redhat.com
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(RootContextWarUnitTestCase.RootContextWarSetup.class)
 public class RootContextWarUnitTestCase {
 
     private static Logger log = Logger.getLogger(RootContextWarUnitTestCase.class);
 
     private static String HOST = "context-host";
 
+    static class RootContextWarSetup implements ServerSetupTask {
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            RootContextUtil.createVirtualServer(managementClient.getControllerClient(), HOST);
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            RootContextUtil.removeVirtualServer(managementClient.getControllerClient(), HOST);
+        }
+    }
+
     @Deployment(name = "root-context.war", testable = false)
     public static WebArchive warDeployment() {
-
-        try {
-            ModelControllerClient mcc = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-            RootContextUtil.createVirtualServer(mcc, HOST);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         String resourcesLocation = "org/jboss/as/test/integration/web/rootcontext/resources/";
@@ -74,17 +81,6 @@ public class RootContextWarUnitTestCase {
 
         log.info(war.toString(true));
         return war;
-    }
-
-    @AfterClass
-    public static void undeployment() {
-        try {
-            ModelControllerClient mcc = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-            RootContextUtil.undeploy(mcc, "root-context.war");
-            RootContextUtil.removeVirtualServer(mcc, HOST);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
     }
 
     @Test
