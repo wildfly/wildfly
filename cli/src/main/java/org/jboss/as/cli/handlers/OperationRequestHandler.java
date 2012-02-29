@@ -69,12 +69,8 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
             throw new CommandFormatException("Parsed request isn't available.");
         }
 
-        try {
-            validateRequest(ctx, request);
-        } catch(CommandFormatException e) {
-            throw new CommandFormatException(e.getLocalizedMessage());
-        }
-
+        validateRequest(ctx, request);
+System.out.println("request:\n" + request);
         try {
             final ModelNode result = client.execute(request);
             if(Util.isSuccess(result)) {
@@ -162,22 +158,27 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
         }
         final ModelNode result = outcome.get(Util.RESULT);
         if(!result.hasDefined(Util.REQUEST_PROPERTIES)) {
-            throw new CommandFormatException("Operation '" + operationName + "' does not expect any property.");
-        }
-        final Set<String> definedProps = result.get("request-properties").keys();
-        if(definedProps.isEmpty()) {
-            throw new CommandFormatException("Operation '" + operationName + "' does not expect any property.");
-        }
-
-        int skipped = 0;
-        for(String prop : keys) {
-            if(skipped < 2 && (prop.equals(Util.ADDRESS) || prop.equals(Util.OPERATION))) {
-                ++skipped;
-                continue;
+            if(!(keys.size() == 3 && keys.contains(Util.OPERATION_HEADERS))) {
+                throw new CommandFormatException("Operation '" + operationName + "' does not expect any property.");
             }
-            if(!definedProps.contains(prop)) {
-                if(!Util.OPERATION_HEADERS.equals(prop)) {
-                    throw new CommandFormatException("'" + prop + "' is not found among the supported properties: " + definedProps);
+        } else {
+            final Set<String> definedProps = result.get(Util.REQUEST_PROPERTIES).keys();
+            if(definedProps.isEmpty()) {
+                if(!(keys.size() == 3 && keys.contains(Util.OPERATION_HEADERS))) {
+                    throw new CommandFormatException("Operation '" + operationName + "' does not expect any property.");
+                }
+            }
+
+            int skipped = 0;
+            for(String prop : keys) {
+                if(skipped < 2 && (prop.equals(Util.ADDRESS) || prop.equals(Util.OPERATION))) {
+                    ++skipped;
+                    continue;
+                }
+                if(!definedProps.contains(prop)) {
+                    if(!Util.OPERATION_HEADERS.equals(prop)) {
+                        throw new CommandFormatException("'" + prop + "' is not found among the supported properties: " + definedProps);
+                    }
                 }
             }
         }
