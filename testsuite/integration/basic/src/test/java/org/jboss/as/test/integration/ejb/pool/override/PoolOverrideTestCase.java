@@ -61,14 +61,14 @@ public class PoolOverrideTestCase {
     static class PoolOverrideTestCaseSetup implements ServerSetupTask {
 
         @Override
-        public void setup(final ManagementClient managementClient) throws Exception {
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), PoolAnnotatedEJB.POOL_NAME, 1, 10, TimeUnit.MILLISECONDS);
             EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), PoolSetInDDBean.POOL_NAME_IN_DD, 1, 10, TimeUnit.MILLISECONDS);
             EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), PoolAnnotatedAndSetInDDBean.POOL_NAME, 1, 10, TimeUnit.MILLISECONDS);
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws Exception {
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             EJBManagementUtil.removeStrictMaxPool(managementClient.getControllerClient(), PoolAnnotatedEJB.POOL_NAME);
             EJBManagementUtil.removeStrictMaxPool(managementClient.getControllerClient(), PoolSetInDDBean.POOL_NAME_IN_DD);
             EJBManagementUtil.removeStrictMaxPool(managementClient.getControllerClient(), PoolAnnotatedAndSetInDDBean.POOL_NAME);

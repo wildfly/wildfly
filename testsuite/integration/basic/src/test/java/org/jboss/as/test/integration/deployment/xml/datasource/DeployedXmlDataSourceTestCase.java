@@ -60,7 +60,7 @@ public class DeployedXmlDataSourceTestCase {
     static class DeployedXmlDataSourceTestCaseSetup implements ServerSetupTask {
 
         @Override
-        public void setup(final ManagementClient managementClient) throws Exception {
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
             final String packageName = DeployedXmlDataSourceTestCase.class.getPackage().getName().replace(".", "/");
             final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlDataSourceTestCase.class.getResource("/" + packageName + "/" + TEST_DS_XML)).andDeploy().build();
@@ -75,7 +75,7 @@ public class DeployedXmlDataSourceTestCase {
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws Exception {
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
             final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_DS_XML).andRemoveUndeployed().build();
             manager.execute(undeployPlan);

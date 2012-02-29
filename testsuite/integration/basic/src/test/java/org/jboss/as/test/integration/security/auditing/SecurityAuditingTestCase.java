@@ -125,7 +125,7 @@ public class SecurityAuditingTestCase {
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws Exception {
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
 
         }
     }

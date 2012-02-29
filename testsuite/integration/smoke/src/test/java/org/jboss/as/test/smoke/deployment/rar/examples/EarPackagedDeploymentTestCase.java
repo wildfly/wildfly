@@ -69,7 +69,7 @@ public class EarPackagedDeploymentTestCase extends ArquillianResourceMgmtTestBas
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws Exception{
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception{
 
             final ModelNode address = new ModelNode();
             address.add("subsystem", "resource-adapters");

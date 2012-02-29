@@ -80,7 +80,7 @@ public class DeployedXmlJMSManagementTestCase {
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws Exception {
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
             final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_JMS_XML).andRemoveUndeployed().build();
             manager.execute(undeployPlan);

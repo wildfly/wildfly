@@ -96,7 +96,7 @@ public class CustomLoginModuleTestCase {
         }
 
         @Override
-        public void setup(final ManagementClient managementClient) throws Exception {
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             final List<ModelNode> updates = new ArrayList<ModelNode>();
             ModelNode op = new ModelNode();
 

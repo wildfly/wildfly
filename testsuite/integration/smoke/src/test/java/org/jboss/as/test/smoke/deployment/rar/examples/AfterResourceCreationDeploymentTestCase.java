@@ -72,7 +72,7 @@ public class AfterResourceCreationDeploymentTestCase extends ArquillianResourceM
     static class AfterResourceCreationDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws Exception{
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception{
             final ModelNode address = new ModelNode();
             address.add("subsystem", "resource-adapters");
             address.add("resource-adapter", deploymentName);

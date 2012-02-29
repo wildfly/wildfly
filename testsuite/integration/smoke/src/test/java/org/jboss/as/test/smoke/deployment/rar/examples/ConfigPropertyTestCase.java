@@ -134,7 +134,7 @@ public class ConfigPropertyTestCase extends ArquillianResourceMgmtTestBase {
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) throws Exception {
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             final ModelNode address = new ModelNode();
             address.add("subsystem", "resource-adapters");
             address.add("resource-adapter", "as7_1452.rar");
