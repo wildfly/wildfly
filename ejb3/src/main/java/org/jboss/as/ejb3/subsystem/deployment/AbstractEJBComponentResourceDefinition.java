@@ -97,6 +97,8 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final SimpleAttributeDefinition POOL_CURRENT_SIZE = new SimpleAttributeDefinitionBuilder("pool-current-size", ModelType.INT, false)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
+    public static final SimpleAttributeDefinition POOL_NAME = new SimpleAttributeDefinitionBuilder("pool-name", ModelType.STRING, true)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final SimpleAttributeDefinition POOL_REMOVE_COUNT = new SimpleAttributeDefinitionBuilder("pool-remove-count", ModelType.INT, false)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final SimpleAttributeDefinition POOL_MAX_SIZE = new SimpleAttributeDefinitionBuilder("pool-max-size", ModelType.INT, false)
@@ -124,6 +126,7 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
         if (componentType.hasPool()) {
             resourceRegistration.registerReadOnlyAttribute(POOL_AVAILABLE_COUNT, handler);
             resourceRegistration.registerReadOnlyAttribute(POOL_CREATE_COUNT, handler);
+            resourceRegistration.registerReadOnlyAttribute(POOL_NAME, handler);
             resourceRegistration.registerReadOnlyAttribute(POOL_REMOVE_COUNT, handler);
             resourceRegistration.registerReadOnlyAttribute(POOL_CURRENT_SIZE, handler);
             resourceRegistration.registerReadWriteAttribute(POOL_MAX_SIZE, handler, handler);

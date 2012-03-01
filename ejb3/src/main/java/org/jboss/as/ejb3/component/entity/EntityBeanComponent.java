@@ -39,6 +39,7 @@ import org.jboss.as.ejb3.component.entity.entitycache.ReadyEntityCache;
 import org.jboss.as.ejb3.component.entity.entitycache.ReferenceCountingEntityCache;
 import org.jboss.as.ejb3.component.entity.entitycache.TransactionLocalEntityCache;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
+import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -53,12 +54,13 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author Stuart Douglas
  */
-public class EntityBeanComponent extends EJBComponent {
+public class EntityBeanComponent extends EJBComponent implements PooledComponent<EntityBeanComponentInstance> {
 
     public static final Object PRIMARY_KEY_CONTEXT_KEY = new Object();
 
     private final StatelessObjectFactory<EntityBeanComponentInstance> factory;
     private final Pool<EntityBeanComponentInstance> pool;
+    private final String poolName;
     private final ReadyEntityCache cache;
     private final Class<EJBHome> homeClass;
     private final Class<EJBLocalHome> localHomeClass;
@@ -97,9 +99,11 @@ public class EntityBeanComponent extends EJBComponent {
         if (poolConfig == null) {
             ROOT_LOGGER.debug("Pooling is disabled for entity bean " + ejbComponentCreateService.getComponentName());
             this.pool = null;
+            this.poolName = null;
         } else {
             ROOT_LOGGER.debug("Using pool config " + poolConfig + " to create pool for entity bean " + ejbComponentCreateService.getComponentName());
             this.pool = poolConfig.createPool(factory);
+            this.poolName = poolConfig.getPoolName();
         }
         this.cache = createEntityCache(ejbComponentCreateService);
 
@@ -240,6 +244,11 @@ public class EntityBeanComponent extends EJBComponent {
 
     public Pool<EntityBeanComponentInstance> getPool() {
         return pool;
+    }
+
+    @Override
+    public String getPoolName() {
+        return poolName;
     }
 
     @Override

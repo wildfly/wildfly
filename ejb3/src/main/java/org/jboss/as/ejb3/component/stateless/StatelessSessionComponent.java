@@ -49,6 +49,7 @@ import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 public class StatelessSessionComponent extends SessionBeanComponent implements PooledComponent<StatelessSessionComponentInstance> {
 
     private final Pool<StatelessSessionComponentInstance> pool;
+    private final String poolName;
     private final Method timeoutMethod;
 
     /**
@@ -74,9 +75,11 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
         if (poolConfig == null) {
             ROOT_LOGGER.debug("Pooling is disabled for Stateless EJB " + slsbComponentCreateService.getComponentName());
             this.pool = null;
+            this.poolName = null;
         } else {
             ROOT_LOGGER.debug("Using pool config " + poolConfig + " to create pool for Stateless EJB " + slsbComponentCreateService.getComponentName());
             this.pool = poolConfig.createPool(factory);
+            this.poolName = poolConfig.getPoolName();
         }
 
         this.timeoutMethod = slsbComponentCreateService.getTimeoutMethod();
@@ -97,6 +100,11 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
     @Override
     public Pool<StatelessSessionComponentInstance> getPool() {
         return pool;
+    }
+
+    @Override
+    public String getPoolName() {
+        return poolName;
     }
 
     public Method getTimeoutMethod() {
