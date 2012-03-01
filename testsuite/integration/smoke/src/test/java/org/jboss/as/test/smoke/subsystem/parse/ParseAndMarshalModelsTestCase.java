@@ -50,6 +50,7 @@ import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -573,68 +574,57 @@ public class ParseAndMarshalModelsTestCase {
             controller.execute(op, null, null, null);
         }
     }
-
-    private File getOriginalStandaloneXml(String profile) {
-        File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
-        f = f.getAbsoluteFile();
-        Assert.assertTrue(f.exists());
-        f = new File(f, "build");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "target");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "generated-configs");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "standalone");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "configuration");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, profile);
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        return f;
+    
+    
+    private static File getFileOrCheckParentsIfNotFound( String baseStr, String path ) throws FileNotFoundException {
+        //File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
+        File base = new File( baseStr );
+        if( ! base.exists() ){
+            throw new FileNotFoundException( "Base path not found: " + base.getPath() );
+        }
+        base = base.getAbsoluteFile();
+        
+        File f = new File( base, path );
+        if ( f.exists() )
+            return f;
+        
+        while( ! f.exists() ){
+            int slash = path.lastIndexOf( File.separatorChar );
+            if( slash <= 0 )  // no slash or "/xxx"
+                throw new FileNotFoundException("Path not found: " + f.getPath());
+            path = path.substring( 0, slash - 1 );
+            f = new File( base, path );
+        }
+        throw new FileNotFoundException("Path not found: " + f.getPath()); // To satisfy the compiler.
     }
 
-    private File getDomainConfigDir() {
+    
+    
+    private File getOriginalStandaloneXml(String profile) throws FileNotFoundException {
+        return getFileOrCheckParentsIfNotFound(
+                System.getProperty("jbossas.project.dir", "../../.."), 
+                "build/target/generated-configs/standalone/configuration" + profile
+        );
+    }
+
+    private File getDomainConfigDir() throws FileNotFoundException {
+        return getFileOrCheckParentsIfNotFound(
+                System.getProperty("jbossas.project.dir", "../../.."), 
+                "build/target/generated-configs/domain/configuration"
+        );
+    }
+    
+    private File getHostConfigDir() throws FileNotFoundException {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
-	File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
-        f = f.getAbsoluteFile();
-        Assert.assertTrue(f.exists());
-        f = new File(f, "build");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "target");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "generated-configs");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "domain");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "configuration");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        return f;
-    }
-
-    private File getHostConfigDir() {
-        //Get the standalone.xml from the build/src directory, since the one in the
-        //built server could have changed during running of tests
-        File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
-        f = f.getAbsoluteFile();
-        Assert.assertTrue(f.exists());
-        f = new File(f, "build");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "src");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "main");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "resources");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "domain");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "configuration");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        return f;
+        return getFileOrCheckParentsIfNotFound(
+                System.getProperty("jbossas.project.dir", "../../.."), 
+                "build/src/main/resources/domain/configuration"
+        );
     }
 
 
-    private File getOriginalHostXml(final String profile) {
+    private File getOriginalHostXml(final String profile) throws FileNotFoundException {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
         File f = getHostConfigDir();
@@ -643,7 +633,7 @@ public class ParseAndMarshalModelsTestCase {
         return f;
     }
 
-    private File getOriginalDomainXml(final String profile) {
+    private File getOriginalDomainXml(final String profile) throws FileNotFoundException {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
         File f = getDomainConfigDir();
