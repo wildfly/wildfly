@@ -34,6 +34,7 @@ import org.jboss.arquillian.container.test.api.*;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.bean.CounterDecorator;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.bean.StatefulBean;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.bean.StatefulCDIInterceptor;
@@ -70,20 +71,19 @@ public class StatefulFailoverTestCase {
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
-        WebArchive war = createDeployment();
-        return war;
+        return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
-        WebArchive war = createDeployment();
-        return war;
+        return createDeployment();
     }
 
     private static WebArchive createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "stateful.war");
         war.addPackage(StatefulBean.class.getPackage());
+        war.addPackage(EJBDirectory.class.getPackage());
         war.setWebXML(StatefulBean.class.getPackage(), "web.xml");
         war.addAsWebInfResource(new StringAsset("<beans>" +
                 "<interceptors><class>" + StatefulCDIInterceptor.class.getName() + "</class></interceptors>" +

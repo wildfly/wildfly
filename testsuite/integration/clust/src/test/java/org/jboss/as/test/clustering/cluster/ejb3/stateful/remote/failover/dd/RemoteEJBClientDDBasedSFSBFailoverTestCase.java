@@ -22,6 +22,15 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover.dd;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -29,6 +38,9 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.EJBClientContextSelector;
+import org.jboss.as.test.clustering.EJBDirectory;
+import org.jboss.as.test.clustering.RemoteEJBDirectory;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover.CounterResult;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover.RemoteCounter;
 import org.jboss.ejb.client.ContextSelector;
@@ -45,15 +57,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Hashtable;
-import java.util.Properties;
-
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
-
 /**
  * Tests that invocations, from a remote EJB client, on a stateful session bean marked as clustered via jboss-ejb3.xml,
  * failover to other node(s) in cases like a node going down
@@ -67,7 +70,7 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase {
 
     private static final String MODULE_NAME = "remote-ejb-client-dd-based-stateful-bean-failover-test";
 
-    private static Context context;
+    private static EJBDirectory context;
 
     @ArquillianResource
     private ContainerController container;
@@ -78,17 +81,17 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
-    public static Archive createDeploymentForContainer1() {
+    public static Archive<?> createDeploymentForContainer1() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
-    public static Archive createDeploymentForContainer2() {
+    public static Archive<?> createDeploymentForContainer2() {
         return createDeployment();
     }
 
-    private static Archive createDeployment() {
+    private static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(DDBasedClusteredSFSB.class.getPackage());
         ejbJar.addClasses(RemoteCounter.class, CounterResult.class);
@@ -99,10 +102,7 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        final Hashtable props = new Hashtable();
-        props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        context = new InitialContext(props);
-
+        context = new RemoteEJBDirectory(MODULE_NAME);
     }
 
     /**
@@ -124,12 +124,11 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase {
         this.container.start(CONTAINER_2);
         this.deployer.deploy(DEPLOYMENT_2);
 
-        final ContextSelector<EJBClientContext> previousSelector = this.setupEJBClientContextSelector();
-        final String jndiName = "ejb:" + "" + "/" + MODULE_NAME + "/" + "" + "/" + DDBasedClusteredSFSB.class.getSimpleName() + "!" + RemoteCounter.class.getName() + "?stateful";
+        final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup("cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties");
         boolean container1Stopped = false;
         boolean container2Stopped = false;
         try {
-            final RemoteCounter remoteCounter = (RemoteCounter) context.lookup(jndiName);
+            final RemoteCounter remoteCounter = context.lookupStateful(DDBasedClusteredSFSB.class, RemoteCounter.class);
             // invoke on the bean a few times
             final int NUM_TIMES = 25;
             for (int i = 0; i < NUM_TIMES; i++) {
@@ -191,27 +190,4 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase {
             }
         }
     }
-
-    /**
-     * Sets up the EJB client context to use a selector which processes and sets up EJB receivers
-     * based on this testcase specific jboss-ejb-client.properties file
-     *
-     * @return
-     * @throws java.io.IOException
-     */
-    private ContextSelector<EJBClientContext> setupEJBClientContextSelector() throws IOException {
-        // setup the selector
-        final String clientPropertiesFile = "cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties";
-        final InputStream inputStream = RemoteEJBClientDDBasedSFSBFailoverTestCase.class.getClassLoader().getResourceAsStream(clientPropertiesFile);
-        if (inputStream == null) {
-            throw new IllegalStateException("Could not find " + clientPropertiesFile + " in classpath");
-        }
-        final Properties properties = new Properties();
-        properties.load(inputStream);
-        final EJBClientConfiguration ejbClientConfiguration = new PropertiesBasedEJBClientConfiguration(properties);
-        final ConfigBasedEJBClientContextSelector selector = new ConfigBasedEJBClientContextSelector(ejbClientConfiguration);
-
-        return EJBClientContext.setSelector(selector);
-    }
-
 }

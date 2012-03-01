@@ -225,10 +225,15 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
     public void modified(CacheEntryModifiedEvent<Address, Map.Entry<K, V>> event) {
         if (event.isPre() || event.isOriginLocal()) return;
         if (!this.listeners.isEmpty()) {
-            Map.Entry<K, V> entry = event.getCache().get(event.getKey());
+            Map.Entry<K, V> entry = event.getValue();
+            Map.Entry<K, V> old = event.getCache().get(event.getKey());
             if (entry != null) {
                 for (Listener<K, V> listener: this.listeners) {
-                    listener.updatedEntries(Collections.singletonMap(entry.getKey(), entry.getValue()));
+                    if (old == null) {
+                        listener.addedEntries(Collections.singletonMap(entry.getKey(), entry.getValue()));
+                    } else {
+                        listener.updatedEntries(Collections.singletonMap(entry.getKey(), entry.getValue()));
+                    }
                 }
             }
         }

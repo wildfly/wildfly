@@ -24,7 +24,12 @@ package org.jboss.as.ejb3.component.stateless;
 
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.DependencyConfigurator;
+import org.jboss.as.ejb3.cache.CacheFactoryService;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.msc.service.ServiceBuilder;
+
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * User: jpai
@@ -36,6 +41,15 @@ public class StatelessComponentCreateServiceFactory extends EJBComponentCreateSe
         if (this.ejbJarConfiguration == null) {
             throw MESSAGES.ejbJarConfigNotBeenSet(this,configuration.getComponentName());
         }
+        configuration.getCreateDependencies().add(new DependencyConfigurator<StatelessSessionComponentCreateService>() {
+            @Override
+            public void configureDependency(ServiceBuilder<?> builder, StatelessSessionComponentCreateService service) throws DeploymentUnitProcessingException {
+                if (service.getClustering() != null) {
+                    // This ensures that the client mappings cache is started
+                    builder.addDependency(CacheFactoryService.DEFAULT_CLUSTERED_SFSB_CACHE_SERVICE_NAME);
+                }
+            }
+        });
         return new StatelessSessionComponentCreateService(configuration, this.ejbJarConfiguration);
     }
 }
