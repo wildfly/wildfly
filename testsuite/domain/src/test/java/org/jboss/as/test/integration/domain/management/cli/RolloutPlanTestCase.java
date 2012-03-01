@@ -38,6 +38,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Assert;
+import org.junit.Ignore;
 
 /**
  *
@@ -65,6 +66,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
     }
     
     @Test
+    @Ignore("AS7-3996")
     public void testRolloutPlan() throws Exception {
         addRolloutPlan();                
         testRolloutPlanDeployment();        
@@ -106,7 +108,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
     private void testRolloutPlanDeployment() throws Exception {
         
         // deploy using prepared rollout plan
-        cli.sendLine("deploy " + warFile.getAbsolutePath() + " --all-server-groups --headers={rolout id=testPlan}");
+        cli.sendLine("deploy " + warFile.getAbsolutePath() + " --all-server-groups --headers={rollout id=testPlan}");
         cli.waitForPrompt(WAIT_TIMEOUT);
         
         // check that the apps were deployed in correct order
