@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jboss.bom</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+        <artifactId>jboss-bom-parent</artifactId>
+    </parent>
+
+    <artifactId>jboss-javaee-6.0-with-errai</artifactId>
+    <packaging>pom</packaging>
+
+    <name>JBoss Java EE 6 Specification APIs with Errai</name>
+    <description>Dependency Management for Java EE 6 Specification APIs with Errai and GWT</description>
+
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License, Version 2.1</name>
+            <url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <properties>
+        <!-- Version properties are inherited from parent -->
+    </properties>
+
+    <dependencyManagement>
+
+        <dependencies>
+            <!-- JBoss distributes a complete set of Java EE 6 APIs including a Bill of Materials (BOM). 
+                A BOM specifies the versions of a "stack" (or a collection) of artifacts. We use this here so that we 
+                always get the correct versions of artifacts. Here we use the jboss-javaee-6.0 stack (you can read this 
+                as the JBoss stack of the Java EE 6 APIs). You can actually use this stack with any version of JBoss 
+                AS that implements Java EE 6, not just JBoss AS 7! -->
+            <dependency>
+                <groupId>org.jboss.spec</groupId>
+                <artifactId>jboss-javaee-6.0</artifactId>
+                <version>${version.org.jboss.spec.jboss.javaee.6.0}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Errai Core and ErraiBus -->
+            <dependency>
+                <groupId>org.jboss.errai</groupId>
+                <artifactId>errai-bus</artifactId>
+                <version>${version.org.jboss.errai}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.inject</groupId>
+                        <artifactId>javax.inject</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.annotation</groupId>
+                        <artifactId>jsr250-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.errai</groupId>
+                <artifactId>errai-ioc</artifactId>
+                <version>${version.org.jboss.errai}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.inject</groupId>
+                        <artifactId>javax.inject</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.annotation</groupId>
+                        <artifactId>jsr250-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.errai</groupId>
+                <artifactId>errai-tools</artifactId>
+                <version>${version.org.jboss.errai}</version>
+            </dependency>
+
+            <!-- Errai JAX-RS -->
+            <dependency>
+                <groupId>org.jboss.errai</groupId>
+                <artifactId>errai-jaxrs-client</artifactId>
+                <version>${version.org.jboss.errai}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.errai</groupId>
+                <artifactId>errai-jaxrs-provider</artifactId>
+                <version>${version.org.jboss.errai}</version>
+            </dependency>
+
+            <!-- Errai CDI Integration Modules -->
+            <dependency>
+                <groupId>org.jboss.errai</groupId>
+                <artifactId>errai-cdi-client</artifactId>
+                <version>${version.org.jboss.errai}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.errai</groupId>
+                <artifactId>errai-javax-enterprise</artifactId>
+                <version>${version.org.jboss.errai}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.errai</groupId>
+                <artifactId>errai-weld-integration</artifactId>
+                <version>${version.org.jboss.errai}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.errai</groupId>
+                <artifactId>jboss7-support</artifactId>
+                <version>${version.org.jboss.errai}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.gwt</groupId>
+                <artifactId>gwt-user</artifactId>
+                <version>${version.com.google.gwt}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.gwt</groupId>
+                <artifactId>gwt-dev</artifactId>
+                <version>${version.com.google.gwt}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>gwt-maven-plugin</artifactId>
+                    <version>${version.org.codehaus.mojo.gwt.maven.plugin}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+</project>

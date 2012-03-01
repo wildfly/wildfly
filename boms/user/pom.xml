@@ -36,6 +36,7 @@
         <version.org.jboss.arquillian.ajocado>1.0.0.CR2</version.org.jboss.arquillian.ajocado>
         <version.org.jboss.as.arquillian.container>7.1.0.Final</version.org.jboss.as.arquillian.container>
         <version.org.jboss.jbossts.jbossjts>4.16.1.Final</version.org.jboss.jbossts.jbossjts>
+        <version.org.jboss.errai>2.0.Beta2</version.org.jboss.errai>
 
         <!-- Version of Hibernate projects -->
         <version.org.hibernate>4.1.0.Final</version.org.hibernate>
@@ -48,16 +49,20 @@
         <!-- Versions of projects not directly under JBoss umbrella -->
         <version.junit>4.8.1</version.junit>
         <version.org.testng>5.14.6</version.org.testng>
+        <version.com.google.gwt>2.4.0</version.com.google.gwt>
 
         <!-- Versions of Maven plugins, user must setup them by his/her own -->
         <version.org.apache.maven.surefire.plugin>2.10</version.org.apache.maven.surefire.plugin>
         <version.org.jboss.as.plugins.jboss.as.maven.plugin>7.1.0.Final</version.org.jboss.as.plugins.jboss.as.maven.plugin>
+        <version.org.codehaus.mojo.gwt.maven.plugin>${version.com.google.gwt}</version.org.codehaus.mojo.gwt.maven.plugin>
+
     </properties>
 
     <modules>
         <module>jboss-javaee-6.0-with-tools</module>
         <module>jboss-javaee-6.0-with-transactions</module>
         <module>jboss-javaee-6.0-with-hibernate</module>
+        <module>jboss-javaee-6.0-with-errai</module>
     </modules>
 
 </project>
