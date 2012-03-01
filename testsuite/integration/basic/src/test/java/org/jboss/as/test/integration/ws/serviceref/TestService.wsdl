@@ -31,7 +31,7 @@
     </binding>
     <service name='EndpointService'>
         <port binding='tns:EndpointInterfaceBinding' name='EJB3BeanPort'>
-            <soap:address location='http://localhost:8080/ws-serviceref-example/EndpointService/EJB3Bean'/>
+            <soap:address location='http://${node0:localhost}:8080/ws-serviceref-example/EndpointService/EJB3Bean'/>
         </port>
     </service>
 </definitions>

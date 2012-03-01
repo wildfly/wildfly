@@ -29,8 +29,11 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.shared.FileUtils;
+import org.jboss.as.test.shared.PropertiesValueResolver;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -44,7 +47,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class ServiceRefSevletTestCase {
-    
+
     private static final Logger log = Logger.getLogger(ServiceRefSevletTestCase.class);
 
     @Deployment (name="main", testable=false)
@@ -54,18 +57,20 @@ public class ServiceRefSevletTestCase {
         log.info(jar.toString(true));
         return jar;
     }
-    
+
     @Deployment (name="servletClient", testable=false)
     public static WebArchive clientDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "ws-serviceref-example-servlet-client.war")
             .addClasses(EndpointInterface.class, EndpointService.class, ServletClient.class)
-            .addAsWebInfResource("ws/serviceref/web.xml", "web.xml")
-            .addAsWebInfResource("ws/serviceref/jboss-web.xml", "jboss-web.xml")
-            .addAsWebInfResource("ws/serviceref/wsdl/TestService.wsdl", "wsdl/TestService.wsdl");
+                .addAsWebInfResource(ServiceRefSevletTestCase.class.getPackage(), "web.xml", "web.xml")
+                .addAsWebInfResource(ServiceRefSevletTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
+
+        String wsdl = FileUtils.readFile(ServiceRefSevletTestCase.class, "TestService.wsdl");
+        war.addAsWebInfResource(new StringAsset(PropertiesValueResolver.replaceProperties(wsdl)), "wsdl/TestService.wsdl");
         log.info(war.toString(true));
         return war;
     }
-    
+
     @ArquillianResource
     @OperateOnDeployment("servletClient")
     URL baseUrl;
@@ -75,31 +80,31 @@ public class ServiceRefSevletTestCase {
         String retStr = receiveFirstLineFromUrl(new URL(baseUrl.toString() + "?echo=HelloWorld&type=echo1"));
         Assert.assertEquals("Unexpected output - " + retStr, "HelloWorld", retStr);
     }
-    
+
     @Test
     public void testServletClientEcho2() throws Exception {
         String retStr = receiveFirstLineFromUrl(new URL(baseUrl.toString() + "?echo=HelloWorld&type=echo2"));
         Assert.assertEquals("Unexpected output - " + retStr, "HelloWorld", retStr);
     }
-    
+
     @Test
     public void testServletClientEcho3() throws Exception {
         String retStr = receiveFirstLineFromUrl(new URL(baseUrl.toString() + "?echo=HelloWorld&type=echo3"));
         Assert.assertEquals("Unexpected output - " + retStr, "HelloWorld", retStr);
     }
-    
+
     @Test
     public void testServletClientEcho4() throws Exception {
         String retStr = receiveFirstLineFromUrl(new URL(baseUrl.toString() + "?echo=HelloWorld&type=echo4"));
         Assert.assertEquals("Unexpected output - " + retStr, "HelloWorld", retStr);
     }
-    
+
     @Test
     public void testServletClientEcho5() throws Exception {
         String retStr = receiveFirstLineFromUrl(new URL(baseUrl.toString() + "?echo=HelloWorld&type=echo5"));
         Assert.assertEquals("Unexpected output - " + retStr, "HelloWorld", retStr);
     }
-    
+
     private String receiveFirstLineFromUrl(URL url) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
         return br.readLine();
