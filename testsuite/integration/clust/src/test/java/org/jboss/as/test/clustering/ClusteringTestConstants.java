@@ -34,15 +34,24 @@ public class ClusteringTestConstants {
      */
     public static final String CONTAINER_1 = "clustering-udp-0";
     public static final String CONTAINER_2 = "clustering-udp-1";
+    public static final String[] CONTAINERS = new String[] { CONTAINER_1, CONTAINER_2 };
+
     /**
      * Deployment names.
      */
     public static final String DEPLOYMENT_1 = "deployment-0";
     public static final String DEPLOYMENT_2 = "deployment-1";
+    public static final String[] DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2 };
+
+    public static final String NODE_1 = "node-udp-0";
+    public static final String NODE_2 = "node-udp-1";
+    public static final String[] NODES = new String[] { NODE_1, NODE_2 };
+
     /**
      * Timeouts.
      */
     public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 5000;
     public static final int GRACE_TIME = 20000;
     public static final int GRACE_TIME_TO_REPLICATE = 3000;
+
 }

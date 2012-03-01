@@ -35,6 +35,7 @@ import org.jboss.arquillian.container.test.api.*;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.cluster.ejb3.xpc.bean.StatefulBean;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -82,19 +83,19 @@ public class StatefulWithXPCFailoverTestCase {
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "stateful.war");
-        war.addPackage(StatefulBean.class.getPackage());
-        war.setWebXML(StatefulBean.class.getPackage(), "web.xml");
-        war.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
-        System.out.println(war.toString(true));
-        return war;
+        return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
+        return createDeployment();
+    }
+
+    private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "stateful.war");
         war.addPackage(StatefulBean.class.getPackage());
+        war.addPackage(EJBDirectory.class.getPackage());
         war.setWebXML(StatefulBean.class.getPackage(), "web.xml");
         war.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
         System.out.println(war.toString(true));
