@@ -58,6 +58,7 @@ import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
 public class MessageDrivenComponent extends EJBComponent implements PooledComponent<MessageDrivenComponentInstance> {
 
     private final Pool<MessageDrivenComponentInstance> pool;
+    private final String poolName;
 
     private final ActivationSpec activationSpec;
     private final MessageEndpointFactory endpointFactory;
@@ -87,9 +88,11 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         if (poolConfig == null) {
             ROOT_LOGGER.debug("Pooling is disabled for MDB " + ejbComponentCreateService.getComponentName());
             this.pool = null;
+            this.poolName = null;
         } else {
             ROOT_LOGGER.debug("Using pool config " + poolConfig + " to create pool for MDB " + ejbComponentCreateService.getComponentName());
             this.pool = poolConfig.createPool(factory);
+            this.poolName = poolConfig.getPoolName();
         }
 
         this.activationSpec = activationSpec;
@@ -139,6 +142,11 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     @Override
     public Pool<MessageDrivenComponentInstance> getPool() {
         return pool;
+    }
+
+    @Override
+    public String getPoolName() {
+        return poolName;
     }
 
     protected void setResourceAdapter(ResourceAdapter resourceAdapter) {

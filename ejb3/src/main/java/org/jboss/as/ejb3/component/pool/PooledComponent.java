@@ -30,4 +30,6 @@ import org.jboss.as.ejb3.pool.Pool;
  */
 public interface PooledComponent<I extends ComponentInstance> extends Component {
     Pool<I> getPool();
+
+    String getPoolName();
 }

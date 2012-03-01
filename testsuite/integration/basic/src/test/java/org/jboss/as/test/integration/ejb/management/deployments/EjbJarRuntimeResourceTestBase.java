@@ -51,6 +51,7 @@ import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourc
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_CREATE_COUNT;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_CURRENT_SIZE;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_MAX_SIZE;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_NAME;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_REMOVE_COUNT;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.RUN_AS_ROLE;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.SECURITY_DOMAIN;
@@ -78,7 +79,7 @@ public class EjbJarRuntimeResourceTestBase {
     protected static final String JAR_NAME = "ejb-management.jar";
 
     private static final AttributeDefinition[] POOL_ATTRIBUTES =
-            new AttributeDefinition[]{POOL_AVAILABLE_COUNT, POOL_CREATE_COUNT, POOL_CURRENT_SIZE, POOL_MAX_SIZE, POOL_REMOVE_COUNT};
+            new AttributeDefinition[]{POOL_AVAILABLE_COUNT, POOL_CREATE_COUNT, POOL_CURRENT_SIZE, POOL_NAME, POOL_MAX_SIZE, POOL_REMOVE_COUNT};
 
     private static final String[] TIMER_ATTRIBUTES = { TIME_REMAINING, NEXT_TIMEOUT, CALENDAR_TIMER};
     private static final String[] SCHEDULE_ATTRIBUTES = { DAY_OF_MONTH, DAY_OF_WEEK, HOUR, MINUTE, YEAR, TIMEZONE, TimerAttributeDefinition.START, END };
@@ -209,12 +210,13 @@ public class EjbJarRuntimeResourceTestBase {
 
         for (AttributeDefinition attr : POOL_ATTRIBUTES) {
             final String name = attr.getName();
+            final ModelType expectedType = attr.getType();
             assertTrue(resourceDescription.get(ATTRIBUTES, name).isDefined());
             assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, name, DESCRIPTION).getType());
-            assertEquals(ModelType.INT, resourceDescription.get(ATTRIBUTES, name, TYPE).asType());
+            assertEquals(expectedType, resourceDescription.get(ATTRIBUTES, name, TYPE).asType());
 
             assertTrue(resource.get(name).isDefined());
-            assertEquals(ModelType.INT, resource.get(name).getType());
+            assertEquals(expectedType, resource.get(name).getType());
         }
     }
 

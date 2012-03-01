@@ -32,6 +32,7 @@ import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
+import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
@@ -109,20 +110,7 @@ public enum EJBComponentType {
     }
 
     public Pool getPool(EJBComponent component) {
-        switch (this) {
-            case ENTITY:
-                return EntityBeanComponent.class.cast(component).getPool();
-            case MESSAGE_DRIVEN:
-                return MessageDrivenComponent.class.cast(component).getPool();
-            case STATELESS:
-                return StatelessSessionComponent.class.cast(component).getPool();
-            case SINGLETON:
-            case STATEFUL:
-                throw MESSAGES.invalidComponentType(this.getComponentClass().getSimpleName());
-            default:
-                // Bug
-                throw MESSAGES.unknownComponentType(this);
-        }
+        return pooledComponent(component).getPool();
     }
 
     public AbstractEJBComponentRuntimeHandler<?> getRuntimeHandler() {
@@ -158,4 +146,20 @@ public enum EJBComponentType {
         throw MESSAGES.unknownComponentDescriptionType(description.getClass());
     }
 
+    protected PooledComponent<?> pooledComponent(final EJBComponent component) {
+        switch (this) {
+            case ENTITY:
+                return EntityBeanComponent.class.cast(component);
+            case MESSAGE_DRIVEN:
+                return MessageDrivenComponent.class.cast(component);
+            case STATELESS:
+                return StatelessSessionComponent.class.cast(component);
+            case SINGLETON:
+            case STATEFUL:
+                throw MESSAGES.invalidComponentType(this.getComponentClass().getSimpleName());
+            default:
+                // Bug
+                throw MESSAGES.unknownComponentType(this);
+        }
+    }
 }
