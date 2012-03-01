@@ -22,10 +22,11 @@ import org.jboss.osgi.resolver.v2.MavenCoordinates;
 import org.jboss.osgi.resolver.v2.XIdentityCapability;
 import org.jboss.osgi.resolver.v2.XRequirementBuilder;
 import org.jboss.osgi.resolver.v2.XResource;
-import org.jboss.osgi.testing.OSGiManifestBuilder;
+import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -41,7 +42,6 @@ import javax.inject.Inject;
 import java.io.InputStream;
 import java.util.Collection;
 
-import static org.jboss.osgi.testing.OSGiTestHelper.assertBundleState;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -92,7 +92,7 @@ public class SimpleRepositoryTestCase {
             Bundle bundle = context.installBundle(xcap.getSymbolicName(), content);
             try {
                 bundle.start();
-                assertBundleState(Bundle.ACTIVE, bundle.getState());
+                Assert.assertEquals(Bundle.ACTIVE, bundle.getState());
                 ServiceReference sref = context.getServiceReference("org.osgi.service.event.EventAdmin");
                 assertNotNull("EventAdmin service not null", sref);
             } finally {

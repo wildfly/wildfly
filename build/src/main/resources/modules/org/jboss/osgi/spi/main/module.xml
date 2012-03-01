@@ -32,7 +32,6 @@
     </resources>
 
     <dependencies>
-        <module name="org.junit"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.osgi.vfs"/>
         <module name="org.jboss.shrinkwrap.core"/>

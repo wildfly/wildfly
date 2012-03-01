@@ -27,11 +27,11 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleActivator;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleService;
-import org.jboss.osgi.testing.OSGiManifestBuilder;
-import org.jboss.osgi.testing.OSGiTestHelper;
+import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -80,11 +80,11 @@ public class SimpleBundleTestCase {
         // Assert that the bundle is in state RESOLVED
         // Note when the test bundle contains the test case it
         // must be resolved already when this test method is called
-        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+        Assert.assertEquals(Bundle.RESOLVED, bundle.getState());
 
         // Start the bundle
         bundle.start();
-        OSGiTestHelper.assertBundleState(Bundle.ACTIVE, bundle.getState());
+        Assert.assertEquals(Bundle.ACTIVE, bundle.getState());
 
         // Get the service reference
         BundleContext context = bundle.getBundleContext();
@@ -101,6 +101,6 @@ public class SimpleBundleTestCase {
 
         // Stop the bundle
         bundle.stop();
-        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+        Assert.assertEquals(Bundle.RESOLVED, bundle.getState());
     }
 }

@@ -35,12 +35,12 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.osgi.testing.ManifestBuilder;
-import org.jboss.osgi.testing.OSGiManifestBuilder;
-import org.jboss.osgi.testing.OSGiTestHelper;
+import org.jboss.osgi.spi.ManifestBuilder;
+import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -128,7 +128,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
                 });
                 startedLatch.await(5, TimeUnit.SECONDS);
             }
-            OSGiTestHelper.assertBundleState(Bundle.ACTIVE, targetBundle.getState());
+            Assert.assertEquals(Bundle.ACTIVE, targetBundle.getState());
 
             // Install the client module
             deployer.deploy(CLIENT_MODULE_NAME);
