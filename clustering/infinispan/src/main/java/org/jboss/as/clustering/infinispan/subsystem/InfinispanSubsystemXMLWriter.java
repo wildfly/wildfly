@@ -182,6 +182,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         writer.writeStartElement(Element.STORE.getLocalName());
                         this.writeRequired(writer, Attribute.CLASS, store, ModelKeys.CLASS);
                         this.writeStoreAttributes(writer, store);
+                        this.writeStoreWriteBehind(writer, store);
                         this.writeStoreProperties(writer, store);
                         writer.writeEndElement();
                     }
@@ -191,6 +192,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         this.writeOptional(writer, Attribute.RELATIVE_TO, store, ModelKeys.RELATIVE_TO);
                         this.writeOptional(writer, Attribute.PATH, store, ModelKeys.PATH);
                         this.writeStoreAttributes(writer, store);
+                        this.writeStoreWriteBehind(writer, store);
                         this.writeStoreProperties(writer, store);
                         writer.writeEndElement();
                     }
@@ -199,6 +201,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         writer.writeStartElement(Element.STRING_KEYED_JDBC_STORE.getLocalName());
                         this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
                         this.writeStoreAttributes(writer, store);
+                        this.writeStoreWriteBehind(writer, store);
                         this.writeStoreProperties(writer, store);
                         this.writeJDBCStoreTable(writer, Element.STRING_KEYED_TABLE, store, ModelKeys.STRING_KEYED_TABLE);
                         writer.writeEndElement();
@@ -208,6 +211,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         writer.writeStartElement(Element.BINARY_KEYED_JDBC_STORE.getLocalName());
                         this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
                         this.writeStoreAttributes(writer, store);
+                        this.writeStoreWriteBehind(writer, store);
                         this.writeStoreProperties(writer, store);
                         this.writeJDBCStoreTable(writer, Element.BINARY_KEYED_TABLE, store, ModelKeys.BINARY_KEYED_TABLE);
                         writer.writeEndElement();
@@ -217,6 +221,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         writer.writeStartElement(Element.MIXED_KEYED_JDBC_STORE.getLocalName());
                         this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
                         this.writeStoreAttributes(writer, store);
+                        this.writeStoreWriteBehind(writer, store);
                         this.writeStoreProperties(writer, store);
                         this.writeJDBCStoreTable(writer, Element.STRING_KEYED_TABLE, store, ModelKeys.STRING_KEYED_TABLE);
                         this.writeJDBCStoreTable(writer, Element.BINARY_KEYED_TABLE, store, ModelKeys.BINARY_KEYED_TABLE);
@@ -229,6 +234,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         this.writeOptional(writer, Attribute.SOCKET_TIMEOUT, store, ModelKeys.SOCKET_TIMEOUT);
                         this.writeOptional(writer, Attribute.TCP_NO_DELAY, store, ModelKeys.TCP_NO_DELAY);
                         this.writeStoreAttributes(writer, store);
+                        this.writeStoreWriteBehind(writer, store);
                         this.writeStoreProperties(writer, store);
                         for (ModelNode remoteServer: store.get(ModelKeys.REMOTE_SERVERS).asList()) {
                             writer.writeStartElement(Element.REMOTE_SERVER.getLocalName());
@@ -311,6 +317,18 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         this.writeOptional(writer, Attribute.FETCH_STATE, store, ModelKeys.FETCH_STATE);
         this.writeOptional(writer, Attribute.PURGE, store, ModelKeys.PURGE);
         this.writeOptional(writer, Attribute.SINGLETON, store, ModelKeys.SINGLETON);
+    }
+
+    private void writeStoreWriteBehind(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
+        if (store.get(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME).isDefined()) {
+            ModelNode writeBehind = store.get(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
+            writer.writeStartElement(Element.WRITE_BEHIND.getLocalName());
+            this.writeOptional(writer, Attribute.FLUSH_LOCK_TIMEOUT, writeBehind, ModelKeys.FLUSH_LOCK_TIMEOUT);
+            this.writeOptional(writer, Attribute.MODIFICATION_QUEUE_SIZE, writeBehind, ModelKeys.MODIFICATION_QUEUE_SIZE);
+            this.writeOptional(writer, Attribute.SHUTDOWN_TIMEOUT, writeBehind, ModelKeys.SHUTDOWN_TIMEOUT);
+            this.writeOptional(writer, Attribute.THREAD_POOL_SIZE, writeBehind, ModelKeys.THREAD_POOL_SIZE);
+            writer.writeEndElement();
+        }
     }
 
     private void writeStoreProperties(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {

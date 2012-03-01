@@ -37,11 +37,13 @@ import org.jboss.dmr.Property;
  *
  * @author Paul Ferraro
  * @author Richard Achmatowicz
+ * @author Tristan Tarrant
  */
 public class InfinispanSubsystemDescribe implements OperationStepHandler {
 
     public static final InfinispanSubsystemDescribe INSTANCE = new InfinispanSubsystemDescribe();
 
+    @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         ModelNode result = context.getResult();
 
@@ -178,6 +180,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
             storeAddress.add(ModelKeys.STORE, ModelKeys.STORE_NAME);
             result.add(CacheConfigOperationHandlers.createStoreOperation(CommonAttributes.COMMON_STORE_ATTRIBUTES, storeAddress, store,
                     CommonAttributes.STORE_ATTRIBUTES));
+            addStoreWriteBehindConfigCommands(store, storeAddress, result);
             addCacheStorePropertyCommands(store, storeAddress, result);
         }
         else if (cache.getValue().get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME).isDefined()) {
@@ -186,6 +189,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
             storeAddress.add(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
             result.add(CacheConfigOperationHandlers.createStoreOperation(CommonAttributes.COMMON_STORE_ATTRIBUTES, storeAddress, store,
                     CommonAttributes.FILE_STORE_ATTRIBUTES));
+            addStoreWriteBehindConfigCommands(store, storeAddress, result);
             addCacheStorePropertyCommands(store, storeAddress, result);
         }
         else if (cache.getValue().get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME).isDefined()) {
@@ -193,6 +197,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
             ModelNode storeAddress = address.clone();
             storeAddress.add(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
             result.add(CacheConfigOperationHandlers.createStringKeyedStoreOperation(storeAddress, store));
+            addStoreWriteBehindConfigCommands(store, storeAddress, result);
             addCacheStorePropertyCommands(store, storeAddress, result);
         }
         else if (cache.getValue().get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME).isDefined()) {
@@ -200,6 +205,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
             ModelNode storeAddress = address.clone();
             storeAddress.add(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
             result.add(CacheConfigOperationHandlers.createBinaryKeyedStoreOperation(storeAddress, store));
+            addStoreWriteBehindConfigCommands(store, storeAddress, result);
             addCacheStorePropertyCommands(store, storeAddress, result);
         }
         else if (cache.getValue().get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME).isDefined()) {
@@ -207,6 +213,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
             ModelNode storeAddress = address.clone();
             storeAddress.add(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
             result.add(CacheConfigOperationHandlers.createMixedKeyedStoreOperation(storeAddress, store));
+            addStoreWriteBehindConfigCommands(store, storeAddress, result);
             addCacheStorePropertyCommands(store, storeAddress, result);
         }
         else if (cache.getValue().get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME).isDefined()) {
@@ -215,6 +222,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
             storeAddress.add(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
             result.add(CacheConfigOperationHandlers.createStoreOperation(CommonAttributes.COMMON_STORE_ATTRIBUTES, storeAddress, store,
                     CommonAttributes.REMOTE_STORE_ATTRIBUTES));
+            addStoreWriteBehindConfigCommands(store, storeAddress, result);
             addCacheStorePropertyCommands(store, storeAddress, result);
         }
     }
@@ -234,7 +242,19 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
             ModelNode stateTransfer = cache.getValue().get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
             ModelNode stateTransferAddress = address.clone();
             stateTransferAddress.add(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
-            result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.STATE_TRANSFER_ATTRIBUTES, stateTransferAddress, stateTransfer));
+            ModelNode createOperation = CacheConfigOperationHandlers.createOperation(CommonAttributes.STATE_TRANSFER_ATTRIBUTES, stateTransferAddress, stateTransfer);
+            result.add(createOperation);
+        }
+    }
+
+    private void addStoreWriteBehindConfigCommands(ModelNode store, ModelNode address, ModelNode result) throws OperationFailedException {
+        // command to recreate the write-behind configuration
+        if (store.get(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME).isDefined()) {
+            ModelNode writeBehind = store.get(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
+            ModelNode writeBehindAddress = address.clone();
+            writeBehindAddress.add(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
+            ModelNode createOperation = CacheConfigOperationHandlers.createOperation(CommonAttributes.WRITE_BEHIND_ATTRIBUTES, writeBehindAddress, writeBehind);
+            result.add(createOperation);
         }
     }
 

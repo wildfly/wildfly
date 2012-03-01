@@ -444,6 +444,7 @@ public class InfinispanDescriptions {
         for (AttributeDefinition attr : CommonAttributes.STORE_ATTRIBUTES) {
             attr.addResourceAttributeDescription(resources, "infinispan.cache.store", store);
         }
+        addCacheStoreWriteBehindCacheChildren("infinispan.cache.store", store, resources);
         addCacheStorePropertyCacheChildren("infinispan.cache.store", store, resources);
         return store ;
     }
@@ -469,6 +470,31 @@ public class InfinispanDescriptions {
         return op;
     }
 
+    // write-behind element
+    static ModelNode getCacheStoreWriteBehindDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode writeBehind = createDescription(resources, "infinispan.cache.store.write-behind");
+        for (AttributeDefinition attr : CommonAttributes.WRITE_BEHIND_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.store.write-behind", writeBehind);
+        }
+        return writeBehind ;
+    }
+
+    static ModelNode getCacheStoreWriteBehindAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(ADD, resources, "infinispan.cache.store.write-behind.add");
+        for (AttributeDefinition attr : CommonAttributes.WRITE_BEHIND_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.store.write-behind", op);
+        }
+        return op;
+    }
+
+    static ModelNode getCacheStoreWriteBehindRemoveDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(REMOVE, resources, "infinispan.cache.store.write-behind.remove");
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        return op;
+    }
 
     // cache store property element
     static ModelNode getCacheStorePropertyDescription(Locale locale) {
@@ -502,6 +528,7 @@ public class InfinispanDescriptions {
         for (AttributeDefinition attr : CommonAttributes.FILE_STORE_ATTRIBUTES) {
             attr.addResourceAttributeDescription(resources, "infinispan.cache.file-store", store);
         }
+        addCacheStoreWriteBehindCacheChildren("infinispan.cache.store", store, resources);
         addCacheStorePropertyCacheChildren("infinispan.cache.store", store, resources);
         return store ;
     }
@@ -533,6 +560,7 @@ public class InfinispanDescriptions {
         for (AttributeDefinition attr : CommonAttributes.STRING_KEYED_JDBC_STORE_ATTRIBUTES) {
             attr.addResourceAttributeDescription(resources, "infinispan.cache.jdbc-store", store);
         }
+        addCacheStoreWriteBehindCacheChildren("infinispan.cache.store", store, resources);
         addCacheStorePropertyCacheChildren("infinispan.cache.store", store, resources);
         return store ;
     }
@@ -568,6 +596,7 @@ public class InfinispanDescriptions {
         for (AttributeDefinition attr : CommonAttributes.BINARY_KEYED_JDBC_STORE_ATTRIBUTES) {
             attr.addResourceAttributeDescription(resources, "infinispan.cache.jdbc-store", store);
         }
+        addCacheStoreWriteBehindCacheChildren("infinispan.cache.store", store, resources);
         addCacheStorePropertyCacheChildren("infinispan.cache.store", store, resources);
         return store ;
     }
@@ -602,6 +631,7 @@ public class InfinispanDescriptions {
         for (AttributeDefinition attr : CommonAttributes.MIXED_KEYED_JDBC_STORE_ATTRIBUTES) {
             attr.addResourceAttributeDescription(resources, "infinispan.cache.jdbc-store", store);
         }
+        addCacheStoreWriteBehindCacheChildren("infinispan.cache.store", store, resources);
         addCacheStorePropertyCacheChildren("infinispan.cache.store", store, resources);
         return store ;
     }
@@ -633,6 +663,7 @@ public class InfinispanDescriptions {
         for (AttributeDefinition attr : CommonAttributes.REMOTE_STORE_ATTRIBUTES) {
             attr.addResourceAttributeDescription(resources, "infinispan.cache.remote-store", store);
         }
+        addCacheStoreWriteBehindCacheChildren("infinispan.cache.store", store, resources);
         addCacheStorePropertyCacheChildren("infinispan.cache.store", store, resources);
         return store ;
     }
@@ -749,6 +780,15 @@ public class InfinispanDescriptions {
         description.get(CHILDREN, ModelKeys.STATE_TRANSFER, ALLOWED).setEmptyList();
         description.get(CHILDREN, ModelKeys.STATE_TRANSFER, ALLOWED).add(ModelKeys.STATE_TRANSFER_NAME);
         description.get(CHILDREN, ModelKeys.STATE_TRANSFER, MODEL_DESCRIPTION);
+    }
+
+    private static void addCacheStoreWriteBehindCacheChildren(String keyPrefix, ModelNode description, ResourceBundle resources) {
+        // child properties
+        description.get(CHILDREN, ModelKeys.WRITE_BEHIND, DESCRIPTION).set(resources.getString(keyPrefix + ".write-behind"));
+        description.get(CHILDREN, ModelKeys.WRITE_BEHIND, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.WRITE_BEHIND, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.WRITE_BEHIND, ALLOWED).add(ModelKeys.WRITE_BEHIND_NAME);
+        description.get(CHILDREN, ModelKeys.WRITE_BEHIND, MODEL_DESCRIPTION);
     }
 
     private static void addCacheStorePropertyCacheChildren(String keyPrefix, ModelNode description, ResourceBundle resources) {

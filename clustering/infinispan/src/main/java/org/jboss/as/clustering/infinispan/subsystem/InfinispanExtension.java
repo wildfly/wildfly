@@ -63,6 +63,7 @@ public class InfinispanExtension implements Extension {
     private static final PathElement expirationPath = PathElement.pathElement(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
     private static final PathElement stateTransferPath = PathElement.pathElement(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
     private static final PathElement storePath = PathElement.pathElement(ModelKeys.STORE, ModelKeys.STORE_NAME);
+    private static final PathElement storeWriteBehindPath = PathElement.pathElement(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
     private static final PathElement storePropertyPath = PathElement.pathElement(ModelKeys.PROPERTY);
     private static final PathElement fileStorePath = PathElement.pathElement(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
     private static final PathElement stringKeyedJdbcStorePath = PathElement.pathElement(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
@@ -177,6 +178,7 @@ public class InfinispanExtension implements Extension {
         store.registerOperationHandler(ADD, CacheConfigOperationHandlers.STORE_ADD, InfinispanSubsystemProviders.STORE_ADD);
         store.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
         CacheConfigOperationHandlers.STORE_ATTR.registerAttributes(store);
+        createStoreWriteBehindRegistration(store);
         createPropertyRegistration(store);
 
         // register the file-store=FILE_STORE handlers
@@ -184,6 +186,7 @@ public class InfinispanExtension implements Extension {
         fileStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.FILE_STORE_ADD, InfinispanSubsystemProviders.FILE_STORE_ADD);
         fileStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
         CacheConfigOperationHandlers.FILE_STORE_ATTR.registerAttributes(fileStore);
+        createStoreWriteBehindRegistration(fileStore);
         createPropertyRegistration(fileStore);
 
         // register the string-keyed-jdbc-store=STRING_KEYED_JDBC_STORE handlers
@@ -191,6 +194,7 @@ public class InfinispanExtension implements Extension {
         stringKeyedJdbcStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.STRING_KEYED_JDBC_STORE_ADD, InfinispanSubsystemProviders.STRING_KEYED_JDBC_STORE_ADD);
         stringKeyedJdbcStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
         CacheConfigOperationHandlers.STRING_KEYED_JDBC_STORE_ATTR.registerAttributes(stringKeyedJdbcStore);
+        createStoreWriteBehindRegistration(stringKeyedJdbcStore);
         createPropertyRegistration(stringKeyedJdbcStore);
 
         // register the string-keyed-jdbc-store=STRING_KEYED_JDBC_STORE handlers
@@ -198,6 +202,7 @@ public class InfinispanExtension implements Extension {
         binaryKeyedJdbcStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.BINARY_KEYED_JDBC_STORE_ADD, InfinispanSubsystemProviders.BINARY_KEYED_JDBC_STORE_ADD);
         binaryKeyedJdbcStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
         CacheConfigOperationHandlers.BINARY_KEYED_JDBC_STORE_ATTR.registerAttributes(binaryKeyedJdbcStore);
+        createStoreWriteBehindRegistration(binaryKeyedJdbcStore);
         createPropertyRegistration(binaryKeyedJdbcStore);
 
         // register the mixed-keyed-jdbc-store=MIXED_KEYED_JDBC_STORE handlers
@@ -205,6 +210,7 @@ public class InfinispanExtension implements Extension {
         mixedKeyedJdbcStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.MIXED_KEYED_JDBC_STORE_ADD, InfinispanSubsystemProviders.MIXED_KEYED_JDBC_STORE_ADD);
         mixedKeyedJdbcStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
         CacheConfigOperationHandlers.MIXED_KEYED_JDBC_STORE_ATTR.registerAttributes(mixedKeyedJdbcStore);
+        createStoreWriteBehindRegistration(mixedKeyedJdbcStore);
         createPropertyRegistration(mixedKeyedJdbcStore);
 
         // register the remote-store=REMOTE_STORE handlers
@@ -212,6 +218,7 @@ public class InfinispanExtension implements Extension {
         remoteStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.REMOTE_STORE_ADD, InfinispanSubsystemProviders.REMOTE_STORE_ADD);
         remoteStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
         CacheConfigOperationHandlers.REMOTE_STORE_ATTR.registerAttributes(remoteStore);
+        createStoreWriteBehindRegistration(remoteStore);
         createPropertyRegistration(remoteStore);
     }
 
@@ -228,6 +235,13 @@ public class InfinispanExtension implements Extension {
         CacheConfigOperationHandlers.STATE_TRANSFER_ATTR.registerAttributes(stateTransfer);
     }
 
+    static void createStoreWriteBehindRegistration(final ManagementResourceRegistration parent) {
+        // register the write-behind=WRITE_BEHIND handlers
+        final ManagementResourceRegistration registration = parent.registerSubModel(storeWriteBehindPath, InfinispanSubsystemProviders.STORE_WRITE_BEHIND);
+        registration.registerOperationHandler(ADD, CacheConfigOperationHandlers.STORE_WRITE_BEHIND_ADD, InfinispanSubsystemProviders.STORE_WRITE_BEHIND_ADD);
+        registration.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_WRITE_BEHIND_REMOVE);
+        CacheConfigOperationHandlers.STORE_WRITE_BEHIND_ATTR.registerAttributes(registration);
+    }
 
     static void createPropertyRegistration(final ManagementResourceRegistration parent) {
         final ManagementResourceRegistration registration = parent.registerSubModel(storePropertyPath, InfinispanSubsystemProviders.STORE_PROPERTY);

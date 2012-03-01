@@ -60,6 +60,10 @@ public class CacheConfigOperationHandlers {
     static final OperationStepHandler STORE_ADD = new CacheStoreAdd();
     static final SelfRegisteringAttributeHandler STORE_ATTR = new AttributeWriteHandler(COMMON_STORE_ATTRIBUTES, STORE_ATTRIBUTES);
 
+    /** The cache store write-behind config add operation handler. */
+    static final OperationStepHandler STORE_WRITE_BEHIND_ADD = new BasicCacheConfigAdd(WRITE_BEHIND_ATTRIBUTES);
+    static final SelfRegisteringAttributeHandler STORE_WRITE_BEHIND_ATTR = new AttributeWriteHandler(WRITE_BEHIND_ATTRIBUTES);
+
     /** The cache file-store config add operation handler. */
     static final OperationStepHandler FILE_STORE_ADD = new FileCacheStoreAdd();
     static final SelfRegisteringAttributeHandler FILE_STORE_ATTR = new AttributeWriteHandler(COMMON_STORE_ATTRIBUTES, FILE_STORE_ATTRIBUTES);
@@ -146,75 +150,12 @@ public class CacheConfigOperationHandlers {
             //
         };
 
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode().set(DESCRIPTION);
-        }
-
-    }
-
-    /**
-     * Helper class to process adding nested cache store configuration elements to the cache parent resource.
-     * Override the process method in order to process configuration specific elements.
-     *
-     */
-    private static class CacheStoreConfigAdd implements OperationStepHandler, DescriptionProvider {
-        private final AttributeDefinition[] attributes;
-
-        CacheStoreConfigAdd(final AttributeDefinition[] attributes) {
-            this.attributes = attributes;
-        }
-
         @Override
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-            final ModelNode subModel = resource.getModel();
-
-            // need to check that the parent does not contain some other cache store ModelNode
-            if (isCacheStoreDefined(context, operation)) {
-                String storeName = getDefinedCacheStore(context, operation);
-                throw MESSAGES.cacheStoreAlreadyDefined(storeName);
-            }
-
-            // Process attributes
-            for(final AttributeDefinition attribute : attributes) {
-                // we use PROPERTIES only to allow the user to pass in a list of properties on store add commands
-                // don't copy these into the model
-                if (attribute.getName().equals(CommonAttributes.PROPERTIES.getName()))
-                    continue ;
-                attribute.validateAndSet(operation, subModel);
-            }
-
-            // Process type specific properties if required
-            process(subModel, operation);
-
-            // The cache config parameters  <property name=>value</property>
-            if(operation.hasDefined(ModelKeys.PROPERTIES)) {
-                for(Property property : operation.get(ModelKeys.PROPERTIES).asPropertyList()) {
-                    // create a new property=name resource
-                    final Resource param = context.createResource(PathAddress.pathAddress(PathElement.pathElement(ModelKeys.PROPERTY, property.getName())));
-                    final ModelNode value = property.getValue();
-                    if(! value.isDefined()) {
-                        throw MESSAGES.propertyValueNotDefined(property.getName());
-                    }
-                    // set the value of the property
-                    param.getModel().get(ModelDescriptionConstants.VALUE).set(value);
-                }
-            }
-            // This needs a reload
-            reloadRequiredStep(context);
-            context.completeStep();
-        }
-
-        void process(ModelNode subModel, ModelNode operation) {
-            //
-        };
-
         public ModelNode getModelDescription(Locale locale) {
             return new ModelNode().set(DESCRIPTION);
         }
 
     }
-
 
     /**
      * Base class for adding cache stores.
@@ -430,6 +371,7 @@ public class CacheConfigOperationHandlers {
             this(combine(attributes, moreAttributes));
         }
 
+        @Override
         public void registerAttributes(final ManagementResourceRegistration registry) {
             final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
             for (AttributeDefinition attr : attributes) {

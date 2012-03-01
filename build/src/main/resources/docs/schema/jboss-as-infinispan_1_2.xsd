@@ -185,22 +185,22 @@
         <xs:sequence>
             <xs:element name="locking" type="tns:locking" minOccurs="0">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>The locking configuration of the cache.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="transaction" type="tns:transaction" minOccurs="0">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>The cache transaction configuration.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="eviction" type="tns:eviction" minOccurs="0">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>The cache eviction configuration.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="expiration" type="tns:expiration" minOccurs="0">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>The cache expiration configuration.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:choice minOccurs="0">
@@ -277,22 +277,22 @@
     <xs:complexType name="locking">
         <xs:attribute name="isolation" type="tns:isolation" default="REPEATABLE_READ">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>Sets the cache locking isolation level.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="striping" type="xs:boolean" default="false">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>If true, a pool of shared locks is maintained for all entries that need to be locked. Otherwise, a lock is created per entry in the cache. Lock striping helps control memory footprint but may reduce concurrency in the system.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="acquire-timeout" type="xs:long" default="15000">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>Maximum time to attempt a particular lock acquisition.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="concurrency-level" type="xs:int" default="1000">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>Concurrency level for lock containers. Adjust this value according to the number of concurrent threads interacting with Infinispan.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -300,17 +300,17 @@
     <xs:complexType name="transaction">
         <xs:attribute name="mode" type="tns:transaction-mode" default="NONE">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>Sets the cache transaction mode to one of NONE, NON_XA, NON_DURABLE_XA, FULL_XA.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="stop-timeout" type="xs:long" default="30000">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>If there are any ongoing transactions when a cache is stopped, Infinispan waits for ongoing remote and local transactions to finish. The amount of time to wait for is defined by the cache stop timeout.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="locking" type="tns:locking-mode" default="OPTIMISTIC">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>The locking mode for this cache, one of OPTIMISTIC or PESSIMISTIC.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -318,12 +318,12 @@
     <xs:complexType name="eviction">
         <xs:attribute name="strategy" type="tns:eviction-strategy" default="NONE">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>Sets the cache eviction strategy. Available options are 'UNORDERED', 'FIFO', 'LRU', 'LIRS' and 'NONE' (to disable eviction).</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="max-entries" type="xs:int" default="10000">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>Maximum number of entries in a cache instance. If selected value is not a power of two the actual value will default to the least power of two larger than selected value. -1 means no limit.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -331,17 +331,17 @@
     <xs:complexType name="expiration">
         <xs:attribute name="max-idle" type="xs:long" default="-1">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>Maximum idle time a cache entry will be maintained in the cache, in milliseconds. If the idle time is exceeded, the entry will be expired cluster-wide. -1 means the entries never expire.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="lifespan" type="xs:long" default="-1">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>Maximum lifespan of a cache entry, after which the entry is expired cluster-wide, in milliseconds. -1 means the entries never expire.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="interval" type="xs:long" default="5000">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>Interval (in milliseconds) between subsequent runs to purge expired entries from memory and any cache stores. If you wish to disable the periodic eviction process altogether, set wakeupInterval to -1.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -358,22 +358,22 @@
                 </xs:attribute>
                 <xs:attribute name="mode" type="tns:mode" use="required">
                     <xs:annotation>
-                        <xs:documentation></xs:documentation>
+                        <xs:documentation>Sets the clustered cache mode, ASYNC for asynchronous operation, or SYNC for synchronous operation.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="queue-size" type="xs:int" default="0">
                     <xs:annotation>
-                        <xs:documentation></xs:documentation>
+                        <xs:documentation>In ASYNC mode, this attribute can be used to trigger flushing of the queue when it reaches a specific threshold.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="queue-flush-interval" type="xs:long" default="10">
                     <xs:annotation>
-                        <xs:documentation></xs:documentation>
+                        <xs:documentation>In ASYNC mode, this attribute controls how often the asynchronous thread used to flush the replication queue runs. This should be a positive integer which represents thread wakeup time in milliseconds.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="remote-timeout" type="xs:long" default="17500">
                     <xs:annotation>
-                        <xs:documentation></xs:documentation>
+                        <xs:documentation>In SYNC mode, the timeout (in ms) used to wait for an acknowledgment when making a remote call, after which the call is aborted and an exception is thrown.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>
@@ -393,7 +393,7 @@
                 <xs:sequence>
                     <xs:element name="state-transfer" type="tns:state-transfer" minOccurs="0">
                         <xs:annotation>
-                            <xs:documentation></xs:documentation>
+                            <xs:documentation>The state transfer configuration for distribution and replicated caches.</xs:documentation>
                         </xs:annotation>
                     </xs:element>
                 </xs:sequence>
@@ -407,7 +407,7 @@
                 <xs:sequence>
                     <xs:element name="state-transfer" type="tns:state-transfer" minOccurs="0">
                         <xs:annotation>
-                            <xs:documentation></xs:documentation>
+                            <xs:documentation>The state transfer configuration for distribution and replicated caches.</xs:documentation>
                         </xs:annotation>
                     </xs:element>
                 </xs:sequence>
@@ -432,40 +432,77 @@
 
     <xs:complexType name="store" abstract="true">
         <xs:sequence>
+            <xs:element name="write-behind" type="tns:write-behind" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Configures a cache store as write-behind instead of write-through.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>A cache store property with name and value.</xs:documentation>
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
         <xs:attribute name="shared" type="xs:boolean" default="false">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>This setting should be set to true when multiple cache instances share the same cache store (e.g., multiple nodes in a cluster using a JDBC-based CacheStore pointing to the same, shared database.) Setting this to true avoids multiple cache instances writing the same modification multiple times. If enabled, only the node where the modification originated will write to the cache store. If disabled, each individual cache reacts to a potential remote update by storing the data to the cache store.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="preload" type="xs:boolean" default="false">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>If true, when the cache starts, data stored in the cache store will be pre-loaded into memory. This is particularly useful when data in the cache store will be needed immediately after startup and you want to avoid cache operations being delayed as a result of loading this data lazily. Can be used to provide a 'warm-cache' on startup, however there is a performance penalty as startup time is affected by this process.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="passivation" type="xs:boolean" default="true">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>If true, data is only written to the cache store when it is evicted from memory, a phenomenon known as 'passivation'. Next time the data is requested, it will be 'activated' which means that data will be brought back to memory and removed from the persistent store. f false, the cache store contains a copy of the contents in memory, so writes to cache result in cache store writes. This essentially gives you a 'write-through' configuration.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="fetch-state" type="xs:boolean" default="true">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>If true, fetch persistent state when joining a cluster. If multiple cache stores are chained, only one of them can have this property enabled.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="purge" type="xs:boolean" default="true">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>If true, purges this cache store when it starts up.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="singleton" type="xs:boolean" default="false">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>If true, the singleton store cache store is enabled. SingletonStore is a delegating cache store used for situations when only one instance in a cluster should interact with the underlying store.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="write-behind">
+        <xs:attribute name="flush-lock-timeout" type="xs:int" default="1">
+            <xs:annotation>
+                <xs:documentation>
+                    Timeout to acquire the lock which guards the state to be flushed to the cache store periodically.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="modification-queue-size" type="xs:int" default="1024">
+            <xs:annotation>
+                <xs:documentation>
+                    Maximum number of entries in the asynchronous queue. When the queue is full, the store becomes write-through.
+                    until it can accept new entries
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="shutdown-timeout" type="xs:int" default="25000">
+            <xs:annotation>
+                <xs:documentation>
+                    Timeout in milliseconds to stop the cache store.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="thread-pool-size" type="xs:int" default="1">
+            <xs:annotation>
+                <xs:documentation>
+                    Size of the thread pool whose threads are responsible for applying the modifications to the cache store.
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -535,7 +572,7 @@
     <xs:complexType name="remote-server">
         <xs:attribute name="outbound-socket-binding" type="xs:string" use="required">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>An outbound socket binding for a remote server.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -706,17 +743,17 @@
     <xs:complexType name="state-transfer">
         <xs:attribute name="enabled" type="xs:boolean" default="true">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>If enabled, this will cause the cache to ask neighboring caches for state when it starts up, so the cache starts 'warm', although it will impact startup time.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="timeout" type="xs:long" default="60000">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>The maximum amount of time (ms) to wait for state from neighboring caches, before throwing an exception and aborting startup.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="chunk-size" type="xs:integer" default="10000">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>The size, in bytes, in which to batch the transfer of cache entries.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

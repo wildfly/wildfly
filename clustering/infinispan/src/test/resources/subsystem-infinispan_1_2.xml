@@ -9,7 +9,9 @@
             <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="LIRS"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="true"/>
+            <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="true">
+                <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1" />
+            </file-store>
         </local-cache>
         <invalidation-cache name="invalid" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="1000" start="LAZY" async-marshalling="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
@@ -17,6 +19,7 @@
             <eviction max-entries="20000" strategy="LRU"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <remote-store cache="default" socket-timeout="60000" tcp-no-delay="true" fetch-state="false" passivation="false" preload="true" purge="false" shared="true" singleton="true">
+                <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1" />
                 <property name="hotrod.property">value</property>
                 <remote-server outbound-socket-binding="hotrod-server-1" />
                 <remote-server outbound-socket-binding="hotrod-server-2" />
@@ -29,6 +32,7 @@
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <state-transfer enabled="true" timeout="60000" chunk-size="10000" /> 
             <store class="org.infinispan.loaders.file.FileCacheStore" fetch-state="true" passivation="true" preload="false" purge="true" shared="false" singleton="false">
+                <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1" />
                 <property name="location">${java.io.tmpdir}</property>
             </store>
         </replicated-cache>
@@ -39,6 +43,7 @@
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <state-transfer enabled="true" timeout="60000" chunk-size="10000" /> 
             <mixed-keyed-jdbc-store datasource="java:jboss/jdbc/store" fetch-state="false" passivation="false" preload="true" purge="false" shared="true" singleton="true">
+                <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1" />
                 <string-keyed-table prefix="ispn_bucket" batch-size="100" fetch-size="100">
                     <id-column name="id" type="VARCHAR"/>
                     <data-column name="datum" type="BINARY"/>
