@@ -1140,7 +1140,6 @@
             <maven-resource group="org.picketlink" artifact="picketlink-fed" jandex="true"/>
             <maven-resource group="org.picketlink" artifact="picketlink-bindings" jandex="true"/>
             <maven-resource group="org.picketlink" artifact="picketlink-bindings-jboss"/>
-            <maven-resource group="org.picketlink" artifact="picketlink-trust-jbossws"/>
         </module-def>
 
         <module-def name="org.picketbox">
