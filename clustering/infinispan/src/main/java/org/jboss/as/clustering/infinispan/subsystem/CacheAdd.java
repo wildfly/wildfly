@@ -404,6 +404,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             final boolean fetchState = CommonAttributes.FETCH_STATE.resolveModelAttribute(context, store).asBoolean();
             final boolean purge = CommonAttributes.PURGE.resolveModelAttribute(context, store).asBoolean();
             final boolean singleton = CommonAttributes.SINGLETON.resolveModelAttribute(context, store).asBoolean();
+            final boolean async = store.hasDefined(ModelKeys.WRITE_BEHIND);
 
             builder.loaders()
                     .shared(shared)
@@ -416,6 +417,16 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                     .purgeSynchronously(true)
             ;
             storeBuilder.singletonStore().enabled(singleton);
+
+            if(async) {
+                ModelNode writeBehind = store.get(ModelKeys.WRITE_BEHIND);
+                storeBuilder.async().enable()
+                    .flushLockTimeout(CommonAttributes.FLUSH_LOCK_TIMEOUT.resolveModelAttribute(context, writeBehind).asLong())
+                    .modificationQueueSize(CommonAttributes.MODIFICATION_QUEUE_SIZE.resolveModelAttribute(context, writeBehind).asInt())
+                    .shutdownTimeout(CommonAttributes.SHUTDOWN_TIMEOUT.resolveModelAttribute(context, writeBehind).asLong())
+                    .threadPoolSize(CommonAttributes.THREAD_POOL_SIZE.resolveModelAttribute(context, writeBehind).asInt());
+            }
+
             this.buildCacheStore(context, storeBuilder, containerName, store, storeKey, dependencies);
         }
     }

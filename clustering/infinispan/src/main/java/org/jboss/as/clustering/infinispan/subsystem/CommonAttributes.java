@@ -20,6 +20,7 @@ import org.jboss.dmr.ModelType;
  * To mark an attribute as required, mark it as not allowing null.
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * @author Tristan Tarrant
  */
 public interface CommonAttributes {
 
@@ -154,6 +155,13 @@ public interface CommonAttributes {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(true))
                     .build();
+    SimpleAttributeDefinition FLUSH_LOCK_TIMEOUT =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.FLUSH_LOCK_TIMEOUT, ModelType.LONG, true)
+                    .setXmlName(Attribute.FLUSH_LOCK_TIMEOUT.getLocalName())
+                    .setAllowExpression(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode().set(1))
+                    .build();
     SimpleAttributeDefinition INDEXING =
             new SimpleAttributeDefinitionBuilder(ModelKeys.INDEXING, ModelType.STRING, true)
                     .setXmlName(Attribute.INDEXING.getLocalName())
@@ -251,6 +259,13 @@ public interface CommonAttributes {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new EnumValidator<TransactionMode>(TransactionMode.class, true, false))
                     .setDefaultValue(new ModelNode().set("NONE"))
+                    .build();
+    SimpleAttributeDefinition MODIFICATION_QUEUE_SIZE =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.MODIFICATION_QUEUE_SIZE, ModelType.INT, true)
+                    .setXmlName(Attribute.MODIFICATION_QUEUE_SIZE.getLocalName())
+                    .setAllowExpression(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode().set(1024))
                     .build();
     SimpleAttributeDefinition NAME =
             new SimpleAttributeDefinitionBuilder(ModelKeys.NAME, ModelType.STRING, true)
@@ -353,6 +368,13 @@ public interface CommonAttributes {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(false))
                     .build();
+    SimpleAttributeDefinition SHUTDOWN_TIMEOUT =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.SHUTDOWN_TIMEOUT, ModelType.LONG, true)
+                    .setXmlName(Attribute.SHUTDOWN_TIMEOUT.getLocalName())
+                    .setAllowExpression(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode().set(25000))
+                    .build();
     SimpleAttributeDefinition SINGLETON =
             new SimpleAttributeDefinitionBuilder(ModelKeys.SINGLETON, ModelType.BOOLEAN, true)
                     .setXmlName(Attribute.SINGLETON.getLocalName())
@@ -428,6 +450,13 @@ public interface CommonAttributes {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(60000))
                     .build();
+    SimpleAttributeDefinition THREAD_POOL_SIZE =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.THREAD_POOL_SIZE, ModelType.INT, true)
+                    .setXmlName(Attribute.THREAD_POOL_SIZE.getLocalName())
+                    .setAllowExpression(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode().set(1))
+                    .build();
     SimpleAttributeDefinition TYPE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.TYPE, ModelType.STRING, true)
                     .setXmlName(Attribute.TYPE.getLocalName())
@@ -496,6 +525,13 @@ public interface CommonAttributes {
             setSuffix("state-transfer").
             build();
 
+    // common store
+    ObjectTypeAttributeDefinition WRITE_BEHIND = ObjectTypeAttributeDefinition.
+            Builder.of(ModelKeys.WRITE_BEHIND, FLUSH_LOCK_TIMEOUT, MODIFICATION_QUEUE_SIZE, THREAD_POOL_SIZE, SHUTDOWN_TIMEOUT).
+            setAllowNull(true).
+            setSuffix("write-behind").
+            build();
+
     // jdbc store
     SimpleAttributeDefinition COLUMN_NAME = new SimpleAttributeDefinition("name", ModelType.STRING, true);
     SimpleAttributeDefinition COLUMN_TYPE = new SimpleAttributeDefinition("type", ModelType.STRING, true);
@@ -536,9 +572,10 @@ public interface CommonAttributes {
             setAllowNull(true).
             build();
 
-    AttributeDefinition[] COMMON_STORE_ATTRIBUTES = {SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON, PROPERTIES};
+    AttributeDefinition[] COMMON_STORE_ATTRIBUTES = {SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON, WRITE_BEHIND, PROPERTIES};
     AttributeDefinition[] STORE_ATTRIBUTES = {CLASS};
     AttributeDefinition[] FILE_STORE_ATTRIBUTES = {RELATIVE_TO, PATH};
     AttributeDefinition[] JDBC_STORE_ATTRIBUTES = {DATA_SOURCE, ENTRY_TABLE, BUCKET_TABLE};
     AttributeDefinition[] REMOTE_STORE_ATTRIBUTES = {CACHE, TCP_NO_DELAY, SOCKET_TIMEOUT, REMOTE_SERVERS};
+
 }
