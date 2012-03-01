@@ -21,17 +21,6 @@
 */
 package org.jboss.as.test.integration.jmx;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,7 +44,6 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -71,6 +59,17 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xnio.IoUtils;
+
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  *
@@ -181,7 +180,7 @@ public class ModelControllerMBeanTestCase {
 
         final JavaArchive sar = ShrinkWrap.create(JavaArchive.class, "test-jmx-sar.sar");
         sar.addClasses(org.jboss.as.test.integration.jmx.sar.Test.class, TestMBean.class);
-        sar.addAsManifestResource("jmx-sar/jboss-service.xml", "jboss-service.xml");
+        sar.addAsManifestResource(ModelControllerMBeanTestCase.class.getPackage(), "jboss-service.xml", "jboss-service.xml");
 
         InputStream in = sar.as(ZipExporter.class).exportAsInputStream();
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
