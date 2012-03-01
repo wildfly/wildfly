@@ -32,6 +32,7 @@ import org.jboss.as.controller.AttributeDefinition;
  * Enumerates the attributes used in the Infinispan subsystem schema.
  * @author Paul Ferraro
  * @author Richard Achmatowicz (c) 2011 RedHat Inc.
+ * @author Tristan Tarrant
  */
 public enum Attribute {
     // must be first
@@ -55,6 +56,7 @@ public enum Attribute {
     EXECUTOR(ModelKeys.EXECUTOR),
     FETCH_SIZE(ModelKeys.FETCH_SIZE),
     FETCH_STATE(ModelKeys.FETCH_STATE),
+    FLUSH_LOCK_TIMEOUT(ModelKeys.FLUSH_LOCK_TIMEOUT),
     @Deprecated FLUSH_TIMEOUT("flush-timeout"),
     INDEXING(ModelKeys.INDEXING),
     INTERVAL(ModelKeys.INTERVAL),
@@ -69,6 +71,7 @@ public enum Attribute {
     MAX_ENTRIES(ModelKeys.MAX_ENTRIES),
     MAX_IDLE(ModelKeys.MAX_IDLE),
     MODE(ModelKeys.MODE),
+    MODIFICATION_QUEUE_SIZE(ModelKeys.MODIFICATION_QUEUE_SIZE),
     NAME(ModelKeys.NAME),
     NAMESPACE(XMLConstants.XMLNS_ATTRIBUTE),
     OUTBOUND_SOCKET_BINDING(ModelKeys.OUTBOUND_SOCKET_BINDING),
@@ -85,6 +88,7 @@ public enum Attribute {
     REMOTE_TIMEOUT(ModelKeys.REMOTE_TIMEOUT),
     REPLICATION_QUEUE_EXECUTOR(ModelKeys.REPLICATION_QUEUE_EXECUTOR),
     SHARED(ModelKeys.SHARED),
+    SHUTDOWN_TIMEOUT(ModelKeys.SHUTDOWN_TIMEOUT),
     SINGLETON(ModelKeys.SINGLETON),
     SITE(ModelKeys.SITE),
     SOCKET_TIMEOUT(ModelKeys.SOCKET_TIMEOUT),
@@ -94,6 +98,7 @@ public enum Attribute {
     STRATEGY(ModelKeys.STRATEGY),
     STRIPING(ModelKeys.STRIPING),
     TCP_NO_DELAY(ModelKeys.TCP_NO_DELAY),
+    THREAD_POOL_SIZE(ModelKeys.THREAD_POOL_SIZE),
     TIMEOUT(ModelKeys.TIMEOUT),
     TYPE(ModelKeys.TYPE),
     VIRTUAL_NODES(ModelKeys.VIRTUAL_NODES),

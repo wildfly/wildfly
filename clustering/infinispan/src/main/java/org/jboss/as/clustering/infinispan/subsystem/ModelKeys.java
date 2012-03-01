@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 /**
  * @author Paul Ferraro
+ * @author Tristan Tarrant
  */
 public class ModelKeys {
     static final String ACQUIRE_TIMEOUT = "acquire-timeout";
@@ -60,6 +61,7 @@ public class ModelKeys {
     static final String FETCH_STATE = "fetch-state";
     static final String FILE_STORE = "file-store";
     static final String FILE_STORE_NAME = "FILE_STORE";
+    static final String FLUSH_LOCK_TIMEOUT = "flush-lock-timeout";
     static final String ID_COLUMN = "id-column";
     static final String INDEXING = "indexing";
     static final String INTERVAL = "interval";
@@ -87,6 +89,7 @@ public class ModelKeys {
     static final String MAX_ENTRIES = "max-entries";
     static final String MAX_IDLE = "max-idle";
     static final String MODE = "mode";
+    static final String MODIFICATION_QUEUE_SIZE = "modification-queue-size";
     static final String NAME = "name";
     static final String OUTBOUND_SOCKET_BINDING = "outbound-socket-binding";
     static final String OWNERS = "owners";
@@ -109,6 +112,7 @@ public class ModelKeys {
     static final String REPLICATED_CACHE = "replicated-cache";
     static final String REPLICATION_QUEUE_EXECUTOR = "replication-queue-executor";
     static final String SHARED = "shared";
+    static final String SHUTDOWN_TIMEOUT = "shutdown-timeout";
     static final String SINGLETON = "singleton";
     static final String SITE = "site";
     static final String SOCKET_TIMEOUT = "socket-timeout";
@@ -122,6 +126,7 @@ public class ModelKeys {
     static final String STRATEGY = "strategy";
     static final String STRIPING = "striping";
     static final String TCP_NO_DELAY = "tcp-no-delay";
+    static final String THREAD_POOL_SIZE = "thread-pool-size";
     static final String TIMEOUT = "timeout";
     static final String TIMESTAMP_COLUMN = "timestamp-column";
     static final String TRANSACTION = "transaction";
@@ -131,4 +136,6 @@ public class ModelKeys {
     static final String TYPE = "type";
     static final String VIRTUAL_NODES = "virtual-nodes";
     static final String WAIT = "wait";
+    static final String WRITE_BEHIND = "write-behind";
+    static final String WRITE_BEHIND_NAME = "WRITE_BEHIND";
 }
