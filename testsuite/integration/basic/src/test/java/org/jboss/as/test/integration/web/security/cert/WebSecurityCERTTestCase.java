@@ -175,7 +175,7 @@ public class WebSecurityCERTTestCase {
         op.get("scheme").set("https");
         op.get("secure").set(true);
         steps.add(op);
-        ModelNode ssl = createOpNode("subsystem=web/connector=testConnector/configuration=ssl", "add");
+        ModelNode ssl = createOpNode("subsystem=web/connector=testConnector/ssl=configuration", "add");
         ssl.get("name").set("https-test");
         ssl.get("key-alias").set("test");
         ssl.get("password").set("changeit");
