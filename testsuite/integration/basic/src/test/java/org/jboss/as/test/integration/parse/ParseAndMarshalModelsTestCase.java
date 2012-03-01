@@ -131,6 +131,7 @@ import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.security.VaultAddHandler;
+import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -171,6 +172,7 @@ public class ParseAndMarshalModelsTestCase {
 
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bogus.jar");
         archive.addPackage(ParseAndMarshalModelsTestCase.class.getPackage());
+        archive.addClass(FileUtils.class);
         archive.add(new Asset() {
                     public InputStream openStream() {
                         return new ByteArrayInputStream("Dependencies: org.jboss.staxmapper,org.jboss.as.controller,org.jboss.as.deployment-repository,org.jboss.as.server,org.jboss.as.host-controller,org.jboss.as.domain-management,org.jboss.as.security\n\n".getBytes());
@@ -303,7 +305,7 @@ public class ParseAndMarshalModelsTestCase {
         if (file.exists()) {
             file.delete();
         }
-        copyFile(original, file);
+        FileUtils.copyFile(original, file);
         ModelNode originalModel = loadServerModel(file);
         ModelNode reparsedModel = loadServerModel(file);
 
@@ -332,7 +334,7 @@ public class ParseAndMarshalModelsTestCase {
         if (file.exists()) {
             file.delete();
         }
-        copyFile(original, file);
+        FileUtils.copyFile(original, file);
         ModelNode originalModel = loadHostModel(file);
         ModelNode reparsedModel = loadHostModel(file);
 
@@ -386,7 +388,7 @@ public class ParseAndMarshalModelsTestCase {
         if (file.exists()) {
             file.delete();
         }
-        copyFile(original, file);
+        FileUtils.copyFile(original, file);
         ModelNode originalModel = loadDomainModel(file);
         ModelNode reparsedModel = loadDomainModel(file);
 
@@ -701,41 +703,19 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     
-    
-    
-    private static File getFileOrCheckParentsIfNotFound( String baseStr, String path ) throws FileNotFoundException {
-        //File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
-        File base = new File( baseStr );
-        if( ! base.exists() ){
-            throw new FileNotFoundException( "Base path not found: " + base.getPath() );
-        }
-        base = base.getAbsoluteFile();
-        
-        File f = new File( base, path );
-        if ( f.exists() )
-            return f;
-        
-        while( ! f.exists() ){
-            int slash = path.lastIndexOf( File.separatorChar );
-            if( slash <= 0 )  // no slash or "/xxx"
-                throw new FileNotFoundException("Path not found: " + f.getPath());
-            path = path.substring( 0, slash - 1 );
-            f = new File( base, path );
-        }
-        throw new FileNotFoundException("Path not found: " + f.getPath()); // To satisfy the compiler.
-    }
 
     
-    
+    //  Get-config methods
+       
     private File getLegacyConfigFile(String type, String profile) throws FileNotFoundException {
-        return getFileOrCheckParentsIfNotFound(
+        return FileUtils.getFileOrCheckParentsIfNotFound(
                 System.getProperty("jbossas.ts.submodule.dir"), 
                 "src/test/resources/legacy-configs/" + type + File.separator + profile
         );
     }
 
     private File getDocsExampleConfigFile(String name) throws FileNotFoundException {
-        return getFileOrCheckParentsIfNotFound(
+        return FileUtils.getFileOrCheckParentsIfNotFound(
                 System.getProperty("jbossas.project.dir", "../../.."), 
                 "build/src/main/resources/docs/examples/configs" + File.separator + name
         );
@@ -743,37 +723,12 @@ public class ParseAndMarshalModelsTestCase {
 
 
     private File getGeneratedExampleConfigFile(String name) throws FileNotFoundException {
-        return getFileOrCheckParentsIfNotFound(
+        return FileUtils.getFileOrCheckParentsIfNotFound(
                 System.getProperty("jbossas.project.dir", "../../.."), 
                 "build/target/generated-configs/docs/examples/configs" + File.separator + name
         );
     }
 
-    private void copyFile(final File src, final File dest) throws Exception {
-        final InputStream in = new BufferedInputStream(new FileInputStream(src));
-        try {
-            dest.getParentFile().mkdirs();
-            final OutputStream out = new BufferedOutputStream(new FileOutputStream(dest));
-            try {
-                int i = in.read();
-                while (i != -1) {
-                    out.write(i);
-                    i = in.read();
-                }
-            } finally {
-                close(out);
-            }
-        } finally {
-            close(in);
-        }
-    }
-
-    private void close(Closeable closeable) {
-        try {
-            closeable.close();
-        } catch (IOException ignore) {
-        }
-    }
 
     DescriptionProvider getRootDescriptionProvider() {
         return new DescriptionProvider() {
