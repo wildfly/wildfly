@@ -253,7 +253,7 @@ enum CommandLineArgument {
 
         @Override
         public String argumentExample() {
-            return String.format("--%s=<config>", argument());
+            return String.format("%s=<config>", argument());
         }
 
         @Override
