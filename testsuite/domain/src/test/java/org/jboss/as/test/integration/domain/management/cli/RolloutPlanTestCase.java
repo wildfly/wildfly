@@ -21,71 +21,70 @@
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
-import java.util.Set;
+import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.RolloutPlanBuilder;
 import org.jboss.as.test.integration.domain.suites.CLITestSuite;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
-import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.Assert;
 
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-public class RolloutPlanTestCase extends AbstractCliTestBase {        
-    
+public class RolloutPlanTestCase extends AbstractCliTestBase {
+
     @BeforeClass
-    public static void before() throws Exception {      
-        AbstractCliTestBase.initCLI();
-    }    
-    
+    public static void before() throws Exception {
+        AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
+    }
+
     @AfterClass
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
     }
-    
+
     @Test
     public void testRolloutPlan() throws Exception {
         addRolloutPlan();
         testRolloutPlanDeployment();
         removeRolloutPlan();
     }
-    
+
     private void addRolloutPlan() throws Exception {
-        
+
         String[] serverGroups = CLITestSuite.serverGroups.keySet().toArray(new String[]{});
-        
+
         // create rollout plan
         RolloutPlanBuilder planBuilder = new RolloutPlanBuilder();
         planBuilder.addGroup(serverGroups[0], new RolloutPlanBuilder.RolloutPolicy(true, null, null));
-        planBuilder.addGroup(serverGroups[1], new RolloutPlanBuilder.RolloutPolicy(true, null, null));        
-        String rolloutPlan = planBuilder.buildAsString();        
-        cli.sendLine("rollout-plan add --name=testPlan --content=" + rolloutPlan);        
-        
+        planBuilder.addGroup(serverGroups[1], new RolloutPlanBuilder.RolloutPolicy(true, null, null));
+        String rolloutPlan = planBuilder.buildAsString();
+        cli.sendLine("rollout-plan add --name=testPlan --content=" + rolloutPlan);
+
         // check it is listed
         cli.sendLine("cd /management-client-content=rollout-plans/rollout-plan");
         cli.sendLine("ls");
         String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         Assert.assertTrue(ls.contains("testPlan"));
-        
+
     }
-    
+
     private void removeRolloutPlan() throws Exception {
-        
+
         // remove rollout plan
-        cli.sendLine("rollout-plan remove --name=testPlan");        
-        
+        cli.sendLine("rollout-plan remove --name=testPlan");
+
         // check it is no more listed
         cli.sendLine("cd /management-client-content=rollout-plans");
         cli.sendLine("ls");
         String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         Assert.assertFalse(ls.contains("testPlan"));
-        
+
     }
-    
+
     private void testRolloutPlanDeployment() throws Exception {
         // TODO unimplemented, add when ready
     }

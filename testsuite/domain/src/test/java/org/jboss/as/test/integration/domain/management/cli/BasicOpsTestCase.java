@@ -21,15 +21,16 @@
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
-import java.util.List;
-
-import org.jboss.as.test.integration.management.util.CLIOpResult;
-import org.jboss.as.test.integration.management.util.CLIWrapper;
-import org.junit.Test;
-
 import static org.jboss.as.test.integration.management.base.AbstractCliTestBase.WAIT_LINETIMEOUT;
 import static org.jboss.as.test.integration.management.base.AbstractCliTestBase.WAIT_TIMEOUT;
 import static org.junit.Assert.assertTrue;
+
+import java.util.List;
+
+import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.management.util.CLIOpResult;
+import org.jboss.as.test.integration.management.util.CLIWrapper;
+import org.junit.Test;
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
@@ -38,7 +39,7 @@ public class BasicOpsTestCase {
 
     @Test
     public void testConnect() throws Exception {
-        CLIWrapper cli = new CLIWrapper(false);
+        CLIWrapper cli = new CLIWrapper(false, DomainTestSupport.masterAddress);
 
         // wait for cli welcome message
         String line = cli.readLine(WAIT_TIMEOUT);
@@ -47,7 +48,7 @@ public class BasicOpsTestCase {
             line = cli.readLine(WAIT_TIMEOUT);
         }
 
-        cli.sendLine("connect", false);
+        cli.sendConnect(DomainTestSupport.masterAddress);
         line = cli.readLine(WAIT_TIMEOUT);
 
         assertTrue("Check we are disconnected:" + line, line.indexOf("disconnected") >= 0);
@@ -60,7 +61,7 @@ public class BasicOpsTestCase {
 
     @Test
     public void testDomainSetup() throws Exception {
-        CLIWrapper cli = new CLIWrapper(false);
+        CLIWrapper cli = new CLIWrapper(false, DomainTestSupport.masterAddress);
 
         // wait for cli welcome message
         String line = cli.readLine(WAIT_TIMEOUT);
@@ -69,7 +70,7 @@ public class BasicOpsTestCase {
             line = cli.readLine(WAIT_TIMEOUT);
         }
 
-        cli.sendLine("connect", false);
+        cli.sendConnect(DomainTestSupport.masterAddress);
         line = cli.readLine(WAIT_TIMEOUT);
 
         assertTrue("Check we are disconnected:" + line, line.indexOf("disconnected") >= 0);
@@ -93,16 +94,16 @@ public class BasicOpsTestCase {
 
     }
 
-        private boolean checkHostServers(CLIWrapper cli, String host, String[] serverList) throws Exception {
-            cli.sendLine("/host=" + host + ":read-children-names(child-type=server-config)");
-            CLIOpResult res = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-            assertTrue(res.getResult() instanceof List);
-            List  servers = (List) res.getResult();
+    private boolean checkHostServers(CLIWrapper cli, String host, String[] serverList) throws Exception {
+        cli.sendLine("/host=" + host + ":read-children-names(child-type=server-config)");
+        CLIOpResult res = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        assertTrue(res.getResult() instanceof List);
+        List  servers = (List) res.getResult();
 
-            if (servers.size() != serverList.length) return false;
-            for (String server : serverList) if (!servers.contains(server)) return false;
+        if (servers.size() != serverList.length) return false;
+        for (String server : serverList) if (!servers.contains(server)) return false;
 
-            return true;
-        }
+        return true;
+    }
 
 }

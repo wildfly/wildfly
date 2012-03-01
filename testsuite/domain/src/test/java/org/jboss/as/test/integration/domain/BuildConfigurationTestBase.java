@@ -22,7 +22,14 @@
 
 package org.jboss.as.test.integration.domain;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -38,8 +45,7 @@ import org.junit.Test;
  public abstract class BuildConfigurationTestBase {
 
     static final String masterAddress = System.getProperty("jboss.test.host.master.address", "localhost");
-    static final File JBOSS_HOME = new File(System.getProperty("jboss.home"));
-    static final File BUILD_DIR = new File(JBOSS_HOME, "domain/configuration/");
+    static final File CONFIG_DIR = new File("target/jbossas/domain/configuration/");
 
     @Test
     public void test() throws Exception {
@@ -47,7 +53,7 @@ import org.junit.Test;
         final DomainLifecycleUtil utils = new DomainLifecycleUtil(config);
         utils.start(); // Start
         try {
-            URLConnection connection = new URL("http://localhost:8080").openConnection();
+            URLConnection connection = new URL("http://" + masterAddress + ":8080").openConnection();
             connection.connect();
         } finally {
             utils.stop(); // Stop
@@ -65,8 +71,8 @@ import org.junit.Test;
 
         configuration.setHostControllerManagementAddress(masterAddress);
         configuration.setHostCommandLineProperties("-Djboss.test.host.master.address=" + masterAddress);
-        configuration.setDomainConfigFile(new File(BUILD_DIR, domainXmlName).getAbsolutePath());
-        configuration.setHostConfigFile(new File(BUILD_DIR, hostXmlName).getAbsolutePath());
+        configuration.setDomainConfigFile(new File(CONFIG_DIR, domainXmlName).getAbsolutePath());
+        configuration.setHostConfigFile(hackReplaceInterfaces(new File(CONFIG_DIR, hostXmlName)).getAbsolutePath());
 
         configuration.setHostName("master"); // TODO this shouldn't be needed
 
@@ -79,4 +85,50 @@ import org.junit.Test;
 
     }
 
+    //HACK to make the interfaces settable - I could not do it in xsl since it was replacing the system property
+    static File hackReplaceInterfaces(File hostConfigFile) {
+        final File file;
+        final BufferedWriter writer;
+        try {
+            file = File.createTempFile("host", ".xml", hostConfigFile.getAbsoluteFile().getParentFile());
+            file.deleteOnExit();
+            writer = new BufferedWriter(new FileWriter(file));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(hostConfigFile));
+            try {
+                String line = reader.readLine();
+                while (line != null) {
+                    int start = line.indexOf("<inet-address value=\"");
+                    if (start >= 0) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(line.substring(0, start));
+                        sb.append("<inet-address value=\"${jboss.test.host.master.address}\"/>");
+                        writer.write(sb.toString());
+                    } else {
+                        writer.write(line);
+                    }
+                    writer.write("\n");
+                    line = reader.readLine();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                safeClose(reader);
+                safeClose(writer);
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        return file;
+    }
+
+    static void safeClose(Closeable c) {
+        try {
+            c.close();
+        } catch (Exception ignore) {
+        }
+    }
 }

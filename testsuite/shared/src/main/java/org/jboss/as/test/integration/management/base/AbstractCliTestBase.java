@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.management.base;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 
@@ -38,7 +39,15 @@ public class AbstractCliTestBase {
     protected static CLIWrapper cli;
 
     public static void initCLI() throws Exception {
-        if (cli == null) cli = new CLIWrapper(true);
+        if (cli == null) {
+            cli = new CLIWrapper(true);
+        }
+    }
+
+    public static void initCLI(String cliAddress) throws Exception {
+        if (cli == null) {
+            cli = new CLIWrapper(true, cliAddress);
+        }
     }
 
     public static void closeCLI() throws Exception {
