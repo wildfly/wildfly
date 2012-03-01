@@ -50,6 +50,7 @@ import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -643,8 +644,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(ProcessType.HOST_CONTROLLER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 DomainModelUtil.updateCoreModel(resource, null);
-                DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, new MockContentRepository(), new MockFileRepository(),
-                        new MockDomainController(), extensionRegistry);
+                DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, new MockContentRepository(), new MockFileRepository(), new MockDomainController(), extensionRegistry);
             }
         });
 
@@ -700,68 +700,53 @@ public class ParseAndMarshalModelsTestCase {
         }
     }
 
-    private File getLegacyConfigFile(String type, final String profile) {
-				File f = new File( System.getProperty("jbossas.ts.submodule.dir") );
-        Assert.assertTrue(f.exists());
-        f = new File(f, "src");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "test");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "resources");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "legacy-configs");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, type);
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, profile);
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        return f;
-
+    
+    
+    
+    private static File getFileOrCheckParentsIfNotFound( String baseStr, String path ) throws FileNotFoundException {
+        //File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
+        File base = new File( baseStr );
+        if( ! base.exists() ){
+            throw new FileNotFoundException( "Base path not found: " + base.getPath() );
+        }
+        base = base.getAbsoluteFile();
+        
+        File f = new File( base, path );
+        if ( f.exists() )
+            return f;
+        
+        while( ! f.exists() ){
+            int slash = path.lastIndexOf( File.separatorChar );
+            if( slash <= 0 )  // no slash or "/xxx"
+                throw new FileNotFoundException("Path not found: " + f.getPath());
+            path = path.substring( 0, slash - 1 );
+            f = new File( base, path );
+        }
+        throw new FileNotFoundException("Path not found: " + f.getPath()); // To satisfy the compiler.
     }
 
-    private File getDocsExampleConfigFile(String name) {
-        File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
-        f = f.getAbsoluteFile();
-        Assert.assertTrue(f.exists());
-        f = new File(f, "build");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "src");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "main");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "resources");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "docs");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "examples");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "configs");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, name);
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        return f;
+    
+    
+    private File getLegacyConfigFile(String type, String profile) throws FileNotFoundException {
+        return getFileOrCheckParentsIfNotFound(
+                System.getProperty("jbossas.ts.submodule.dir"), 
+                "src/test/resources/legacy-configs/" + type + File.separator + profile
+        );
+    }
+
+    private File getDocsExampleConfigFile(String name) throws FileNotFoundException {
+        return getFileOrCheckParentsIfNotFound(
+                System.getProperty("jbossas.project.dir", "../../.."), 
+                "build/src/main/resources/docs/examples/configs" + File.separator + name
+        );
     }
 
 
-    private File getGeneratedExampleConfigFile(String name) {
-        File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
-        f = f.getAbsoluteFile();
-        Assert.assertTrue(f.exists());
-        f = new File(f, "build");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "target");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "generated-configs");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "docs");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "examples");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "configs");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, name);
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        return f;
+    private File getGeneratedExampleConfigFile(String name) throws FileNotFoundException {
+        return getFileOrCheckParentsIfNotFound(
+                System.getProperty("jbossas.project.dir", "../../.."), 
+                "build/target/generated-configs/docs/examples/configs" + File.separator + name
+        );
     }
 
     private void copyFile(final File src, final File dest) throws Exception {
