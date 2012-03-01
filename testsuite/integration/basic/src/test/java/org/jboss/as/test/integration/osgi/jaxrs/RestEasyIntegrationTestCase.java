@@ -118,8 +118,20 @@ public class RestEasyIntegrationTestCase {
     }
 
     private String getHttpResponse(String message) throws IOException, ExecutionException, TimeoutException {
-        String reqPath = "http://" + System.getProperty("test.bind.address", "localhost") + ":8080/resteasy-osgi-client/rest/echo/" + message;
+        String reqPath = "http://" + formatPossibleIpv6Address(System.getProperty("test.bind.address", "localhost")) + ":8080/resteasy-osgi-client/rest/echo/" + message;
         return HttpRequest.get(reqPath, 10, TimeUnit.SECONDS);
     }
 
+    public static String formatPossibleIpv6Address(String address) {
+        if (address == null) {
+            return address;
+        }
+        if (!address.contains(":")) {
+            return address;
+        }
+        if (address.startsWith("[") && address.endsWith("]")) {
+            return address;
+        }
+        return "[" + address + "]";
+    }
 }

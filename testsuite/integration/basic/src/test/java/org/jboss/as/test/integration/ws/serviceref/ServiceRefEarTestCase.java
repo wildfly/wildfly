@@ -24,12 +24,14 @@ package org.jboss.as.test.integration.ws.serviceref;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Properties;
 
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.PropertiesValueResolver;
 import org.jboss.logging.Logger;
@@ -66,7 +68,11 @@ public class ServiceRefEarTestCase {
             .addAsWebInfResource(ServiceRefEarTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
 
         String wsdl = FileUtils.readFile(ServiceRefEarTestCase.class, "TestService.wsdl");
-        war.addAsWebInfResource(new StringAsset(PropertiesValueResolver.replaceProperties(wsdl)), "wsdl/TestService.wsdl");
+        final Properties properties = new Properties(System.getProperties());
+        if(properties.containsKey("node0")) {
+            properties.put("node0", NetworkUtils.formatPossibleIpv6Address((String) properties.get("node0")));
+        }
+        war.addAsWebInfResource(new StringAsset(PropertiesValueResolver.replaceProperties(wsdl, properties)), "wsdl/TestService.wsdl");
 
         log.info(war.toString(true));
 
