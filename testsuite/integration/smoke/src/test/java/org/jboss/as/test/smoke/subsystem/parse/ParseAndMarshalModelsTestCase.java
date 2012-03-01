@@ -131,6 +131,7 @@ import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.security.VaultAddHandler;
+import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -168,6 +169,7 @@ public class ParseAndMarshalModelsTestCase {
     @Deployment
     public static Archive<?> getDeployment() {
         return ShrinkWrapUtils.createJavaArchive("bogus.jar", ParseAndMarshalModelsTestCase.class.getPackage())
+                .addClass(FileUtils.class)
                 .add(new Asset() {
                     public InputStream openStream() {
                         return new ByteArrayInputStream("Dependencies: org.jboss.staxmapper,org.jboss.as.controller,org.jboss.as.deployment-repository,org.jboss.as.server,org.jboss.as.host-controller,org.jboss.as.domain-management,org.jboss.as.security\n\n".getBytes());
@@ -225,7 +227,7 @@ public class ParseAndMarshalModelsTestCase {
         if (file.exists()) {
             file.delete();
         }
-        copyFile(original, file);
+        FileUtils.copyFile(original, file);
         ModelNode originalModel = loadServerModel(file);
         ModelNode reparsedModel = loadServerModel(file);
 
@@ -244,7 +246,7 @@ public class ParseAndMarshalModelsTestCase {
         if (file.exists()) {
             file.delete();
         }
-        copyFile(original, file);
+        FileUtils.copyFile(original, file);
         ModelNode originalModel = loadHostModel(file);
         ModelNode reparsedModel = loadHostModel(file);
 
@@ -261,7 +263,7 @@ public class ParseAndMarshalModelsTestCase {
         if (file.exists()) {
             file.delete();
         }
-        copyFile(original, file);
+        FileUtils.copyFile(original, file);
         ModelNode originalModel = loadDomainModel(file);
         ModelNode reparsedModel = loadDomainModel(file);
 
@@ -576,39 +578,18 @@ public class ParseAndMarshalModelsTestCase {
     }
     
     
-    private static File getFileOrCheckParentsIfNotFound( String baseStr, String path ) throws FileNotFoundException {
-        //File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
-        File base = new File( baseStr );
-        if( ! base.exists() ){
-            throw new FileNotFoundException( "Base path not found: " + base.getPath() );
-        }
-        base = base.getAbsoluteFile();
-        
-        File f = new File( base, path );
-        if ( f.exists() )
-            return f;
-        
-        while( ! f.exists() ){
-            int slash = path.lastIndexOf( File.separatorChar );
-            if( slash <= 0 )  // no slash or "/xxx"
-                throw new FileNotFoundException("Path not found: " + f.getPath());
-            path = path.substring( 0, slash - 1 );
-            f = new File( base, path );
-        }
-        throw new FileNotFoundException("Path not found: " + f.getPath()); // To satisfy the compiler.
-    }
 
-    
+    //  Get-config methods
     
     private File getOriginalStandaloneXml(String profile) throws FileNotFoundException {
-        return getFileOrCheckParentsIfNotFound(
+        return FileUtils.getFileOrCheckParentsIfNotFound(
                 System.getProperty("jbossas.project.dir", "../../.."), 
-                "build/target/generated-configs/standalone/configuration" + profile
+                "build/target/generated-configs/standalone/configuration/" + profile
         );
     }
 
     private File getDomainConfigDir() throws FileNotFoundException {
-        return getFileOrCheckParentsIfNotFound(
+        return FileUtils.getFileOrCheckParentsIfNotFound(
                 System.getProperty("jbossas.project.dir", "../../.."), 
                 "build/target/generated-configs/domain/configuration"
         );
@@ -617,7 +598,7 @@ public class ParseAndMarshalModelsTestCase {
     private File getHostConfigDir() throws FileNotFoundException {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
-        return getFileOrCheckParentsIfNotFound(
+        return FileUtils.getFileOrCheckParentsIfNotFound(
                 System.getProperty("jbossas.project.dir", "../../.."), 
                 "build/src/main/resources/domain/configuration"
         );
@@ -642,31 +623,6 @@ public class ParseAndMarshalModelsTestCase {
         return f;
     }
 
-    private void copyFile(final File src, final File dest) throws Exception {
-        final InputStream in = new BufferedInputStream(new FileInputStream(src));
-        try {
-            dest.getParentFile().mkdirs();
-            final OutputStream out = new BufferedOutputStream(new FileOutputStream(dest));
-            try {
-                int i = in.read();
-                while (i != -1) {
-                    out.write(i);
-                    i = in.read();
-                }
-            } finally {
-                close(out);
-            }
-        } finally {
-            close(in);
-        }
-    }
-
-    private void close(Closeable closeable) {
-        try {
-            closeable.close();
-        } catch (IOException ignore) {
-        }
-    }
 
     DescriptionProvider getRootDescriptionProvider() {
         return new DescriptionProvider() {
