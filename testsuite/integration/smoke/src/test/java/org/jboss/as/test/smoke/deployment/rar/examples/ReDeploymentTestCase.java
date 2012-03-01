@@ -23,9 +23,11 @@ package org.jboss.as.test.smoke.deployment.rar.examples;
 
 import java.util.List;
 import javax.naming.Context;
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -37,9 +39,9 @@ import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,20 +52,23 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- *         JBQA-5841 test for RA activation
+ *         JBQA-5968 test for undeployment and re-deployment
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(AfterResourceCreationDeploymentTestCase.AfterResourceCreationDeploymentTestCaseSetup.class)
-public class AfterResourceCreationDeploymentTestCase extends ArquillianResourceMgmtTestBase {
+@ServerSetup(ReDeploymentTestCase.ReDeploymentTestCaseSetup.class)
+@Ignore("AS7-3938")
+public class ReDeploymentTestCase extends ArquillianResourceMgmtTestBase {
 
     static String deploymentName = "basic-after.rar";
 
     @ContainerResource
     private Context context;
 
+    @ArquillianResource
+    private Deployer deployer;
 
-    static class AfterResourceCreationDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
+    static class ReDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception{
@@ -102,7 +107,7 @@ public class AfterResourceCreationDeploymentTestCase extends ArquillianResourceM
      *
      * @return The deployment archive
      */
-    @Deployment(name = "basic-after.rar")
+    @Deployment(name = "basic-after.rar", managed=false)
     public static ResourceAdapterArchive createDeployment() throws Exception {
 
 
@@ -123,9 +128,13 @@ public class AfterResourceCreationDeploymentTestCase extends ArquillianResourceM
      */
     @Test
     public void testConfiguration() throws Throwable {
+        deployer.deploy(deploymentName);
         setup();
+        deployer.undeploy(deploymentName);
+        deployer.deploy(deploymentName);
         MultipleAdminObject1 adminObject1 = (MultipleAdminObject1) context.lookup("after/Name3");
         assertNotNull("AO1 not found", adminObject1);
+        deployer.undeploy(deploymentName);
     }
 
 }
