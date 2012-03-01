@@ -24,14 +24,18 @@ package org.jboss.as.test.integration.ws.serviceref;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
+
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.shared.FileUtils;
+import org.jboss.as.test.shared.PropertiesValueResolver;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -40,40 +44,43 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests for WS ServiceRef from servlet to verify access for <service-ref> in nested war
- * 
+ *
  * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class ServiceRefEarTestCase {
-    
+
     private static final Logger log = Logger.getLogger(ServiceRefEarTestCase.class);
-    
+
     @Deployment (testable=false)
     public static Archive<?> deployment() {
-        
+
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ws-serviceref-example.jar")
             .addClasses(EJB3Bean.class, EndpointInterface.class);
         log.info(jar.toString(true));
-    
+
         WebArchive war = ShrinkWrap.create(WebArchive.class, "ws-serviceref-example-servlet-client.war")
             .addClasses(EndpointInterface.class, EndpointService.class, ServletClient.class)
-            .addAsWebInfResource("ws/serviceref/web.xml", "web.xml")
-            .addAsWebInfResource("ws/serviceref/jboss-web.xml", "jboss-web.xml")
-            .addAsWebInfResource("ws/serviceref/wsdl/TestService.wsdl", "wsdl/TestService.wsdl");
+            .addAsWebInfResource(ServiceRefEarTestCase.class.getPackage(), "web.xml", "web.xml")
+            .addAsWebInfResource(ServiceRefEarTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
+
+        String wsdl = FileUtils.readFile(ServiceRefEarTestCase.class, "TestService.wsdl");
+        war.addAsWebInfResource(new StringAsset(PropertiesValueResolver.replaceProperties(wsdl)), "wsdl/TestService.wsdl");
+
         log.info(war.toString(true));
-        
+
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "ws-serviceref-example.ear")
             .addAsModule(jar)
             .addAsModule(war);
         log.info(ear.toString(true));
-        
+
         return ear;
     }
-    
+
     @ArquillianResource(ServletClient.class)
     URL baseUrl;
-    
+
         @Test
     public void testServletClientEcho1() throws Exception {
         String retStr = receiveFirstLineFromUrl(new URL(baseUrl.toString() + "?echo=HelloWorld&type=echo1"));
@@ -103,7 +110,7 @@ public class ServiceRefEarTestCase {
         String retStr = receiveFirstLineFromUrl(new URL(baseUrl.toString() + "?echo=HelloWorld&type=echo5"));
         Assert.assertEquals("Unexpected output - " + retStr, "HelloWorld", retStr);
     }
-        
+
     private String receiveFirstLineFromUrl(URL url) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
         return br.readLine();
