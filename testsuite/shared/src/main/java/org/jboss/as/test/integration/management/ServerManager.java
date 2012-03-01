@@ -88,7 +88,7 @@ public class ServerManager extends AbstractMgmtTestBase {
         op.get("enabled").set(true);
         steps.add(op);
         if (conn.isSecure()) {
-            ModelNode ssl = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector/configuration=ssl", "add");
+            ModelNode ssl = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector/ssl=configuration", "add");
             if (conn.equals(Connector.HTTPSNATIVE)) {
                 ssl.get("certificate-key-file").set(keyPEMFile);
                 ssl.get("certificate-file").set(certPEMFile);

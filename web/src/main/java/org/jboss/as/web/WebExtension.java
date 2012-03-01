@@ -44,24 +44,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 public class WebExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "web";
     protected static final PathElement CONNECTOR_PATH = PathElement.pathElement(Constants.CONNECTOR);
-    protected static final PathElement SSL_PATH = PathElement.pathElement(Constants.CONFIGURATION, Constants.SSL);
+    protected static final PathElement SSL_PATH = PathElement.pathElement(Constants.SSL, Constants.CONFIGURATION);
     protected static final PathElement HOST_PATH = PathElement.pathElement(Constants.VIRTUAL_SERVER);
 
     protected static final PathElement JSP_CONFIGURATION_PATH = PathElement.pathElement(Constants.CONFIGURATION, Constants.JSP_CONFIGURATION);
     protected static final PathElement STATIC_RESOURCES_PATH = PathElement.pathElement(Constants.CONFIGURATION, Constants.STATIC_RESOURCES);
     protected static final PathElement CONTAINER_PATH = PathElement.pathElement(Constants.CONFIGURATION, Constants.CONTAINER);
 
-    protected static final PathElement ACCESS_LOG_PATH = PathElement.pathElement(Constants.CONFIGURATION, Constants.ACCESS_LOG);
+    protected static final PathElement ACCESS_LOG_PATH = PathElement.pathElement(Constants.ACCESS_LOG, Constants.CONFIGURATION);
 
     protected static final PathElement REWRITE_PATH = PathElement.pathElement(Constants.REWRITE);
-    protected static final PathElement SSO_PATH = PathElement.pathElement(Constants.CONFIGURATION, Constants.SSO);
-    protected static final PathElement DIRECTORY_PATH = PathElement.pathElement(Constants.SETTING,Constants.DIRECTORY);
+    protected static final PathElement SSO_PATH = PathElement.pathElement(Constants.SSO, Constants.CONFIGURATION);
+    protected static final PathElement DIRECTORY_PATH = PathElement.pathElement(Constants.DIRECTORY,Constants.CONFIGURATION);
     protected static final PathElement REWRITECOND_PATH = PathElement.pathElement(Constants.CONDITION);
-    //here only for backward compatibility
-    protected static final PathElement SSL_PATH_ALIAS = PathElement.pathElement(Constants.SSL, Constants.CONFIGURATION);
-    protected static final PathElement SSO_PATH_ALIAS = PathElement.pathElement(Constants.SSO, Constants.CONFIGURATION);
-    protected static final PathElement DIRECTORY_PATH_ALIAS = PathElement.pathElement(Constants.DIRECTORY, Constants.CONFIGURATION);
-    protected static final PathElement ACCESS_LOG_PATH_ALIAS = PathElement.pathElement(Constants.ACCESS_LOG, Constants.CONFIGURATION);
 
     private static final String RESOURCE_NAME = WebExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -85,28 +80,19 @@ public class WebExtension implements Extension {
         final ManagementResourceRegistration connectors = registration.registerSubModel(WebConnectorDefinition.INSTANCE);
 
         final ManagementResourceRegistration ssl = connectors.registerSubModel(WebSSLDefinition.INSTANCE);
-        //just alias proxy to preserve backward compatibility
-        connectors.registerSubModel(new ResourceAliasDefinition(SSL_PATH_ALIAS, WebSSLDefinition.INSTANCE));
 
         //hosts
         final ManagementResourceRegistration hosts = registration.registerSubModel(WebVirtualHostDefinition.INSTANCE);
 
         // access-log.
         final ManagementResourceRegistration accesslog = hosts.registerSubModel(WebAccessLogDefinition.INSTANCE);
-        //backward compatibility
-        hosts.registerSubModel(new ResourceAliasDefinition(ACCESS_LOG_PATH_ALIAS, WebAccessLogDefinition.INSTANCE));
 
         // access-log.
         // the directory needs one level more
         accesslog.registerSubModel(WebAccessLogDirectoryDefinition.INSTANCE);
-        //backward compatibility
-        accesslog.registerSubModel(new ResourceAliasDefinition(DIRECTORY_PATH_ALIAS, WebAccessLogDirectoryDefinition.INSTANCE));
-
 
         // sso valve.
         hosts.registerSubModel(WebSSODefinition.INSTANCE);
-        //backward compatibility
-        hosts.registerSubModel(new ResourceAliasDefinition(SSO_PATH_ALIAS, WebSSODefinition.INSTANCE));
 
         // rewrite valve.
         final ManagementResourceRegistration rewrite = hosts.registerSubModel(WebReWriteDefinition.INSTANCE);
