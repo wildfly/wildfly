@@ -80,8 +80,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
 
         ModelNode node = context.getModelNode();
         WebDefinition.DEFAULT_VIRTUAL_SERVER.marshallAsAttribute(node, true, writer);
-        WebDefinition.NATIVE.marshallAsAttribute(node, false, writer);
         WebDefinition.INSTANCE_ID.marshallAsAttribute(node, false, writer);
+        WebDefinition.NATIVE.marshallAsAttribute(node, false, writer);
         if (node.hasDefined(CONFIGURATION)) {
             writeContainerConfig(writer, node.get(CONFIGURATION));
         }
@@ -91,11 +91,14 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 writer.writeStartElement(Element.CONNECTOR.getLocalName());
                 writer.writeAttribute(NAME, connector.getName());
                 for (SimpleAttributeDefinition attr : WebConnectorDefinition.CONNECTOR_ATTRIBUTES) {
-                    attr.marshallAsAttribute(config, false, writer);
+                    if (attr != WebConnectorDefinition.VIRTUAL_SERVER) {
+                        attr.marshallAsAttribute(config, false, writer);
+                    }
                 }
                 if (config.get(SSL_PATH.getKey(), SSL_PATH.getValue()).isDefined()) {
                     ModelNode sslConfig = config.get(SSL_PATH.getKey(), SSL_PATH.getValue());
                     writer.writeStartElement(Element.SSL.getLocalName());
+                    WebSSLDefinition.NAME.marshallAsAttribute(sslConfig, writer);
                     for (SimpleAttributeDefinition attr : WebSSLDefinition.SSL_ATTRIBUTES) {
                         attr.marshallAsAttribute(sslConfig, false, writer);
                     }
@@ -116,8 +119,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 final ModelNode config = host.getValue();
                 writer.writeStartElement(Element.VIRTUAL_SERVER.getLocalName());
                 writer.writeAttribute(NAME, host.getName());
-                WebVirtualHostDefinition.DEFAULT_WEB_MODULE.marshallAsAttribute(config, true, writer);
                 WebVirtualHostDefinition.ENABLE_WELCOME_ROOT.marshallAsAttribute(config, true, writer);
+                WebVirtualHostDefinition.DEFAULT_WEB_MODULE.marshallAsAttribute(config, true, writer);
 
                 if (config.hasDefined(ALIAS)) {
                     for (final ModelNode alias : config.get(ALIAS).asList()) {

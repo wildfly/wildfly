@@ -25,8 +25,10 @@ package org.jboss.as.web;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.web.WebSSLDefinition.SSL_ATTRIBUTES;
 
 /**
@@ -45,6 +47,9 @@ class WebSSLAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+
+        WebSSLDefinition.NAME.validateAndSet(operation, model);
+
         for (AttributeDefinition def : SSL_ATTRIBUTES){
             def.validateAndSet(operation,model);
         }

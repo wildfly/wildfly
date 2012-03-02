@@ -70,8 +70,8 @@ public class WebDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        registration.registerReadWriteAttribute(DEFAULT_VIRTUAL_SERVER, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(DEFAULT_VIRTUAL_SERVER));
-        registration.registerReadWriteAttribute(NATIVE, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(NATIVE));
-        registration.registerReadWriteAttribute(INSTANCE_ID, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(INSTANCE_ID));
+        registration.registerReadWriteAttribute(DEFAULT_VIRTUAL_SERVER, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_VIRTUAL_SERVER));
+        registration.registerReadWriteAttribute(NATIVE, null, new ReloadRequiredWriteAttributeHandler(NATIVE));
+        registration.registerReadWriteAttribute(INSTANCE_ID, null, new ReloadRequiredWriteAttributeHandler(INSTANCE_ID));
     }
 }

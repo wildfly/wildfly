@@ -87,12 +87,12 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(OperationContext context, ModelNode baseOperation, ModelNode model,
                                    ServiceVerificationHandler verificationHandler,
                                    List<ServiceController<?>> newControllers) throws OperationFailedException {
-        ModelNode operation = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
-        final ModelNode config = resolveConfiguration(context, operation.get(Constants.CONFIGURATION));
-        final String defaultVirtualServer = WebDefinition.DEFAULT_VIRTUAL_SERVER.resolveModelAttribute(context, operation).asString();
+        ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        final ModelNode config = resolveConfiguration(context, fullModel.get(Constants.CONFIGURATION));
+        final String defaultVirtualServer = WebDefinition.DEFAULT_VIRTUAL_SERVER.resolveModelAttribute(context, fullModel).asString();
 
-        final boolean useNative = WebDefinition.NATIVE.resolveModelAttribute(context, operation).asBoolean();
-        final String instanceId = WebDefinition.INSTANCE_ID.resolveModelAttribute(context, operation).asString();
+        final boolean useNative = WebDefinition.NATIVE.resolveModelAttribute(context, fullModel).asBoolean();
+        final String instanceId = WebDefinition.INSTANCE_ID.resolveModelAttribute(context, fullModel).asString();
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override

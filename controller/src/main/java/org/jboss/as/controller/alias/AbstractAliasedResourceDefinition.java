@@ -22,7 +22,10 @@
 
 package org.jboss.as.controller.alias;
 
-import org.jboss.as.controller.AttributeDefinition;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -31,15 +34,10 @@ import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 
 /**
  * Abstract base class for {@link AliasedResourceDefinition} implementations. Provides an implementation of
@@ -80,8 +78,6 @@ public class AbstractAliasedResourceDefinition extends SimpleResourceDefinition 
     public void registerAliasOperations(ManagementResourceRegistration resourceRegistration, PathElement alias) {
         registerAddOperation(resourceRegistration, aliasHandler, OperationEntry.Flag.RESTART_NONE);
         registerRemoveOperation(resourceRegistration, aliasHandler, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
-        resourceRegistration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, aliasHandler,
-                GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
     }
 
 

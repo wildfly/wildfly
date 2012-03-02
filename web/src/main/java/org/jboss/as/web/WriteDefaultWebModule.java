@@ -22,6 +22,13 @@ public class WriteDefaultWebModule extends WriteAttributeHandler {
         if (context.isNormalServer()) {
             context.reloadRequired();
         }
-        context.completeStep();
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                if (context.isNormalServer()) {
+                    context.revertReloadRequired();
+                }
+            }
+        });
     }
 }

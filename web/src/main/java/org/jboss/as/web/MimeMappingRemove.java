@@ -26,14 +26,10 @@ package org.jboss.as.web;
 import static org.jboss.as.web.Constants.MIME_MAPPING;
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
 // implements ModelQueryOperationHandler, DescriptionProvider
@@ -56,6 +52,12 @@ public class MimeMappingRemove implements OperationStepHandler{
 
         // TODO deal with runtime https://issues.jboss.org/browse/AS7-3854
 
-        context.completeStep();
+        context.reloadRequired();
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                context.revertReloadRequired();
+            }
+        });
     }
 }
