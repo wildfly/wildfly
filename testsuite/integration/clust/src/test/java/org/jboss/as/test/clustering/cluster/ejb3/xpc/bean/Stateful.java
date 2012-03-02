@@ -49,4 +49,18 @@ public interface Stateful {
 
     @Remove
     void destroy();
+
+    void flush();
+
+    void clear();
+
+    void deleteEmployee(int id);
+
+    void echo(String message);
+
+    int executeNativeSQL(String nativeSql);
+
+    String getVersion();
+
+    long getEmployeesInMemory();
 }
