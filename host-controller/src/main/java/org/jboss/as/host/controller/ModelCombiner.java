@@ -88,6 +88,7 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.repository.HostFileRepository;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingAddHandler;
 import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingAddHandler;
@@ -100,6 +101,7 @@ import org.jboss.dmr.Property;
  * an application server instance.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class ModelCombiner implements ManagedServerBootConfiguration {
 
@@ -256,8 +258,14 @@ class ModelCombiner implements ManagedServerBootConfiguration {
                 command.add(sb.toString());
             }
         }
+        // Determine the directory grouping type
+        final DirectoryGrouping directoryGrouping = DirectoryGrouping.fromModel(hostModel);
+        // Write the paths out to the command
+        final String logDir = addPathProperty(directoryGrouping, command, bootTimeProperties, ServerEnvironment.SERVER_LOG_DIR, environment.getDomainLogDir(), "log");
+        addPathProperty(directoryGrouping, command, bootTimeProperties, ServerEnvironment.SERVER_TEMP_DIR, environment.getDomainTempDir(), "tmp");
+        addPathProperty(directoryGrouping, command, bootTimeProperties, ServerEnvironment.SERVER_DATA_DIR, environment.getDomainDataDir(), "data");
 
-        command.add("-Dorg.jboss.boot.log.file=" + getAbsolutePath(environment.getDomainServersDir(), serverName, "log", "boot.log"));
+        command.add("-Dorg.jboss.boot.log.file=" + getAbsolutePath(new File(logDir), "boot.log"));
         // TODO: make this better
         String loggingConfiguration = System.getProperty("logging.configuration");
         if (loggingConfiguration == null) {
@@ -646,6 +654,39 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
     private ModelNode pathAddress(PathElement...elements) {
         return PathAddress.pathAddress(elements).toModelNode();
+    }
+
+    /**
+     * Adds the absolute path to command.
+     *
+     * @param directoryGrouping the directory group type.
+     * @param command           the command to add the arguments to.
+     * @param properties        the properties where the path may already be defined.
+     * @param propertyName      the name of the property.
+     * @param rootDir           the root directory;
+     * @param subDirName        the subdirectory of the path.
+     *
+     * @return the absolute path that was added.
+     */
+    private String addPathProperty(final DirectoryGrouping directoryGrouping, final List<String> command, final Map<String, String> properties, final String propertyName, final File rootDir, final String subDirName) {
+        final String result;
+        final String value = properties.get(propertyName);
+        if (value == null) {
+            switch (directoryGrouping) {
+                case BY_TYPE:
+                    result = getAbsolutePath(rootDir, subDirName, "servers", serverName);
+                    break;
+                case BY_SERVER:
+                default:
+                    result = getAbsolutePath(rootDir, serverName, subDirName);
+                    break;
+            }
+            properties.put(propertyName, result);
+        } else {
+            result = new File(value).getAbsolutePath();
+        }
+        command.add(String.format("-D%s=%s", propertyName, result));
+        return result;
     }
 
     static String getAbsolutePath(final File root, final String... paths) {

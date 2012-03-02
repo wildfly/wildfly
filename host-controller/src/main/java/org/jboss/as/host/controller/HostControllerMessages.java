@@ -619,5 +619,4 @@ public interface HostControllerMessages {
 
     @Message(id = 15861, value = "Could not create domain temp directory: %s")
     IllegalStateException couldNotCreateDomainTempDirectory(File file);
-
 }

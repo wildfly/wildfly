@@ -27,6 +27,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.SecureRandom;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -623,9 +624,10 @@ class ManagedServer {
             assert Thread.holdsLock(ManagedServer.this); // Call under lock
             // Get the standalone boot updates
             final List<ModelNode> bootUpdates = bootConfiguration.getBootUpdates();
+            final Map<String, String> launchProperties = parseLaunchProperties(bootConfiguration.getServerLaunchCommand());
             // Send std.in
             final ServiceActivator hostControllerCommActivator = HostCommunicationServices.createServerCommunicationActivator(managementSocket, serverName, serverProcessName, authKey, bootConfiguration.isManagementSubsystemEndpoint());
-            final ServerStartTask startTask = new ServerStartTask(hostControllerName, serverName, 0, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates);
+            final ServerStartTask startTask = new ServerStartTask(hostControllerName, serverName, 0, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates, launchProperties);
             final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
             final OutputStream os = processControllerClient.sendStdin(serverProcessName);
             marshaller.start(Marshalling.createByteOutput(os));
@@ -665,6 +667,21 @@ class ManagedServer {
             final int port = managementSocket.getPort();
             processControllerClient.reconnectProcess(serverProcessName, NetworkUtils.formatPossibleIpv6Address(hostName), port, bootConfiguration.isManagementSubsystemEndpoint(), authKey);
         }
+    }
+
+    private static Map<String, String> parseLaunchProperties(final List<String> commands) {
+        final Map<String, String> result = new LinkedHashMap<String, String>();
+        for (String cmd : commands) {
+            if (cmd.startsWith("-D")) {
+                final String[] parts = cmd.substring(2).split("=");
+                if (parts.length == 2) {
+                    result.put(parts[0], parts[1]);
+                } else if (parts.length == 1) {
+                    result.put(parts[0], "true");
+                }
+            }
+        }
+        return result;
     }
 
 }

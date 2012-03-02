@@ -78,6 +78,7 @@ public class ModelDescriptionConstants {
     public static final String DESTINATION_ADDRESS = "destination-address";
     public static final String DESTINATION_PORT = "destination-port";
     public static final String DIRECTORY = "directory";
+    public static final String DIRECTORY_GROUPING = "directory-grouping";
     public static final String DISABLE = "disable";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
     public static final String DOMAIN_CONTROLLER = "domain-controller";

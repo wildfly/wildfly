@@ -71,9 +71,15 @@ import static org.jboss.as.server.controller.descriptions.ServerDescriptionConst
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.registry.AttributeAccess.Flag;
+import org.jboss.as.host.controller.DirectoryGrouping;
 import org.jboss.as.host.controller.operations.HostShutdownHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.dmr.ModelNode;
@@ -85,6 +91,11 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry
  */
 public class HostRootDescription {
+    public static final AttributeDefinition DIRECTORY_GROUPING = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.DIRECTORY_GROUPING, ModelType.STRING).
+            addFlag(Flag.RESTART_ALL_SERVICES).
+            setDefaultValue(DirectoryGrouping.defaultValue().toModelNode()).
+            setValidator(EnumValidator.create(DirectoryGrouping.class, false, false)).
+            build();
 
     private static final String RESOURCE_NAME = HostRootDescription.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -171,6 +182,8 @@ public class HostRootDescription {
 
         root.get(ATTRIBUTES, MASTER, DESCRIPTION).set(bundle.getString("host.master"));
         root.get(ATTRIBUTES, MASTER, TYPE).set(ModelType.BOOLEAN);
+
+        DIRECTORY_GROUPING.addResourceAttributeDescription(bundle, "host", root);
 
         root.get(OPERATIONS).setEmptyObject();
 

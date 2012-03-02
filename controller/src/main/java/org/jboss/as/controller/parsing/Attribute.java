@@ -51,6 +51,7 @@ public enum Attribute {
     DEBUG_ENABLED("debug-enabled"),
     DEBUG_OPTIONS("debug-options"),
     DESTINATION_ADDRESS("destination-address"),
+    DIRECTORY_GROUPING("directory-grouping"),
     DESTINATION_PORT("destination-port"),
     ENABLED("enabled"),
     ENV_CLASSPATH_IGNORED("env-classpath-ignored"),

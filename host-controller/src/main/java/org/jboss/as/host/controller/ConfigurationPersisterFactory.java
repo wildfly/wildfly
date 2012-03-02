@@ -60,6 +60,7 @@ public class ConfigurationPersisterFactory {
     public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final ConfigurationFile file, String defaultHostControllerName) {
         HostXml hostXml = new HostXml(defaultHostControllerName);
         BackupXmlConfigurationPersister persister =  new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
+        persister.registerAdditionalRootElement(new QName(Namespace.DOMAIN_1_1.getUriString(), "host"), hostXml);
         persister.registerAdditionalRootElement(new QName(Namespace.DOMAIN_1_0.getUriString(), "host"), hostXml);
         return persister;
     }
@@ -68,6 +69,7 @@ public class ConfigurationPersisterFactory {
     public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final ConfigurationFile file, ExecutorService executorService, ExtensionRegistry extensionRegistry) {
         DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
         BackupXmlConfigurationPersister persister = new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+        persister.registerAdditionalRootElement(new QName(Namespace.DOMAIN_1_1.getUriString(), "domain"), domainXml);
         persister.registerAdditionalRootElement(new QName(Namespace.DOMAIN_1_0.getUriString(), "domain"), domainXml);
         extensionRegistry.setWriterRegistry(persister);
         return persister;

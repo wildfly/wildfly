@@ -27,6 +27,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIRECTORY_GROUPING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -53,7 +54,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_0;
-import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_1;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
@@ -83,6 +83,7 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
@@ -97,6 +98,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  *
  * @author Brian Stansberry
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author <a href="mailto:jperkins@jboss.com">James R. Perkins</a>
  */
 public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
@@ -119,8 +121,9 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                 readHostElement_1_0(reader, address, operationList);
                 break;
             }
-            case DOMAIN_1_1: {
-                readHostElement_1_1(reader, address, operationList);
+            case DOMAIN_1_1:
+            case DOMAIN_1_2: {
+                readHostElement_1_1(readerNS, reader, address, operationList);
                 break;
             }
             default: {
@@ -194,8 +197,13 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         }
 
         if (modelNode.hasDefined(SERVER_CONFIG)) {
+            writer.writeStartElement(Element.SERVERS.getLocalName());
+            // Write the directory grouping
+            if (HostRootDescription.DIRECTORY_GROUPING.isMarshallable(modelNode, false))
+                writeAttribute(writer, Attribute.DIRECTORY_GROUPING, modelNode.get(DIRECTORY_GROUPING).asString());
             writeServers(writer, modelNode.get(SERVER_CONFIG));
             writeNewLine(writer);
+            writer.writeEndElement();
         }
 
         writer.writeEndElement();
@@ -301,7 +309,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
     }
 
-    private void readHostElement_1_1(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+    private void readHostElement_1_1(final Namespace namespace, final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
             throws XMLStreamException {
         String hostName = null;
 
@@ -360,43 +368,43 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         // Content
         // Handle elements: sequence
 
-        Element element = nextElement(reader, DOMAIN_1_1);
+        Element element = nextElement(reader, namespace);
 
         if (element == Element.SYSTEM_PROPERTIES) {
-            parseSystemProperties(reader, address, DOMAIN_1_1, list, false);
-            element = nextElement(reader, DOMAIN_1_1);
+            parseSystemProperties(reader, address, namespace, list, false);
+            element = nextElement(reader, namespace);
         }
         if (element == Element.PATHS) {
-            parsePaths(reader, address, DOMAIN_1_1, list, true);
-            element = nextElement(reader, DOMAIN_1_1);
+            parsePaths(reader, address, namespace, list, true);
+            element = nextElement(reader, namespace);
         }
         if (element == Element.VAULT) {
-            parseVault(reader, address, DOMAIN_1_1, list);
-            element = nextElement(reader, DOMAIN_1_1);
+            parseVault(reader, address, namespace, list);
+            element = nextElement(reader, namespace);
         }
         if (element == Element.MANAGEMENT) {
             ManagementXml managementXml = new ManagementXml(this);
-            managementXml.parseManagement(reader, address, DOMAIN_1_1, list, true, true);
-            element = nextElement(reader, DOMAIN_1_1);
+            managementXml.parseManagement(reader, address, namespace, list, true, true);
+            element = nextElement(reader, namespace);
         } else {
             throw missingRequiredElement(reader, EnumSet.of(Element.MANAGEMENT));
         }
         if (element == Element.DOMAIN_CONTROLLER) {
-            parseDomainController(reader, address, DOMAIN_1_1, list);
-            element = nextElement(reader, DOMAIN_1_1);
+            parseDomainController(reader, address, namespace, list);
+            element = nextElement(reader, namespace);
         }
         final Set<String> interfaceNames = new HashSet<String>();
         if (element == Element.INTERFACES) {
-            parseInterfaces(reader, interfaceNames, address, DOMAIN_1_1, list, true);
-            element = nextElement(reader, DOMAIN_1_1);
+            parseInterfaces(reader, interfaceNames, address, namespace, list, true);
+            element = nextElement(reader, namespace);
         }
         if (element == Element.JVMS) {
-            parseJvms(reader, address, DOMAIN_1_1, list);
-            element = nextElement(reader, DOMAIN_1_1);
+            parseJvms(reader, address, namespace, list);
+            element = nextElement(reader, namespace);
         }
         if (element == Element.SERVERS) {
-            parseServers(reader, address, DOMAIN_1_1, list);
-            element = nextElement(reader, DOMAIN_1_1);
+            parseServers(reader, address, namespace, list);
+            element = nextElement(reader, namespace);
         }
         if (element != null) {
             throw unexpectedElement(reader);
@@ -921,10 +929,33 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         }
     }
 
+    private void parseServersAttributes(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> list) throws XMLStreamException {
+        // Handle attributes
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case DIRECTORY_GROUPING: {
+                        final ModelNode address = parentAddress.clone();
+                        list.add(Util.getWriteAttributeOperation(address, DIRECTORY_GROUPING, value));
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+    }
+
     private void parseServers(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
             throws XMLStreamException {
-
-        requireNoAttributes(reader);
+        if (expectedNs != Namespace.DOMAIN_1_1) {
+            parseServersAttributes(reader, address, list);
+        }
         // Handle elements
         final Set<String> names = new HashSet<String>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -1242,7 +1273,6 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
     }
 
     private void writeServers(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
-        writer.writeStartElement(Element.SERVERS.getLocalName());
 
         for (Property prop : modelNode.asPropertyList()) {
             final ModelNode server = prop.getValue();
@@ -1284,8 +1314,6 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
             writer.writeEndElement();
         }
-
-        writer.writeEndElement();
     }
 
 }
