@@ -35,7 +35,6 @@ public final class PersistenceUnit {
     public static final AttributeDefinition JARFILE = new AttributeDefinition(true);
     public static final AttributeDefinition JTADATASOURCE = new AttributeDefinition(true);
     public static final AttributeDefinition MAPPINGFILE = new AttributeDefinition(true);
-    public static final AttributeDefinition NAME = new AttributeDefinition(false);
     public static final AttributeDefinition NONJTADATASOURCE = new AttributeDefinition(true);
     public static final AttributeDefinition PROVIDER = new AttributeDefinition(true);
     public static final AttributeDefinition PROPERTY = new AttributeDefinition(true);
