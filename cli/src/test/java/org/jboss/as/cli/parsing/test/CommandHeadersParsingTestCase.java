@@ -26,9 +26,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.jboss.as.cli.ArgumentValueConverter;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.completion.mock.MockCommandContext;
+import org.jboss.as.cli.impl.HeadersArgumentValueConverter;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.parsing.ParserUtil;
 import org.jboss.dmr.ModelNode;
@@ -41,10 +42,11 @@ import org.junit.Test;
 public class CommandHeadersParsingTestCase {
 
     private final DefaultCallbackHandler handler = new DefaultCallbackHandler();
+    private final HeadersArgumentValueConverter converter = new HeadersArgumentValueConverter(new MockCommandContext());
 
     @Test
     public void testSingleHeader() throws Exception {
-        final ModelNode headers = ArgumentValueConverter.HEADERS.fromString("{rollback-on-runtime-failure=false}");
+        final ModelNode headers = converter.fromString("{rollback-on-runtime-failure=false}");
         final ModelNode expected = new ModelNode();
         expected.get("rollback-on-runtime-failure").set("false");
         assertEquals(expected, headers);
@@ -52,7 +54,7 @@ public class CommandHeadersParsingTestCase {
 
     @Test
     public void testTwoHeaders() throws Exception {
-        final ModelNode headers = ArgumentValueConverter.HEADERS.fromString("{rollback-on-runtime-failure=false;allow-resource-service-restart=true}");
+        final ModelNode headers = converter.fromString("{rollback-on-runtime-failure=false;allow-resource-service-restart=true}");
         final ModelNode expected = new ModelNode();
         expected.get("rollback-on-runtime-failure").set("false");
         expected.get("allow-resource-service-restart").set("true");
@@ -62,7 +64,7 @@ public class CommandHeadersParsingTestCase {
     @Test
     public void testArgumentValueConverter() throws Exception {
 
-        final ModelNode node = ArgumentValueConverter.HEADERS.fromString("{ rollout groupA rollback-across-groups; rollback-on-runtime-failure=false}");
+        final ModelNode node = converter.fromString("{ rollout groupA rollback-across-groups; rollback-on-runtime-failure=false}");
 
         final ModelNode expectedHeaders = new ModelNode();
         final ModelNode rolloutPlan = expectedHeaders.get(Util.ROLLOUT_PLAN);
@@ -97,7 +99,7 @@ public class CommandHeadersParsingTestCase {
 
         final String headers = handler.getPropertyValue("--headers");
         assertNotNull(headers);
-        final ModelNode node = ArgumentValueConverter.HEADERS.fromString(headers);
+        final ModelNode node = converter.fromString(headers);
         assertTrue(node.hasDefined(Util.ROLLOUT_PLAN));
         assertTrue(node.hasDefined(Util.ROLLBACK_ON_RUNTIME_FAILURE));
         assertEquals("tr", node.get(Util.ALLOW_RESOURCE_SERVICE_RESTART).asString());
