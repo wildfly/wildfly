@@ -12,6 +12,9 @@
       </replacement>
    </supplement>
    <supplement name="no-remote-connector">
+      <replacement placeholder="REMOTING-CONNECTOR">
+         <!--<remoting-connector/>-->
+      </replacement>   
    </supplement>
    
 </config>
