@@ -1,0 +1,12 @@
+SYNOPSIS
+
+    echo-dmr command_line
+
+DESCRIPTION
+
+    Builds a DMR requests for the command or operation passed in as the argument
+    and echos in its toString() format.
+
+ARGUMENTS
+
+ command_line   - command or an operation to translate to DMR.
