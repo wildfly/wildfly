@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jboss.as.cli.ArgumentValueConverter;
 import org.jboss.as.cli.CliEvent;
 import org.jboss.as.cli.CliEventListener;
 import org.jboss.as.cli.CommandArgument;
@@ -37,6 +36,7 @@ import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
+import org.jboss.as.cli.impl.HeadersArgumentValueConverter;
 import org.jboss.as.cli.impl.RequestParameterArgument;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.CommandLineParser;
@@ -61,11 +61,12 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
     private Boolean addressAvailable;
     private String requiredType;
 
-    protected ArgumentWithValue headers = new ArgumentWithValue(this, HeadersCompleter.INSTANCE, ArgumentValueConverter.HEADERS, "--headers");
+    protected ArgumentWithValue headers;
 
     public BaseOperationCommand(CommandContext ctx, String command, boolean connectionRequired) {
         super(command, connectionRequired);
         ctx.addEventListener(this);
+        headers = new ArgumentWithValue(this, HeadersCompleter.INSTANCE, new HeadersArgumentValueConverter(ctx), "--headers");
     }
 
     /**

@@ -25,10 +25,10 @@ package org.jboss.as.cli.parsing.test;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.jboss.as.cli.ArgumentValueConverter;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.completion.mock.MockCommandContext;
+import org.jboss.as.cli.impl.HeadersArgumentValueConverter;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.ParsedOperationRequestHeader;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
@@ -1030,7 +1030,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
     @Test
     public void testArgumentValueConverter() throws Exception {
 
-        final ModelNode node = ArgumentValueConverter.HEADERS.fromString("{ rollout " +
+        final ModelNode node = new HeadersArgumentValueConverter(new MockCommandContext()).fromString("{ rollout " +
                 "groupA(rolling-to-servers=true,max-failure-percentage=20) ^ groupB, groupC," +
                 "groupD(rolling-to-servers=true,max-failed-servers=1) ^ groupE rollback-across-groups}");
 
