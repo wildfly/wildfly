@@ -62,7 +62,7 @@ public class CliLauncher {
                         value = arg.substring(11);
                     }
                     String portStr = null;
-                    int colonIndex = value.indexOf(':');
+                    int colonIndex = value.lastIndexOf(':');
                     if(colonIndex < 0) {
                         // default port
                         defaultControllerHost = value;
@@ -70,8 +70,25 @@ public class CliLauncher {
                         // default host
                         portStr = value.substring(1);
                     } else {
-                        defaultControllerHost = value.substring(0, colonIndex);
-                        portStr = value.substring(colonIndex + 1);
+                        final boolean hasPort;
+                        int closeBracket = value.lastIndexOf(']');
+                        if (closeBracket != -1) {
+                            //possible ip v6
+                            if (closeBracket > colonIndex) {
+                                hasPort = false;
+                            } else {
+                                hasPort = true;
+                            }
+                        } else {
+                            //probably ip v4
+                            hasPort = true;
+                        }
+                        if (hasPort) {
+                            defaultControllerHost = value.substring(0, colonIndex).trim();
+                            portStr = value.substring(colonIndex + 1).trim();
+                        } else {
+                            defaultControllerHost = value;
+                        }
                     }
 
                     if(portStr != null) {
