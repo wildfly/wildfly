@@ -29,8 +29,14 @@ import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
+import javax.sql.DataSource;
 
+import org.hibernate.Session;
+import org.hibernate.stat.SecondLevelCacheStatistics;
 import org.jboss.ejb3.annotation.Clustered;
+
+import java.sql.Connection;
+import java.util.HashMap;
 
 /**
  * @author Paul Ferraro
@@ -43,6 +49,9 @@ public class StatefulBean implements Stateful {
 
     @PersistenceContext(unitName = "mypc", type = PersistenceContextType.EXTENDED)
     EntityManager em;
+
+    String version = "initial";
+    HashMap valueBag = new HashMap();
 
 //     @EJB
 //     SecondBean secondBean;
@@ -64,19 +73,23 @@ public class StatefulBean implements Stateful {
         emp.setId(id);
         emp.setAddress(address);
         emp.setName(name);
-
         em.persist(emp);
+        logStats("createEmployee");
+        version = "created";
+        valueBag.put("version","created");
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public Employee getEmployee(int id) {
+        logStats("getEmployee " + id);
         return em.find(Employee.class, id, LockModeType.NONE);
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public Employee getSecondBeanEmployee(int id) {
+        logStats("getSecondBeanEmployee");
         //return secondBean.getEmployee(id);
         return em.find(Employee.class, id, LockModeType.NONE);
     }
@@ -84,6 +97,87 @@ public class StatefulBean implements Stateful {
     @Override
     @Remove
     public void destroy() {
+        logStats("destroy");
+        version = "destroyed";
+        valueBag.put("version",version);
+    }
+
+    @Override
+        @TransactionAttribute(TransactionAttributeType.REQUIRED)
+        public void deleteEmployee(int id) {
+            Employee employee = em.find(Employee.class, id, LockModeType.NONE);
+            em.remove(employee);
+            logStats("deleteEmployee");
+            version = "deletedEmployee";
+            valueBag.put("version",version);
+        }
+
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void flush() {
+        logStats("flush");
+        version = "flushed";
+        valueBag.put("version",version);
+    }
+
+    @Override
+    public void clear() {
+        em.clear();
+        logStats("clear");
+        version = "cleared";
+        valueBag.put("version",version);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
+    public void echo(String message) {
+        System.out.println("echo entered for " + message);
+        logStats("echo " + message);
+        System.out.println("echo completed for " + message);
+    }
+
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public int executeNativeSQL(String nativeSql) {
+        logStats("executeNativeSQL");
+        return em.createNativeQuery(nativeSql).executeUpdate();
+    }
+
+    @Override
+    public String getVersion() {
+        return version;
+    }
+
+    @Override
+    public long getEmployeesInMemory() {
+        Session session = em.unwrap(Session.class);
+        String entityRegionNames[] =  session.getSessionFactory().getStatistics().getSecondLevelCacheRegionNames();
+        for (String name: entityRegionNames) {
+            if (name.contains(Employee.class.getName())) {
+                SecondLevelCacheStatistics stats = session.getSessionFactory().getStatistics().getSecondLevelCacheStatistics(name);
+                return stats.getElementCountInMemory();
+            }
+        }
+        return -1;
 
     }
+
+    private void logStats(String methodName) {
+        Session session = em.unwrap(Session.class);
+        System.out.println(methodName + "(version="+version+", HashMap version="+valueBag.get("version")+") logging statistics for session = " + session);
+        session.getSessionFactory().getStatistics().setStatisticsEnabled(true);
+        session.getSessionFactory().getStatistics().logSummary();
+        String entityRegionNames[] =  session.getSessionFactory().getStatistics().getSecondLevelCacheRegionNames();
+        for (String name: entityRegionNames) {
+            System.out.println("cache entity region name = " + name);
+            SecondLevelCacheStatistics stats = session.getSessionFactory().getStatistics().getSecondLevelCacheStatistics(name);
+            System.out.println("2lc for " + name+ ": " + stats.toString());
+
+        }
+        // we will want to return the SecondLevelCacheStatistics for Employee
+
+    }
+
 }
