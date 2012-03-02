@@ -70,9 +70,11 @@ class WebVirtualHostAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        model.get(WebVirtualHostDefinition.NAME.getName()).set(address.getLastElement().getValue());
+
         WebVirtualHostDefinition.ALIAS.validateAndSet(operation, model);
         WebVirtualHostDefinition.ENABLE_WELCOME_ROOT.validateAndSet(operation, model);
-        WebVirtualHostDefinition.NAME.validateAndSet(operation, model);
         WebVirtualHostDefinition.DEFAULT_WEB_MODULE.validateAndSet(operation, model);
     }
 

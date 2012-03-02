@@ -1,10 +1,10 @@
 package org.jboss.as.web;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.alias.AbstractAliasedResourceDefinition;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -21,7 +21,7 @@ public class WebAccessLogDefinition extends AbstractAliasedResourceDefinition {
     protected static final SimpleAttributeDefinition PATTERN =
             new SimpleAttributeDefinitionBuilder(Constants.PATTERN, ModelType.STRING, true)
                     .setXmlName(Constants.PATTERN)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode("common"))
                     .setValidator(new StringLengthValidator(1, true))
                     .build();
@@ -29,21 +29,21 @@ public class WebAccessLogDefinition extends AbstractAliasedResourceDefinition {
     protected static final SimpleAttributeDefinition RESOLVE_HOSTS =
             new SimpleAttributeDefinitionBuilder(Constants.RESOLVE_HOSTS, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.RESOLVE_HOSTS)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(false))
                     .build();
 
     protected static final SimpleAttributeDefinition EXTENDED =
             new SimpleAttributeDefinitionBuilder(Constants.EXTENDED, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.EXTENDED)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(false))
                     .build();
 
     protected static final SimpleAttributeDefinition PREFIX =
             new SimpleAttributeDefinitionBuilder(Constants.PREFIX, ModelType.STRING, true)
                     .setXmlName(Constants.PREFIX)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(false))
                     .setValidator(new StringLengthValidator(1, true))
                     .build();
@@ -51,10 +51,11 @@ public class WebAccessLogDefinition extends AbstractAliasedResourceDefinition {
     protected static final SimpleAttributeDefinition ROTATE =
             new SimpleAttributeDefinitionBuilder(Constants.ROTATE, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.ROTATE)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(true))
                     .build();
     protected static final SimpleAttributeDefinition[] ACCESS_LOG_ATTRIBUTES = {
+            // IMPORTANT -- keep these in xsd order as this order controls marshalling
             PATTERN,
             RESOLVE_HOSTS,
             EXTENDED,
@@ -73,7 +74,7 @@ public class WebAccessLogDefinition extends AbstractAliasedResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration accesslog) {
         for (SimpleAttributeDefinition def : ACCESS_LOG_ATTRIBUTES) {
-            accesslog.registerReadWriteAttribute(def, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(def));
+            accesslog.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
         }
     }
 

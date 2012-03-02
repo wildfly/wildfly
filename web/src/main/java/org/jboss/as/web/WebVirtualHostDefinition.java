@@ -1,10 +1,10 @@
 package org.jboss.as.web;
 
-import org.jboss.as.controller.SimpleListAttributeDefinition;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -19,9 +19,9 @@ public class WebVirtualHostDefinition extends SimpleResourceDefinition {
     public static final WebVirtualHostDefinition INSTANCE = new WebVirtualHostDefinition();
 
     protected static final SimpleAttributeDefinition NAME =
-            new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING, true)
+            new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING, false)
                     .setXmlName(Constants.NAME)
-                    //.setAllowNull(false) //todo should be true
+                    .setAllowNull(true)      // todo should be false, but 'add' won't validate then
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
@@ -59,8 +59,8 @@ public class WebVirtualHostDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration hosts) {
-        hosts.registerReadWriteAttribute(NAME, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(NAME));
-        hosts.registerReadWriteAttribute(ALIAS, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(ALIAS));
+        hosts.registerReadOnlyAttribute(NAME, null);
+        hosts.registerReadWriteAttribute(ALIAS, null, new ReloadRequiredWriteAttributeHandler(ALIAS));
         // They excluded each other...
         hosts.registerReadWriteAttribute(ENABLE_WELCOME_ROOT, null, WriteEnableWelcomeRoot.INSTANCE);
         hosts.registerReadWriteAttribute(DEFAULT_WEB_MODULE, null, WriteDefaultWebModule.INSTANCE);

@@ -2,6 +2,7 @@ package org.jboss.as.web;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.alias.AbstractAliasedResourceDefinition;
@@ -23,7 +24,7 @@ public class WebAccessLogDirectoryDefinition extends AbstractAliasedResourceDefi
             new SimpleAttributeDefinitionBuilder(Constants.RELATIVE_TO, ModelType.STRING, true)
                     .setXmlName(Constants.RELATIVE_TO)
                     .setAllowNull(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
                     .setDefaultValue(new ModelNode("jboss.server.log.dir"))
                     .build();
@@ -33,7 +34,7 @@ public class WebAccessLogDirectoryDefinition extends AbstractAliasedResourceDefi
             new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING, true)
                     .setXmlName(Constants.PATH)
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
                     .build();
 
@@ -47,8 +48,8 @@ public class WebAccessLogDirectoryDefinition extends AbstractAliasedResourceDefi
 
     @Override
     public void registerAttributes(ManagementResourceRegistration directory) {
-        directory.registerReadWriteAttribute(RELATIVE_TO, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(RELATIVE_TO));
-        directory.registerReadWriteAttribute(PATH, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(PATH));
+        directory.registerReadWriteAttribute(RELATIVE_TO, null, new ReloadRequiredWriteAttributeHandler(RELATIVE_TO));
+        directory.registerReadWriteAttribute(PATH, null, new ReloadRequiredWriteAttributeHandler(PATH));
     }
 
     @Override

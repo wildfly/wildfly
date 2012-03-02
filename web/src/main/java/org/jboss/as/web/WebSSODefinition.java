@@ -2,6 +2,7 @@ package org.jboss.as.web;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.alias.AbstractAliasedResourceDefinition;
@@ -45,7 +46,10 @@ public class WebSSODefinition extends AbstractAliasedResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
-    protected static SimpleAttributeDefinition[] SSO_ATTRIBUTES = {CACHE_CONTAINER, CACHE_NAME, DOMAIN, REAUTHENTICATE};
+    protected static SimpleAttributeDefinition[] SSO_ATTRIBUTES = {
+            // IMPORTANT -- keep these in xsd order as this order controls marshalling
+            CACHE_CONTAINER, CACHE_NAME, DOMAIN, REAUTHENTICATE
+    };
 
     private WebSSODefinition() {
         super(WebExtension.SSO_PATH,
@@ -57,7 +61,7 @@ public class WebSSODefinition extends AbstractAliasedResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration sso) {
         for (SimpleAttributeDefinition def : SSO_ATTRIBUTES) {
-            sso.registerReadWriteAttribute(def, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(def));
+            sso.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
         }
     }
 

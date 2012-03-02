@@ -3,6 +3,7 @@ package org.jboss.as.web;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.alias.AbstractAliasedResourceDefinition;
@@ -24,8 +25,7 @@ public class WebSSLDefinition extends AbstractAliasedResourceDefinition {
     protected static final SimpleAttributeDefinition NAME =
             new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING, true)
                     .setXmlName(Constants.NAME)
-                    .setAllowNull(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowNull(true)
                     .build();
 
     protected static final SimpleAttributeDefinition KEY_ALIAS =
@@ -136,21 +136,23 @@ public class WebSSLDefinition extends AbstractAliasedResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
     protected static SimpleAttributeDefinition[] SSL_ATTRIBUTES = {
+            // IMPORTANT -- keep these in xsd order as this order controls marshalling
             KEY_ALIAS,
             PASSWORD,
             CERTIFICATE_KEY_FILE,
-            CERTIFICATE_FILE,
             CIPHER_SUITE,
             PROTOCOL,
             VERIFY_CLIENT,
             VERIFY_DEPTH,
+            CERTIFICATE_FILE,
             CA_CERTIFICATE_FILE,
-            CA_CERTIFICATE_PASSWORD,
             CA_REVOCATION_URL,
-            SESSION_CACHE_SIZE,
-            SESSION_TIMEOUT,
+            CA_CERTIFICATE_PASSWORD,
+            KEYSTORE_TYPE,
             TRUSTSTORE_TYPE,
-            KEYSTORE_TYPE};
+            SESSION_CACHE_SIZE,
+            SESSION_TIMEOUT
+        };
 
 
     private WebSSLDefinition() {
@@ -163,12 +165,14 @@ public class WebSSLDefinition extends AbstractAliasedResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration ssl) {
+        ssl.registerReadWriteAttribute(NAME, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(NAME));
         for (AttributeDefinition attr : SSL_ATTRIBUTES) {
-            ssl.registerReadWriteAttribute(attr, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(attr));
+            ssl.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }
     }
 
     public void registerAliasAttributes(ManagementResourceRegistration resourceRegistration, PathElement alias) {
+        resourceRegistration.registerReadOnlyAttribute(NAME, aliasHandler);
         for (AttributeDefinition attr : SSL_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, aliasHandler, aliasHandler);
         }
