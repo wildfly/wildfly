@@ -26,7 +26,6 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
-import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.util.jar.Attributes;
 
@@ -320,15 +319,15 @@ public interface ServerLogger extends BasicLogger {
 
     @LogMessage(level = INFO)
     @Message(id = 15951, value= "Admin console listening on http://%s:%d")
-    void logHttpConsole(InetAddress httpAddr, int httpPort);
+    void logHttpConsole(String httpAddr, int httpPort);
 
     @LogMessage(level = INFO)
     @Message(id = 15952, value= "Admin console listening on https://%s:%d")
-    void logHttpsConsole(InetAddress httpsAddr, int httpsPort);
+    void logHttpsConsole(String httpsAddr, int httpsPort);
 
     @LogMessage(level = INFO)
     @Message(id = 15953, value= "Admin console listening on http://%s:%d and https://%s:%d")
-    void logHttpAndHttpsConsole(InetAddress httpAddr, int httpPort, InetAddress httpsAddr, int httpsPort);
+    void logHttpAndHttpsConsole(String httpAddr, int httpPort, String httpsAddr, int httpsPort);
 
     @LogMessage(level = INFO)
     @Message(id = 15954, value= "Admin console is not enabled")

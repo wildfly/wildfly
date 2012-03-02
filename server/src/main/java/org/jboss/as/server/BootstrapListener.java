@@ -21,6 +21,7 @@
  */
 package org.jboss.as.server;
 
+import java.net.InetAddress;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Set;
@@ -28,6 +29,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -167,14 +169,18 @@ public class BootstrapListener extends AbstractServiceListener<Object> {
             boolean hasHttp = mgmt.getHttpNetworkInterfaceBinding() != null && mgmt.getHttpPort() > 0;
             boolean hasHttps = mgmt.getHttpsNetworkInterfaceBinding() != null && mgmt.getHttpsPort() > 0;
             if (hasHttp && hasHttps) {
-                ServerLogger.AS_ROOT_LOGGER.logHttpAndHttpsConsole(mgmt.getHttpNetworkInterfaceBinding().getAddress(), mgmt.getHttpPort(), mgmt.getHttpsNetworkInterfaceBinding().getAddress(), mgmt.getHttpsPort());
+                ServerLogger.AS_ROOT_LOGGER.logHttpAndHttpsConsole(formatAddress(mgmt.getHttpNetworkInterfaceBinding().getAddress()), mgmt.getHttpPort(), formatAddress(mgmt.getHttpsNetworkInterfaceBinding().getAddress()), mgmt.getHttpsPort());
             } else if (hasHttp) {
-                ServerLogger.AS_ROOT_LOGGER.logHttpConsole(mgmt.getHttpNetworkInterfaceBinding().getAddress(), mgmt.getHttpPort());
+                ServerLogger.AS_ROOT_LOGGER.logHttpConsole(formatAddress(mgmt.getHttpNetworkInterfaceBinding().getAddress()), mgmt.getHttpPort());
             } else if (hasHttps) {
-                ServerLogger.AS_ROOT_LOGGER.logHttpsConsole(mgmt.getHttpsNetworkInterfaceBinding().getAddress(), mgmt.getHttpsPort());
+                ServerLogger.AS_ROOT_LOGGER.logHttpsConsole(formatAddress(mgmt.getHttpsNetworkInterfaceBinding().getAddress()), mgmt.getHttpsPort());
             } else {
                 ServerLogger.AS_ROOT_LOGGER.logNoConsole();
             }
         }
+    }
+
+    private String formatAddress(InetAddress addr) {
+        return NetworkUtils.formatPossibleIpv6Address(addr.getHostAddress());
     }
 }
