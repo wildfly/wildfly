@@ -95,6 +95,7 @@ import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
 import org.jboss.as.cli.handlers.ReadAttributeHandler;
 import org.jboss.as.cli.handlers.ReadOperationHandler;
+import org.jboss.as.cli.handlers.EchoDMRHandler;
 import org.jboss.as.cli.handlers.UndeployHandler;
 import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.cli.handlers.batch.BatchClearHandler;
@@ -267,6 +268,7 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new ClearScreenHandler(), "clear", "cls");
         cmdRegistry.registerHandler(new CommandCommandHandler(cmdRegistry), "command");
         cmdRegistry.registerHandler(new ConnectHandler(), "connect");
+        cmdRegistry.registerHandler(new EchoDMRHandler(), "echo-dmr");
         cmdRegistry.registerHandler(new HelpHandler(), "help", "h");
         cmdRegistry.registerHandler(new HistoryHandler(), "history");
         cmdRegistry.registerHandler(new LsHandler(), "ls");
