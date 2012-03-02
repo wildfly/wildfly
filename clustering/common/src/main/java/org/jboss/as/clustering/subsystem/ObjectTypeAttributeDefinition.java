@@ -53,8 +53,24 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
     private final AttributeDefinition[] valueTypes;
     private final String suffix;
 
+    /**
+     * Constructor which enables validation via ObjectTypeValidator.
+     */
     private ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull, final ParameterCorrector corrector, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
         super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, new ObjectTypeValidator(allowNull, valueTypes), alternatives, requires, flags);
+        this.valueTypes = valueTypes;
+        if (suffix == null) {
+            this.suffix = "";
+        } else {
+            this.suffix = suffix;
+        }
+    }
+
+    /*
+     * Constructor which allows specifying a custom ParameterValidator. Disabled by default.
+     */
+    private ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull, final ParameterValidator validator, final ParameterCorrector corrector, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, validator, alternatives, requires, flags);
         this.valueTypes = valueTypes;
         if (suffix == null) {
             this.suffix = "";
@@ -176,6 +192,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
                 }
             }
         }
+
         if (validator instanceof AllowedValuesValidator) {
             AllowedValuesValidator avv = (AllowedValuesValidator) validator;
             List<ModelNode> allowed = avv.getAllowedValues();
@@ -185,7 +202,6 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
                 }
             }
         }
-
         return result;
     }
 
@@ -193,6 +209,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
         private final String name;
         private String suffix;
         private final AttributeDefinition[] valueTypes;
+        private ParameterValidator validator;
         private ParameterCorrector corrector;
         private String xmlName;
         private boolean allowNull;
@@ -222,7 +239,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
 
         public ObjectTypeAttributeDefinition build() {
             if (xmlName == null) xmlName = name;
-            return new ObjectTypeAttributeDefinition(name, xmlName, suffix, valueTypes, allowNull, corrector, alternatives, requires, flags);
+            return new ObjectTypeAttributeDefinition(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires, flags);
         }
 
         public Builder setAllowNull(final boolean allowNull) {
@@ -238,6 +255,10 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
         public Builder setCorrector(final ParameterCorrector corrector) {
             this.corrector = corrector;
             return this;
+        }
+
+        public void setValidator(ParameterValidator validator) {
+            this.validator = validator;
         }
 
         public Builder setFlags(final AttributeAccess.Flag... flags) {
