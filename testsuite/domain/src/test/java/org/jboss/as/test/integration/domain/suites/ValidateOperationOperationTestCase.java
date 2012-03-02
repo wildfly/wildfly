@@ -21,11 +21,19 @@
 */
 package org.jboss.as.test.integration.domain.suites;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALIDATE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
@@ -34,12 +42,6 @@ import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALIDATE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 /**
  * Tests that the validate-operation operation works as it should
@@ -58,7 +60,7 @@ public class ValidateOperationOperationTestCase extends AbstractMgmtTestBase {
 
     @BeforeClass
     public static void setup() throws UnknownHostException {
-        client = ModelControllerClient.Factory.create(TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort());
+        client = ModelControllerClient.Factory.create(DomainTestSupport.masterAddress, TestSuiteEnvironment.getServerPort());
     }
 
     @AfterClass

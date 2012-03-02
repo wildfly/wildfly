@@ -21,18 +21,15 @@
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
-import org.jboss.as.test.integration.domain.suites.CLITestSuite;
-import java.util.Map;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Map;
 
-import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.suites.CLITestSuite;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -52,7 +49,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void before() throws Exception {
-        AbstractCliTestBase.initCLI();
+        AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
     }
 
     @AfterClass

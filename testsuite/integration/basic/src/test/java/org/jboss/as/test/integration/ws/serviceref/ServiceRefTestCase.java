@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.ws.serviceref;
 
 import java.util.Hashtable;
+import java.util.Properties;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -30,6 +31,7 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.PropertiesValueResolver;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -66,11 +68,16 @@ public class ServiceRefTestCase {
     @Deployment
     public static JavaArchive deployment() {
         String wsdl = FileUtils.readFile(ServiceRefTestCase.class, "TestService.wsdl");
+
+        final Properties properties = new Properties(System.getProperties());
+        if(properties.containsKey("node0")) {
+            properties.put("node0", NetworkUtils.formatPossibleIpv6Address((String)properties.get("node0")));
+        }
         return ShrinkWrap.create(JavaArchive.class, "ws-serviceref-example.jar")
                 .addClasses(EJB3Bean.class, EndpointInterface.class, EndpointService.class, StatelessBean.class, StatelessRemote.class)
                 .addAsManifestResource(ServiceRefTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
                 .addAsManifestResource(ServiceRefTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(wsdl)), "wsdl/TestService.wsdl");
+                .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(wsdl, properties)), "wsdl/TestService.wsdl");
     }
 
     @Test

@@ -45,7 +45,6 @@
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <!-- This value is overridden in submodules with the correct relative path. -->
         <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
-
     </properties>
 
     <!--
@@ -65,11 +64,17 @@
                     <failIfNoTests>false</failIfNoTests>
                     <!-- parallel>none</parallel -->
                     <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+
+                    <!-- System properties to forked surefire JVM which runs clients. -->
+                    <argLine>${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
+
                     <systemPropertyVariables>
                         <jboss.options>${surefire.system.args}</jboss.options>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <jboss.home>${jboss.home}</jboss.home>
                         <module.path>${jboss.home}/modules</module.path>
+                        <jboss.test.host.master.address>${node0}</jboss.test.host.master.address>
+                        <jboss.test.host.slave.address>${node1}</jboss.test.host.slave.address>
                     </systemPropertyVariables>
                     <includes>
                          <include>org/jboss/as/test/integration/respawn/*TestCase.java</include>

@@ -49,6 +49,8 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.process.Main;
 import org.jboss.as.process.ProcessController;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.junit.AfterClass;
@@ -128,6 +130,7 @@ public class RespawnTestCase {
         pw.println("slave=" + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm", "slave_user_password".toCharArray()));
         pw.close();
         fos.close();
+        final String address = System.getProperty("jboss.test.host.master.address", "127.0.0.1");
 
         List<String> args = new ArrayList<String>();
         args.add("-jboss-home");
@@ -137,7 +140,8 @@ public class RespawnTestCase {
         args.add("--");
         args.add("-Dorg.jboss.boot.log.file=" + masterDirPath + "/log/host-controller.log");
         args.add("-Dlogging.configuration=file:" + jbossHome + "/domain/configuration/logging.properties");
-        args.add("-Djboss.test.host.master.address=" + System.getProperty("jboss.test.host.master.address", "127.0.0.1"));
+        args.add("-Djboss.test.host.master.address=" + address);
+        TestSuiteEnvironment.getIpv6Args(args);
         args.add("-Xms64m");
         args.add("-Xmx512m");
         args.add("-XX:MaxPermSize=256m");
@@ -149,8 +153,12 @@ public class RespawnTestCase {
         args.add(processUtil.getJavaCommand());
         args.add("--host-config=" + hostXml.getName());
         args.add("--domain-config=" + domainXml.getName());
-        args.add("-Djboss.test.host.master.address=" + System.getProperty("jboss.test.host.master.address", "127.0.0.1"));
+        args.add("-Djboss.test.host.master.address=" + address);
         args.add("-Djboss.domain.base.dir=" + masterDir.getAbsolutePath());
+        args.add("--interprocess-hc-address");
+        args.add(address);
+        args.add("--pc-address");
+        args.add(address);
 
         processController = Main.start(args.toArray(new String[args.size()]));
     }
@@ -279,7 +287,7 @@ public class RespawnTestCase {
         if (adminOnly != null) {
             operation.get(ModelDescriptionConstants.ADMIN_ONLY).set(adminOnly);
         }
-        final ModelControllerClient client = ModelControllerClient.Factory.create("localhost", HC_PORT, getCallbackHandler());
+        final ModelControllerClient client = ModelControllerClient.Factory.create(DomainTestSupport.masterAddress, HC_PORT, getCallbackHandler());
         try {
             Assert.assertEquals(SUCCESS, client.execute(operation).get(OUTCOME).asString());
         } catch (IOException canHappenWhenShuttingDownController) {
@@ -315,7 +323,7 @@ public class RespawnTestCase {
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(OP_ADDR).set(getHostControllerServerAddress(host, server));
 
-        final ModelControllerClient client = ModelControllerClient.Factory.create("localhost", HC_PORT, getCallbackHandler());
+        final ModelControllerClient client = ModelControllerClient.Factory.create(DomainTestSupport.masterAddress, HC_PORT, getCallbackHandler());
         try {
             final ModelNode result = client.execute(operation);
             if (result.get(OUTCOME).asString().equals(SUCCESS)){

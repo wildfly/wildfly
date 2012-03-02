@@ -185,19 +185,19 @@
              </move>
         </sequential>
     </macrodef>
-    
-    
+
+
     <!--
         Add a new cache container to the Infinispan subsystem.
         The container definition is loaded from a file.
-    -->  
+    -->
     <macrodef name="ts.config-as.add-cache-container" description="Add a cache container to the Infinispan subsystem">
 
         <attribute name="name" default="jbossas"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
         <attribute name="containerdef" default="cache-container.xml"/>
-        
+
         <sequential>
             <echo message="Adding a cache container to Infinispan subsystem for config @{name}"/>
 
@@ -225,7 +225,7 @@
              </move>
         </sequential>
     </macrodef>
-    
+
 
 
 

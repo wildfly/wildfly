@@ -65,6 +65,7 @@
                                         <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
                                             <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
                                             <property name="node1" value="${node1}"/>
+                                            <property name="udpGroup" value="${udpGroup}"/>
                                             <target name="build-clustering-udp"/>
                                         </ant>
                                     </target>
@@ -139,7 +140,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <profile>
             <id>clustering.integration.tests.jdbc.cachestore.profile</id>
             <activation>
@@ -147,7 +148,7 @@
                     <name>!ts.noClustering</name>
                 </property>
             </activation>
-            
+
             <!--
                 Server configuration executions.
             -->

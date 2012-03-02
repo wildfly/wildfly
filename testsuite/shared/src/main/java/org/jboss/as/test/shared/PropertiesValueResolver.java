@@ -23,6 +23,7 @@
 package org.jboss.as.test.shared;
 
 import java.io.File;
+import java.util.Properties;
 
 /**
  * Parses a string and replaces any references to system properties or environment variables in the string
@@ -47,6 +48,17 @@ public class PropertiesValueResolver {
      *         it exists
      */
     public static String replaceProperties(final String value) {
+        return replaceProperties(value, System.getProperties());
+    }
+    /**
+     * Replace properties of the form:
+     * <code>${<i>&lt;[env.]name&gt;[</i>,<i>&lt;[env.]name2&gt;[</i>,<i>&lt;[env.]name3&gt;...]][</i>:<i>&lt;default&gt;]</i>}</code>
+     *
+     * @param value - either a system property or environment variable reference
+     * @return the value of the system property or environment variable referenced if
+     *         it exists
+     */
+    public static String replaceProperties(final String value, final Properties properties) {
         final StringBuilder builder = new StringBuilder();
         final int len = value.length();
         int state = INITIAL;
@@ -107,7 +119,7 @@ public class PropertiesValueResolver {
                                 continue;
                             }
                             // First check for system property, then env variable
-                            String val = System.getProperty(name);
+                            String val = (String) properties.get(name);
                             if (val == null && name.startsWith("env."))
                                 val = System.getenv(name.substring(4));
 

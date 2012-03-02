@@ -60,51 +60,39 @@
     </xsl:template>
 
     <!-- Change UDP multicast addresses. -->
-    <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='jgroups-udp']">
-        <xsl:copy>
-            <xsl:attribute name="multicast-address">
-                <xsl:value-of select="$udpMcastAddress"/>
-            </xsl:attribute>
-            <xsl:apply-templates select="node()|@*"/>
-        </xsl:copy>
+    <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='jgroups-udp']/@multicast-address">
+        <xsl:attribute name="multicast-address">
+            <xsl:value-of select="$udpMcastAddress"/>
+        </xsl:attribute>
     </xsl:template>
 
     <!-- Change diagnostics multicast addresses. -->
-    <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='jgroups-diagnostics']">
-        <xsl:copy>
-            <xsl:attribute name="multicast-address">
-                <xsl:value-of select="$diagnosticsMcastAddress"/>
-            </xsl:attribute>
-            <xsl:apply-templates select="node()|@*"/>
-        </xsl:copy>
+    <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='jgroups-diagnostics']/@multicast-address">
+        <xsl:attribute name="multicast-address">
+            <xsl:value-of select="$diagnosticsMcastAddress"/>
+        </xsl:attribute>
     </xsl:template>
 
     <!-- Change MPING multicast addresses. -->
-    <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='jgroups-mping']">
-        <xsl:copy>
-            <xsl:attribute name="multicast-address">
-                <xsl:value-of select="$mpingMcastAddress"/>
-            </xsl:attribute>
-            <xsl:apply-templates select="node()|@*"/>
-        </xsl:copy>
+    <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='jgroups-mping']/@multicast-address">
+        <xsl:attribute name="multicast-address">
+            <xsl:value-of select="$mpingMcastAddress"/>
+        </xsl:attribute>
     </xsl:template>
 
     <!-- Change modcluster multicast addresses. -->
-    <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='modcluster']">
-        <xsl:copy>
-            <xsl:attribute name="multicast-address">
-                <xsl:value-of select="$modclusterMcastAddress"/>
-            </xsl:attribute>
-            <xsl:apply-templates select="node()|@*"/>
-        </xsl:copy>
+    <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='modcluster']/@multicast-address">
+        <xsl:attribute name="multicast-address">
+            <xsl:value-of select="$modclusterMcastAddress"/>
+        </xsl:attribute>
     </xsl:template>
-    
+
     <!-- Change WSDL host. -->
     <xsl:template match="//ws11:wsdl-host">
         <xsl:copy>${jboss.bind.address:<xsl:value-of select="$publicIPAddress"/>}</xsl:copy>
     </xsl:template>
-    
-    
+
+
 
     <!-- Copy everything else. -->
     <xsl:template match="node()|@*">

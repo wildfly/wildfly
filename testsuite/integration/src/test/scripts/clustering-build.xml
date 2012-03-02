@@ -26,7 +26,7 @@
         <ts.config-as.add-port-offset name="jbossas-clustering-udp-1" offset="100" nativePort="9999" httpPort="9990"/>
 
     </target>
-    
+
     <target name="build-clustering-udp-jdbc-store" description="Builds server configuration for UDP tests with jdbc-store enabled">
 
         <echo message="Building config clustering-udp-0-jdbc-store"/>

@@ -75,7 +75,7 @@ public class CLIWrapper implements Runnable {
      * @throws Exception
      */
     public CLIWrapper(boolean connect) throws Exception {
-        this(connect, null);
+        this(connect, null, null);
     }
 
     /**
@@ -83,10 +83,25 @@ public class CLIWrapper implements Runnable {
      * <code>connect</code> command.
      *
      * @param connect indicates if the CLI should connect to server automatically.
+     * @param cliAddress The default name of the property containing the cli address. If null the value of the {@code node0} property is
+     * used, and if that is absent {@code localhost} is used
+     * @throws Exception
+     */
+    public CLIWrapper(boolean connect, String cliAddress) throws Exception {
+        this(connect, cliAddress, null);
+    }
+
+    /**
+     * Creates new CLI wrapper. If the connect parameter is set to true the CLI will connect to the server using
+     * <code>connect</code> command.
+     *
+     * @param connect indicates if the CLI should connect to server automatically.
+     * @param cliAddress The default name of the property containing the cli address. If null the value of the {@code node0} property is
+     * used, and if that is absent {@code localhost} is used
      * @param cliArgs specifies additional CLI command line arguments
      * @throws Exception
      */
-    public CLIWrapper(boolean connect, String[] cliArgs) throws Exception {
+    public CLIWrapper(boolean connect, String cliAddress, String[] cliArgs) throws Exception {
         init(cliArgs);
         if (!connect) {
             return;
@@ -101,7 +116,7 @@ public class CLIWrapper implements Runnable {
             line = readLine(10000);
         }
 
-        sendLine("connect " + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getServerPort(), false);
+        sendConnect(cliAddress);
         line = readLine(5000);
 
         if (!(line.indexOf("disconnected") >= 0)) {
@@ -112,6 +127,27 @@ public class CLIWrapper implements Runnable {
         if (! ((line.indexOf("[standalone@") >= 0) || (line.indexOf("[domain@") >= 0)) ) {
             throw new CLIException("Connect failed. Line received: " + line);
         }
+    }
+
+    /**
+     * Sends a line with the connect command. This will look for the {@code node0} system property
+     * and use that as the address. If the system property is not set {@code localhost} will
+     * be used
+     */
+    public void sendConnect() throws Exception {
+        sendConnect(null);
+    }
+
+    /**
+     * Sends a line with the connect command.
+     * @param cliAddress The address to connect to. If null it will look for the {@code node0} system
+     * property and use that as the address. If the system property is not set {@code localhost} will
+     * be used
+     */
+    public void sendConnect(String cliAddress) throws Exception {
+        String addr = cliAddress != null ? cliAddress : TestSuiteEnvironment.getServerAddress();
+        sendLine("connect " + addr + ":" + TestSuiteEnvironment.getServerPort(), false);
+
     }
 
     /**

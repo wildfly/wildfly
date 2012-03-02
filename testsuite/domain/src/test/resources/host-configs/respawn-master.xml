@@ -52,6 +52,9 @@
     </domain-controller>
 
     <interfaces>
+        <interface name="management">
+            <inet-address value="${jboss.test.host.master.address}"/>
+        </interface>
         <interface name="public">
             <inet-address value="${jboss.test.host.master.address}"/>
         </interface>
