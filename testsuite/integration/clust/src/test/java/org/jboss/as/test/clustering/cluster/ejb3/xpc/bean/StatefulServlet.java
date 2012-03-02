@@ -23,6 +23,8 @@
 package org.jboss.as.test.clustering.cluster.ejb3.xpc.bean;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
@@ -31,6 +33,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.sql.DataSource;
+
+import static org.junit.Assert.assertTrue;
 
 import org.jboss.as.test.clustering.LocalEJBDirectory;
 
@@ -55,6 +60,7 @@ public class StatefulServlet extends HttpServlet {
         }
 
         String command = req.getParameter("command");
+        System.out.println(StatefulServlet.class.getName() + ": command = " + command);
 
         if("createEmployee".equals(command)) {
             bean.createEmployee("Tom Brady","New England Patriots", 1);
@@ -72,9 +78,19 @@ public class StatefulServlet extends HttpServlet {
             bean.destroy();
             resp.setHeader("employee", command);
         }
-
+        else if("flush".equals(command)) {
+            bean.flush();
+        }
+        else if("deleteEmployeeViaJDBC".equals(command)) {
+            // delete all employees in db
+            int deleted = bean.executeNativeSQL("delete from Employee");
+            if (deleted < 1) {
+                throw new ServletException("couldn't delete entity in database, deleted row count =" + deleted);
+            }
+        }
 
         resp.getWriter().write("Success");
         session.setAttribute("bean", bean);
+        System.out.println(StatefulServlet.class.getName() + ": command = " + command + " finished");
     }
 }

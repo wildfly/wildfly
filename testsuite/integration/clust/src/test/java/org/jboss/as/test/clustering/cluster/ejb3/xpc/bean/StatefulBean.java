@@ -29,8 +29,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
+import javax.sql.DataSource;
 
 import org.jboss.ejb3.annotation.Clustered;
+
+import java.sql.Connection;
 
 /**
  * @author Paul Ferraro
@@ -86,4 +89,18 @@ public class StatefulBean implements Stateful {
     public void destroy() {
 
     }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void flush() {
+
+    }
+
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public int executeNativeSQL(String nativeSql) {
+        return em.createNativeQuery(nativeSql).executeUpdate();
+    }
+
 }

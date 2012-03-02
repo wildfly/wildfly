@@ -49,4 +49,8 @@ public interface Stateful {
 
     @Remove
     void destroy();
+
+    void flush();
+
+    int executeNativeSQL(String nativeSql);
 }
