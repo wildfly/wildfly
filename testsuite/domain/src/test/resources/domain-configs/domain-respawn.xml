@@ -29,8 +29,6 @@
     </extensions>
 
     <system-properties>
-        <!-- IPv4 is not required, but setting this helps avoid unintended use of IPv6 -->
-        <property name="java.net.preferIPv4Stack" value="true"/>
     </system-properties>
 
     <paths>
@@ -76,12 +74,8 @@
          are shown.
     -->
     <interfaces>
-        <interface name="management">
-            <inet-address value="127.0.0.1"/>
-        </interface>
-        <interface name="public">
-           <inet-address value="127.0.0.1"/>
-        </interface>
+        <interface name="management"/>
+        <interface name="public"/>
     </interfaces>
 
     <socket-binding-groups>

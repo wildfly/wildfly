@@ -53,6 +53,7 @@ import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.xnio.IoUtils;
@@ -75,7 +76,7 @@ public class DomainLifecycleUtil {
 
     private final JBossAsManagedConfiguration configuration;
     private DomainClient domainClient;
-    private Map<ServerIdentity,ControlledProcessState.State> serverStatuses = new HashMap<ServerIdentity, ControlledProcessState.State>();
+    private Map<ServerIdentity, ControlledProcessState.State> serverStatuses = new HashMap<ServerIdentity, ControlledProcessState.State>();
     private ExecutorService executor;
 
     public DomainLifecycleUtil(final JBossAsManagedConfiguration configuration) {
@@ -97,13 +98,13 @@ public class DomainLifecycleUtil {
                 throw new IllegalStateException("Cannot find: " + modulesJar);
 
             String javaHome = configuration.getJavaHome();
-            String java = (javaHome != null) ?  javaHome + "/bin/java" : "java";
+            String java = (javaHome != null) ? javaHome + "/bin/java" : "java";
 
             File domainDir = configuration.getDomainDirectory() != null ? new File(configuration.getDomainDirectory()) : new File(new File(jbossHomeDir), "domain");
             String domainPath = domainDir.getAbsolutePath();
 
             final String modulePath;
-            if(configuration.getModulePath() != null && !configuration.getModulePath().isEmpty()) {
+            if (configuration.getModulePath() != null && !configuration.getModulePath().isEmpty()) {
                 modulePath = configuration.getModulePath();
             } else {
                 modulePath = jbossHomeDir + "/modules";
@@ -124,6 +125,7 @@ public class DomainLifecycleUtil {
                     cmd.add(opt);
                 }
             }
+            TestSuiteEnvironment.getIpv6Args(cmd);
             cmd.add("-Djboss.home.dir=" + jbossHomeDir);
             cmd.add("-Dorg.jboss.boot.log.file=" + domainPath + "/log/process-controller.log");
             cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + "/domain/configuration/logging.properties");
@@ -141,6 +143,7 @@ public class DomainLifecycleUtil {
             cmd.add("--");
             cmd.add("-Dorg.jboss.boot.log.file=" + domainPath + "/log/host-controller.log");
             cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + "/domain/configuration/logging.properties");
+            TestSuiteEnvironment.getIpv6Args(cmd);
             if (additionalJavaOpts != null) {
                 for (String opt : additionalJavaOpts.split("\\s+")) {
                     cmd.add(opt);
@@ -171,6 +174,13 @@ public class DomainLifecycleUtil {
                 cmd.add("-host-config");
                 cmd.add(name);
             }
+            if (configuration.getHostControllerManagementAddress() != null) {
+                cmd.add("--interprocess-hc-address");
+                cmd.add(configuration.getHostControllerManagementAddress());
+                cmd.add("--pc-address");
+                cmd.add(configuration.getHostControllerManagementAddress());
+            }
+
 
             log.info("Starting container with: " + cmd.toString());
             ProcessBuilder processBuilder = new ProcessBuilder(cmd);
@@ -231,7 +241,7 @@ public class DomainLifecycleUtil {
     }
 
     public void stop() {
-        if(shutdownThread != null) {
+        if (shutdownThread != null) {
             Runtime.getRuntime().removeShutdownHook(shutdownThread);
             shutdownThread = null;
         }
@@ -243,8 +253,7 @@ public class DomainLifecycleUtil {
             }
         } catch (Exception e) {
             throw new RuntimeException("Could not stop container", e);
-        }
-        finally {
+        } finally {
             safeCloseDomainClient();
             final ExecutorService exec = executor;
             if (exec != null) {
@@ -300,14 +309,13 @@ public class DomainLifecycleUtil {
             }
             serverStatuses.putAll(statuses);
             return true;
-        }
-        catch (Exception ignored) {
+        } catch (Exception ignored) {
             // ignore, as we will get exceptions until the management comm services start
         }
         return false;
     }
 
-    private synchronized void safeCloseDomainClient()  {
+    private synchronized void safeCloseDomainClient() {
         if (domainClient != null) {
             try {
                 domainClient.close();
@@ -317,9 +325,9 @@ public class DomainLifecycleUtil {
         }
     }
 
-    private Map<ServerIdentity,ControlledProcessState.State> getServerStatuses() {
+    private Map<ServerIdentity, ControlledProcessState.State> getServerStatuses() {
 
-        Map<ServerIdentity,ControlledProcessState.State> result = new HashMap<ServerIdentity, ControlledProcessState.State>();
+        Map<ServerIdentity, ControlledProcessState.State> result = new HashMap<ServerIdentity, ControlledProcessState.State>();
         ModelNode op = new ModelNode();
         op.get("operation").set("read-children-names");
         op.get("child-type").set("server-config");
@@ -366,17 +374,13 @@ public class DomainLifecycleUtil {
             ModelNode result = getDomainClient().execute(op);
             if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
                 return result.get("result");
-            }
-            else if (result.hasDefined("failure-description")) {
+            } else if (result.hasDefined("failure-description")) {
                 throw new RuntimeException(result.get("failure-description").toString());
-            }
-            else if (result.hasDefined("domain-failure-description")) {
+            } else if (result.hasDefined("domain-failure-description")) {
                 throw new RuntimeException(result.get("domain-failure-description").toString());
-            }
-            else if (result.hasDefined("host-failure-descriptions")) {
+            } else if (result.hasDefined("host-failure-descriptions")) {
                 throw new RuntimeException(result.get("host-failure-descriptions").toString());
-            }
-            else {
+            } else {
                 throw new RuntimeException("Operation outcome is " + result.get("outcome").asString());
             }
         } catch (IOException e) {
@@ -385,7 +389,7 @@ public class DomainLifecycleUtil {
     }
 
     public static void main(String[] args) throws Exception {
-        DomainLifecycleUtil starterUtil = new DomainLifecycleUtil(new JBossAsManagedConfiguration()) ;
+        DomainLifecycleUtil starterUtil = new DomainLifecycleUtil(new JBossAsManagedConfiguration());
         starterUtil.start();
         System.out.println("--------- STARTED");
         starterUtil.stop();
@@ -393,12 +397,10 @@ public class DomainLifecycleUtil {
     }
 
 
-
     /**
      * Runnable that consumes the output of the process. If nothing consumes the output the AS will hang on some platforms
      *
      * @author Stuart Douglas
-     *
      */
     private class ConsoleConsumer implements Runnable {
 
@@ -406,8 +408,8 @@ public class DomainLifecycleUtil {
         public void run() {
             final InputStream stream = process.getInputStream();
             final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-            final boolean writeOutput = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
 
+            final boolean writeOutput = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
                 @Override
                 public Boolean run() {
                     // this needs a better name
@@ -417,7 +419,7 @@ public class DomainLifecycleUtil {
             });
             String line = null;
             try {
-                while((line = reader.readLine())!=null) {
+                while ((line = reader.readLine()) != null) {
                     if (writeOutput) {
                         System.out.println(line);
                     }
@@ -430,6 +432,7 @@ public class DomainLifecycleUtil {
     private static final class AsyncThreadFactory implements ThreadFactory {
 
         private int threadCount;
+
         @Override
         public Thread newThread(Runnable r) {
 
