@@ -252,7 +252,7 @@
 
         <!-- Non-default plugin versions and configuration -->
         <version.javacc.plugin>2.5</version.javacc.plugin>
-        <version.org.zanata.plugin>1.4.5.1</version.org.zanata.plugin>
+        <version.org.zanata.plugin>1.5.0</version.org.zanata.plugin>
         <version.shade.plugin>1.5</version.shade.plugin>
 
         <!-- Surefire args -->
