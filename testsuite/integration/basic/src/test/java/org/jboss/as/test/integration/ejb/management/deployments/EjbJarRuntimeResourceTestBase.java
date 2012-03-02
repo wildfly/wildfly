@@ -215,7 +215,7 @@ public class EjbJarRuntimeResourceTestBase {
             assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, name, DESCRIPTION).getType());
             assertEquals(expectedType, resourceDescription.get(ATTRIBUTES, name, TYPE).asType());
 
-            assertTrue(resource.get(name).isDefined());
+            assertTrue(name + " is not defined", resource.get(name).isDefined());
             assertEquals(expectedType, resource.get(name).getType());
         }
     }
