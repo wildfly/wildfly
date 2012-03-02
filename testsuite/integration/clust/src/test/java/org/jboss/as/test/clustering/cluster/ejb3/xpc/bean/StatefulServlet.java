@@ -24,7 +24,6 @@ package org.jboss.as.test.clustering.cluster.ejb3.xpc.bean;
 
 import java.io.IOException;
 
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -32,6 +31,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import org.jboss.as.test.clustering.LocalEJBDirectory;
 
 /**
  * @author Paul Ferraro
@@ -47,8 +48,7 @@ public class StatefulServlet extends HttpServlet {
         Stateful bean = (Stateful)session.getAttribute("bean");
         if (bean == null) {
             try {
-                bean =  (Stateful)new InitialContext().lookup("java:app/stateful/StatefulBean!" +
-                    Stateful.class.getName());
+                bean = new LocalEJBDirectory("stateful").lookupStateful(StatefulBean.class, Stateful.class);
             } catch (NamingException e) {
                 throw new ServletException(e);
             }
