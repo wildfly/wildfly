@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
+
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -50,24 +52,34 @@ public class SecretIdentityService implements Service<CallbackHandlerFactory> {
 
     public static final String SERVICE_SUFFIX = "secret";
 
-    private final char[] password;
+    private final String password;
+    private final boolean base64;
 
     private volatile CallbackHandlerFactory factory;
 
     public SecretIdentityService(final String password, boolean base64) {
-        if (base64) {
-            byte[] value = Base64.decode(password);
-            this.password = new String(value).toCharArray();
-        } else {
-            this.password = password.toCharArray();
-        }
+        this.password = password;
+        this.base64 = base64;
     }
 
-
     public void start(StartContext startContext) throws StartException {
+        final char[] thePassword;
+        if (base64) {
+            byte[] value = Base64.decode(password);
+            String tempPassword = new String(value);
+            String trimmedPassword = tempPassword.trim();
+            if (tempPassword.equals(trimmedPassword) == false) {
+                ROOT_LOGGER.whitespaceTrimmed();
+            }
+
+            thePassword = trimmedPassword.toCharArray();
+        } else {
+            thePassword = password.toCharArray();
+        }
+
         factory = new CallbackHandlerFactory() {
             public CallbackHandler getCallbackHandler(String username) {
-                return new SecretCallbackHandler(username);
+                return new SecretCallbackHandler(username, thePassword);
             }
         };
     }
@@ -83,9 +95,11 @@ public class SecretIdentityService implements Service<CallbackHandlerFactory> {
     private class SecretCallbackHandler implements CallbackHandler {
 
         private final String userName;
+        private final char[] password;
 
-        SecretCallbackHandler(final String userName) {
+        SecretCallbackHandler(final String userName, final char[] password) {
             this.userName = userName;
+            this.password = password;
         }
 
 

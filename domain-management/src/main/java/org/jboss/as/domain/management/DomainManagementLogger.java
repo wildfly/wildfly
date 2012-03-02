@@ -50,6 +50,14 @@ public interface DomainManagementLogger extends BasicLogger {
     @Message(id = 15200, value = "Properties file defined with default user and password, this will be easy to guess.")
     void userAndPasswordWarning();
 
+    /**
+     * Logs a warning message indicating that whitespace has been trimmed from the password when it was
+     * decoded from Base64.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 15201, value = "Whitespace has been trimmed from the Base64 representation of the secret identity.")
+    void whitespaceTrimmed();
+
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementMessages
      * also contains messages in this range commencing 15220.
