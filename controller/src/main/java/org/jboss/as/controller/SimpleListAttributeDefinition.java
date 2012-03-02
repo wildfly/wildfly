@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.subsystem;
+package org.jboss.as.controller;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.jboss.as.controller.ListAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -45,7 +43,6 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Richard Achmatowicz (c) 2012 RedHat Inc.
  */
-//todo this class it marked for removal as it is replaced with copy of this class in org.jboss.as.controller
 public class SimpleListAttributeDefinition extends ListAttributeDefinition {
     private final SimpleAttributeDefinition valueType;
 

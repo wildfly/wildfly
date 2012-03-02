@@ -38,6 +38,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.Connector;
@@ -52,6 +53,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -267,14 +270,17 @@ public class ConnectorTestCase extends ArquillianResourceMgmtTestBase {
     }
 
     private ModelNode getAddConnectorOp(Connector conn) {
+        final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
+        final ModelNode steps = composite.get(STEPS);
         ModelNode op = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector", "add");
         op.get("socket-binding").set("test-" + conn.getName() + socketBindingCount);
         op.get("scheme").set(conn.getScheme());
         op.get("protocol").set(conn.getProtocol());
         op.get("secure").set(conn.isSecure());
         op.get("enabled").set(true);
+        steps.add(op);
         if (conn.isSecure()) {
-            ModelNode ssl = new ModelNode();
+            ModelNode ssl = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector/configuration=ssl", "add");
             if (conn.equals(Connector.HTTPSNATIVE)) {
                 ssl.get("certificate-key-file").set(keyPEMFile.getAbsolutePath());
                 ssl.get("certificate-file").set(certPEMFile.getAbsolutePath());
@@ -282,9 +288,9 @@ public class ConnectorTestCase extends ArquillianResourceMgmtTestBase {
                 ssl.get("certificate-key-file").set(keyStoreFile.getAbsolutePath());
             }
             ssl.get("password").set("test123");
-            op.get("ssl").set(ssl);
+            steps.add(ssl);
         }
-        return op;
+        return composite;
     }
 
     private void removeConnector(Connector conn) throws Exception {

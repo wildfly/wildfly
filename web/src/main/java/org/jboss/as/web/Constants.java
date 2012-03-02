@@ -25,7 +25,7 @@ package org.jboss.as.web;
 /**
  * @author Emanuel Muckenhuber
  */
-interface Constants {
+public interface Constants {
 
     String ACCESS_LOG = "access-log";
     String ALIAS = "alias";
@@ -42,7 +42,6 @@ interface Constants {
     String CONFIGURATION = "configuration";
     String CONNECTOR = "connector";
     String CONTAINER = "container";
-    String CONTAINER_CONFIG = CONFIGURATION;
     String DEFAULT_VIRTUAL_SERVER = "default-virtual-server";
     String DEFAULT_WEB_MODULE = "default-web-module";
     String DEVELOPMENT = "development";
@@ -106,6 +105,7 @@ interface Constants {
     String STATIC_RESOURCES = "static-resources";
     String SUBSTITUTION = "substitution";
     String SUBSYSTEM = "subsystem";
+    String SETTING = "setting";
     String TAG_POOLING = "tag-pooling";
     String TARGET_VM = "target-vm";
     String TEST = "test";
@@ -126,6 +126,9 @@ interface Constants {
     String ERROR_COUNT = "errorCount";
     String MAX_TIME = "maxTime";
     String REQUEST_COUNT = "requestCount";
+
+    String LOAD_TIME ="load-time";
+    String MIN_TIME = "min-time";
 
 
 }

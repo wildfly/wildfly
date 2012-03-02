@@ -1,6 +1,7 @@
-        <subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host">
+        <subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host" native="true">
             <configuration>
-               <jsp-configuration development="true" />
+                <static-resources max-depth="5"/>
+                <jsp-configuration development="true" />
                <mime-mapping name="ogx" value="application/ogg" />
                <mime-mapping name="ogg" value="audio/ogg" />
                <welcome-file>toto</welcome-file>
@@ -9,9 +10,9 @@
             <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
             <connector name="https" scheme="https" protocol="HTTP/1.1" secure="true" socket-binding="https">
                <ssl password="changeit" key-alias="tomcat"
-                    certificate-key-file="/path/to/keystore.p12"
+                    certificate-key-file="${jboss.server.config.dir}/keystore.p12"
                     verify-client="true"
-                    ca-certificate-file="/path/to/truststore.jks"
+                    ca-certificate-file="${jboss.server.config.dir}/truststore.jks"
                     ca-certificate-password="changeit"
                     keystore-type="PKCS12" truststore-type="JKS" />
             </connector>

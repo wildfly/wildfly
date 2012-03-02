@@ -35,15 +35,11 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
-// implements ModelQueryOperationHandler, DescriptionProvider
-public class MimeMappingAdd implements OperationStepHandler, DescriptionProvider{
+public class MimeMappingAdd implements OperationStepHandler{
 
     static final MimeMappingAdd INSTANCE = new MimeMappingAdd();
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return WebSubsystemDescriptions.getMimeMappingAddDescription(locale);
-    }
+
 
     @Override
     public void execute(OperationContext context, ModelNode operation)

@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-class WebConnectorRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+class WebConnectorRemove extends AbstractRemoveStepHandler{
 
     static final WebConnectorRemove INSTANCE = new WebConnectorRemove();
 
@@ -53,8 +53,5 @@ class WebConnectorRemove extends AbstractRemoveStepHandler implements Descriptio
         // TODO:  RE-ADD SERVICES
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return WebSubsystemDescriptions.getConnectorRemove(locale);
-    }
+
 }
