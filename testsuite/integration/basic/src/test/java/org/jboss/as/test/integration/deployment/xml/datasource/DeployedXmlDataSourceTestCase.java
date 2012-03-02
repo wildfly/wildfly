@@ -78,7 +78,7 @@ public class DeployedXmlDataSourceTestCase {
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
             final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_DS_XML).andRemoveUndeployed().build();
-            manager.execute(undeployPlan);
+            manager.execute(undeployPlan).get();
         }
     }
 
