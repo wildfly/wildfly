@@ -24,6 +24,7 @@ package org.jboss.as.jpa.config;
 
 /**
  * Persistence unit attributes.
+ * 
  *
  * @author kulikov
  */
