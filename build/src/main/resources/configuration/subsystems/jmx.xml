@@ -11,7 +11,12 @@
          <remoting-connector/>
       </replacement>
    </supplement>
-   <supplement name="no-remote-connector">
+   <supplement name="no-remote-connector">   
+   </supplement>   
+   <supplement name="domain">
+      <replacement placeholder="REMOTING-CONNECTOR">
+         <!--<remoting-connector use-management-endpoint="false"/>-->
+      </replacement>   
    </supplement>
    
 </config>
