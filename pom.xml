@@ -133,7 +133,7 @@
         <version.org.hibernate.commons.annotations>4.0.1.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.2.0.Final</version.org.hibernate.validator>
-        <version.org.hornetq>2.2.11.Final</version.org.hornetq>
+        <version.org.hornetq>2.2.12.Final</version.org.hornetq>
         <version.org.infinispan>5.1.1.FINAL</version.org.infinispan>
         <version.org.jacorb>2.3.1.jbossorg-1</version.org.jacorb>
         <version.org.javassist>3.15.0-GA</version.org.javassist>
