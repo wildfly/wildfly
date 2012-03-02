@@ -287,8 +287,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     void processModelNode(OperationContext context, String containerName, ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies)
             throws OperationFailedException {
 
-        ModelNode resolvedValue = null ;
-        final String indexingString = ((resolvedValue = CommonAttributes.INDEXING.resolveModelAttribute(context, cache)).isDefined()) ? resolvedValue.asString() : null ;
+        final Indexing indexing = Indexing.valueOf(CommonAttributes.INDEXING.resolveModelAttribute(context, cache).asString());
         final int queueSize = CommonAttributes.QUEUE_SIZE.resolveModelAttribute(context, cache).asInt();
         final long queueFlushInterval = CommonAttributes.QUEUE_FLUSH_INTERVAL.resolveModelAttribute(context, cache).asLong();
         final long remoteTimeout = CommonAttributes.REMOTE_TIMEOUT.resolveModelAttribute(context, cache).asLong();
@@ -300,17 +299,19 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         CacheMode cacheMode = CacheMode.valueOf(cache.require(ModelKeys.MODE).asString());
         builder.clustering().cacheMode(cacheMode);
 
-        if (indexingString != null) {
-            Indexing indexing = Indexing.valueOf(indexingString);
-            builder.indexing().enabled(indexing.isEnabled()).indexLocalOnly(indexing.isLocalOnly());
-        }
-
+        builder.indexing()
+                .enabled(indexing.isEnabled())
+                .indexLocalOnly(indexing.isLocalOnly())
+        ;
         if (cacheMode.isSynchronous()) {
             builder.clustering().sync().replTimeout(remoteTimeout);
         } else  {
-            builder.clustering().async().replQueueMaxElements(queueSize).useReplQueue(queueSize > 0);
-            builder.clustering().async().replQueueInterval(queueFlushInterval);
-            if(asyncMarshalling) {
+            builder.clustering().async()
+                    .replQueueMaxElements(queueSize)
+                    .useReplQueue(queueSize > 0)
+                    .replQueueInterval(queueFlushInterval)
+            ;
+            if (asyncMarshalling) {
                 builder.clustering().async().asyncMarshalling();
             } else {
                 builder.clustering().async().syncMarshalling();
@@ -321,15 +322,17 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         if (cache.hasDefined(ModelKeys.LOCKING) && cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME).isDefined()) {
             ModelNode locking = cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
 
-            final String isolationLevel = ((resolvedValue = CommonAttributes.ISOLATION.resolveModelAttribute(context, locking)).isDefined()) ? resolvedValue.asString() : null ;
+            final IsolationLevel isolationLevel = IsolationLevel.valueOf(CommonAttributes.ISOLATION.resolveModelAttribute(context, locking).asString());
             final boolean striping = CommonAttributes.SHARED.resolveModelAttribute(context, locking).asBoolean();
             final long acquireTimeout = CommonAttributes.ACQUIRE_TIMEOUT.resolveModelAttribute(context, locking).asLong();
             final int concurrencyLevel = CommonAttributes.CONCURRENCY_LEVEL.resolveModelAttribute(context, locking).asInt();
 
-            builder.locking().isolationLevel(IsolationLevel.valueOf(isolationLevel));
-            builder.locking().useLockStriping(striping);
-            builder.locking().lockAcquisitionTimeout(acquireTimeout);
-            builder.locking().concurrencyLevel(concurrencyLevel);
+            builder.locking()
+                    .isolationLevel(isolationLevel)
+                    .useLockStriping(striping)
+                    .lockAcquisitionTimeout(acquireTimeout)
+                    .concurrencyLevel(concurrencyLevel)
+            ;
         }
 
         TransactionMode txMode = TransactionMode.NONE;
@@ -339,16 +342,10 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             ModelNode transaction = cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
 
             final long stopTimeout = CommonAttributes.STOP_TIMEOUT.resolveModelAttribute(context, transaction).asLong();
-            final String txnMode = ((resolvedValue = CommonAttributes.MODE.resolveModelAttribute(context, transaction)).isDefined()) ? resolvedValue.asString() : null ;
-            final String lockingModeString = ((resolvedValue = CommonAttributes.LOCKING.resolveModelAttribute(context, transaction)).isDefined()) ? resolvedValue.asString() : null ;
+            txMode = TransactionMode.valueOf(CommonAttributes.MODE.resolveModelAttribute(context, transaction).asString());
+            lockingMode = LockingMode.valueOf(CommonAttributes.LOCKING.resolveModelAttribute(context, transaction).asString());
 
             builder.transaction().cacheStopTimeout(stopTimeout);
-            if (txnMode != null) {
-                txMode = TransactionMode.valueOf(txnMode);
-            }
-            if (lockingModeString != null) {
-                lockingMode = LockingMode.valueOf(lockingModeString);
-            }
         }
         builder.transaction()
             .transactionMode(txMode.getMode())
@@ -370,13 +367,13 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         if (cache.hasDefined(ModelKeys.EVICTION) && cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME).isDefined()) {
             ModelNode eviction = cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
 
-            final String strategy = ((resolvedValue = CommonAttributes.STRATEGY.resolveModelAttribute(context, eviction)).isDefined()) ? resolvedValue.asString() : null ;
-            final int maxEntries = CommonAttributes.MAX_ENTRIES.resolveModelAttribute(context, eviction).asInt();
+            final EvictionStrategy strategy = EvictionStrategy.valueOf(CommonAttributes.EVICTION_STRATEGY.resolveModelAttribute(context, eviction).asString());
+            builder.eviction().strategy(strategy);
 
-            if (strategy != null) {
-                builder.eviction().strategy(EvictionStrategy.valueOf(strategy));
+            if (strategy.isEnabled()) {
+                final int maxEntries = CommonAttributes.MAX_ENTRIES.resolveModelAttribute(context, eviction).asInt();
+                builder.eviction().maxEntries(maxEntries);
             }
-            builder.eviction().maxEntries(maxEntries);
         }
         // expiration is a child resource
         if (cache.hasDefined(ModelKeys.EXPIRATION) && cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME).isDefined()) {
@@ -387,9 +384,11 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             final long lifespan = CommonAttributes.LIFESPAN.resolveModelAttribute(context, expiration).asLong();
             final long interval = CommonAttributes.INTERVAL.resolveModelAttribute(context, expiration).asLong();
 
-            builder.expiration().maxIdle(maxIdle);
-            builder.expiration().lifespan(lifespan);
-            builder.expiration().wakeUpInterval(interval);
+            builder.expiration()
+                    .maxIdle(maxIdle)
+                    .lifespan(lifespan)
+                    .wakeUpInterval(interval)
+            ;
         }
 
         // to here

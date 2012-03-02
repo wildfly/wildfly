@@ -27,7 +27,7 @@
         <locking lockAcquisitionTimeout="15000" useLockStriping="false" concurrencyLevel="1000"/>
         <storeAsBinary enabled="false"/>
         <clustering mode="local"></clustering>
-        <eviction strategy="NONE" maxEntries="10000"/>
+        <eviction strategy="NONE"/>
     </default>
     <namedCache name="REPL_SYNC">
         <storeAsBinary enabled="true"/>

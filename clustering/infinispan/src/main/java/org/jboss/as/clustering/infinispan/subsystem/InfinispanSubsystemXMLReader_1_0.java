@@ -9,9 +9,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.infinispan.eviction.EvictionStrategy;
-import org.infinispan.transaction.LockingMode;
-import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -644,7 +641,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case STRATEGY: {
-                    CommonAttributes.STRATEGY.parseAndSetParameter(value, eviction, reader);
+                    CommonAttributes.EVICTION_STRATEGY.parseAndSetParameter(value, eviction, reader);
                     break;
                 }
                 case MAX_ENTRIES: {
