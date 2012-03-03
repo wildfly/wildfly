@@ -29,11 +29,7 @@ MAVEN_SEARCH_PATH="\
     tools/apache/maven \
     maven"
 
-#  Default arguments
-if [ "$MVN_OPTIONS" = "" ]
-  then
-    MVN_OPTIONS="-s tools/maven/conf/settings.xml"
-fi
+
 
 #  Use the maximum available, or set MAX_FD != -1 to use that
 MAX_FD="maximum"
@@ -162,12 +158,15 @@ main() {
     . testsuite/groupDefs.sh
 
     #  Add smoke integration test directives before calling maven.
+    MVN_SETTINGS_XML_ARGS="-s tools/maven/conf/settings.xml"
     TESTS=$SMOKE_TESTS
     MVN_GOAL="";
     ADDIT_PARAMS="";
     #  For each parameter, check for testsuite directives.
     for param in $@ ; do
         case $param in
+            ## -s .../settings.xml - don't use our own.
+            -s)      MVN_SETTINGS_XML_ARGS="";   ADDIT_PARAMS="$ADDIT_PARAMS $param";;
             -*)      ADDIT_PARAMS="$ADDIT_PARAMS $param";;
             clean)   MVN_GOAL="$MVN_GOAL$param ";;
             test)    MVN_GOAL="$MVN_GOAL$param ";;
@@ -185,13 +184,16 @@ main() {
     #  Export some stuff for maven.
     export MVN MAVEN_HOME MVN_OPTS MVN_GOAL
 
-    echo "$MVN $MVN_OPTIONS $MVN_GOAL $ADDIT_PARAMS"
+    # The default arguments.  `mvn -s ...` will override this.
+    MVN_ARGS=${MVN_ARGS:-"$MVN_SETTINGS_XML_ARGS"};
+
+    echo "$MVN $MVN_ARGS $MVN_GOAL $ADDIT_PARAMS"
 
     #  Execute in debug mode, or simply execute.
     if [ "x$MVN_DEBUG" != "x" ]; then
-        /bin/sh -x $MVN $MVN_OPTIONS $MVN_GOAL $ADDIT_PARAMS
+        /bin/sh -x $MVN $MVN_ARGS $MVN_GOAL $ADDIT_PARAMS
     else
-        exec $MVN $MVN_OPTIONS $MVN_GOAL $ADDIT_PARAMS
+        exec       $MVN $MVN_ARGS $MVN_GOAL $ADDIT_PARAMS
     fi
 }
 
