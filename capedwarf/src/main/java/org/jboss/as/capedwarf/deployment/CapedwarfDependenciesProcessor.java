@@ -24,6 +24,7 @@ package org.jboss.as.capedwarf.deployment;
 
 import org.jboss.as.capedwarf.services.ServletExecutorConsumerService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
+import org.jboss.as.logging.util.LogServices;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.msc.service.ServiceName;
@@ -42,6 +43,7 @@ public class CapedwarfDependenciesProcessor extends CapedwarfDeploymentUnitProce
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         serviceTarget.addDependency(DEFAULT_CACHE_CONFIG); // make sure the default cache config is registerd into container before we get the cache
         serviceTarget.addDependency(ServletExecutorConsumerService.NAME); // we need queue -- as default gae queue is there by default
+        serviceTarget.addDependency(LogServices.handlerName(CAPEDWARF.toUpperCase())); // we need logger
     }
 
 }

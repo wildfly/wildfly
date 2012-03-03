@@ -22,6 +22,7 @@
 
 package org.jboss.as.capedwarf.extension;
 
+import org.jboss.as.capedwarf.api.Logger;
 import org.jboss.as.capedwarf.deployment.CapedwarfCDIExtensionProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfCleanupProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfDependenciesProcessor;
@@ -38,6 +39,8 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.logging.handlers.custom.CustomHandlerService;
+import org.jboss.as.logging.util.LogServices;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -61,6 +64,7 @@ import org.jboss.vfs.VFSUtils;
 import javax.jms.Connection;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Handler;
 
 /**
  * Handler responsible for adding the subsystem resource to the model
@@ -103,6 +107,8 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 final TempDir tempDir = createTempDir(serviceTarget);
 
+                addLogger(serviceTarget);
+                
                 final int initialPhaseOrder = Math.min(Phase.PARSE_WEB_DEPLOYMENT, Phase.PARSE_PERSISTENCE_UNIT);
                 processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 20, new CapedwarfInitializationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 10, new CapedwarfPersistenceModificationProcessor(tempDir)); // before persistence.xml parsing
@@ -153,5 +159,11 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
         });
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
         return tempDir;
+    }
+    
+    protected static void addLogger(final ServiceTarget serviceTarget) {
+        final CustomHandlerService service = new CustomHandlerService(Logger.class.getName(), "org.jboss.as.capedwarf");
+        final ServiceBuilder<Handler> builder = serviceTarget.addService(LogServices.handlerName(CAPEDWARF.toUpperCase()), service);
+        builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
     }
 }

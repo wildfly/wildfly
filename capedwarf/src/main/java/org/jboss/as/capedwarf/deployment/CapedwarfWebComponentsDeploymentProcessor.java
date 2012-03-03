@@ -112,7 +112,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
 
     private ListenerMetaData createAsListener() {
         ListenerMetaData listener = new ListenerMetaData();
-        listener.setListenerClass("org.jboss.as.capedwarf.api.ServletExecutorListener");
+        listener.setListenerClass("org.jboss.as.capedwarf.api.CapedwarfListener");
         return listener;
     }
 
