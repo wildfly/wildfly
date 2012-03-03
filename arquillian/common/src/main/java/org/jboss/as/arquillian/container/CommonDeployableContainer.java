@@ -16,14 +16,6 @@
  */
 package org.jboss.as.arquillian.container;
 
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
@@ -38,6 +30,14 @@ import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.jboss.util.NotImplementedException;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.net.UnknownHostException;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
@@ -84,12 +84,17 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
             Authentication.password = containerConfig.getPassword();
         }
 
-        ModelControllerClient modelControllerClient = ModelControllerClient.Factory.create(
-                containerConfig.getManagementAddress(),
-                containerConfig.getManagementPort(),
-                getCallbackHandler());
+        ModelControllerClient modelControllerClient = null;
+        try {
+            modelControllerClient = ModelControllerClient.Factory.create(
+                    containerConfig.getManagementAddress(),
+                    containerConfig.getManagementPort(),
+                    getCallbackHandler());
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
 
-        managementClient = new ManagementClient(modelControllerClient, containerConfig.getManagementAddress().getHostAddress(), containerConfig.getManagementPort());
+        managementClient = new ManagementClient(modelControllerClient, containerConfig.getManagementAddress(), containerConfig.getManagementPort());
 
         managementClientInst.set(managementClient);
 

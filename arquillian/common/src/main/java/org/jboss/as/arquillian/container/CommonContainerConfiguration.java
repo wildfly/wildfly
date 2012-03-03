@@ -16,11 +16,11 @@
  */
 package org.jboss.as.arquillian.container;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * JBossAS7 server configuration
@@ -30,23 +30,23 @@ import org.jboss.arquillian.container.spi.client.container.ContainerConfiguratio
  */
 public class CommonContainerConfiguration implements ContainerConfiguration {
 
-    private InetAddress managementAddress;
+    private String managementAddress;
     private int managementPort;
 
     private String username;
     private String password;
 
     public CommonContainerConfiguration() {
-        managementAddress = getInetAddress("127.0.0.1");
+        managementAddress = "127.0.0.1";
         managementPort = 9999;
     }
 
-    public InetAddress getManagementAddress() {
+    public String getManagementAddress() {
         return managementAddress;
     }
 
     public void setManagementAddress(String host) {
-        this.managementAddress = getInetAddress(host);
+        this.managementAddress = host;
     }
 
     public int getManagementPort() {
