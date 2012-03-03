@@ -69,7 +69,8 @@ public class ServiceRefTestCase {
     public static JavaArchive deployment() {
         String wsdl = FileUtils.readFile(ServiceRefTestCase.class, "TestService.wsdl");
 
-        final Properties properties = new Properties(System.getProperties());
+        final Properties properties = new Properties();
+        properties.putAll(System.getProperties());
         if(properties.containsKey("node0")) {
             properties.put("node0", NetworkUtils.formatPossibleIpv6Address((String)properties.get("node0")));
         }

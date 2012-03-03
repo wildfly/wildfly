@@ -69,7 +69,8 @@ public class ServiceRefSevletTestCase {
                 .addAsWebInfResource(ServiceRefSevletTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
 
         String wsdl = FileUtils.readFile(ServiceRefSevletTestCase.class, "TestService.wsdl");
-        final Properties properties = new Properties(System.getProperties());
+        final Properties properties = new Properties();
+        properties.putAll(System.getProperties());
         if(properties.containsKey("node0")) {
             properties.put("node0", NetworkUtils.formatPossibleIpv6Address((String) properties.get("node0")));
         }
