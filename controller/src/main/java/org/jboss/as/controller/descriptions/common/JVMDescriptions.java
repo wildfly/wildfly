@@ -182,9 +182,9 @@ public final class JVMDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("add-jvm-option");
         node.get(DESCRIPTION).set(bundle.getString("jvm.option.add"));
-        node.get(REQUEST_PROPERTIES, TYPE, TYPE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, TYPE, DESCRIPTION).set(bundle.getString("jvm.option"));
-        node.get(REQUEST_PROPERTIES, TYPE, REQUIRED).set(true);
+        node.get(REQUEST_PROPERTIES, JVM_OPTION, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_OPTION, DESCRIPTION).set(bundle.getString("jvm.option"));
+        node.get(REQUEST_PROPERTIES, JVM_OPTION, REQUIRED).set(true);
         node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
