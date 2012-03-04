@@ -39,6 +39,7 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.logging.handlers.FormatterSpec;
 import org.jboss.as.logging.handlers.custom.CustomHandlerService;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -163,6 +164,10 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     protected static void addLogger(final ServiceTarget serviceTarget) {
         final CustomHandlerService service = new CustomHandlerService(Logger.class.getName(), "org.jboss.as.capedwarf");
+        service.setFormatterSpec(new FormatterSpec() {
+            public void apply(Handler handler) {
+            }
+        });
         final ServiceBuilder<Handler> builder = serviceTarget.addService(LogServices.handlerName(CAPEDWARF.toUpperCase()), service);
         builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
     }
