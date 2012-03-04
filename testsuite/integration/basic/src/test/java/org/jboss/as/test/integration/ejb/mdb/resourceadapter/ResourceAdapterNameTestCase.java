@@ -30,6 +30,9 @@ import javax.jms.TextMessage;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
@@ -38,9 +41,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,6 +49,7 @@ import org.junit.runner.RunWith;
  * User: jpai
  */
 @RunWith(Arquillian.class)
+@ServerSetup({ResourceAdapterNameTestCase.JmsQueueSetup.class})
 public class ResourceAdapterNameTestCase {
 
     private static final Logger logger = Logger.getLogger(ResourceAdapterNameTestCase.class);
@@ -64,32 +66,38 @@ public class ResourceAdapterNameTestCase {
     @Resource(mappedName = QUEUE_JNDI_NAME)
     private Queue queue;
 
-    private static JMSOperations jmsAdminOperations;
+    static class JmsQueueSetup implements ServerSetupTask {
+
+        private JMSOperations jmsAdminOperations;
+
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient);
+            jmsAdminOperations.createJmsQueue("resource-adapter-name-test/queue", QUEUE_JNDI_NAME);
+            jmsAdminOperations.createJmsQueue("resource-adapter-name-test/reply-queue", REPLY_QUEUE_JNDI_NAME);
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            if (jmsAdminOperations != null) {
+                jmsAdminOperations.removeJmsQueue("resource-adapter-name-test/queue");
+                jmsAdminOperations.removeJmsQueue("resource-adapter-name-test/reply-queue");
+                jmsAdminOperations.close();
+            }
+        }
+    }
 
     @Deployment
     public static Archive getDeployment() {
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "resource-adapter-name-mdb-test.jar");
-        ejbJar.addClasses(OverriddenResourceAdapterNameMDB.class, JMSMessagingUtil.class, ResourceAdapterNameTestCase.class);
+        ejbJar.addClasses(OverriddenResourceAdapterNameMDB.class, JMSMessagingUtil.class, ResourceAdapterNameTestCase.class,
+                JmsQueueSetup.class);
         ejbJar.addPackage(JMSOperations.class.getPackage());
         ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         logger.info(ejbJar.toString(true));
 
         return ejbJar;
-    }
-
-    @BeforeClass
-    public static void createJmsDestinations() {
-        jmsAdminOperations = JMSOperationsProvider.getInstance();
-        jmsAdminOperations.createJmsQueue("resource-adapter-name-test/queue", QUEUE_JNDI_NAME);
-        jmsAdminOperations.createJmsQueue("resource-adapter-name-test/reply-queue", REPLY_QUEUE_JNDI_NAME);
-    }
-
-    @AfterClass
-    public static void afterTestClass() {
-        jmsAdminOperations.removeJmsQueue("resource-adapter-name-test/queue");
-        jmsAdminOperations.removeJmsQueue("resource-adapter-name-test/reply-queue");
-        jmsAdminOperations.close();
     }
 
     @Test

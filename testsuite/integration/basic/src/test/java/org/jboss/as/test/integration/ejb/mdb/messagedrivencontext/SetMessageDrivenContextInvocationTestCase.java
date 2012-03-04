@@ -30,6 +30,9 @@ import javax.jms.TextMessage;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
@@ -48,12 +51,32 @@ import org.junit.runner.RunWith;
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
+@ServerSetup({SetMessageDrivenContextInvocationTestCase.JmsQueueSetup.class})
 public class SetMessageDrivenContextInvocationTestCase {
-
-    private static JMSOperations jmsAdminOperations;
 
     private static final String QUEUE_JNDI_NAME = "java:jboss/queue/set-message-context";
     private static final String REPLY_QUEUE_JNDI_NAME = "java:jboss/queue/set-message-context-reply-queue";
+
+    static class JmsQueueSetup implements ServerSetupTask {
+
+        private JMSOperations jmsAdminOperations;
+
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient);
+            jmsAdminOperations.createJmsQueue("setMessageDrivenContext/queue", QUEUE_JNDI_NAME);
+            jmsAdminOperations.createJmsQueue("setMessageDrivenContext/replyQueue", REPLY_QUEUE_JNDI_NAME);
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            if (jmsAdminOperations != null) {
+                jmsAdminOperations.removeJmsQueue("setMessageDrivenContext/queue");
+                jmsAdminOperations.removeJmsQueue("setMessageDrivenContext/replyQueue");
+                jmsAdminOperations.close();
+            }
+        }
+    }
 
     @EJB(mappedName = "java:module/JMSMessagingUtil")
     private JMSMessagingUtil jmsUtil;
@@ -66,31 +89,11 @@ public class SetMessageDrivenContextInvocationTestCase {
 
     @Deployment
     public static Archive createDeployment() {
-        // setup the JMS destinations
-        createJmsDestinations();
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "set-message-driven-context-invocation-test.jar");
-        jar.addClasses(SimpleMDB.class, JMSMessagingUtil.class);
+        jar.addClasses(SimpleMDB.class, JMSMessagingUtil.class, JmsQueueSetup.class);
         jar.addPackage(JMSOperations.class.getPackage());
         return jar;
-    }
-
-    private static void createJmsDestinations() {
-        jmsAdminOperations = JMSOperationsProvider.getInstance();
-        jmsAdminOperations.createJmsQueue("setMessageDrivenContext/queue", QUEUE_JNDI_NAME);
-        jmsAdminOperations.createJmsQueue("setMessageDrivenContext/replyQueue", REPLY_QUEUE_JNDI_NAME);
-    }
-
-    @AfterClass
-    public static void afterTestClass() {
-        try {
-            jmsAdminOperations.removeJmsQueue("setMessageDrivenContext/queue");
-            jmsAdminOperations.removeJmsQueue("setMessageDrivenContext/replyQueue");
-        } finally {
-            if (jmsAdminOperations != null) {
-                jmsAdminOperations.close();
-            }
-        }
     }
 
     /**

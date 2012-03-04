@@ -61,26 +61,46 @@ import org.junit.runner.RunWith;
  */
 @RunAsClient()
 @RunWith(Arquillian.class)
-//@Ignore("Ignore failing tests")
 public class JMSTopicManagementTestCase {
 
-    private static JMSOperations adminSupport;
     private static long count = System.currentTimeMillis();
 
+    private static HornetQConnectionFactory senderConnectionFactory;
+
+    private static HornetQConnectionFactory consumerConnectionFactory;
+
     @BeforeClass
-    public static void connectManagmentClient() {
-        adminSupport = JMSOperationsProvider.getInstance();
+    public static void beforeClass() throws Exception {HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("host", TestSuiteEnvironment.getServerAddress());
+        TransportConfiguration transportConfiguration =
+                     new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
+        senderConnectionFactory = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
+        senderConnectionFactory.setClientID("sender");
+        senderConnectionFactory.setBlockOnDurableSend(true);
+        senderConnectionFactory.setBlockOnNonDurableSend(true);
+
+        consumerConnectionFactory = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
+        consumerConnectionFactory.setClientID("consumer");
+        consumerConnectionFactory.setBlockOnDurableSend(true);
+        consumerConnectionFactory.setBlockOnNonDurableSend(true);
     }
 
     @AfterClass
-    public static void closeManagementClient() {
-        if (adminSupport != null) {
-            adminSupport.close();
+    public static void afterClass() throws Exception {
+
+        if (senderConnectionFactory != null) {
+            senderConnectionFactory.close();
+        }
+
+        if (consumerConnectionFactory != null) {
+            consumerConnectionFactory.close();
         }
     }
 
     @ContainerResource
     private ManagementClient managementClient;
+
+    private JMSOperations adminSupport;
 
     private TopicConnection conn;
     private Topic topic;
@@ -92,24 +112,19 @@ public class JMSTopicManagementTestCase {
     @Before
     public void addTopic() throws Exception {
 
+        adminSupport = JMSOperationsProvider.getInstance(managementClient);
         count++;
+
         final String jndiName = getTopicJndiName();
         adminSupport.createJmsTopic(getTopicName(), jndiName);
 
-        HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("host", TestSuiteEnvironment.getServerAddress());
-        TransportConfiguration transportConfiguration =
-                new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
-        HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
-        cf.setClientID("sender");
-        conn = cf.createTopicConnection("guest", "guest");
+        conn = senderConnectionFactory.createTopicConnection("guest", "guest");
         conn.start();
         topic = HornetQJMSClient.createTopic(getTopicName());
         session = conn.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
 
-        cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
-        cf.setClientID("consumer");
-        consumerConn = cf.createTopicConnection("guest", "guest");
+
+        consumerConn = consumerConnectionFactory.createTopicConnection("guest", "guest");
         consumerConn.start();
         consumerSession = consumerConn.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
     }
@@ -162,7 +177,10 @@ public class JMSTopicManagementTestCase {
             consumerConn.close();
         }
 
-        adminSupport.removeJmsTopic(getTopicName());
+        if (adminSupport != null) {
+            adminSupport.removeJmsTopic(getTopicName());
+            adminSupport.close();
+        }
     }
 
     @After
@@ -366,7 +384,7 @@ public class JMSTopicManagementTestCase {
     }
 
     private ModelNode execute(final ModelNode op, final boolean expectSuccess) throws IOException {
-        ModelNode response = adminSupport.getModelControllerClient().execute(op);
+        ModelNode response = managementClient.getControllerClient().execute(op);
         final String outcome = response.get("outcome").asString();
         if (expectSuccess) {
             if (!"success".equals(outcome)) {

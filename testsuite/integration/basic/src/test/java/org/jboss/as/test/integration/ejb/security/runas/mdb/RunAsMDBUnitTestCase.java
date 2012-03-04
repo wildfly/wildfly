@@ -39,14 +39,15 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
-import org.jboss.as.test.integration.ejb.security.SecurityTest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,25 +59,40 @@ import org.junit.runner.RunWith;
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
-public class RunAsMDBUnitTestCase extends SecurityTest {
+@ServerSetup({RunAsMDBUnitTestCase.JmsQueueSetup.class})
+public class RunAsMDBUnitTestCase {
     private static final Logger log = Logger.getLogger(RunAsMDBUnitTestCase.class.getName());
     private static final String queueName = "queue/mdbtest";
-    
-    private static JMSOperations jmsAdminOperations;
+
+    static class JmsQueueSetup implements ServerSetupTask {
+
+        private JMSOperations jmsAdminOperations;
+
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient);
+            jmsAdminOperations.createJmsQueue(queueName, "java:jboss/" + queueName);
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            if (jmsAdminOperations != null) {
+                jmsAdminOperations.removeJmsQueue(queueName);
+                jmsAdminOperations.close();
+            }
+        }
+    }
 
     @ArquillianResource
     InitialContext ctx;
 
     @Deployment
     public static Archive<?> deploy() {
-        jmsAdminOperations = JMSOperationsProvider.getInstance();
-        jmsAdminOperations.createJmsQueue(queueName, "java:jboss/" + queueName);
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "runas-mdb.jar")
                 .addPackage(RunAsMDBUnitTestCase.class.getPackage())
-                .addClasses(
-                        SecurityTest.class)
                 .addPackage(JMSOperations.class.getPackage())
+                .addClass(JmsQueueSetup.class)
                 .addAsResource(RunAsMDBUnitTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(RunAsMDBUnitTestCase.class.getPackage(), "roles.properties", "roles.properties");
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr \n"), "MANIFEST.MF");
@@ -86,12 +102,6 @@ public class RunAsMDBUnitTestCase extends SecurityTest {
 
     protected <T> T lookup(String name, Class<T> cls) throws Exception {
         return cls.cast(ctx.lookup(name));
-    }
-       
-    @AfterClass
-    public static void tearDown() throws Exception {
-        jmsAdminOperations.removeJmsQueue(queueName);
-        jmsAdminOperations.close();
     }
 
     @Test

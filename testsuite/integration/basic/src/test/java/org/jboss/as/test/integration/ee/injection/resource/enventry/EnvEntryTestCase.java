@@ -36,15 +36,16 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -56,13 +57,31 @@ import org.junit.runner.RunWith;
  * @author Carlo de Wolf, William DeCoste, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
+@ServerSetup({EnvEntryTestCase.JmsQueueSetup.class})
 public class EnvEntryTestCase {
     private static final Logger log = Logger.getLogger(EnvEntryTestCase.class);
 
     @ArquillianResource
     InitialContext ctx;
 
-    private static JMSOperations adminOps;
+    static class JmsQueueSetup implements ServerSetupTask {
+
+        private JMSOperations jmsAdminOperations;
+
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient);
+            jmsAdminOperations.createJmsQueue("queue/testEnvEntry", "java:jboss/queue/testEnvEntry");
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            if (jmsAdminOperations != null) {
+                jmsAdminOperations.removeJmsQueue("queue/testEnvEntry");
+                jmsAdminOperations.close();
+            }
+        }
+    }
 
     @Deployment
     public static Archive<?> deploymentOptional() {
@@ -75,35 +94,12 @@ public class EnvEntryTestCase {
                         TestEnvEntryBean.class,
                         TestEnvEntryBeanBase.class,
                         TestEnvEntryMDBean.class,
-                        EnvEntryTestCase.class)
+                        EnvEntryTestCase.class,
+                        JmsQueueSetup.class)
                 .addPackage(JMSOperations.class.getPackage());
         jar.addAsManifestResource(EnvEntryTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         log.info(jar.toString(true));
         return jar;
-    }
-    
-    private static JMSOperations getAdminOps() {
-        if(adminOps == null) {
-            adminOps = JMSOperationsProvider.getInstance();
-        }
-        return adminOps;
-    }
-    
-    @BeforeClass 
-    public static void init() {
-        // queue has to be ready before deploy
-        try {
-            getAdminOps().createJmsQueue("queue/testEnvEntry", "java:jboss/queue/testEnvEntry");
-        } catch (Exception e) {
-            log.error("createJmsQueue problem", e);
-            // nothing
-        }
-    }
-
-    @AfterClass
-    public static void tearDown() {
-        getAdminOps().removeJmsQueue("queue/testEnvEntry");
-        getAdminOps().close();
     }
 
     // Deployment optional

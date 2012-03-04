@@ -42,6 +42,8 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
@@ -63,20 +65,33 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class JMSQueueManagementTestCase {
 
-    private static JMSOperations adminSupport;
     private static long count = System.currentTimeMillis();
 
+    private static HornetQConnectionFactory connectionFactory;
+
     @BeforeClass
-    public static void connectManagmentClient() {
-        adminSupport = JMSOperationsProvider.getInstance();
+    public static void beforeClass() throws Exception {HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("host", TestSuiteEnvironment.getServerAddress());
+        TransportConfiguration transportConfiguration =
+                     new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
+        connectionFactory = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
+        connectionFactory.setClientID("sender");
+        connectionFactory.setBlockOnDurableSend(true);
+        connectionFactory.setBlockOnNonDurableSend(true);
     }
 
     @AfterClass
-    public static void closeManagementClient() {
-        if (adminSupport != null) {
-            adminSupport.close();
+    public static void afterClass() throws Exception {
+
+        if (connectionFactory != null) {
+            connectionFactory.close();
         }
     }
+
+    @ContainerResource
+    private ManagementClient managementClient;
+
+    private JMSOperations adminSupport;
 
     private QueueConnection conn;
     private Queue queue;
@@ -87,18 +102,15 @@ public class JMSQueueManagementTestCase {
     private QueueSession consumerSession;
 
     @Before
-    public void addTopic() throws Exception {
+    public void addQueues() throws Exception {
+
+        adminSupport = JMSOperationsProvider.getInstance(managementClient);
 
         count++;
         adminSupport.createJmsQueue(getQueueName(), getQueueJndiName());
         adminSupport.createJmsQueue(getOtherQueueName(), getOtherQueueJndiName());
-        HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("host", TestSuiteEnvironment.getServerAddress());
-        TransportConfiguration transportConfiguration =
-                     new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
-        HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
-        cf.setClientID("sender");
-        conn = cf.createQueueConnection("guest", "guest");
+
+        conn = connectionFactory.createQueueConnection("guest", "guest");
         conn.start();
         queue = HornetQJMSClient.createQueue(getQueueName());
         otherQueue = HornetQJMSClient.createQueue(getOtherQueueName());
@@ -106,7 +118,7 @@ public class JMSQueueManagementTestCase {
     }
 
     @After
-    public void removeTopic() throws Exception {
+    public void removeQueues() throws Exception {
 
         if (conn != null) {
             conn.stop();
@@ -128,8 +140,11 @@ public class JMSQueueManagementTestCase {
             consumerConn.close();
         }
 
-        adminSupport.removeJmsQueue(getQueueName());
-        adminSupport.removeJmsQueue(getOtherQueueName());
+        if (adminSupport != null) {
+            adminSupport.removeJmsQueue(getQueueName());
+            adminSupport.removeJmsQueue(getOtherQueueName());
+            adminSupport.close();
+        }
     }
 
     @Test
@@ -205,7 +220,7 @@ public class JMSQueueManagementTestCase {
         Assert.assertFalse(result.asBoolean());
     }
 
-    @org.junit.Ignore("AS7-2480")
+//    @org.junit.Ignore("AS7-2480")
     @Test
     public void testMessageRemoval() throws Exception {
 
@@ -236,7 +251,7 @@ public class JMSQueueManagementTestCase {
 
     }
 
-    @org.junit.Ignore("AS7-2480")
+//    @org.junit.Ignore("AS7-2480")
     @Test
     public void testMessageMovement() throws Exception {
 
@@ -374,7 +389,7 @@ public class JMSQueueManagementTestCase {
     }
 
     private ModelNode execute(final ModelNode op, final boolean expectSuccess) throws IOException {
-        ModelNode response = adminSupport.getModelControllerClient().execute(op);
+        ModelNode response = managementClient.getControllerClient().execute(op);
         final String outcome = response.get("outcome").asString();
         if (expectSuccess) {
             if (!"success".equals(outcome)) {

@@ -38,9 +38,9 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.as.test.integration.common.jms.JMSOperations;
-import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.After;
@@ -59,49 +59,63 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class CoreQueueManagementTestCase {
 
-    private static JMSOperations adminSupport;
     private static long count = System.currentTimeMillis();
 
+    private static ClientSessionFactory sessionFactory;
+
     @BeforeClass
-    public static void connectManagmentClient() {
-        adminSupport = JMSOperationsProvider.getInstance();
-    }
+    public static void beforeClass() throws Exception {
 
-    @AfterClass
-    public static void closeManagementClient() {
-        if (adminSupport != null) {
-            adminSupport.close();
-        }
-    }
-
-    private ClientSession session;
-    private ClientSession consumerSession;
-
-    @Before
-    public void addTopic() throws Exception {
-
-        count++;
 
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("host", TestSuiteEnvironment.getServerAddress());
         TransportConfiguration transportConfiguration =
                 new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
-        ClientSessionFactory factory = locator.createSessionFactory();
-        session = factory.createSession("guest", "guest", false, true, true, false, 1);
+        locator.setBlockOnDurableSend(true);
+        locator.setBlockOnNonDurableSend(true);
+        sessionFactory =  locator.createSessionFactory();
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+
+        if (sessionFactory != null) {
+            sessionFactory.cleanup();
+            sessionFactory.close();
+        }
+    }
+
+
+    @ContainerResource
+    private ManagementClient managementClient;
+
+    private ClientSession session;
+    private ClientSession consumerSession;
+
+    @Before
+    public void setup() throws Exception {
+
+        count++;
+
+        session = sessionFactory.createSession("guest", "guest", false, true, true, false, 1);
         session.createQueue(getQueueName(), getQueueName(), false);
         session.createQueue(getOtherQueueName(), getOtherQueueName(), false);
+
+        consumerSession = sessionFactory.createSession("guest", "guest", false, false, false, false, 1);
     }
 
     @After
-    public void removeTopic() throws Exception {
-
-        if (session != null) {
-            session.close();
-        }
+    public void cleanup() throws Exception {
 
         if (consumerSession != null) {
             consumerSession.close();
+        }
+
+        if (session != null) {
+            session.deleteQueue(getQueueName());
+            session.deleteQueue(getOtherQueueName());
+            session.close();
         }
     }
 
@@ -178,7 +192,7 @@ public class CoreQueueManagementTestCase {
         Assert.assertFalse(result.asBoolean());
     }
 
-    @org.junit.Ignore("AS7-2480")
+//    @org.junit.Ignore("AS7-2480")
     @Test
     public void testMessageRemoval() throws Exception {
 
@@ -214,7 +228,7 @@ public class CoreQueueManagementTestCase {
         return result.get(0).get("messageID").asLong();
     }
 
-    @org.junit.Ignore("AS7-2480")
+//    @org.junit.Ignore("AS7-2480")
     @Test
     public void testMessageMovement() throws Exception {
 
@@ -249,7 +263,7 @@ public class CoreQueueManagementTestCase {
 
     }
 
-    @org.junit.Ignore("AS7-2480")
+//    @org.junit.Ignore("AS7-2480")
     @Test
     public void testChangeMessagePriority() throws Exception {
 
@@ -310,14 +324,7 @@ public class CoreQueueManagementTestCase {
     @Test
     public void testListConsumers() throws Exception {
 
-        HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("host", TestSuiteEnvironment.getServerAddress());
-        TransportConfiguration transportConfiguration =
-                new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
-        ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
-        ClientSessionFactory factory = locator.createSessionFactory();
-        consumerSession = factory.createSession("guest", "guest", false, false, false, false, 1);
-        session.createConsumer(getQueueName());
+        consumerSession.createConsumer(getQueueName());
 
         ModelNode result = execute(getQueueOperation("list-consumers-as-json"), true);
         Assert.assertTrue(result.isDefined());
@@ -333,7 +340,7 @@ public class CoreQueueManagementTestCase {
     }
 
     private ModelNode execute(final ModelNode op, final boolean expectSuccess) throws IOException {
-        ModelNode response = adminSupport.getModelControllerClient().execute(op);
+        ModelNode response = managementClient.getControllerClient().execute(op);
         final String outcome = response.get("outcome").asString();
         if (expectSuccess) {
             if (!"success".equals(outcome)) {

@@ -15,15 +15,20 @@ public class CreateTopicSetupTask implements ServerSetupTask {
     public static final String TOPIC_NAME = "myAwesomeTopic";
     public static final String TOPIC_JNDI_NAME = "topic/myAwesomeTopic";
 
+
+    private JMSOperations adminOperations;
+
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
-        JMSOperations adminOperations =  JMSOperationsProvider.getInstance(managementClient);
+        adminOperations = JMSOperationsProvider.getInstance(managementClient);
         adminOperations.createJmsTopic(TOPIC_NAME, TOPIC_JNDI_NAME);
     }
 
     @Override
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        JMSOperations adminOperations =  JMSOperationsProvider.getInstance(managementClient);
-        adminOperations.removeJmsTopic(TOPIC_NAME);
+        if (adminOperations != null) {
+            adminOperations.removeJmsTopic(TOPIC_NAME);
+            adminOperations.close();
+        }
     }
 }

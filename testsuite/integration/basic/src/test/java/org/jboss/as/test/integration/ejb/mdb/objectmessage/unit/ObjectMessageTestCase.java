@@ -32,6 +32,9 @@ import javax.jms.Queue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
@@ -44,9 +47,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -56,6 +57,7 @@ import org.junit.runner.RunWith;
  * User: Jaikiran Pai
  */
 @RunWith(Arquillian.class)
+@ServerSetup({ObjectMessageTestCase.JmsQueueSetup.class})
 public class ObjectMessageTestCase {
 
     private static final Logger logger = Logger.getLogger(ObjectMessageTestCase.class);
@@ -79,8 +81,30 @@ public class ObjectMessageTestCase {
     @Resource(mappedName = ObjectMessageTestCase.OBJECT_MESSAGE_REPLY_QUEUE_JNDI_NAME)
     private Queue objectMessageReplyQueue;
 
+    static class JmsQueueSetup implements ServerSetupTask {
 
-    private static JMSOperations jmsAdminOperations;
+        private JMSOperations jmsAdminOperations;
+
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient);
+            jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-queue", MDBAcceptingObjectMessage.QUEUE_JNDI_NAME);
+            jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-replyQueue", OBJECT_MESSAGE_REPLY_QUEUE_JNDI_NAME);
+            jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-array-queue", MDBAcceptingObjectMessageOfArrayType.QUEUE_JNDI_NAME);
+            jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-array-replyQueue", OBJECT_MESSAGE_ARRAY_TYPE_REPLY_QUEUE_JNDI_NAME);
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            if (jmsAdminOperations != null) {
+                jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-queue");
+                jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-replyQueue");
+                jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-array-queue");
+                jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-array-replyQueue");
+                jmsAdminOperations.close();
+            }
+        }
+    }
 
     /**
      * .ear
@@ -106,6 +130,7 @@ public class ObjectMessageTestCase {
         final JavaArchive libJar = ShrinkWrap.create(JavaArchive.class, "util.jar");
         libJar.addClasses(SimpleMessageInEarLibJar.class);
         libJar.addPackage(JMSOperations.class.getPackage());
+        libJar.addClass(JmsQueueSetup.class);
         logger.info(libJar.toString(true));
 
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "mdb-objectmessage-test.ear");
@@ -115,25 +140,6 @@ public class ObjectMessageTestCase {
         ear.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         logger.info(ear.toString(true));
         return ear;
-    }
-
-    @BeforeClass
-    public static void createJmsDestinations() {
-        jmsAdminOperations = JMSOperationsProvider.getInstance();
-        jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-queue", MDBAcceptingObjectMessage.QUEUE_JNDI_NAME);
-        jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-replyQueue", OBJECT_MESSAGE_REPLY_QUEUE_JNDI_NAME);
-        jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-array-queue", MDBAcceptingObjectMessageOfArrayType.QUEUE_JNDI_NAME);
-        jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-array-replyQueue", OBJECT_MESSAGE_ARRAY_TYPE_REPLY_QUEUE_JNDI_NAME);
-
-    }
-
-    @AfterClass
-    public static void afterTestClass() {
-        jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-queue");
-        jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-replyQueue");
-        jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-array-queue");
-        jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-array-replyQueue");
-        jmsAdminOperations.close();
     }
 
     /**

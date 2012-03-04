@@ -65,7 +65,12 @@ public class DefaultHornetQProviderJMSOperations implements JMSOperations {
     }
 
     @Override
-    public final ModelControllerClient getModelControllerClient() {
+     public void close() {
+        // no-op
+        // DO NOT close the management client. Whoever passed it into the constructor should close it
+    }
+
+    private ModelControllerClient getModelControllerClient() {
         return client.getControllerClient();
     }
 
@@ -100,22 +105,11 @@ public class DefaultHornetQProviderJMSOperations implements JMSOperations {
         ModelNode result = this.getModelControllerClient().execute(update);
         if (result.hasDefined(ClientConstants.OUTCOME) && ClientConstants.SUCCESS.equals(result.get(ClientConstants.OUTCOME).asString())) {
             logger.info("Operation successful for update = " + update.toString());
-            return;
         } else if (result.hasDefined(ClientConstants.FAILURE_DESCRIPTION)) {
             final String failureDesc = result.get(ClientConstants.FAILURE_DESCRIPTION).toString();
             throw new JMSOperationsException(failureDesc);
         } else {
             throw new JMSOperationsException("Operation not successful; outcome = " + result.get(ClientConstants.OUTCOME));
-        }
-
-    }
-
-    @Override
-    public void close() {
-        try {
-            this.getModelControllerClient().close();
-        } catch(IOException ex) {
-            ex.printStackTrace();
         }
     }
 }

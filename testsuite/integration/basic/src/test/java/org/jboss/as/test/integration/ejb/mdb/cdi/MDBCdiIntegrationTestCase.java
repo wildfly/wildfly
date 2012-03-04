@@ -30,6 +30,9 @@ import javax.jms.TextMessage;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
@@ -39,9 +42,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,6 +52,7 @@ import org.junit.runner.RunWith;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
+@ServerSetup({MDBCdiIntegrationTestCase.JmsQueueSetup.class})
 public class MDBCdiIntegrationTestCase {
 
     private static final Logger logger = Logger.getLogger(MDBCdiIntegrationTestCase.class);
@@ -67,34 +69,38 @@ public class MDBCdiIntegrationTestCase {
     @Resource(mappedName = QUEUE_JNDI_NAME)
     private Queue queue;
 
-    private static JMSOperations jmsAdminOperations;
+    static class JmsQueueSetup implements ServerSetupTask {
+
+        private JMSOperations jmsAdminOperations;
+
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient);
+            jmsAdminOperations.createJmsQueue("mdb-cdi-test/queue", QUEUE_JNDI_NAME);
+            jmsAdminOperations.createJmsQueue("mdb-cdi-test/reply-queue", REPLY_QUEUE_JNDI_NAME);
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            if (jmsAdminOperations != null) {
+                jmsAdminOperations.removeJmsQueue("mdb-cdi-test/queue");
+                jmsAdminOperations.removeJmsQueue("mdb-cdi-test/reply-queue");
+                jmsAdminOperations.close();
+            }
+        }
+    }
 
     @Deployment
     public static Archive getDeployment() {
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb-cdi-integration-test.jar");
-        ejbJar.addClasses(CdiIntegrationMDB.class, RequestScopedCDIBean.class, JMSMessagingUtil.class, MDBCdiIntegrationTestCase.class)
+        ejbJar.addClasses(CdiIntegrationMDB.class, RequestScopedCDIBean.class, JMSMessagingUtil.class, MDBCdiIntegrationTestCase.class, JmsQueueSetup.class)
            .addPackage(JMSOperations.class.getPackage());
         ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         logger.info(ejbJar.toString(true));
 
         return ejbJar;
-    }
-
-    @BeforeClass
-    public static void createJmsDestinations() {
-        jmsAdminOperations = JMSOperationsProvider.getInstance();
-        jmsAdminOperations.createJmsQueue("mdb-cdi-test/queue", QUEUE_JNDI_NAME);
-        jmsAdminOperations.createJmsQueue("mdb-cdi-test/reply-queue", REPLY_QUEUE_JNDI_NAME);
-    }
-
-    @AfterClass
-    public static void afterTestClass() {
-        jmsAdminOperations.removeJmsQueue("mdb-cdi-test/queue");
-        jmsAdminOperations.removeJmsQueue("mdb-cdi-test/reply-queue");
-        jmsAdminOperations.close();
-        jmsAdminOperations = null;
     }
 
     @Test

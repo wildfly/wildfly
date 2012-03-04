@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.common.jms;
 
-import org.jboss.as.controller.client.ModelControllerClient;
-
 /**
  * Utility to administrate JMS-related resources on the server. An separate implementation should be created for
  * every possible JMS provider to be tested.
@@ -43,11 +41,5 @@ public interface JMSOperations {
     public void removeJmsTopic(final String topicName);
 
     public void close();
-
-    /**
-     * not recommended to access the controller client directly
-     * prefer to use the abstractions provided by a JMSOperations implementation!
-     */
-    @Deprecated public ModelControllerClient getModelControllerClient();
 
 }
