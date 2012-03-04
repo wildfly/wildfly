@@ -188,12 +188,25 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
                     CommonAttributes.FILE_STORE_ATTRIBUTES));
             addCacheStorePropertyCommands(store, storeAddress, result);
         }
-        else if (cache.getValue().get(ModelKeys.JDBC_STORE, ModelKeys.JDBC_STORE_NAME).isDefined()) {
-            ModelNode store = cache.getValue().get(ModelKeys.JDBC_STORE, ModelKeys.JDBC_STORE_NAME);
+        else if (cache.getValue().get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME).isDefined()) {
+            ModelNode store = cache.getValue().get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
             ModelNode storeAddress = address.clone();
-            storeAddress.add(ModelKeys.JDBC_STORE, ModelKeys.JDBC_STORE_NAME);
-            result.add(CacheConfigOperationHandlers.createStoreOperation(CommonAttributes.COMMON_STORE_ATTRIBUTES, storeAddress, store,
-                    CommonAttributes.JDBC_STORE_ATTRIBUTES));
+            storeAddress.add(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
+            result.add(CacheConfigOperationHandlers.createStringKeyedStoreOperation(storeAddress, store));
+            addCacheStorePropertyCommands(store, storeAddress, result);
+        }
+        else if (cache.getValue().get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME).isDefined()) {
+            ModelNode store = cache.getValue().get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
+            ModelNode storeAddress = address.clone();
+            storeAddress.add(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
+            result.add(CacheConfigOperationHandlers.createBinaryKeyedStoreOperation(storeAddress, store));
+            addCacheStorePropertyCommands(store, storeAddress, result);
+        }
+        else if (cache.getValue().get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME).isDefined()) {
+            ModelNode store = cache.getValue().get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
+            ModelNode storeAddress = address.clone();
+            storeAddress.add(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
+            result.add(CacheConfigOperationHandlers.createMixedKeyedStoreOperation(storeAddress, store));
             addCacheStorePropertyCommands(store, storeAddress, result);
         }
         else if (cache.getValue().get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME).isDefined()) {

@@ -38,18 +38,18 @@
             <eviction max-entries="20000" strategy="UNORDERED"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <state-transfer enabled="true" timeout="60000" chunk-size="10000" /> 
-            <jdbc-store datasource="java:jboss/jdbc/store" fetch-state="false" passivation="false" preload="true" purge="false" shared="true" singleton="true">
-                <bucket-table prefix="ispn_bucket" batch-size="100" fetch-size="100">
+            <mixed-keyed-jdbc-store datasource="java:jboss/jdbc/store" fetch-state="false" passivation="false" preload="true" purge="false" shared="true" singleton="true">
+                <string-keyed-table prefix="ispn_bucket" batch-size="100" fetch-size="100">
                     <id-column name="id" type="VARCHAR"/>
                     <data-column name="datum" type="BINARY"/>
                     <timestamp-column name="version" type="BIGINT"/>
-                </bucket-table>
-                <entry-table prefix="ispn_entry" batch-size="100" fetch-size="100">
+                </string-keyed-table>
+                <binary-keyed-table prefix="ispn_entry" batch-size="100" fetch-size="100">
                     <id-column name="id" type="VARCHAR"/>
                     <data-column name="datum" type="BINARY"/>
                     <timestamp-column name="version" type="BIGINT"/>
-                </entry-table>
-            </jdbc-store>
+                </binary-keyed-table>
+            </mixed-keyed-jdbc-store>
         </distributed-cache>
     </cache-container>
 </subsystem>

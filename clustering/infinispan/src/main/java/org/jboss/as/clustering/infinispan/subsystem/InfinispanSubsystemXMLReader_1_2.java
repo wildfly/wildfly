@@ -478,8 +478,16 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
                 this.parseFileStore(reader, cache, operations);
                 break;
             }
-            case JDBC_STORE: {
-                this.parseJDBCStore(reader, cache, operations);
+            case STRING_KEYED_JDBC_STORE: {
+                this.parseStringKeyedJDBCStore(reader, cache, operations);
+                break;
+            }
+            case BINARY_KEYED_JDBC_STORE: {
+                this.parseBinaryKeyedJDBCStore(reader, cache, operations);
+                break;
+            }
+            case MIXED_KEYED_JDBC_STORE: {
+                this.parseMixedKeyedJDBCStore(reader, cache, operations);
                 break;
             }
             case REMOTE_STORE: {
@@ -778,10 +786,10 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
         ParseUtils.requireNoContent(reader);
     }
 
-    private void parseJDBCStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
-        // ModelNode for the jdbc store add operation
+    private void parseStringKeyedJDBCStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+        // ModelNode for the string-keyed jdbc store add operation
         ModelNode storeAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        storeAddress.add(ModelKeys.JDBC_STORE,ModelKeys.JDBC_STORE_NAME) ;
+        storeAddress.add(ModelKeys.STRING_KEYED_JDBC_STORE,ModelKeys.STRING_KEYED_JDBC_STORE_NAME) ;
         storeAddress.protect();
         ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, storeAddress);
 
@@ -806,12 +814,8 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case ENTRY_TABLE: {
-                    this.parseJDBCStoreTable(reader, store.get(ModelKeys.ENTRY_TABLE).setEmptyObject());
-                    break;
-                }
-                case BUCKET_TABLE: {
-                    this.parseJDBCStoreTable(reader, store.get(ModelKeys.BUCKET_TABLE).setEmptyObject());
+                case STRING_KEYED_TABLE: {
+                    this.parseJDBCStoreTable(reader, store.get(ModelKeys.STRING_KEYED_TABLE).setEmptyObject());
                     break;
                 }
                 default: {
@@ -821,6 +825,90 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
         }
         operations.add(store);
     }
+
+    private void parseBinaryKeyedJDBCStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+        // ModelNode for the binary-keyed jdbc store add operation
+        ModelNode storeAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
+        storeAddress.add(ModelKeys.BINARY_KEYED_JDBC_STORE,ModelKeys.BINARY_KEYED_JDBC_STORE_NAME) ;
+        storeAddress.protect();
+        ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, storeAddress);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            String value = reader.getAttributeValue(i);
+            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case DATASOURCE: {
+                    CommonAttributes.DATA_SOURCE.parseAndSetParameter(value, store, reader);
+                    break;
+                }
+                default: {
+                    this.parseStoreAttribute(reader, i, attribute, value, store);
+                }
+            }
+        }
+
+        if (!store.hasDefined(ModelKeys.DATASOURCE)) {
+            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.DATASOURCE));
+        }
+
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case BINARY_KEYED_TABLE: {
+                    this.parseJDBCStoreTable(reader, store.get(ModelKeys.BINARY_KEYED_TABLE).setEmptyObject());
+                    break;
+                }
+                default: {
+                    this.parseStoreProperty(reader, store);
+                }
+            }
+        }
+        operations.add(store);
+    }
+    private void parseMixedKeyedJDBCStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+        // ModelNode for the mixed-keyed jdbc store add operation
+        ModelNode storeAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
+        storeAddress.add(ModelKeys.MIXED_KEYED_JDBC_STORE,ModelKeys.MIXED_KEYED_JDBC_STORE_NAME) ;
+        storeAddress.protect();
+        ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, storeAddress);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            String value = reader.getAttributeValue(i);
+            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case DATASOURCE: {
+                    CommonAttributes.DATA_SOURCE.parseAndSetParameter(value, store, reader);
+                    break;
+                }
+                default: {
+                    this.parseStoreAttribute(reader, i, attribute, value, store);
+                }
+            }
+        }
+
+        if (!store.hasDefined(ModelKeys.DATASOURCE)) {
+            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.DATASOURCE));
+        }
+
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case STRING_KEYED_TABLE: {
+                    this.parseJDBCStoreTable(reader, store.get(ModelKeys.STRING_KEYED_TABLE).setEmptyObject());
+                    break;
+                }
+                case BINARY_KEYED_TABLE: {
+                    this.parseJDBCStoreTable(reader, store.get(ModelKeys.BINARY_KEYED_TABLE).setEmptyObject());
+                    break;
+                }
+                default: {
+                    this.parseStoreProperty(reader, store);
+                }
+            }
+        }
+        operations.add(store);
+    }
+
 
     private void parseJDBCStoreTable(XMLExtendedStreamReader reader, ModelNode table) throws XMLStreamException {
         for (int i = 0; i < reader.getAttributeCount(); i++) {

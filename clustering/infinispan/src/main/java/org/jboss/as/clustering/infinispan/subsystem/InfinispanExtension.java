@@ -65,7 +65,9 @@ public class InfinispanExtension implements Extension {
     private static final PathElement storePath = PathElement.pathElement(ModelKeys.STORE, ModelKeys.STORE_NAME);
     private static final PathElement storePropertyPath = PathElement.pathElement(ModelKeys.PROPERTY);
     private static final PathElement fileStorePath = PathElement.pathElement(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
-    private static final PathElement jdbcStorePath = PathElement.pathElement(ModelKeys.JDBC_STORE, ModelKeys.JDBC_STORE_NAME);
+    private static final PathElement stringKeyedJdbcStorePath = PathElement.pathElement(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
+    private static final PathElement binaryKeyedJdbcStorePath = PathElement.pathElement(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
+    private static final PathElement mixedKeyedJdbcStorePath = PathElement.pathElement(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
     private static final PathElement remoteStorePath = PathElement.pathElement(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
 
     /**
@@ -184,12 +186,26 @@ public class InfinispanExtension implements Extension {
         CacheConfigOperationHandlers.FILE_STORE_ATTR.registerAttributes(fileStore);
         createPropertyRegistration(fileStore);
 
-        // register the jdbc-store=JDBC_STORE handlers
-        final ManagementResourceRegistration jdbcStore = resource.registerSubModel(jdbcStorePath, InfinispanSubsystemProviders.JDBC_STORE);
-        jdbcStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.JDBC_STORE_ADD, InfinispanSubsystemProviders.JDBC_STORE_ADD);
-        jdbcStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
-        CacheConfigOperationHandlers.JDBC_STORE_ATTR.registerAttributes(jdbcStore);
-        createPropertyRegistration(jdbcStore);
+        // register the string-keyed-jdbc-store=STRING_KEYED_JDBC_STORE handlers
+        final ManagementResourceRegistration stringKeyedJdbcStore = resource.registerSubModel(stringKeyedJdbcStorePath, InfinispanSubsystemProviders.STRING_KEYED_JDBC_STORE);
+        stringKeyedJdbcStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.STRING_KEYED_JDBC_STORE_ADD, InfinispanSubsystemProviders.STRING_KEYED_JDBC_STORE_ADD);
+        stringKeyedJdbcStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
+        CacheConfigOperationHandlers.STRING_KEYED_JDBC_STORE_ATTR.registerAttributes(stringKeyedJdbcStore);
+        createPropertyRegistration(stringKeyedJdbcStore);
+
+        // register the string-keyed-jdbc-store=STRING_KEYED_JDBC_STORE handlers
+        final ManagementResourceRegistration binaryKeyedJdbcStore = resource.registerSubModel(binaryKeyedJdbcStorePath, InfinispanSubsystemProviders.BINARY_KEYED_JDBC_STORE);
+        binaryKeyedJdbcStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.BINARY_KEYED_JDBC_STORE_ADD, InfinispanSubsystemProviders.BINARY_KEYED_JDBC_STORE_ADD);
+        binaryKeyedJdbcStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
+        CacheConfigOperationHandlers.BINARY_KEYED_JDBC_STORE_ATTR.registerAttributes(binaryKeyedJdbcStore);
+        createPropertyRegistration(binaryKeyedJdbcStore);
+
+        // register the mixed-keyed-jdbc-store=MIXED_KEYED_JDBC_STORE handlers
+        final ManagementResourceRegistration mixedKeyedJdbcStore = resource.registerSubModel(mixedKeyedJdbcStorePath, InfinispanSubsystemProviders.MIXED_KEYED_JDBC_STORE);
+        mixedKeyedJdbcStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.MIXED_KEYED_JDBC_STORE_ADD, InfinispanSubsystemProviders.MIXED_KEYED_JDBC_STORE_ADD);
+        mixedKeyedJdbcStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
+        CacheConfigOperationHandlers.MIXED_KEYED_JDBC_STORE_ATTR.registerAttributes(mixedKeyedJdbcStore);
+        createPropertyRegistration(mixedKeyedJdbcStore);
 
         // register the remote-store=REMOTE_STORE handlers
         final ManagementResourceRegistration remoteStore = resource.registerSubModel(remoteStorePath, InfinispanSubsystemProviders.REMOTE_STORE);
