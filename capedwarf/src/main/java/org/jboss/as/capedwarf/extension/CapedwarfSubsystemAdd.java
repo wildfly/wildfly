@@ -41,6 +41,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.logging.handlers.FormatterSpec;
 import org.jboss.as.logging.handlers.custom.CustomHandlerService;
+import org.jboss.as.logging.loggers.LoggerHandlerService;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -163,12 +164,21 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     protected static void addLogger(final ServiceTarget serviceTarget) {
-        final CustomHandlerService service = new CustomHandlerService(Logger.class.getName(), "org.jboss.as.capedwarf");
-        service.setFormatterSpec(new FormatterSpec() {
+        final CustomHandlerService chs = new CustomHandlerService(Logger.class.getName(), "org.jboss.as.capedwarf");
+        chs.setFormatterSpec(new FormatterSpec() {
             public void apply(Handler handler) {
             }
         });
-        final ServiceBuilder<Handler> builder = serviceTarget.addService(LogServices.handlerName(CAPEDWARF.toUpperCase()), service);
-        builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        final String capedwarfLogger = CAPEDWARF.toUpperCase();
+        final ServiceName chsName = LogServices.handlerName(capedwarfLogger);
+        final ServiceBuilder<Handler> chsBuilder = serviceTarget.addService(chsName, chs);
+        chsBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+
+        final String rootLogger = "ROOT";
+        final LoggerHandlerService lhs = new LoggerHandlerService(rootLogger);
+        final ServiceBuilder<org.jboss.logmanager.Logger> lhsBuilder = serviceTarget.addService(LogServices.loggerHandlerName(rootLogger, capedwarfLogger), lhs);
+        lhsBuilder.addDependency(LogServices.loggerName(rootLogger));
+        lhsBuilder.addDependency(LogServices.handlerName(capedwarfLogger), Handler.class, lhs.getHandlerInjector());
+        lhsBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
     }
 }

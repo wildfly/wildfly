@@ -43,7 +43,7 @@ public class CapedwarfDependenciesProcessor extends CapedwarfDeploymentUnitProce
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         serviceTarget.addDependency(DEFAULT_CACHE_CONFIG); // make sure the default cache config is registerd into container before we get the cache
         serviceTarget.addDependency(ServletExecutorConsumerService.NAME); // we need queue -- as default gae queue is there by default
-        serviceTarget.addDependency(LogServices.handlerName(CAPEDWARF.toUpperCase())); // we need logger
+        serviceTarget.addDependency(LogServices.loggerHandlerName("ROOT", CAPEDWARF.toUpperCase())); // we need logger
     }
 
 }
