@@ -4,6 +4,7 @@
 		xmlns="urn:jboss:domain:1.1"
 		xmlns:d="urn:jboss:domain:1.1"
         xmlns:ws11="urn:jboss:domain:webservices:1.1"
+        xmlns:xts="urn:jboss:domain:xts:1.0"
                 >
 
     <!--
@@ -90,6 +91,20 @@
     <!-- Change WSDL host. -->
     <xsl:template match="//ws11:wsdl-host">
         <xsl:copy>${jboss.bind.address:<xsl:value-of select="$publicIPAddress"/>}</xsl:copy>
+    </xsl:template>
+
+    <!-- Change XTS Coordinator -->
+    <xsl:template match="//xts:xts-environment/@url">
+        <xsl:attribute name="url">
+            <xsl:choose>
+                <xsl:when test="contains($publicIPAddress,':')">
+                    <xsl:value-of select="concat('http://[', $publicIPAddress, ']:8080/ws-c11/ActivationService')"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="concat('http://', $publicIPAddress, ':8080/ws-c11/ActivationService')"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:attribute>
     </xsl:template>
 
 
