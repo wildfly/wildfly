@@ -178,7 +178,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final LoggerHandlerService lhs = new LoggerHandlerService(rootLogger);
         final ServiceBuilder<org.jboss.logmanager.Logger> lhsBuilder = serviceTarget.addService(LogServices.loggerHandlerName(rootLogger, capedwarfLogger), lhs);
         lhsBuilder.addDependency(LogServices.loggerName(rootLogger));
-        lhsBuilder.addDependency(LogServices.handlerName(capedwarfLogger), Handler.class, lhs.getHandlerInjector());
+        lhsBuilder.addDependency(chsName, Handler.class, lhs.getHandlerInjector());
         newControllers.add(lhsBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND).install());
     }
 }
