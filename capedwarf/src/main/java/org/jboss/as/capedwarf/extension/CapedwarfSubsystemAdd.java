@@ -108,7 +108,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 final TempDir tempDir = createTempDir(serviceTarget);
 
                 addLogger(serviceTarget);
-                
+
                 final int initialPhaseOrder = Math.min(Phase.PARSE_WEB_DEPLOYMENT, Phase.PARSE_PERSISTENCE_UNIT);
                 processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 20, new CapedwarfInitializationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 10, new CapedwarfPersistenceModificationProcessor(tempDir)); // before persistence.xml parsing
@@ -160,7 +160,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
         return tempDir;
     }
-    
+
     protected static void addLogger(final ServiceTarget serviceTarget) {
         final CustomHandlerService service = new CustomHandlerService(Logger.class.getName(), "org.jboss.as.capedwarf");
         final ServiceBuilder<Handler> builder = serviceTarget.addService(LogServices.handlerName(CAPEDWARF.toUpperCase()), service);

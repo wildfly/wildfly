@@ -44,7 +44,7 @@ public class CapedwarfListener implements ServletContextListener {
     static boolean isCapedwarfApp(ClassLoader classLoader) {
         return classLoaders.contains(classLoader);
     }
-    
+
     static boolean isCapedwarfApp() {
         return isCapedwarfApp(SecurityActions.getAppClassLoader());
     }
