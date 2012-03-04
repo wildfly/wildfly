@@ -95,7 +95,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
      */
     @Override
     public void performBoottime(final OperationContext context, ModelNode operation, ModelNode model,
-                                ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
+                                ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers)
             throws OperationFailedException {
 
         final ModelNode appEngineModel = CapedwarfDefinition.APPENGINE_API.resolveModelAttribute(context,model);
@@ -105,11 +105,11 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 final ServiceTarget serviceTarget = context.getServiceTarget();
 
-                final ServletExecutorConsumerService consumerService = addQueueConsumer(serviceTarget);
+                final ServletExecutorConsumerService consumerService = addQueueConsumer(serviceTarget, newControllers);
 
-                final TempDir tempDir = createTempDir(serviceTarget);
+                final TempDir tempDir = createTempDir(serviceTarget, newControllers);
 
-                addLogger(serviceTarget);
+                addLogger(serviceTarget, newControllers);
 
                 final int initialPhaseOrder = Math.min(Phase.PARSE_WEB_DEPLOYMENT, Phase.PARSE_PERSISTENCE_UNIT);
                 processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 20, new CapedwarfInitializationProcessor());
@@ -128,18 +128,18 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     }
 
-    protected static ServletExecutorConsumerService addQueueConsumer(ServiceTarget serviceTarget) {
+    protected static ServletExecutorConsumerService addQueueConsumer(final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers) {
         final ServletExecutorConsumerService consumerService = new ServletExecutorConsumerService();
         final ServiceBuilder<Connection> builder = serviceTarget.addService(ServletExecutorConsumerService.NAME, consumerService);
         builder.addDependency(ContextNames.bindInfoFor("java:/ConnectionFactory").getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getFactory());
         builder.addDependency(ContextNames.bindInfoFor("java:/queue/" + CAPEDWARF).getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getQueue());
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, consumerService.getLoader());
         builder.addDependency(ServiceName.JBOSS.append("messaging").append("default")); // depending on messaging sub-system impl details ...
-        builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        newControllers.add(builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install());
         return consumerService;
     }
 
-    protected static TempDir createTempDir(final ServiceTarget serviceTarget) {
+    protected static TempDir createTempDir(final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers) {
         final TempDir tempDir;
         try {
             tempDir = TempFileProviderService.provider().createTempDir(CAPEDWARF);
@@ -159,11 +159,11 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 return tempDir;
             }
         });
-        builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        newControllers.add(builder.setInitialMode(ServiceController.Mode.ACTIVE).install());
         return tempDir;
     }
 
-    protected static void addLogger(final ServiceTarget serviceTarget) {
+    protected static void addLogger(final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers) {
         final CustomHandlerService chs = new CustomHandlerService(Logger.class.getName(), "org.jboss.as.capedwarf");
         chs.setFormatterSpec(new FormatterSpec() {
             public void apply(Handler handler) {
@@ -172,13 +172,13 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String capedwarfLogger = CAPEDWARF.toUpperCase();
         final ServiceName chsName = LogServices.handlerName(capedwarfLogger);
         final ServiceBuilder<Handler> chsBuilder = serviceTarget.addService(chsName, chs);
-        chsBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        newControllers.add(chsBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND).install());
 
         final String rootLogger = "ROOT";
         final LoggerHandlerService lhs = new LoggerHandlerService(rootLogger);
         final ServiceBuilder<org.jboss.logmanager.Logger> lhsBuilder = serviceTarget.addService(LogServices.loggerHandlerName(rootLogger, capedwarfLogger), lhs);
         lhsBuilder.addDependency(LogServices.loggerName(rootLogger));
         lhsBuilder.addDependency(LogServices.handlerName(capedwarfLogger), Handler.class, lhs.getHandlerInjector());
-        lhsBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        newControllers.add(lhsBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND).install());
     }
 }
