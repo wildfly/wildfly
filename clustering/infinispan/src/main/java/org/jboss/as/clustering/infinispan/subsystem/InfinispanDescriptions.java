@@ -454,6 +454,8 @@ public class InfinispanDescriptions {
         for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
             attr.addOperationParameterDescription(resources, "infinispan.cache.store", op);
         }
+        // optional properties parameter
+        CommonAttributes.PROPERTIES.addOperationParameterDescription(resources, "infinispan.cache.store", op);
         for (AttributeDefinition attr : CommonAttributes.STORE_ATTRIBUTES) {
             attr.addOperationParameterDescription(resources, "infinispan.cache.store", op);
         }
@@ -510,33 +512,112 @@ public class InfinispanDescriptions {
         for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
             attr.addOperationParameterDescription(resources, "infinispan.cache.store", op);
         }
+        // optional properties parameter
+        CommonAttributes.PROPERTIES.addOperationParameterDescription(resources, "infinispan.cache.store", op);
         for (AttributeDefinition attr : CommonAttributes.FILE_STORE_ATTRIBUTES) {
             attr.addOperationParameterDescription(resources, "infinispan.cache.file-store", op);
         }
         return op;
     }
 
-    // cache jdbc store element
-    static ModelNode getJdbcCacheStoreDescription(Locale locale) {
+    // string keyed cache jdbc store element
+    static ModelNode getStringKeyedJdbcCacheStoreDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
         final ModelNode store = createDescription(resources, "infinispan.cache.store");
         for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
             attr.addResourceAttributeDescription(resources, "infinispan.cache.store", store);
         }
-        for (AttributeDefinition attr : CommonAttributes.JDBC_STORE_ATTRIBUTES) {
+        for (AttributeDefinition attr : CommonAttributes.COMMON_JDBC_STORE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.jdbc-store", store);
+        }
+        for (AttributeDefinition attr : CommonAttributes.STRING_KEYED_JDBC_STORE_ATTRIBUTES) {
             attr.addResourceAttributeDescription(resources, "infinispan.cache.jdbc-store", store);
         }
         addCacheStorePropertyCacheChildren("infinispan.cache.store", store, resources);
         return store ;
     }
 
-    static ModelNode getJdbcCacheStoreAddDescription(Locale locale) {
+    static ModelNode getStringKeyedJdbcCacheStoreAddDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
         final ModelNode op = createOperationDescription(ADD, resources, "infinispan.cache.store.add");
         for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
             attr.addOperationParameterDescription(resources, "infinispan.cache.store", op);
         }
-        for (AttributeDefinition attr : CommonAttributes.JDBC_STORE_ATTRIBUTES) {
+        // optional properties parameter
+        CommonAttributes.PROPERTIES.addOperationParameterDescription(resources, "infinispan.cache.store", op);
+        for (AttributeDefinition attr : CommonAttributes.COMMON_JDBC_STORE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.jdbc-store", op);
+        }
+        for (AttributeDefinition attr : CommonAttributes.STRING_KEYED_JDBC_STORE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.jdbc-store", op);
+        }
+        CommonAttributes.PROPERTIES.addOperationParameterDescription(resources, "infinispan.cache.store", op);
+        return op;
+    }
+
+    // binary keyed cache jdbc store element
+    static ModelNode getBinaryKeyedJdbcCacheStoreDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode store = createDescription(resources, "infinispan.cache.store");
+        for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.store", store);
+        }
+        for (AttributeDefinition attr : CommonAttributes.COMMON_JDBC_STORE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.jdbc-store", store);
+        }
+        for (AttributeDefinition attr : CommonAttributes.BINARY_KEYED_JDBC_STORE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.jdbc-store", store);
+        }
+        addCacheStorePropertyCacheChildren("infinispan.cache.store", store, resources);
+        return store ;
+    }
+
+    static ModelNode getBinaryKeyedJdbcCacheStoreAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(ADD, resources, "infinispan.cache.store.add");
+        for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.store", op);
+        }
+        // optional properties parameter
+        CommonAttributes.PROPERTIES.addOperationParameterDescription(resources, "infinispan.cache.store", op);
+        for (AttributeDefinition attr : CommonAttributes.COMMON_JDBC_STORE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.jdbc-store", op);
+        }
+        for (AttributeDefinition attr : CommonAttributes.BINARY_KEYED_JDBC_STORE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.jdbc-store", op);
+        }
+        return op;
+    }
+
+    // mixed keyed cache jdbc store element
+    static ModelNode getMixedKeyedJdbcCacheStoreDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode store = createDescription(resources, "infinispan.cache.store");
+        for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.store", store);
+        }
+        for (AttributeDefinition attr : CommonAttributes.COMMON_JDBC_STORE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.jdbc-store", store);
+        }
+        for (AttributeDefinition attr : CommonAttributes.MIXED_KEYED_JDBC_STORE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.jdbc-store", store);
+        }
+        addCacheStorePropertyCacheChildren("infinispan.cache.store", store, resources);
+        return store ;
+    }
+
+    static ModelNode getMixedKeyedJdbcCacheStoreAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(ADD, resources, "infinispan.cache.store.add");
+        for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.store", op);
+        }
+        // optional properties parameter
+        CommonAttributes.PROPERTIES.addOperationParameterDescription(resources, "infinispan.cache.store", op);
+        for (AttributeDefinition attr : CommonAttributes.COMMON_JDBC_STORE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.jdbc-store", op);
+        }
+        for (AttributeDefinition attr : CommonAttributes.MIXED_KEYED_JDBC_STORE_ATTRIBUTES) {
             attr.addOperationParameterDescription(resources, "infinispan.cache.jdbc-store", op);
         }
         return op;
@@ -562,6 +643,8 @@ public class InfinispanDescriptions {
         for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
             attr.addOperationParameterDescription(resources, "infinispan.cache.store", op);
         }
+        // optional properties parameter
+        CommonAttributes.PROPERTIES.addOperationParameterDescription(resources, "infinispan.cache.store", op);
         for (AttributeDefinition attr : CommonAttributes.REMOTE_STORE_ATTRIBUTES) {
             attr.addOperationParameterDescription(resources, "infinispan.cache.remote-store", op);
         }
@@ -628,13 +711,27 @@ public class InfinispanDescriptions {
         description.get(CHILDREN, ModelKeys.FILE_STORE, ALLOWED).setEmptyList();
         description.get(CHILDREN, ModelKeys.FILE_STORE, ALLOWED).add(ModelKeys.FILE_STORE_NAME);
         description.get(CHILDREN, ModelKeys.FILE_STORE, MODEL_DESCRIPTION);
-        // information about its child "jdbc-store=JDBC_STORE"
-        description.get(CHILDREN, ModelKeys.JDBC_STORE, DESCRIPTION).set(resources.getString(keyPrefix+".jdbc-store"));
-        description.get(CHILDREN, ModelKeys.JDBC_STORE, MIN_OCCURS).set(0);
-        description.get(CHILDREN, ModelKeys.JDBC_STORE, MAX_OCCURS).set(1);
-        description.get(CHILDREN, ModelKeys.JDBC_STORE, ALLOWED).setEmptyList();
-        description.get(CHILDREN, ModelKeys.JDBC_STORE, ALLOWED).add(ModelKeys.JDBC_STORE_NAME);
-        description.get(CHILDREN, ModelKeys.JDBC_STORE, MODEL_DESCRIPTION);
+        // information about its child "string-keyed-jdbc-store=STRING_KEYED_JDBC_STORE"
+        description.get(CHILDREN, ModelKeys.STRING_KEYED_JDBC_STORE, DESCRIPTION).set(resources.getString(keyPrefix+".string-keyed-jdbc-store"));
+        description.get(CHILDREN, ModelKeys.STRING_KEYED_JDBC_STORE, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.STRING_KEYED_JDBC_STORE, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.STRING_KEYED_JDBC_STORE, ALLOWED).setEmptyList();
+        description.get(CHILDREN, ModelKeys.STRING_KEYED_JDBC_STORE, ALLOWED).add(ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
+        description.get(CHILDREN, ModelKeys.STRING_KEYED_JDBC_STORE, MODEL_DESCRIPTION);
+        // information about its child "binary-keyed-jdbc-store=BINARY_KEYED_JDBC_STORE"
+        description.get(CHILDREN, ModelKeys.BINARY_KEYED_JDBC_STORE, DESCRIPTION).set(resources.getString(keyPrefix+".binary-keyed-jdbc-store"));
+        description.get(CHILDREN, ModelKeys.BINARY_KEYED_JDBC_STORE, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.BINARY_KEYED_JDBC_STORE, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.BINARY_KEYED_JDBC_STORE, ALLOWED).setEmptyList();
+        description.get(CHILDREN, ModelKeys.BINARY_KEYED_JDBC_STORE, ALLOWED).add(ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
+        description.get(CHILDREN, ModelKeys.BINARY_KEYED_JDBC_STORE, MODEL_DESCRIPTION);
+        // information about its child "mixed-keyed-jdbc-store=MIXED_KEYED_JDBC_STORE"
+        description.get(CHILDREN, ModelKeys.MIXED_KEYED_JDBC_STORE, DESCRIPTION).set(resources.getString(keyPrefix+".mixed-keyed-jdbc-store"));
+        description.get(CHILDREN, ModelKeys.MIXED_KEYED_JDBC_STORE, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.MIXED_KEYED_JDBC_STORE, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.MIXED_KEYED_JDBC_STORE, ALLOWED).setEmptyList();
+        description.get(CHILDREN, ModelKeys.MIXED_KEYED_JDBC_STORE, ALLOWED).add(ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
+        description.get(CHILDREN, ModelKeys.MIXED_KEYED_JDBC_STORE, MODEL_DESCRIPTION);
         // information about its child "remote-store=REMOTE_STORE"
         description.get(CHILDREN, ModelKeys.REMOTE_STORE, DESCRIPTION).set(resources.getString(keyPrefix+".remote-store"));
         description.get(CHILDREN, ModelKeys.REMOTE_STORE, MIN_OCCURS).set(0);

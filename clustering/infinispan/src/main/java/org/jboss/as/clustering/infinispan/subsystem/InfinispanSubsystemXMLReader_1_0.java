@@ -1,6 +1,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -820,9 +821,8 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
     private void parseJDBCStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
         // ModelNode for the store add operation
         ModelNode storeAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        storeAddress.add(ModelKeys.JDBC_STORE,ModelKeys.JDBC_STORE_NAME) ;
-        storeAddress.protect();
-        ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, storeAddress);
+        // we can't determine the full address until we know which tables are present
+        ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -846,11 +846,11 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case ENTRY_TABLE: {
-                    this.parseJDBCStoreTable(reader, store.get(ModelKeys.ENTRY_TABLE).setEmptyObject());
+                    this.parseJDBCStoreTable(reader, store.get(ModelKeys.STRING_KEYED_TABLE).setEmptyObject());
                     break;
                 }
                 case BUCKET_TABLE: {
-                    this.parseJDBCStoreTable(reader, store.get(ModelKeys.BUCKET_TABLE).setEmptyObject());
+                    this.parseJDBCStoreTable(reader, store.get(ModelKeys.BINARY_KEYED_TABLE).setEmptyObject());
                     break;
                 }
                 default: {
@@ -858,6 +858,23 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                 }
             }
         }
+        // we determine the store address by the presence / absence of tables
+        boolean isStringTableDefined = store.get(ModelKeys.STRING_KEYED_TABLE).isDefined();
+        boolean isBinaryTableDefined = store.get(ModelKeys.BINARY_KEYED_TABLE).isDefined();
+
+        // if no tables are defined, we default to mixed store
+        if (isStringTableDefined && !isBinaryTableDefined) {
+            storeAddress.add(ModelKeys.STRING_KEYED_JDBC_STORE,ModelKeys.STRING_KEYED_JDBC_STORE_NAME) ;
+            storeAddress.protect();
+        } else if (!isStringTableDefined && isBinaryTableDefined) {
+            storeAddress.add(ModelKeys.BINARY_KEYED_JDBC_STORE,ModelKeys.BINARY_KEYED_JDBC_STORE_NAME) ;
+            storeAddress.protect();
+        } else {
+            storeAddress.add(ModelKeys.MIXED_KEYED_JDBC_STORE,ModelKeys.MIXED_KEYED_JDBC_STORE_NAME) ;
+            storeAddress.protect();
+        }
+        // set the address
+        store.get(OP_ADDR).set(storeAddress);
         operations.add(store);
     }
 

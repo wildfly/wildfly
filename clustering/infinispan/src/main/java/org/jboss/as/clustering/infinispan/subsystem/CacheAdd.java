@@ -2,6 +2,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,9 +14,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
@@ -27,7 +26,6 @@ import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.loaders.CacheLoader;
 import org.infinispan.loaders.CacheStore;
 import org.infinispan.loaders.file.FileCacheStore;
-import org.infinispan.loaders.jdbc.TableManipulation;
 import org.infinispan.loaders.jdbc.binary.JdbcBinaryCacheStore;
 import org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory;
 import org.infinispan.loaders.jdbc.mixed.JdbcMixedCacheStore;
@@ -391,8 +389,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             ;
         }
 
-        // to here
-
+        // stores are a child resource
         String storeKey = this.findStoreKey(cache);
         if (storeKey != null) {
             ModelNode store = this.getStoreModelNode(cache);
@@ -424,8 +421,12 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             return ModelKeys.STORE;
         } else if (cache.hasDefined(ModelKeys.FILE_STORE)) {
             return ModelKeys.FILE_STORE;
-        } else if (cache.hasDefined(ModelKeys.JDBC_STORE)) {
-            return ModelKeys.JDBC_STORE;
+        } else if (cache.hasDefined(ModelKeys.STRING_KEYED_JDBC_STORE)) {
+            return ModelKeys.STRING_KEYED_JDBC_STORE;
+        } else if (cache.hasDefined(ModelKeys.BINARY_KEYED_JDBC_STORE)) {
+            return ModelKeys.BINARY_KEYED_JDBC_STORE;
+        } else if (cache.hasDefined(ModelKeys.MIXED_KEYED_JDBC_STORE)) {
+            return ModelKeys.MIXED_KEYED_JDBC_STORE;
         } else if (cache.hasDefined(ModelKeys.REMOTE_STORE)) {
             return ModelKeys.REMOTE_STORE;
         }
@@ -437,8 +438,12 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             return cache.get(ModelKeys.STORE, ModelKeys.STORE_NAME);
         } else if (cache.hasDefined(ModelKeys.FILE_STORE)) {
             return cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
-        } else if (cache.hasDefined(ModelKeys.JDBC_STORE)) {
-            return cache.get(ModelKeys.JDBC_STORE, ModelKeys.JDBC_STORE_NAME);
+        } else if (cache.hasDefined(ModelKeys.STRING_KEYED_JDBC_STORE)) {
+            return cache.get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
+        } else if (cache.hasDefined(ModelKeys.BINARY_KEYED_JDBC_STORE)) {
+            return cache.get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
+        } else if (cache.hasDefined(ModelKeys.MIXED_KEYED_JDBC_STORE)) {
+            return cache.get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
         } else if (cache.hasDefined(ModelKeys.REMOTE_STORE)) {
             return cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
         }
@@ -482,8 +487,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             final String relativeTo = ((resolvedValue = CommonAttributes.RELATIVE_TO.resolveModelAttribute(context, store)).isDefined()) ? resolvedValue.asString() : ServerEnvironment.SERVER_DATA_DIR ;
             dependencies.add(new Dependency<String>(AbstractPathService.pathNameOf(relativeTo), String.class, injector));
             properties.setProperty("fsyncMode", "perWrite");
-        } else if (storeKey.equals(ModelKeys.JDBC_STORE)) {
-            builder.cacheLoader(this.createJDBCStore(properties, store));
+        } else if (storeKey.equals(ModelKeys.STRING_KEYED_JDBC_STORE) || storeKey.equals(ModelKeys.BINARY_KEYED_JDBC_STORE) || storeKey.equals(ModelKeys.MIXED_KEYED_JDBC_STORE)) {
+            builder.cacheLoader(this.createJDBCStore(properties, context, store));
 
             final String datasource = CommonAttributes.DATA_SOURCE.resolveModelAttribute(context, store).asString() ;
 
@@ -531,34 +536,40 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         }
     }
 
-    private CacheStore createJDBCStore(Properties properties, ModelNode store) {
-        boolean useEntryTable = store.hasDefined(ModelKeys.ENTRY_TABLE);
-        boolean useBucketTable = store.hasDefined(ModelKeys.BUCKET_TABLE);
-        if (useEntryTable && !useBucketTable) {
-            this.setEntryTableProperties(properties, store.get(ModelKeys.ENTRY_TABLE), "", "stringsTableNamePrefix");
+    private CacheStore createJDBCStore(Properties properties, OperationContext context, ModelNode store) throws OperationFailedException {
+        boolean useStringKeyedTable = store.hasDefined(ModelKeys.STRING_KEYED_TABLE);
+        boolean useBinaryKeyedTable = store.hasDefined(ModelKeys.BINARY_KEYED_TABLE);
+        if (useStringKeyedTable && !useBinaryKeyedTable) {
+            this.setStringKeyedTableProperties(properties, context, store.get(ModelKeys.STRING_KEYED_TABLE), "", "stringsTableNamePrefix");
             return new JdbcStringBasedCacheStore();
-        } else if (useBucketTable && !useEntryTable) {
-            this.setBucketTableProperties(properties, store.get(ModelKeys.BUCKET_TABLE), "", "bucketTableNamePrefix");
+        } else if (useBinaryKeyedTable && !useStringKeyedTable) {
+            this.setBinaryKeyedTableProperties(properties, context, store.get(ModelKeys.BINARY_KEYED_TABLE), "", "bucketTableNamePrefix");
             return new JdbcBinaryCacheStore();
         }
         // Else, use mixed mode
-        this.setEntryTableProperties(properties, store.get(ModelKeys.ENTRY_TABLE), "ForStrings", "tableNamePrefixForStrings");
-        this.setBucketTableProperties(properties, store.get(ModelKeys.BUCKET_TABLE), "ForBinary", "tableNamePrefixForBinary");
+        this.setStringKeyedTableProperties(properties, context, store.get(ModelKeys.STRING_KEYED_TABLE), "ForStrings", "tableNamePrefixForStrings");
+        this.setBinaryKeyedTableProperties(properties, context, store.get(ModelKeys.BINARY_KEYED_TABLE), "ForBinary", "tableNamePrefixForBinary");
         return new JdbcMixedCacheStore();
     }
 
-    private void setBucketTableProperties(Properties properties, ModelNode table, String propertySuffix, String tableNamePrefixProperty) {
-        this.setTableProperties(properties, table, propertySuffix, tableNamePrefixProperty, "ispn_bucket");
+    private void setBinaryKeyedTableProperties(Properties properties, OperationContext context, ModelNode table, String propertySuffix, String tableNamePrefixProperty) throws OperationFailedException {
+        this.setTableProperties(properties, context, table, propertySuffix, tableNamePrefixProperty, "ispn_bucket");
     }
 
-    private void setEntryTableProperties(Properties properties, ModelNode table, String propertySuffix, String tableNamePrefixProperty) {
-        this.setTableProperties(properties, table, propertySuffix, tableNamePrefixProperty, "ispn_entry");
+    private void setStringKeyedTableProperties(Properties properties, OperationContext context, ModelNode table, String propertySuffix, String tableNamePrefixProperty) throws OperationFailedException {
+        this.setTableProperties(properties, context, table, propertySuffix, tableNamePrefixProperty, "ispn_entry");
     }
 
-    private void setTableProperties(Properties properties, ModelNode table, String propertySuffix, String tableNamePrefixProperty, String defaultTableNamePrefix) {
-        properties.setProperty("batchSize", Integer.toString(table.isDefined() && table.hasDefined(ModelKeys.BATCH_SIZE) ? table.get(ModelKeys.BATCH_SIZE).asInt() : TableManipulation.DEFAULT_BATCH_SIZE));
-        properties.setProperty("fetchSize", Integer.toString(table.isDefined() && table.hasDefined(ModelKeys.FETCH_SIZE) ? table.get(ModelKeys.FETCH_SIZE).asInt() : TableManipulation.DEFAULT_FETCH_SIZE));
-        properties.setProperty(tableNamePrefixProperty, table.isDefined() && table.hasDefined(ModelKeys.PREFIX) ? table.get(ModelKeys.PREFIX).asString() : defaultTableNamePrefix);
+    private void setTableProperties(Properties properties, OperationContext context, ModelNode table, String propertySuffix, String tableNamePrefixProperty, String defaultTableNamePrefix) throws OperationFailedException {
+
+        final int batchSize = CommonAttributes.BATCH_SIZE.resolveModelAttribute(context, table).asInt();
+        final int fetchSize = CommonAttributes.FETCH_SIZE.resolveModelAttribute(context, table).asInt();
+        ModelNode resolvedValue = null ;
+        final String prefixString = ((resolvedValue = CommonAttributes.PREFIX.resolveModelAttribute(context, table)).isDefined()) ? resolvedValue.asString() : defaultTableNamePrefix ;
+
+        properties.setProperty("batchSize", Integer.toString(batchSize));
+        properties.setProperty("fetchSize", Integer.toString(fetchSize));
+        properties.setProperty(tableNamePrefixProperty, prefixString);
         properties.setProperty("idColumnName" + propertySuffix, this.getColumnProperty(table,  ModelKeys.ID_COLUMN, ModelKeys.NAME, "id"));
         properties.setProperty("idColumnType" + propertySuffix, this.getColumnProperty(table,  ModelKeys.ID_COLUMN, ModelKeys.TYPE, "VARCHAR"));
         properties.setProperty("dataColumnName" + propertySuffix, this.getColumnProperty(table,  ModelKeys.DATA_COLUMN, ModelKeys.NAME, "datum"));

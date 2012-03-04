@@ -526,6 +526,17 @@ public interface CommonAttributes {
             setSuffix("table").
             build();
 
+    ObjectTypeAttributeDefinition STRING_KEYED_TABLE = ObjectTypeAttributeDefinition.
+            Builder.of(ModelKeys.STRING_KEYED_TABLE, PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN).
+            setAllowNull(true).
+            setSuffix("table").
+            build();
+    ObjectTypeAttributeDefinition BINARY_KEYED_TABLE = ObjectTypeAttributeDefinition.
+            Builder.of(ModelKeys.BINARY_KEYED_TABLE, PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN).
+            setAllowNull(true).
+            setSuffix("table").
+            build();
+
     // remote store
     SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinition("outbound-socket-binding", ModelType.STRING, true);
     ObjectTypeAttributeDefinition REMOTE_SERVER = ObjectTypeAttributeDefinition.
@@ -537,9 +548,13 @@ public interface CommonAttributes {
             setAllowNull(true).
             build();
 
-    AttributeDefinition[] COMMON_STORE_ATTRIBUTES = {SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON, PROPERTIES};
+    // AttributeDefinition[] COMMON_STORE_ATTRIBUTES = {SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON, PROPERTIES};
+    AttributeDefinition[] COMMON_STORE_ATTRIBUTES = {SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON};
     AttributeDefinition[] STORE_ATTRIBUTES = {CLASS};
     AttributeDefinition[] FILE_STORE_ATTRIBUTES = {RELATIVE_TO, PATH};
-    AttributeDefinition[] JDBC_STORE_ATTRIBUTES = {DATA_SOURCE, ENTRY_TABLE, BUCKET_TABLE};
+    AttributeDefinition[] COMMON_JDBC_STORE_ATTRIBUTES = {DATA_SOURCE};
+    AttributeDefinition[] STRING_KEYED_JDBC_STORE_ATTRIBUTES = {STRING_KEYED_TABLE};
+    AttributeDefinition[] BINARY_KEYED_JDBC_STORE_ATTRIBUTES = {BINARY_KEYED_TABLE};
+    AttributeDefinition[] MIXED_KEYED_JDBC_STORE_ATTRIBUTES = {STRING_KEYED_TABLE, BINARY_KEYED_TABLE};
     AttributeDefinition[] REMOTE_STORE_ATTRIBUTES = {CACHE, TCP_NO_DELAY, SOCKET_TIMEOUT, REMOTE_SERVERS};
 }

@@ -282,16 +282,55 @@ public class InfinispanSubsystemProviders {
         }
     };
 
-    static final DescriptionProvider JDBC_STORE = new DescriptionProvider() {
+//    static final DescriptionProvider JDBC_STORE = new DescriptionProvider() {
+//        @Override
+//        public ModelNode getModelDescription(Locale locale) {
+//            return InfinispanDescriptions.getJdbcCacheStoreDescription(locale);
+//        }
+//    };
+//    static final DescriptionProvider JDBC_STORE_ADD = new DescriptionProvider() {
+//        @Override
+//        public ModelNode getModelDescription(Locale locale) {
+//            return InfinispanDescriptions.getJdbcCacheStoreAddDescription(locale);
+//        }
+//    };
+
+    static final DescriptionProvider STRING_KEYED_JDBC_STORE = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return InfinispanDescriptions.getJdbcCacheStoreDescription(locale);
+            return InfinispanDescriptions.getStringKeyedJdbcCacheStoreDescription(locale);
         }
     };
-    static final DescriptionProvider JDBC_STORE_ADD = new DescriptionProvider() {
+    static final DescriptionProvider STRING_KEYED_JDBC_STORE_ADD = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return InfinispanDescriptions.getJdbcCacheStoreAddDescription(locale);
+            return InfinispanDescriptions.getStringKeyedJdbcCacheStoreAddDescription(locale);
+        }
+    };
+
+    static final DescriptionProvider BINARY_KEYED_JDBC_STORE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getBinaryKeyedJdbcCacheStoreDescription(locale);
+        }
+    };
+    static final DescriptionProvider BINARY_KEYED_JDBC_STORE_ADD = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getBinaryKeyedJdbcCacheStoreAddDescription(locale);
+        }
+    };
+
+    static final DescriptionProvider MIXED_KEYED_JDBC_STORE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getMixedKeyedJdbcCacheStoreDescription(locale);
+        }
+    };
+    static final DescriptionProvider MIXED_KEYED_JDBC_STORE_ADD = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getMixedKeyedJdbcCacheStoreAddDescription(locale);
         }
     };
 

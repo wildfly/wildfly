@@ -214,11 +214,23 @@
                         <xs:documentation>Defines a file-based cache store.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
-                <xs:element name="jdbc-store" type="tns:jdbc-store">
-                    <xs:annotation>
-                        <xs:documentation>Defines a database cache store accessed via JDBC.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
+                <xs:choice minOccurs="0">
+                    <xs:element name="string-keyed-jdbc-store" type="tns:string-keyed-jdbc-store">
+                        <xs:annotation>
+                            <xs:documentation>Defines a database cache store accessed via JDBC using string-based keys.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="binary-keyed-jdbc-store" type="tns:binary-keyed-jdbc-store">
+                        <xs:annotation>
+                            <xs:documentation>Defines a database cache store accessed via JDBC using binary-based keys.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="mixed-keyed-jdbc-store" type="tns:mixed-keyed-jdbc-store">
+                        <xs:annotation>
+                            <xs:documentation>Defines a database cache store accessed via JDBC using mixed string and binary-based keys.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:choice>
                 <xs:element name="remote-store" type="tns:remote-store">
                     <xs:annotation>
                         <xs:documentation>
@@ -528,23 +540,14 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="jdbc-store">
+    <xs:complexType name="string-keyed-jdbc-store">
         <xs:complexContent>
             <xs:extension base="tns:store">
                 <xs:sequence>
-                    <xs:element name="bucket-table" type="tns:bucket-table" minOccurs="0">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Defines the table used to store cache buckets.
-                                If an entry-table is also defined, a mixed-mode cache store will be used.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                    <xs:element name="entry-table" type="tns:entry-table" minOccurs="0">
+                    <xs:element name="string-keyed-table" type="tns:string-keyed-table" minOccurs="0">
                         <xs:annotation>
                             <xs:documentation>
                                 Defines the table used to store cache entries.
-                                If a bucket-table is also defined, a mixed-mode cache store will be used.
                             </xs:documentation>
                         </xs:annotation>
                     </xs:element>
@@ -558,7 +561,56 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="entry-table">
+    <xs:complexType name="binary-keyed-jdbc-store">
+        <xs:complexContent>
+            <xs:extension base="tns:store">
+                <xs:sequence>
+                    <xs:element name="binary-keyed-table" type="tns:binary-keyed-table" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Defines the table used to store cache buckets.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+                <xs:attribute name="datasource" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>Defines the jndi name of the datasource.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="mixed-keyed-jdbc-store">
+        <xs:complexContent>
+            <xs:extension base="tns:store">
+                <xs:sequence>
+                    <xs:element name="binary-keyed-table" type="tns:binary-keyed-table" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Defines the table used to store cache buckets.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="string-keyed-table" type="tns:string-keyed-table" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Defines the table used to store cache entries.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+                <xs:attribute name="datasource" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>Defines the jndi name of the datasource.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="string-keyed-table">
         <xs:complexContent>
             <xs:extension base="tns:table">
                 <xs:attribute name="prefix" type="xs:string" default="ispn_entry">
@@ -570,7 +622,7 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="bucket-table">
+    <xs:complexType name="binary-keyed-table">
         <xs:complexContent>
             <xs:extension base="tns:table">
                 <xs:attribute name="prefix" type="xs:string" default="ispn_bucket">
