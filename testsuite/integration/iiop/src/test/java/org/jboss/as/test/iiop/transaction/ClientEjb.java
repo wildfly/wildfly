@@ -3,7 +3,6 @@ package org.jboss.as.test.iiop.transaction;
 import java.rmi.RemoteException;
 
 import javax.annotation.Resource;
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -27,11 +26,8 @@ public class ClientEjb {
     @Resource
     private UserTransaction userTransaction;
 
-    @EJB(lookup = "corbaname:iiop:localhost:3628#IIOPTransactionalStatelessBean")
     private IIOPTransactionalHome home;
 
-
-    @EJB(lookup = "corbaname:iiop:localhost:3628#IIOPTransactionalStatefulBean")
     private IIOPTransactionalStatefulHome statefulHome;
 
     public void basicTransactionPropagationTest() throws RemoteException, SystemException, NotSupportedException {
