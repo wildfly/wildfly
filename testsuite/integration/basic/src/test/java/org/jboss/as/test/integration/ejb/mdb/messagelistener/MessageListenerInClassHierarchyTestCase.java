@@ -24,7 +24,8 @@ package org.jboss.as.test.integration.ejb.mdb.messagelistener;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.common.JMSAdminOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
 import org.jboss.as.test.integration.ejb.mdb.messagedrivencontext.SimpleMDB;
 import org.jboss.shrinkwrap.api.Archive;
@@ -51,7 +52,7 @@ import javax.jms.TextMessage;
 @RunWith(Arquillian.class)
 public class MessageListenerInClassHierarchyTestCase {
 
-    private static JMSAdminOperations jmsAdminOperations;
+    private static JMSOperations jmsAdminOperations;
 
     private static final String QUEUE_JNDI_NAME = "java:jboss/queue/message-listener";
     private static final String REPLY_QUEUE_JNDI_NAME = "java:jboss/queue/message-listener-reply-queue";
@@ -71,12 +72,13 @@ public class MessageListenerInClassHierarchyTestCase {
         createJmsDestinations();
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "message-listener-in-class-hierarchy-test.jar");
-        jar.addClasses(ConcreteMDB.class, CommonBase.class, JMSMessagingUtil.class, JMSAdminOperations.class);
+        jar.addClasses(ConcreteMDB.class, CommonBase.class, JMSMessagingUtil.class);
+        jar.addPackage(JMSOperations.class.getPackage());
         return jar;
     }
 
     private static void createJmsDestinations() {
-        jmsAdminOperations = new JMSAdminOperations();
+        jmsAdminOperations = JMSOperationsProvider.getInstance();
         jmsAdminOperations.createJmsQueue("messagelistener/queue", QUEUE_JNDI_NAME);
         jmsAdminOperations.createJmsQueue("messagelistener/replyQueue", REPLY_QUEUE_JNDI_NAME);
     }

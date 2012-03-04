@@ -8,7 +8,9 @@ import javax.jms.TextMessage;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.common.JMSAdminOperations;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -38,12 +40,13 @@ public class ConfiguredResourceAdapterNameTestCase {
     @Resource(mappedName = QUEUE_JNDI_NAME)
     private Queue queue;
 
-    private static JMSAdminOperations jmsAdminOperations;
+    private static JMSOperations jmsAdminOperations;
 
     @Deployment
     public static Archive<JavaArchive> getDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "configured-resource-adapter-name-mdb-test.jar")
-                .addClasses(ConfiguredResourceAdapterNameMDB.class, JMSMessagingUtil.class, JMSAdminOperations.class, ConfiguredResourceAdapterNameTestCase.class)
+                .addClasses(ConfiguredResourceAdapterNameMDB.class, JMSMessagingUtil.class, ConfiguredResourceAdapterNameTestCase.class)
+                .addPackage(JMSOperations.class.getPackage())
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF")
                 .addAsManifestResource("ejb/mdb/configuredresourceadapter/jboss-ejb3.xml", "jboss-ejb3.xml");
         logger.info(ejbJar.toString(true));
@@ -52,7 +55,7 @@ public class ConfiguredResourceAdapterNameTestCase {
 
     @BeforeClass
     public static void createJmsDestinations() {
-        jmsAdminOperations = new JMSAdminOperations();
+        jmsAdminOperations = JMSOperationsProvider.getInstance();
         jmsAdminOperations.createJmsQueue("override-resource-adapter-name-test/queue", QUEUE_JNDI_NAME);
         jmsAdminOperations.createJmsQueue("override-resource-adapter-name-test/reply-queue", REPLY_QUEUE_JNDI_NAME);
     }

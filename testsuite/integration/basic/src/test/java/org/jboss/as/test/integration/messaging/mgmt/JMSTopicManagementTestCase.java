@@ -42,8 +42,9 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.test.integration.common.JMSAdminOperations;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.After;
@@ -63,12 +64,12 @@ import org.junit.runner.RunWith;
 //@Ignore("Ignore failing tests")
 public class JMSTopicManagementTestCase {
 
-    private static JMSAdminOperations adminSupport;
+    private static JMSOperations adminSupport;
     private static long count = System.currentTimeMillis();
 
     @BeforeClass
     public static void connectManagmentClient() {
-        adminSupport = new JMSAdminOperations();
+        adminSupport = JMSOperationsProvider.getInstance();
     }
 
     @AfterClass

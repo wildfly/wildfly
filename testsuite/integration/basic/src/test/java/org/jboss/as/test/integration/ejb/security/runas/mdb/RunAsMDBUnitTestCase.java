@@ -39,7 +39,9 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.common.JMSAdminOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.integration.ejb.security.SecurityTest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -50,30 +52,31 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Make sure the run-as on a MDB is picked up.
+ * Make sure the run-as on a MDB is picked up. 
  * Part of migration test from EAP5 (JBAS-6239) to AS7 [JBQA-5275].
- *
+ * 
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
-public class RunAsMDBUnitTestCase {
+public class RunAsMDBUnitTestCase extends SecurityTest {
     private static final Logger log = Logger.getLogger(RunAsMDBUnitTestCase.class.getName());
     private static final String queueName = "queue/mdbtest";
-
-    private static JMSAdminOperations jmsAdminOperations;
+    
+    private static JMSOperations jmsAdminOperations;
 
     @ArquillianResource
     InitialContext ctx;
 
     @Deployment
     public static Archive<?> deploy() {
-        jmsAdminOperations = new JMSAdminOperations();
+        jmsAdminOperations = JMSOperationsProvider.getInstance();
         jmsAdminOperations.createJmsQueue(queueName, "java:jboss/" + queueName);
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "runas-mdb.jar")
                 .addPackage(RunAsMDBUnitTestCase.class.getPackage())
                 .addClasses(
-                        JMSAdminOperations.class)
+                        SecurityTest.class)
+                .addPackage(JMSOperations.class.getPackage())
                 .addAsResource(RunAsMDBUnitTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(RunAsMDBUnitTestCase.class.getPackage(), "roles.properties", "roles.properties");
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr \n"), "MANIFEST.MF");
@@ -84,7 +87,7 @@ public class RunAsMDBUnitTestCase {
     protected <T> T lookup(String name, Class<T> cls) throws Exception {
         return cls.cast(ctx.lookup(name));
     }
-
+       
     @AfterClass
     public static void tearDown() throws Exception {
         jmsAdminOperations.removeJmsQueue(queueName);

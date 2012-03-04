@@ -30,7 +30,8 @@ import javax.jms.TextMessage;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.common.JMSAdminOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -63,13 +64,14 @@ public class ResourceAdapterNameTestCase {
     @Resource(mappedName = QUEUE_JNDI_NAME)
     private Queue queue;
 
-    private static JMSAdminOperations jmsAdminOperations;
+    private static JMSOperations jmsAdminOperations;
 
     @Deployment
     public static Archive getDeployment() {
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "resource-adapter-name-mdb-test.jar");
-        ejbJar.addClasses(OverriddenResourceAdapterNameMDB.class, JMSMessagingUtil.class, JMSAdminOperations.class, ResourceAdapterNameTestCase.class);
+        ejbJar.addClasses(OverriddenResourceAdapterNameMDB.class, JMSMessagingUtil.class, ResourceAdapterNameTestCase.class);
+        ejbJar.addPackage(JMSOperations.class.getPackage());
         ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         logger.info(ejbJar.toString(true));
 
@@ -78,7 +80,7 @@ public class ResourceAdapterNameTestCase {
 
     @BeforeClass
     public static void createJmsDestinations() {
-        jmsAdminOperations = new JMSAdminOperations();
+        jmsAdminOperations = JMSOperationsProvider.getInstance();
         jmsAdminOperations.createJmsQueue("resource-adapter-name-test/queue", QUEUE_JNDI_NAME);
         jmsAdminOperations.createJmsQueue("resource-adapter-name-test/reply-queue", REPLY_QUEUE_JNDI_NAME);
     }

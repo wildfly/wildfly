@@ -29,7 +29,8 @@ import javax.jms.Queue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.common.JMSAdminOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
 import org.jboss.as.test.integration.ejb.mdb.activationconfig.MDBWithUnknownActivationConfigProperties;
 import org.jboss.logging.Logger;
@@ -64,17 +65,17 @@ public class MDBActivationConfigTestCase {
     private Queue replyQueue;
 
 
-    private static JMSAdminOperations jmsAdminOperations;
+    private static JMSOperations jmsAdminOperations;
 
     @Deployment
     public static Archive getDeployment() {
-         jmsAdminOperations = new JMSAdminOperations();
+         jmsAdminOperations = JMSOperationsProvider.getInstance();
         // setup the queues
         createJmsDestinations();
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb-activation-config-test.jar");
         ejbJar.addPackage(MDBWithUnknownActivationConfigProperties.class.getPackage());
-        ejbJar.addClasses(JMSAdminOperations.class, JMSMessagingUtil.class);
+        ejbJar.addClasses(JMSOperations.class, JMSMessagingUtil.class);
         ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         logger.info(ejbJar.toString(true));
         return ejbJar;
