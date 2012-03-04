@@ -205,7 +205,11 @@ public class ManagementClient {
             operation.get(OP_ADDR).get("socket-binding").set(socketBinding);
             operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
             operation.get(NAME).set("bound-address");
-            final String ip = executeForResult(operation).asString();
+            String ip = executeForResult(operation).asString();
+            //it appears some system can return a binding with the zone specifier on the end
+            if(ip.contains(":") && ip.contains("%")) {
+                ip = ip.split("%")[0];
+            }
 
             final ModelNode portOp = new ModelNode();
             portOp.get(OP_ADDR).get("socket-binding-group").set(socketBindingGroupName);
