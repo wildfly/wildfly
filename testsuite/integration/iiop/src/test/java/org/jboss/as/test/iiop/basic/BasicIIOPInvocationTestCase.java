@@ -65,6 +65,13 @@ public class BasicIIOPInvocationTestCase {
     @TargetsContainer("iiop-client")
     public static Archive<?> clientDeployment() {
 
+        /*
+         * The @EJB annotation doesn't allow to specify the address dynamically. So, istead of
+         *       @EJB(lookup = "corbaname:iiop:localhost:3628#IIOPTransactionalStatelessBean")
+         *       private IIOPTransactionalHome home;
+         * we need to do this trick to get the ${node0} sys prop into ejb-jar.xml
+         * and have it injected that way.
+         */
         String ejbJar = FileUtils.readFile(BasicIIOPInvocationTestCase.class, "ejb-jar.xml");
 
         final Properties properties = new Properties();
