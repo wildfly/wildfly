@@ -129,8 +129,13 @@ public final class Main {
 
                     @Override
                     public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
-                        ExtensibleConfigurationPersister persister = new ApplicationClientConfigurationPersister(earPath, deploymentName, options.hostUrl,options.propertiesFile, params,
+                        ApplicationClientConfigurationPersister persister = new ApplicationClientConfigurationPersister(earPath, deploymentName, options.hostUrl,options.propertiesFile, params,
                                 serverEnvironment.getServerConfigurationFile().getBootFile(), rootElement, parser);
+                        for (Namespace namespace : Namespace.values()) {
+                            if (!namespace.equals(Namespace.CURRENT)) {
+                                persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "server"), parser);
+                            }
+                        }
                         extensionRegistry.setWriterRegistry(persister);
                         return persister;
                     }
