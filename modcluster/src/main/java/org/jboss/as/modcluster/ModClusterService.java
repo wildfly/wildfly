@@ -27,7 +27,6 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -85,15 +84,10 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         ROOT_LOGGER.debugf("Starting Mod_cluster Extension");
 
         config = new ModClusterConfig();
-        // Set the configuration.
 
         // Set some defaults...
         if (!modelconf.hasDefined(CommonAttributes.PROXY_LIST)) {
-            try {
-                config.setAdvertise(this.isMulticastEnabled(Collections.list(NetworkInterface.getNetworkInterfaces())));
-            } catch (SocketException e) {
-                // Ignore
-            }
+            config.setAdvertise(this.isMulticastEnabled(bindingManager.getValue().getDefaultInterfaceBinding().getNetworkInterfaces()));
         }
         config.setAdvertisePort(23364);
         config.setAdvertiseGroupAddress("224.0.1.105");
@@ -253,7 +247,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     private boolean isMulticastEnabled(Collection<NetworkInterface> ifaces) {
         for (NetworkInterface iface: ifaces) {
             try {
-                if (iface.isUp() && iface.supportsMulticast()) {
+                if (iface.isUp() && (iface.supportsMulticast() || iface.isLoopback())) {
                     return true;
                 }
             } catch (SocketException e) {
