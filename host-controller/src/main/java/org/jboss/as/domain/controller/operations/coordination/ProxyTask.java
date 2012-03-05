@@ -59,6 +59,8 @@ class ProxyTask implements Callable<ModelNode> {
     private final AtomicReference<ModelNode> uncommittedResultRef = new AtomicReference<ModelNode>();
     private boolean cancelRemoteTransaction;
 
+    final AtomicReference<ModelNode> finalResultRef = new AtomicReference<ModelNode>();
+
     public ProxyTask(String host, ModelNode operation, OperationContext context, ProxyController proxyController) {
         this.host = host;
         this.operation = operation;
@@ -77,7 +79,6 @@ class ProxyTask implements Callable<ModelNode> {
 
             final AtomicReference<ModelController.OperationTransaction> txRef = new AtomicReference<ModelController.OperationTransaction>();
             final AtomicReference<ModelNode> preparedResultRef = new AtomicReference<ModelNode>();
-            final AtomicReference<ModelNode> finalResultRef = new AtomicReference<ModelNode>();
             final ProxyController.ProxyOperationControl proxyControl = new ProxyController.ProxyOperationControl() {
 
                 @Override
@@ -190,10 +191,22 @@ class ProxyTask implements Callable<ModelNode> {
         }
     }
 
-    void finalizeTransaction(boolean commit) {
+    /**
+     * Finalize the transaction. This will return {@code false} in case the local operation failed,
+     * but the overall state of the operation is commit=true.
+     *
+     * @param commit {@code true} to commit, {@code false} to rollback
+     * @return whether the local proxy operation result is in sync with the overall operation
+     */
+    boolean finalizeTransaction(boolean commit) {
         synchronized (transactionAction) {
+            final boolean failed = finalResultRef.get() != null;
             transactionAction.set(Boolean.valueOf(commit));
             transactionAction.notifyAll();
+            if(commit && failed) {
+                return false;
+            }
+            return true;
         }
     }
 
@@ -201,6 +214,10 @@ class ProxyTask implements Callable<ModelNode> {
         synchronized (uncommittedResultRef) {
             cancelRemoteTransaction = true;
         }
+    }
+
+    public ProxyController getProxyController() {
+        return proxyController;
     }
 
     private static class DelegatingMessageHandler implements OperationMessageHandler {
