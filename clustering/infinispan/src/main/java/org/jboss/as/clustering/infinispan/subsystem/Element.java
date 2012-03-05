@@ -32,6 +32,7 @@ import org.jboss.as.controller.AttributeDefinition;
  *
  * @author Paul Ferraro
  * @author Richard Achmatowicz (c) 2011 RedHat Inc.
+ * @author Tristan Tarrant
  */
 public enum Element {
     // must be first
@@ -62,6 +63,7 @@ public enum Element {
     TIMESTAMP_COLUMN(ModelKeys.TIMESTAMP_COLUMN),
     TRANSACTION(ModelKeys.TRANSACTION),
     TRANSPORT(ModelKeys.TRANSPORT),
+    WRITE_BEHIND(ModelKeys.WRITE_BEHIND)
     ;
 
     private final String name;
