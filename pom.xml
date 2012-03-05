@@ -2832,7 +2832,6 @@
             </dependency>
 
             <dependency>
-<<<<<<< HEAD
                 <groupId>org.apache.juddi</groupId>
                 <artifactId>juddi-client</artifactId>
                 <version>${version.org.apache.juddi}</version>
