@@ -97,7 +97,8 @@
         <!-- IP address defaults. -->
         <node0>127.0.0.1</node0>
         <node1>127.0.0.1</node1>
-        <udpGroup>230.0.0.4</udpGroup>
+        <mcast>230.0.0.4</mcast> <!-- Default multicast address. -->
+        <mcast.jgroupsDiag>224.0.75.75</mcast.jgroupsDiag>  <!-- for <socket-binding name="jgroups-diagnostics" .../> -->
 
         <!-- IP stack configs. -->
         <jvm.args.ip>-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses=false</jvm.args.ip>
@@ -360,7 +361,7 @@
                                     <parameters>
                                         <parameter><name>managementIPAddress</name><value>${node0}</value></parameter>
                                         <parameter><name>publicIPAddress</name><value>${node0}</value></parameter>
-                                        <parameter><name>udpMcastAddress</name><value>${udpGroup}</value></parameter><!-- Only somewhere - TODO. -->
+                                        <parameter><name>udpMcastAddress</name><value>${mcast}</value></parameter>
                                     </parameters>
                                 </transformationSet>
                                 <!-- JMS destinations. -->
@@ -609,6 +610,13 @@
             <activation><property><name>ipv6</name></property></activation>
             <properties>
                 <jvm.args.ip>-Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true</jvm.args.ip>
+
+                <!-- IP address defaults. -->
+                <node0>::1</node0>
+                <node1>::1</node1>
+                <mcast>ff01::1</mcast> <!-- Default multicast address.  ff01::1  is IPv6 Node-Local scope mcast addr. -->
+                <mcast.jgroupsDiag>ff01::2</mcast.jgroupsDiag>  <!-- for jgroups-diagnostics -->
+
             </properties>
         </profile>
 

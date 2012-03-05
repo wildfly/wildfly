@@ -44,7 +44,7 @@
                 <filterset begintoken="${" endtoken="}">
                     <filter token="node0" value="${node0}"/>
                     <filter token="node1" value="${node1}"/>
-                    <filter token="udpGroup" value="${udpGroup}"/>
+                    <filter token="mcast" value="${mcast}"/>
                     <filter-elements/>
                 </filterset>
             </copy>
@@ -64,7 +64,7 @@
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
         <attribute name="node" default="${node0}"/>
-        <attribute name="mcastaddr" default="${udpGroup}"/>
+        <attribute name="mcastaddr" default="${mcast}"/>
 
         <sequential>
             <echo message="Changing IP addresses for config @{name}"/>
