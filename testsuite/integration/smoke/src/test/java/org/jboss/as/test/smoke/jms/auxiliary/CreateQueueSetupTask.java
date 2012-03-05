@@ -1,4 +1,4 @@
-package org.jboss.as.test.smoke.jms.aux;
+package org.jboss.as.test.smoke.jms.auxiliary;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
