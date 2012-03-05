@@ -76,7 +76,7 @@ public class ServerRemoveHandler extends AbstractRemoveStepHandler implements De
                 }
                 context.completeStep();
             }
-        }, OperationContext.Stage.IMMEDIATE);
+        }, OperationContext.Stage.RUNTIME);
     }
 
     protected boolean requiresRuntime(OperationContext context) {
