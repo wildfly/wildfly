@@ -102,6 +102,10 @@
         </xsl:attribute>
     </xsl:template>
 
+    <!-- Mail SMTP -->
+    <xsl:template match="//d:outbound-socket-binding[@name='mail-smtp']/d:remote-destination/@host">
+        <xsl:attribute name="host"><xsl:value-of select="$publicIPAddress"/></xsl:attribute>
+    </xsl:template>
 
     <!-- Copy everything else. -->
     <xsl:template match="node()|@*">
