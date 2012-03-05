@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connector xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+           http://java.sun.com/xml/ns/j2ee/connector_1_6.xsd"
+	version="1.6" metadata-complete="true">
+
+	<vendor-name>Red Hat Middleware LLC</vendor-name>
+	<eis-type>Test RA</eis-type>
+	<resourceadapter-version>0.1</resourceadapter-version>
+
+	<resourceadapter>
+		<resourceadapter-class>org.jboss.as.test.smoke.deployment.rar.MultipleResourceAdapter2
+		</resourceadapter-class>
+
+		<outbound-resourceadapter>
+			<connection-definition>
+				<managedconnectionfactory-class>org.jboss.as.test.smoke.deployment.rar.MultipleManagedConnectionFactory1
+				</managedconnectionfactory-class>
+				<connectionfactory-interface>org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1
+				</connectionfactory-interface>
+				<connectionfactory-impl-class>org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1Impl
+				</connectionfactory-impl-class>
+				<connection-interface>org.jboss.as.test.smoke.deployment.rar.MultipleConnection1
+				</connection-interface>
+				<connection-impl-class>org.jboss.as.test.smoke.deployment.rar.MultipleConnection1Impl
+				</connection-impl-class>
+			</connection-definition>
+			<transaction-support>NoTransaction</transaction-support>
+			<reauthentication-support>false</reauthentication-support>
+		</outbound-resourceadapter>
+		<adminobject>
+			<adminobject-interface>org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1
+			</adminobject-interface>
+			<adminobject-class>org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1Impl
+			</adminobject-class>
+		</adminobject>
+	</resourceadapter>
+</connector>

@@ -29,149 +29,183 @@ import javax.resource.spi.BootstrapContext;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterInternalException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.resource.spi.work.*;
 
 import javax.transaction.xa.XAResource;
 
+import org.jboss.as.connector.bootstrap.NamedBootstrapContext;
+import org.jboss.as.connector.workmanager.NamedWorkManager;
+
 /**
- * MultipleResourceAdapter
- *
- * @version $Revision: $
+ * MultipleResourceAdapter2
+ * 
  */
-public class MultipleResourceAdapter2 implements ResourceAdapter
-{
+public class MultipleResourceAdapter2 implements ResourceAdapter {
 
-   /** The logger */
-   private static Logger log = Logger.getLogger("MultipleResourceAdapter2");
+    /** The logger */
+    private static Logger log = Logger.getLogger("MultipleResourceAdapter2");
 
-   /** Name */
-   private String name;
+    /** Name */
+    private String name;
 
-   /**
-    * Default constructor
-    */
-   public MultipleResourceAdapter2()
-   {
+    private String bootstrapContextName = "undefined";
 
-   }
+    public void setBootstrapContextName(String bootstrapContextName) {
+        this.bootstrapContextName = bootstrapContextName;
+    }
 
-   /**
-    * Set name
-    * @param name The value
-    */
-   public void setName(String name)
-   {
-      this.name = name;
-   }
+    public void setWorkManagerName(String workManagerName) {
+        this.workManagerName = workManagerName;
+    }
 
-   /**
-    * Get name
-    * @return The value
-    */
-   public String getName()
-   {
-      return name;
-   }
+    private String workManagerName = "undefined";
 
-   /**
-    * This is called during the activation of a message endpoint.
-    *
-    * @param endpointFactory A message endpoint factory instance.
-    * @param spec An activation spec JavaBean instance.
-    * @throws ResourceException generic exception
-    */
-   public void endpointActivation(MessageEndpointFactory endpointFactory,
-      ActivationSpec spec) throws ResourceException
-   {
-      log.finest("endpointActivation()");
-   }
+    /**
+     * Default constructor
+     */
+    public MultipleResourceAdapter2() {
 
-   /**
-    * This is called when a message endpoint is deactivated.
-    *
-    * @param endpointFactory A message endpoint factory instance.
-    * @param spec An activation spec JavaBean instance.
-    */
-   public void endpointDeactivation(MessageEndpointFactory endpointFactory,
-      ActivationSpec spec)
-   {
-      log.finest("endpointDeactivation()");
-   }
+    }
 
-   /**
-    * This is called when a resource adapter instance is bootstrapped.
-    *
-    * @param ctx A bootstrap context containing references
-    * @throws ResourceAdapterInternalException indicates bootstrap failure.
-    */
-   public void start(BootstrapContext ctx)
-      throws ResourceAdapterInternalException
-   {
-      log.finest("start()");
-   }
+    /**
+     * Set name
+     * 
+     * @param name The value
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
 
-   /**
-    * This is called when a resource adapter instance is undeployed or
-    * during application server shutdown.
-    */
-   public void stop()
-   {
-      log.finest("stop()");
-   }
+    /**
+     * Get name
+     * 
+     * @return The value
+     */
+    public String getName() {
+        return name;
+    }
 
-   /**
-    * This method is called by the application server during crash recovery.
-    *
-    * @param specs An array of ActivationSpec JavaBeans
-    * @throws ResourceException generic exception
-    * @return An array of XAResource objects
-    */
-   public XAResource[] getXAResources(ActivationSpec[] specs)
-      throws ResourceException
-   {
-      log.finest("getXAResources()");
-      return null;
-   }
+    public String getBootstrapContextName() {
+        return bootstrapContextName;
+    }
 
-   /**
-    * Returns a hash code value for the object.
-    * @return A hash code value for this object.
-    */
-   @Override
-   public int hashCode()
-   {
-      int result = 17;
-      if (name != null)
-         result += 31 * result + 7 * name.hashCode();
-      else
-         result += 31 * result + 7;
-      return result;
-   }
+    public String getWorkManagerName() {
+        return workManagerName;
+    }
 
-   /**
-    * Indicates whether some other object is equal to this one.
-    * @param other The reference object with which to compare.
-    * @return true if this object is the same as the obj argument, false otherwise.
-    */
-   @Override
-   public boolean equals(Object other)
-   {
-      if (other == null)
-         return false;
-      if (other == this)
-         return true;
-      if (!(other instanceof MultipleResourceAdapter2))
-         return false;
-      MultipleResourceAdapter2 obj = (MultipleResourceAdapter2)other;
-      boolean result = true;
-      if (result)
-      {
-         if (name == null)
-            result = obj.getName() == null;
-         else
-            result = name.equals(obj.getName());
-      }
-      return result;
-   }
+    /**
+     * This is called during the activation of a message endpoint.
+     * 
+     * @param endpointFactory A message endpoint factory instance.
+     * @param spec An activation spec JavaBean instance.
+     * @throws ResourceException generic exception
+     */
+    public void endpointActivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) throws ResourceException {
+        log.finest("endpointActivation()");
+    }
 
+    /**
+     * This is called when a message endpoint is deactivated.
+     * 
+     * @param endpointFactory A message endpoint factory instance.
+     * @param spec An activation spec JavaBean instance.
+     */
+    public void endpointDeactivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) {
+        log.finest("endpointDeactivation()");
+    }
+
+    /**
+     * This is called when a resource adapter instance is bootstrapped.
+     * 
+     * @param ctx A bootstrap context containing references
+     * @throws ResourceAdapterInternalException indicates bootstrap failure.
+     */
+    public void start(BootstrapContext ctx) throws ResourceAdapterInternalException {
+        log.finest("start()");
+
+        if (ctx instanceof NamedBootstrapContext) {
+            NamedBootstrapContext nc = (NamedBootstrapContext) ctx;
+            setBootstrapContextName(nc.getName());
+            log.finest("Bootstrap-context:" + nc.getName());
+        }
+        WorkManager wm = ctx.getWorkManager();
+
+        if (wm instanceof NamedWorkManager) {
+            NamedWorkManager nw = (NamedWorkManager) wm;
+            setWorkManagerName(nw.getName());
+            log.finest("Work-manager:" + nw.getName());
+        }
+
+        Work myWork1 = new MultipleWork();
+        Work myWork2 = new MultipleWork();
+        Work myWork3 = new MultipleWork();
+
+        try {
+            wm.doWork(myWork1);
+            wm.scheduleWork(myWork2);
+            wm.startWork(myWork3);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * This is called when a resource adapter instance is undeployed or during application server shutdown.
+     */
+    public void stop() {
+        log.finest("stop()");
+    }
+
+    /**
+     * This method is called by the application server during crash recovery.
+     * 
+     * @param specs An array of ActivationSpec JavaBeans
+     * @throws ResourceException generic exception
+     * @return An array of XAResource objects
+     */
+    public XAResource[] getXAResources(ActivationSpec[] specs) throws ResourceException {
+        log.finest("getXAResources()");
+        return null;
+    }
+
+    /**
+     * Returns a hash code value for the object.
+     * 
+     * @return A hash code value for this object.
+     */
+    @Override
+    public int hashCode() {
+        int result = 17;
+        if (name != null)
+            result += 31 * result + 7 * name.hashCode();
+        else
+            result += 31 * result + 7;
+        return result;
+    }
+
+    /**
+     * Indicates whether some other object is equal to this one.
+     * 
+     * @param other The reference object with which to compare.
+     * @return true if this object is the same as the obj argument, false otherwise.
+     */
+    @Override
+    public boolean equals(Object other) {
+        if (other == null)
+            return false;
+        if (other == this)
+            return true;
+        if (!(other instanceof MultipleResourceAdapter2))
+            return false;
+        MultipleResourceAdapter2 obj = (MultipleResourceAdapter2) other;
+        boolean result = true;
+        if (result) {
+            if (name == null)
+                result = obj.getName() == null;
+            else
+                result = name.equals(obj.getName());
+        }
+        return result;
+    }
 
 }

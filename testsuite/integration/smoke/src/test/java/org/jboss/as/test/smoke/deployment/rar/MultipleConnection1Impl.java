@@ -23,51 +23,54 @@ package org.jboss.as.test.smoke.deployment.rar;
 
 import java.util.logging.Logger;
 
+import javax.resource.spi.ResourceAdapter;
+
 /**
  * MultipleConnection1Impl
- *
- * @version $Revision: $
+ * 
  */
-public class MultipleConnection1Impl implements MultipleConnection1
-{
-   /** The logger */
-   private static Logger log = Logger.getLogger("MultipleConnection1Impl");
+public class MultipleConnection1Impl implements MultipleConnection1 {
+    /** The logger */
+    private static Logger log = Logger.getLogger("MultipleConnection1Impl");
 
-   /** ManagedConnection */
-   private MultipleManagedConnection1 mc;
+    /** ManagedConnection */
+    private MultipleManagedConnection1 mc;
 
-   /** ManagedConnectionFactory */
-   private MultipleManagedConnectionFactory1 mcf;
+    /** ManagedConnectionFactory */
+    private MultipleManagedConnectionFactory1 mcf;
 
-   /**
-    * Default constructor
-    * @param mc MultipleManagedConnection1
-    * @param mcf MultipleManagedConnectionFactory1
-    */
-   public MultipleConnection1Impl(MultipleManagedConnection1 mc, MultipleManagedConnectionFactory1 mcf)
-   {
-      this.mc = mc;
-      this.mcf = mcf;
-   }
+    /**
+     * Default constructor
+     * 
+     * @param mc MultipleManagedConnection1
+     * @param mcf MultipleManagedConnectionFactory1
+     */
+    public MultipleConnection1Impl(MultipleManagedConnection1 mc, MultipleManagedConnectionFactory1 mcf) {
+        this.mc = mc;
+        this.mcf = mcf;
+    }
 
-   /**
-    * Call test
-    * @param s String
-    * @return String
-    */
-   public String test(String s)
-   {
-      log.finest("test()");
-      return null;
+    /**
+     * Call test
+     * 
+     * @param s String
+     * @return String
+     */
+    public String test(String s) {
+        log.finest("test()");
+        return null;
 
-   }
+    }
 
-   /**
-    * Close
-    */
-   public void close()
-   {
-      mc.closeHandle(this);
-   }
+    /**
+     * Close
+     */
+    public void close() {
+        mc.closeHandle(this);
+    }
+
+    public ResourceAdapter getResourceAdapter() {
+        return ((ResourceAdapter) mcf.getResourceAdapter());
+    }
 
 }

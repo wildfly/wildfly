@@ -10,7 +10,7 @@
    <resourceadapter-version>0.1</resourceadapter-version>
 
    <resourceadapter>
-      <resourceadapter-class>org.jboss.as.test.smoke.deployment.rar.MultipleResourceAdapter2</resourceadapter-class>
+      <resourceadapter-class>org.jboss.as.test.smoke.deployment.rar.MultipleResourceAdapter</resourceadapter-class>
 
       <outbound-resourceadapter>
          <connection-definition>

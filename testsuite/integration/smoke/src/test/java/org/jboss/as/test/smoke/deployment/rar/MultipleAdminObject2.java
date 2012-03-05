@@ -27,23 +27,22 @@ import javax.resource.Referenceable;
 
 /**
  * MultipleAdminObject2
- *
- * @version $Revision: $
+ * 
  */
-public interface MultipleAdminObject2 extends Referenceable, Serializable
-{
+public interface MultipleAdminObject2 extends Referenceable, Serializable {
 
-   /**
-    * Set name
-    * @param name The value
-    */
-   public void setName(String name);
+    /**
+     * Set name
+     * 
+     * @param name The value
+     */
+    public void setName(String name);
 
-   /**
-    * Get name
-    * @return The value
-    */
-   public String getName();
-
+    /**
+     * Get name
+     * 
+     * @return The value
+     */
+    public String getName();
 
 }
