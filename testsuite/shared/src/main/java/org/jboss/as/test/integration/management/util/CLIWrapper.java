@@ -96,6 +96,18 @@ public class CLIWrapper implements Runnable {
      * <code>connect</code> command.
      *
      * @param connect indicates if the CLI should connect to server automatically.
+     * @param cliArgs specifies additional CLI command line arguments
+     * @throws Exception
+     */
+    public CLIWrapper(boolean connect, String[] cliArgs) throws Exception {
+        this(connect, null, cliArgs);
+    }
+    
+    /**
+     * Creates new CLI wrapper. If the connect parameter is set to true the CLI will connect to the server using
+     * <code>connect</code> command.
+     *
+     * @param connect indicates if the CLI should connect to server automatically.
      * @param cliAddress The default name of the property containing the cli address. If null the value of the {@code node0} property is
      * used, and if that is absent {@code localhost} is used
      * @param cliArgs specifies additional CLI command line arguments
