@@ -51,10 +51,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.AfterClass;
@@ -145,7 +145,8 @@ public class ServerManagementTestCase {
         Assert.assertFalse(exists(client, newRunningServerAddress));
 
         ModelNode result = client.execute(addServer);
-        validateResponse(result);
+
+        validateResponse(result, false);
 
         Assert.assertTrue(exists(client, newServerConfigAddress));
         Assert.assertFalse(exists(client, newRunningServerAddress));
@@ -286,6 +287,10 @@ public class ServerManagementTestCase {
     }
 
     private ModelNode validateResponse(ModelNode response) {
+        return validateResponse(response, true);
+    }
+
+    private ModelNode validateResponse(ModelNode response, boolean validateResult) {
 
         if(! SUCCESS.equals(response.get(OUTCOME).asString())) {
             System.out.println("Failed response:");
@@ -293,7 +298,9 @@ public class ServerManagementTestCase {
             Assert.fail(response.get(FAILURE_DESCRIPTION).toString());
         }
 
-        Assert.assertTrue("result exists", response.has(RESULT));
+        if (validateResult) {
+            Assert.assertTrue("result exists", response.has(RESULT));
+        }
         return response.get(RESULT);
     }
 
