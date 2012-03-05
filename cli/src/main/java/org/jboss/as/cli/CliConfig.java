@@ -30,6 +30,48 @@ package org.jboss.as.cli;
 public interface CliConfig {
 
     /**
+     * The default server controller host to connect to.
+     *
+     * @return default server controller host to connect to
+     */
+    String getDefaultControllerHost();
+
+    /**
+     * The default server controller port to connect to.
+     *
+     * @return  default server controller port to connect to
+     */
+    int getDefaultControllerPort();
+
+    /**
+     * Whether the record the history of executed commands and operations.
+     *
+     * @return  true if the history is enabled, false - otherwise.
+     */
+    boolean isHistoryEnabled();
+
+    /**
+     * The name of the command and operation history file.
+     *
+     * @return  name of the command and operation history file
+     */
+    String getHistoryFileName();
+
+    /**
+     * The directory which contains the command and operation history file.
+     *
+     * @return  directory which contains the command and operation history file.
+     */
+    String getHistoryFileDir();
+
+    /**
+     * Maximum size of the history log.
+     *
+     * @return maximum size of the history log
+     */
+    int getHistoryMaxSize();
+
+    /**
      * The global SSL configuration if it has been defined.
      *
      * @return The SSLConfig

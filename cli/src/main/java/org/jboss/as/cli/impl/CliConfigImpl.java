@@ -49,6 +49,17 @@ import org.jboss.staxmapper.XMLMapper;
  */
 class CliConfigImpl implements CliConfig {
 
+    private static final String NS = "urn:jboss:cli:1.0";
+    private static final String DEFAULT_CONTROLLER = "default-controller";
+    private static final String ENABLED = "enabled";
+    private static final String FILE_DIR = "file-dir";
+    private static final String FILE_NAME = "file-name";
+    private static final String JBOSS_CLI = "jboss-cli";
+    private static final String HISTORY = "history";
+    private static final String HOST = "host";
+    private static final String MAX_SIZE = "max-size";
+    private static final String PORT = "port";
+
     static CliConfig load(final CommandContext ctx) throws CliInitializationException {
         final String jbossHome = SecurityActions.getEnvironmentVariable("JBOSS_HOME");
         if(jbossHome == null) {
@@ -72,25 +83,70 @@ class CliConfigImpl implements CliConfig {
         BufferedInputStream input = null;
         try {
             final XMLMapper mapper = XMLMapper.Factory.create();
-            mapper.registerRootElement(new QName("urn:jboss:cli:1.0", "jboss-cli"), new XMLElementReader<CliConfigImpl>(){
+            mapper.registerRootElement(new QName(NS, JBOSS_CLI), new XMLElementReader<CliConfigImpl>(){
                 @Override
                 public void readElement(XMLExtendedStreamReader reader, CliConfigImpl config) throws XMLStreamException {
-
                     boolean jbossCliEnded = false;
                     while (reader.hasNext() && jbossCliEnded == false) {
                         int tag = reader.nextTag();
                         if(tag == XMLStreamConstants.START_ELEMENT) {
                             final String localName = reader.getLocalName();
-                            if (localName.equals("ssl")) {
+                            if(localName.equals(DEFAULT_CONTROLLER)) {
+                                readDefaultController(reader, config);
+                            } else if(localName.equals(HISTORY)) {
+                                readHistory(reader, config);
+                            } else if (localName.equals("ssl")) {
                                 SslConfig sslConfig = new SslConfig();
                                 readSSLElement(reader, sslConfig);
                                 config.sslConfig = sslConfig;
+                            } else {
+                                throw new XMLStreamException("Unexpected element: " + localName);
                             }
                         } else if(tag == XMLStreamConstants.END_ELEMENT) {
                             final String localName = reader.getLocalName();
-                            if (localName.equals("jboss-cli")) {
+                            if (localName.equals(JBOSS_CLI)) {
                                 jbossCliEnded = true;
                             }
+                        }
+                    }
+                }
+
+                private void readDefaultController(XMLExtendedStreamReader reader, CliConfigImpl config) throws XMLStreamException {
+                    while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                        final String localName = reader.getLocalName();
+                        final String resolved = resolveString(reader.getElementText());
+                        if (HOST.equals(localName)) {
+                            config.defaultControllerHost = resolved;
+                        } else if (PORT.equals(localName)) {
+                            try {
+                                config.defaultControllerPort = Integer.parseInt(resolved);
+                            } catch(NumberFormatException e) {
+                                throw new XMLStreamException("Failed to parse " + DEFAULT_CONTROLLER + " " + PORT + " value '" + resolved + "'", e);
+                            }
+                        } else {
+                            throw new XMLStreamException("Unexpected child of " + DEFAULT_CONTROLLER + ": " + localName);
+                        }
+                    }
+                }
+
+                private void readHistory(XMLExtendedStreamReader reader, CliConfigImpl config) throws XMLStreamException {
+                    while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                        final String localName = reader.getLocalName();
+                        final String resolved = resolveString(reader.getElementText());
+                        if (ENABLED.equals(localName)) {
+                            config.historyEnabled = Boolean.parseBoolean(resolved);
+                        } else if (FILE_NAME.equals(localName)) {
+                            config.historyFileName = resolved;
+                        } else if (FILE_DIR.equals(localName)) {
+                            config.historyFileDir = resolved;
+                        } else if (MAX_SIZE.equals(localName)) {
+                            try {
+                                config.historyMaxSize = Integer.parseInt(resolved);
+                            } catch(NumberFormatException e) {
+                                throw new XMLStreamException("Failed to parse " + HISTORY + " " + MAX_SIZE + " value '" + resolved + "'", e);
+                            }
+                        } else {
+                            throw new XMLStreamException("Unexpected child of " + DEFAULT_CONTROLLER + ": " + localName);
                         }
                     }
                 }
@@ -126,10 +182,72 @@ class CliConfigImpl implements CliConfig {
         return config;
     }
 
-    private CliConfigImpl() {}
+    private static String resolveString(String str) throws XMLStreamException {
+        if(str == null) {
+            return null;
+        }
+        if(str.startsWith("${") && str.endsWith("}")) {
+            str = str.substring(2, str.length() - 1);
+            final String resolved = SecurityActions.getSystemProperty(str);
+            if(resolved == null) {
+                throw new XMLStreamException("Failed to resolve '" + str + "' to a non-null value.");
+            }
+            str = resolved;
+        }
+        return str;
+    }
+
+    private CliConfigImpl() {
+        defaultControllerHost = "localhost";
+        defaultControllerPort = 9999;
+
+        historyEnabled = true;
+        historyFileName = ".jboss-cli-history";
+        historyFileDir = SecurityActions.getSystemProperty("user.home");
+        historyMaxSize = 500;
+    }
+
+    private String defaultControllerHost;
+    private int defaultControllerPort;
+
+    private boolean historyEnabled;
+    private String historyFileName;
+    private String historyFileDir;
+    private int historyMaxSize;
 
     private SSLConfig sslConfig;
 
+    @Override
+    public String getDefaultControllerHost() {
+        return defaultControllerHost;
+    }
+
+    @Override
+    public int getDefaultControllerPort() {
+        return defaultControllerPort;
+    }
+
+    @Override
+    public boolean isHistoryEnabled() {
+        return historyEnabled;
+    }
+
+    @Override
+    public String getHistoryFileName() {
+        return historyFileName;
+    }
+
+    @Override
+    public String getHistoryFileDir() {
+        return historyFileDir;
+    }
+
+    @Override
+    public int getHistoryMaxSize() {
+        return historyMaxSize;
+    }
+
+    @Override
     public SSLConfig getSslConfig() {
         return sslConfig;
     }
@@ -183,5 +301,4 @@ class CliConfigImpl implements CliConfig {
         }
 
     }
-
 }

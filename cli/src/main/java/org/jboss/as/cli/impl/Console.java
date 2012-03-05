@@ -228,6 +228,16 @@ public interface Console {
                 public void clear() {
                     console.getHistory().clear();
                 }
+
+                @Override
+                public void setMaxSize(int maxSize) {
+                    console.getHistory().setMaxSize(maxSize);
+                }
+
+                @Override
+                public int getMaxSize() {
+                    return console.getHistory().getMaxSize();
+                }
             }};
         }
     }
