@@ -190,6 +190,9 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                     transaction.rollback();
                 } else {
                     registerHost(transaction, result);
+                    if(failed) {
+                        transaction.rollback();
+                    }
                 }
             } finally {
                 activeOperation.getResultHandler().done(null);
@@ -250,6 +253,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                     transaction.commit();
                 } else {
                     transaction.rollback();
+                    return;
                 }
 
                 final String productName;
@@ -268,11 +272,9 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         }
 
         void completeRegistration(final ManagementRequestContext<RegistrationContext> responseChannel, boolean commit) {
-            if(completed.compareAndSet(false, true)) {
-                failed |= ! commit;
-                this.responseChannel = responseChannel;
-                completedLatch.countDown();
-            }
+            failed |= ! commit;
+            this.responseChannel = responseChannel;
+            completedLatch.countDown();
         }
 
         void failed(SlaveRegistrationException.ErrorCode errorCode, String message) {
@@ -293,10 +295,12 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         }
 
         void sendCompletedMessage() {
-            try {
-                sendResponse(responseChannel, DomainControllerProtocol.PARAM_OK, null);
-            } catch (IOException e) {
-                ProtocolLogger.ROOT_LOGGER.debugf(e, "failed to process message");
+            if(completed.compareAndSet(false, true)) {
+                try {
+                    sendResponse(responseChannel, DomainControllerProtocol.PARAM_OK, null);
+                } catch (IOException e) {
+                    ProtocolLogger.ROOT_LOGGER.debugf(e, "failed to process message");
+                }
             }
         }
 
