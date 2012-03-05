@@ -30,20 +30,22 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+
 import javax.ejb.CreateException;
 import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.NoSuchEJBException;
 import javax.ejb.NoSuchEntityException;
+import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
+
 import org.jboss.as.cmp.ejbql.ASTNullComparison;
 import org.jboss.as.cmp.ejbql.SimpleNode;
 import org.jboss.as.cmp.jdbc.bridge.CMRMessage;
-import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractEntityBridge;
 import org.jboss.as.cmp.jdbc.metadata.JDBCQueryMetaData;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -464,7 +466,7 @@ public interface CmpMessages {
     EJBException errorGettingInstanceValue(@Cause Exception e);
 
     @Message(id = 18532, value = "Instance was already removed")
-    IllegalStateException instanceAlreadyRemoved(@Cause Exception e);
+    IllegalArgumentException instanceAlreadyRemoved(@Cause Exception e);
 
     @Message(id = 18533, value = "Error in scheduleForCascadeDelete")
     EJBException errorInScheduleCascadeDelete(@Cause Exception e);
@@ -1212,4 +1214,8 @@ public interface CmpMessages {
 
     @Message(id = 18882, value = "Failed to insert new rows")
     SQLException failedToInsertNewRows(@Cause SQLException e);
+
+
+    @Message(id = 18895, value = "Instance was already removed: id=%s")
+    NoSuchObjectLocalException instanceAlreadyRemovedLocal(Object pk);
 }

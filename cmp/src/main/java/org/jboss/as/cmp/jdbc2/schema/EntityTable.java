@@ -29,13 +29,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJBException;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.transaction.Transaction;
+
 import org.jboss.as.cmp.CmpConfig;
 import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
@@ -1036,7 +1037,7 @@ public class EntityTable implements Table {
 
         public Object getFieldValue(int i) {
             if (state == DELETED) {
-                throw CmpMessages.MESSAGES.instanceAlreadyRemoved(pk);
+                throw CmpMessages.MESSAGES.instanceAlreadyRemovedLocal(pk);
             }
 
             Object value = fields[i];
