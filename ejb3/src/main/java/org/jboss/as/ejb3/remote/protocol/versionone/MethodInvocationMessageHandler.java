@@ -155,8 +155,9 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                     try {
                         methodParams[i] = unmarshaller.readObject();
                     } catch (ClassNotFoundException cnfe) {
-                        // TODO: Write out invocation failure to channel outstream
-                        throw new RuntimeException(cnfe);
+                        // write out the failure
+                        MethodInvocationMessageHandler.this.writeException(channel, MethodInvocationMessageHandler.this.marshallerFactory, invocationId, cnfe, null);
+                        return;
                     }
                 }
             }
@@ -165,8 +166,9 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             try {
                 attachments = this.readAttachments(unmarshaller);
             } catch (ClassNotFoundException cnfe) {
-                // TODO: Write out invocation failure to channel outstream
-                throw new RuntimeException(cnfe);
+                // write out the failure
+                MethodInvocationMessageHandler.this.writeException(channel, MethodInvocationMessageHandler.this.marshallerFactory, invocationId, cnfe, null);
+                return;
             }
             // done with unmarshalling
             unmarshaller.finish();
