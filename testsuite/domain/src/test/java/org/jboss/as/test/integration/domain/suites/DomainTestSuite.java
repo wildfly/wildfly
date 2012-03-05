@@ -40,6 +40,7 @@ import org.junit.runners.Suite;
         ManagementReadsTestCase.class,
         DeploymentManagementTestCase.class,
         ServerManagementTestCase.class,
+        ServerRestartRequiredTestCase.class,
         ManagementAccessTestCase.class,
         ManagementClientContentTestCase.class,
         ValidateOperationOperationTestCase.class

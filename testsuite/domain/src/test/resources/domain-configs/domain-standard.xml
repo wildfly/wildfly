@@ -325,6 +325,7 @@
                     <journal-type>NIO</journal-type>
                     <!-- disable messaging persistence -->
                     <persistence-enabled>false</persistence-enabled>
+                    <thread-pool-max-size>2</thread-pool-max-size>
 
                     <connectors>
                        <netty-connector name="netty" socket-binding="messaging" />
@@ -669,6 +670,7 @@
                     <journal-type>NIO</journal-type>
                     <!-- disable messaging persistence -->
                     <persistence-enabled>false</persistence-enabled>
+                    <thread-pool-max-size>2</thread-pool-max-size>
 
                     <connectors>
                        <netty-connector name="netty" socket-binding="messaging" />
@@ -863,6 +865,7 @@
         <socket-binding-group name="ignored" default-interface="public">
             <socket-binding name="http" port="8080"/>
         </socket-binding-group>
+        <socket-binding-group name="reload-sockets" default-interface="public" />
     </socket-binding-groups>
 
     <server-groups>
@@ -891,6 +894,14 @@
         <server-group name="minimal" profile="minimal">
             <socket-binding-group ref="standard-sockets"/>
         </server-group>
+
+        <server-group name="reload-test-group" profile="minimal">
+            <socket-binding-group ref="reload-sockets"/>
+            <jvm name="default">
+               <heap size="64m" max-size="64m"/>
+            </jvm>
+        </server-group>
+
     </server-groups>
 
 

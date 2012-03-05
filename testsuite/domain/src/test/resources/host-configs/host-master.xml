@@ -92,5 +92,6 @@
                  the default socket-group declared in the server-group -->
             <socket-bindings port-offset="250"/>
         </server>
+        <server name="reload-one" group="reload-test-group" />
     </servers>
 </host>
