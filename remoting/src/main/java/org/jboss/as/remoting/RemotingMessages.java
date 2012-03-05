@@ -113,4 +113,7 @@ public interface RemotingMessages {
     @Message(id = 17129, value = "")
     UnsupportedCallbackException unsupportedCallback(@Param Callback current);
 
+    @Message(id = 17130, value = "Invalid Strength '%s' string given")
+    IllegalArgumentException illegalStrength(String strength);
+
 }

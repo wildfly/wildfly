@@ -73,73 +73,13 @@ public class ConnectorAdd extends AbstractAddStepHandler {
     }
 
     void launchServices(OperationContext context, String connectorName, ModelNode fullModel, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        //TODO SASL and properties
-
-        OptionMap optionMap = ConnectorResource.getOptions(fullModel.get(CommonAttributes.PROPERTY));
+        OptionMap optionMap = ConnectorResource.getFullOptions(fullModel);
 
         final ServiceTarget target = context.getServiceTarget();
 
         final ServiceName socketBindingName = SocketBinding.JBOSS_BINDING_NAME.append(ConnectorResource.SOCKET_BINDING.resolveModelAttribute(context, fullModel).asString());
         RemotingServices.installConnectorServicesForSocketBinding(target, RemotingServices.SUBSYSTEM_ENDPOINT, connectorName, socketBindingName, optionMap, verificationHandler, newControllers);
 
-        //TODO AuthenticationHandler
-//
-//        final ConnectorService connectorService = new ConnectorService();
-//        connectorService.setOptionMap(createOptionMap(operation));
-//
-//        // Register the service with the container and inject dependencies.
-//        final ServiceName connectorName = RemotingServices.connectorServiceName(name);
-//        try {
-//            newControllers.add(target.addService(connectorName, connectorService)
-//                    .addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector())
-//                    .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
-//                    .addListener(verificationHandler)
-//                    .setInitialMode(ServiceController.Mode.ACTIVE)
-//                    .install());
-//
-//            // TODO create XNIO connector service from socket-binding, with dependency on connectorName
-//        } catch (ServiceRegistryException e) {
-//            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-//        }
+
     }
-
-   /* static OptionMap createOptionMap(final ModelNode parameters) {
-        final OptionMap.Builder builder = OptionMap.builder();
-
-        if (parameters.hasDefined(SASL)) {
-            final ModelNode sasl = parameters.require(SASL);
-            builder.set(Options.SASL_SERVER_AUTH, sasl.get(SERVER_AUTH).asBoolean());
-            builder.set(Options.SASL_STRENGTH, SaslStrength.valueOf(sasl.get(STRENGTH).asString()));
-            builder.set(Options.SASL_QOP, Sequence.of(asQopSet(sasl.get(QOP))));
-            builder.set(Options.SASL_MECHANISMS, Sequence.of(asStringSet(sasl.get(INCLUDE_MECHANISMS))));
-
-            if (sasl.hasDefined(POLICY)) {
-                final ModelNode policy = sasl.require(POLICY);
-                builder.set(Options.SASL_POLICY_FORWARD_SECRECY, policy.get(FORWARD_SECRECY).asBoolean());
-                builder.set(Options.SASL_POLICY_NOACTIVE, policy.get(NO_ACTIVE).asBoolean());
-                builder.set(Options.SASL_POLICY_NOANONYMOUS, policy.get(NO_ANONYMOUS).asBoolean());
-                builder.set(Options.SASL_POLICY_NODICTIONARY, policy.get(NO_DICTIONARY).asBoolean());
-                builder.set(Options.SASL_POLICY_NOPLAINTEXT, policy.get(NO_PLAIN_TEXT).asBoolean());
-                builder.set(Options.SASL_POLICY_PASS_CREDENTIALS, policy.get(PASS_CREDENTIALS).asBoolean());
-            }
-        }
-        return builder.getMap();
-    }
-
-    static Collection<String> asStringSet(final ModelNode node) {
-        final Set<String> set = new HashSet<String>();
-        for (final ModelNode element : node.asList()) {
-            set.add(element.asString());
-        }
-        return set;
-    }
-
-    static Collection<SaslQop> asQopSet(final ModelNode node) {
-        final Set<SaslQop> set = new HashSet<SaslQop>();
-        for (final ModelNode element : node.asList()) {
-            set.add(SaslQop.valueOf(element.asString()));
-        }
-        return set;
-    }
-    */
 }
