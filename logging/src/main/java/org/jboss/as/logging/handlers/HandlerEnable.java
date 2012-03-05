@@ -25,13 +25,13 @@ package org.jboss.as.logging.handlers;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Operation responsible for enabling a logging handler.
@@ -56,8 +56,11 @@ public class HandlerEnable implements OperationStepHandler {
                                 serviceController.setMode(ServiceController.Mode.ACTIVE);
                             }
 
-                            public void serviceStarted(ServiceController<?> serviceController) {
-                                context.completeStep();
+                            @Override
+                            public void transition(ServiceController<?> serviceController, ServiceController.Transition transition) {
+                                if (transition == ServiceController.Transition.STARTING_to_UP) {
+                                    context.completeStep();
+                                }
                             }
                         });
                     } else {
