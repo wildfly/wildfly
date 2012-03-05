@@ -24,14 +24,14 @@ package org.jboss.as.cli.operation.impl;
 import java.util.Iterator;
 
 import org.jboss.as.cli.operation.OperationRequestAddress;
-import org.jboss.as.cli.operation.PrefixFormatter;
+import org.jboss.as.cli.operation.NodePathFormatter;
 import org.jboss.as.cli.operation.OperationRequestAddress.Node;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class DefaultPrefixFormatter implements PrefixFormatter {
+public class DefaultPrefixFormatter implements NodePathFormatter {
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.PrefixFormatter#format(org.jboss.as.cli.Prefix)

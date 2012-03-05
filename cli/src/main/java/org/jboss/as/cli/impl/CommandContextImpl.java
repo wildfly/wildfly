@@ -126,7 +126,7 @@ import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.ParsedCommandLine;
-import org.jboss.as.cli.operation.PrefixFormatter;
+import org.jboss.as.cli.operation.NodePathFormatter;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
@@ -190,7 +190,7 @@ class CommandContextImpl implements CommandContext {
     /** operation request address prefix */
     private final OperationRequestAddress prefix = new DefaultOperationRequestAddress();
     /** the prefix formatter */
-    private final PrefixFormatter prefixFormatter = new DefaultPrefixFormatter();
+    private final NodePathFormatter prefixFormatter = new DefaultPrefixFormatter();
     /** provider of operation request candidates for tab-completion */
     private final OperationCandidatesProvider operationCandidatesProvider;
     /** operation request handler */
@@ -423,7 +423,7 @@ class CommandContextImpl implements CommandContext {
 
             if (isBatchMode()) {
                 StringBuilder op = new StringBuilder();
-                op.append(getPrefixFormatter().format(parsedCmd.getAddress()));
+                op.append(getNodePathFormatter().format(parsedCmd.getAddress()));
                 op.append(line.substring(line.indexOf(':')));
                 DefaultBatchedCommand batchedCmd = new DefaultBatchedCommand(op.toString(), request);
                 Batch batch = getBatchManager().getActiveBatch();
@@ -586,12 +586,12 @@ class CommandContextImpl implements CommandContext {
     }
 
     @Override
-    public OperationRequestAddress getPrefix() {
+    public OperationRequestAddress getCurrentNodePath() {
         return prefix;
     }
 
     @Override
-    public PrefixFormatter getPrefixFormatter() {
+    public NodePathFormatter getNodePathFormatter() {
 
         return prefixFormatter;
     }

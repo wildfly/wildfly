@@ -51,10 +51,10 @@ public class PrefixHandler extends CommandHandlerWithHelp {
 
         final String nodePath = this.nodePath.getValue(ctx.getParsedCommandLine());
 
-        OperationRequestAddress prefix = ctx.getPrefix();
+        OperationRequestAddress prefix = ctx.getCurrentNodePath();
 
         if(nodePath == null) {
-            ctx.printLine(ctx.getPrefixFormatter().format(prefix));
+            ctx.printLine(ctx.getNodePathFormatter().format(prefix));
             return;
         }
 

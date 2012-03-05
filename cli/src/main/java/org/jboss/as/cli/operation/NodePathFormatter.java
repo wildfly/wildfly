@@ -23,13 +23,11 @@ package org.jboss.as.cli.operation;
 
 
 /**
- * TODO this has to turn into the whole operation request formatter
- *
- * Creates a string representation of the Prefix instance.
+ * Creates a string representation of the OperationRequestAddress instance.
  *
  * @author Alexey Loubyansky
  */
-public interface PrefixFormatter {
+public interface NodePathFormatter {
 
     /**
      * Creates a string representation of the Prefix instance.

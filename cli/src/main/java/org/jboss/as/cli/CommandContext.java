@@ -30,7 +30,7 @@ import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.ParsedCommandLine;
-import org.jboss.as.cli.operation.PrefixFormatter;
+import org.jboss.as.cli.operation.NodePathFormatter;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
@@ -180,13 +180,13 @@ public interface CommandContext {
      * Returns the current prefix.
      * @return current prefix
      */
-    OperationRequestAddress getPrefix();
+    OperationRequestAddress getCurrentNodePath();
 
     /**
      * Returns the prefix formatter.
      * @return the prefix formatter.
      */
-    PrefixFormatter getPrefixFormatter();
+    NodePathFormatter getNodePathFormatter();
 
     /**
      * Returns the provider of operation request candidates for tab-completion.

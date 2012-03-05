@@ -39,7 +39,7 @@ public class PrintWorkingNodeHandler extends CommandHandlerWithHelp {
      */
     @Override
     protected void doHandle(CommandContext ctx) {
-        OperationRequestAddress prefix = ctx.getPrefix();
-        ctx.printLine(ctx.getPrefixFormatter().format(prefix));
+        OperationRequestAddress prefix = ctx.getCurrentNodePath();
+        ctx.printLine(ctx.getNodePathFormatter().format(prefix));
     }
 }
