@@ -71,7 +71,7 @@ public class LsHandler extends CommandHandlerWithHelp {
 
         final OperationRequestAddress address;
         if (nodePath != null) {
-            address = new DefaultOperationRequestAddress(ctx.getPrefix());
+            address = new DefaultOperationRequestAddress(ctx.getCurrentNodePath());
             CommandLineParser.CallbackHandler handler = new DefaultCallbackHandler(address);
 
             // this is for correct parsing of escaped characters
@@ -86,7 +86,7 @@ public class LsHandler extends CommandHandlerWithHelp {
             }
             ctx.getCommandLineParser().parse(nodePath, handler);
         } else {
-            address = new DefaultOperationRequestAddress(ctx.getPrefix());
+            address = new DefaultOperationRequestAddress(ctx.getCurrentNodePath());
         }
 
         List<String> names = null;
@@ -120,7 +120,7 @@ public class LsHandler extends CommandHandlerWithHelp {
                                 "Expected a node name for type '"
                                         + node.getType()
                                         + "' in path '"
-                                        + ctx.getPrefixFormatter().format(
+                                        + ctx.getNodePathFormatter().format(
                                                 address) + "'");
                     }
                 }
@@ -145,7 +145,7 @@ public class LsHandler extends CommandHandlerWithHelp {
                                 "Expected a node name for type '"
                                         + node.getType()
                                         + "' in path '"
-                                        + ctx.getPrefixFormatter().format(
+                                        + ctx.getNodePathFormatter().format(
                                                 address) + "'");
                     }
                 }

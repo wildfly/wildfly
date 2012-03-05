@@ -243,7 +243,7 @@ public class ReadAttributeHandler extends BaseOperationCommand {
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         final OperationRequestAddress address;
         if (node.isPresent(args)) {
-            address = new DefaultOperationRequestAddress(ctx.getPrefix());
+            address = new DefaultOperationRequestAddress(ctx.getCurrentNodePath());
             CommandLineParser.CallbackHandler handler = new DefaultCallbackHandler(address);
 
             // this is for correct parsing of escaped characters
@@ -267,7 +267,7 @@ public class ReadAttributeHandler extends BaseOperationCommand {
             nodePath = nodePath.substring(nodeArgInd + 8, nodeArgEndInd);
             ctx.getCommandLineParser().parse(nodePath, handler);
         } else {
-            address = new DefaultOperationRequestAddress(ctx.getPrefix());
+            address = new DefaultOperationRequestAddress(ctx.getCurrentNodePath());
         }
         return address;
     }

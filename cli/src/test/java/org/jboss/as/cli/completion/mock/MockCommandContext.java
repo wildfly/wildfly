@@ -38,7 +38,7 @@ import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.ParsedCommandLine;
-import org.jboss.as.cli.operation.PrefixFormatter;
+import org.jboss.as.cli.operation.NodePathFormatter;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
@@ -57,7 +57,7 @@ public class MockCommandContext implements CommandContext {
     private ModelControllerClient mcc;
     //private CommandLineParser operationParser;
     private OperationRequestAddress prefix;
-    private PrefixFormatter prefixFormatter;
+    private NodePathFormatter prefixFormatter;
     private OperationCandidatesProvider operationCandidatesProvider;
 
     private DefaultCallbackHandler parsedCmd = new DefaultCallbackHandler();
@@ -150,7 +150,7 @@ public class MockCommandContext implements CommandContext {
      * @see org.jboss.as.cli.CommandContext#getPrefix()
      */
     @Override
-    public OperationRequestAddress getPrefix() {
+    public OperationRequestAddress getCurrentNodePath() {
         if(prefix == null) {
             prefix = new DefaultOperationRequestAddress();
         }
@@ -161,7 +161,7 @@ public class MockCommandContext implements CommandContext {
      * @see org.jboss.as.cli.CommandContext#getPrefixFormatter()
      */
     @Override
-    public PrefixFormatter getPrefixFormatter() {
+    public NodePathFormatter getNodePathFormatter() {
         if(prefixFormatter == null) {
             prefixFormatter = new DefaultPrefixFormatter();
         }

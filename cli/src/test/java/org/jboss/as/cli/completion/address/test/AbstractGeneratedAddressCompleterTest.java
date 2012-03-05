@@ -48,7 +48,7 @@ public abstract class AbstractGeneratedAddressCompleterTest extends AbstractAddr
 
         int prefixLevel = getPrefixLevel();
         if(prefixLevel > 0) {
-            OperationRequestAddress prefix = ctx.getPrefix();
+            OperationRequestAddress prefix = ctx.getCurrentNodePath();
             for(int i = 1; i <= prefixLevel; ++i) {
                 if(i % 2 == 0) {
                     prefix.toNode("link" + i);
@@ -158,6 +158,6 @@ public abstract class AbstractGeneratedAddressCompleterTest extends AbstractAddr
     }
 
     protected void assertContextPrefix(String expected) {
-        Assert.assertEquals(expected, ctx.getPrefixFormatter().format(ctx.getPrefix()));
+        Assert.assertEquals(expected, ctx.getNodePathFormatter().format(ctx.getCurrentNodePath()));
     }
 }

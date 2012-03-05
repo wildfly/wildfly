@@ -68,7 +68,7 @@ public class CommandCompleter implements CommandLineCompleter {
 
         final DefaultCallbackHandler parsedCmd = (DefaultCallbackHandler) ctx.getParsedCommandLine();
         try {
-            parsedCmd.parse(ctx.getPrefix(), buffer, false);
+            parsedCmd.parse(ctx.getCurrentNodePath(), buffer, false);
         } catch(CommandFormatException e) {
             if(!parsedCmd.endsOnAddressOperationNameSeparator() || !parsedCmd.endsOnSeparator()) {
                 return -1;

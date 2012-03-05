@@ -60,14 +60,14 @@ public class PathNavigatorsTestCase extends AbstractAddressCompleterTest {
     public void testRoot3() {
 
         try {
-            ctx.getPrefix().toNode("type1", "name12");
+            ctx.getCurrentNodePath().toNode("type1", "name12");
             //assertEquals(Arrays.asList("type2=child21"), fetchCandidates("./"));
             assertEquals(Arrays.asList("type2="), fetchCandidates("./"));
             //assertEquals(Arrays.asList("type1=name11", "type1=name12"), fetchCandidates("/"));
             assertEquals(Arrays.asList("type1="), fetchCandidates("/"));
             assertEquals(Arrays.asList("name11", "name12"), fetchCandidates("/type1=n"));
         } finally {
-            ctx.getPrefix().reset();
+            ctx.getCurrentNodePath().reset();
         }
     }
 
@@ -81,13 +81,13 @@ public class PathNavigatorsTestCase extends AbstractAddressCompleterTest {
     public void testParentAtTheBeginning() {
 
         try {
-            ctx.getPrefix().toNode("type1", "name12");
+            ctx.getCurrentNodePath().toNode("type1", "name12");
             //assertEquals(Arrays.asList("type2=child21"), fetchCandidates("./"));
             assertEquals(Arrays.asList("type2="), fetchCandidates("./"));
             //assertEquals(Arrays.asList("type1=name11", "type1=name12"), fetchCandidates("../"));
             assertEquals(Arrays.asList("type1="), fetchCandidates("../"));
         } finally {
-            ctx.getPrefix().reset();
+            ctx.getCurrentNodePath().reset();
         }
     }
 

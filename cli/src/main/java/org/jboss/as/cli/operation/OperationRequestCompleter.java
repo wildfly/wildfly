@@ -49,7 +49,7 @@ public class OperationRequestCompleter implements CommandLineCompleter {
         @Override
         public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
             try {
-                parsedOp.parseOperation(ctx.getPrefix(), buffer);
+                parsedOp.parseOperation(ctx.getCurrentNodePath(), buffer);
             } catch (CommandFormatException e) {
                 return -1;
             }
@@ -308,7 +308,7 @@ public class OperationRequestCompleter implements CommandLineCompleter {
         final String chunk;
         if (address.isEmpty() || parsedCmd.endsOnNodeSeparator()
                 || parsedCmd.endsOnNodeTypeNameSeparator()
-                || address.equals(ctx.getPrefix())) {
+                || address.equals(ctx.getCurrentNodePath())) {
             chunk = null;
         } else if (address.endsOnType()) {
             chunk = address.getNodeType();

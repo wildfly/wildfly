@@ -303,7 +303,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             }
         }
         if(!pathValid) {
-            throw new CommandFormatException("Type '" + typeName + "' not found among child types of '" + ctx.getPrefixFormatter().format(typeAddress) + "'");
+            throw new CommandFormatException("Type '" + typeName + "' not found among child types of '" + ctx.getNodePathFormatter().format(typeAddress) + "'");
         }
 
         address.add(typeName, "?");
