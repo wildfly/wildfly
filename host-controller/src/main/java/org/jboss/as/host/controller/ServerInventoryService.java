@@ -120,7 +120,7 @@ class ServerInventoryService implements Service<ServerInventory> {
                 @Override
                 public void run() {
                     try {
-                        serverInventory.stopServers(-1, true); // TODO graceful shutdown // TODO async
+                        serverInventory.shutdown(-1, true); // TODO graceful shutdown // TODO async
                         serverInventory = null;
                         // client.getValue().setServerInventory(null);
                     } finally {
