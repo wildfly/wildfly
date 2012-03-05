@@ -37,6 +37,8 @@
         <module name="javax.xml.bind.api" export="true"/>
         <module name="com.sun.xml.bind" export="true" services="export"/>
         <module name="javax.xml.ws.api" />
+        <!-- WSDL4J API -->
+        <module name="javax.wsdl4j.api" export="true"/>
         <!-- JBossWS API -->
         <module name="org.jboss.ws.api" export="true" />
         <!--  JBossWS JAXWS client -->
