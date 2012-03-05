@@ -55,9 +55,7 @@ public class ConnectorAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException{
         ConnectorResource.SOCKET_BINDING.validateAndSet(operation, model);
         ConnectorResource.AUTHENTICATION_PROVIDER.validateAndSet(operation, model);
-        if (operation.hasDefined(SECURITY_REALM)) {
-            model.get(SECURITY_REALM).set(operation.get(SECURITY_REALM).asString());
-        }
+        ConnectorResource.SECURITY_REALM.validateAndSet(operation, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
