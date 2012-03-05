@@ -40,7 +40,6 @@
         <module name="javax.xml.bind.api" />
         <module name="javax.xml.stream.api" />
         <module name="javax.xml.ws.api" />
-        <module name="org.picketbox" />
         <module name="org.jboss.ws.api" />
         <module name="org.jboss.ws.spi" />
         <module name="org.jboss.ws.common" />

@@ -117,10 +117,10 @@
         <version.org.apache.httpcomponents.httpcore>4.1.4</version.org.apache.httpcomponents.httpcore>
         <version.org.apache.neethi>3.0.1</version.org.apache.neethi>
         <version.org.apache.openjpa>2.1.1</version.org.apache.openjpa>
-        <version.org.apache.santuario>1.4.5</version.org.apache.santuario>
+        <version.org.apache.santuario>1.5.1</version.org.apache.santuario>
         <version.org.apache.velocity>1.6.3</version.org.apache.velocity>
         <version.org.apache.ws.scout>1.1.1</version.org.apache.ws.scout>
-        <version.org.apache.ws.security>1.6.4</version.org.apache.ws.security>
+        <version.org.apache.ws.security>1.6.5</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.0</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-1</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1-jbossas-1</version.org.apache.xerces>
@@ -219,12 +219,12 @@
         <version.org.jboss.weld.weld>1.1.5.AS71.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>1.1.Final</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.0.GA</version.org.jboss.ws.api>
-        <version.org.jboss.ws.common>2.0.1.GA</version.org.jboss.ws.common>
+        <version.org.jboss.ws.common>2.0.2.GA</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>1.0.0.GA</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.jbossws-cxf>4.0.1.GA</version.org.jboss.ws.jbossws-cxf>
-        <version.org.jboss.ws.jbossws-native>4.0.1.GA</version.org.jboss.ws.jbossws-native>
-        <version.org.jboss.ws.spi>2.0.2.GA</version.org.jboss.ws.spi>
-        <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.0.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
+        <version.org.jboss.ws.jbossws-cxf>4.0.2.GA</version.org.jboss.ws.jbossws-cxf>
+        <version.org.jboss.ws.jbossws-native>4.0.2.GA</version.org.jboss.ws.jbossws-native>
+        <version.org.jboss.ws.spi>2.0.3.GA</version.org.jboss.ws.spi>
+        <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.1.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
         <version.org.jboss.xnio>3.0.3.GA</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
@@ -5292,7 +5292,7 @@
             <dependency>
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-resources</artifactId>
-                <classifier>jboss700</classifier>
+                <classifier>jboss711</classifier>
                 <version>${version.org.jboss.ws.jbossws-cxf}</version>
             </dependency>
 

@@ -47,7 +47,7 @@
         <module name="javax.xml.ws.api" />
         <module name="org.picketbox"/>
         <module name="org.apache.xerces" services="import"/>
-        <module name="org.apache.xmlsec" optional="true"/>
+        <module name="org.apache.santuario.xmlsec" optional="true"/>
         <module name="org.apache.ws.commons.policy" optional="true"/>
         <module name="org.javassist" />
         <module name="org.codehaus.jettison" optional="true"/>
