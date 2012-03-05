@@ -24,6 +24,7 @@ package org.jboss.as.clustering.jgroups;
 
 import java.net.URL;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
@@ -62,4 +63,11 @@ public interface JGroupsMessages {
 
     @Message(id = 10272, value = "A node named %s already exists in this cluster.  Perhaps there is already a server running on this host?  If so, restart this server with a unique node name, via -Djboss.node.name=<node-name>")
     IllegalStateException duplicateNodeName(String name);
+
+    @Message(id = 10273, value = "Transport for stack %s is not defined. Please specify both a transport and protocol list, either as optional parameters to add() or via batching.")
+    OperationFailedException transportNotDefined(String stackName);
+
+    @Message(id = 10274, value = "Protocol list for stack %s is not defined. Please specify both a transport and protocol list, either as optional parameters to add() or via batching.")
+    OperationFailedException protocolListNotDefined(String stackName);
+
 }

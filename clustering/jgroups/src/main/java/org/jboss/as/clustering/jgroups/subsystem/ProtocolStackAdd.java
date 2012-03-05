@@ -24,8 +24,8 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import javax.management.MBeanServer;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,9 +35,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
-import javax.management.MBeanServer;
-
 import org.jboss.as.clustering.jgroups.ChannelFactory;
+import org.jboss.as.clustering.jgroups.JGroupsMessages;
 import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
 import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
@@ -45,7 +44,6 @@ import org.jboss.as.clustering.jgroups.TransportConfiguration;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -144,6 +142,9 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
 
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
+
+        // check that we have enough information to create a stack
+        protocolStackSanityCheck(name, model);
 
         // pick up the transport here and its values
         ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
@@ -262,6 +263,22 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         if (executor != null) {
             builder.addDependency(ThreadsServices.executorName(executor), Executor.class, injector);
         }
+    }
+
+    /*
+     * A check that we have the minimal configuration required to create a protocol stack.
+     */
+    private void protocolStackSanityCheck(String stackName, ModelNode model) throws OperationFailedException {
+
+         ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+         if (!transport.isDefined()) {
+            throw JGroupsMessages.MESSAGES.transportNotDefined(stackName) ;
+         }
+
+         List<Property> protocols = getOrderedProtocolPropertyList(model);
+         if ( protocols == null || !(protocols.size() > 0)) {
+             throw JGroupsMessages.MESSAGES.protocolListNotDefined(stackName) ;
+         }
     }
 
     @Override
