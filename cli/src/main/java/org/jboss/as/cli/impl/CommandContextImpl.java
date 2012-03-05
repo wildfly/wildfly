@@ -58,7 +58,6 @@ import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
 import javax.security.sasl.SaslException;
 
-import org.jboss.as.cli.ArgumentValueConverter;
 import org.jboss.as.cli.CliConfig;
 import org.jboss.as.cli.CliEvent;
 import org.jboss.as.cli.CliEventListener;
@@ -147,9 +146,6 @@ import org.jboss.sasl.util.HexConverter;
  */
 class CommandContextImpl implements CommandContext {
 
-    static final String DEFAULT_CONTROLLER_HOST = "localhost";
-    static final int DEFAULT_CONTROLLER_PORT = 9999;
-
     /** the cli configuration */
     private final CliConfig config;
 
@@ -170,9 +166,9 @@ class CommandContextImpl implements CommandContext {
     /** the controller client */
     private ModelControllerClient client;
     /** the default controller host */
-    private String defaultControllerHost = DEFAULT_CONTROLLER_HOST;
+    private String defaultControllerHost;
     /** the default controller port */
-    private int defaultControllerPort = DEFAULT_CONTROLLER_PORT;
+    private int defaultControllerPort;
     /** the host of the controller */
     private String controllerHost;
     /** the port of the controller */
@@ -226,7 +222,7 @@ class CommandContextImpl implements CommandContext {
     }
 
     CommandContextImpl(String username, char[] password) throws CliInitializationException {
-        this(DEFAULT_CONTROLLER_HOST, DEFAULT_CONTROLLER_PORT, username, password, false);
+        this(null, -1, username, password, false);
     }
 
     /**
@@ -235,32 +231,43 @@ class CommandContextImpl implements CommandContext {
      */
     CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password, boolean initConsole)
             throws CliInitializationException {
+
+        config = CliConfigImpl.load(this);
+
         operationHandler = new OperationRequestHandler();
 
         this.username = username;
         this.password = password;
         if (defaultControllerHost != null) {
             this.defaultControllerHost = defaultControllerHost;
+        } else {
+            this.defaultControllerHost = config.getDefaultControllerHost();
         }
         if (defaultControllerPort != -1) {
             this.defaultControllerPort = defaultControllerPort;
+        } else {
+            this.defaultControllerPort = config.getDefaultControllerPort();
         }
         initCommands();
 
-        config = CliConfigImpl.load(this);
         initSSLContext();
 
         if (initConsole) {
             cmdCompleter = new CommandCompleter(cmdRegistry);
-            this.console = Console.Factory.getConsole(this);
-            console.setUseHistory(true);
-            console.setHistoryFile(new File(SecurityActions.getSystemProperty("user.home"), ".jboss-cli-history"));
+            initBasicConsole();
             console.addCompleter(cmdCompleter);
             this.operationCandidatesProvider = new DefaultOperationCandidatesProvider();
         } else {
             this.cmdCompleter = null;
             this.operationCandidatesProvider = null;
         }
+    }
+
+    protected void initBasicConsole() {
+        this.console = Console.Factory.getConsole(this);
+        console.setUseHistory(config.isHistoryEnabled());
+        console.setHistoryFile(new File(config.getHistoryFileDir(), config.getHistoryFileName()));
+        console.getHistory().setMaxSize(config.getHistoryMaxSize());
     }
 
     private void initCommands() {
@@ -521,7 +528,7 @@ class CommandContextImpl implements CommandContext {
 
     private String readLine(String prompt, boolean password, boolean disableHistory) throws IOException {
         if (console == null) {
-            console = Console.Factory.getConsole(this);
+            initBasicConsole();
         }
 
         boolean useHistory = console.isUseHistory();

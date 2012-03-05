@@ -35,4 +35,34 @@ public class MockCliConfig implements CliConfig {
     public SSLConfig getSslConfig() {
         return null;
     }
+
+    @Override
+    public String getDefaultControllerHost() {
+        return "localhost";
+    }
+
+    @Override
+    public int getDefaultControllerPort() {
+        return 9999;
+    }
+
+    @Override
+    public boolean isHistoryEnabled() {
+        return false;
+    }
+
+    @Override
+    public String getHistoryFileName() {
+        return ".jboss-cli-history";
+    }
+
+    @Override
+    public String getHistoryFileDir() {
+        return null;
+    }
+
+    @Override
+    public int getHistoryMaxSize() {
+        return 500;
+    }
 }

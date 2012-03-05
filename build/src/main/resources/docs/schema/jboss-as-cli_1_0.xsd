@@ -38,7 +38,40 @@
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
+                <xs:element ref="default-controller" minOccurs="0"/>
+                <xs:element ref="history" minOccurs="0"/>
                 <xs:element ref="ssl" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="default-controller">
+        <xs:annotation>
+            <xs:documentation>
+                This element contains the configuration of the default controller to connect to
+                when the connect command is executed w/o arguments.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="host" type="xs:string" minOccurs="0" default="localhost"/>
+                <xs:element name="port" type="xs:int" minOccurs="0" default="9999"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="history">
+        <xs:annotation>
+            <xs:documentation>
+                This element contains the configuration for the commands and operations history log.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="enabled" type="xs:boolean" minOccurs="0" default="true"/>
+                <xs:element name="file-name" type="xs:string" minOccurs="0" default=".jboss-cli-history"/>
+                <xs:element name="file-dir" type="xs:string" minOccurs="0" default="${user.home}"/>
+                <xs:element name="max-size" type="xs:int" minOccurs="0" default="500"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
