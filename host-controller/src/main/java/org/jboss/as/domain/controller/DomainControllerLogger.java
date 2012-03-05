@@ -175,4 +175,9 @@ public interface DomainControllerLogger extends BasicLogger {
     @LogMessage(level = Level.ERROR)
     @Message(id = 10810, value = "No deployment content with hash %s is available in the deployment content repository for deployment %s. Because this Host Controller is booting in ADMIN-ONLY mode, boot will be allowed to proceed to provide administrators an opportunity to correct this problem. If this Host Controller were not in ADMIN-ONLY mode this would be a fatal boot failure.")
     void reportAdminOnlyMissingDeploymentContent(String contentHash, String deploymentName);
+
+    @LogMessage(level = Level.WARN)
+    @Message(id = 10811, value = "failed to set server (%s) into a restart required state")
+    void failedToSetServerInRestartRequireState(String serverName);
+
 }

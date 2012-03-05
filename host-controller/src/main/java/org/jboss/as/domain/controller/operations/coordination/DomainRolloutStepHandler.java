@@ -144,7 +144,21 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                 boolean completeRollback = domainOperationContext.isCompleteRollback();
                 for (Map.Entry<ServerIdentity, ProxyTask> entry : tasks.entrySet()) {
                     boolean rollback = completeRollback || domainOperationContext.isServerGroupRollback(entry.getKey().getServerGroupName());
-                    entry.getValue().finalizeTransaction(!rollback);
+                    final ProxyTask task = entry.getValue();
+                    // Require a server reload, in case the operation failed, but the overall state was commit
+                    if(!task.finalizeTransaction(!rollback)) {
+                        try {
+                            // Replace the original proxyTask with the requireReloadTask
+                            final ServerIdentity identity = entry.getKey();
+                            final ModelNode result = task.getUncommittedResult();
+                            final ProxyController proxy = task.getProxyController();
+                            final Future<ModelNode> future = executorService.submit(new ServerRequireRestartTask(identity, proxy, result));
+                            // replace the existing future
+                            futures.put(entry.getKey(), future);
+                        } catch (Exception ignore) {
+                            // getUncommittedResult() won't fail here
+                        }
+                    }
                 }
                 // Now read the final values. This ensures the operations are committed on the remote servers
                 // before we expose the servers to further requests
