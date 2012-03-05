@@ -52,19 +52,16 @@
         </xsl:copy>
     </xsl:template>
 
-    <xsl:template match="//d:interfaces/d:interface[@name='public' or @name='unsecure']/d:inet-address">
-        <xsl:copy>
-            <xsl:attribute name="value">
-                <xsl:value-of select="$publicIPAddress"/>
-            </xsl:attribute>
-        </xsl:copy>
+    <xsl:template match="//d:interfaces/d:interface[@name='public']/d:inet-address">
+        <xsl:copy><xsl:attribute name="value">${jboss.bind.address:<xsl:value-of select="$publicIPAddress"/>}</xsl:attribute></xsl:copy>
+    </xsl:template>
+    <xsl:template match="//d:interfaces/d:interface[@name='unsecure']/d:inet-address">
+        <xsl:copy><xsl:attribute name="value">${jboss.bind.address.unsecure:<xsl:value-of select="$publicIPAddress"/>}</xsl:attribute></xsl:copy>
     </xsl:template>
 
     <!-- Change UDP multicast addresses. -->
     <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='jgroups-udp']/@multicast-address">
-        <xsl:attribute name="multicast-address">
-            <xsl:value-of select="$udpMcastAddress"/>
-        </xsl:attribute>
+        <xsl:attribute name="multicast-address">${jboss.default.multicast.address:<xsl:value-of select="$udpMcastAddress"/>}</xsl:attribute>
     </xsl:template>
 
     <!-- Change diagnostics multicast addresses. -->
@@ -76,9 +73,7 @@
 
     <!-- Change MPING multicast addresses. -->
     <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='jgroups-mping']/@multicast-address">
-        <xsl:attribute name="multicast-address">
-            <xsl:value-of select="$mpingMcastAddress"/>
-        </xsl:attribute>
+        <xsl:attribute name="multicast-address">${jboss.default.multicast.address:<xsl:value-of select="$mpingMcastAddress"/>}</xsl:attribute>
     </xsl:template>
 
     <!-- Change modcluster multicast addresses. -->
