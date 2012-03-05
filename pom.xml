@@ -230,7 +230,7 @@
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>3.0.5.Final</version.org.jgroups>
         <version.org.mockito>1.8.5</version.org.mockito>
-        <version.org.picketbox>4.0.6.final</version.org.picketbox>
+        <version.org.picketbox>4.0.7.Final</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.0.2.Final</version.org.picketlink>
         <version.org.powermock>1.4.11</version.org.powermock>
