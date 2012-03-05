@@ -83,6 +83,10 @@ public class ChannelServer implements Closeable {
         return new ChannelServer(endpoint, registration, streamServer);
     }
 
+    public Endpoint getEndpoint() {
+        return endpoint;
+    }
+
     public void addChannelOpenListener(final String channelName) throws ServiceRegistrationException {
         addChannelOpenListener(channelName, null);
     }

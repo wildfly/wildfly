@@ -23,6 +23,9 @@ package org.jboss.as.controller.remote;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import org.jboss.as.controller.ModelController;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -372,12 +375,12 @@ public class RemoteProxyController implements ManagementRequestHandlerFactory, P
 
         @Override
         public void failed(Exception e) {
-            operationFailed(getResponse(e.getMessage() != null ? e.getMessage() : "failed"));
+            operationFailed(getResponse(FAILED, e.getMessage()));
         }
 
         @Override
         public void cancelled() {
-            operationFailed(getResponse("cancelled"));
+            operationFailed(getResponse(CANCELLED));
         }
 
         @Override
@@ -407,8 +410,15 @@ public class RemoteProxyController implements ManagementRequestHandlerFactory, P
     }
 
     static ModelNode getResponse(final String outcome) {
+        return getResponse(outcome, null);
+    }
+
+    static ModelNode getResponse(final String outcome, final String message) {
         final ModelNode response = new ModelNode();
         response.get(OUTCOME).set(outcome);
+        if(message != null) {
+            response.get(FAILURE_DESCRIPTION).set(message);
+        }
         return response;
     }
 
