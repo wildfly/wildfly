@@ -77,7 +77,7 @@ public class ServerInventoryImpl implements ServerInventory {
     private final InetSocketAddress managementAddress;
     private final DomainController domainController;
 
-    private volatile boolean stopped;
+    private volatile boolean shutdown;
     private volatile boolean connectionFinished;
 
     //
@@ -147,7 +147,7 @@ public class ServerInventoryImpl implements ServerInventory {
 
     @Override
     public ServerStatus startServer(final String serverName, final ModelNode domainModel) {
-        if(stopped || connectionFinished) {
+        if(shutdown || connectionFinished) {
             throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
         }
         final ManagedServer existing = servers.get(serverName);
@@ -171,7 +171,7 @@ public class ServerInventoryImpl implements ServerInventory {
         stopServer(serverName, gracefulTimeout);
         synchronized (shutdownCondition) {
             for(;;) {
-                if(stopped || connectionFinished) {
+                if(shutdown || connectionFinished) {
                     throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
                 }
                 if(! servers.containsKey(serverName)) {
@@ -201,7 +201,7 @@ public class ServerInventoryImpl implements ServerInventory {
 
     @Override
     public void reconnectServer(final String serverName, final ModelNode domainModel, final boolean running) {
-        if(stopped || connectionFinished) {
+        if(shutdown || connectionFinished) {
             throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
         }
         final ManagedServer existing = servers.get(serverName);
@@ -228,53 +228,57 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     public void stopServers(final int gracefulTimeout, final boolean blockUntilStopped) {
-        final boolean stopped = this.stopped;
-        this.stopped = true;
-        if(! stopped) {
-            if(connectionFinished) {
-                // In case the connection to the ProcessController is closed we won't be able to shutdown the servers from here
-                // nor can expect to receive any further notifications notifications.
-                return;
-            }
-            for(final ManagedServer server : servers.values()) {
-                server.stop();
-            }
-            if(blockUntilStopped) {
-                synchronized (shutdownCondition) {
-                    for(;;) {
-                        if(connectionFinished) {
-                            break;
+        for(final ManagedServer server : servers.values()) {
+            server.stop();
+        }
+        if(blockUntilStopped) {
+            synchronized (shutdownCondition) {
+                for(;;) {
+                    if(connectionFinished) {
+                        break;
+                    }
+                    int count = 0;
+                    for(final ManagedServer server : servers.values()) {
+                        final ServerStatus state = server.getState();
+                        switch (state) {
+                            case DISABLED:
+                            case FAILED:
+                            case STOPPED:
+                                break;
+                            default:
+                                count++;
                         }
-                        int count = 0;
-                        for(final ManagedServer server : servers.values()) {
-                            final ServerStatus state = server.getState();
-                            switch (state) {
-                                case DISABLED:
-                                case FAILED:
-                                case STOPPED:
-                                    break;
-                                default:
-                                    count++;
-                            }
-                        }
-                        if(count == 0) {
-                            break;
-                        }
-                        try {
-                            shutdownCondition.wait();
-                        } catch(InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            break;
-                        }
+                    }
+                    if(count == 0) {
+                        break;
+                    }
+                    try {
+                        shutdownCondition.wait();
+                    } catch(InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
                     }
                 }
             }
         }
     }
 
+    public void shutdown(final int gracefulTimeout, final boolean blockUntilStopped) {
+        final boolean shutdown = this.shutdown;
+        this.shutdown = true;
+        if(! shutdown) {
+            if(connectionFinished) {
+                // In case the connection to the ProcessController is closed we won't be able to shutdown the servers from here
+                // nor can expect to receive any further notifications notifications.
+                return;
+            }
+            stopServers(gracefulTimeout, blockUntilStopped);
+        }
+    }
+
     @Override
     public void serverCommunicationRegistered(final String serverProcessName, final ManagementChannelHandler channelAssociation) {
-        if(stopped || connectionFinished) {
+        if(shutdown || connectionFinished) {
             throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
         }
         final String serverName = ManagedServer.getServerName(serverProcessName);
