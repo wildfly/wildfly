@@ -49,7 +49,9 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -72,6 +74,9 @@ public class ConnectorResource extends SimpleResourceDefinition {
 
     static final SimpleAttributeDefinition AUTHENTICATION_PROVIDER = new NamedValueAttributeDefinition(CommonAttributes.AUTHENTICATION_PROVIDER, Attribute.NAME, null, ModelType.STRING, true);
     static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinition(CommonAttributes.SOCKET_BINDING, ModelType.STRING, false);
+    static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(
+            CommonAttributes.SECURITY_REALM, ModelType.STRING, true).setValidator(
+            new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).build();
 
     private ConnectorResource() {
         super(PathElement.pathElement(CommonAttributes.CONNECTOR), RemotingExtension.getResourceDescriptionResolver(CONNECTOR),
@@ -201,8 +206,9 @@ public class ConnectorResource extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(AUTHENTICATION_PROVIDER,
-                SOCKET_BINDING);
+                SOCKET_BINDING, SECURITY_REALM);
         resourceRegistration.registerReadWriteAttribute(AUTHENTICATION_PROVIDER, null, writeHandler);
         resourceRegistration.registerReadWriteAttribute(SOCKET_BINDING, null, writeHandler);
+        resourceRegistration.registerReadWriteAttribute(SECURITY_REALM, null, writeHandler);
     }
 }
