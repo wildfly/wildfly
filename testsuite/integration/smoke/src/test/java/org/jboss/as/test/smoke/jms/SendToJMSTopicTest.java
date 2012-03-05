@@ -26,7 +26,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
-import org.jboss.as.test.smoke.jms.aux.CreateTopicSetupTask;
+import org.jboss.as.test.smoke.jms.auxiliary.CreateTopicSetupTask;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
