@@ -12,7 +12,7 @@
         <copy todir="target/jbossas-clustering-udp-0" overwrite="true">
             <fileset dir="${basedir}/target/jbossas"/>
         </copy>
-        <ts.config-as.ip-with-multicast name="jbossas-clustering-udp-0" node="${node0}" mcastaddr="${udpGroup}"/>
+        <ts.config-as.ip-with-multicast name="jbossas-clustering-udp-0" node="${node0}" mcastaddr="${mcast}"/>
         <ts.config-as.add-port-offset name="jbossas-clustering-udp-0" />
 
 
@@ -22,7 +22,7 @@
         <copy todir="target/jbossas-clustering-udp-1" overwrite="true">
             <fileset dir="${basedir}/target/jbossas"/>
         </copy>
-        <ts.config-as.ip-with-multicast name="jbossas-clustering-udp-1" node="${node1}" mcastaddr="${udpGroup}"/>
+        <ts.config-as.ip-with-multicast name="jbossas-clustering-udp-1" node="${node1}" mcastaddr="${mcast}"/>
         <ts.config-as.add-port-offset name="jbossas-clustering-udp-1" offset="100" nativePort="9999" httpPort="9990"/>
 
     </target>
@@ -35,7 +35,7 @@
             <fileset dir="${basedir}/target/jbossas"/>
         </copy>
         <ts.config-as.add-cache-container name="jbossas-clustering-udp-0-jdbc-store" containerdef="${cache.container.def}" />
-        <ts.config-as.ip-with-multicast name="jbossas-clustering-udp-0-jdbc-store" node="${node0}" mcastaddr="${udpGroup}"/>
+        <ts.config-as.ip-with-multicast name="jbossas-clustering-udp-0-jdbc-store" node="${node0}" mcastaddr="${mcast}"/>
         <ts.config-as.add-port-offset name="jbossas-clustering-udp-0-jdbc-store" />
 
     </target>
