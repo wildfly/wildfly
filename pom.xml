@@ -91,7 +91,7 @@
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.0-SP4</version.javax.enterprise>
         <version.javax.faces.jsf-api.1.2>1.2_15-jbossorg-2</version.javax.faces.jsf-api.1.2>
-        <version.javax.faces.jsf-impl>2.1.7-jbossorg-1</version.javax.faces.jsf-impl>
+        <version.javax.faces.jsf-impl>2.1.7-jbossorg-2</version.javax.faces.jsf-impl>
         <version.javax.faces.jsf-impl.1.2>1.2_15-jbossorg-2</version.javax.faces.jsf-impl.1.2>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
