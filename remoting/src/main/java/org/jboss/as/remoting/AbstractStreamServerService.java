@@ -94,7 +94,11 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
             if (connectorPropertiesOptionMap != null) {
                 builder.addAll(connectorPropertiesOptionMap);
             }
-            streamServer = networkServerProvider.createServer(getSocketAddress(), builder.getMap(), sap, rsp.getXnioSsl());
+            OptionMap resultingMap = builder.getMap();
+            if (log.isTraceEnabled()) {
+                log.tracef("Resulting OptionMap %s", resultingMap.toString());
+            }
+            streamServer = networkServerProvider.createServer(getSocketAddress(), resultingMap, sap, rsp.getXnioSsl());
             SocketBindingManager sbm = socketBindingManagerValue.getOptionalValue();
             if (sbm != null) {
                 managedBinding = registerSocketBinding(sbm);
