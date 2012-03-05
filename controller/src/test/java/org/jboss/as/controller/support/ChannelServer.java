@@ -75,10 +75,13 @@ public class ChannelServer implements Closeable {
         //There is currently a probable bug in jboss remoting, so the user realm name MUST be the same as
         //the endpoint name.
         provider.addUser("bob", configuration.getEndpointName(), "pass".toCharArray());
-        System.out.println(configuration.getBindAddress());
         AcceptingChannel<? extends ConnectedStreamChannel> streamServer = networkServerProvider.createServer(configuration.getBindAddress(), OptionMap.create(Options.SASL_MECHANISMS, Sequence.of("CRAM-MD5")), provider, null);
 
         return new ChannelServer(endpoint, registration, streamServer);
+    }
+
+    public Endpoint getEndpoint() {
+        return endpoint;
     }
 
     public void addChannelOpenListener(final String channelName) throws ServiceRegistrationException {

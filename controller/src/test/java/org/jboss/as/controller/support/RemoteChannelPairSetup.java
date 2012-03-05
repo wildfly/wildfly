@@ -111,6 +111,7 @@ public class RemoteChannelPairSetup {
         ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
         configuration.setEndpointName(ENDPOINT_NAME);
         configuration.setUriScheme(URI_SCHEME);
+        configuration.setEndpoint(channelServer.getEndpoint());
         configuration.setUri(new URI("" + URI_SCHEME + "://127.0.0.1:" + PORT + ""));
 
         ProtocolChannelClient client = ProtocolChannelClient.create(configuration);

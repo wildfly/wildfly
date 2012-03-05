@@ -216,22 +216,22 @@ public class ProtocolChannelClient implements Closeable {
             if (uriScheme == null && endpoint == null) {
                 throw MESSAGES.nullVar("uriScheme");
             }
-            if (uriScheme != null && endpoint != null) {
-                throw MESSAGES.cannotSetUriScheme();
-            }
+//            if (uriScheme != null && endpoint != null) {
+//                throw MESSAGES.cannotSetUriScheme();
+//            }
             if (uri == null) {
                 throw MESSAGES.nullVar("uri");
             }
-            if (endpoint != null){
-                //The below does not work so just hard code it for now
-                if (!uri.getScheme().equals("remote")) {
-                    throw MESSAGES.invalidUrl("remote");
-                }
-            } else {
-                if (!uriScheme.equals(uri.getScheme())) {
-                    throw MESSAGES.unmatchedScheme(uriScheme, uri);
-                }
-            }
+//            if (endpoint != null){
+//                //The below does not work so just hard code it for now
+//                if (!uri.getScheme().equals("remote")) {
+//                    throw MESSAGES.invalidUrl("remote");
+//                }
+//            } else {
+//                if (!uriScheme.equals(uri.getScheme())) {
+//                    throw MESSAGES.unmatchedScheme(uriScheme, uri);
+//                }
+//            }
         }
 
         public Endpoint getEndpoint() {
