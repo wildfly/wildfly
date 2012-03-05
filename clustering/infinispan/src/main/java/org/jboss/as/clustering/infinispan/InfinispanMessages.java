@@ -26,6 +26,7 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 
 import org.infinispan.configuration.cache.CacheMode;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.logging.Cause;
@@ -128,5 +129,25 @@ public interface InfinispanMessages {
      */
     @Message(id = 10297, value = "Invalid value for parameter %s. Allowable values: %s")
     String invalidParameterValue(String id, String allowableValues);
+
+    /**
+     * Creates an exception indicating the a cache store cannot be added as one already exists.
+     *
+     * @param existingStoreName the store which already exists.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 10298, value = "Cache store cannot be created: cache store %s is already defined")
+    OperationFailedException cacheStoreAlreadyDefined(String existingStoreName);
+
+    /**
+     * Creates an exception indicating the a cache store cannot be added as one already exists.
+     *
+     * @param propertyKey the name of the property.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 10299, value = "Value for property with key %s is not defined")
+    OperationFailedException propertyValueNotDefined(String propertyKey);
 
 }
