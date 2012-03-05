@@ -99,6 +99,7 @@
         <node1>127.0.0.1</node1>
         <mcast>230.0.0.4</mcast> <!-- Default multicast address. -->
         <mcast.jgroupsDiag>224.0.75.75</mcast.jgroupsDiag>  <!-- for <socket-binding name="jgroups-diagnostics" .../> -->
+        <mcast.modcluster >224.0.1.105</mcast.modcluster>   <!-- for <socket-binding name="modcluster" .../> -->
 
         <!-- IP stack configs. -->
         <jvm.args.ip>-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses=false</jvm.args.ip>
@@ -359,9 +360,13 @@
                                         <include>standalone*.xml</include>
                                     </includes>
                                     <parameters>
-                                        <parameter><name>managementIPAddress</name><value>${node0}</value></parameter>
-                                        <parameter><name>publicIPAddress</name><value>${node0}</value></parameter>
-                                        <parameter><name>udpMcastAddress</name><value>${mcast}</value></parameter>
+                                        <parameter><name>managementIPAddress</name>    <value>${node0}</value></parameter>
+                                        <parameter><name>publicIPAddress</name>        <value>${node0}</value></parameter>
+                                        
+                                        <parameter><name>udpMcastAddress</name>        <value>${mcast}</value></parameter>
+                                        <parameter><name>diagnosticsMcastAddress</name><value>${mcast.jgroupsDiag}</value></parameter>
+                                        <parameter><name>mpingMcastAddress</name>      <value>${mcast}</value></parameter>
+                                        <parameter><name>modclusterMcastAddress</name> <value>${mcast.modcluster}</value></parameter>
                                     </parameters>
                                 </transformationSet>
                                 <!-- JMS destinations. -->
@@ -611,12 +616,12 @@
             <properties>
                 <jvm.args.ip>-Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true</jvm.args.ip>
 
-                <!-- IP address defaults. -->
+                <!-- Override IPv4 defaults from the top. -->
                 <node0>::1</node0>
                 <node1>::1</node1>
-                <mcast>ff01::1</mcast> <!-- Default multicast address.  ff01::1  is IPv6 Node-Local scope mcast addr. -->
-                <mcast.jgroupsDiag>ff01::2</mcast.jgroupsDiag>  <!-- for jgroups-diagnostics -->
-
+                <mcast            >ff01::1</mcast>      <!-- ff01::1  is IPv6 Node-Local scope mcast addr. -->
+                <mcast.jgroupsDiag>ff01::2</mcast.jgroupsDiag>
+                <mcast.modcluster >ff01::3</mcast.modcluster>
             </properties>
         </profile>
 
