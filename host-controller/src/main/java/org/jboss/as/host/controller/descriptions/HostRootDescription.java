@@ -72,6 +72,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -91,10 +92,10 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry
  */
 public class HostRootDescription {
-    public static final AttributeDefinition DIRECTORY_GROUPING = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.DIRECTORY_GROUPING, ModelType.STRING).
+    public static final SimpleAttributeDefinition DIRECTORY_GROUPING = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.DIRECTORY_GROUPING, ModelType.STRING, true).
             addFlag(Flag.RESTART_ALL_SERVICES).
             setDefaultValue(DirectoryGrouping.defaultValue().toModelNode()).
-            setValidator(EnumValidator.create(DirectoryGrouping.class, false, false)).
+            setValidator(EnumValidator.create(DirectoryGrouping.class, true, false)).
             build();
 
     private static final String RESOURCE_NAME = HostRootDescription.class.getPackage().getName() + ".LocalDescriptions";

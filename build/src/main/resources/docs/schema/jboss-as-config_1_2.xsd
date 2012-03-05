@@ -830,15 +830,17 @@
                     <xs:enumeration value="by-server">
                         <xs:annotation>
                             <xs:documentation>
-                                Groups each servers directory structure in the domain/servers directory. This is the
-                                default option.
+                                Indicates each server's writable directories should be grouped under the server's name
+                                in the domain/servers directory. This is the default option.
                             </xs:documentation>
                         </xs:annotation>
                     </xs:enumeration>
                     <xs:enumeration value="by-type">
                         <xs:annotation>
                             <xs:documentation>
-                                Groups each servers directory structure by the type, e.g. domain/data/servers/server-name.
+                                Indicates each server's writable directories should be grouped based on their "type"
+                                (i.e. "data", "log", "tmp") with directories of a given type for all servers appearing
+                                in the domain level directory for that type, e.g. domain/data/servers/server-name.
                             </xs:documentation>
                         </xs:annotation>
                     </xs:enumeration>

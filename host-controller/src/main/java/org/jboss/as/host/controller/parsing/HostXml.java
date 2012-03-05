@@ -199,8 +199,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         if (modelNode.hasDefined(SERVER_CONFIG)) {
             writer.writeStartElement(Element.SERVERS.getLocalName());
             // Write the directory grouping
-            if (HostRootDescription.DIRECTORY_GROUPING.isMarshallable(modelNode, false))
-                writeAttribute(writer, Attribute.DIRECTORY_GROUPING, modelNode.get(DIRECTORY_GROUPING).asString());
+            HostRootDescription.DIRECTORY_GROUPING.marshallAsAttribute(modelNode, writer);
             writeServers(writer, modelNode.get(SERVER_CONFIG));
             writeNewLine(writer);
             writer.writeEndElement();

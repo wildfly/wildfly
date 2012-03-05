@@ -258,12 +258,16 @@ class ModelCombiner implements ManagedServerBootConfiguration {
                 command.add(sb.toString());
             }
         }
-        // Determine the directory grouping type
+        // Determine the directory grouping type and use it to set props controlling the server data/log/tmp dirs
         final DirectoryGrouping directoryGrouping = DirectoryGrouping.fromModel(hostModel);
-        // Write the paths out to the command
-        final String logDir = addPathProperty(directoryGrouping, command, bootTimeProperties, ServerEnvironment.SERVER_LOG_DIR, environment.getDomainLogDir(), "log");
-        addPathProperty(directoryGrouping, command, bootTimeProperties, ServerEnvironment.SERVER_TEMP_DIR, environment.getDomainTempDir(), "tmp");
-        addPathProperty(directoryGrouping, command, bootTimeProperties, ServerEnvironment.SERVER_DATA_DIR, environment.getDomainDataDir(), "data");
+        String serverDirProp = bootTimeProperties.get(ServerEnvironment.SERVER_BASE_DIR);
+        File serverDir = serverDirProp == null ? new File(environment.getDomainServersDir(), serverName) : new File(serverDirProp);
+        final String logDir = addPathProperty(command, "log", ServerEnvironment.SERVER_LOG_DIR, bootTimeProperties,
+                directoryGrouping, environment.getDomainLogDir(), serverDir);
+        addPathProperty(command, "tmp", ServerEnvironment.SERVER_TEMP_DIR, bootTimeProperties,
+                directoryGrouping, environment.getDomainTempDir(), serverDir);
+        addPathProperty(command, "data", ServerEnvironment.SERVER_DATA_DIR, bootTimeProperties,
+                directoryGrouping, environment.getDomainDataDir(), serverDir);
 
         command.add("-Dorg.jboss.boot.log.file=" + getAbsolutePath(new File(logDir), "boot.log"));
         // TODO: make this better
@@ -659,26 +663,31 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     /**
      * Adds the absolute path to command.
      *
-     * @param directoryGrouping the directory group type.
-     * @param command           the command to add the arguments to.
-     * @param properties        the properties where the path may already be defined.
-     * @param propertyName      the name of the property.
-     * @param rootDir           the root directory;
-     * @param subDirName        the subdirectory of the path.
      *
+     *
+     *
+     *
+     * @param command           the command to add the arguments to.
+     * @param typeName          the type of directory.
+     * @param propertyName      the name of the property.
+     * @param properties        the properties where the path may already be defined.
+     * @param directoryGrouping the directory group type.
+     * @param typeDir           the domain level directory for the given directory type; to be used for by-type grouping
+     * @param serverDir         the root directory for the server, to be used for 'by-server' grouping
      * @return the absolute path that was added.
      */
-    private String addPathProperty(final DirectoryGrouping directoryGrouping, final List<String> command, final Map<String, String> properties, final String propertyName, final File rootDir, final String subDirName) {
+    private String addPathProperty(final List<String> command, final String typeName, final String propertyName, final Map<String, String> properties, final DirectoryGrouping directoryGrouping,
+                                   final File typeDir, File serverDir) {
         final String result;
         final String value = properties.get(propertyName);
         if (value == null) {
             switch (directoryGrouping) {
                 case BY_TYPE:
-                    result = getAbsolutePath(rootDir, subDirName, "servers", serverName);
+                    result = getAbsolutePath(typeDir, "servers", serverName);
                     break;
                 case BY_SERVER:
                 default:
-                    result = getAbsolutePath(rootDir, serverName, subDirName);
+                    result = getAbsolutePath(serverDir, typeName);
                     break;
             }
             properties.put(propertyName, result);
