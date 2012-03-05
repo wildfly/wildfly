@@ -71,11 +71,6 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
         return streamServer;
     }
 
-//    @SuppressWarnings("rawtypes")
-//    public InjectedValue<ChannelListener> getConnectorInjector() {
-//        return connectorValue;
-//    }
-
     public InjectedValue<RemotingSecurityProvider> getSecurityProviderInjector() {
         return securityProviderValue;
     }
@@ -95,10 +90,10 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
             RemotingSecurityProvider rsp = securityProviderValue.getValue();
             ServerAuthenticationProvider sap = rsp.getServerAuthenticationProvider();
             OptionMap.Builder builder = OptionMap.builder();
+            builder.addAll(rsp.getOptionMap());
             if (connectorPropertiesOptionMap != null) {
                 builder.addAll(connectorPropertiesOptionMap);
             }
-            builder.addAll(rsp.getOptionMap());
             streamServer = networkServerProvider.createServer(getSocketAddress(), builder.getMap(), sap, rsp.getXnioSsl());
             SocketBindingManager sbm = socketBindingManagerValue.getOptionalValue();
             if (sbm != null) {

@@ -85,7 +85,6 @@
             </xs:documentation>
         </xs:annotation>
         <xs:all>
-            <!-- xs:element name="ssl-whatever??" type="ref" minOccurs="0" -->
             <xs:element name="sasl" type="sasl" minOccurs="0"/>
             <xs:element name="authentication-provider" type="ref" minOccurs="0"/>
             <xs:element name="properties" type="properties" minOccurs="0"/>
@@ -331,14 +330,4 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="xnio-optionsType">
-        <xs:sequence>
-            <xs:element name="option" type="xnio-optionType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="xnio-optionType">
-        <xs:attribute name="name" type="xs:string" use="required"/>
-        <xs:attribute name="value" type="xs:string" use="required"/>
-    </xs:complexType>
 </xs:schema>

@@ -264,6 +264,9 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
 
         final RealmCallbackHandler realmCallbackHandler; // Referenced later by an inner-class so needs to be final.
 
+        // TODO - Although we recommend Digest auth in the default config if the subsytem is overriden then we may get PLAIN so
+        //        double check it still works.
+
         // We must have a match in this block or throw an IllegalStateException.
         if (DIGEST_MD5.equals(mechanismName) && digestMd5Supported() || PLAIN.equals(mechanismName) && plainSupported()) {
             realmCallbackHandler = new RealmCallbackHandler(realm.getCallbackHandler(), realm.getSubjectSupplemental());
