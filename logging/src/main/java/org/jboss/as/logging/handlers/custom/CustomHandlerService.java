@@ -41,8 +41,8 @@ import java.util.logging.Filter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
-import static org.jboss.as.logging.handlers.custom.PropertiesConfigurator.setProperties;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+import static org.jboss.as.logging.handlers.custom.PropertiesConfigurator.setProperties;
 
 /**
  * Service for custom handlers.
@@ -96,7 +96,7 @@ public final class CustomHandlerService implements HandlerService {
             throw MESSAGES.cannotAccessClass(e, className);
         }
         if (filter != null) handler.setFilter(filter);
-        formatterSpec.apply(handler);
+        if (formatterSpec != null) formatterSpec.apply(handler);
         if (level != null) handler.setLevel(level);
         try {
             handler.setEncoding(encoding);
