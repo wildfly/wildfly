@@ -43,5 +43,4 @@ public class PublicAddressInterfaceCriteria implements InterfaceCriteria {
     private Object readResolve() throws ObjectStreamException {
         return INSTANCE;
     }
-
 }

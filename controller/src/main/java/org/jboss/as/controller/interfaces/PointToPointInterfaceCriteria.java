@@ -39,5 +39,4 @@ public class PointToPointInterfaceCriteria implements InterfaceCriteria {
     private Object readResolve() throws ObjectStreamException {
         return INSTANCE;
     }
-
 }

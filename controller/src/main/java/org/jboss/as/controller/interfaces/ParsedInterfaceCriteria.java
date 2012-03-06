@@ -22,8 +22,6 @@
 
 package org.jboss.as.controller.interfaces;
 
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-
 import static org.jboss.as.controller.ControllerLogger.SERVER_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_ADDRESS;
@@ -38,6 +36,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
@@ -151,7 +150,8 @@ public final class ParsedInterfaceCriteria {
                         criteriaSet.add(criterion);
                     }
                 }
-                parsed = new ParsedInterfaceCriteria(criteriaSet);
+                String validation = new CriteriaValidator(criteriaSet).validate();
+                parsed = validation == null ? new ParsedInterfaceCriteria(criteriaSet) : new ParsedInterfaceCriteria(validation);
             } catch (ParsingException p) {
                 return new ParsedInterfaceCriteria(p.msg);
             }

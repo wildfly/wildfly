@@ -38,5 +38,4 @@ public class LoopbackInterfaceCriteria implements InterfaceCriteria {
     private Object readResolve() throws ObjectStreamException {
         return INSTANCE;
     }
-
 }

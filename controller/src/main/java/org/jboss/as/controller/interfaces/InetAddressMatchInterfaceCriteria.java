@@ -123,4 +123,25 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
         return (toMatch.getScopeId() == 0 || toMatch.getScopeId() == address.getScopeId()) ? address : null;
     }
 
+    @Override
+    public int hashCode() {
+        if (address != null) {
+            return address.hashCode();
+        } else {
+            return addressString.hashCode();
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof InetAddressMatchInterfaceCriteria == false) {
+            return false;
+        }
+        if (address != null) {
+            return address.equals(((InetAddressMatchInterfaceCriteria)o).address);
+        } else if (addressString != null) {
+            return addressString.equals(((InetAddressMatchInterfaceCriteria)o).addressString);
+        }
+        return false;
+    }
 }
