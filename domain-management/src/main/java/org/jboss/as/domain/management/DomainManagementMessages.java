@@ -488,9 +488,54 @@ public interface DomainManagementMessages {
     @Message(id = 15251, value = "Invalid response. (Valid responses are A, a, B, or b)")
     String invalidChoiceResponse();
 
-    /*
-     * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
-     * this range commencing 15200.
+    /**
+     * Confirmation if the current user password and roles is about to be updated.
+     *
+     * @param user - The name of the user.
+     *
+     * @return a {@link String} for the message.
      */
+    @Message(value = "User '%s' already exits, would you like to update the existing user password and roles")
+    String aboutToUpdateUser(String user);
 
+    /**
+     * Message to inform user that the user has been updated to the file identified.
+     *
+     * @param username - The new username.
+     * @param fileName - The file the user has been added to.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "Updated user '%s' to file '%s'")
+    String updateUser(String userName, String canonicalPath);
+
+
+
+    /**
+    * The error message if updating user to the file fails.
+    *
+    * @param file - The name of the file the add failed for.
+    * @param error - The failure message.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15254, value = "Unable to update user to %s due to error %s")
+    String unableToUpdateUser(String absolutePath, String message);
+
+    /**
+     * Message to inform user that the user has been updated to the roles file identified.
+     *
+     * @param username - The new username.
+     * @param roles - The new roles.
+     * @param fileName - The file the user has been added to.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "Updated user '%s' with roles %s to file '%s'")
+    String updatedRoles(String username, String roles, String fileName);
+
+    /*
+    * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
+    * this range commencing 15200.
+    */
 }

@@ -118,7 +118,7 @@ public abstract class PropertiesFileLoader {
         return properties;
     }
 
-    private synchronized void persistProperties() throws IOException {
+    public synchronized void persistProperties() throws IOException {
         Properties toSave = (Properties) properties.clone();
 
         File backup = new File(propertiesFile.getCanonicalPath() + ".bak");
