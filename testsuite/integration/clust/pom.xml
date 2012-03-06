@@ -36,11 +36,7 @@
 
         <profile>
             <id>clustering.integration.tests.profile</id>
-            <activation>
-                <property>
-                    <name>!ts.noClustering</name>
-                </property>
-            </activation>
+            <activation><property><name>!ts.noClustering</name></property></activation>
 
             <!--
                 Server configuration executions.
@@ -52,11 +48,7 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>build-clustering.server</id>
-                                <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
+                                <id>ts.config-as.clust</id> <phase>process-test-resources</phase> <goals><goal>run</goal></goals>
                                 <configuration>
                                     <target>
                                         <echo>In Maven: node0: ${node0}</echo>
@@ -83,21 +75,11 @@
                         <executions combine.children="append">
 
                             <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
+                            <execution><id>default-test</id> <goals><goal>test</goal></goals><phase>none</phase></execution>
 
                             <!-- Multi node clustering tests with manual containers with unmanaged deployment. -->
                             <execution>
-                                <id>tests-clustering-multi-node-unmanaged.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
+                                <id>ts.surefire.clust.multi-node-unmanaged</id> <phase>test</phase> <goals><goal>test</goal></goals>
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
@@ -115,11 +97,7 @@
 
                             <!-- Single node clustering tests. TODO: move from clustering TS. -->
                             <execution>
-                                <id>tests-clustering-single-node.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
+                                <id>ts.surefire.clust.single-node</id> <phase>test</phase> <goals><goal>test</goal></goals>
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
@@ -140,14 +118,13 @@
                 </plugins>
             </build>
         </profile>
+        
+
+        
 
         <profile>
-            <id>clustering.integration.tests.jdbc.cachestore.profile</id>
-            <activation>
-                <property>
-                    <name>!ts.noClustering</name>
-                </property>
-            </activation>
+            <id>ts.clust.jdbc-cachestore.profile</id>
+            <activation><property><name>!ts.noClustering</name></property></activation>
 
             <!--
                 Server configuration executions.
@@ -159,11 +136,7 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>build-clustering.server.jdbc.store.enabled</id>
-                                <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
+                                <id>ts.config-as.clust.enable-jdbc-store</id> <phase>process-test-resources</phase> <goals><goal>run</goal></goals>
                                 <configuration>
                                     <target>
                                         <echo>In Maven: node0: ${node0}</echo>
@@ -188,21 +161,11 @@
                         <executions combine.children="append">
 
                             <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
+                            <execution><id>default-test</id><goals><goal>test</goal></goals><phase>none</phase></execution>
 
                             <!-- Single node clustering tests. -->
                             <execution>
-                                <id>tests-clustering-single-node-jdbc-store.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
+                                <id>ts.surefire.clust.jdbc-store</id> <phase>test</phase> <goals><goal>test</goal></goals>
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
@@ -222,6 +185,7 @@
                 </plugins>
             </build>
         </profile>
+
 
     </profiles>
 </project>
