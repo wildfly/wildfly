@@ -21,47 +21,23 @@
  */
 package org.jboss.as.modcluster;
 
-import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE;
-import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE_SECURITY_KEY;
-import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE_SOCKET;
-import static org.jboss.as.modcluster.CommonAttributes.AUTO_ENABLE_CONTEXTS;
-import static org.jboss.as.modcluster.CommonAttributes.BALANCER;
 import static org.jboss.as.modcluster.CommonAttributes.CAPACITY;
 import static org.jboss.as.modcluster.CommonAttributes.CLASS;
 import static org.jboss.as.modcluster.CommonAttributes.CONFIGURATION;
 import static org.jboss.as.modcluster.CommonAttributes.CUSTOM_LOAD_METRIC;
 import static org.jboss.as.modcluster.CommonAttributes.DECAY;
-import static org.jboss.as.modcluster.CommonAttributes.DOMAIN;
 import static org.jboss.as.modcluster.CommonAttributes.DYNAMIC_LOAD_PROVIDER;
-import static org.jboss.as.modcluster.CommonAttributes.EXCLUDED_CONTEXTS;
 import static org.jboss.as.modcluster.CommonAttributes.FACTOR;
-import static org.jboss.as.modcluster.CommonAttributes.FLUSH_PACKETS;
-import static org.jboss.as.modcluster.CommonAttributes.FLUSH_WAIT;
 import static org.jboss.as.modcluster.CommonAttributes.HISTORY;
 import static org.jboss.as.modcluster.CommonAttributes.LOAD_METRIC;
-import static org.jboss.as.modcluster.CommonAttributes.MAX_ATTEMPTS;
 import static org.jboss.as.modcluster.CommonAttributes.MOD_CLUSTER_CONFIG;
 import static org.jboss.as.modcluster.CommonAttributes.NAME;
-import static org.jboss.as.modcluster.CommonAttributes.NODE_TIMEOUT;
-import static org.jboss.as.modcluster.CommonAttributes.PING;
-import static org.jboss.as.modcluster.CommonAttributes.PROXY_LIST;
-import static org.jboss.as.modcluster.CommonAttributes.PROXY_URL;
 import static org.jboss.as.modcluster.CommonAttributes.SIMPLE_LOAD_PROVIDER;
-import static org.jboss.as.modcluster.CommonAttributes.SMAX;
-import static org.jboss.as.modcluster.CommonAttributes.SOCKET_TIMEOUT;
 import static org.jboss.as.modcluster.CommonAttributes.SSL;
-import static org.jboss.as.modcluster.CommonAttributes.STICKY_SESSION;
-import static org.jboss.as.modcluster.CommonAttributes.STICKY_SESSION_FORCE;
-import static org.jboss.as.modcluster.CommonAttributes.STICKY_SESSION_REMOVE;
-import static org.jboss.as.modcluster.CommonAttributes.STOP_CONTEXT_TIMEOUT;
-import static org.jboss.as.modcluster.CommonAttributes.TTL;
 import static org.jboss.as.modcluster.CommonAttributes.TYPE;
 import static org.jboss.as.modcluster.CommonAttributes.VALUE;
 import static org.jboss.as.modcluster.CommonAttributes.WEIGHT;
-import static org.jboss.as.modcluster.CommonAttributes.WORKER_TIMEOUT;
 
-import java.util.Iterator;
-import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -106,40 +82,43 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
     /* prop-confType */
     static void writePropConf(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        writeAttribute(writer, ADVERTISE_SOCKET, config);
-        writeAttribute(writer, PROXY_LIST, config);
-        writeAttribute(writer, PROXY_URL, config);
-        writeAttribute(writer, ADVERTISE, config);
-        writeAttribute(writer, ADVERTISE_SECURITY_KEY, config);
-        writeAttribute(writer, EXCLUDED_CONTEXTS, config);
-        writeAttribute(writer, AUTO_ENABLE_CONTEXTS, config);
-        writeAttribute(writer, STOP_CONTEXT_TIMEOUT, config);
-        writeAttribute(writer, SOCKET_TIMEOUT, config);
 
-        writeAttribute(writer, STICKY_SESSION, config);
-        writeAttribute(writer, STICKY_SESSION_REMOVE, config);
-        writeAttribute(writer, STICKY_SESSION_FORCE, config);
-        writeAttribute(writer, WORKER_TIMEOUT, config);
-        writeAttribute(writer, MAX_ATTEMPTS, config);
-        writeAttribute(writer, FLUSH_PACKETS, config);
-        writeAttribute(writer, FLUSH_WAIT, config);
-        writeAttribute(writer, PING, config);
-        writeAttribute(writer, SMAX, config);
-        writeAttribute(writer, TTL, config);
-        writeAttribute(writer, NODE_TIMEOUT, config);
-        writeAttribute(writer, BALANCER, config);
-        writeAttribute(writer, DOMAIN, config);
+        // Keep these in xsd order. TODO the xsd order isn't so great
+        ModClusterConfigResourceDefinition.ADVERTISE_SOCKET.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.PROXY_LIST.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.PROXY_URL.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.BALANCER.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.DOMAIN.marshallAsAttribute(config, writer); // not in the 1.0 xsd
+        ModClusterConfigResourceDefinition.ADVERTISE.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.ADVERTISE_SECURITY_KEY.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.EXCLUDED_CONTEXTS.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.AUTO_ENABLE_CONTEXTS.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.STOP_CONTEXT_TIMEOUT.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.SOCKET_TIMEOUT.marshallAsAttribute(config, writer);
+
+        ModClusterConfigResourceDefinition.STICKY_SESSION.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.STICKY_SESSION_REMOVE.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.STICKY_SESSION_FORCE.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.WORKER_TIMEOUT.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.MAX_ATTEMPTS.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.FLUSH_PACKETS.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.FLUSH_WAIT.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.PING.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.SMAX.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.TTL.marshallAsAttribute(config, writer);
+        ModClusterConfigResourceDefinition.NODE_TIMEOUT.marshallAsAttribute(config, writer);
+
     }
 
     static void writeSSL(XMLExtendedStreamWriter writer, ModelNode sslConfig) throws XMLStreamException {
         writer.writeStartElement(Element.SSL.getLocalName());
-        writeAttribute(writer, Attribute.KEY_ALIAS.getLocalName(), sslConfig);
-        writeAttribute(writer, Attribute.PASSWORD.getLocalName(), sslConfig);
-        writeAttribute(writer, Attribute.CERTIFICATE_KEY_FILE.getLocalName(), sslConfig);
-        writeAttribute(writer, Attribute.CIPHER_SUITE.getLocalName(), sslConfig);
-        writeAttribute(writer, Attribute.PROTOCOL.getLocalName(), sslConfig);
-        writeAttribute(writer, Attribute.CA_CERTIFICATE_FILE.getLocalName(), sslConfig);
-        writeAttribute(writer, Attribute.CA_REVOCATION_URL.getLocalName(), sslConfig);
+        ModClusterSSLResourceDefinition.KEY_ALIAS.marshallAsAttribute(sslConfig, writer);
+        ModClusterSSLResourceDefinition.PASSWORD.marshallAsAttribute(sslConfig, writer);
+        ModClusterSSLResourceDefinition.CERTIFICATE_KEY_FILE.marshallAsAttribute(sslConfig, writer);
+        ModClusterSSLResourceDefinition.CIPHER_SUITE.marshallAsAttribute(sslConfig, writer);
+        ModClusterSSLResourceDefinition.PROTOCOL.marshallAsAttribute(sslConfig, writer);
+        ModClusterSSLResourceDefinition.CA_CERTIFICATE_FILE.marshallAsAttribute(sslConfig, writer);
+        ModClusterSSLResourceDefinition.CA_REVOCATION_URL.marshallAsAttribute(sslConfig, writer);
         writer.writeEndElement();
     }
 
@@ -168,10 +147,7 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
     /* Load Metric parsing logic */
     static void writeLoadMetric(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        final List<ModelNode> array = config.asList();
-        Iterator<ModelNode> it = array.iterator();
-        while (it.hasNext()) {
-            final ModelNode node = it.next();
+        for (ModelNode node : config.asList()) {
             writer.writeStartElement(Element.LOAD_METRIC.getLocalName());
             writeAttribute(writer, TYPE, node);
             writeAttribute(writer, WEIGHT, node);
@@ -187,10 +163,7 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
     /* Custom Load Metric parsing logic */
     static void writeCustomLoadMetric(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        final List<ModelNode> array = config.asList();
-        Iterator<ModelNode> it = array.iterator();
-        while (it.hasNext()) {
-            final ModelNode node = it.next();
+        for (ModelNode node : config.asList()) {
             writer.writeStartElement(Element.CUSTOM_LOAD_METRIC.getLocalName());
             writeAttribute(writer, CAPACITY, node);
             writeAttribute(writer, WEIGHT, node);

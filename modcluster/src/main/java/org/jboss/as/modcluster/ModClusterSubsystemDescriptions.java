@@ -365,7 +365,6 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.ADVERTISE_SOCKET, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.ADVERTISE_SOCKET, DESCRIPTION).set(bundle.getString("modcluster.configuration.advertise-socket"));
         node.get(type, CommonAttributes.ADVERTISE_SOCKET, REQUIRED).set(false);
-        node.get(type, CommonAttributes.ADVERTISE_SOCKET,  DEFAULT).set("224.0.1.105:23364");
 
         node.get(type, CommonAttributes.PROXY_LIST, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.PROXY_LIST, DESCRIPTION).set(bundle.getString("modcluster.configuration.proxy-list"));
@@ -393,7 +392,7 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, DESCRIPTION).set(bundle.getString("modcluster.configuration.excluded-contexts"));
         node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, REQUIRED).set(false);
         node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, EXPRESSIONS_ALLOWED).set(true);
-        node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, DEFAULT).set("ROOT,admin-console,invoker,jbossws,jmx-console,juddi,web-console");
+        node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, DEFAULT).set("ROOT,invoker,jbossws,juddi,console");
 
         node.get(type, CommonAttributes.AUTO_ENABLE_CONTEXTS, TYPE).set(ModelType.BOOLEAN);
         node.get(type, CommonAttributes.AUTO_ENABLE_CONTEXTS, DESCRIPTION).set(bundle.getString("modcluster.configuration.auto-enable-contexts"));
@@ -443,7 +442,6 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.FLUSH_PACKETS, REQUIRED).set(false);
         node.get(type, CommonAttributes.FLUSH_PACKETS, DEFAULT).set(false);
 
-
         node.get(type, CommonAttributes.FLUSH_WAIT, TYPE).set(ModelType.INT);
         node.get(type, CommonAttributes.FLUSH_WAIT, DESCRIPTION).set(bundle.getString("modcluster.configuration.flush-wait"));
         node.get(type, CommonAttributes.FLUSH_WAIT, REQUIRED).set(false);
@@ -456,15 +454,15 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.PING, DEFAULT).set(10);
         node.get(type, CommonAttributes.PING, ModelDescriptionConstants.UNIT).set(MeasurementUnit.SECONDS.getName());
 
-
         node.get(type, CommonAttributes.SMAX, TYPE).set(ModelType.INT);
         node.get(type, CommonAttributes.SMAX, DESCRIPTION).set(bundle.getString("modcluster.configuration.smax"));
         node.get(type, CommonAttributes.SMAX, REQUIRED).set(false);
+        node.get(type, CommonAttributes.SMAX, DEFAULT).set(-1);
 
         node.get(type, CommonAttributes.TTL, TYPE).set(ModelType.INT);
         node.get(type, CommonAttributes.TTL, DESCRIPTION).set(bundle.getString("modcluster.configuration.ttl"));
         node.get(type, CommonAttributes.TTL, REQUIRED).set(false);
-        node.get(type, CommonAttributes.TTL, DEFAULT).set(60);
+        node.get(type, CommonAttributes.TTL, DEFAULT).set(-1);
         node.get(type, CommonAttributes.TTL, ModelDescriptionConstants.UNIT).set(MeasurementUnit.SECONDS.getName());
 
         node.get(type, CommonAttributes.NODE_TIMEOUT, TYPE).set(ModelType.INT);
@@ -476,7 +474,7 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.BALANCER, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.BALANCER, DESCRIPTION).set(bundle.getString("modcluster.configuration.balancer"));
         node.get(type, CommonAttributes.BALANCER, REQUIRED).set(false);
-        node.get(type, CommonAttributes.BALANCER, DEFAULT).set("mycluster");
+        node.get(type, CommonAttributes.BALANCER, EXPRESSIONS_ALLOWED).set(true);
 
         // That is the loadBalancingGroup :-(
         node.get(type, CommonAttributes.DOMAIN, TYPE).set(ModelType.STRING);
