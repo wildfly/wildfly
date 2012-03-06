@@ -476,6 +476,7 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.BALANCER, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.BALANCER, DESCRIPTION).set(bundle.getString("modcluster.configuration.balancer"));
         node.get(type, CommonAttributes.BALANCER, REQUIRED).set(false);
+        node.get(type, CommonAttributes.BALANCER, EXPRESSIONS_ALLOWED).set(true);
         node.get(type, CommonAttributes.BALANCER, DEFAULT).set("mycluster");
 
         // That is the loadBalancingGroup :-(

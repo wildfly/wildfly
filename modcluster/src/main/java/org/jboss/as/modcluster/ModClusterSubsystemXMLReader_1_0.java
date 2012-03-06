@@ -188,9 +188,9 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                 case WORKER_TIMEOUT:
                     conf.get(WORKER_TIMEOUT).set(Integer.parseInt(value));
                     break;
-                 case MAX_ATTEMPTS:
-                     conf.get(MAX_ATTEMPTS).set(Integer.parseInt(value));
-                     break;
+                case MAX_ATTEMPTS:
+                    conf.get(MAX_ATTEMPTS).set(Integer.parseInt(value));
+                    break;
                 case FLUSH_PACKETS:
                     conf.get(FLUSH_PACKETS).set(Boolean.parseBoolean(value));
                     break;
@@ -210,7 +210,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     conf.get(NODE_TIMEOUT).set(Integer.parseInt(value));
                     break;
                 case BALANCER:
-                    conf.get(BALANCER).set(value);
+                    conf.get(BALANCER).set(ParseUtils.parsePossibleExpression(value));
                     break;
                 case DOMAIN:
                     conf.get(DOMAIN).set(ParseUtils.parsePossibleExpression(value));
@@ -230,29 +230,29 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-            case KEY_ALIAS:
-                ssl.get(KEY_ALIAS).set(value);
-                break;
-            case PASSWORD:
-                ssl.get(PASSWORD).set(ParseUtils.parsePossibleExpression(value));
-                break;
-            case CERTIFICATE_KEY_FILE:
-                ssl.get(CERTIFICATE_KEY_FILE).set(ParseUtils.parsePossibleExpression(value));
-                break;
-            case CIPHER_SUITE:
-                ssl.get(CIPHER_SUITE).set(value);
-                break;
-            case PROTOCOL:
-                ssl.get(PROTOCOL).set(value);
-                break;
-             case CA_CERTIFICATE_FILE:
-                ssl.get(CA_CERTIFICATE_FILE).set(ParseUtils.parsePossibleExpression(value));
-                break;
-            case CA_REVOCATION_URL:
-                ssl.get(CA_REVOCATION_URL).set(value);
-                break;
-           default:
-                throw unexpectedAttribute(reader, i);
+                case KEY_ALIAS:
+                    ssl.get(KEY_ALIAS).set(value);
+                    break;
+                case PASSWORD:
+                    ssl.get(PASSWORD).set(ParseUtils.parsePossibleExpression(value));
+                    break;
+                case CERTIFICATE_KEY_FILE:
+                    ssl.get(CERTIFICATE_KEY_FILE).set(ParseUtils.parsePossibleExpression(value));
+                    break;
+                case CIPHER_SUITE:
+                    ssl.get(CIPHER_SUITE).set(value);
+                    break;
+                case PROTOCOL:
+                    ssl.get(PROTOCOL).set(value);
+                    break;
+                 case CA_CERTIFICATE_FILE:
+                    ssl.get(CA_CERTIFICATE_FILE).set(ParseUtils.parsePossibleExpression(value));
+                    break;
+                case CA_REVOCATION_URL:
+                    ssl.get(CA_REVOCATION_URL).set(value);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         ParseUtils.requireNoContent(reader);
