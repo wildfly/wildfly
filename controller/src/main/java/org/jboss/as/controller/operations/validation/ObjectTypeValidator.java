@@ -20,7 +20,7 @@
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
 
-package org.jboss.as.clustering.subsystem.validators;
+package org.jboss.as.controller.operations.validation;
 
 // import static org.jboss.as.clustering.ClusteringMessages.MESSAGES;
 
@@ -33,8 +33,6 @@ import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
