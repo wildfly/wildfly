@@ -168,7 +168,7 @@ public class ComplexPropertiesParseUtils {
         params.put("pad-xid", "true");
         params.put("wrap-xa-resource", "true");
         //security
-        params.put("application", "true");
+        params.put("security-application", "true");
         //validation
         params.put("background-validation", "true");
         params.put("background-validation-millis", "5000");
