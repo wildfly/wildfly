@@ -57,26 +57,27 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.ClientConstants;
-import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.smoke.modular.utils.PollingUtils;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.util.Base64;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.test.integration.common.jms.JMSOperationsProvider.getInstance;
 
 /**
  * Part of migration EJB testsuite (JBAS-7922) to AS7 [JIRA JBQA-5483]. This test covers jira AS7-687 which aims to migrate this
@@ -101,31 +102,20 @@ public class SendMessagesTestCase {
     @ContainerResource
     private ManagementClient managementClient;
 
-    static class SendMessagesTestCaseSetup extends AbstractMgmtServerSetupTask {
+    static class SendMessagesTestCaseSetup implements ServerSetupTask {
 
         @Override
-        protected void doSetup(final ManagementClient managementClient) throws Exception {
-            createQueue(QUEUE_SEND);
-            createQueue(QUEUE_REPLY);
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            final JMSOperations operations = getInstance(managementClient);
+            operations.createJmsQueue(QUEUE_SEND, "java:jboss/" + QUEUE_SEND);
+            operations.createJmsQueue(QUEUE_REPLY, "java:jboss/" + QUEUE_REPLY);
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            destroyQueue(QUEUE_SEND);
-            destroyQueue(QUEUE_REPLY);
-        }
-
-        private void createQueue(String queueName) throws Exception {
-            ModelNode addJmsQueue = getQueueAddr(queueName);
-            addJmsQueue.get(ClientConstants.OP).set("add");
-            addJmsQueue.get("entries").add("java:jboss/" + queueName);
-            executeOperation(addJmsQueue);
-        }
-
-        private void destroyQueue(String queueName) throws Exception {
-            ModelNode removeJmsQueue = getQueueAddr(queueName);
-            removeJmsQueue.get(ClientConstants.OP).set("remove");
-            executeOperation(removeJmsQueue);
+            final JMSOperations operations = getInstance(managementClient);
+            operations.removeJmsQueue(QUEUE_SEND);
+            operations.removeJmsQueue(QUEUE_REPLY);
         }
     }
 
@@ -133,7 +123,7 @@ public class SendMessagesTestCase {
     private Deployer deployer;
 
     @ArquillianResource
-    @OperateOnDeployment("test")
+    @OperateOnDeployment("mdb")
     private InitialContext initialContext;
 
     @AfterClass
@@ -156,28 +146,6 @@ public class SendMessagesTestCase {
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment." + SINGLETON + ".jar\n"), "MANIFEST.MF");
         log.info(jar.toString(true));
         return jar;
-    }
-
-    @Deployment(name = "test", order = 3, managed = true, testable = true)
-    public static Archive<?> deploymentTest() {
-        final JavaArchive jar = ShrinkWrap
-                .create(JavaArchive.class, "test-containerstart.jar")
-                .addClass(SendMessagesTestCase.class)
-                .addClass(Base64.class)
-                .addClass(ShrinkWrapUtils.class)
-                .addClass(PollingUtils.class)
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, deployment." + SINGLETON + ".jar \n"), "MANIFEST.MF");
-        log.info(jar.toString(true));
-        return jar;
-    }
-
-
-    private static ModelNode getQueueAddr(String name) {
-        final ModelNode queueAddr = new ModelNode();
-        queueAddr.get(ClientConstants.OP_ADDR).add("subsystem", "messaging");
-        queueAddr.get(ClientConstants.OP_ADDR).add("hornetq-server", "default");
-        queueAddr.get(ClientConstants.OP_ADDR).add("jms-queue", name);
-        return queueAddr;
     }
 
     public static void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
@@ -302,11 +270,9 @@ public class SendMessagesTestCase {
     private Callable<Void> undeployTask() {
         return new Callable<Void>() {
             public Void call() throws Exception {
-                log.debug("undpeployTask: undeploying...");
-                final ModelNode undeployAddr = new ModelNode();
-                undeployAddr.get(ClientConstants.OP_ADDR).add("deployment", MBEAN + ".jar");
-                undeployAddr.get(ClientConstants.OP).set("undeploy");
-                SendMessagesTestCase.applyUpdate(undeployAddr, managementClient.getControllerClient());
+                ServerDeploymentManager deploymentManager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
+                final DeploymentPlan plan = deploymentManager.newDeploymentPlan().undeploy(MBEAN + ".jar").build();
+                deploymentManager.execute(plan).get(10, TimeUnit.SECONDS);
                 return null;
             }
         };
