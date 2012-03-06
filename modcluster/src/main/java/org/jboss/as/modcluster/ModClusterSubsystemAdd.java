@@ -53,6 +53,7 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
     static final ModClusterSubsystemAdd INSTANCE = new ModClusterSubsystemAdd();
     static final PathElement SSLPath = PathElement.pathElement(CommonAttributes.SSL, CommonAttributes.CONFIGURATION);
     static final PathElement confPath = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
+
     @Override
     protected void populateModel(final ModelNode operation, final Resource resource) {
          if (operation.hasDefined(CommonAttributes.MOD_CLUSTER_CONFIG)) {
@@ -82,7 +83,7 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
     }
 
     static void populateConf(final ModelNode subModel, final ModelNode operation) {
-        for(final String attribute : operation.keys()) {
+        for (final String attribute: operation.keys()) {
             if(operation.hasDefined(attribute)) {
                 subModel.get(attribute).set(operation.get(attribute));
             }
@@ -101,11 +102,9 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
             }
         }
         try {
-
-            //Get the unmasked password
             // Add mod_cluster service
             final ModelNode resolved = context.resolveExpressions(node.clone());
-            final ModClusterService service = new ModClusterService(unmaskPassword(context, model), resolved);
+            final ModClusterService service = new ModClusterService(resolved);
             final ServiceBuilder<ModCluster> serviceBuilder = context.getServiceTarget().addService(ModClusterService.NAME, service)
                     // .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                     .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer())
@@ -130,17 +129,5 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) {
         // TODO Auto-generated method stub
-
     }
-
-    private String unmaskPassword(OperationContext context, ModelNode model) throws OperationFailedException {
-        if (!model.hasDefined(CommonAttributes.SSL)) {
-            return null;
-        }
-        if (!model.get(CommonAttributes.SSL).hasDefined(CommonAttributes.PASSWORD)) {
-            return null;
-        }
-        return context.resolveExpressions(model.get(CommonAttributes.SSL, CommonAttributes.PASSWORD)).toString();
-    }
-
 }
