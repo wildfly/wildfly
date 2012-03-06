@@ -3,11 +3,12 @@
  */
 package org.jboss.as.controller.interfaces;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import java.util.Arrays;
 
 /**
  * {@link InterfaceCriteria} that tests whether a given address is on the
@@ -62,6 +63,19 @@ public class SubnetMatchInterfaceCriteria implements InterfaceCriteria {
         return address;
     }
 
+    @Override
+    public int hashCode() {
+        int i = 17;
+        i = 31 * i + mask;
+        i = 31 * 1 + Arrays.hashCode(network);
+        return i;
+    }
 
-
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof SubnetMatchInterfaceCriteria == false) {
+            return false;
+        }
+        return Arrays.equals(network, ((SubnetMatchInterfaceCriteria)o).network) && mask == ((SubnetMatchInterfaceCriteria)o).mask;
+    }
 }

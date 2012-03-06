@@ -3,13 +3,13 @@
  */
 package org.jboss.as.controller.interfaces;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.HashSet;
 import java.util.Set;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * {@link InterfaceCriteria} that tests whether a given network interface and
@@ -53,6 +53,21 @@ public class NotInterfaceCriteria implements InterfaceCriteria {
         return address;
     }
 
+    Set<InterfaceCriteria> getAllCriteria(){
+        return criteria;
+    }
 
+    @Override
+    public int hashCode() {
+        return criteria.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof NotInterfaceCriteria == false) {
+            return false;
+        }
+        return criteria.equals(((NotInterfaceCriteria)o).criteria);
+    }
 
 }

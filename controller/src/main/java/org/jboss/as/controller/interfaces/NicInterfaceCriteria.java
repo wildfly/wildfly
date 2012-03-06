@@ -3,11 +3,11 @@
  */
 package org.jboss.as.controller.interfaces;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * {@link InterfaceCriteria} that tests whether a given name matches the
@@ -53,6 +53,17 @@ public class NicInterfaceCriteria implements InterfaceCriteria {
         return null;
     }
 
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof NicInterfaceCriteria == false) {
+            return false;
+        }
+        return name.equals(((NicInterfaceCriteria)o).name);
+    }
 
 }

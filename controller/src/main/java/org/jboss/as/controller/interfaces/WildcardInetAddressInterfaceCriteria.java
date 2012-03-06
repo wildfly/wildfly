@@ -43,4 +43,16 @@ public class WildcardInetAddressInterfaceCriteria implements InterfaceCriteria {
         return null;
     }
 
+    @Override
+    public int hashCode() {
+        return version.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof WildcardInetAddressInterfaceCriteria == false) {
+            return false;
+        }
+        return version == ((WildcardInetAddressInterfaceCriteria)o).version;
+    }
 }

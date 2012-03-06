@@ -26,8 +26,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -116,19 +118,19 @@ public class ServerControllerUnitTestCase {
         {
             final ModelNode operation = base.clone();
             operation.get("any-address").set(true);
-            populateCritieria(operation, false);
+            populateCritieria(operation, Nesting.TOP);
             executeForFailure(client, operation);
         }
         {
             final ModelNode operation = base.clone();
             operation.get("any-ipv4-address").set(true);
-            populateCritieria(operation, false);
+            populateCritieria(operation, Nesting.TOP);
             executeForFailure(client, operation);
         }
         {
             final ModelNode operation = base.clone();
             operation.get("any-ipv6-address").set(true);
-            populateCritieria(operation, false);
+            populateCritieria(operation, Nesting.TOP);
             executeForFailure(client, operation);
         }
         {
@@ -146,8 +148,14 @@ public class ServerControllerUnitTestCase {
         {
             final ModelNode operation = base.clone();
             // operation.get("any-address").set(true);
-            populateCritieria(operation, false);
+            populateCritieria(operation, Nesting.TOP, InterfaceDescription.LOOPBACK, InterfaceDescription.LINK_LOCAL_ADDRESS);
             executeForResult(client, operation);
+        }
+        {
+            final ModelNode operation = base.clone();
+            // operation.get("any-address").set(true);
+            populateCritieria(operation, Nesting.TOP);
+            executeForFailure(client, operation);
         }
     }
 
@@ -196,35 +204,56 @@ public class ServerControllerUnitTestCase {
         operation.get(ModelDescriptionConstants.OP).set("add");
         operation.get(ModelDescriptionConstants.OP_ADDR).add("interface", "complex");
         // This won't be resolvable with the runtime layer enabled
-        populateCritieria(operation, false);
-        populateCritieria(operation.get("not"), true);
-        populateCritieria(operation.get("any"), true);
+        populateCritieria(operation, Nesting.TOP,
+                InterfaceDescription.LINK_LOCAL_ADDRESS,
+                InterfaceDescription.LOOPBACK);
+        populateCritieria(operation.get("not"), Nesting.NOT,
+                InterfaceDescription.PUBLIC_ADDRESS,
+                InterfaceDescription.SITE_LOCAL_ADDRESS,
+                InterfaceDescription.VIRTUAL,
+                InterfaceDescription.UP,
+                InterfaceDescription.MULTICAST,
+                InterfaceDescription.LOOPBACK_ADDRESS,
+                InterfaceDescription.POINT_TO_POINT);
+        populateCritieria(operation.get("any"), Nesting.ANY);
 
         final ModelControllerClient client = controller.createClient(Executors.newCachedThreadPool());
 
         executeForResult(client, operation);
     }
 
-    protected void populateCritieria(final ModelNode model, final boolean nested) {
+    protected void populateCritieria(final ModelNode model, final Nesting nesting, final AttributeDefinition...excluded) {
+        Set<AttributeDefinition> excludedCriteria = new HashSet<AttributeDefinition>(Arrays.asList(excluded));
         for(final AttributeDefinition def : InterfaceDescription.NESTED_ATTRIBUTES) {
+
+            if (excludedCriteria.contains(def)) {
+                continue;
+            }
+
             final ModelNode node = model.get(def.getName());
             if(def.getType() == ModelType.BOOLEAN) {
                 node.set(true);
             } else if (def == InterfaceDescription.INET_ADDRESS || def == InterfaceDescription.LOOPBACK_ADDRESS) {
-                if (nested && def == InterfaceDescription.INET_ADDRESS) {
+                if (nesting == Nesting.ANY && def == InterfaceDescription.INET_ADDRESS) {
                     node.add("127.0.0.1");
+                } else if (nesting == Nesting.NOT && def == InterfaceDescription.INET_ADDRESS) {
+                    node.add("10.0.0.1");
                 } else {
                     node.set("127.0.0.1");
                 }
             } else if (def == InterfaceDescription.NIC || def == InterfaceDescription.NIC_MATCH) {
-                if (nested) {
+                if (nesting == Nesting.ANY) {
                     node.add("lo");
+                } else if (nesting == Nesting.NOT) {
+                    node.add("en3");
                 } else {
                     node.set("lo");
                 }
             } else if (def == InterfaceDescription.SUBNET_MATCH) {
-                if (nested) {
+                if (nesting == Nesting.ANY) {
                     node.add("127.0.0.1/24");
+                } else if (nesting == Nesting.NOT) {
+                    node.add("10.0.0.1/24");
                 } else {
                     node.set("127.0.0.0/24");
                 }
@@ -358,7 +387,7 @@ public class ServerControllerUnitTestCase {
             if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
                 return result.get("result");
             } else {
-                Assert.fail("Operation outcome is " + result.get("outcome").asString());
+                Assert.fail("Operation outcome is " + result.get("outcome").asString() + " " + result.get("failure-description"));
                 throw new RuntimeException(); // not reached
             }
         } catch (IOException e) {
@@ -405,4 +434,9 @@ public class ServerControllerUnitTestCase {
 
     }
 
+    private enum Nesting {
+        TOP,
+        ANY,
+        NOT
+    }
 }

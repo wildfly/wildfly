@@ -35,6 +35,7 @@ import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -2415,4 +2416,13 @@ public interface ControllerMessages {
     @Message(id = 14841, value = "An operation handler attempted to access the operation response server results object " +
             "on a process type other than '%s'. The current process type is '%s'")
     IllegalStateException serverResultsAccessNotAllowed(ProcessType validType, ProcessType processType);
+
+    @Message(id = 14842, value = "Can't have both loopback and inet-address criteria")
+    String cantHaveBothLoopbackAndInetAddressCriteria();
+
+    @Message(id = 14843, value = "Can't have both link-local and inet-address criteria")
+    String cantHaveBothLinkLocalAndInetAddressCriteria();
+
+    @Message(id = 14844, value = "Can't have same criteria for both not and inclusion %s")
+    String cantHaveSameCriteriaForBothNotAndInclusion(InterfaceCriteria interfaceCriteria);
 }

@@ -18,15 +18,15 @@
  */
 package org.jboss.as.controller.interfaces;
 
-import org.jboss.dmr.ModelNode;
+import static org.jboss.as.controller.ControllerLogger.SERVER_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import static org.jboss.as.controller.ControllerLogger.SERVER_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import org.jboss.dmr.ModelNode;
 
 /**
  * A loopback criteria with a specified bind address.
@@ -95,5 +95,18 @@ public class LoopbackAddressInterfaceCriteria implements InterfaceCriteria {
         sb.append(resolved);
         sb.append(')');
         return sb.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return address.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof LoopbackAddressInterfaceCriteria == false) {
+            return false;
+        }
+        return address.equals(((LoopbackAddressInterfaceCriteria)o).address);
     }
 }

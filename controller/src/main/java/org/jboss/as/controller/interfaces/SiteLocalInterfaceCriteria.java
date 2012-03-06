@@ -39,5 +39,4 @@ public class SiteLocalInterfaceCriteria implements InterfaceCriteria {
     private Object readResolve() throws ObjectStreamException {
         return INSTANCE;
     }
-
 }

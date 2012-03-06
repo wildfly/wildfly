@@ -39,5 +39,4 @@ public class SupportsMulticastInterfaceCriteria implements InterfaceCriteria {
     private Object readResolve() throws ObjectStreamException {
         return INSTANCE;
     }
-
 }
