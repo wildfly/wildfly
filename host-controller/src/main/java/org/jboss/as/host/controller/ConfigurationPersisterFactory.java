@@ -85,7 +85,12 @@ public class ConfigurationPersisterFactory {
     public static ExtensibleConfigurationPersister createRemoteBackupDomainXmlConfigurationPersister(final File configDir, ExecutorService executorService, ExtensionRegistry extensionRegistry) {
         DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
         File file = new File(configDir, CACHED_DOMAIN_XML);
-        ExtensibleConfigurationPersister persister = new BackupRemoteDomainXmlPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+        BackupRemoteDomainXmlPersister persister = new BackupRemoteDomainXmlPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+        for (Namespace namespace : Namespace.values()) {
+            if (!namespace.equals(Namespace.CURRENT)) {
+                persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "domain"), domainXml);
+            }
+        }
         extensionRegistry.setWriterRegistry(persister);
         return persister;
     }
@@ -94,7 +99,12 @@ public class ConfigurationPersisterFactory {
     public static ExtensibleConfigurationPersister createCachedRemoteDomainXmlConfigurationPersister(final File configDir, ExecutorService executorService, ExtensionRegistry extensionRegistry) {
         DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
         File file = new File(configDir, CACHED_DOMAIN_XML);
-        ExtensibleConfigurationPersister persister = new CachedRemoteDomainXmlPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+        CachedRemoteDomainXmlPersister persister = new CachedRemoteDomainXmlPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+        for (Namespace namespace : Namespace.values()) {
+            if (!namespace.equals(Namespace.CURRENT)) {
+                persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "domain"), domainXml);
+            }
+        }
         extensionRegistry.setWriterRegistry(persister);
         return persister;
     }
