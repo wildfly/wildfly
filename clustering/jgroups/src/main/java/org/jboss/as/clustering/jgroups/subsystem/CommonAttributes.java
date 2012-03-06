@@ -1,7 +1,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.subsystem.ObjectListAttributeDefinition;
-import org.jboss.as.clustering.subsystem.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.ObjectListAttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.clustering.subsystem.SimpleListAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
