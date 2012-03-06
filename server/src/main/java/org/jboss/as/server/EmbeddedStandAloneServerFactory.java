@@ -154,7 +154,12 @@ public class EmbeddedStandAloneServerFactory {
                         public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
                             final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
                             final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
-                            ExtensibleConfigurationPersister persister = new TransientConfigurationPersister(serverEnvironment.getServerConfigurationFile(), rootElement, parser, parser);
+                            TransientConfigurationPersister persister = new TransientConfigurationPersister(serverEnvironment.getServerConfigurationFile(), rootElement, parser, parser);
+                            for (Namespace namespace : Namespace.values()) {
+                                if (!namespace.equals(Namespace.CURRENT)) {
+                                    persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "server"), parser);
+                                }
+                            }
                             extensionRegistry.setWriterRegistry(persister);
                             return persister;
                         }
