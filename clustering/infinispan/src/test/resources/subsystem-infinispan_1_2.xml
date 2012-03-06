@@ -27,7 +27,7 @@
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="FIFO"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <state-transfer enabled="true" timeout="60000" chunk-size="10000" /> 
+            <state-transfer enabled="true" timeout="60000" chunk-size="10000" />
             <store class="org.infinispan.loaders.file.FileCacheStore" fetch-state="true" passivation="true" preload="false" purge="true" shared="false" singleton="false">
                 <property name="location">${java.io.tmpdir}</property>
             </store>
@@ -37,7 +37,7 @@
             <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="UNORDERED"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <state-transfer enabled="true" timeout="60000" chunk-size="10000" /> 
+            <state-transfer enabled="true" timeout="60000" chunk-size="10000" />
             <jdbc-store datasource="java:jboss/jdbc/store" fetch-state="false" passivation="false" preload="true" purge="false" shared="true" singleton="true">
                 <bucket-table prefix="ispn_bucket" batch-size="100" fetch-size="100">
                     <id-column name="id" type="VARCHAR"/>
@@ -50,6 +50,17 @@
                     <timestamp-column name="version" type="BIGINT"/>
                 </entry-table>
             </jdbc-store>
+        </distributed-cache>
+        <distributed-cache name="indexed" mode="SYNC" batching="true" indexing="ALL" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" virtual-nodes="2"  async-marshalling="true">
+            <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
+            <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
+            <eviction max-entries="20000" strategy="UNORDERED"/>
+            <expiration interval="10000" lifespan="10" max-idle="10"/>
+            <state-transfer enabled="true" timeout="60000" chunk-size="10000"/>
+            <indexing-properties>
+                <property name="hibernate.search.default.directory_provider" >infinispan</property>
+                <property name="hibernate.search.default.worker.backend">${sys.prop:jgroupsMaster}</property>
+            </indexing-properties>
         </distributed-cache>
     </cache-container>
 </subsystem>

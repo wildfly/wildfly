@@ -275,6 +275,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         CommonAttributes.BATCHING.validateAndSet(fromModel, toModel);
         CommonAttributes.INDEXING.validateAndSet(fromModel, toModel);
         CommonAttributes.JNDI_NAME.validateAndSet(fromModel, toModel);
+        CommonAttributes.INDEXING_PROPERTIES.validateAndSet(fromModel, toModel);
     }
 
     /**
@@ -293,15 +294,25 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         final long remoteTimeout = CommonAttributes.REMOTE_TIMEOUT.resolveModelAttribute(context, cache).asLong();
         final boolean batching = CommonAttributes.BATCHING.resolveModelAttribute(context, cache).asBoolean();
         final boolean asyncMarshalling = CommonAttributes.ASYNC_MARSHALLING.resolveModelAttribute(context, cache).asBoolean();
+        final ModelNode indexingPropertiesModel = CommonAttributes.INDEXING_PROPERTIES.resolveModelAttribute(context, cache);
 
         builder.classLoader(this.getClass().getClassLoader());
         // set the cache mode
         CacheMode cacheMode = CacheMode.valueOf(cache.require(ModelKeys.MODE).asString());
-        builder.clustering().cacheMode(cacheMode);
 
+        Properties indexingProperties = new Properties();
+        if (indexing.isEnabled()&&indexingPropertiesModel.isDefined()){
+            for (Property p:indexingPropertiesModel.asPropertyList()){
+                String value = p.getValue().asString();
+                indexingProperties.put(p.getName(), value);
+            }
+        }
+
+        builder.clustering().cacheMode(cacheMode);
         builder.indexing()
                 .enabled(indexing.isEnabled())
                 .indexLocalOnly(indexing.isLocalOnly())
+                .withProperties(indexingProperties)
         ;
         if (cacheMode.isSynchronous()) {
             builder.clustering().sync().replTimeout(remoteTimeout);

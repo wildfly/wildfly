@@ -227,6 +227,22 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:element>
+                <xs:element name="indexing-properties" >
+                    <xs:annotation>
+                        <xs:documentation>
+                          defined indexing options for cache
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded">
+                                <xs:annotation>
+                                    <xs:documentation></xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
             </xs:choice>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required">

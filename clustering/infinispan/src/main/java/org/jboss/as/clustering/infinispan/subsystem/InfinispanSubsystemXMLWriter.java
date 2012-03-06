@@ -218,7 +218,18 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                             writer.writeEndElement();
                         }
                         writer.writeEndElement();
+                    }else if (cache.get(ModelKeys.INDEXING_PROPERTIES).isDefined()){
+                        writer.writeStartElement(ModelKeys.INDEXING_PROPERTIES);
+                        for (Property property:cache.get(ModelKeys.INDEXING_PROPERTIES).asPropertyList()){
+                            writer.writeStartElement(Element.PROPERTY.getLocalName());
+                            writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                            writer.writeCharacters(property.getValue().asString());
+                            writer.writeEndElement();
+                        }
+
+                        writer.writeEndElement();
                     }
+
 
                     writer.writeEndElement();
                 }

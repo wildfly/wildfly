@@ -6,6 +6,7 @@ import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.subsystem.ObjectListAttributeDefinition;
 import org.jboss.as.clustering.subsystem.ObjectTypeAttributeDefinition;
 import org.jboss.as.clustering.subsystem.SimpleListAttributeDefinition;
+import org.jboss.as.clustering.subsystem.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -294,10 +295,14 @@ public interface CommonAttributes {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(false))
                     .build();
-    SimpleAttributeDefinition PROPERTY = new SimpleAttributeDefinition(ModelKeys.PROPERTY, ModelType.PROPERTY, true);
+    SimpleAttributeDefinition PROPERTY =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.PROPERTY, ModelType.PROPERTY, true)
+                .build();
+
     SimpleListAttributeDefinition PROPERTIES = SimpleListAttributeDefinition.Builder.of(ModelKeys.PROPERTIES, PROPERTY).
             setAllowNull(true).
             build();
+    SimpleMapAttributeDefinition INDEXING_PROPERTIES = new SimpleMapAttributeDefinition(ModelKeys.INDEXING_PROPERTIES, ModelKeys.INDEXING_PROPERTIES,true,true);
     SimpleAttributeDefinition PURGE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.PURGE, ModelType.BOOLEAN, true)
                     .setXmlName(Attribute.PURGE.getLocalName())

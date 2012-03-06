@@ -485,6 +485,9 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             case REMOTE_STORE: {
                 this.parseRemoteStore(reader, cache, operations);
                 break;
+            }case INDEXING_PROPERTIES: {
+                this.parseIndexingProperties(reader, cache);
+                break;
             }
             default: {
                 throw ParseUtils.unexpectedElement(reader);
@@ -922,11 +925,50 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
 
     private void parseStoreProperties(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
-            this.parseStoreProperty(reader, node);
+            node.get(ModelKeys.PROPERTIES).add(this.parseStoreProperty(reader));
         }
     }
 
-    private void parseStoreProperty(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+    private void parseIndexingProperties(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROPERTY: {
+                    int attributes = reader.getAttributeCount();
+                    String property = null;
+                    for (int i = 0; i < attributes; i++) {
+                        String value = reader.getAttributeValue(i);
+                        Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                        switch (attribute) {
+                            case NAME: {
+                                property = value;
+                                break;
+                            }
+                            default: {
+                                throw ParseUtils.unexpectedAttribute(reader, i);
+                            }
+                        }
+                    }
+                    if (property == null) {
+                        throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+                    }
+                    String value = reader.getElementText();
+                    CommonAttributes.INDEXING_PROPERTIES.parseAndAddParameterElement(property,value,node,reader);
+                    //node.get(ModelKeys.INDEXING_PROPERTIES).add(property, ParseUtils.parsePossibleExpression(value));
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+    }
+    private void parseStoreProperty(XMLExtendedStreamReader reader,ModelNode node) throws XMLStreamException {
+        node.get(ModelKeys.PROPERTIES).add(parseStoreProperty(reader));
+    }
+
+    private ModelNode parseStoreProperty(XMLExtendedStreamReader reader) throws XMLStreamException {
+        ModelNode node = new ModelNode();
         Element element = Element.forName(reader.getLocalName());
         switch (element) {
             case PROPERTY: {
@@ -949,12 +991,13 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
                     throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
                 }
                 String value = reader.getElementText();
-                node.get(ModelKeys.PROPERTIES).add(property, value);
+                node.get(property).set(value);
                 break;
             }
             default: {
                 throw ParseUtils.unexpectedElement(reader);
             }
         }
+        return node;
     }
 }

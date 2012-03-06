@@ -60,6 +60,7 @@ public class ModelKeys {
     static final String FILE_STORE_NAME = "FILE_STORE";
     static final String ID_COLUMN = "id-column";
     static final String INDEXING = "indexing";
+    static final String INDEXING_PROPERTIES = "indexing-properties";
     static final String INTERVAL = "interval";
     static final String INVALIDATION_CACHE = "invalidation-cache";
     static final String ISOLATION = "isolation";
