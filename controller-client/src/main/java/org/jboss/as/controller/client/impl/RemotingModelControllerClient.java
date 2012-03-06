@@ -116,7 +116,6 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
                 endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.EMPTY);
 
                 configuration.setEndpoint(endpoint);
-                configuration.setEndpointName("management-client");
 
                 final ProtocolChannelClient setup = ProtocolChannelClient.create(configuration);
                 strategy = ManagementClientChannelStrategy.create(setup, channelAssociation, clientConfiguration.getCallbackHandler(),
