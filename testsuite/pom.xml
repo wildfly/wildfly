@@ -126,6 +126,7 @@
             -Dts.tr.memio=${timeout.ratio.memio}
             -Dts.tr.db=${timeout.ratio.db}
         </jvm.args.timeouts>
+        <surefire.timeout>900</surefire.timeout>
 
         <!-- Database properties. -->
         <ds.db></ds.db>
@@ -141,7 +142,7 @@
         <surefire.jpda.args></surefire.jpda.args>
         <as.debug.port>8787</as.debug.port>
         <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
-        <surefire.forked.process.timeout>900</surefire.forked.process.timeout>
+        <surefire.forked.process.timeout>${surefire.timeout}</surefire.forked.process.timeout>
 
         <!-- Arquillian dependency versions -->
         <version.arquillian_core>${version.org.jboss.arquillian.core}</version.arquillian_core>
