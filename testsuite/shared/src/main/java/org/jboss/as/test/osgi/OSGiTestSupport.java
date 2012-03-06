@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.osgi;
+package org.jboss.as.test.osgi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -43,7 +43,7 @@ import org.osgi.service.startlevel.StartLevel;
 
 /**
  * OSGi integration test support.
- * TODO This class is duplicated in the smoke and basic modules
+ *
  * @author thomas.diesler@jboss.com
  * @since 24-May-2011
  */
@@ -87,5 +87,4 @@ public final class OSGiTestSupport {
         assertEquals("One bundle found", 1, bundles.length);
         return bundles[0];
     }
-
 }
