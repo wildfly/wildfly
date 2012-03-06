@@ -49,7 +49,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Resource adapter operation unit test.
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 @RunWith(Arquillian.class)
@@ -145,15 +145,13 @@ public class ResourceAdapterOperationsUnitTestCase extends ArquillianResourceMgm
 
         ModelNode node = findNodeWithProperty(newList, "archive", "some.rar");
         Assert.assertNotNull("There is no archive element:" + newList, node);
-        //Ignored AS7-3941
-        // Assert.assertTrue("compare failed, node:"+node.asString()+"\nparams:"+params,checkModelParams(node,params));
+        Assert.assertTrue("compare failed, node:"+node.asString()+"\nparams:"+params,checkModelParams(node,params));
         Assert.assertEquals("beanvalidationgroups element is incorrect:" + node.get("beanvalidationgroups").asString(), node
                 .get("beanvalidationgroups").asString(), "[\"Class0\",\"Class00\"]");
 
         node = findNodeWithProperty(newList, "jndi-name", "java:jboss/name1");
         Assert.assertNotNull("There is no connection jndi-name element:" + newList, node);
-        //Ignored AS7-3941
-        //Assert.assertTrue("compare failed, node:"+node.asString()+"\nparams:"+conParams,checkModelParams(node,conParams));
+        Assert.assertTrue("compare failed, node:"+node.asString()+"\nparams:"+conParams,checkModelParams(node,conParams));
 
         node = findNodeWithProperty(newList, "jndi-name", "java:jboss/Name3");
         Assert.assertNotNull("There is no admin jndi-name element:" + newList, node);

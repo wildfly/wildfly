@@ -86,7 +86,7 @@ public class Constants {
 
     private static final String ARCHIVE_NAME = "archive";
 
-    private static final String BOOTSTRAPCONTEXT_NAME = "bootstrapcontext";
+    private static final String BOOTSTRAPCONTEXT_NAME = "bootstrap-context";
 
     private static final String TRANSACTIONSUPPORT_NAME = "transaction-support";
 
