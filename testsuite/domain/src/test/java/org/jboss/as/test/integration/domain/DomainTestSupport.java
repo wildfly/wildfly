@@ -36,8 +36,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.jboss.as.test.integration.domain.management.util.DomainControllerClientConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
@@ -209,6 +211,7 @@ public class DomainTestSupport {
     private final String slaveConfig;
     private final DomainLifecycleUtil domainMasterLifecycleUtil;
     private final DomainLifecycleUtil domainSlaveLifecycleUtil;
+    private final DomainControllerClientConfig sharedClientConfig;
 
 
     public DomainTestSupport(final String testClass, final Configuration configuration) throws Exception {
@@ -219,13 +222,14 @@ public class DomainTestSupport {
         this.domainConfig = domainConfig;
         this.masterConfig = masterConfig;
         this.slaveConfig = slaveConfig;
+        this.sharedClientConfig = DomainControllerClientConfig.create();
 
         final JBossAsManagedConfiguration master = getMasterConfiguration(domainConfig, masterConfig, testClass);
-        domainMasterLifecycleUtil = new DomainLifecycleUtil(master);
+        domainMasterLifecycleUtil = new DomainLifecycleUtil(master, sharedClientConfig);
 
         if (slaveConfig != null) {
             final JBossAsManagedConfiguration slave = getSlaveConfiguration(slaveConfig, testClass);
-            domainSlaveLifecycleUtil = new DomainLifecycleUtil(slave);
+            domainSlaveLifecycleUtil = new DomainLifecycleUtil(slave, sharedClientConfig);
         } else {
             domainSlaveLifecycleUtil = null;
         }
@@ -253,12 +257,15 @@ public class DomainTestSupport {
 
     public void stop() {
         try {
-            if (domainSlaveLifecycleUtil != null) {
-                domainSlaveLifecycleUtil.stop();
+            try {
+                if (domainSlaveLifecycleUtil != null) {
+                    domainSlaveLifecycleUtil.stop();
+                }
+            } finally {
+                domainMasterLifecycleUtil.stop();
             }
-
-        }   finally {
-            domainMasterLifecycleUtil.stop();
+        } finally {
+            StreamUtils.safeClose(sharedClientConfig);
         }
     }
 

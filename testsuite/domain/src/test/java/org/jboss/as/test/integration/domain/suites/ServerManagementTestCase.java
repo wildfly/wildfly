@@ -49,9 +49,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.checkState;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.waitUntilState;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
@@ -64,6 +63,12 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * @author Emanuel Muckenhuber
@@ -270,7 +275,6 @@ public class ServerManagementTestCase {
     }
 
     @Test
-    @Ignore("AS7-3764")
     public void testAdminOnlyMode() throws Exception {
 
         // restart master HC in admin only mode
@@ -279,18 +283,29 @@ public class ServerManagementTestCase {
         op.get(OP_ADDR).add(HOST, "master");
         op.get(OP).set("reload");
         op.get("admin-only").set(true);
-        executeForResult(masterClient, op);
+        domainMasterLifecycleUtil.executeAwaitConnectionClosed(op);
 
-        // check that the servers are stopped
-        waitUntilState(masterClient, "master", "main-one", "STOPPED");
-        waitUntilState(masterClient, "master", "main-one", "STOPPED");
+        // Try to reconnect to the hc
+        domainMasterLifecycleUtil.connect();
+
+        op = new ModelNode();
+        op.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        op.get(OP_ADDR).add(HOST, "master");
+        op.get(NAME).set("running-mode");
+
+        // Validate that we are started in the --admin-only mode
+        final ModelNode result = executeForResult(masterClient, op);
+        Assert.assertEquals("ADMIN_ONLY", result.asString());
 
         // restart back to normal mode
         op = new ModelNode();
         op.get(OP_ADDR).add(HOST, "master");
         op.get(OP).set("reload");
         op.get("admin-only").set(false);
-        executeForResult(masterClient, op);
+        domainMasterLifecycleUtil.executeAwaitConnectionClosed(op);
+
+        // Try to reconnect to the hc
+        domainMasterLifecycleUtil.connect();
 
         // check that the servers are up
         waitUntilState(masterClient, "master", "main-one", "STARTED");
@@ -370,42 +385,6 @@ public class ServerManagementTestCase {
                 operation.get(OP).set(STOP);
             }
         }
-    }
-
-    private void waitUntilState(final ModelControllerClient client, final String hostName, final String serverName, final String state) throws IOException {
-        ModelNode address = new ModelNode().add(HOST, hostName).add(SERVER_CONFIG, serverName);
-        waitUntilState(client, address, state);
-    }
-
-    static void waitUntilState(final ModelControllerClient client, final ModelNode serverAddress, final String state) throws IOException {
-        for(int i = 0; i < 20; i++) {
-            if (checkState(client, serverAddress, state)) {
-                return;
-            }
-            try {
-                TimeUnit.SECONDS.sleep(1);
-            } catch(InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
-        }
-        final String required = getServerState(client, serverAddress);
-        Assert.assertEquals(serverAddress.toString(), required, state);
-    }
-
-    private static boolean checkState(final ModelControllerClient client, final ModelNode serverAddress, final String state) throws IOException {
-        final String serverState = getServerState(client, serverAddress);
-        return state.equals(serverState);
-    }
-
-    private static String getServerState(final ModelControllerClient client, final ModelNode serverAddress) throws IOException {
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        operation.get(OP_ADDR).set(serverAddress);
-        operation.get(NAME).set("status");
-
-        ModelNode status = client.execute(operation);
-        return status.get(RESULT).asString();
     }
 
 }

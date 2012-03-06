@@ -20,30 +20,29 @@ package org.jboss.as.test.integration.domain.management.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,8 +52,13 @@ import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.Connection;
+import org.jboss.remoting3.HandleableCloseable;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.xnio.IoUtils;
 
@@ -71,23 +75,40 @@ public class DomainLifecycleUtil {
 
     private final Logger log = Logger.getLogger(DomainLifecycleUtil.class.getName());
 
-    private Process process;
-    private Thread shutdownThread;
+    // The ProcessController process wrapper
+    private ProcessWrapper process;
+    // The connection to the HC, which can be shared across multiple clients
+    private DomainTestConnection connection;
+    // A shared domain client
+    private DomainTestClient domainClient;
 
-    private final JBossAsManagedConfiguration configuration;
-    private DomainClient domainClient;
     private Map<ServerIdentity, ControlledProcessState.State> serverStatuses = new HashMap<ServerIdentity, ControlledProcessState.State>();
     private ExecutorService executor;
 
-    public DomainLifecycleUtil(final JBossAsManagedConfiguration configuration) {
-        assert configuration != null : "configuration is null";
-        this.configuration = configuration;
+    private final JBossAsManagedConfiguration configuration;
+    private final DomainControllerClientConfig clientConfiguration;
+
+    public DomainLifecycleUtil(final JBossAsManagedConfiguration configuration) throws IOException {
+        this(configuration, DomainControllerClientConfig.create());
     }
 
+    public DomainLifecycleUtil(final JBossAsManagedConfiguration configuration, final DomainControllerClientConfig clientConfiguration) {
+        assert configuration != null : "configuration is null";
+        assert clientConfiguration != null : "clientConfiguration is null";
+        this.configuration = configuration;
+        this.clientConfiguration = clientConfiguration;
+
+    }
 
     public void start() {
         try {
             configuration.validate();
+
+            final String address = NetworkUtils.formatPossibleIpv6Address(configuration.getHostControllerManagementAddress());
+            final int port = configuration.getHostControllerManagementPort();
+            final URI connectionURI = new URI("remote://" + address + ":" + port);
+            // Create the connection - this will try to connect on the first request
+            connection = clientConfiguration.createConnection(connectionURI, getCallbackHandler());
 
             String jbossHomeDir = configuration.getJbossHome();
 
@@ -180,40 +201,29 @@ public class DomainLifecycleUtil {
                 cmd.add("--pc-address");
                 cmd.add(configuration.getHostControllerManagementAddress());
             }
+            // the process working dir
+            final String workingDir = configuration.getDomainDirectory();
 
+            // Start the process
+            final ProcessWrapper wrapper = new ProcessWrapper(configuration.getHostName(), cmd, Collections.<String, String>emptyMap(), workingDir);
+            wrapper.start();
+            process = wrapper;
 
-            log.info("Starting container with: " + cmd.toString());
-            ProcessBuilder processBuilder = new ProcessBuilder(cmd);
-            processBuilder.redirectErrorStream(true);
-            long start = System.currentTimeMillis();
-            process = processBuilder.start();
-            new Thread(new ConsoleConsumer()).start();
-            final Process proc = process;
-            shutdownThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    if (proc != null) {
-                        proc.destroy();
-                        try {
-                            proc.waitFor();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-            });
-            Runtime.getRuntime().addShutdownHook(shutdownThread);
-
-            long timeout = configuration.getStartupTimeoutInSeconds() * 1000;
-
+            // Wait for the servers to be started
             boolean serversAvailable = false;
-            while (timeout > 0 && serversAvailable == false) {
-                serversAvailable = areServersStarted();
-
+            long start = System.currentTimeMillis();
+            long deadline = start + configuration.getStartupTimeoutInSeconds() * 1000;
+            // Wait a while before starting to check for the servers
+            TimeUnit.SECONDS.sleep(1);
+            while (serversAvailable == false) {
+                long remaining = deadline - System.currentTimeMillis();
+                if(remaining <= 0) {
+                    break;
+                }
                 if (!serversAvailable) {
                     Thread.sleep(100);
-                    timeout -= 100;
                 }
+                serversAvailable = areServersStarted();
             }
 
             if (!serversAvailable) {
@@ -240,21 +250,20 @@ public class DomainLifecycleUtil {
         return getExecutorService().submit(c);
     }
 
+    /**
+     * Stop and wait for the process to exit.
+     */
     public void stop() {
-        if (shutdownThread != null) {
-            Runtime.getRuntime().removeShutdownHook(shutdownThread);
-            shutdownThread = null;
-        }
         try {
             if (process != null) {
-                process.destroy();
+                process.stop();
                 process.waitFor();
                 process = null;
             }
         } catch (Exception e) {
             throw new RuntimeException("Could not stop container", e);
         } finally {
-            safeCloseDomainClient();
+            closeConnection();
             final ExecutorService exec = executor;
             if (exec != null) {
                 exec.shutdownNow();
@@ -276,13 +285,112 @@ public class DomainLifecycleUtil {
         return Executors.newSingleThreadExecutor(threadFactory).submit(c);
     }
 
+    /**
+     * Execute an operation and wait until the connection is closed. This is only useful for :reload and :shutdown operations.
+     *
+     * @param operation the operation to execute
+     * @return the operation result
+     * @throws IOException for any error
+     */
+    public ModelNode executeAwaitConnectionClosed(final ModelNode operation) throws IOException {
+        final DomainTestClient client = internalGetOrCreateClient();
+        final Channel channel = client.getChannel();
+        final Connection ref = channel.getConnection();
+        ModelNode result = new ModelNode();
+        try {
+            result = client.execute(operation);
+            // IN case the operation wasn't successful, don't bother waiting
+            if(! "success".equals(result.get("outcome").asString())) {
+                return result;
+            }
+        } catch(Exception e) {
+            if(e instanceof IOException) {
+                throw (IOException) e;
+            } else if(e instanceof ExecutionException) {
+                // ignore, this might happen if the channel gets closed before we got the response
+            } else {
+                throw new RuntimeException(e);
+            }
+        }
+        try {
+            if(channel != null) {
+                // Wait for the channel to close
+                channel.awaitClosed();
+            }
+            // Wait for the connection to be closed
+            connection.awaitConnectionClosed(ref);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return result;
+    }
+
+    /**
+     * Try to connect to the host controller.
+     *
+     * @throws IOException
+     */
+    public void connect() throws IOException {
+        connect(30, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Try to connect to the host controller.
+     *
+     * @param timeout the timeout
+     * @param timeUnit the timeUnit
+     */
+    public void connect(final long timeout, final TimeUnit timeUnit) throws IOException {
+        final DomainTestConnection connection = this.connection;
+        if(connection == null) {
+            throw new IllegalStateException();
+        }
+        final long deadline = System.currentTimeMillis() + timeUnit.toMillis(timeout);
+        for(;;) {
+            long remaining = deadline - System.currentTimeMillis();
+            if(remaining <= 0) {
+                return;
+            }
+            try {
+                // Open a connection
+                connection.connect();
+            } catch (IOException e) {
+                remaining = deadline - System.currentTimeMillis();
+                if(remaining <= 0) {
+                    throw e;
+                }
+            }
+        }
+    }
+
+    /**
+     * Create a new model controller client. The client can (and should) be closed without affecting other usages.
+     *
+     * @return the domain client
+     */
+    public DomainClient createClient() {
+        final DomainTestConnection connection = this.connection;
+        if(connection == null) {
+            throw new IllegalStateException();
+        }
+        return DomainClient.Factory.create(connection.createClient());
+    }
+
+    /**
+     * Get a shared domain client.
+     *
+     * @return the domain client
+     */
     public synchronized DomainClient getDomainClient() {
+        return DomainClient.Factory.create(internalGetOrCreateClient());
+    }
+
+    private synchronized DomainTestClient internalGetOrCreateClient() {
+        // Perhaps get rid of the shared client...
         if (domainClient == null) {
             try {
-                InetAddress managementAddress = InetAddress.getByName(configuration.getHostControllerManagementAddress());
-
-                domainClient = DomainClient.Factory.create(managementAddress, configuration.getHostControllerManagementPort(), getCallbackHandler());
-            } catch (UnknownHostException e) {
+                domainClient = connection.createClient();
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -315,10 +423,10 @@ public class DomainLifecycleUtil {
         return false;
     }
 
-    private synchronized void safeCloseDomainClient() {
-        if (domainClient != null) {
+    private synchronized void closeConnection() {
+        if (connection != null) {
             try {
-                domainClient.close();
+                connection.close();
             } catch (IOException e) {
                 log.log(Level.SEVERE, "Caught exception closing DomainClient", e);
             }
@@ -385,47 +493,6 @@ public class DomainLifecycleUtil {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    public static void main(String[] args) throws Exception {
-        DomainLifecycleUtil starterUtil = new DomainLifecycleUtil(new JBossAsManagedConfiguration());
-        starterUtil.start();
-        System.out.println("--------- STARTED");
-        starterUtil.stop();
-        System.out.println("--------- STOPPED");
-    }
-
-
-    /**
-     * Runnable that consumes the output of the process. If nothing consumes the output the AS will hang on some platforms
-     *
-     * @author Stuart Douglas
-     */
-    private class ConsoleConsumer implements Runnable {
-
-        @Override
-        public void run() {
-            final InputStream stream = process.getInputStream();
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-
-            final boolean writeOutput = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
-                @Override
-                public Boolean run() {
-                    // this needs a better name
-                    String val = System.getProperty("org.jboss.as.writeconsole");
-                    return val == null || !"false".equals(val);
-                }
-            });
-            String line = null;
-            try {
-                while ((line = reader.readLine()) != null) {
-                    if (writeOutput) {
-                        System.out.println(line);
-                    }
-                }
-            } catch (IOException e) {
-            }
         }
     }
 
