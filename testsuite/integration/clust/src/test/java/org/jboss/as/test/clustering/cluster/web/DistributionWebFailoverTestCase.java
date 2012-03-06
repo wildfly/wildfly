@@ -38,8 +38,8 @@ public class DistributionWebFailoverTestCase extends ClusteredWebFailoverTestCas
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
         // Take web.xml from the managed test.
-        war.setWebXML(ClusteredWebTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(ClusteredWebTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
+        war.setWebXML(ClusteredWebAbstractCase.class.getPackage(), "web.xml");
+        war.addAsWebInfResource(ClusteredWebAbstractCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         System.out.println(war.toString(true));
         return war;
     }
@@ -49,8 +49,8 @@ public class DistributionWebFailoverTestCase extends ClusteredWebFailoverTestCas
     public static Archive<?> deployment1() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
-        war.setWebXML(ClusteredWebTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(ClusteredWebTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
+        war.setWebXML(ClusteredWebAbstractCase.class.getPackage(), "web.xml");
+        war.addAsWebInfResource(ClusteredWebAbstractCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         System.out.println(war.toString(true));
         return war;
     }

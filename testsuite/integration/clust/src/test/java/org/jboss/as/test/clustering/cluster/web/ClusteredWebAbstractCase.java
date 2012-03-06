@@ -55,7 +55,7 @@ import org.jboss.as.test.clustering.NodeUtil;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ClusteredWebTestCase {
+public class ClusteredWebAbstractCase {
 
     @ArquillianResource
     private ContainerController controller;
@@ -73,7 +73,7 @@ public class ClusteredWebTestCase {
     public static Archive<?> deployment0() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
-        war.setWebXML(ClusteredWebTestCase.class.getPackage(), "web.xml");
+        war.setWebXML(ClusteredWebAbstractCase.class.getPackage(), "web.xml");
         System.out.println(war.toString(true));
         return war;
     }
@@ -83,7 +83,7 @@ public class ClusteredWebTestCase {
     public static Archive<?> deployment1() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
-        war.setWebXML(ClusteredWebTestCase.class.getPackage(), "web.xml");
+        war.setWebXML(ClusteredWebAbstractCase.class.getPackage(), "web.xml");
         System.out.println(war.toString(true));
         return war;
     }
