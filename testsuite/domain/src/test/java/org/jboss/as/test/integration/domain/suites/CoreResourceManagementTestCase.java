@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.domain.suites;
 
+import java.io.File;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
@@ -118,6 +119,8 @@ public class CoreResourceManagementTestCase {
     private static final ModelNode OTHER_RUNNING_SERVER_ADDRESS = new ModelNode();
     private static final ModelNode OTHER_RUNNING_SERVER_PROP_ADDRESS = new ModelNode();
     private static final ModelNode OTHER_RUNNING_SERVER_CLASSLOADING_ADDRESS = new ModelNode();
+    
+    private static final String fileSeparator = System.getProperty("file.separator");
 
     static {
         ROOT_PROP_ADDRESS.add(SYSTEM_PROPERTY, TEST);
@@ -487,7 +490,7 @@ public class CoreResourceManagementTestCase {
         ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation));
         Set<String> snapshots = new HashSet<String>();
         for (ModelNode curr : listResult.get(NAMES).asList()) {
-            snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());
+            snapshots.add(listResult.get(DIRECTORY).asString() + fileSeparator + curr.asString());
         }
 
         Assert.assertTrue(snapshots.contains(snapshot));
@@ -495,13 +498,13 @@ public class CoreResourceManagementTestCase {
         ModelNode deleteSnapshotOperation = new ModelNode();
         deleteSnapshotOperation.get(OP).set(SnapshotDeleteHandler.OPERATION_NAME);
         deleteSnapshotOperation.get(OP_ADDR).setEmptyList();
-        deleteSnapshotOperation.get(NAME).set(snapshot.substring(snapshot.lastIndexOf("/")  + 1));
+        deleteSnapshotOperation.get(NAME).set(snapshot.substring(snapshot.lastIndexOf(fileSeparator)  + fileSeparator.length()));
         validateResponse(masterClient.execute(deleteSnapshotOperation), false);
 
         listResult = validateResponse(masterClient.execute(listSnapshotOperation));
         snapshots = new HashSet<String>();
         for (ModelNode curr : listResult.get(NAMES).asList()) {
-            snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());
+            snapshots.add(listResult.get(DIRECTORY).asString() + fileSeparator + curr.asString());
         }
 
         Assert.assertFalse(snapshots.contains(snapshot));
@@ -838,7 +841,7 @@ public class CoreResourceManagementTestCase {
         ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation));
         Set<String> snapshots = new HashSet<String>();
         for (ModelNode curr : listResult.get(NAMES).asList()) {
-            snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());
+            snapshots.add(listResult.get(DIRECTORY).asString() + fileSeparator + curr.asString());
         }
 
         Assert.assertTrue(snapshots.contains(snapshot));
@@ -846,13 +849,13 @@ public class CoreResourceManagementTestCase {
         ModelNode deleteSnapshotOperation = new ModelNode();
         deleteSnapshotOperation.get(OP).set(SnapshotDeleteHandler.OPERATION_NAME);
         deleteSnapshotOperation.get(OP_ADDR).set(addr);
-        deleteSnapshotOperation.get(NAME).set(snapshot.substring(snapshot.lastIndexOf("/")  + 1));
+        deleteSnapshotOperation.get(NAME).set(snapshot.substring(snapshot.lastIndexOf(fileSeparator)  + fileSeparator.length()));
         validateResponse(masterClient.execute(deleteSnapshotOperation));
 
         listResult = validateResponse(masterClient.execute(listSnapshotOperation));
         snapshots = new HashSet<String>();
         for (ModelNode curr : listResult.get(NAMES).asList()) {
-            snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());
+            snapshots.add(listResult.get(DIRECTORY).asString() + fileSeparator + curr.asString());
         }
 
         Assert.assertFalse(snapshots.contains(snapshot));
