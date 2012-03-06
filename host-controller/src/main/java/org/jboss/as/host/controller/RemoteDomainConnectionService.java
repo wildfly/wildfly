@@ -181,7 +181,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                     throw MESSAGES.connectionToMasterTimeout(e, retries, timeout);
                 }
                 try {
-                    HostControllerLogger.ROOT_LOGGER.cannotConnect(localHostInfo.getRemoteDomainControllerHost(), localHostInfo.getRemoteDomainControllerPort());
+                    HostControllerLogger.ROOT_LOGGER.cannotConnect(localHostInfo.getRemoteDomainControllerHost(), localHostInfo.getRemoteDomainControllerPort(), e);
                     ReconnectPolicy.CONNECT.wait(retries);
                     retries++;
                 } catch (InterruptedException ie) {

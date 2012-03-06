@@ -34,6 +34,8 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.remoting3.Channel;
 
+import java.io.IOException;
+
 /**
  * This module is using message IDs in the range 10800-10999. This file is using the subset 10900-10939 for host
  * controller logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
@@ -71,10 +73,11 @@ public interface HostControllerLogger extends BasicLogger {
      *
      * @param hostAddress the host name.
      * @param port        the port.
+     * @param cause       the cause
      */
     @LogMessage(level = Level.WARN)
-    @Message(id = 10900, value = "Could not connect to remote domain controller %s:%d")
-    void cannotConnect(String hostAddress, int port);
+    @Message(id = 10900, value = "Could not connect to remote domain controller %s:%d: %s")
+    void cannotConnect(String hostAddress, int port, IOException cause);
 
     /**
      * Logs an error message indicating this host is a slave and cannot connect to the master host controller.
