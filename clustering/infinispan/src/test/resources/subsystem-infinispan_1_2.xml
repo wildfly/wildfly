@@ -59,7 +59,7 @@
             <state-transfer enabled="true" timeout="60000" chunk-size="10000"/>
             <indexing-properties>
                 <property name="hibernate.search.default.directory_provider" >infinispan</property>
-                <property name="hibernate.search.default.worker.backend">jgroupsMaster</property>
+                <property name="hibernate.search.default.worker.backend">${sys.prop:jgroupsMaster}</property>
             </indexing-properties>
         </distributed-cache>
     </cache-container>

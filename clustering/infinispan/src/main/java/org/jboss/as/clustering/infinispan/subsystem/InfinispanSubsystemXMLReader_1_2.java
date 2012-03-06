@@ -931,7 +931,36 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
 
     private void parseIndexingProperties(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
-            node.get(ModelKeys.INDEXING_PROPERTIES).add(this.parseStoreProperty(reader));
+            Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROPERTY: {
+                    int attributes = reader.getAttributeCount();
+                    String property = null;
+                    for (int i = 0; i < attributes; i++) {
+                        String value = reader.getAttributeValue(i);
+                        Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                        switch (attribute) {
+                            case NAME: {
+                                property = value;
+                                break;
+                            }
+                            default: {
+                                throw ParseUtils.unexpectedAttribute(reader, i);
+                            }
+                        }
+                    }
+                    if (property == null) {
+                        throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+                    }
+                    String value = reader.getElementText();
+                    CommonAttributes.INDEXING_PROPERTIES.parseAndAddParameterElement(property,value,node,reader);
+                    //node.get(ModelKeys.INDEXING_PROPERTIES).add(property, ParseUtils.parsePossibleExpression(value));
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
         }
     }
     private void parseStoreProperty(XMLExtendedStreamReader reader,ModelNode node) throws XMLStreamException {

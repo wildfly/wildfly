@@ -31,9 +31,11 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.MapValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * Defining characteristics of an {@link ModelType#OBJECT} attribute in a {@link org.jboss.as.controller.registry.Resource},
@@ -62,6 +64,13 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
         this.elementValidator = elementValidator;
     }
 
+    public MapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
+                                  final int minSize, final int maxSize, final ParameterValidator elementValidator,
+                                  final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, null, ModelType.OBJECT, allowNull, allowExpression, null, new MapValidator(elementValidator, allowNull, minSize, maxSize), alternatives, requires, flags);
+        this.elementValidator = elementValidator;
+    }
+
     /**
      * Creates and returns a {@link ModelNode} using the given {@code value} after first validating the node
      * against {@link #getValidator() this object's validator}.
@@ -82,11 +91,43 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
 
         final String trimmed = value == null ? null : value.trim();
         ModelNode node;
-        if (trimmed != null ) {
-            node = new ModelNode().set(trimmed);
-        } else {
+        if (trimmed != null) {
+            if (isAllowExpression()) {
+                node = ParseUtils.parsePossibleExpression(trimmed);
+            } else {
+                node = new ModelNode().set(trimmed);
+            }
+            if (node.getType() != ModelType.EXPRESSION) {
+                // Convert the string to the expected type
+                switch (getType()) {
+                    case BIG_DECIMAL:
+                        node.set(node.asBigDecimal());
+                        break;
+                    case BIG_INTEGER:
+                        node.set(node.asBigInteger());
+                        break;
+                    case BOOLEAN:
+                        node.set(node.asBoolean());
+                        break;
+                    case BYTES:
+                        node.set(node.asBytes());
+                        break;
+                    case DOUBLE:
+                        node.set(node.asDouble());
+                        break;
+                    case INT:
+                        node.set(node.asInt());
+                        break;
+                    case LONG:
+                        node.set(node.asLong());
+                        break;
+                }
+            }
+        }
+        else {
             node = new ModelNode();
         }
+
 
         try {
             elementValidator.validateParameter(getXmlName(), node);
@@ -97,8 +138,8 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
         return node;
     }
 
-    public void parseAndAddParameterElement(final String key, final String value, final ModelNode operation, final Location location) throws XMLStreamException {
-        ModelNode paramVal = parse(value, location);
+    public void parseAndAddParameterElement(final String key, final String value, final ModelNode operation, final XMLExtendedStreamReader reader) throws XMLStreamException {
+        ModelNode paramVal = parse(value, reader.getLocation());
         operation.get(getName()).get(key).set(paramVal);
     }
 

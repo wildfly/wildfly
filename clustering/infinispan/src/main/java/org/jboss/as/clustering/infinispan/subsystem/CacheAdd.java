@@ -303,7 +303,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         Properties indexingProperties = new Properties();
         if (indexing.isEnabled()&&indexingPropertiesModel.isDefined()){
             for (Property p:indexingPropertiesModel.asPropertyList()){
-                indexingProperties.put(p.getName(), p.getValue().asString());
+                String value = p.getValue().asString();
+                indexingProperties.put(p.getName(), value);
             }
         }
 
