@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <config xmlns="http://zanata.org/namespace/config/">
     <url>https://translate.jboss.org/</url>
-    <project>jboss-as</project>
+    <project>jboss_as</project>
     <project-version>master</project-version>
     <project-type>properties</project-type>
 
