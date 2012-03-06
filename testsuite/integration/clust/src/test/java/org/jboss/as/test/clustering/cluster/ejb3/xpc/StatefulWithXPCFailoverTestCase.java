@@ -65,6 +65,9 @@ public class StatefulWithXPCFailoverTestCase {
             "    </description>" +
             "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
+            "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\" />" +
+            "<property name=\"hibernate.cache.use_query_cache\" value=\"true\" />" +
+            "<property name=\"hibernate.generate_statistics\" value=\"true\" />" +
             "</properties>" +
             "  </persistence-unit>" +
             "</persistence>";
@@ -131,7 +134,7 @@ public class StatefulWithXPCFailoverTestCase {
         String xpc2_get_url = baseURL2 + "count?command=getEmployee";
         String xpc1_getempsecond_url = baseURL1 + "count?command=getSecondBeanEmployee";
         String xpc2_getempsecond_url = baseURL2 + "count?command=getSecondBeanEmployee";
-        String xpc2_getdestroy_url = baseURL2 + "count?command=destroy";
+        String xpc1_getdestroy_url = baseURL1 + "count?command=destroy";
 
         try {
             // extended persistence context is available on node1
@@ -185,22 +188,93 @@ public class StatefulWithXPCFailoverTestCase {
             assertGetEmployee(client, xpc1_get_url, "6. xpc still on node1, node1 should be able to read entity from xpc");
             assertGetSecondEmployee(client, xpc1_getempsecond_url, "6. xpc still on node1, node1 should be able to read entity from xpc of second bean");
 
-            // failover to deployment2
-            stop(DEPLOYMENT_1, CONTAINER_1);  // failover #2 to node 2
-
-            System.out.println(new Date() + "7. stopped node1, about to read entity on node2");
-
-            assertGetEmployee(client, xpc2_get_url, "7. stopped deployment on node1, xpc should failover to node2, node2 should be able to read entity from xpc");
-            assertGetEmployee(client, xpc2_getempsecond_url, "7. stopped deployment on node1, xpc should failover to node2, node2 should be able to read entity from xpc that is on node2 (second bean)");
-
-            assertDestroy(client, xpc2_getdestroy_url,"destroy the bean on node2");
-
+            assertDestroy(client, xpc1_getdestroy_url,"destroy the bean on node2");
+            System.out.println(new Date() + "7. test is done");
 
         } finally {
             client.getConnectionManager().shutdown();
 
             stop(DEPLOYMENT_1, CONTAINER_1);
             stop(DEPLOYMENT_2, CONTAINER_2);
+        }
+    }
+
+    @Test
+    @InSequence(3)
+    public void testSecondLevelCache(
+            @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            throws IOException, InterruptedException {
+
+        start(DEPLOYMENT_1, CONTAINER_1);
+        start(DEPLOYMENT_2, CONTAINER_2);
+
+        DefaultHttpClient client = new DefaultHttpClient();
+
+        String xpc1_create_url = baseURL1 + "count?command=createEmployee";
+        String xpc1_flush_url = baseURL1 + "count?command=flush";
+        String xpc1_delete_url = baseURL1 + "count?command=deleteEmployeeViaJDBC";
+        String xpc1_get_url = baseURL1 + "count?command=getEmployee";
+        String xpc2_get_url = baseURL2 + "count?command=getEmployee";
+        String xpc2_getdestroy_url = baseURL2 + "count?command=destroy";
+
+        try {
+            System.out.println(new Date() + "create employee entity ");
+            assertCreateEmployee(client, xpc1_create_url);
+
+            System.out.println(new Date() + "1. about to read entity on node1");
+            // ensure that we can get it from node 1
+            assertGetEmployee(client, xpc1_get_url, "1. on node1, node1 should be able to read entity on node1");
+
+            assertFlush(client, xpc1_flush_url); // flush changes to db
+
+            assertGetEmployee(client, xpc1_get_url, "2. on node1, node1 should be able to read entity on node1");
+
+            System.out.println(new Date() + "2. about to delete entity on node1 (2lc shouldn't notice the deletion)");
+            assertDeleteEmployeeViaJDBC(client, xpc1_delete_url);
+
+            System.out.println(new Date() + "3. about to read entity on node1 (2lc still contain the entity)");
+
+            assertGetEmployee(client, xpc1_get_url, "3. on node1, node1 should be able to read entity on node1");
+
+            // failover to deployment2
+            stop(DEPLOYMENT_1, CONTAINER_1); // failover #1 to node 2
+
+            System.out.println(new Date() + "4. stopped node1 to force failover, about to read deleted entity on node2");
+
+            assertGetEmployee(client, xpc2_get_url, "4. stopped deployment on node1, should failover to node2, node2 should be able to read deleted entity from 2lc");
+
+            System.out.println(new Date() + "5. about to destroy bean");
+            assertDestroy(client, xpc2_getdestroy_url,"5. destroy the bean on node1");
+            System.out.println(new Date() + "6. test is done");
+
+        } finally {
+            client.getConnectionManager().shutdown();
+            stop(DEPLOYMENT_2, CONTAINER_2);
+        }
+    }
+
+    private void assertDeleteEmployeeViaJDBC(DefaultHttpClient client, String delete_url)  throws IOException {
+        HttpResponse response = client.execute(new HttpGet(delete_url));
+        try {
+            if (response.getStatusLine().getStatusCode() >= 400 && response.getStatusLine().getStatusCode() < 500)
+               return;
+
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        } finally {
+            response.getEntity().getContent().close();
+        }
+    }
+
+    private void assertFlush(DefaultHttpClient client, String flush_url) throws IOException {
+        HttpResponse response = client.execute(new HttpGet(flush_url));
+        try {
+            if (response.getStatusLine().getStatusCode() >= 400 && response.getStatusLine().getStatusCode() < 500)
+               return;
+
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        } finally {
+            response.getEntity().getContent().close();
         }
     }
 

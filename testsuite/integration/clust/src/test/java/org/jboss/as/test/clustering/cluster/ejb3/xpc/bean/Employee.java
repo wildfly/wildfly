@@ -24,6 +24,7 @@ package org.jboss.as.test.clustering.cluster.ejb3.xpc.bean;
 
 import java.io.Serializable;
 
+import javax.persistence.Cacheable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -33,6 +34,7 @@ import javax.persistence.Id;
  * @author Scott Marlow
  */
 @Entity
+@Cacheable(true) // allow second level cache to cache Employee
 public class Employee implements Serializable {
     @Id
     private int id;
