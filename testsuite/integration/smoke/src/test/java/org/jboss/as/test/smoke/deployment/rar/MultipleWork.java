@@ -19,24 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.test.smoke.deployment.rar;
 
-import java.io.Serializable;
+import java.util.logging.Logger;
 
-import javax.resource.Referenceable;
-import javax.resource.ResourceException;
+import javax.resource.spi.work.Work;
 
-/**
- * MultipleConnectionFactory2
- * 
- */
-public interface MultipleConnectionFactory2 extends Serializable, Referenceable {
-    /**
-     * Get connection from factory
-     * 
-     * @return MultipleConnection2 instance
-     * @exception ResourceException Thrown if a connection can't be obtained
-     */
-    public MultipleConnection2 getConnection() throws ResourceException;
+public class MultipleWork implements Work {
+
+    private static Logger log = Logger.getLogger("MultipleWork");
+    
+    @Override
+    public void run() {
+        
+        log.finest("Work is started");
+    }
+
+    @Override
+    public void release() {
+        
+        log.finest("Work is done");
+    }
 
 }
