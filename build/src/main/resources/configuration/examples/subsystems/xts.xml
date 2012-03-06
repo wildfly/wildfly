@@ -3,6 +3,6 @@
 <config>
    <extension-module>org.jboss.as.xts</extension-module>
    <subsystem xmlns="urn:jboss:domain:xts:1.0">
-       <xts-environment url="http://localhost:8080/ws-c11/ActivationService"/>
+       <xts-environment url="http://${jboss.bind.address:127.0.0.1}:8080/ws-c11/ActivationService"/>
    </subsystem>
 </config>
