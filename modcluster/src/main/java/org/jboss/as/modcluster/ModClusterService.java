@@ -60,7 +60,6 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
 
     static final ServiceName NAME = ServiceName.JBOSS.append("mod-cluster");
 
-    private final String unmaskedPassword;
     private final ModelNode modelconf;
 
     private CatalinaEventHandlerAdapter adapter;
@@ -73,8 +72,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     /* Depending on configuration we use one of the other */
     private org.jboss.modcluster.ModClusterService service;
     private ModClusterConfig config;
-    public ModClusterService(final String unmaskedPassword, final ModelNode modelconf) {
-        this.unmaskedPassword = unmaskedPassword;
+    public ModClusterService(final ModelNode modelconf) {
         this.modelconf = modelconf;
     }
 
@@ -118,8 +116,9 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             if (ssl.has(CommonAttributes.KEY_ALIAS))
                 config.setSslKeyAlias(ssl.get(CommonAttributes.KEY_ALIAS).asString());
             if (ssl.has(CommonAttributes.PASSWORD)) {
-                config.setSslTrustStorePassword(unmaskedPassword);
-                config.setSslKeyStorePassword(unmaskedPassword);
+                String password = ssl.get(CommonAttributes.PASSWORD).asString();
+                config.setSslTrustStorePassword(password);
+                config.setSslKeyStorePassword(password);
             }
             if (ssl.has(CommonAttributes.CERTIFICATE_KEY_FILE))
                 config.setSslKeyStore(ssl.get(CommonAttributes.CERTIFICATE_KEY_FILE).asString());
