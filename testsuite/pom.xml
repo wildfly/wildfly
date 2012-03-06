@@ -624,6 +624,33 @@
                 <mcast.modcluster >ff01::3</mcast.modcluster>
             </properties>
         </profile>
+        <!-- Ugly workaround for MANTRUN-172 :/   See AS7-3993. -->
+        <profile>
+            <id>ts.ipv6.dummy.node0</id>
+            <activation><property><name>node0</name></property></activation>
+            <properties> <node0>${node0}</node0> </properties>
+        </profile>
+        <profile>
+            <id>ts.ipv6.dummy.node1</id>
+            <activation><property><name>node1</name></property></activation>
+            <properties> <node1>${node1}</node1> </properties>
+        </profile>
+        <profile>
+            <id>ts.ipv6.dummy.mcast</id>
+            <activation><property><name>mcast</name></property></activation>
+            <properties> <mcast            >${mcast}</mcast> </properties>
+        </profile>
+        <profile>
+            <id>ts.ipv6.dummy.mcast.jgroupsDiag</id>
+            <activation><property><name>mcast.jgroupsDiag</name></property></activation>
+            <properties> <mcast.jgroupsDiag>${mcast.jgroupsDiag}</mcast.jgroupsDiag> </properties>
+        </profile>
+        <profile>
+            <id>ts.ipv6.dummy.mcast.modcluster</id>
+            <activation><property><name>mcast.modcluster</name></property></activation>
+            <properties> <mcast.modcluster >${mcast.modcluster}</mcast.modcluster> </properties>
+        </profile>
+        
 
 
         <!-- Security policy.  ARQ-690, AS7-2823, AS7-2826. -->

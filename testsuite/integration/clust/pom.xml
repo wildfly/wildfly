@@ -53,6 +53,7 @@
                                     <target>
                                         <echo>In Maven: node0: ${node0}</echo>
                                         <echo>In Maven: node1: ${node1}</echo>
+                                        <echo>In Maven: mcast: ${mcast}</echo>
                                         <!-- Build the UDP server configs in target/ . -->
                                         <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
                                             <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
@@ -119,6 +120,30 @@
             </build>
         </profile>
         
+        <!--
+           Disable Surefire and AntRun executions when using -Dtest=... which would cause it running twice.
+        -->
+        <profile>
+            <id>ts.clust.prevent-2nd-run-on-Dtest.profile</id>
+            <activation><property><name>test</name></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions><execution><id>ts.config-as.clust.jdbc-store</id> <phase>none</phase></execution></executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution><id>ts.surefire.clust.jdbc-store</id>  <phase>none</phase></execution>
+                            <execution><id>ts.surefire.clust.single-node</id> <phase>none</phase></execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
 
         
 

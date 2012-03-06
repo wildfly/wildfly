@@ -38,9 +38,9 @@
 
     <!-- Multi-cast addresses. -->
     <xsl:param name="udpMcastAddress"         select="'230.0.0.4'"/>
-    <xsl:param name="diagnosticsMcastAddress" select="'224.0.75.75'"/>
-    <xsl:param name="mpingMcastAddress"       select="'230.0.0.4'"/>
-    <xsl:param name="modclusterMcastAddress"  select="'224.0.1.105'"/>
+    <xsl:param name="diagnosticsMcastAddress" select="$udpMcastAddress"/>
+    <xsl:param name="mpingMcastAddress"       select="$udpMcastAddress"/>
+    <xsl:param name="modclusterMcastAddress"  select="$udpMcastAddress"/>
 
 
     <!-- Change the management and public IP addresses. -->
