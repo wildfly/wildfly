@@ -135,7 +135,7 @@ public class XTSExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case URL:
-                        store.get(ModelDescriptionConstants.URL).set(value);
+                        store.get(ModelDescriptionConstants.URL).set(ParseUtils.parsePossibleExpression(value));
                         break;
                     default:
                         throw ParseUtils.unexpectedAttribute(reader, i);

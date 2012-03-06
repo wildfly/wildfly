@@ -28,6 +28,7 @@ public class Descriptions {
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, ModelDescriptionConstants.URL, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("xts-environment.url"));
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, ModelDescriptionConstants.URL, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, ModelDescriptionConstants.URL, ModelDescriptionConstants.REQUIRED).set(true);
+        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, ModelDescriptionConstants.URL, ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(true);
 
         return subsystem;
     }
@@ -47,6 +48,7 @@ public class Descriptions {
         op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, ModelDescriptionConstants.URL, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("xts-environment.url"));
         op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, ModelDescriptionConstants.URL, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
         op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, ModelDescriptionConstants.URL, ModelDescriptionConstants.REQUIRED).set(false);
+        op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, ModelDescriptionConstants.URL, ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(true);
 
         op.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
 
