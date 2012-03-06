@@ -33,6 +33,8 @@ import org.jboss.msc.service.ServiceRegistry;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.logging.Handler;
+
 /**
  * Operation responsible for disabling a logging handler.
  *
@@ -49,23 +51,12 @@ public class HandlerDisable implements OperationStepHandler {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, ModelNode operation) {
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
-                    final ServiceController<?> controller = serviceRegistry.getService(LogServices.handlerName(name));
+                    @SuppressWarnings("unchecked")
+                    final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
                     if (controller != null) {
-                        controller.addListener(new AbstractServiceListener<Object>() {
-                            public void listenerAdded(ServiceController<?> serviceController) {
-                                serviceController.setMode(ServiceController.Mode.NEVER);
-                            }
-
-                            @Override
-                            public void transition(ServiceController<?> serviceController, ServiceController.Transition transition) {
-                                if (transition == ServiceController.Transition.STOPPING_to_DOWN) {
-                                    context.completeStep();
-                                }
-                            }
-                        });
-                    } else {
-                        context.completeStep();
+                        Handlers.disableHandler(controller.getValue(), name);
                     }
+                    context.completeStep();
                 }
             }, OperationContext.Stage.RUNTIME);
         }
