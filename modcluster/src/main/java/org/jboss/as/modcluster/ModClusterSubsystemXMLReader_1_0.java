@@ -148,72 +148,29 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-
                 case ADVERTISE_SOCKET:
-                    conf.get(ADVERTISE_SOCKET).set(value);
-                    break;
                 case PROXY_LIST:
-                    conf.get(PROXY_LIST).set(ParseUtils.parsePossibleExpression(value));
-                    break;
                 case PROXY_URL:
-                    conf.get(PROXY_URL).set(ParseUtils.parsePossibleExpression(value));
-                    break;
                 case ADVERTISE:
-                    conf.get(ADVERTISE).set(value);
-                    break;
                 case ADVERTISE_SECURITY_KEY:
-                    conf.get(ADVERTISE_SECURITY_KEY).set(ParseUtils.parsePossibleExpression(value));
-                    break;
                 case EXCLUDED_CONTEXTS:
-                    conf.get(EXCLUDED_CONTEXTS).set(ParseUtils.parsePossibleExpression(value));
-                    break;
                 case AUTO_ENABLE_CONTEXTS:
-                    conf.get(AUTO_ENABLE_CONTEXTS).set(Boolean.parseBoolean(value));
-                    break;
                 case STOP_CONTEXT_TIMEOUT:
-                    conf.get(STOP_CONTEXT_TIMEOUT).set(Integer.parseInt(value));
-                    break;
                 case SOCKET_TIMEOUT:
-                    conf.get(SOCKET_TIMEOUT).set(Integer.parseInt(value));
-                    break;
                 case STICKY_SESSION:
-                    conf.get(STICKY_SESSION).set(Boolean.parseBoolean(value));
-                    break;
                 case STICKY_SESSION_REMOVE:
-                    conf.get(STICKY_SESSION_REMOVE).set(Boolean.parseBoolean(value));
-                    break;
                 case STICKY_SESSION_FORCE:
-                    conf.get(STICKY_SESSION_FORCE).set(Boolean.parseBoolean(value));
-                    break;
                 case WORKER_TIMEOUT:
-                    conf.get(WORKER_TIMEOUT).set(Integer.parseInt(value));
-                    break;
-                 case MAX_ATTEMPTS:
-                     conf.get(MAX_ATTEMPTS).set(Integer.parseInt(value));
-                     break;
+                case MAX_ATTEMPTS:
                 case FLUSH_PACKETS:
-                    conf.get(FLUSH_PACKETS).set(Boolean.parseBoolean(value));
-                    break;
                 case FLUSH_WAIT:
-                    conf.get(FLUSH_WAIT).set(Integer.parseInt(value));
-                    break;
                 case PING:
-                    conf.get(PING).set(Integer.parseInt(value));
-                    break;
                 case SMAX:
-                    conf.get(SMAX).set(Integer.parseInt(value));
-                    break;
                 case TTL:
-                    conf.get(TTL).set(Integer.parseInt(value));
-                    break;
                 case NODE_TIMEOUT:
-                    conf.get(NODE_TIMEOUT).set(Integer.parseInt(value));
-                    break;
                 case BALANCER:
-                    conf.get(BALANCER).set(value);
-                    break;
                 case DOMAIN:
-                    conf.get(DOMAIN).set(ParseUtils.parsePossibleExpression(value));
+                    ModClusterConfigResourceDefinition.ATTRIBUTES_BY_NAME.get(attribute.getLocalName()).parseAndSetParameter(value, conf, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -231,25 +188,12 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
             case KEY_ALIAS:
-                ssl.get(KEY_ALIAS).set(value);
-                break;
             case PASSWORD:
-                ssl.get(PASSWORD).set(ParseUtils.parsePossibleExpression(value));
-                break;
             case CERTIFICATE_KEY_FILE:
-                ssl.get(CERTIFICATE_KEY_FILE).set(ParseUtils.parsePossibleExpression(value));
-                break;
             case CIPHER_SUITE:
-                ssl.get(CIPHER_SUITE).set(value);
-                break;
             case PROTOCOL:
-                ssl.get(PROTOCOL).set(value);
-                break;
-             case CA_CERTIFICATE_FILE:
-                ssl.get(CA_CERTIFICATE_FILE).set(ParseUtils.parsePossibleExpression(value));
-                break;
             case CA_REVOCATION_URL:
-                ssl.get(CA_REVOCATION_URL).set(value);
+                ModClusterSSLResourceDefinition.ATTRIBUTES_BY_NAME.get(attribute.getLocalName()).parseAndSetParameter(value, ssl, reader);
                 break;
            default:
                 throw unexpectedAttribute(reader, i);
