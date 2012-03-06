@@ -40,7 +40,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * 
+ *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemTest {
@@ -49,18 +49,18 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
         super(ResourceAdaptersExtension.SUBSYSTEM_NAME, new ResourceAdaptersExtension());
     }
 
-    public ModelNode getModel(String resourceFileName) throws Exception {
-        return getModel(resourceFileName, true);
+    public ModelNode getModel(String resourceFileName, String archiveName) throws Exception {
+        return getModel(resourceFileName, true, archiveName);
     }
 
-    public ModelNode getModel(String resourceFileName, boolean checkMarshalledXML) throws Exception {
+    public ModelNode getModel(String resourceFileName, boolean checkMarshalledXML, String archiveName) throws Exception {
 
         String xml = readResource(resourceFileName);
 
         KernelServices services = super.installInController(AdditionalInitialization.MANAGEMENT, xml);
 
         ModelNode model = services.readWholeModel();
-        ConnectorServices.unregisterResourceIdentifiers("some.rar");
+        ConnectorServices.unregisterResourceIdentifiers(archiveName);
 
         // Marshal the xml to see that it is the same as before
         String marshalled = services.getPersistedSubsystemXml();
@@ -81,7 +81,7 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
     @Test
     public void testResourceAdapters() throws Exception {
 
-        ModelNode model = getModel("ra.xml");
+        ModelNode model = getModel("ra.xml", "some.rar");
         if (model == null)
             return;
         // Check model..
@@ -106,10 +106,9 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
     }
 
     @Test
-    @Ignore("AS7-3941")
     public void testResourceAdapterWith2ConDefAnd2AdmObj() throws Exception {
 
-        getModel("ra2.xml", false);
+        getModel("ra2.xml", false, "multiple.rar");
 
     }
 }

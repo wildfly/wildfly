@@ -134,7 +134,7 @@ public class ParseUtils {
     	Properties params=new Properties();
     	 params.put("archive","some.rar");
          params.put("transaction-support","XATransaction");
-         params.put("bootstrapcontext","someContext");
+         params.put("bootstrap-context","someContext");
 
     	return params;
     }
