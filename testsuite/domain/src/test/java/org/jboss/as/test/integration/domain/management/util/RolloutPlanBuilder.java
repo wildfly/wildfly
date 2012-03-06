@@ -81,7 +81,7 @@ public class RolloutPlanBuilder {
     public String buildAsString() {
         ModelNode plan = build();
         String planString = plan.toString();
-        planString = planString.replace(System.getProperty("line.separator"), " ");
+        planString = planString.replace("\n", " ");
         return planString;
         
     }
