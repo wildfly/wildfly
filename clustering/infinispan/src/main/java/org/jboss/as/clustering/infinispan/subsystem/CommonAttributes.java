@@ -298,6 +298,9 @@ public interface CommonAttributes {
     SimpleListAttributeDefinition PROPERTIES = SimpleListAttributeDefinition.Builder.of(ModelKeys.PROPERTIES, PROPERTY).
             setAllowNull(true).
             build();
+    SimpleListAttributeDefinition INDEXING_PROPERTIES = SimpleListAttributeDefinition.Builder.of(ModelKeys.INDEXING_PROPERTIES, PROPERTY).
+            setAllowNull(true).
+            build();
     SimpleAttributeDefinition PURGE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.PURGE, ModelType.BOOLEAN, true)
                     .setXmlName(Attribute.PURGE.getLocalName())
