@@ -24,10 +24,16 @@ package org.jboss.as.test.integration.management.cli;
 import java.io.File;
 import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,7 +46,16 @@ import org.junit.runner.RunWith;
 public class CliArgumentsTestCase extends AbstractCliTestBase {
     
     private static final String tempDir = System.getProperty("java.io.tmpdir");
-    private static final int MGMT_PORT = 9999;
+    
+    @ArquillianResource
+    private ManagementClient managementClient;
+    
+    @Deployment
+    public static Archive<?> getDeployment() {
+        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
+        ja.addClass(GlobalOpsTestCase.class);
+        return ja;
+    }
     
     @Test
     public void testVersionArgument() throws Exception {
@@ -98,7 +113,10 @@ public class CliArgumentsTestCase extends AbstractCliTestBase {
     
     @Test
     public void testControlerArgument() throws Exception {
-        CLIWrapper cli = new CLIWrapper(false, new String[] {"--controller=localhost:" + String.valueOf(MGMT_PORT)});
+        
+        String mgmtAddr = managementClient.getMgmtAddress(); 
+        int mgmtPort = managementClient.getMgmtPort();
+        CLIWrapper cli = new CLIWrapper(false, new String[] {"--controller=" + mgmtAddr + ":" + String.valueOf(mgmtPort)});
         cli.sendLine("connect");
         cli.sendLine("ls");
         String output = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
@@ -106,7 +124,7 @@ public class CliArgumentsTestCase extends AbstractCliTestBase {
         Assert.assertTrue(output.contains("extension"));        
         cli.quit();
         
-        cli = new CLIWrapper(false, new String[] {"--controller=localhost:" + String.valueOf(MGMT_PORT - 1)});
+        cli = new CLIWrapper(false, new String[] {"--controller=" + mgmtAddr + ":" + String.valueOf(mgmtPort - 1)});
         cli.sendLine("connect");
         output = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT * 10);
         Assert.assertTrue(output.contains("The controller is not available"));
