@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Basic process test wrapper.
+ *
  * @author Emanuel Muckenhuber
  */
 class ProcessWrapper {
@@ -47,7 +49,7 @@ class ProcessWrapper {
     private final String workingDirectory;
 
     private Process process;
-    private boolean stopped;
+    private volatile boolean stopped;
 
     ProcessWrapper(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory) {
         assert processName != null;
@@ -113,7 +115,7 @@ class ProcessWrapper {
      * @author Stuart Douglas
      *
      */
-    private static class ConsoleConsumer implements Runnable {
+    private class ConsoleConsumer implements Runnable {
         private final InputStream source;
         private final PrintStream target;
         private final boolean writeOutput = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
@@ -143,7 +145,9 @@ class ProcessWrapper {
                 }
                 source.close();
             } catch (IOException e) {
-                e.printStackTrace(target);
+                if(! ProcessWrapper.this.stopped) {
+                    e.printStackTrace(target);
+                }
             } finally {
                 StreamUtils.safeClose(source);
             }

@@ -31,6 +31,7 @@ import java.io.IOException;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
+import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
@@ -215,11 +216,6 @@ public class IgnoredResourcesTestCase {
     }
 
     private ModelNode executeOperation(final ModelNode op, final ModelControllerClient modelControllerClient) throws IOException, MgmtOperationException {
-        ModelNode ret = modelControllerClient.execute(op);
-
-        if (! SUCCESS.equals(ret.get(OUTCOME).asString())) {
-            throw new MgmtOperationException("Management operation failed.", op, ret);
-        }
-        return ret.get(RESULT);
+        return DomainTestUtils.executeForResult(op, modelControllerClient);
     }
 }
