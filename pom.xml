@@ -255,6 +255,8 @@
         <version.javacc.plugin>2.5</version.javacc.plugin>
         <version.org.zanata.plugin>1.5.0</version.org.zanata.plugin>
         <version.shade.plugin>1.5</version.shade.plugin>
+        <version.jacoco.plugin>0.5.6.201201232323</version.jacoco.plugin> <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
+
 
         <!-- Surefire args -->
         <surefire.jpda.args/>
