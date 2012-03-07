@@ -28,6 +28,8 @@
  */
 package org.jboss.as.ejb3.pool.common;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.logging.Logger;
 
 /**
@@ -37,44 +39,44 @@ import org.jboss.logging.Logger;
  */
 public class MockBean {
     private static final Logger log = Logger.getLogger(MockBean.class);
-    static int finalized = 0;
-    static int preDestroys = 0;
-    static int postConstructs = 0;
+    static final AtomicInteger finalized = new AtomicInteger(0);
+    static final AtomicInteger preDestroys = new AtomicInteger(0);
+    static final AtomicInteger postConstructs= new AtomicInteger(0);
 
     @Override
     protected void finalize() throws Throwable {
         log.info("finalize");
 
-        finalized++;
+        finalized.incrementAndGet();
 
         super.finalize();
     }
 
     public static int getFinalized() {
-        return finalized;
+        return finalized.get();
     }
 
     public static int getPreDestroys() {
-        return preDestroys;
+        return preDestroys.get();
     }
 
     public static int getPostConstructs() {
-        return postConstructs;
+        return postConstructs.get();
     }
 
     public void postConstruct() {
         log.info("postConstruct");
-        postConstructs++;
+        postConstructs.incrementAndGet();
     }
 
     public void preDestroy() {
         log.info("preDestroy");
-        preDestroys++;
+        preDestroys.incrementAndGet();
     }
 
     public static void reset() {
-        finalized = 0;
-        preDestroys = 0;
-        postConstructs = 0;
+        finalized.set(0);
+        preDestroys.set(0);
+        postConstructs.set(0);
     }
 }

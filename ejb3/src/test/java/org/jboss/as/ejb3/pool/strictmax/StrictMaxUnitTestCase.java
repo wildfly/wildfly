@@ -29,6 +29,7 @@ import org.jboss.as.ejb3.pool.common.MockBean;
 import org.jboss.as.ejb3.pool.common.MockFactory;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -81,19 +82,18 @@ public class StrictMaxUnitTestCase extends TestCase {
         final Pool<MockBean> pool = new StrictMaxPool<MockBean>(factory, 10, 1, TimeUnit.SECONDS);
         pool.start();
 
+        final CountDownLatch in = new CountDownLatch(1);
+
         Callable<Void> task = new Callable<Void>() {
             public Void call() throws Exception {
-                for (int i = 0; i < 20; i++) {
-                    MockBean bean = pool.get();
+                in.await();
+                MockBean bean = pool.get();
 
-                    Thread.sleep(50);
+                pool.release(bean);
 
-                    pool.release(bean);
+                bean = null;
 
-                    bean = null;
-
-                    used.incrementAndGet();
-                }
+                used.incrementAndGet();
 
                 return null;
             }
@@ -103,7 +103,10 @@ public class StrictMaxUnitTestCase extends TestCase {
         Future<?> results[] = new Future<?>[20];
         for (int i = 0; i < results.length; i++) {
             results[i] = service.submit(task);
+
         }
+
+        in.countDown();
 
         for (Future<?> result : results) {
             result.get(5, TimeUnit.SECONDS);
@@ -113,7 +116,7 @@ public class StrictMaxUnitTestCase extends TestCase {
 
         pool.stop();
 
-        assertEquals(400, used.intValue());
+        assertEquals(20, used.intValue());
         assertEquals(10, MockBean.getPostConstructs());
         assertEquals(10, MockBean.getPreDestroys());
     }
