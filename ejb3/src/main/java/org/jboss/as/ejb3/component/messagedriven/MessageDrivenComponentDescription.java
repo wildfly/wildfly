@@ -22,13 +22,6 @@
 package org.jboss.as.ejb3.component.messagedriven;
 
 
-import java.util.Properties;
-import java.util.Set;
-
-import javax.ejb.MessageDrivenBean;
-import javax.ejb.TransactionManagementType;
-import javax.resource.spi.ResourceAdapter;
-
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -42,6 +35,7 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
@@ -63,7 +57,13 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import javax.ejb.MessageDrivenBean;
+import javax.ejb.TransactionManagementType;
+import javax.resource.spi.ResourceAdapter;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.jboss.as.ejb3.EjbMessages.*;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -119,6 +119,13 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
 
         // setup the configurator to inject the resource adapter
         mdbComponentConfiguration.getCreateDependencies().add(new ResourceAdapterInjectingConfiguration());
+
+        mdbComponentConfiguration.getCreateDependencies().add(new DependencyConfigurator<MessageDrivenComponentCreateService>() {
+            @Override
+            public void configureDependency(final ServiceBuilder<?> serviceBuilder, final MessageDrivenComponentCreateService mdbComponentCreateService) throws DeploymentUnitProcessingException {
+                serviceBuilder.addDependency(EJBUtilities.SERVICE_NAME, EJBUtilities.class, mdbComponentCreateService.getEJBUtilitiesInjector());
+            }
+        });
 
         // add the bmt interceptor
         if (TransactionManagementType.BEAN.equals(this.getTransactionManagementType())) {

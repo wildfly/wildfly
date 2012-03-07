@@ -21,17 +21,6 @@
  */
 package org.jboss.as.ejb3.component.messagedriven;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.resource.ResourceException;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.ResourceAdapter;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.transaction.TransactionManager;
-
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
@@ -44,13 +33,23 @@ import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.jca.core.spi.rar.Endpoint;
 import org.jboss.msc.service.StopContext;
 
-import static java.util.Collections.emptyMap;
-import static javax.ejb.TransactionAttributeType.REQUIRED;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
+import javax.resource.ResourceException;
+import javax.resource.spi.ActivationSpec;
+import javax.resource.spi.ResourceAdapter;
+import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.transaction.TransactionManager;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static java.util.Collections.*;
+import static javax.ejb.TransactionAttributeType.*;
+import static org.jboss.as.ejb3.EjbLogger.*;
+import static org.jboss.as.ejb3.component.MethodIntf.*;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -64,6 +63,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     private final MessageEndpointFactory endpointFactory;
     private final Class<?> messageListenerInterface;
     private ResourceAdapter resourceAdapter;
+    private Endpoint endpoint;
 
     /**
      * Construct a new instance.
@@ -153,20 +153,25 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         this.resourceAdapter = resourceAdapter;
     }
 
+    void setEndpoint(final Endpoint endpoint) {
+        this.endpoint = endpoint;
+    }
+
     @Override
     public void start() {
-        if (resourceAdapter == null)
-            throw MESSAGES.resourceAdapterNotSpecified(this);
+        if (endpoint == null) {
+            throw EJB3_LOGGER.endpointUnAvailable(this.getComponentName());
+        }
 
         super.start();
 
         try {
-            resourceAdapter.endpointActivation(endpointFactory, activationSpec);
+            this.endpoint.activate(endpointFactory, activationSpec);
         } catch (ResourceException e) {
             throw new RuntimeException(e);
         }
 
-        if(this.pool!=null) {
+        if (this.pool != null) {
             this.pool.start();
         }
     }
@@ -174,11 +179,15 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     @Override
     public void stop(final StopContext stopContext) {
 
-        if(this.pool!=null){
+        if (this.pool != null) {
             this.pool.stop();
         }
 
-        resourceAdapter.endpointDeactivation(endpointFactory, activationSpec);
+        try {
+            endpoint.deactivate(endpointFactory, activationSpec);
+        } catch (ResourceException re) {
+            throw EJB3_LOGGER.failureDuringEndpointDeactivation(this.getComponentName(), re);
+        }
 
         super.stop(stopContext);
     }
