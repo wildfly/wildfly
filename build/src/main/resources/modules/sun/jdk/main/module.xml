@@ -46,6 +46,7 @@
                 <path name="sun/security/krb5"/>
                 <path name="sun/util"/>
                 <path name="sun/util/calendar"/>
+                <path name="sun/util/locale"/>
                 <path name="sun/security/provider"/>
                 <path name="META-INF/services"/>
             </paths>
