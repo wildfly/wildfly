@@ -24,26 +24,36 @@ package org.jboss.as.jaxr.extension;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.jaxr.JAXRConfiguration;
 import org.jboss.as.jaxr.ModelConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
+ * Handles write-attribute operation for a JAXR property resource.
+ *
  * @author Kurt Stam
  * @since 25-Oct-2011
  */
 public class JAXRPropertyWrite extends AbstractWriteAttributeHandler<Void> {
 
+    static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.VALUE, ModelType.STRING, false)
+            .setAllowExpression(true).build();
+
     private final JAXRConfiguration config;
 
     public JAXRPropertyWrite(JAXRConfiguration config) {
+        super(VALUE);
         this.config = config;
     }
 
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder handbackHolder) throws OperationFailedException {
-        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.PROPERTY).asString();
+        final String propName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         String propValue = resolvedValue.asString();
         applyUpdateToConfig(config, propName, propValue);
         return false;
@@ -51,7 +61,7 @@ public class JAXRPropertyWrite extends AbstractWriteAttributeHandler<Void> {
 
     @Override
     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
-        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.PROPERTY).asString();
+        final String propName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         String propValue = valueToRestore.asString();
         applyUpdateToConfig(config, propName, propValue);
     }

@@ -196,7 +196,6 @@
                     </replicated-cache>
                 </cache-container>
             </subsystem>
-<<<<<<< HEAD:testsuite/domain/src/test/resources/domain-configs/domain-standard.xml
             <subsystem xmlns="urn:jboss:domain:jgroups:1.0" default-stack="udp">
                 <stack name="udp">
                     <transport type="UDP" socket-binding="jgroups-udp" diagnostics-socket-binding="jgroups-diagnostics"/>
@@ -279,16 +278,10 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
             <subsystem xmlns="urn:jboss:domain:weld:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:jca:1.0">
-=======
-            <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
-            <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
+            <subsystem xmlns="urn:jboss:domain:jaxr:1.1">
               <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
-              <properties/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
->>>>>>> AS7-2305 adding UDDIv3 config options:build/src/main/resources/domain/configuration/domain.xml
                 <archive-validation enabled="true"/>
                 <bean-validation enabled="true"/>
                 <default-workmanager>

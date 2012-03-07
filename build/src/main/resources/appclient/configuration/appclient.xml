@@ -131,9 +131,8 @@
                 </security-domain>
             </security-domains>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
+        <subsystem xmlns="urn:jboss:domain:jaxr:1.1">
             <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
-            <juddi-server publish-url="http://localhost:8080/juddi/publish" query-url="http://localhost:8080/juddi/query"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:transactions:1.0">
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>

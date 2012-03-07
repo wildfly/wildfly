@@ -26,13 +26,19 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.PathAddHandler;
 import org.jboss.as.jaxr.JAXRConfiguration;
 import org.jboss.as.jaxr.ModelConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Kurt Stam
@@ -47,16 +53,20 @@ public class JAXRPropertyAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.get(ModelConstants.VALUE).set(operation.get(ModelConstants.VALUE));
-        ModelNode propertyNode = operation.get("address");
-        List<Property> properties = propertyNode.asPropertyList();
-        for (Property property : properties) {
-            if (property.getName().equals(ModelConstants.PROPERTY)) {
-                config.applyUpdateToConfig(
-                        property.getValue().asString(),
-                        operation.get(ModelConstants.VALUE).asString());
-            }
-        }
+        JAXRPropertyWrite.VALUE.validateAndSet(operation, model);
+    }
+
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
+                                  ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        final String propertyName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
+        config.applyUpdateToConfig(propertyName, JAXRPropertyWrite.VALUE.resolveModelAttribute(context, model).asString());
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
+        final String propertyName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
+        config.applyUpdateToConfig(propertyName, null);
     }
 
     static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
@@ -67,9 +77,9 @@ public class JAXRPropertyAdd extends AbstractAddStepHandler {
             ResourceBundle resbundle = JAXRConfiguration.getResourceBundle(locale);
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("jaxr.property.add"));
-            //node.get(ModelConstants.PROPERTY, ModelConstants.VALUE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("jaxr.property.value"));
-            //node.get(ModelConstants.PROPERTY, ModelConstants.VALUE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            //node.get(ModelConstants.PROPERTY, ModelConstants.VALUE, ModelDescriptionConstants.REQUIRED).set(true);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.VALUE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("jaxr.property.value"));
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.VALUE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.VALUE, ModelDescriptionConstants.REQUIRED).set(true);
             return node;
         }
     };

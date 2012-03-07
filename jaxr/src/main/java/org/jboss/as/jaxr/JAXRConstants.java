@@ -71,9 +71,10 @@ public interface JAXRConstants {
 
         // must be first
         UNKNOWN(null),
-        JAXR_1_0("urn:jboss:domain:jaxr:1.0");
+        JAXR_1_0("urn:jboss:domain:jaxr:1.0"),
+        JAXR_1_1("urn:jboss:domain:jaxr:1.1");
 
-        public static final Namespace CURRENT = JAXR_1_0;
+        public static final Namespace CURRENT = JAXR_1_1;
 
         private final String name;
         private static final Map<String, Namespace> MAP;
@@ -106,7 +107,9 @@ public interface JAXRConstants {
         JNDI_NAME("jndi-name"),
         CLASS("class"),
         NAME("name"),
-        VALUE("value");
+        VALUE("value"),
+        PUBLISH_URL("publish-url"), // legacy attribute
+        QUERY_URL("query-url");     // legacy attribute
 
         private final String name;
         private static final Map<String, Attribute> MAP;
@@ -143,7 +146,8 @@ public interface JAXRConstants {
         UNKNOWN(null),
         CONNECTION_FACTORY("connection-factory"),
         PROPERTIES("properties"),
-        PROPERTY("property");
+        PROPERTY("property"),
+        JUDDI_SERVER("juddi-server"); // legacy element
 
         private final String name;
         private static final Map<String, Element> MAP;
