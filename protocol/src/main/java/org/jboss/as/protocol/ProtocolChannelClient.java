@@ -64,18 +64,14 @@ import org.xnio.Sequence;
 public class ProtocolChannelClient implements Closeable {
 
     private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
-    private final Configuration configuration;
-    private final boolean startedEndpoint;
+
     private final Endpoint endpoint;
-    private final Registration providerRegistration;
+    private final Configuration configuration;
     private final URI uri;
 
-    private ProtocolChannelClient(final boolean startedEndpoint, final Endpoint endpoint,
-                                 final Registration providerRegistration, final Configuration configuration) {
+    private ProtocolChannelClient(final Endpoint endpoint, final Configuration configuration) {
 
-        this.startedEndpoint = startedEndpoint;
         this.endpoint = endpoint;
-        this.providerRegistration = providerRegistration;
         this.configuration = configuration;
         this.uri = configuration.getUri();
     }
@@ -86,15 +82,8 @@ public class ProtocolChannelClient implements Closeable {
         }
         configuration.validate();
 
-        final Endpoint endpoint;
-        if (configuration.getEndpoint() != null) {
-            endpoint = configuration.getEndpoint();
-            return new ProtocolChannelClient(false, endpoint, null, configuration);
-        } else {
-            endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getOptionMap());
-            Registration providerRegistration = endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(), OptionMap.EMPTY);
-            return new ProtocolChannelClient(true, endpoint, providerRegistration, configuration);
-        }
+        final Endpoint endpoint = configuration.getEndpoint();
+        return new ProtocolChannelClient(endpoint, configuration);
     }
 
     public IoFuture<Connection> connect(CallbackHandler handler) throws IOException {
@@ -179,24 +168,16 @@ public class ProtocolChannelClient implements Closeable {
     }
 
     public void close() {
-        if (startedEndpoint) {
-            IoUtils.safeClose(providerRegistration);
-            IoUtils.safeClose(endpoint);
-        }
+        //
     }
 
     public static final class Configuration {
         private static final long DEFAULT_CONNECT_TIMEOUT = 5000;
 
-        private static final AtomicInteger COUNTER = new AtomicInteger();
-        private Endpoint endpoint;
-
-        private String endpointName;
-        private OptionMap optionMap = OptionMap.EMPTY;
-        private ThreadGroup group;
-        private String uriScheme;
-        private long connectionTimeout = DEFAULT_CONNECT_TIMEOUT;
         private URI uri;
+        private Endpoint endpoint;
+        private OptionMap optionMap = OptionMap.EMPTY;
+        private long connectionTimeout = DEFAULT_CONNECT_TIMEOUT;
 
         //Flags to avoid spamming logs with warnings every time someone tries to set these
         private static volatile boolean warnedExecutor;
@@ -207,30 +188,14 @@ public class ProtocolChannelClient implements Closeable {
         }
 
         void validate() {
-            if (endpointName == null && endpoint == null) {
-                throw MESSAGES.nullParameters("endpointName", "endpoint");
+            if (endpoint == null) {
+                throw MESSAGES.nullVar("endpoint");
             }
             if (optionMap == null) {
                 throw MESSAGES.nullVar("optionMap");
             }
-            if (uriScheme == null && endpoint == null) {
-                throw MESSAGES.nullVar("uriScheme");
-            }
-            if (uriScheme != null && endpoint != null) {
-                throw MESSAGES.cannotSetUriScheme();
-            }
             if (uri == null) {
                 throw MESSAGES.nullVar("uri");
-            }
-            if (endpoint != null){
-                //The below does not work so just hard code it for now
-                if (!uri.getScheme().equals("remote")) {
-                    throw MESSAGES.invalidUrl("remote");
-                }
-            } else {
-                if (!uriScheme.equals(uri.getScheme())) {
-                    throw MESSAGES.unmatchedScheme(uriScheme, uri);
-                }
             }
         }
 
@@ -240,29 +205,6 @@ public class ProtocolChannelClient implements Closeable {
 
         public void setEndpoint(Endpoint endpoint) {
             this.endpoint = endpoint;
-        }
-
-        public void setEndpointName(String endpointName) {
-            this.endpointName = endpointName;
-        }
-
-        public String getEndpointName() {
-            return endpointName;
-        }
-
-        public ThreadGroup getGroup() {
-            if (group == null) {
-                group = new ThreadGroup("Remoting client threads " + COUNTER.incrementAndGet());
-            }
-            return group;
-        }
-
-        public String getUriScheme() {
-            return uriScheme;
-        }
-
-        public void setUriScheme(String uriScheme) {
-            this.uriScheme = uriScheme;
         }
 
         public OptionMap getOptionMap() {

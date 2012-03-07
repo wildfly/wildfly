@@ -37,6 +37,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -69,6 +70,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.xnio.IoUtils;
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -533,8 +536,9 @@ public class RemoteProxyControllerProtocolTestCase {
                 } catch (Exception e) {
                     errorRef.set(e);
                 }
-                //IoUtils.safeClose(channels.getClientChannel());
-                //IoUtils.safeClose(channels.getServerChannel());
+                // Ensure the channels are closed
+                IoUtils.safeClose(channels.getClientChannel());
+                IoUtils.safeClose(channels.getServerChannel());
                 return new ModelNode();
             }
         };
@@ -545,7 +549,7 @@ public class RemoteProxyControllerProtocolTestCase {
         operation.get("test").set("123");
 
         CommitProxyOperationControl commitControl = new CommitProxyOperationControl();
-        proxyController.execute(operation, null, commitControl, null);
+        proxyController.execute(operation, OperationMessageHandler.DISCARD, commitControl, OperationAttachments.EMPTY);
         Assert.assertNull(errorRef.get());
         latch.await(15, TimeUnit.SECONDS);
         Assert.assertEquals(1, commitControl.txCompletionStatus.get());

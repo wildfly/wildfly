@@ -109,12 +109,11 @@ public class RemoteChannelPairSetup {
 
     public void startClientConnetion() throws IOException, URISyntaxException {
         ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
-        configuration.setEndpointName(ENDPOINT_NAME);
-        configuration.setUriScheme(URI_SCHEME);
+        configuration.setEndpoint(channelServer.getEndpoint());
         configuration.setUri(new URI("" + URI_SCHEME + "://127.0.0.1:" + PORT + ""));
 
         ProtocolChannelClient client = ProtocolChannelClient.create(configuration);
-        connection = client.connectSync(new PasswordClientCallbackHandler("bob",configuration.getEndpointName(),"pass".toCharArray()));
+        connection = client.connectSync(new PasswordClientCallbackHandler("bob", ENDPOINT_NAME ,"pass".toCharArray()));
 
         clientChannel = connection.openChannel(TEST_CHANNEL, OptionMap.EMPTY).get();
         try {
