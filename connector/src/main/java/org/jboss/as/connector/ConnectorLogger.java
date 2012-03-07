@@ -204,4 +204,8 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 10413, value = "the attribute class-name cannot be null for more than one admin-object")
     OperationFailedException classNameNullForMoreAO();
 
+    @Message(id = 10414, value = "the attribute driver-name (%s) cannot be different from driver resource name (%s)")
+    OperationFailedException driverNameAndResourceNameNotEquals(String driverName, String resourceName);
+
+
 }
