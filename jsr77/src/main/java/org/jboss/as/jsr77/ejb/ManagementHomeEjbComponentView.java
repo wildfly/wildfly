@@ -50,7 +50,6 @@ public class ManagementHomeEjbComponentView extends BaseManagementEjbComponentVi
     @Override
     public Object invoke(InterceptorContext interceptorContext) throws Exception {
         if (interceptorContext.getMethod().equals(create)) {
-            //return EJBClient.getProxy(APP_NAME, MODULE_NAME, DISTINCT_NAME, EJB_NAME, Management.class);
             return EJBClient.createProxy(new StatelessEJBLocator<Management>(Management.class, APP_NAME, MODULE_NAME, EJB_NAME, DISTINCT_NAME));
         }
         throw new UnsupportedOperationException(interceptorContext.getMethod().toString());

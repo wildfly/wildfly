@@ -21,6 +21,7 @@
 */
 package org.jboss.as.jsr77.managedobject;
 
+import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
 
 import javax.management.ObjectName;
 
@@ -59,7 +60,7 @@ public class ObjectNameBuilder {
         try {
             return new ObjectName(toString());
         } catch (Exception e) {
-            throw new RuntimeException("Invalid ObjectName: " + toString(), e);
+            throw MESSAGES.invalidObjectName(e, toString());
         }
     }
 
@@ -67,7 +68,7 @@ public class ObjectNameBuilder {
         try {
             return new ObjectName(name);
         } catch (Exception e) {
-            throw new RuntimeException("Could not create ObjectName from " + name, e);
+            throw MESSAGES.couldNotCreateObjectName(e, name);
         }
     }
 

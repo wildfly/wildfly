@@ -31,18 +31,6 @@ import org.jboss.as.ejb3.component.EJBComponentCreateService;
 public class ManagementEjbComponent extends EJBComponent {
 
     protected ManagementEjbComponent(EJBComponentCreateService ejbComponentCreateService) {
-        // FIXME ManagementEjbComponent constructor
         super(ejbComponentCreateService);
     }
-
-//    private static class FakeEJBComponentCreateService extends EJBComponentCreateService {
-//
-//        public FakeEJBComponentCreateService(ComponentConfiguration componentConfiguration,
-//                EjbJarConfiguration ejbJarConfiguration) {
-//            // FIXME FakeEJBComponentCreateService constructor
-//            super(componentConfiguration, ejbJarConfiguration);
-//        }
-//    }
-
-
 }

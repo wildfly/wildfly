@@ -21,6 +21,8 @@
 */
 package org.jboss.as.jsr77.managedobject;
 
+import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,7 +86,7 @@ public class ManagedObjectHandlerRegistry {
     public Object getAttribute(ModelController controller, ObjectName name, String attribute) throws InstanceNotFoundException, MBeanException, AttributeNotFoundException {
         Handler handler = handlers.get(name.getKeyProperty(Handler.J2EE_TYPE));
         if (handler == null) {
-            throw new InstanceNotFoundException("No mbean found with ObjectName " + name);
+            throw MESSAGES.noMBeanCalled(name);
         }
         return handler.getAttribute(new ModelReader(controller), name, attribute);
     }
@@ -105,7 +107,7 @@ public class ManagedObjectHandlerRegistry {
     public MBeanInfo getMBeanInfo(ModelController controller, ObjectName name) throws InstanceNotFoundException {
         Handler handler = handlers.get(name.getKeyProperty(Handler.J2EE_TYPE));
         if (handler == null) {
-            throw new InstanceNotFoundException("No mbean found with ObjectName " + name);
+            throw MESSAGES.noMBeanCalled(name);
         }
         return handler.getMBeanInfo(new ModelReader(controller), name);
     }
@@ -181,23 +183,4 @@ public class ManagedObjectHandlerRegistry {
             return pattern.matcher(candidate).matches();
         }
     }
-
-//    public static void main(String[] args) {
-//        ManagedObjectHandlerRegistry registry = new ManagedObjectHandlerRegistry();
-//        System.out.println(registry.isMyDomain(createObjectName(JMX_DOMAIN + ":j2eeType=JVM")));
-//        System.out.println(registry.isMyDomain(createObjectName("jboss.*:j2eeType=JVM")));
-//        System.out.println(registry.isMyDomain(createObjectName("*:j2eeType=JVM")));
-//        System.out.println(registry.isMyDomain(createObjectName("x*:j2eeType=JVM")));
-//
-//        System.out.println(registry.getHandlers(createObjectName(JMX_DOMAIN + ":j2eeType=JVM"))); //Should add just JVM
-//        System.out.println(registry.getHandlers(createObjectName(JMX_DOMAIN + ":j2eeType=J*")));  //Should add any starting with J
-//        System.out.println(registry.getHandlers(createObjectName(JMX_DOMAIN + ":j2eeType=*")));   //Should add all
-//        System.out.println(registry.getHandlers(createObjectName(JMX_DOMAIN + ":*")));            //Should add all
-//        System.out.println(registry.getHandlers(createObjectName(JMX_DOMAIN + ":j2eeType=None")));//Should add none
-//        System.out.println(registry.getHandlers(createObjectName(JMX_DOMAIN + ":j2eeType=N*")));//Should add none
-//        System.out.println(registry.getHandlers(createObjectName(JMX_DOMAIN + ":thing=true")));    //Should add none
-//        System.out.println(registry.getHandlers(createObjectName(JMX_DOMAIN + ":j2eeType=None,*")));   //Should add none
-//        System.out.println(registry.getHandlers(createObjectName(JMX_DOMAIN + ":j2eeType=N*,*")));   //Should add none
-//    }
-
 }
