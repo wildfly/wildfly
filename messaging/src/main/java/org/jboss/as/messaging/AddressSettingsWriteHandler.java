@@ -65,7 +65,7 @@ class AddressSettingsWriteHandler implements OperationStepHandler {
         if(def == null) {
             context.getFailureDescription().set(new ModelNode().set(MESSAGES.unknownAttribute(attribute)));
         } else {
-            def.getValidator().validateParameter(ModelDescriptionConstants.VALUE, operation);
+            def.getValidator().validateParameter(ModelDescriptionConstants.VALUE, operation.get(ModelDescriptionConstants.VALUE));
             resource.getModel().get(attribute).set(operation.get(ModelDescriptionConstants.VALUE));
 
             if(context.isNormalServer()) {
