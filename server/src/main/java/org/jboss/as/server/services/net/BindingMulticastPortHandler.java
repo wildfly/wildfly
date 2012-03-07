@@ -25,6 +25,7 @@ package org.jboss.as.server.services.net;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 
@@ -38,7 +39,7 @@ public class BindingMulticastPortHandler extends AbstractBindingWriteHandler {
     public static final BindingMulticastPortHandler INSTANCE = new BindingMulticastPortHandler();
 
     private BindingMulticastPortHandler() {
-        super(new IntRangeValidator(1, 65535, true, true), new IntRangeValidator(1, 65535, true, false));
+        super(AbstractSocketBindingResourceDefinition.MULTICAST_PORT);
     }
 
     @Override

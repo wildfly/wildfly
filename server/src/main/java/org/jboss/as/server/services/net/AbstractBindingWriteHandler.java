@@ -22,18 +22,16 @@
 
 package org.jboss.as.server.services.net;
 
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.net.UnknownHostException;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -45,33 +43,11 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Emanuel Muckenhuber
  */
-abstract class AbstractBindingWriteHandler extends WriteAttributeHandlers.WriteAttributeOperationHandler {
+abstract class AbstractBindingWriteHandler extends AbstractWriteAttributeHandler<AbstractBindingWriteHandler.RollbackInfo> {
 
     private static final ServiceName SOCKET_BINDING = SocketBinding.JBOSS_BINDING_NAME;
-
-    private final ParameterValidator resolvedValueValidator;
-
-    protected AbstractBindingWriteHandler() {
-        this(null, null);
-    }
-
-    protected AbstractBindingWriteHandler(ParameterValidator valueValidator) {
-        this(valueValidator, valueValidator);
-    }
-
-    protected AbstractBindingWriteHandler(ParameterValidator valueValidator, ParameterValidator resolvedValueValidator) {
-        super(valueValidator);
-        this.resolvedValueValidator = resolvedValueValidator;
-    }
-
-    /**
-     * Indicating whether the operation requires a restart irrespective of
-     * the runtime state.
-     *
-     * @return
-     */
-    protected boolean requiresRestart() {
-        return false;
+    public AbstractBindingWriteHandler(AttributeDefinition... definitions) {
+        super(definitions);
     }
 
     /**
@@ -96,63 +72,50 @@ abstract class AbstractBindingWriteHandler extends WriteAttributeHandlers.WriteA
      */
     abstract void handleRuntimeRollback(final ModelNode operation, final String attributeName, final ModelNode previousValue, final SocketBinding binding);
 
-    @Override
-    protected void modelChanged(final OperationContext context, final ModelNode operation,
-                                final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
-
-        final boolean restartRequired = requiresRestart();
-        boolean setReload = false;
-        if (requiresRuntime(context)) {
-            if (restartRequired) {
-                context.reloadRequired();
-                setReload = true;
-            } else {
-                context.addStep(new OperationStepHandler() {
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        final ModelNode resolvedValue = newValue.isDefined() ? newValue.resolve() : newValue;
-                        if (resolvedValueValidator != null) {
-                            resolvedValueValidator.validateResolvedParameter(VALUE, resolvedValue);
-                        }
-                        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-                        final PathElement element = address.getLastElement();
-                        final String bindingName = element.getValue();
-                        final ModelNode bindingModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-                        final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(SOCKET_BINDING.append(bindingName));
-                        final SocketBinding binding = controller.getState() == ServiceController.State.UP ? SocketBinding.class.cast(controller.getValue()) : null;
-                        final boolean bound = binding != null && binding.isBound();
-                        if (binding == null) {
-                            // existing is not started, so can't update it. Instead reinstall the service
-                            handleBindingReinstall(context, bindingName, bindingModel);
-                        }
-                        else if (bound) {
-                            // Cannot edit bound sockets
-                            context.reloadRequired();
-                        } else {
-                            handleRuntimeChange(operation, attributeName, resolvedValue, binding);
-                        }
-
-                        if (context.completeStep() != OperationContext.ResultAction.KEEP ) {
-                            if (binding == null) {
-                                // Back to the old service
-                                revertBindingReinstall(context, bindingName, bindingModel, attributeName, currentValue);
-                            } else if (bound) {
-                                context.revertReloadRequired();
-                            } else {
-                                ModelNode resolvedPrevious = currentValue.isDefined() ? currentValue.resolve() : currentValue;
-                                handleRuntimeRollback(operation, attributeName, resolvedPrevious, binding);
-                            }
-                        }
-                    }
-                }, OperationContext.Stage.RUNTIME);
-            }
-        }
-        if (context.completeStep() != OperationContext.ResultAction.KEEP && setReload) {
-            context.revertReloadRequired();
-        }
+    /**
+     * Indicates if a change requires a reload, regardless of whether the socket-binding was bound or not.
+     *
+     * @return {@code true} if a reload is required, {@code false} otherwise
+     */
+    protected boolean requiresRestart() {
+        return false;
     }
 
-    protected boolean requiresRuntime(OperationContext context) {
-        return true;
+    @Override
+    protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue,
+                                           final ModelNode currentValue, final HandbackHolder<RollbackInfo> handbackHolder) throws OperationFailedException {
+
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final PathElement element = address.getLastElement();
+        final String bindingName = element.getValue();
+        final ModelNode bindingModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+        final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(SOCKET_BINDING.append(bindingName));
+        final SocketBinding binding = controller.getState() == ServiceController.State.UP ? SocketBinding.class.cast(controller.getValue()) : null;
+        final boolean bound = binding != null && binding.isBound();
+        if (binding == null) {
+            // existing is not started, so can't update it. Instead reinstall the service
+            handleBindingReinstall(context, bindingName, bindingModel);
+        } else if (bound) {
+            // Cannot edit bound sockets
+            return true;
+        } else {
+            handleRuntimeChange(operation, attributeName, resolvedValue, binding);
+        }
+        handbackHolder.setHandback(new RollbackInfo(bindingName, bindingModel, binding));
+        return requiresRestart();
+    }
+
+    @Override
+    protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore,
+                                         final ModelNode valueToRevert, final RollbackInfo handback) throws OperationFailedException {
+        if(handback != null) {
+            // in case the binding wasn't installed
+            if(handback.revertBinding()) {
+                revertBindingReinstall(context, handback.bindingName, handback.bindingModel, attributeName, valueToRevert);
+            } else {
+                handleRuntimeRollback(operation, attributeName, valueToRevert, handback.binding);
+            }
+        }
     }
 
     private void handleBindingReinstall(OperationContext context, String bindingName, ModelNode bindingModel) throws OperationFailedException {
@@ -175,6 +138,24 @@ abstract class AbstractBindingWriteHandler extends WriteAttributeHandlers.WriteA
             // Bizarro, as we installed the service before
             throw new RuntimeException(e);
         }
+    }
+
+    static class RollbackInfo {
+
+        private final String bindingName;
+        private final ModelNode bindingModel;
+        private final SocketBinding binding;
+
+        RollbackInfo(String bindingName, ModelNode bindingModel, SocketBinding binding) {
+            this.bindingName = bindingName;
+            this.bindingModel = bindingModel;
+            this.binding = binding;
+        }
+
+        boolean revertBinding() {
+            return binding == null;
+        }
+
     }
 
 }

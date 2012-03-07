@@ -20,6 +20,7 @@ package org.jboss.as.server.services.net;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -34,7 +35,7 @@ public class BindingFixedPortHandler extends AbstractBindingWriteHandler {
     public static final BindingFixedPortHandler INSTANCE = new BindingFixedPortHandler();
 
     private BindingFixedPortHandler() {
-        super(new ModelTypeValidator(ModelType.BOOLEAN, true, false));
+        super(AbstractSocketBindingResourceDefinition.FIXED_PORT);
     }
 
     @Override
