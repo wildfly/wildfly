@@ -49,12 +49,12 @@ public class JAXRDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        addDepdenency(moduleSpecification, moduleLoader, APACHE_SCOUT);
-        addDepdenency(moduleSpecification, moduleLoader, JBOSS_JAXR);
+        addDependency(moduleSpecification, moduleLoader, APACHE_SCOUT);
+        addDependency(moduleSpecification, moduleLoader, JBOSS_JAXR);
 
     }
 
-    private void addDepdenency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader, ModuleIdentifier moduleIdentifier) {
+    private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader, ModuleIdentifier moduleIdentifier) {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
     }
 
