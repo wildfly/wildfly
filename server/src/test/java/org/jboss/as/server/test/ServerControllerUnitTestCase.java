@@ -148,7 +148,7 @@ public class ServerControllerUnitTestCase {
         {
             final ModelNode operation = base.clone();
             // operation.get("any-address").set(true);
-            populateCritieria(operation, Nesting.TOP, InterfaceDescription.LOOPBACK, InterfaceDescription.LINK_LOCAL_ADDRESS);
+            populateCritieria(operation, Nesting.TOP, InterfaceDescription.LOOPBACK);
             executeForResult(client, operation);
         }
         {
@@ -205,10 +205,10 @@ public class ServerControllerUnitTestCase {
         operation.get(ModelDescriptionConstants.OP_ADDR).add("interface", "complex");
         // This won't be resolvable with the runtime layer enabled
         populateCritieria(operation, Nesting.TOP,
-                InterfaceDescription.LINK_LOCAL_ADDRESS,
                 InterfaceDescription.LOOPBACK);
         populateCritieria(operation.get("not"), Nesting.NOT,
                 InterfaceDescription.PUBLIC_ADDRESS,
+                InterfaceDescription.LINK_LOCAL_ADDRESS,
                 InterfaceDescription.SITE_LOCAL_ADDRESS,
                 InterfaceDescription.VIRTUAL,
                 InterfaceDescription.UP,
