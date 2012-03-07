@@ -149,7 +149,7 @@
    <xs:attributeGroup name="web-connector-attlist">
       <xs:attribute name="name" use="required" />
       <xs:attribute name="protocol" use="required" />
-      <xs:attribute name="scheme" />
+      <xs:attribute name="scheme" use="required" />
       <xs:attribute name="socket-binding" use="required" />
       <xs:attribute name="enable-lookups" default="false" type="xs:boolean" />
       <xs:attribute name="proxy-name" />
