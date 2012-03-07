@@ -28,7 +28,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -50,6 +53,7 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
 
     private static final Map<String, AttributeDefinition> ATTRIBUTES = new HashMap<String, AttributeDefinition>();
     private static final OperationStepHandler VERIFY_HANDLER = new ModelValidationStep();
+    private static final ParametersValidator nameValidator = new ParametersValidator();
 
     static {
         for(final AttributeDefinition def : InterfaceDescription.ROOT_ATTRIBUTES) {
@@ -69,16 +73,19 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
-        final ModelNode model = resource.getModel();
-        final String name = operation.require(ModelDescriptionConstants.NAME).asString();
-        final AttributeDefinition def = ATTRIBUTES.get(name);
-        if(def == null) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownAttribute(name)));
+        nameValidator.validate(operation);
+        final String attributeName = operation.require(NAME).asString();
+        final ModelNode newValue = operation.hasDefined(VALUE) ? operation.get(VALUE) : new ModelNode();
+        final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
+        final AttributeDefinition attributeDefinition = ATTRIBUTES.get(attributeName);
+        if (attributeDefinition != null) {
+            final ModelNode syntheticOp = new ModelNode();
+            syntheticOp.get(attributeName).set(newValue);
+            attributeDefinition.validateAndSet(syntheticOp, submodel);
+        } else {
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownAttribute(attributeName)));
         }
-        final ModelNode value = operation.get(ModelDescriptionConstants.VALUE);
-        def.getValidator().validateParameter(name, value);
-        model.get(name).set(value);
+        // Require a reload
         context.reloadRequired();
         // Verify the model in a later step
         context.addStep(VERIFY_HANDLER, OperationContext.Stage.MODEL);
