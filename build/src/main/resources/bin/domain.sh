@@ -136,14 +136,19 @@ if [ "x$JBOSS_CONFIG_DIR" = "x" ]; then
    JBOSS_CONFIG_DIR="$JBOSS_BASE_DIR/configuration"
 fi
 
+# Setup the java path to invoke from JVM
+# Needed to start domain from cygwin when the JAVA path will result in an invalid path
+JAVA_FROM_JVM="$JAVA"
+
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
     JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
-    JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
-    JBOSS_BASE_DIR=`cydpath --path --windows "$JBOSS_BASE_DIR"`
+    JAVA_FROM_JVM=`cygpath --path --absolute --windows "$JAVA_FROM_JVM"`
+    JBOSS_BASE_DIR=`cygpath --path --windows "$JBOSS_BASE_DIR"`
     JBOSS_LOG_DIR=`cygpath --path --windows "$JBOSS_LOG_DIR"`
     JBOSS_CONFIG_DIR=`cygpath --path --windows "$JBOSS_CONFIG_DIR"`
+    JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
 fi
 
 # Display our environment
@@ -170,13 +175,13 @@ while true; do
          -mp \"${JBOSS_MODULEPATH}\" \
          org.jboss.as.process-controller \
          -jboss-home \"$JBOSS_HOME\" \
-         -jvm \"$JAVA\" \
+         -jvm \"$JAVA_FROM_JVM\" \
          -- \
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/host-controller.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          $HOST_CONTROLLER_JAVA_OPTS \
          -- \
-         -default-jvm \"$JAVA\" \
+         -default-jvm \"$JAVA_FROM_JVM\" \
          "$@"
       JBOSS_STATUS=$?
    else
@@ -188,13 +193,13 @@ while true; do
          -mp \"${JBOSS_MODULEPATH}\" \
          org.jboss.as.process-controller \
          -jboss-home \"$JBOSS_HOME\" \
-         -jvm \"$JAVA\" \
+         -jvm \"$JAVA_FROM_JVM\" \
          -- \
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/host-controller.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          $HOST_CONTROLLER_JAVA_OPTS \
          -- \
-         -default-jvm \"$JAVA\" \
+         -default-jvm \"$JAVA_FROM_JVM\" \
          "$@" "&"
       JBOSS_PID=$!
       # Trap common signals and relay them to the jboss process
