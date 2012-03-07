@@ -48,7 +48,9 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>ts.config-as.clust</id> <phase>process-test-resources</phase> <goals><goal>run</goal></goals>
+                                <id>ts.config-as.clust</id> 
+                                <phase>process-test-resources</phase> 
+                                <goals><goal>run</goal></goals>
                                 <configuration>
                                     <target>
                                         <echo>In Maven: node0: ${node0}</echo>
@@ -76,11 +78,16 @@
                         <executions combine.children="append">
 
                             <!-- Disable default-test execution. -->
-                            <execution><id>default-test</id> <goals><goal>test</goal></goals><phase>none</phase></execution>
+                            <execution>
+                                <id>default-test</id> 
+                                <goals><goal>test</goal></goals>
+                                <phase>none</phase></execution>
 
                             <!-- Multi node clustering tests with manual containers with unmanaged deployment. -->
                             <execution>
-                                <id>ts.surefire.clust.multi-node-unmanaged</id> <phase>test</phase> <goals><goal>test</goal></goals>
+                                <id>ts.surefire.clust.multi-node-unmanaged</id>
+                                <phase>test</phase> 
+                                <goals><goal>test</goal></goals>
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
@@ -131,14 +138,25 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
-                        <executions><execution><id>ts.config-as.clust.jdbc-store</id> <phase>none</phase></execution></executions>
+                        <executions>
+                            <execution>
+                                <id>ts.config-as.clust.jdbc-store</id> 
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
-                            <execution><id>ts.surefire.clust.jdbc-store</id>  <phase>none</phase></execution>
-                            <execution><id>ts.surefire.clust.single-node</id> <phase>none</phase></execution>
+                            <execution>
+                                <id>ts.surefire.clust.jdbc-store</id>  
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clust.single-node</id> 
+                                <phase>none</phase>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
@@ -161,7 +179,9 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>ts.config-as.clust.enable-jdbc-store</id> <phase>process-test-resources</phase> <goals><goal>run</goal></goals>
+                                <id>ts.config-as.clust.enable-jdbc-store</id> 
+                                <phase>process-test-resources</phase> 
+                                <goals><goal>run</goal></goals>
                                 <configuration>
                                     <target>
                                         <echo>In Maven: node0: ${node0}</echo>
@@ -186,11 +206,17 @@
                         <executions combine.children="append">
 
                             <!-- Disable default-test execution. -->
-                            <execution><id>default-test</id><goals><goal>test</goal></goals><phase>none</phase></execution>
+                            <execution>
+                                <id>default-test</id>
+                                <goals><goal>test</goal></goals>
+                                <phase>none</phase>
+                            </execution>
 
                             <!-- Single node clustering tests. -->
                             <execution>
-                                <id>ts.surefire.clust.jdbc-store</id> <phase>test</phase> <goals><goal>test</goal></goals>
+                                <id>ts.surefire.clust.jdbc-store</id> 
+                                <phase>test</phase> 
+                                <goals><goal>test</goal></goals>
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
