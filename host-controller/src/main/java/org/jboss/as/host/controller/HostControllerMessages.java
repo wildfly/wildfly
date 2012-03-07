@@ -619,4 +619,15 @@ public interface HostControllerMessages {
 
     @Message(id = 15861, value = "Could not create domain temp directory: %s")
     IllegalStateException couldNotCreateDomainTempDirectory(File file);
+
+    /**
+     * Creates an exception indicating an inability to connect due to a SSL failure.
+     *
+     * @param cause the cause of the error.
+     *
+     * @return an {@link IllegalStateException} for the error.
+     */
+    @Message(id = 15862, value = "Unable to connect due to SSL failure.")
+    IllegalStateException sslFailureUnableToConnect(@Cause Throwable cause);
+
 }
