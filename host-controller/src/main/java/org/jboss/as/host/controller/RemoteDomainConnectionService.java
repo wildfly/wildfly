@@ -49,6 +49,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
+import javax.net.ssl.SSLHandshakeException;
 import javax.security.sasl.SaslException;
 
 import org.jboss.as.controller.HashUtil;
@@ -175,6 +176,8 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                 while ((cause = cause.getCause()) != null) {
                     if (cause instanceof SaslException) {
                         throw MESSAGES.authenticationFailureUnableToConnect(cause);
+                    } else if (cause instanceof SSLHandshakeException) {
+                        throw MESSAGES.sslFailureUnableToConnect(cause);
                     }
                 }
                 if (System.currentTimeMillis() > endTime) {
