@@ -62,19 +62,20 @@ public class JAXRSubsystemExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(JAXRConstants.SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), parser);
+        context.setSubsystemXmlMapping(JAXRConstants.SUBSYSTEM_NAME, Namespace.JAXR_1_1.getUriString(), parser);
+        context.setSubsystemXmlMapping(JAXRConstants.SUBSYSTEM_NAME, Namespace.JAXR_1_0.getUriString(), parser);
     }
 
     @Override
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration subsystem = context.registerSubsystem(JAXRConstants.SUBSYSTEM_NAME, 1, 0);
+        SubsystemRegistration subsystem = context.registerSubsystem(JAXRConstants.SUBSYSTEM_NAME, 1, 1);
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new JAXRSubsystemRootResource(config));
         registration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         // JAXR Properties
         ManagementResourceRegistration properties = registration.registerSubModel(PathElement.pathElement(ModelConstants.PROPERTY), PROPERTY_DESCRIPTION);
         properties.registerOperationHandler(ModelDescriptionConstants.ADD, new JAXRPropertyAdd(config), JAXRPropertyAdd.DESCRIPTION, false);
-        properties.registerOperationHandler(ModelDescriptionConstants.REMOVE, JAXRPropertyRemove.INSTANCE, JAXRPropertyRemove.DESCRIPTION, false);
+        properties.registerOperationHandler(ModelDescriptionConstants.REMOVE, new JAXRPropertyRemove(config), JAXRPropertyRemove.DESCRIPTION, false);
         properties.registerReadWriteAttribute(ModelConstants.VALUE, null, new JAXRPropertyWrite(config), Storage.CONFIGURATION);
 
         subsystem.registerXMLElementWriter(JAXRSubsystemWriter.INSTANCE);
@@ -107,8 +108,6 @@ public class JAXRSubsystemExtension implements Extension {
             node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("jaxr.property.value"));
             node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.REQUIRED).set(true);
-            node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.ACCESS_TYPE).set(AccessType.READ_WRITE.toString());
-            //node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.RESTART_REQUIRED).set("all-services");
             return node;
         }
     };

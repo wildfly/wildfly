@@ -902,17 +902,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.apache.ws.scout</groupId>
-      <artifactId>scout</artifactId>
-      <licenses>
-        <license>
-          <name>Apache Software License, Version 2.0</name>
-          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-         <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.apache.ws.security</groupId>
       <artifactId>wss4j</artifactId>
       <licenses>

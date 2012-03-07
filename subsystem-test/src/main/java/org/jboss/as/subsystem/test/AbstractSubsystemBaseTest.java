@@ -88,6 +88,25 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
      * @throws Exception
      */
     protected void standardSubsystemTest(final String configId) throws Exception {
+        standardSubsystemTest(configId, true);
+    }
+
+    /**
+     * Tests the ability to create a model from an xml configuration, marshal the model back to xml,
+     * re-read that marshalled model into a new model that matches the first one, execute a "describe"
+     * operation for the model, create yet another model from executing the results of that describe
+     * operation, and compare that model to first model.
+     *
+     * @param configId  id to pass to {@link #getSubsystemXml(String)} to get the configuration; if {@code null}
+     *                  {@link #getSubsystemXml()} will be called
+     *
+     * @param compareXml if {@code true} a comparison of xml output to original input is performed. This can be
+     *                   set to {@code false} if the original input is from an earlier xsd and the current
+     *                   schema has a different output
+     *
+     * @throws Exception
+     */
+    protected void standardSubsystemTest(final String configId, boolean compareXml) throws Exception {
         final AdditionalInitialization additionalInit = createAdditionalInitialization();
 
         // Parse the subsystem xml and install into the first controller
@@ -105,7 +124,10 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
 
         // validate the the normalized xmls
         String normalizedSubsystem = normalizeXML(subsystemXml);
-        compareXml(configId, normalizedSubsystem, normalizeXML(marshalled));
+
+        if (compareXml) {
+            compareXml(configId, normalizedSubsystem, normalizeXML(marshalled));
+        }
 
         //Install the persisted xml from the first controller into a second controller
         final KernelServices servicesB = super.installInController(additionalInit, marshalled);

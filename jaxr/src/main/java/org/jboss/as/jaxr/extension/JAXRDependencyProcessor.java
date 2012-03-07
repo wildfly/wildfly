@@ -41,7 +41,7 @@ import org.jboss.modules.ModuleLoader;
 */
 public class JAXRDependencyProcessor implements DeploymentUnitProcessor {
 
-    public static ModuleIdentifier APACHE_SCOUT = ModuleIdentifier.create("org.apache.ws.scout");
+    public static ModuleIdentifier APACHE_SCOUT = ModuleIdentifier.create("org.apache.juddi.scout");
     public static ModuleIdentifier JBOSS_JAXR = ModuleIdentifier.create("org.jboss.as.jaxr");
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {

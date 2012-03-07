@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import org.jboss.as.jaxr.JAXRConstants;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.junit.Test;
 
 /**
  *
@@ -36,11 +37,24 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
         super(JAXRConstants.SUBSYSTEM_NAME, new JAXRSubsystemExtension());
     }
 
+    @Test
+    public void testSubsystem1_0() throws Exception {
+        standardSubsystemTest(JAXRConstants.Namespace.JAXR_1_0.getUriString(), false);
+    }
+
     @Override
     protected String getSubsystemXml() throws IOException {
-        return "<subsystem xmlns=\"urn:jboss:domain:jaxr:1.0\">" +
+        return "<subsystem xmlns=\"urn:jboss:domain:jaxr:1.1\">" +
         "<connection-factory jndi-name=\"java:jboss/jaxr/ConnectionFactory\"/>" +
         "<properties/>" +
+        "</subsystem>";
+    }
+
+    @Override
+    protected String getSubsystemXml(String configId) throws IOException {
+        return "<subsystem xmlns=\"urn:jboss:domain:jaxr:1.0\">" +
+        "<connection-factory jndi-name=\"java:jboss/jaxr/ConnectionFactory\"/>" +
+        "<juddi-server publish-url=\"http://localhost:8080/juddi/publish\" query-url=\"http://localhost:8080/juddi/query\"/>" +
         "</subsystem>";
     }
 

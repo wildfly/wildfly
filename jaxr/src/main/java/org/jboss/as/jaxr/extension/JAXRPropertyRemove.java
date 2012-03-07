@@ -24,6 +24,9 @@ package org.jboss.as.jaxr.extension;
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.jaxr.JAXRConfiguration;
@@ -33,9 +36,23 @@ import org.jboss.dmr.ModelNode;
  * @author Kurt Stam
  */
 public class JAXRPropertyRemove extends AbstractRemoveStepHandler {
-    static final JAXRPropertyRemove INSTANCE = new JAXRPropertyRemove();
 
-    private JAXRPropertyRemove() {
+    private final JAXRConfiguration config;
+
+    JAXRPropertyRemove(JAXRConfiguration config) {
+        this.config = config;
+    }
+
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        final String propertyName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
+        config.applyUpdateToConfig(propertyName, null);
+    }
+
+    @Override
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        final String propertyName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
+        config.applyUpdateToConfig(propertyName, JAXRPropertyWrite.VALUE.resolveModelAttribute(context, model).asString());
     }
 
     static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
@@ -45,7 +62,7 @@ public class JAXRPropertyRemove extends AbstractRemoveStepHandler {
             ModelNode node = new ModelNode();
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.REMOVE);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(JAXRConfiguration.getResourceBundle(locale).getString("jaxr.property.remove"));
-            //node.get(ModelConstants.PROPERTY).setEmptyObject();
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
             return node;
         }
     };

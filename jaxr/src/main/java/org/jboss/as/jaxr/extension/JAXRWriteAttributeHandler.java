@@ -41,8 +41,8 @@ import org.jboss.dmr.ModelType;
  */
 public class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
-    static AttributeDefinition CONNECTION_FACTORY_ATTRIBUTE = new JAXRAttributeDefinition(ModelConstants.CONNECTION_FACTORY);
-    static AttributeDefinition CONNECTION_FACTORY_IMPL_ATTRIBUTE = new JAXRAttributeDefinition(ModelConstants.CONNECTION_FACTORY_IMPL);
+    static SimpleAttributeDefinition CONNECTION_FACTORY_ATTRIBUTE = new JAXRAttributeDefinition(ModelConstants.CONNECTION_FACTORY);
+    static SimpleAttributeDefinition CONNECTION_FACTORY_IMPL_ATTRIBUTE = new JAXRAttributeDefinition(ModelConstants.CONNECTION_FACTORY_IMPL);
 
     private final JAXRConfiguration config;
 
@@ -74,7 +74,7 @@ public class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Voi
 
     private static class JAXRAttributeDefinition extends SimpleAttributeDefinition {
         JAXRAttributeDefinition(String name) {
-            super(name, ModelType.STRING, true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+            super(name, ModelType.STRING, true);
         }
     }
 }

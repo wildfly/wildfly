@@ -22,6 +22,7 @@
 package org.jboss.as.jaxr.extension;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
 import org.jboss.as.controller.descriptions.DefaultResourceRemoveDescriptionProvider;
@@ -65,7 +66,8 @@ class JAXRSubsystemRootResource extends SimpleResourceDefinition {
         final DescriptionProvider subsystemAddDescription = new DefaultResourceAddDescriptionProvider(rootResourceRegistration, rootResolver);
         rootResourceRegistration.registerOperationHandler(ADD, new JAXRSubsystemAdd(config), subsystemAddDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
         final DescriptionProvider subsystemRemoveDescription = new DefaultResourceRemoveDescriptionProvider(rootResolver);
-        rootResourceRegistration.registerOperationHandler(REMOVE, JAXRSubsystemRemove.INSTANCE, subsystemRemoveDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
+        rootResourceRegistration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, subsystemRemoveDescription,
+                EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
     }
 
     @Override
