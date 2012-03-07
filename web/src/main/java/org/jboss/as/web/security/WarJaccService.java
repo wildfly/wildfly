@@ -205,11 +205,11 @@ public class WarJaccService extends JaccService<WarMetaData> {
             int length = missingHttpMethods.length;
             roles = info.getRoleMethods();
             if( length > 0 && !roles.hasNext() ){
-            	// Create the unchecked permissions WebResourcePermissions
+                // Create the unchecked permissions WebResourcePermissions
                 WebResourcePermission wrp = new WebResourcePermission(qurl, missingHttpMethods);
                 pc.addToUncheckedPolicy(wrp);
             } else if( !roles.hasNext()) {
-                pc.addToUncheckedPolicy(new WebResourcePermission(qurl, (String) null));	
+                pc.addToUncheckedPolicy(new WebResourcePermission(qurl, (String) null));
             }
 
             // SECURITY-63: Missing auth-constraint needs unchecked policy
