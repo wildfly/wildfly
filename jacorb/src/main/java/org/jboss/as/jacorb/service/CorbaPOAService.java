@@ -183,8 +183,10 @@ public class CorbaPOAService implements Service<POA> {
     @Override
     public void stop(StopContext context) {
         JacORBLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
-        // destroy the created POA.
-        this.poa.destroy(false, false);
+
+        // destroy parent POAs, letting they destroy their children POAs in the process.
+        if (this.poa.the_parent() == null)
+           this.poa.destroy(false, false);
     }
 
     @Override
