@@ -192,6 +192,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             case CERTIFICATE_KEY_FILE:
             case CIPHER_SUITE:
             case PROTOCOL:
+            case CA_CERTIFICATE_FILE:
             case CA_REVOCATION_URL:
                 ModClusterSSLResourceDefinition.ATTRIBUTES_BY_NAME.get(attribute.getLocalName()).parseAndSetParameter(value, ssl, reader);
                 break;
