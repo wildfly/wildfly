@@ -21,6 +21,7 @@ package org.jboss.as.server.services.net;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 
@@ -34,7 +35,7 @@ public class BindingPortHandler extends AbstractBindingWriteHandler {
     public static final BindingPortHandler INSTANCE = new BindingPortHandler();
 
     private BindingPortHandler() {
-        super(new IntRangeValidator(0, 65535, false, true), new IntRangeValidator(0, 65535, false, false));
+        super(AbstractSocketBindingResourceDefinition.PORT);
     }
 
     @Override

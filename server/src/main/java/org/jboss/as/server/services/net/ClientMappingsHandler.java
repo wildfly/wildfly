@@ -35,7 +35,7 @@ public class ClientMappingsHandler extends AbstractBindingWriteHandler {
     public static final ClientMappingsHandler INSTANCE = new ClientMappingsHandler();
 
     private ClientMappingsHandler() {
-        super(AbstractSocketBindingResourceDefinition.CLIENT_MAPPINGS.getValidator());
+        super(AbstractSocketBindingResourceDefinition.CLIENT_MAPPINGS);
     }
 
     @Override
