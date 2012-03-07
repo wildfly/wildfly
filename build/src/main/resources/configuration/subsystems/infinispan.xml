@@ -74,6 +74,30 @@
                     <eviction strategy="NONE"/>
                 </replicated-cache>
             </cache-container>
-        </replacement>
-    </supplement>
+           <cache-container name="capedwarf" default-cache="default">
+               <transport lock-timeout="60000"/>
+               <replicated-cache name="default" mode="ASYNC" indexing="LOCAL">
+                   <transaction mode="NON_XA"/>
+                   <eviction strategy="NONE"/>
+               </replicated-cache>
+               <replicated-cache name="data" mode="ASYNC">
+                   <transaction mode="NON_XA"/>
+                   <eviction strategy="NONE"/>
+               </replicated-cache>
+               <replicated-cache name="metadata" mode="ASYNC">
+                   <transaction mode="NON_XA"/>
+                   <eviction strategy="NONE"/>
+               </replicated-cache>
+               <replicated-cache name="memcache" mode="ASYNC">
+                   <transaction mode="NON_XA" locking="PESSIMISTIC"/>
+                   <eviction strategy="NONE"/>
+               </replicated-cache>
+               <distributed-cache name="dist" mode="ASYNC">
+                   <transaction mode="NON_XA" locking="PESSIMISTIC"/>
+                   <eviction strategy="NONE"/>
+                   <file-store/>
+               </distributed-cache>
+           </cache-container>
+       </replacement>
+   </supplement>
 </config>

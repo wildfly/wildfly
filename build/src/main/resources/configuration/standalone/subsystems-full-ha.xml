@@ -3,6 +3,7 @@
 <config>
    <subsystems>
       <subsystem>configuration/subsystems/logging.xml</subsystem>
+      <subsystem>configuration/subsystems/capedwarf.xml</subsystem>
       <subsystem>configuration/subsystems/cmp.xml</subsystem>
       <subsystem>configuration/subsystems/configadmin.xml</subsystem>
       <subsystem>configuration/subsystems/datasources.xml</subsystem>
