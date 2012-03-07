@@ -59,7 +59,9 @@ class CriteriaValidator {
         if (criteria instanceof LoopbackInterfaceCriteria) {
             return LOOPBACK_INTERFACE;
         } else if (criteria instanceof LinkLocalInterfaceCriteria) {
-            return LINK_LOCAL_INTERFACE;
+            //TODO
+            //return LINK_LOCAL_INTERFACE;
+            return null;
         } else if (criteria instanceof NotInterfaceCriteria) {
             return NOT_INTERFACE;
         }
@@ -81,16 +83,17 @@ class CriteriaValidator {
         }
     };
 
-    static Validation LINK_LOCAL_INTERFACE = new Validation() {
-
-        @Override
-        public String validate(InterfaceCriteria current, InterfaceCriteria candidate) {
-            if (candidate instanceof InetAddressMatchInterfaceCriteria) {
-                return MESSAGES.cantHaveBothLinkLocalAndInetAddressCriteria();
-            }
-            return null;
-        }
-    };
+    //TODO This needs to check the inet address match interface criteria is not link local
+//    static Validation LINK_LOCAL_INTERFACE = new Validation() {
+//
+//        @Override
+//        public String validate(InterfaceCriteria current, InterfaceCriteria candidate) {
+//            if (candidate instanceof InetAddressMatchInterfaceCriteria) {
+//                return MESSAGES.cantHaveBothLinkLocalAndInetAddressCriteria();
+//            }
+//            return null;
+//        }
+//    };
 
     static Validation NOT_INTERFACE = new Validation() {
         @Override
