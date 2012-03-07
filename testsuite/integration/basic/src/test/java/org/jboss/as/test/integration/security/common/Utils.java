@@ -29,7 +29,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +53,7 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.integration.security.loginmodules.common.Coding;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -380,4 +383,8 @@ public class Utils {
       war.as(ZipExporter.class).exportTo(new File(address), true);
    }
 
+   public static ModelControllerClient getModelControllerClient() throws UnknownHostException {
+      return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()), TestSuiteEnvironment.getServerPort(),
+         org.jboss.as.arquillian.container.Authentication.getCallbackHandler());
+   }
 }
