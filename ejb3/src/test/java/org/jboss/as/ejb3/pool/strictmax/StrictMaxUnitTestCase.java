@@ -79,16 +79,16 @@ public class StrictMaxUnitTestCase extends TestCase {
      */
     public void testMultiThread() throws Exception {
         StatelessObjectFactory<MockBean> factory = new MockFactory();
-        final Pool<MockBean> pool = new StrictMaxPool<MockBean>(factory, 10, 1, TimeUnit.SECONDS);
+        final Pool<MockBean> pool = new StrictMaxPool<MockBean>(factory, 10, 60, TimeUnit.SECONDS);
         pool.start();
 
         final CountDownLatch in = new CountDownLatch(1);
 
+
         Callable<Void> task = new Callable<Void>() {
             public Void call() throws Exception {
-                in.await();
                 MockBean bean = pool.get();
-
+                in.await();
                 pool.release(bean);
 
                 bean = null;
@@ -103,7 +103,6 @@ public class StrictMaxUnitTestCase extends TestCase {
         Future<?> results[] = new Future<?>[20];
         for (int i = 0; i < results.length; i++) {
             results[i] = service.submit(task);
-
         }
 
         in.countDown();
