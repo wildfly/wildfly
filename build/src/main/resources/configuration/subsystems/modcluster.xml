@@ -3,7 +3,11 @@
 <config>
    <extension-module>org.jboss.as.modcluster</extension-module>
    <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
-       <mod-cluster-config advertise-socket="modcluster"/>
+       <mod-cluster-config advertise-socket="modcluster">
+           <dynamic-load-provider>
+               <load-metric type="busyness"/>
+           </dynamic-load-provider>
+       </mod-cluster-config>
    </subsystem>
    <socket-binding name="modcluster" port="0" multicast-address="224.0.1.105" multicast-port="23364"/>
 </config>
