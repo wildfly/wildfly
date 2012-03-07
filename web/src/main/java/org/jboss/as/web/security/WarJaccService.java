@@ -193,7 +193,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
                 pc.addToRole(role, wrp);
 
                 // JACC 1.1: create !(httpmethods) in unchecked perms
-                if (httpMethods != null) {
+                if (httpMethods != null && httpMethods.length != 7) {
                     WebResourcePermission wrpUnchecked = new WebResourcePermission(info.pattern, "!"
                             + getCommaSeparatedString(httpMethods));
                     pc.addToUncheckedPolicy(wrpUnchecked);
@@ -202,12 +202,15 @@ public class WarJaccService extends JaccService<WarMetaData> {
 
             // Create the unchecked permissions
             String[] missingHttpMethods = info.getMissingMethods();
-            if (missingHttpMethods.length > 0) {
-                // Create the unchecked permissions WebResourcePermissions
+            int length = missingHttpMethods.length;
+            roles = info.getRoleMethods();
+            if( length > 0 && !roles.hasNext() ){
+            	// Create the unchecked permissions WebResourcePermissions
                 WebResourcePermission wrp = new WebResourcePermission(qurl, missingHttpMethods);
                 pc.addToUncheckedPolicy(wrp);
-            } else
-                pc.addToUncheckedPolicy(new WebResourcePermission(qurl, (String) null));
+            } else if( !roles.hasNext()) {
+                pc.addToUncheckedPolicy(new WebResourcePermission(qurl, (String) null));	
+            }
 
             // SECURITY-63: Missing auth-constraint needs unchecked policy
             if (info.isMissingAuthConstraint) {
