@@ -21,7 +21,6 @@
  */
 package org.jboss.as.jaxr.extension;
 
-import java.util.TreeSet;
 
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.jaxr.ModelConstants;
@@ -68,7 +67,7 @@ public class JAXRSubsystemWriter implements XMLStreamConstants, XMLElementWriter
         writer.writeStartElement(Element.PROPERTIES.getLocalName());
         ModelNode properties = node.get(ModelConstants.PROPERTY);
         if (properties.isDefined()) {
-            for (String key : new TreeSet<String>(properties.keys())) {
+            for (String key : properties.keys()) {
                 String val = properties.get(key).get(ModelConstants.VALUE).asString();
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), key);
