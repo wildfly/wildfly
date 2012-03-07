@@ -22,23 +22,19 @@
 
 package org.jboss.as.test.integration.ejb.async;
 
-import java.net.URL;
-import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
+import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -51,7 +47,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests that a simple async annotation works. Enhanced test by migration [JIRA JBQA-5483].
- * 
+ *
  * @author Stuart Douglas, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
@@ -62,7 +58,10 @@ public class AsyncMethodTestCase {
 
     @ArquillianResource
     private InitialContext iniCtx;
-    
+
+    @ContainerResource
+    private InitialContext remoteContext;
+
     @Deployment(name = "asynctest")
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
@@ -254,21 +253,10 @@ public class AsyncMethodTestCase {
      */
     @Test
     @RunAsClient
-    public void testRemoteAsynchronousCall(@ArquillianResource @OperateOnDeployment("asynctest") URL baseUrl) throws Exception {
-        AsyncBeanRemoteInterface bean = (AsyncBeanRemoteInterface) getInitialContext(baseUrl.getHost()).lookup(
+    public void testRemoteAsynchronousCall() throws Exception {
+        AsyncBeanRemoteInterface bean = (AsyncBeanRemoteInterface) remoteContext.lookup(
                 ARCHIVE_NAME + "/" + AsyncBeanRemote.class.getSimpleName() + "!" + AsyncBeanRemoteInterface.class.getName());
         bean.asyncMethod();
-    }
-
-    private InitialContext getInitialContext(String host) throws NamingException {
-        final Properties jndiProperties = new Properties();
-        jndiProperties.put(Context.INITIAL_CONTEXT_FACTORY,
-                org.jboss.naming.remote.client.InitialContextFactory.class.getName());
-        jndiProperties.put(Context.PROVIDER_URL, "remote://" + host + ":4447");
-        jndiProperties.put("jboss.naming.client.ejb.context", true);
-        jndiProperties.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
-        jndiProperties.put("jboss.naming.client.security.callback.handler.class", CallbackHandler.class.getName());
-        return new InitialContext(jndiProperties);
     }
 
 }
