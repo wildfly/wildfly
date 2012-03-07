@@ -23,6 +23,6 @@
 
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
-   <extension-module>org.jboss.as.pojo</extension-module>
+   <extension-module>org.jboss.as.capedwarf</extension-module>
    <subsystem xmlns="urn:jboss:domain:capedwarf:1.0"/>
 </config>

@@ -76,10 +76,24 @@
             </cache-container>
            <cache-container name="capedwarf" default-cache="default">
                <transport lock-timeout="60000"/>
-               <replicated-cache name="default" mode="ASYNC" indexing="LOCAL">
+               <distributed-cache name="default" owners="2" mode="ASYNC" batching="true" indexing="LOCAL">
                    <transaction mode="NON_XA"/>
                    <eviction strategy="NONE"/>
-               </replicated-cache>
+                   <indexing-properties>
+                       <property name="hibernate.search.default.directory_provider">
+                           infinispan
+                       </property>
+                       <property name="hibernate.search.default.worker.backend">
+                           ${infinispan.jgroups.node.type}
+                       </property>
+                       <property name="hibernate.search.default.worker.backend.jgroups.clusterName">
+                           capedwarf
+                       </property>
+                       <property name="hibernate.search.default.infinispan.cachemanager_jndiname">
+                           java:jboss/infinispan/container/HibernateSearch
+                       </property>
+                   </indexing-properties>
+               </distributed-cache>
                <replicated-cache name="data" mode="ASYNC">
                    <transaction mode="NON_XA"/>
                    <eviction strategy="NONE"/>
@@ -98,6 +112,22 @@
                    <file-store/>
                </distributed-cache>
            </cache-container>
+           <cache-container name="HibernateSearch">
+					<transport lock-timeout="60000"/>
+					<replicated-cache name="LuceneIndexesMetadata" mode="SYNC" batching="true">
+					    <transaction mode="NONE"/>
+					    <eviction strategy="NONE"/>
+					</replicated-cache>
+					<replicated-cache name="LuceneIndexesData" mode="SYNC" batching="true">
+					    <transaction mode="NONE"/>
+					    <eviction strategy="NONE"/>
+					</replicated-cache>
+					<replicated-cache name="LuceneIndexesLocking" mode="SYNC" batching="true">
+					    <transaction mode="NONE"/>
+					    <eviction strategy="NONE"/>
+					</replicated-cache>
+           </cache-container>
+
        </replacement>
    </supplement>
 </config>
