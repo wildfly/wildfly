@@ -75,7 +75,7 @@ public class CliArgumentsTestCase extends AbstractCliTestBase {
 
     @Test
     public void testCommandsArgument() throws Exception {
-        CLIWrapper cli = new CLIWrapper(false, new String[] {"--commands=version,connect,ls"});
+        CLIWrapper cli = new CLIWrapper(false, new String[] {getControllerString(), "--commands=version,connect,ls"});
         String output = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         Assert.assertTrue("CLI Output: " + output, output.contains("JBOSS_HOME"));
         Assert.assertTrue("CLI Output: " + output, output.contains("subsystem"));
@@ -103,7 +103,7 @@ public class CliArgumentsTestCase extends AbstractCliTestBase {
     
     @Test
     public void testConnectArgument() throws Exception {
-        CLIWrapper cli = new CLIWrapper(false, new String[] {"--commands=version,connect,ls"});
+        CLIWrapper cli = new CLIWrapper(false, new String[] {getControllerString(), "--commands=version,connect,ls"});
         String output = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         Assert.assertTrue(output.contains("JBOSS_HOME"));
         Assert.assertTrue(output.contains("subsystem"));
@@ -113,10 +113,8 @@ public class CliArgumentsTestCase extends AbstractCliTestBase {
     
     @Test
     public void testControlerArgument() throws Exception {
-        
-        String mgmtAddr = managementClient.getMgmtAddress(); 
-        int mgmtPort = managementClient.getMgmtPort();
-        CLIWrapper cli = new CLIWrapper(false, new String[] {"--controller=" + mgmtAddr + ":" + String.valueOf(mgmtPort)});
+        String controller = getControllerString();
+        CLIWrapper cli = new CLIWrapper(false, new String[] {controller});
         cli.sendLine("connect");
         cli.sendLine("ls");
         String output = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
@@ -124,11 +122,21 @@ public class CliArgumentsTestCase extends AbstractCliTestBase {
         Assert.assertTrue(output.contains("extension"));        
         cli.quit();
         
-        cli = new CLIWrapper(false, new String[] {"--controller=" + mgmtAddr + ":" + String.valueOf(mgmtPort - 1)});
+        cli = new CLIWrapper(false, new String[] {getControllerString(-1)});
         cli.sendLine("connect");
         output = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT * 10);
         Assert.assertTrue(output.contains("The controller is not available"));
         cli.quit();        
-    }    
-    
+    }
+
+    private String getControllerString() {
+        return getControllerString(0);
+    }
+
+    private String getControllerString(int portOffset) {
+        String mgmtAddr1 = managementClient.getMgmtAddress();
+        int mgmtPort1 = managementClient.getMgmtPort();
+        return "--controller=" + mgmtAddr1 + ":" + String.valueOf(mgmtPort1 + portOffset);
+    }
+
 }
