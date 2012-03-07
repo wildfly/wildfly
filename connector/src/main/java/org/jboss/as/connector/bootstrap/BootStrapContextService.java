@@ -91,7 +91,7 @@ public final class BootStrapContextService implements Service<CloneableBootstrap
 
     @Override
     public void stop(StopContext context) {
-
+        jcaConfig.getValue().getBootstrapContexts().remove(name);
     }
 
     public Injector<com.arjuna.ats.jbossatx.jta.TransactionManagerService> getTxManagerInjector() {
