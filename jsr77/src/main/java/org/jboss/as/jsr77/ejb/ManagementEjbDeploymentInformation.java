@@ -37,7 +37,6 @@ import org.jboss.msc.value.InjectedValue;
 public class ManagementEjbDeploymentInformation extends EjbDeploymentInformation {
 
     public ManagementEjbDeploymentInformation(String ejbName, Map<String, InjectedValue<ComponentView>> componentViews, ClassLoader deploymentClassLoader) {
-        // FIXME ManagementEjbDeploymentInformation constructor
         super(ejbName, new InjectedValue<EJBComponent>(), componentViews, null, deploymentClassLoader, new InjectedValue<EjbIIOPService>());
     }
 

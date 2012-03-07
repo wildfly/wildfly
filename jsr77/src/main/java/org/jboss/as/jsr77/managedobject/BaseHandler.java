@@ -21,6 +21,8 @@
 */
 package org.jboss.as.jsr77.managedobject;
 
+import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -54,17 +56,17 @@ abstract class BaseHandler extends Handler{
         } else if (attribute.equals(ATTR_STATE_MANAGEABLE) || attribute.equals(ATTR_STATISTICS_PROVIDER) || attribute.equals(ATTR_EVENT_PROVIDER)) {
             return false;
         }
-        throw new AttributeNotFoundException("No attribute called " + attribute);
+        throw MESSAGES.noAttributeCalled(attribute);
     }
 
     @Override
     MBeanInfo getMBeanInfo(ModelReader reader, ObjectName name) throws InstanceNotFoundException {
         Set<ObjectName> names = queryObjectNames(reader, name, null);
         if (names.size() != 1) {
-            throw new InstanceNotFoundException("No MBean found for " + name);
+            throw MESSAGES.noMBeanCalled(name);
         }
         if (!name.apply(names.iterator().next())){
-            throw new InstanceNotFoundException("No MBean found for " + name);
+            throw MESSAGES.noMBeanCalled(name);
         }
         Set<MBeanAttributeInfo> attrs = getAttributeInfos();
         MBeanAttributeInfo[] attributes = attrs.toArray(new MBeanAttributeInfo[attrs.size()]);
@@ -80,10 +82,10 @@ abstract class BaseHandler extends Handler{
 
     Set<MBeanAttributeInfo> getAttributeInfos() {
         Set<MBeanAttributeInfo> attributes = new HashSet<MBeanAttributeInfo>();
-        attributes.add(createRoMBeanAttributeInfo(ATTR_NAME, String.class.getName(), "The object name"));
-        attributes.add(createRoMBeanAttributeInfo(ATTR_STATE_MANAGEABLE, Boolean.TYPE.getName(), "Whether this managed object is state manageable"));
-        attributes.add(createRoMBeanAttributeInfo(ATTR_STATISTICS_PROVIDER, Boolean.TYPE.getName(), "Whether this managed object is a statistics provider"));
-        attributes.add(createRoMBeanAttributeInfo(ATTR_EVENT_PROVIDER, Boolean.TYPE.getName(), "Whether this managed object is an event provider"));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_NAME, String.class.getName(), MESSAGES.attrInfoAttrName()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_STATE_MANAGEABLE, Boolean.TYPE.getName(), MESSAGES.attrInfoStateManageable()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_STATISTICS_PROVIDER, Boolean.TYPE.getName(), MESSAGES.attrInfoStatisticsProvider()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_EVENT_PROVIDER, Boolean.TYPE.getName(), MESSAGES.attrInfoEventProvider()));
         return attributes;
     }
 

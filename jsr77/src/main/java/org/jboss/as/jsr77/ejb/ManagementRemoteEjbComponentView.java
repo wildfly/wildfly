@@ -21,6 +21,8 @@
 */
 package org.jboss.as.jsr77.ejb;
 
+import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
@@ -106,11 +108,11 @@ public class ManagementRemoteEjbComponentView extends BaseManagementEjbComponent
             return server.getDefaultDomain();
         } else if (method == getListenerRegistry) {
             //TODO read spec ;-) and find out what this should do
-            throw new IllegalStateException("Not yet implemented");
+            throw MESSAGES.notYetImplemented();
         } else if (method == remove) {
             return null;
         }
-        throw new IllegalArgumentException("Unknown method " + method);
+        throw MESSAGES.unknownMethod(method);
     }
 
     @Override
@@ -160,7 +162,7 @@ public class ManagementRemoteEjbComponentView extends BaseManagementEjbComponent
 
     private <T> T getParameter(Class<T> clazz, Object[] params, int index) {
         if (index >= params.length) {
-            throw new IllegalArgumentException("Expected at least " + index + " elements in parameter array with size" + params.length);
+            throw MESSAGES.wrongParamLength(index, params.length);
         }
         Object o = params[index];
         if (o == null) {
@@ -169,7 +171,7 @@ public class ManagementRemoteEjbComponentView extends BaseManagementEjbComponent
         try {
             return clazz.cast(o);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Bad type for parameter at " + index + ". Expected " + clazz.getName() + ", but was " + o.getClass().getName());
+            throw MESSAGES.wrongParamType(index, clazz.getName(), o.getClass().getName());
         }
     }
 

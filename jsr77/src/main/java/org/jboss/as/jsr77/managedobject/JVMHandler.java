@@ -21,7 +21,7 @@
 */
 package org.jboss.as.jsr77.managedobject;
 
-import org.jboss.as.controller.interfaces.InetAddressUtil;
+import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
 
 import java.net.UnknownHostException;
 import java.util.Collections;
@@ -31,6 +31,8 @@ import javax.management.AttributeNotFoundException;
 import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
+
+import org.jboss.as.controller.interfaces.InetAddressUtil;
 
 
 /**
@@ -82,9 +84,9 @@ class JVMHandler extends BaseHandler {
     Set<MBeanAttributeInfo> getAttributeInfos() {
         Set<MBeanAttributeInfo> attributes = super.getAttributeInfos();
 
-        attributes.add(createRoMBeanAttributeInfo(ATTR_JVM_NAME, String[].class.getName(), "The jvm name"));
-        attributes.add(createRoMBeanAttributeInfo(ATTR_JAVA_VENDOR, String.class.getName(), "The java vendor"));
-        attributes.add(createRoMBeanAttributeInfo(ATTR_NODE, String.class.getName(), "The node"));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_JVM_NAME, String[].class.getName(), MESSAGES.attrInfoJvmName()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_JAVA_VENDOR, String.class.getName(), MESSAGES.attrInfoJavaVendor()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_NODE, String.class.getName(), MESSAGES.attrInfoNode()));
 
         return attributes;
     }

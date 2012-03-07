@@ -21,6 +21,8 @@
 */
 package org.jboss.as.jsr77.subsystem;
 
+import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
+
 import java.io.ObjectInputStream;
 import java.util.Collections;
 import java.util.Set;
@@ -259,13 +261,13 @@ class JSR77ManagementMBeanServer implements MBeanServerPlugin {
     @Override
     public void setAttribute(ObjectName name, Attribute attribute) throws InstanceNotFoundException, AttributeNotFoundException,
             InvalidAttributeValueException, MBeanException, ReflectionException {
-        throw new IllegalStateException(name + " is read only");
+        throw MESSAGES.mbeanIsReadOnly(name);
     }
 
     @Override
     public AttributeList setAttributes(ObjectName name, AttributeList attributes) throws InstanceNotFoundException,
             ReflectionException {
-        throw new IllegalStateException(name + " is read only");
+        throw MESSAGES.mbeanIsReadOnly(name);
     }
 
     @Override

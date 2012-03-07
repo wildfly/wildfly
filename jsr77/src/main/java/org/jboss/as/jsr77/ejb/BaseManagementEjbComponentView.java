@@ -21,6 +21,8 @@
 */
 package org.jboss.as.jsr77.ejb;
 
+import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
@@ -37,28 +39,18 @@ abstract class BaseManagementEjbComponentView implements ComponentView {
 
     private volatile Map<String, Map<String, Method>> methods;
 
-//    @Override
-//    public ComponentViewInstance createInstance() {
-//        throw new UnsupportedOperationException("Only required in local view");
-//    }
-//
-//    @Override
-//    public ComponentViewInstance createInstance(Map<Object, Object> contextData) {
-//        throw new UnsupportedOperationException("Only required in local view");
-//    }
-
     public ManagedReference createInstance() {
-        throw new UnsupportedOperationException("Only required in local view");
+        throw MESSAGES.onlyRequiredInLocalView();
     }
 
     public ManagedReference createInstance(Map<Object, Object> contextData) {
-        throw new UnsupportedOperationException("Only required in local view");
+        throw MESSAGES.onlyRequiredInLocalView();
     }
 
 
     @Override
     public Component getComponent() {
-        throw new UnsupportedOperationException("Only required in local view");
+        throw MESSAGES.onlyRequiredInLocalView();
     }
 
     @Override
