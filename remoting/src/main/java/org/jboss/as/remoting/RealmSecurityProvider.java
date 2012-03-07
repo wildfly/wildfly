@@ -116,7 +116,7 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
         Set<Property> properties = new HashSet<Property>();
         Builder builder = OptionMap.builder();
 
-        mechanisms.add(JBOSS_LOCAL_USER);
+        mechanisms.add(JBOSS_LOCAL_USER); // If this becomes optional based on the realm config then adjust the check below.
         builder.set(SASL_POLICY_NOPLAINTEXT, false);
         properties.add(Property.of(LOCAL_DEFAULT_USER, DOLLAR_LOCAL));
         if (tokensDir != null) {
@@ -133,8 +133,6 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
         } else if (realm == null) {
             mechanisms.add(ANONYMOUS);
             builder.set(SASL_POLICY_NOANONYMOUS, false);
-        } else {
-            throw MESSAGES.noSupportingMechanismsForRealm();
         }
 
         SslMode sslMode = getSslMode();
@@ -154,6 +152,10 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
                 break;
         // We do not currently support the SSL_CLIENT_AUTH_MODE of REQUIRED as there is always
         // the possibility that the local mechanism will still be needed.
+        }
+
+        if (mechanisms.size() == 1) {
+            throw MESSAGES.noSupportingMechanismsForRealm();
         }
 
         builder.set(SASL_MECHANISMS, Sequence.of(mechanisms));
