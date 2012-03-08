@@ -572,6 +572,9 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     }
 
     private void addSocketBindings(List<ModelNode> updates, ModelNode group, final String groupName, ModelNode defaultInterface) {
+        if(! group.hasDefined(SOCKET_BINDING)) {
+            return;
+        }
         for(final Property socketBinding : group.get(SOCKET_BINDING).asPropertyList()) {
             final String name = socketBinding.getName();
             final ModelNode binding = socketBinding.getValue();

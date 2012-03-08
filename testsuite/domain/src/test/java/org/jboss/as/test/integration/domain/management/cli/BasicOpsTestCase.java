@@ -88,8 +88,8 @@ public class BasicOpsTestCase {
         assertTrue(hosts.contains("slave"));
 
         // check servers
-        assertTrue(checkHostServers(cli, "master", new String[] {"main-one", "main-two", "other-one"}));
-        assertTrue(checkHostServers(cli, "slave", new String[] {"main-three", "main-four", "other-two"}));
+        assertTrue(checkHostServers(cli, "master", new String[] {"main-one", "main-two", "other-one", "reload-one"}));
+        assertTrue(checkHostServers(cli, "slave", new String[] {"main-three", "main-four", "other-two", "reload-two"}));
         cli.quit();
 
     }
