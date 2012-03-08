@@ -681,9 +681,13 @@
         <module-def name="org.hibernate.envers">
             <maven-resource group="org.hibernate" artifact="hibernate-envers"/>
         </module-def>
+
         <module-def name="org.hibernate.search">
             <maven-resource group="org.hibernate" artifact="hibernate-search-engine"/>
+            <maven-resource group="org.hibernate" artifact="hibernate-search-infinispan"/>
+            <maven-resource group="org.infinispan" artifact="infinispan-lucene-directory"/>
         </module-def>
+
         <module-def name="org.hibernate.validator">
             <maven-resource group="org.hibernate" artifact="hibernate-validator"/>
         </module-def>

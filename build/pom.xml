@@ -738,6 +738,16 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-engine</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-infinispan</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.hibernate.common</groupId>
                     <artifactId>hibernate-commons-annotations</artifactId>
                 </dependency>
@@ -805,6 +815,11 @@
                 <dependency>
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-query</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.infinispan</groupId>
+                    <artifactId>infinispan-lucene-directory</artifactId>
                 </dependency>
 
                 <dependency>

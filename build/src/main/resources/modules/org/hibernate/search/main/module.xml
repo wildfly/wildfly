@@ -36,5 +36,7 @@
         <module name="org.hibernate"/>
         <module name="org.apache.avro"/>
         <module name="org.apache.lucene"/>
+        <module name="org.jgroups"/>
+        <module name="org.infinispan"/>
     </dependencies>
 </module>
