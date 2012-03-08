@@ -534,7 +534,7 @@ class DataSourcesSubsystemProviders {
 
             operation.get(REQUEST_PROPERTIES, DRIVER_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-name"));
             operation.get(REQUEST_PROPERTIES, DRIVER_NAME.getName(), TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, DRIVER_NAME.getName(), REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, DRIVER_NAME.getName(), REQUIRED).set(false);
             operation.get(REQUEST_PROPERTIES, DEPLOYMENT_NAME, DESCRIPTION).set(bundle.getString("installed-drivers.deployment-name"));
             operation.get(REQUEST_PROPERTIES, DEPLOYMENT_NAME, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, DEPLOYMENT_NAME, REQUIRED).set(false);
