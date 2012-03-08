@@ -32,6 +32,7 @@ import org.jboss.as.logging.handlers.console.Target;
 import org.jboss.as.logging.validators.FileValidator;
 import org.jboss.as.logging.validators.LogLevelValidator;
 import org.jboss.as.logging.validators.SizeValidator;
+import org.jboss.as.logging.validators.SuffixValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logmanager.handlers.AsyncHandler.OverflowAction;
@@ -183,7 +184,9 @@ public interface CommonAttributes {
             setAllowNull(true).
             build();
 
-    SimpleAttributeDefinition SUFFIX = SimpleAttributeDefinitionBuilder.create("suffix", ModelType.STRING).build();
+    SimpleAttributeDefinition SUFFIX = SimpleAttributeDefinitionBuilder.create("suffix", ModelType.STRING).
+            setValidator(new SuffixValidator()).
+            build();
 
     SimpleAttributeDefinition TARGET = SimpleAttributeDefinitionBuilder.create("target", ModelType.STRING, true).
             setDefaultValue(new ModelNode().set(Target.SYSTEM_OUT.toString())).

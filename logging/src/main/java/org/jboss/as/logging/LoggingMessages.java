@@ -323,4 +323,14 @@ public interface LoggingMessages {
      */
     @Message(id = 11553, value = "An absolute path (%2$s) cannot be used when a relative-to path (%1$s) is being used.")
     String invalidPath(String relativeTo, String path);
+
+    /**
+     * A message indicating an suffix is invalid.
+     *
+     * @param suffix the suffix.
+     *
+     * @return the message.
+     */
+    @Message(id = 11554, value = "The suffix (%s) is invalid. A suffix must be a valid date format and not contain seconds or milliseconds.")
+    String invalidSuffix(String suffix);
 }
