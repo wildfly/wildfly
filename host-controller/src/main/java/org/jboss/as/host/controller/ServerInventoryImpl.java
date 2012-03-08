@@ -147,6 +147,11 @@ public class ServerInventoryImpl implements ServerInventory {
 
     @Override
     public ServerStatus startServer(final String serverName, final ModelNode domainModel) {
+        return startServer(serverName, domainModel, false);
+    }
+
+    @Override
+    public ServerStatus startServer(final String serverName, final ModelNode domainModel, final boolean blocking) {
         if(shutdown || connectionFinished) {
             throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
         }
@@ -163,11 +168,19 @@ public class ServerInventoryImpl implements ServerInventory {
         synchronized (shutdownCondition) {
             shutdownCondition.notifyAll();
         }
+        if(blocking) {
+            server.awaitState(ManagedServer.InternalState.SERVER_STARTED);
+        }
         return server.getState();
     }
 
     @Override
     public ServerStatus restartServer(final String serverName, final int gracefulTimeout, final ModelNode domainModel) {
+        return restartServer(serverName, gracefulTimeout, domainModel, false);
+    }
+
+    @Override
+    public ServerStatus restartServer(final String serverName, final int gracefulTimeout, final ModelNode domainModel, final boolean blocking) {
         stopServer(serverName, gracefulTimeout);
         synchronized (shutdownCondition) {
             for(;;) {
@@ -185,17 +198,25 @@ public class ServerInventoryImpl implements ServerInventory {
                 }
             }
         }
-        startServer(serverName, domainModel);
+        startServer(serverName, domainModel, blocking);
         return determineServerStatus(serverName);
     }
 
     @Override
     public ServerStatus stopServer(final String serverName, final int gracefulTimeout) {
+        return stopServer(serverName, gracefulTimeout, false);
+    }
+
+    @Override
+    public ServerStatus stopServer(final String serverName, final int gracefulTimeout, final boolean blocking) {
         final ManagedServer server = servers.get(serverName);
         if(server == null) {
             return ServerStatus.STOPPED;
         }
         server.stop();
+        if(blocking) {
+            server.awaitState(ManagedServer.InternalState.STOPPED);
+        }
         return server.getState();
     }
 

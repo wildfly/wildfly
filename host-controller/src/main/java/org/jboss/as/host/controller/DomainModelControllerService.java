@@ -521,6 +521,11 @@ public class DomainModelControllerService extends AbstractControllerService impl
             return serverInventory.startServer(serverName, domainModel);
         }
 
+        @Override
+        public ServerStatus startServer(String serverName, ModelNode domainModel, boolean blocking) {
+            return serverInventory.startServer(serverName, domainModel, blocking);
+        }
+
         public void reconnectServer(String serverName, ModelNode domainModel, boolean running) {
             serverInventory.reconnectServer(serverName, domainModel, running);
         }
@@ -529,8 +534,18 @@ public class DomainModelControllerService extends AbstractControllerService impl
             return serverInventory.restartServer(serverName, gracefulTimeout, domainModel);
         }
 
+        @Override
+        public ServerStatus restartServer(String serverName, int gracefulTimeout, ModelNode domainModel, boolean blocking) {
+            return serverInventory.restartServer(serverName, gracefulTimeout, domainModel, blocking);
+        }
+
         public ServerStatus stopServer(String serverName, int gracefulTimeout) {
             return serverInventory.stopServer(serverName, gracefulTimeout);
+        }
+
+        @Override
+        public ServerStatus stopServer(String serverName, int gracefulTimeout, boolean blocking) {
+            return serverInventory.stopServer(serverName, gracefulTimeout, blocking);
         }
 
         public CallbackHandler getServerCallbackHandler() {

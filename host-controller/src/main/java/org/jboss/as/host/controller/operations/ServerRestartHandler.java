@@ -68,6 +68,7 @@ public class ServerRestartHandler implements OperationStepHandler, DescriptionPr
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final PathElement element = address.getLastElement();
         final String serverName = element.getValue();
+        final boolean blocking = operation.get("blocking").asBoolean(false);
 
         final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
         context.addStep(new OperationStepHandler() {
@@ -77,7 +78,7 @@ public class ServerRestartHandler implements OperationStepHandler, DescriptionPr
                 if (origStatus != ServerStatus.STARTED) {
                     throw new OperationFailedException(new ModelNode(MESSAGES.cannotRestartServer(serverName, origStatus)));
                 }
-                final ServerStatus status = serverInventory.restartServer(serverName, -1, model);
+                final ServerStatus status = serverInventory.restartServer(serverName, -1, model, blocking);
                 context.getResult().set(status.toString());
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }

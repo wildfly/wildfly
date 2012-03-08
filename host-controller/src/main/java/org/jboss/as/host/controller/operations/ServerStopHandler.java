@@ -70,11 +70,11 @@ public class ServerStopHandler implements OperationStepHandler, DescriptionProvi
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final PathElement element = address.getLastElement();
         final String serverName = element.getValue();
-
+        final boolean blocking = operation.get("blocking").asBoolean(false);
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                final ServerStatus status = serverInventory.stopServer(serverName, -1);
+                final ServerStatus status = serverInventory.stopServer(serverName, -1, blocking);
                 context.getResult().set(status.toString());
                 context.completeStep();
             }
