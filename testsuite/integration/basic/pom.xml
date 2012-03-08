@@ -122,8 +122,7 @@
                                         <include>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/entity/cmp/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/remote/entity/cmp/**/*TestCase*.java</include>
-                                        <include>org/jboss/as/test/integration/ejb/management/deployments/EjbJarInEarRuntimeResourcesTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ejb/management/deployments/EjbJarRuntimeResourcesTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/transaction/bmt/lazyenlist</include>
                                         <include>org/jboss/as/test/integration/jaxr/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/messaging/**/*TestCase*.java</include>
@@ -167,8 +166,7 @@
                                         <exclude>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/entity/cmp/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/remote/entity/cmp/**/*TestCase*.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ejb/management/deployments/EjbJarInEarRuntimeResourcesTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ejb/management/deployments/EjbJarRuntimeResourcesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/transaction/bmt/lazyenlist</exclude>
                                         <exclude>org/jboss/as/test/integration/jaxr/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/**/*TestCase*.java</exclude>
