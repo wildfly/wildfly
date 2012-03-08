@@ -206,10 +206,11 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     private final ProductConfig productConfig;
     private final String qualifiedHostName;
     private final String hostName;
+    private final String modulePath;
 
     private String hostControllerName;
 
-    public HostControllerEnvironment(Map<String, String> hostSystemProperties, boolean isRestart,
+    public HostControllerEnvironment(Map<String, String> hostSystemProperties, boolean isRestart, String modulePath,
                                      InetAddress processControllerAddress, Integer processControllerPort, InetAddress hostControllerAddress,
                                      Integer hostControllerPort, String defaultJVM, String domainConfig, String hostConfig,
                                      RunningMode initialRunningMode, boolean backupDomainFiles, boolean useCachedDc, ProductConfig productConfig) {
@@ -218,7 +219,9 @@ public class HostControllerEnvironment extends ProcessEnvironment {
             throw MESSAGES.nullVar("hostSystemProperties");
         }
         this.hostSystemProperties = Collections.unmodifiableMap(hostSystemProperties);
-
+        if (modulePath == null) {
+            throw MESSAGES.nullVar("modulePath");
+        }
         if (processControllerAddress == null) {
             throw MESSAGES.nullVar("processControllerAddress");
         }
@@ -236,6 +239,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         this.hostControllerAddress = hostControllerAddress;
         this.hostControllerPort = hostControllerPort;
         this.isRestart = isRestart;
+        this.modulePath = modulePath;
 
         // Calculate host and default server name
         String hostName = hostSystemProperties.get(HOST_NAME);
@@ -702,6 +706,10 @@ public class HostControllerEnvironment extends ProcessEnvironment {
 
     public ConfigurationFile getDomainConfigurationFile() {
         return domainConfigurationFile;
+    }
+
+    String getModulePath() {
+        return modulePath;
     }
 
     /**

@@ -103,6 +103,8 @@ public class CommandLineConstants {
     public static final String MASTER_ADDRESS = "--master-address";
     public static final String MASTER_PORT = "--master-port";
 
+    public static final String MODULE_PATH = "-mp";
+
     /** Additional class path items, used only by app client*/
     public static final String APPCLIENT_CONFIG = "--appclient-config";
     public static final String SHORT_HOST = "-H";
