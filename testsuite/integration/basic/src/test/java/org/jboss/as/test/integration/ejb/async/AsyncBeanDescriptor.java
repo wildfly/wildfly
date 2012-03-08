@@ -6,8 +6,8 @@ import java.util.concurrent.Future;
 import javax.ejb.AsyncResult;
 
 public class AsyncBeanDescriptor {
-    public static boolean futureMethodCalled = false;
-    
+    public static volatile boolean futureMethodCalled = false;
+
     public Future<Boolean> futureMethod(CountDownLatch latch) throws InterruptedException {
         latch.countDown();
         futureMethodCalled = true;

@@ -7,5 +7,5 @@ import javax.ejb.Asynchronous;
  */
 @Asynchronous
 public class AsyncParentClass {
-    public static boolean voidMethodCalled = false;
+    public static volatile boolean voidMethodCalled = false;
 }
