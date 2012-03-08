@@ -169,7 +169,7 @@ public final class Main {
         RunningMode initialRunningMode = RunningMode.NORMAL;
         Map<String, String> hostSystemProperties = getHostSystemProperties();
         ProductConfig productConfig;
-
+        String modulePath = null;
 
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
@@ -374,6 +374,8 @@ public final class Main {
 
                     hostSystemProperties.put(HostControllerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                     SecurityActions.setSystemProperty(HostControllerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
+                } else if (arg.equals(CommandLineConstants.MODULE_PATH)) {
+                    modulePath = args[++i];
                 } else {
                     System.err.println(MESSAGES.invalidOption(arg));
                     usage();
@@ -387,7 +389,7 @@ public final class Main {
         }
 
         productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(HostControllerEnvironment.HOME_DIR));
-        return new HostControllerEnvironment(hostSystemProperties, isRestart, pmAddress, pmPort,
+        return new HostControllerEnvironment(hostSystemProperties, isRestart, modulePath, pmAddress, pmPort,
                 pcSocketConfig.getBindAddress(), pcSocketConfig.getBindPort(), defaultJVM,
                 domainConfig, hostConfig, initialRunningMode, backupDomainFiles, cachedDc, productConfig);
     }

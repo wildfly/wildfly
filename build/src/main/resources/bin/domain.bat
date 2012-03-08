@@ -121,6 +121,7 @@ echo.
      org.jboss.as.process-controller ^
     -jboss-home "%JBOSS_HOME%" ^
     -jvm "%JAVA%" ^
+    -mp "%JBOSS_MODULEPATH%" ^
     -- ^
     "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\host-controller.log" ^
     "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^

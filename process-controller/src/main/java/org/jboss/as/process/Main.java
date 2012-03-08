@@ -156,7 +156,8 @@ public final class Main {
         if (modulePath == null) {
             // if "-mp" (i.e. module path) wasn't part of the command line args, then check the system property.
             // if system property not set, then default to JBOSS_HOME/modules
-            modulePath = SecurityActions.getSystemProperty("jboss.module.path", jbossHome + File.separator + "modules");
+            // TODO: jboss-modules setting module.path is not a reliable API; log a WARN or something if we get here
+            modulePath = SecurityActions.getSystemProperty("module.path", jbossHome + File.separator + "modules");
         }
         if (bootJar == null) {
             // if "-jar" wasn't part of the command line args, then default to JBOSS_HOME/jboss-modules.jar
@@ -200,6 +201,8 @@ public final class Main {
         initialCommand.add("-jaxpmodule");
         initialCommand.add(jaxpModule);
         initialCommand.add(bootModule);
+        initialCommand.add("-mp");  // Repeat the module path so HostController's Main sees it
+        initialCommand.add(modulePath);
         initialCommand.add(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR);
         initialCommand.add(boundAddress.getHostName());
         initialCommand.add(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT);
