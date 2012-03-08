@@ -583,6 +583,27 @@ public class AddressOnlyParsingTestCase extends TestCase {
         assertEquals("c", node.getName());
     }
 
+    public void testEndsOnSlashWhichIsPartOfName() throws Exception {
+
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
+        parser.parse("/subsystem=mail/mail-session=java\\:\\/", handler);
+
+        OperationRequestAddress address = handler.getAddress();
+        assertNotNull(address);
+        Iterator<Node> nodes = address.iterator();
+        assertTrue(nodes.hasNext());
+        Node node = nodes.next();
+        assertEquals("subsystem", node.getType());
+        assertEquals("mail", node.getName());
+
+        assertTrue(nodes.hasNext());
+        node = nodes.next();
+        assertEquals("mail-session", node.getType());
+        assertEquals("java:/", node.getName());
+
+        assertFalse(handler.endsOnNodeSeparator());
+    }
+
     @Test
     public void testTest() throws Exception {
 
