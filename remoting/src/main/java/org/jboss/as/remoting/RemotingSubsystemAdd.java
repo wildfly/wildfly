@@ -77,7 +77,8 @@ class RemotingSubsystemAdd extends AbstractAddStepHandler {
 
     void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         // create endpoint
-        final EndpointService endpointService = new EndpointService(RemotingExtension.NODE_NAME, EndpointService.EndpointType.SUBSYSTEM);
+        final String nodeName = SecurityActions.getSystemProperty(RemotingExtension.NODE_NAME_PROPERTY);
+        final EndpointService endpointService = new EndpointService(nodeName, EndpointService.EndpointType.SUBSYSTEM);
         // todo configure option map
         final OptionMap map = OptionMap.builder()
                 .set(Options.WORKER_READ_THREADS, RemotingSubsystemRootResource.WORKER_READ_THREADS.resolveModelAttribute(context, model).asInt())

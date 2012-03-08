@@ -101,11 +101,7 @@ public class RemotingExtension implements Extension {
 
     private static final String RESOURCE_NAME = RemotingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final String NODE_NAME_PROPERTY = "jboss.node.name";
-    static final String NODE_NAME;
-    static {
-        NODE_NAME = SecurityActions.getSystemProperty(RemotingExtension.NODE_NAME_PROPERTY);
-    }
+    static final String NODE_NAME_PROPERTY = "jboss.node.name";
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, RemotingExtension.class.getClassLoader(), true, false);

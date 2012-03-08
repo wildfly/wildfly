@@ -93,8 +93,18 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         properties.setProperty(ServerEnvironment.DOMAIN_BASE_DIR, SecurityActions.getSystemProperty(ServerEnvironment.DOMAIN_BASE_DIR));
         properties.setProperty(ServerEnvironment.DOMAIN_CONFIG_DIR, SecurityActions.getSystemProperty(ServerEnvironment.DOMAIN_CONFIG_DIR));
 
-        // Set the optional properties
+        // Provide any other properties that standalone Main.determineEnvironment() would read
+        // from system properties and pass in to ServerEnvironment
+        setPropertyIfFound(launchProperties, ServerEnvironment.JAVA_EXT_DIRS, properties);
+        setPropertyIfFound(launchProperties, ServerEnvironment.QUALIFIED_HOST_NAME, properties);
+        setPropertyIfFound(launchProperties, ServerEnvironment.HOST_NAME, properties);
+        setPropertyIfFound(launchProperties, ServerEnvironment.NODE_NAME, properties);
+        @SuppressWarnings("deprecation")
+        String deprecated = ServerEnvironment.MODULES_DIR;
+        setPropertyIfFound(launchProperties, deprecated, properties);
+        setPropertyIfFound(launchProperties, ServerEnvironment.BUNDLES_DIR, properties);
         setPropertyIfFound(launchProperties, ServerEnvironment.SERVER_DATA_DIR, properties);
+        setPropertyIfFound(launchProperties, ServerEnvironment.SERVER_CONTENT_DIR, properties);
         setPropertyIfFound(launchProperties, ServerEnvironment.SERVER_LOG_DIR, properties);
         setPropertyIfFound(launchProperties, ServerEnvironment.SERVER_TEMP_DIR, properties);
     }
@@ -104,7 +114,8 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
         final ProductConfig productConfig = new ProductConfig(Module.getBootModuleLoader(), home);
         // Create server environment on the server, so that the system properties are getting initialized on the right side
-        final ServerEnvironment providedEnvironment = new ServerEnvironment(hostControllerName, properties, SecurityActions.getSystemEnvironment(), null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL, productConfig);
+        final ServerEnvironment providedEnvironment = new ServerEnvironment(hostControllerName, properties,
+                SecurityActions.getSystemEnvironment(), null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL, productConfig);
         final Bootstrap.Configuration configuration = new Bootstrap.Configuration(providedEnvironment);
         final ExtensionRegistry extensionRegistry = configuration.getExtensionRegistry();
         final Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = new Bootstrap.ConfigurationPersisterFactory() {

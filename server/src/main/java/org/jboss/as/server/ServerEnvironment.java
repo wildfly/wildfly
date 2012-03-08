@@ -498,7 +498,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         }
     }
 
-    // TODO why is this not done in the constructor?
+    // TODO AS7-3617 why is this not done in the constructor?
     @SuppressWarnings("deprecation")
     void install() {
         SecurityActions.setSystemProperty(QUALIFIED_HOST_NAME, qualifiedHostName);
