@@ -45,6 +45,7 @@ import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.remoting3.security.UserInfo;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
+import org.jboss.security.ISecurityManagement;
 import org.jboss.security.RunAs;
 import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
@@ -66,6 +67,8 @@ import org.jboss.security.identity.plugins.SimpleIdentity;
 public class SimpleSecurityManager {
     private ThreadLocalStack<SecurityContext> contexts = new ThreadLocalStack<SecurityContext>();
 
+    private static ISecurityManagement securityManagement = null;
+
     private static PrivilegedAction<SecurityContext> securityContext() {
         return new PrivilegedAction<SecurityContext>() {
             public SecurityContext run() {
@@ -78,11 +81,16 @@ public class SimpleSecurityManager {
         // Do not use SecurityFactory.establishSecurityContext, its static init is broken.
         try {
             final SecurityContext securityContext = SecurityContextFactory.createSecurityContext(securityDomain);
+            securityContext.setSecurityManagement(securityManagement);
             SecurityContextAssociation.setSecurityContext(securityContext);
             return securityContext;
         } catch (Exception e) {
             throw SecurityMessages.MESSAGES.securityException(e);
         }
+    }
+
+    public void setSecurityManagement(ISecurityManagement iSecurityManagement){
+        securityManagement = iSecurityManagement;
     }
 
     public Principal getCallerPrincipal() {
