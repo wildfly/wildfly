@@ -291,13 +291,14 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                     }
                 }
             }
-            //  look provider up if we didn't use the providers packaged with the application
-            if (provider == null) {
-                provider = lookupProvider(pu);
-            }
 
             final List<String> pus = deploymentUnit.getAttachmentList(JpaAttachments.IGNORED_PU_SERVICES);
             if (pus == null || pus.contains(pu.getPersistenceUnitName()) == false) {
+                //  look provider up if we didn't use the providers packaged with the application
+                if (provider == null) {
+                    provider = lookupProvider(pu);
+                }
+
                 final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider);
 
                 phaseContext.getDeploymentUnit().addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(pu, adaptor));

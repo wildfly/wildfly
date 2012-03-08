@@ -84,7 +84,7 @@
                            infinispan
                        </property>
                        <property name="hibernate.search.default.worker.backend">
-                           ${infinispan.jgroups.node.type}
+                           ${infinispan.jgroups.node.type:jgroupsMaster}
                        </property>
                        <property name="hibernate.search.default.worker.backend.jgroups.clusterName">
                            capedwarf
