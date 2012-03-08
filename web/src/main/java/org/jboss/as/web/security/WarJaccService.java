@@ -191,15 +191,10 @@ public class WarJaccService extends JaccService<WarMetaData> {
                 }
                 pc.addToRole(role, wrp);
 
-                // We will need to check if there are any methods missing from the list of 7 possible types
-                // See WebResourceCollectionMetaData.ALL_HTTP_METHOD_NAMES
-                boolean missingMethods = true;
-                if(httpMethods != null){
-                    String[] anyMissingMethods = WebResourceCollectionMetaData.getMissingHttpMethods(Arrays.asList(httpMethods));
-                    missingMethods = (anyMissingMethods.length == 0);
-                }
+                //there are totally 7 http methods from the jacc spec (See WebResourceCollectionMetaData.ALL_HTTP_METHOD_NAMES)
+                final int NUMBER_OF_HTTP_METHODS = 7;
                 // JACC 1.1: create !(httpmethods) in unchecked perms
-                if (httpMethods != null && missingMethods) {
+                if (httpMethods != null && httpMethods.length != NUMBER_OF_HTTP_METHODS) {
                     WebResourcePermission wrpUnchecked = new WebResourcePermission(info.pattern, "!"
                             + getCommaSeparatedString(httpMethods));
                     pc.addToUncheckedPolicy(wrpUnchecked);
