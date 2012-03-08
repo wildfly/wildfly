@@ -53,6 +53,7 @@
             <modules>
                 <module>smoke</module>
                 <module>basic</module>
+                <module>servlet30</module>
                 <module>clust</module>
                 <module>iiop</module>
                 <module>xts</module>
@@ -67,6 +68,7 @@
             <modules>
                 <module>smoke</module>
                 <module>basic</module>
+                <module>servlet30</module>
                 <module>clust</module>
                 <module>iiop</module>
                 <module>xts</module>
