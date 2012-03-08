@@ -33,6 +33,7 @@ import javax.transaction.xa.Xid;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.logging.Logger;
@@ -59,6 +60,13 @@ class XidTransactionCommitTask extends XidTransactionManagementTask {
     protected void manageTransaction() throws Throwable {
         // first associate the tx on this thread, by resuming the tx
         final Transaction transaction = this.transactionsRepository.removeTransaction(this.xidTransactionID);
+        if(transaction == null) {
+            if(EjbLogger.EJB3_INVOCATION_LOGGER.isDebugEnabled()) {
+                //this happens if no ejb invocations where made within the TX
+                EjbLogger.EJB3_INVOCATION_LOGGER.debug("Not committing transaction " + this.xidTransactionID + " as is was not found on the server");
+            }
+            return;
+        }
         this.resumeTransaction(transaction);
         // now commit
         final Xid xid = this.xidTransactionID.getXid();

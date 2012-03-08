@@ -22,15 +22,7 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import com.arjuna.ats.arjuna.coordinator.TwoPhaseOutcome;
-import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
-import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
-import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
-import org.jboss.ejb.client.XidTransactionID;
-import org.jboss.logging.Logger;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.remoting3.Channel;
-import org.xnio.IoUtils;
+import java.io.IOException;
 
 import javax.transaction.HeuristicCommitException;
 import javax.transaction.HeuristicMixedException;
@@ -40,7 +32,17 @@ import javax.transaction.Transaction;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-import java.io.IOException;
+
+import com.arjuna.ats.arjuna.coordinator.TwoPhaseOutcome;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
+import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
+import org.jboss.ejb.client.XidTransactionID;
+import org.jboss.logging.Logger;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.remoting3.Channel;
+import org.xnio.IoUtils;
 
 /**
  * @author Jaikiran Pai
@@ -92,6 +94,13 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
     private int prepareTransaction() throws Throwable {
         // first associate the tx on this thread, by resuming the tx
         final Transaction transaction = this.transactionsRepository.removeTransaction(this.xidTransactionID);
+        if(transaction == null) {
+            if(EjbLogger.EJB3_INVOCATION_LOGGER.isDebugEnabled()) {
+                //this happens if no ejb invocations where made within the TX
+                EjbLogger.EJB3_INVOCATION_LOGGER.debug("Not preparing transaction " + this.xidTransactionID + " as is was not found on the server");
+            }
+            return XAResource.XA_OK;
+        }
         this.resumeTransaction(transaction);
         try {
             // now "prepare"
