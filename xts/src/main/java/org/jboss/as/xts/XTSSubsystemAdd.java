@@ -28,14 +28,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.as.webservices.service.EndpointPublishService;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.jbossts.XTSService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -130,6 +134,10 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
      */
     private static final String ENDPOINT_SERVICE_HOST_NAME = "default-host";
 
+    private static final SimpleAttributeDefinition ENVIRONMENT = new SimpleAttributeDefinition(CommonAttributes.XTS_ENVIRONMENT, ModelType.OBJECT, true);
+    private static final AttributeDefinition URL = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.URL, ModelType.STRING, true)
+            .setAllowExpression(true).build();
+
     private XTSSubsystemAdd() {
     }
 
@@ -139,8 +147,16 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.get(CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.URL).set(operation.get(CommonAttributes.XTS_ENVIRONMENT).require(ModelDescriptionConstants.URL));
-
+        ModelNode environmentNode = ENVIRONMENT.validateOperation(operation);
+        // URL.validateOperation will do a conversion to ModelType.EXPRESSION if necessary, same as what the parser does
+        // This is necessary to handle the case of the "add" operation being done by a mgmt client post-boot
+        ModelNode urlNode = environmentNode.isDefined() ? URL.validateOperation(environmentNode) : new ModelNode();
+        model.get(CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.URL).set(urlNode);
+        // Brian Stansberry 2012/03/08: TODO get rid of this complex "XTS_ENVIRONMENT" attribute and for legacy
+        // compatibility only add a :read-attribute handler that can synthesize the attribute value from whatever
+        // resource structure replaces it. By "get rid of" I mean either make the "url" attribute a simple child of
+        // the subsystem, or, if there will need to be multiple structures to group sets of attributes together,
+        // create a properly addressable resource for each.
     }
 
 
