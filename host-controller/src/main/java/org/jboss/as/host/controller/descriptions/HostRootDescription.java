@@ -92,6 +92,9 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry
  */
 public class HostRootDescription {
+
+    private static final String BLOCKING = "blocking";
+
     public static final SimpleAttributeDefinition DIRECTORY_GROUPING = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.DIRECTORY_GROUPING, ModelType.STRING, true).
             addFlag(Flag.RESTART_ALL_SERVICES).
             setDefaultValue(DirectoryGrouping.defaultValue().toModelNode()).
@@ -240,6 +243,12 @@ public class HostRootDescription {
         root.get(REQUEST_PROPERTIES, SERVER, REQUIRED).set(true);
         root.get(REQUEST_PROPERTIES, SERVER, MIN_LENGTH).set(1);
         root.get(REQUEST_PROPERTIES, SERVER, NILLABLE).set(false);
+        root.get(REQUEST_PROPERTIES, BLOCKING, TYPE).set(ModelType.BOOLEAN);
+        root.get(REQUEST_PROPERTIES, BLOCKING, DEFAULT).set(false);
+        root.get(REQUEST_PROPERTIES, BLOCKING, DESCRIPTION).set(bundle.getString("host.start-server.blocking"));
+        root.get(REQUEST_PROPERTIES, BLOCKING, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, BLOCKING, NILLABLE).set(true);
+        root.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
         root.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
         root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("host.start-server.reply"));
         return root;
@@ -256,6 +265,11 @@ public class HostRootDescription {
         root.get(REQUEST_PROPERTIES, SERVER, REQUIRED).set(true);
         root.get(REQUEST_PROPERTIES, SERVER, MIN_LENGTH).set(1);
         root.get(REQUEST_PROPERTIES, SERVER, NILLABLE).set(false);
+        root.get(REQUEST_PROPERTIES, BLOCKING, TYPE).set(ModelType.BOOLEAN);
+        root.get(REQUEST_PROPERTIES, BLOCKING, DEFAULT).set(false);
+        root.get(REQUEST_PROPERTIES, BLOCKING, DESCRIPTION).set(bundle.getString("host.restart-server.blocking"));
+        root.get(REQUEST_PROPERTIES, BLOCKING, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, BLOCKING, NILLABLE).set(true);
         root.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
         root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("host.restart-server.reply"));
         return root;
@@ -272,6 +286,11 @@ public class HostRootDescription {
         root.get(REQUEST_PROPERTIES, SERVER, REQUIRED).set(true);
         root.get(REQUEST_PROPERTIES, SERVER, MIN_LENGTH).set(1);
         root.get(REQUEST_PROPERTIES, SERVER, NILLABLE).set(false);
+        root.get(REQUEST_PROPERTIES, BLOCKING, TYPE).set(ModelType.BOOLEAN);
+        root.get(REQUEST_PROPERTIES, BLOCKING, DEFAULT).set(false);
+        root.get(REQUEST_PROPERTIES, BLOCKING, DESCRIPTION).set(bundle.getString("host.stop-server.blocking"));
+        root.get(REQUEST_PROPERTIES, BLOCKING, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, BLOCKING, NILLABLE).set(true);
         root.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
         root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("host.stop-server.reply"));
         return root;

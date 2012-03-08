@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.domain.suites;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
@@ -44,6 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START_SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
@@ -164,6 +166,7 @@ public class ServerManagementTestCase {
         final ModelNode stopServer = new ModelNode();
         stopServer.get(OP).set("stop");
         stopServer.get(OP_ADDR).set(newServerConfigAddress);
+        stopServer.get("blocking").set(true);
         result = client.execute(stopServer);
         validateResponse(result);
         waitUntilState(client, newServerConfigAddress, "DISABLED");
@@ -269,7 +272,7 @@ public class ServerManagementTestCase {
     @Test
     @Ignore("AS7-3764")
     public void testAdminOnlyMode() throws Exception {
-        
+
         // restart master HC in admin only mode
         final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
         ModelNode op = new ModelNode();
@@ -277,24 +280,24 @@ public class ServerManagementTestCase {
         op.get(OP).set("reload");
         op.get("admin-only").set(true);
         executeForResult(masterClient, op);
-        
+
         // check that the servers are stopped
         waitUntilState(masterClient, "master", "main-one", "STOPPED");
         waitUntilState(masterClient, "master", "main-one", "STOPPED");
-        
+
         // restart back to normal mode
         op = new ModelNode();
         op.get(OP_ADDR).add(HOST, "master");
         op.get(OP).set("reload");
         op.get("admin-only").set(false);
-        executeForResult(masterClient, op);        
+        executeForResult(masterClient, op);
 
         // check that the servers are up
         waitUntilState(masterClient, "master", "main-one", "STARTED");
         waitUntilState(masterClient, "master", "main-one", "STARTED");
-        
+
     }
-    
+
     private void executeLifecycleOperation(final ModelControllerClient client, String opName) throws IOException {
         executeLifecycleOperation(client, null, opName);
     }

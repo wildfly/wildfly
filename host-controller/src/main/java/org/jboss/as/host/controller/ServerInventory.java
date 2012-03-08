@@ -86,9 +86,19 @@ public interface ServerInventory {
      *
      * @param serverName the name of the server
      * @param domainModel the configuration model for the domain
-     * @return the status of the server followin the attempt to start
+     * @return the status of the server following the attempt to start
      */
     ServerStatus startServer(final String serverName, final ModelNode domainModel);
+
+    /**
+     * Start the server with the given name.
+     *
+     * @param serverName the name of the server
+     * @param domainModel the configuration model for the domain
+     * @param blocking whether to block until the server is started
+     * @return the status of the server following the attempt to start
+     */
+    ServerStatus startServer(String serverName, ModelNode domainModel, boolean blocking);
 
     /**
      * Restart the server with the given name. Note that returning from this method does not mean the server
@@ -98,9 +108,20 @@ public interface ServerInventory {
      * @param gracefulTimeout time in ms the server should allow for graceful shutdown (if supported) before terminating all services
      * @param domainModel the configuration model for the domain
      *
-     * @return the status of the server followin the attempt to restart
+     * @return the status of the server following the attempt to restart
      */
     ServerStatus restartServer(String serverName, final int gracefulTimeout, final ModelNode domainModel);
+
+    /**
+     * Restart the server with the given name.
+     *
+     * @param serverName the name of the server
+     * @param gracefulTimeout time in ms the server should allow for graceful shutdown (if supported) before terminating all services
+     * @param domainModel the configuration model for the domain
+     * @param blocking whether to block until the server is restarted
+     * @return the status of the server following the attempt to restart
+     */
+    ServerStatus restartServer(String serverName, int gracefulTimeout, ModelNode domainModel, boolean blocking);
 
     /**
      * Stop the server with the given name. Note that returning from this method does not mean the server
@@ -112,6 +133,16 @@ public interface ServerInventory {
      * @return the status of the server following the attempt to stop
      */
     ServerStatus stopServer(final String serverName, final int gracefulTimeout);
+
+    /**
+     * Stop the server with the given name.
+     *
+     * @param serverName the name of the server
+     * @param gracefulTimeout time in ms the server should allow for graceful shutdown (if supported) before terminating all services
+     * @param blocking whether to block until the server is stopped
+     * @return the status of the server following the attempt to stop
+     */
+    ServerStatus stopServer(String serverName, int gracefulTimeout, boolean blocking);
 
     /**
      * Stop all servers. Note that returning from this method does not mean the servers

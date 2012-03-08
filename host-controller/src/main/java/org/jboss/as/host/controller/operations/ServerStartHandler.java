@@ -69,6 +69,7 @@ public class ServerStartHandler implements OperationStepHandler, DescriptionProv
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final PathElement element = address.getLastElement();
         final String serverName = element.getValue();
+        final boolean blocking = operation.get("blocking").asBoolean(false);
 
         final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
         context.addStep(new OperationStepHandler() {
@@ -76,7 +77,7 @@ public class ServerStartHandler implements OperationStepHandler, DescriptionProv
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final ServerStatus origStatus = serverInventory.determineServerStatus(serverName);
                 if (origStatus != ServerStatus.STARTED && origStatus != ServerStatus.STARTING) {
-                    final ServerStatus status = serverInventory.startServer(serverName, model);
+                    final ServerStatus status = serverInventory.startServer(serverName, model, blocking);
                     context.getResult().set(status.toString());
                 } else {
                     context.getResult().set(origStatus.toString());
