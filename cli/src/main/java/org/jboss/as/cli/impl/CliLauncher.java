@@ -208,8 +208,9 @@ public class CliLauncher {
             cmdCtx.interact();
         } catch(Throwable t) {
             t.printStackTrace();
+            exitCode = 1;
         } finally {
-            if(cmdCtx != null) {
+            if(cmdCtx != null && cmdCtx.getExitCode() != 0) {
                 exitCode = cmdCtx.getExitCode();
             }
             if (!gui) {
