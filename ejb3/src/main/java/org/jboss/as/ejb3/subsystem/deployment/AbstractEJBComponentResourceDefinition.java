@@ -28,7 +28,10 @@ import java.util.ResourceBundle;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -43,6 +46,7 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Base class for {@link ResourceDefinition}s describing runtime {@link EJBComponent}s.
@@ -56,8 +60,28 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
+    private static final AttributeDefinition EXECUTION_TIME = new SimpleAttributeDefinitionBuilder("execution-time", ModelType.LONG)
+            .setAllowNull(false)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .build();
+
+    private static final AttributeDefinition INVOCATIONS = new SimpleAttributeDefinitionBuilder("invocations", ModelType.LONG)
+            .setAllowNull(false)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .build();
+
+    private static final AttributeDefinition PEAK_CONCURRENT_INVOCATIONS = new SimpleAttributeDefinitionBuilder("peak-concurrent-invocations", ModelType.LONG)
+            .setAllowNull(false)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .build();
+
     public static final SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder("security-domain", ModelType.STRING, true)
             .setValidator(new StringLengthValidator(1, true))
+            .build();
+
+    private static final AttributeDefinition WAIT_TIME = new SimpleAttributeDefinitionBuilder("wait-time", ModelType.LONG)
+            .setAllowNull(false)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
     public static final SimpleAttributeDefinition RUN_AS_ROLE = new SimpleAttributeDefinitionBuilder("run-as-role", ModelType.STRING, true)
@@ -131,5 +155,29 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             resourceRegistration.registerReadOnlyAttribute(POOL_CURRENT_SIZE, handler);
             resourceRegistration.registerReadWriteAttribute(POOL_MAX_SIZE, handler, handler);
         }
+        resourceRegistration.registerMetric(EXECUTION_TIME, new AbstractRuntimeMetricsHandler() {
+            @Override
+            protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+                context.getResult().set(component.getInvocationMetrics().getExecutionTime());
+            }
+        });
+        resourceRegistration.registerMetric(INVOCATIONS, new AbstractRuntimeMetricsHandler() {
+            @Override
+            protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+                context.getResult().set(component.getInvocationMetrics().getInvocations());
+            }
+        });
+        resourceRegistration.registerMetric(PEAK_CONCURRENT_INVOCATIONS, new AbstractRuntimeMetricsHandler() {
+            @Override
+            protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+                context.getResult().set(component.getInvocationMetrics().getPeakConcurrent());
+            }
+        });
+        resourceRegistration.registerMetric(WAIT_TIME, new AbstractRuntimeMetricsHandler() {
+            @Override
+            protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+                context.getResult().set(component.getInvocationMetrics().getWaitTime());
+            }
+        });
     }
 }

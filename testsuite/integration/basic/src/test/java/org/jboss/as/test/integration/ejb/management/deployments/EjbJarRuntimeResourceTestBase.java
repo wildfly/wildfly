@@ -76,7 +76,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class EjbJarRuntimeResourceTestBase {
 
-    protected static final String JAR_NAME = "ejb-management.jar";
+    protected static final String MODULE_NAME = "ejb-management";
+    protected static final String JAR_NAME = MODULE_NAME + ".jar";
 
     private static final AttributeDefinition[] POOL_ATTRIBUTES =
             new AttributeDefinition[]{POOL_AVAILABLE_COUNT, POOL_CREATE_COUNT, POOL_CURRENT_SIZE, POOL_NAME, POOL_MAX_SIZE, POOL_REMOVE_COUNT};
@@ -146,8 +147,8 @@ public class EjbJarRuntimeResourceTestBase {
 
         ModelNode address = getComponentAddress(type, name).toModelNode();
         address.protect();
-        ModelNode resourceDescription = executeOperation(ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION, address);
-        ModelNode resource = executeOperation(ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
+        ModelNode resourceDescription = executeOperation(managementClient, ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION, address);
+        ModelNode resource = executeOperation(managementClient, ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
 
         assertTrue(resourceDescription.get(ATTRIBUTES, COMPONENT_CLASS_NAME.getName()).isDefined());
         assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, COMPONENT_CLASS_NAME.getName(), DESCRIPTION).getType());
@@ -251,7 +252,7 @@ public class EjbJarRuntimeResourceTestBase {
         }
     }
 
-    private ModelNode executeOperation(String name, ModelNode address) throws IOException {
+    static ModelNode executeOperation(final ManagementClient managementClient, final String name, final ModelNode address) throws IOException {
 
         final ModelNode op = new ModelNode();
         op.get(ModelDescriptionConstants.OP).set(name);
@@ -271,7 +272,11 @@ public class EjbJarRuntimeResourceTestBase {
         return response.get(ModelDescriptionConstants.RESULT);
     }
 
-    private PathAddress getComponentAddress(EJBComponentType type, String name) {
+    static PathAddress componentAddress(final PathAddress baseAddress, final EJBComponentType type, final String name) {
         return baseAddress.append(PathElement.pathElement(SUBSYSTEM, "ejb3")).append(PathElement.pathElement(type.getResourceType(), name));
+    }
+
+    private PathAddress getComponentAddress(EJBComponentType type, String name) {
+        return componentAddress(this.baseAddress, type, name);
     }
 }

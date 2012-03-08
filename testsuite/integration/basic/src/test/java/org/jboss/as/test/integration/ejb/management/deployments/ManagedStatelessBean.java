@@ -40,13 +40,7 @@ import org.jboss.ejb3.annotation.SecurityDomain;
 @SecurityDomain("other")
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})
 @RunAs("Role3")
-public class ManagedStatelessBean implements BusinessInterface {
-
-    @Override
-    public void doIt() {
-        //no-op;
-    }
-
+public class ManagedStatelessBean extends AbstractManagedBean implements BusinessInterface {
     @Timeout
     @Schedule(second="15", persistent = false)
     public void timeout(final Timer timer) {

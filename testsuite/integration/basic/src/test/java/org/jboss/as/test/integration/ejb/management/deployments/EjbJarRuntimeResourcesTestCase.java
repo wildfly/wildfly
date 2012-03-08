@@ -40,6 +40,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class EjbJarRuntimeResourcesTestCase extends EjbJarRuntimeResourceTestBase {
+    static final PathAddress BASE_ADDRESS = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.DEPLOYMENT, JAR_NAME));
 
     @Deployment
     public static Archive<?> deploy() {
@@ -47,6 +48,6 @@ public class EjbJarRuntimeResourcesTestCase extends EjbJarRuntimeResourceTestBas
     }
 
     public EjbJarRuntimeResourcesTestCase() {
-        super(PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.DEPLOYMENT, JAR_NAME)));
+        super(BASE_ADDRESS);
     }
 }

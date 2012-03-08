@@ -62,6 +62,8 @@ import org.jboss.as.ejb3.component.interceptors.AdditionalSetupInterceptor;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingInterceptorFactories;
 import org.jboss.as.ejb3.component.interceptors.LoggingInterceptor;
+import org.jboss.as.ejb3.component.invocationmetrics.ExecutionTimeInterceptor;
+import org.jboss.as.ejb3.component.invocationmetrics.WaitTimeInterceptor;
 import org.jboss.as.ejb3.deployment.ApplicableMethodInformation;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
@@ -259,6 +261,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                         }
                     });
                 }
+
+                configuration.addComponentInterceptor(ExecutionTimeInterceptor.FACTORY, InterceptorOrder.Component.EJB_EXECUTION_TIME_INTERCEPTOR, true);
             }
         });
     }
@@ -338,6 +342,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     viewConfiguration.addViewInterceptor(AdditionalSetupInterceptor.factory(ejbSetupActions), InterceptorOrder.View.EE_SETUP);
                 }
 
+                viewConfiguration.addViewInterceptor(WaitTimeInterceptor.FACTORY, InterceptorOrder.View.EJB_WAIT_TIME_INTERCEPTOR);
             }
         });
         this.addCurrentInvocationContextFactory(view);

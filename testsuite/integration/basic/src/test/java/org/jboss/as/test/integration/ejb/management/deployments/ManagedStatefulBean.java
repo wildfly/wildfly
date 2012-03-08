@@ -37,10 +37,5 @@ import org.jboss.ejb3.annotation.SecurityDomain;
 @SecurityDomain("other")
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})
 @RunAs("Role3")
-public class ManagedStatefulBean implements BusinessInterface {
-
-    @Override
-    public void doIt() {
-        //no-op;
-    }
+public class ManagedStatefulBean extends AbstractManagedBean implements BusinessInterface {
 }

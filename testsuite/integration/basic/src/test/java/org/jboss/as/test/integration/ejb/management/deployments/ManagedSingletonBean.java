@@ -24,12 +24,15 @@ package org.jboss.as.test.integration.ejb.management.deployments;
 
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
+import javax.ejb.Lock;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
+
+import static javax.ejb.LockType.WRITE;
 
 /**
  * TBean to use in tests of management resources for EJB Singletons.
@@ -40,13 +43,8 @@ import org.jboss.ejb3.annotation.SecurityDomain;
 @SecurityDomain("other")
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})
 @RunAs("Role3")
-public class ManagedSingletonBean implements BusinessInterface {
-
-    @Override
-    public void doIt() {
-        //no-op;
-    }
-
+@Lock(WRITE)
+public class ManagedSingletonBean extends AbstractManagedBean implements BusinessInterface {
     @Timeout
     @Schedule(second="15", persistent = false)
     public void timeout(final Timer timer) {
