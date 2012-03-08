@@ -22,12 +22,13 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import javax.transaction.Transaction;
+
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.Channel;
-
-import javax.transaction.Transaction;
 
 /**
  * @author Jaikiran Pai
@@ -43,7 +44,12 @@ class UserTransactionCommitTask extends UserTransactionManagementTask {
     @Override
     protected void manageTransaction() throws Throwable {
         final Transaction transaction = this.transactionsRepository.removeTransaction(this.userTransactionID);
-        this.resumeTransaction(transaction);
-        this.transactionsRepository.getTransactionManager().commit();
+        if(transaction != null) {
+            this.resumeTransaction(transaction);
+            this.transactionsRepository.getTransactionManager().commit();
+        } else if(EjbLogger.EJB3_INVOCATION_LOGGER.isDebugEnabled()) {
+            //this happens if no ejb invocations where made within the TX
+            EjbLogger.EJB3_INVOCATION_LOGGER.debug("Not committing transaction " + this.userTransactionID + " as is was not found on the server");
+        }
     }
 }

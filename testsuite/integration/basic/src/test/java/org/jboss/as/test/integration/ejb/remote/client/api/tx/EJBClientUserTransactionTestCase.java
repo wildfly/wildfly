@@ -89,6 +89,30 @@ public class EJBClientUserTransactionTestCase {
     }
 
     /**
+     * Tests a empty begin()/commit()
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testEmptyTxCommit() throws Exception {
+        final UserTransaction userTransaction = EJBClient.getUserTransaction(nodeName);
+        userTransaction.begin();
+        userTransaction.commit();
+    }
+
+    /**
+     * Tests a empty begin()/rollback()
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testEmptyTxRollback() throws Exception {
+        final UserTransaction userTransaction = EJBClient.getUserTransaction(nodeName);
+        userTransaction.begin();
+        userTransaction.rollback();
+    }
+
+    /**
      * Create and setup the EJB client context backed by the remoting receiver
      *
      * @throws Exception
