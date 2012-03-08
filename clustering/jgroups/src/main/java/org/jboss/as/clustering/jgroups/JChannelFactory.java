@@ -85,9 +85,9 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
 
         channel.setName(this.configuration.getEnvironment().getNodeName() + "/" + id);
 
-        TransportConfiguration transportConfiguration = this.configuration.getTransport();
-        if(transportConfiguration.hasTopology()) {
-            channel.setAddressGenerator(new TopologyAddressGenerator(channel, transportConfiguration.getSiteId(), transportConfiguration.getRackId(), transportConfiguration.getMachineId()));
+        TransportConfiguration.Topology topology = this.configuration.getTransport().getTopology();
+        if (topology != null) {
+            channel.setAddressGenerator(new TopologyAddressGenerator(channel, topology.getSite(), topology.getRack(), topology.getMachine()));
         }
 
         MBeanServer server = this.configuration.getMBeanServer();
@@ -179,6 +179,8 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
 
         configs.add(config);
 
+        boolean supportsMulticast = transport.hasProperty("mcast_addr");
+
         for (ProtocolConfiguration protocol: this.configuration.getProtocols()) {
             config = this.createProtocol(protocol);
             binding = protocol.getSocketBinding();
@@ -191,6 +193,9 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
                 // If no socket-binding was specified, use bind address of transport
                 this.configureBindAddress(protocol, config, transport.getSocketBinding());
             }
+            if (!supportsMulticast) {
+                this.setProperty(protocol, config, "use_mcast_xmit", String.valueOf(false));
+            }
 
             configs.add(config);
         }
@@ -198,30 +203,26 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
     }
 
     private void configureBindAddress(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, SocketBinding binding) {
-        final String property = "bind_addr";
-        if (protocol.hasProperty(property)) {
-            config.getProperties().put(property, binding.getSocketAddress().getAddress().getHostAddress());
-        }
+        this.setProperty(protocol, config, "bind_addr", binding.getSocketAddress().getAddress().getHostAddress());
     }
 
     private void configureServerSocket(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String property, SocketBinding binding) {
-        if (protocol.hasProperty(property)) {
-            config.getProperties().put(property, String.valueOf(binding.getSocketAddress().getPort()));
-        }
+        this.setProperty(protocol, config, property, String.valueOf(binding.getSocketAddress().getPort()));
     }
 
     private void configureMulticastSocket(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String addressProperty, String portProperty, SocketBinding binding) {
-        Map<String, String> properties = config.getProperties();
         try {
             InetSocketAddress mcastSocketAddress = binding.getMulticastSocketAddress();
-            if (protocol.hasProperty(addressProperty)) {
-                properties.put(addressProperty, mcastSocketAddress.getAddress().getHostAddress());
-            }
-            if (protocol.hasProperty(portProperty)) {
-                properties.put(portProperty, String.valueOf(mcastSocketAddress.getPort()));
-            }
+            this.setProperty(protocol, config, addressProperty, mcastSocketAddress.getAddress().getHostAddress());
+            this.setProperty(protocol, config, portProperty, String.valueOf(mcastSocketAddress.getPort()));
         } catch (IllegalStateException e) {
             ROOT_LOGGER.tracef(e, "Could not set %s.%s and %s.%s, %s socket binding does not specify a multicast socket", config.getProtocolName(), addressProperty, config.getProtocolName(), portProperty, binding.getName());
+        }
+    }
+
+    private void setProperty(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String name, String value) {
+        if (protocol.hasProperty(name)) {
+            config.getProperties().put(name, value);
         }
     }
 

@@ -45,11 +45,11 @@ public interface TransportConfiguration extends ProtocolConfiguration {
 
     ThreadFactory getThreadFactory();
 
-    String getMachineId();
+    Topology getTopology();
 
-    String getRackId();
-
-    String getSiteId();
-
-    boolean hasTopology();
+    interface Topology {
+        String getMachine();
+        String getRack();
+        String getSite();
+    }
 }
