@@ -228,7 +228,7 @@ public class ParserUtil {
                                 }
                             }
 
-                            if (ch == '/') {
+                            if (ch == '/' && value.charAt(value.length() - 1) != '/') {
                                 handler.nodeSeparator(ctx.getLocation());
                             }
                         }
