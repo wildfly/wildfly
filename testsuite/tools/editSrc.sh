@@ -3,7 +3,7 @@
 
 function usage {
     echo
-    echo "    Usage:  testsuite/tools/showSrc.sh <part-of-file-name>"
+    echo "    Usage:  testsuite/tools/editSrc.sh <part-of-file-name>"
     echo
 }
 
@@ -30,20 +30,26 @@ if [ "$IDE" = "" ]; then
     IDE=$EDITOR;
 fi
 
+##  Path restriction.
+if [ "$2" != "" ] ; then PATH_MASK="*$2*";
+else PATH_MASK='*/testsuite/*';
+fi
 
-FIND="find $scriptDir/.. -name \*$1\*.java";
+#set -x
+FIND="find $scriptDir/../.. -name *$1*.java ";
+echo $FIND -path $PATH_MASK;
 
 ##  Prevent killing the IDE with hundreds of files.
-NUM=$( $FIND | wc -l )
+NUM=$( $FIND -path $PATH_MASK | wc -l )
 echo $NUM
 if [[ $NUM -ge 30 ]] ; then
     echo "  ERROR:  More than 30 files found, not passing to the IDE to prevent overload.";
-    $FIND | head -60
+    $FIND -path $PATH_MASK | head -60
     echo "..."
     exit 2;
 fi
 
-SOURCES=`$FIND`
+SOURCES=$( $FIND -path $PATH_MASK )
 if [ "" == "$SOURCES" ] ; then
     echo "No sources found.";
     exit 0;
