@@ -36,10 +36,13 @@ import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+import org.jboss.logging.Param;
 import org.jboss.remoting3.Channel;
 
 import javax.ejb.Timer;
 import javax.resource.ResourceException;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -442,6 +445,9 @@ public interface EjbLogger extends BasicLogger {
      */
     @Message(id = 14147, value = "Could not deactive endpoint for message driven component %s")
     RuntimeException failureDuringEndpointDeactivation(final String componentName, @Cause ResourceException cause);
+
+    @Message(id = 14148, value = "")
+    UnsupportedCallbackException unsupportedCallback(@Param Callback current);
 
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is

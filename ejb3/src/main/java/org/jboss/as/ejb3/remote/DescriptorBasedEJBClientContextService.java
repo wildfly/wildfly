@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.remote;
 
 import org.jboss.as.remoting.AbstractOutboundConnectionService;
+import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBReceiver;
 import org.jboss.ejb.client.remoting.IoFutureHelper;
@@ -74,15 +75,21 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
      */
     private final InjectedValue<LocalEjbReceiver> localEjbReceiverInjectedValue = new InjectedValue<LocalEjbReceiver>();
 
+    private final EJBClientConfiguration ejbClientConfiguration;
+
     /**
      * The client context
      */
     private volatile EJBClientContext ejbClientContext;
 
+    public DescriptorBasedEJBClientContextService(final EJBClientConfiguration ejbClientConfiguration) {
+        this.ejbClientConfiguration = ejbClientConfiguration;
+    }
+
     @Override
     public synchronized void start(StartContext startContext) throws StartException {
         // setup the context with the receivers
-        final EJBClientContext context = EJBClientContext.create();
+        final EJBClientContext context = EJBClientContext.create(this.ejbClientConfiguration);
         // add the (optional) local EJB receiver
         final LocalEjbReceiver localEjbReceiver = this.localEjbReceiverInjectedValue.getOptionalValue();
         if (localEjbReceiver != null) {
