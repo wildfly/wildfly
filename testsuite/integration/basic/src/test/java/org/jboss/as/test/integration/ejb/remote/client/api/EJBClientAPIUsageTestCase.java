@@ -22,6 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api;
 
+import java.util.concurrent.Future;
+
+import javax.ejb.EJBException;
+import javax.ejb.NoSuchEJBException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -41,10 +46,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.EJBException;
-import javax.ejb.NoSuchEJBException;
-import java.util.concurrent.Future;
 
 /**
  * Tests the various common use cases of the EJB remote client API
@@ -235,8 +236,8 @@ public class EJBClientAPIUsageTestCase {
         // invoke on the (non-existent) view of a bean
         try {
             nonExistentBean.echo("Hello world to a non-existent view of a bean");
-            Assert.fail("Expected a NoSuchEJBException");
-        } catch (NoSuchEJBException nsee) {
+            Assert.fail("Expected a IllegalStateException");
+        } catch (IllegalStateException nsee) {
             // expected
             logger.info("Received the expected exception", nsee);
         }
