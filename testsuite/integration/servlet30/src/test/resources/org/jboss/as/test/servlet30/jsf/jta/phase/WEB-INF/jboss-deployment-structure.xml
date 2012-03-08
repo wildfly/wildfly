@@ -1,0 +1,17 @@
+<jboss-deployment-structure>
+	<deployment>
+		<!-- 
+		<exclusions>
+			<module name="org.apache.xalan" slot="main" />
+			<module name="org.apache.xerces" slot="main" />
+		</exclusions>
+		 -->
+		<dependencies>
+			<module name="org.apache.xalan" slot="main" />
+			<module name="org.apache.xerces" slot="main" />
+			
+		</dependencies>
+		
+		
+	</deployment>
+</jboss-deployment-structure>
