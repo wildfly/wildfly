@@ -28,6 +28,7 @@ import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.as.ejb3.pool.common.MockBean;
 import org.jboss.as.ejb3.pool.common.MockFactory;
 
+import java.sql.Time;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -83,11 +84,14 @@ public class StrictMaxUnitTestCase extends TestCase {
         pool.start();
 
         final CountDownLatch in = new CountDownLatch(1);
+        final CountDownLatch ready = new CountDownLatch(10);
+
 
 
         Callable<Void> task = new Callable<Void>() {
             public Void call() throws Exception {
                 MockBean bean = pool.get();
+                ready.countDown();
                 in.await();
                 pool.release(bean);
 
@@ -105,6 +109,7 @@ public class StrictMaxUnitTestCase extends TestCase {
             results[i] = service.submit(task);
         }
 
+        ready.await(120, TimeUnit.SECONDS);
         in.countDown();
 
         for (Future<?> result : results) {
