@@ -169,7 +169,12 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
             newControllers.add(target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService)
                 .addListener(verificationHandler).setInitialMode(ServiceController.Mode.ACTIVE).install());
 
-            newControllers.add(target.addService(SimpleSecurityManagerService.SERVICE_NAME, new SimpleSecurityManagerService())
+            //add Simple Security Manager Service
+            final SimpleSecurityManagerService simpleSecurityManagerService = new SimpleSecurityManagerService();
+
+            newControllers.add(target.addService(SimpleSecurityManagerService.SERVICE_NAME, simpleSecurityManagerService)
+                .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
+                            simpleSecurityManagerService.getSecurityManagementInjector())
                 .addListener(verificationHandler).install());
 
             context.addStep(new AbstractDeploymentChainStep() {
@@ -182,5 +187,4 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
             }, OperationContext.Stage.RUNTIME);
         }
     }
-
 }
