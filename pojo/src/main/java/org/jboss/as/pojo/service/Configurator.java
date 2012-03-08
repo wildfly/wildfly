@@ -26,8 +26,8 @@ import org.jboss.as.pojo.PojoMessages;
 import org.jboss.as.pojo.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.as.server.parsing.PropertiesValueResolver;
 import org.jboss.logging.Logger;
-import org.jboss.util.StringPropertyReplacer;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
@@ -97,7 +97,7 @@ public class Configurator {
             if (trim)
                 string = string.trim();
             if (replaceProperties)
-                value = StringPropertyReplacer.replaceProperties(string);
+                value = PropertiesValueResolver.replaceProperties(string);
         }
 
         if (clazz.isAssignableFrom(valueClass))
