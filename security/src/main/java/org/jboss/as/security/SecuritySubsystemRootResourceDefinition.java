@@ -51,7 +51,9 @@ import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -123,6 +125,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
 
             final SecurityBootstrapService bootstrapService = new SecurityBootstrapService();
             newControllers.add(target.addService(SecurityBootstrapService.SERVICE_NAME, bootstrapService)
+                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, bootstrapService.getServiceModuleLoaderInjectedValue())
                 .addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE).install());
 
@@ -148,6 +151,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
                 AUTHENTICATION_MANAGER, modelNode.isDefined() && modelNode.asBoolean(), CALLBACK_HANDLER,
                 AUTHORIZATION_MANAGER, AUDIT_MANAGER, IDENTITY_TRUST_MANAGER, MAPPING_MANAGER);
             newControllers.add(target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService)
+                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, securityManagementService.getServiceModuleLoaderInjectedValue())
                 .addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE).install());
 

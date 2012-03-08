@@ -44,12 +44,11 @@ import org.jboss.security.SecurityContextAssociation;
  */
 class SecurityActions {
 
-    static ModuleClassLoader getModuleClassLoader(final String moduleSpec) throws ModuleLoadException {
+    static ModuleClassLoader getModuleClassLoader(final ModuleLoader loader, final String moduleSpec) throws ModuleLoadException {
         if (System.getSecurityManager() != null) {
             try {
                 return AccessController.doPrivileged(new PrivilegedExceptionAction<ModuleClassLoader>() {
                     public ModuleClassLoader run() throws ModuleLoadException {
-                        ModuleLoader loader = Module.getCallerModuleLoader();
                         ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleSpec);
                         return loader.loadModule(identifier).getClassLoader();
                     }
@@ -58,7 +57,6 @@ class SecurityActions {
                 throw SecurityMessages.MESSAGES.moduleLoadException(pae);
             }
         } else {
-            ModuleLoader loader = Module.getCallerModuleLoader();
             ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleSpec);
             return loader.loadModule(identifier).getClassLoader();
         }

@@ -27,6 +27,7 @@ import java.security.SecureClassLoader;
 
 import org.jboss.as.security.SecurityMessages;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.security.plugins.ClassLoaderLocator;
 
 /**
@@ -34,10 +35,16 @@ import org.jboss.security.plugins.ClassLoaderLocator;
  * @author anil saldhana
  */
 public class ModuleClassLoaderLocator implements ClassLoaderLocator {
+    private final ModuleLoader moduleLoader;
+
+    public ModuleClassLoaderLocator(ModuleLoader loader) {
+        this.moduleLoader = loader;
+    }
+
     @Override
     public ClassLoader get(String key) {
         try {
-            ClassLoader moduleClassLoader = SecurityActions.getModuleClassLoader(key);
+            ClassLoader moduleClassLoader = SecurityActions.getModuleClassLoader(moduleLoader, key);
             ClassLoader tccl = SecurityActions.getContextClassLoader();
             /**
              * A Login Module can be in a custom user module.

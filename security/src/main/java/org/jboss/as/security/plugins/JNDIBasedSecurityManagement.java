@@ -37,6 +37,7 @@ import org.infinispan.config.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.security.SecurityLogger;
 import org.jboss.as.security.SecurityMessages;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.CacheableManager;
@@ -74,9 +75,11 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private String auditManagerClassName;
     private String identityTrustManagerClassName;
     private String mappingManagerClassName;
+    private ModuleLoader loader;
 
     // creating a singleton
-    public JNDIBasedSecurityManagement() {
+    public JNDIBasedSecurityManagement(ModuleLoader loader) {
+        this.loader = loader;
     }
 
     public ConcurrentHashMap<String, SecurityDomainContext> getSecurityManagerMap() {
@@ -328,7 +331,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
             throw SecurityMessages.MESSAGES.missingModuleName("default-callback-handler-class-name attribute");
         String moduleSpec = callbackHandlerClassName.substring(0, i);
         String className = callbackHandlerClassName.substring(i + 1);
-        Class<?> callbackHandlerClazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
+        Class<?> callbackHandlerClazz = SecurityActions.getModuleClassLoader(loader, moduleSpec).loadClass(className);
         CallbackHandler ch = (CallbackHandler) callbackHandlerClazz.newInstance();
 
         i = authenticationManagerClassName.lastIndexOf(":");
@@ -336,7 +339,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
             throw SecurityMessages.MESSAGES.missingModuleName("authentication-manager-class-name attribute");
         moduleSpec = authenticationManagerClassName.substring(0, i);
         className = authenticationManagerClassName.substring(i + 1);
-        Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
+        Class<?> clazz = SecurityActions.getModuleClassLoader(loader, moduleSpec).loadClass(className);
         Constructor<?> ctr = clazz.getConstructor(new Class[] { String.class, CallbackHandler.class });
         return (AuthenticationManager) ctr.newInstance(new Object[] { securityDomain, ch });
     }
@@ -354,7 +357,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
             throw SecurityMessages.MESSAGES.missingModuleName("authorization manager class");
         String moduleSpec = authorizationManagerClassName.substring(0, i);
         String className = authorizationManagerClassName.substring(i + 1);
-        Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
+        Class<?> clazz = SecurityActions.getModuleClassLoader(loader, moduleSpec).loadClass(className);
         Constructor<?> ctr = clazz.getConstructor(new Class[] { String.class });
         return (AuthorizationManager) ctr.newInstance(new Object[] { securityDomain });
     }
@@ -372,7 +375,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
             throw SecurityMessages.MESSAGES.missingModuleName("audit manager class");
         String moduleSpec = auditManagerClassName.substring(0, i);
         String className = auditManagerClassName.substring(i + 1);
-        Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
+        Class<?> clazz = SecurityActions.getModuleClassLoader(loader, moduleSpec).loadClass(className);
         Constructor<?> ctr = clazz.getConstructor(new Class[] { String.class });
         return (AuditManager) ctr.newInstance(new Object[] { securityDomain });
     }
@@ -390,7 +393,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
             throw SecurityMessages.MESSAGES.missingModuleName("identity trust manager class");
         String moduleSpec = identityTrustManagerClassName.substring(0, i);
         String className = identityTrustManagerClassName.substring(i + 1);
-        Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
+        Class<?> clazz = SecurityActions.getModuleClassLoader(loader, moduleSpec).loadClass(className);
         Constructor<?> ctr = clazz.getConstructor(new Class[] { String.class });
         return (IdentityTrustManager) ctr.newInstance(new Object[] { securityDomain });
     }
@@ -408,7 +411,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
             throw SecurityMessages.MESSAGES.missingModuleName("mapping manager class");
         String moduleSpec = mappingManagerClassName.substring(0, i);
         String className = mappingManagerClassName.substring(i + 1);
-        Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
+        Class<?> clazz = SecurityActions.getModuleClassLoader(loader, moduleSpec).loadClass(className);
         Constructor<?> ctr = clazz.getConstructor(new Class[] { String.class });
         return (MappingManager) ctr.newInstance(new Object[] { securityDomain });
     }
