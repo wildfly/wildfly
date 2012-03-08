@@ -41,6 +41,7 @@ import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
 import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
 import org.jboss.as.clustering.jgroups.TransportConfiguration;
+import org.jboss.as.clustering.jgroups.TransportConfiguration.Topology;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -172,15 +173,8 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
                 ;
 
         transportConfig.setShared(shared);
-        if (machine != null) {
-            transportConfig.setMachineId(machine);
-        }
-        if (rack != null) {
-            transportConfig.setRackId(rack);
-        }
-        if (site != null) {
-            transportConfig.setSiteId(site);
-        }
+        transportConfig.setTopology(site, rack, machine);
+
         build(builder, context, transport, transportConfig);
 
         addSocketBindingDependency(builder, diagnosticsSocketBinding, transportConfig.getDiagnosticsSocketBindingInjector());
@@ -350,9 +344,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         private final InjectedValue<ScheduledExecutorService> timerExecutor = new InjectedValue<ScheduledExecutorService>();
         private final InjectedValue<ThreadFactory> threadFactory = new InjectedValue<ThreadFactory>();
         private boolean shared = true;
-        private String machineId;
-        private String rackId;
-        private String siteId;
+        private Topology topology;
 
         Transport(String name) {
             super(name);
@@ -387,37 +379,15 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
             return this.shared;
         }
 
-
         @Override
-        public String getMachineId() {
-            return machineId;
+        public Topology getTopology() {
+            return this.topology;
         }
 
-        public void setMachineId(String machineId) {
-            this.machineId = machineId;
-        }
-
-        @Override
-        public String getRackId() {
-            return rackId;
-        }
-
-        public void setRackId(String rackId) {
-            this.rackId = rackId;
-        }
-
-        @Override
-        public String getSiteId() {
-            return siteId;
-        }
-
-        public void setSiteId(String siteId) {
-            this.siteId = siteId;
-        }
-
-        @Override
-        public boolean hasTopology() {
-            return (machineId!=null || rackId!=null || siteId!=null);
+        public void setTopology(String site, String rack, String machine) {
+            if ((site != null) || (rack != null) || (machine != null)) {
+                this.topology = new TopologyImpl(site, rack, machine);
+            }
         }
 
         @Override
@@ -445,6 +415,33 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         @Override
         public ThreadFactory getThreadFactory() {
             return this.threadFactory.getOptionalValue();
+        }
+
+        private class TopologyImpl implements Topology {
+            private final String site;
+            private final String rack;
+            private final String machine;
+
+            TopologyImpl(String site, String rack, String machine) {
+                this.site = site;
+                this.rack = rack;
+                this.machine = machine;
+            }
+
+            @Override
+            public String getMachine() {
+                return this.machine;
+            }
+
+            @Override
+            public String getRack() {
+                return this.rack;
+            }
+
+            @Override
+            public String getSite() {
+                return this.site;
+            }
         }
     }
 
