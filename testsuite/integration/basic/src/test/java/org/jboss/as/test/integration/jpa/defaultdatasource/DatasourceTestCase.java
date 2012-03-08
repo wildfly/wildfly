@@ -42,7 +42,7 @@ import org.junit.runner.RunWith;
  * @author Scott Marlow
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
+//@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class DatasourceTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_sessionfactory";

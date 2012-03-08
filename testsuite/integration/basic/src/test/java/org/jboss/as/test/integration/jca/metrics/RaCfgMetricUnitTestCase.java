@@ -24,15 +24,11 @@ package org.jboss.as.test.integration.jca.metrics;
 
 
 import static junit.framework.Assert.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
-import java.net.URL;
 import java.util.List;
-import org.junit.AfterClass;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
@@ -40,8 +36,6 @@ import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -77,7 +71,7 @@ public class RaCfgMetricUnitTestCase  extends DsMgmtTestBase{
         executeOperation(operationListToCompositeOperation(operations));
     }
 
-	@Deployment
+    @Deployment
     public static Archive<?> getDeployment() {
 		return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }
@@ -129,7 +123,6 @@ public class RaCfgMetricUnitTestCase  extends DsMgmtTestBase{
    }
 
     @Test(expected=Exception.class)
-
     public void testConfPropWithEqualNames()throws Exception {
     	setBadModel("wrong-equal-conf-prop");
     }
@@ -188,13 +181,12 @@ public class RaCfgMetricUnitTestCase  extends DsMgmtTestBase{
     }
 
     @Test(expected=Exception.class)
-    @Ignore("to be implemented in IJ metadata validaton")
+    //@Ignore("to be implemented in IJ metadata validaton")
     public void testMinGtMaxPoolSize()throws Exception {
     	setBadModel("wrong-min-max-pool-size");
     }
 
     @Test
-
     public void testBoolPresProperties()throws Exception {
         setModel("bool-pres-properties");
         ModelNode address1=baseAddress.clone();
