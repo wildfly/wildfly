@@ -271,4 +271,8 @@ public class BasicComponent implements Component {
     public NamespaceContextSelector getNamespaceContextSelector() {
         return namespaceContextSelector;
     }
+
+    public static ServiceName serviceNameOf(final ServiceName deploymentUnitServiceName, final String componentName) {
+        return deploymentUnitServiceName.append("component").append(componentName);
+    }
 }

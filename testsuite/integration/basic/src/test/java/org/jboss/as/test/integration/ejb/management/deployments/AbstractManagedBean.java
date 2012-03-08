@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,18 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.integration.ejb.management.deployments;
 
-import javax.ejb.Remote;
-
 /**
- * Dummy interface for session beans in this class.
- *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-@Remote
-public interface BusinessInterface {
-
-    void doIt();
+public abstract class AbstractManagedBean implements BusinessInterface {
+    @Override
+    public void doIt() {
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+        }
+    }
 }

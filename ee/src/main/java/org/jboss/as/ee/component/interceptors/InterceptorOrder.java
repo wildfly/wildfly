@@ -46,6 +46,8 @@ public class InterceptorOrder {
         public static final int JPA_SESSION_BEAN_INTERCEPTOR = 0x600;
         public static final int SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR = 0x700;
         public static final int CMP_RELATIONSHIP_INTERCEPTOR = 0x800;
+        // WS handlers, user and CDI interceptors plus the bean method are considered user execution time
+        public static final int EJB_EXECUTION_TIME_INTERCEPTOR = 0x850;
         // JSR 109 - Version 1.3 - 6.2.2.4 Security
         // For EJB based service implementations, Handlers run after method level authorization has occurred.
         // JSR 109 - Version 1.3 - 6.2.2.5 Transaction
@@ -133,6 +135,8 @@ public class InterceptorOrder {
         public static final int INVALID_METHOD_EXCEPTION = 0x230;
         public static final int SECURITY_CONTEXT = 0x250;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR = 0x300;
+        // after security we take note of the invocation
+        public static final int EJB_WAIT_TIME_INTERCEPTOR = 0x350;
         public static final int INVOCATION_CONTEXT_INTERCEPTOR = 0x400;
         // should happen before the CMT/BMT interceptors
         public static final int REMOTE_TRANSACTION_PROPAGATION_INTERCEPTOR = 0x450;
