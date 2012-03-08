@@ -53,7 +53,7 @@ public class DeploymentScannerDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(CommonAttributes.SCAN_INTERVAL, ModelType.INT, true)
                     .setXmlName(Attribute.SCAN_INTERVAL.getLocalName())
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode().set(5000))
+                    .setDefaultValue(new ModelNode().set(0))
                     .build();
     protected static final SimpleAttributeDefinition AUTO_DEPLOY_ZIPPED =
             new SimpleAttributeDefinitionBuilder(CommonAttributes.AUTO_DEPLOY_ZIPPED, ModelType.BOOLEAN, true)
