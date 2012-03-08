@@ -75,7 +75,6 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private String identityTrustManagerClassName;
     private String mappingManagerClassName;
 
-    // creating a singleton
     public JNDIBasedSecurityManagement() {
     }
 
