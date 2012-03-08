@@ -51,10 +51,9 @@ import org.jboss.metadata.web.spec.WebResourceCollectionMetaData;
 
 /**
  * A service that creates JACC permissions for a web deployment
- *
- * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  * @author Scott.Stark@jboss.org
  * @author Anil.Saldhana@jboss.org
+ * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
 public class WarJaccService extends JaccService<WarMetaData> {
 
@@ -192,8 +191,15 @@ public class WarJaccService extends JaccService<WarMetaData> {
                 }
                 pc.addToRole(role, wrp);
 
+                // We will need to check if there are any methods missing from the list of 7 possible types
+                // See WebResourceCollectionMetaData.ALL_HTTP_METHOD_NAMES
+                boolean missingMethods = true;
+                if(httpMethods != null){
+                    String[] anyMissingMethods = WebResourceCollectionMetaData.getMissingHttpMethods(Arrays.asList(httpMethods));
+                    missingMethods = (anyMissingMethods.length == 0);
+                }
                 // JACC 1.1: create !(httpmethods) in unchecked perms
-                if (httpMethods != null && httpMethods.length != 7) {
+                if (httpMethods != null && missingMethods) {
                     WebResourcePermission wrpUnchecked = new WebResourcePermission(info.pattern, "!"
                             + getCommaSeparatedString(httpMethods));
                     pc.addToUncheckedPolicy(wrpUnchecked);
