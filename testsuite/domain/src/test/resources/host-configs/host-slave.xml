@@ -102,6 +102,6 @@
         <server name="other-two" group="other-server-group">
             <socket-bindings socket-binding-group="osgi-sockets" port-offset="550"/>
         </server>
-        <server name="reload-two" group="reload-test-group" />
+        <server name="reload-two" group="reload-test-group"  auto-start="false" />
     </servers>
 </host>

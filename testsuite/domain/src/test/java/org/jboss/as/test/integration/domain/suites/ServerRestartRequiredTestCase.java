@@ -69,20 +69,56 @@ public class ServerRestartRequiredTestCase {
     private static DomainLifecycleUtil domainMasterLifecycleUtil;
     private static DomainLifecycleUtil domainSlaveLifecycleUtil;
 
+    private static final ModelNode reloadOneAddress = new ModelNode();
+    private static final ModelNode reloadTwoAddress = new ModelNode();
+
+    static {
+        // (host=slave),(server-config=reload-one)
+        reloadOneAddress.add("host", "master");
+        reloadOneAddress.add("server-config", "reload-one");
+        // (host=slave),(server=new-server)
+        reloadTwoAddress.add("host", "slave");
+        reloadTwoAddress.add("server-config", "reload-two");
+    }
+
     @BeforeClass
     public static void setupDomain() throws Exception {
         testSupport = DomainTestSuite.createSupport(ServerManagementTestCase.class.getSimpleName());
 
         domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
         domainSlaveLifecycleUtil = testSupport.getDomainSlaveLifecycleUtil();
+
+        final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
+
+        final ModelNode startServer = new ModelNode();
+        startServer.get(OP).set("start");
+        startServer.get(OP_ADDR).set(reloadOneAddress);
+        client.execute(startServer);
+        ServerManagementTestCase.waitUntilState(client, reloadOneAddress, "STARTED");
+        startServer.get(OP_ADDR).set(reloadTwoAddress);
+        client.execute(startServer);
+        ServerManagementTestCase.waitUntilState(client, reloadTwoAddress, "STARTED");
     }
 
     @AfterClass
     public static void tearDownDomain() throws Exception {
-        DomainTestSuite.stopSupport();
-        testSupport = null;
-        domainMasterLifecycleUtil = null;
-        domainSlaveLifecycleUtil = null;
+        try {
+            final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
+
+            final ModelNode stopServer = new ModelNode();
+            stopServer.get(OP).set("stop");
+            stopServer.get(OP_ADDR).set(reloadOneAddress);
+            client.execute(stopServer);
+            ServerManagementTestCase.waitUntilState(client, reloadOneAddress, "DISABLED");
+            stopServer.get(OP_ADDR).set(reloadTwoAddress);
+            client.execute(stopServer);
+            ServerManagementTestCase.waitUntilState(client, reloadTwoAddress, "DISABLED");
+        } finally {
+            DomainTestSuite.stopSupport();
+            testSupport = null;
+            domainMasterLifecycleUtil = null;
+            domainSlaveLifecycleUtil = null;
+        }
     }
 
     @Test

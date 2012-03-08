@@ -374,7 +374,7 @@ public class ServerManagementTestCase {
         waitUntilState(client, address, state);
     }
 
-    private void waitUntilState(final ModelControllerClient client, final ModelNode serverAddress, final String state) throws IOException {
+    static void waitUntilState(final ModelControllerClient client, final ModelNode serverAddress, final String state) throws IOException {
         for(int i = 0; i < 20; i++) {
             if (checkState(client, serverAddress, state)) {
                 return;
@@ -390,12 +390,12 @@ public class ServerManagementTestCase {
         Assert.assertEquals(serverAddress.toString(), required, state);
     }
 
-    private boolean checkState(final ModelControllerClient client, final ModelNode serverAddress, final String state) throws IOException {
+    private static boolean checkState(final ModelControllerClient client, final ModelNode serverAddress, final String state) throws IOException {
         final String serverState = getServerState(client, serverAddress);
         return state.equals(serverState);
     }
 
-    private String getServerState(final ModelControllerClient client, final ModelNode serverAddress) throws IOException {
+    private static String getServerState(final ModelControllerClient client, final ModelNode serverAddress) throws IOException {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
         operation.get(OP_ADDR).set(serverAddress);
