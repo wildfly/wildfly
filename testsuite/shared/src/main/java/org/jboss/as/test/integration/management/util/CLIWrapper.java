@@ -102,7 +102,7 @@ public class CLIWrapper implements Runnable {
     public CLIWrapper(boolean connect, String[] cliArgs) throws Exception {
         this(connect, null, cliArgs);
     }
-    
+
     /**
      * Creates new CLI wrapper. If the connect parameter is set to true the CLI will connect to the server using
      * <code>connect</code> command.

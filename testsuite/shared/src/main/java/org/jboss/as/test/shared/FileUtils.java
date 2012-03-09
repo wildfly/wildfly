@@ -14,7 +14,7 @@ import java.net.URL;
 
 /**
  * Shared fs utils for the test suite.
- * 
+ *
  * Keep this class dependent only on JDK classes as it's packed to deployed WAR's.
  *
  * @author Stuart Douglas
@@ -53,9 +53,9 @@ public class FileUtils {
             }
         }
     }
-    
-    
-    
+
+
+
     public static File getFileOrCheckParentsIfNotFound( String baseStr, String path ) throws FileNotFoundException {
         //File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
         File base = new File( baseStr );
@@ -63,11 +63,11 @@ public class FileUtils {
             throw new FileNotFoundException( "Base path not found: " + base.getPath() );
         }
         base = base.getAbsoluteFile();
-        
+
         File f = new File( base, path );
         if ( f.exists() )
             return f;
-        
+
         File fLast = f;
         while( ! f.exists() ){
             int slash = path.lastIndexOf( File.separatorChar );
@@ -82,8 +82,8 @@ public class FileUtils {
     }
 
 
-    
-    
+
+
     public static void copyFile(final File src, final File dest) throws Exception {
         final InputStream in = new BufferedInputStream(new FileInputStream(src));
         try {
@@ -102,14 +102,14 @@ public class FileUtils {
             close(in);
         }
     }
-    
-    
+
+
     public static void close(Closeable closeable) {
         try {
             closeable.close();
         } catch (IOException ignore) {
         }
     }
-    
+
 
 }// class

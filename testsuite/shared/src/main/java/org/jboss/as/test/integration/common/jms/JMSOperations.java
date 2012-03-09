@@ -32,14 +32,14 @@ package org.jboss.as.test.integration.common.jms;
  */
 public interface JMSOperations {
 
-    public void createJmsQueue(final String queueName, final String jndiName);
+    void createJmsQueue(final String queueName, final String jndiName);
 
-    public void createJmsTopic(final String topicName, final String jndiName);
+    void createJmsTopic(final String topicName, final String jndiName);
 
-    public void removeJmsQueue(final String queueName);
+    void removeJmsQueue(final String queueName);
 
-    public void removeJmsTopic(final String topicName);
+    void removeJmsTopic(final String topicName);
 
-    public void close();
+    void close();
 
 }

@@ -59,7 +59,7 @@ public class CliArgumentsTestCase extends AbstractCliTestBase {
     
     @Test
     public void testVersionArgument() throws Exception {
-        CLIWrapper cw = new CLIWrapper(true, new String[] {"--version"});
+        CLIWrapper cw = new CLIWrapper(false, new String[] {"--version"});
         String output = cw.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         Assert.assertTrue(output.contains("JBOSS_HOME"));
         Assert.assertTrue(cw.hasQuit());
