@@ -22,30 +22,15 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.arquillian.container.test.api.*;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
 import org.jboss.ejb.client.ContextSelector;
-import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
-import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -148,7 +133,7 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
             final int totalCountBeforeShuttingDownANode = result.getCount();
             final String previousInvocationNodeName = result.getNodeName();
             // the value is configured in arquillian.xml of the project
-            if (previousInvocationNodeName.equals("node-udp-0")) {
+            if (previousInvocationNodeName.equals(NODE_1)) {
                 this.deployer.undeploy(DEPLOYMENT_1);
                 this.container.stop(CONTAINER_1);
                 container1Stopped = true;

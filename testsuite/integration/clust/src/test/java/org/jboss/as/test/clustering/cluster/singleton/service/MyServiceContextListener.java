@@ -41,10 +41,12 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceController.Transition;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+
 @WebListener
 public class MyServiceContextListener implements ServletContextListener {
 
-    public static final String PREFERRED_NODE = "node-udp-1";
+    public static final String PREFERRED_NODE = NODE_2;
 
     @Override
     public void contextInitialized(ServletContextEvent event) {

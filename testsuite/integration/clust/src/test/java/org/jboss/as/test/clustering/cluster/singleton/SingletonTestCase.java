@@ -118,7 +118,7 @@ public class SingletonTestCase {
         try {
             HttpResponse response = client.execute(new HttpGet(url1));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals("node-udp-0", response.getFirstHeader("node").getValue());
+            Assert.assertEquals(NODE_1, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
             controller.start(CONTAINER_2);
@@ -143,7 +143,7 @@ public class SingletonTestCase {
 
             response = tryGet(client, url1);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals("node-udp-0", response.getFirstHeader("node").getValue());
+            Assert.assertEquals(NODE_1, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
             controller.start(CONTAINER_2);
@@ -162,7 +162,7 @@ public class SingletonTestCase {
 
             response = tryGet(client, url2);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals("node-udp-1", response.getFirstHeader("node").getValue());
+            Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
             controller.start(CONTAINER_1);
