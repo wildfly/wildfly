@@ -61,6 +61,7 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
 
 
     private static final QName ROOT_1_0 = new QName(EJBClientDescriptor10Parser.NAMESPACE_1_0, "jboss-ejb-client");
+    private static final QName ROOT_1_1 = new QName(EJBClientDescriptor11Parser.NAMESPACE_1_1, "jboss-ejb-client");
     private static final QName ROOT_NO_NAMESPACE = new QName("jboss-ejb-client");
 
 
@@ -71,7 +72,8 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
     public EJBClientDescriptorParsingProcessor() {
         mapper = XMLMapper.Factory.create();
         mapper.registerRootElement(ROOT_1_0, EJBClientDescriptor10Parser.INSTANCE);
-        mapper.registerRootElement(ROOT_NO_NAMESPACE, EJBClientDescriptor10Parser.INSTANCE);
+        mapper.registerRootElement(ROOT_1_1, EJBClientDescriptor11Parser.INSTANCE);
+        mapper.registerRootElement(ROOT_NO_NAMESPACE, EJBClientDescriptor11Parser.INSTANCE);
     }
 
     @Override

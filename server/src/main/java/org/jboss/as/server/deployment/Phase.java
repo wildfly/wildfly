@@ -224,7 +224,6 @@ public enum Phase {
     // create and attach EJB metadata for EJB deployments
     public static final int PARSE_EJB_DEPLOYMENT                        = 0x1100;
     public static final int PARSE_APP_CLIENT_XML                        = 0x1101;
-    public static final int PARSE_EJB_CLIENT_METADATA                   = 0x1102;
     public static final int PARSE_CREATE_COMPONENT_DESCRIPTIONS         = 0x1150;
     // described EJBs must be created after annotated EJBs
     public static final int PARSE_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS = 0x1152;
@@ -352,6 +351,7 @@ public enum Phase {
     // should come before ejb jndi bindings processor
     public static final int POST_MODULE_EJB_IMPLICIT_NO_INTERFACE_VIEW  = 0x1000;
     public static final int POST_MODULE_EJB_JNDI_BINDINGS               = 0x1100;
+    public static final int POST_MODULE_EJB_CLIENT_METADATA             = 0x1102;
     public static final int POST_MODULE_EJB_APPLICATION_EXCEPTIONS      = 0x1200;
     public static final int POST_INITIALIZE_IN_ORDER                    = 0x1300;
     public static final int POST_MODULE_ENV_ENTRY                       = 0x1400;
@@ -369,7 +369,6 @@ public enum Phase {
     public static final int POST_MODULE_APPLICATION_CLIENT_ACTIVE       = 0x2000;
     public static final int POST_MODULE_APP_CLIENT_METHOD_RESOLUTION    = 0x2020;
     public static final int POST_MODULE_EJB_ORB_BIND                    = 0x2100;
-    public static final int POST_MODULE_EJB_CLIENT_CONTEXT_SETUP        = 0x2200;
     public static final int POST_MODULE_CMP_PARSE                       = 0x2300;
     public static final int POST_MODULE_CMP_ENTITY_METADATA             = 0x2400;
     public static final int POST_MODULE_CMP_STORE_MANAGER               = 0x2500;
@@ -385,7 +384,8 @@ public enum Phase {
     public static final int INSTALL_JACC_POLICY                         = 0x0350;
     public static final int INSTALL_COMPONENT_AGGREGATION               = 0x0400;
     public static final int INSTALL_RESOLVE_MESSAGE_DESTINATIONS        = 0x0403;
-    public static final int INSTALL_EJB_JACC_PROCESSING                 = 0x0403;
+    public static final int INSTALL_EJB_CLIENT_CONTEXT                  = 0x0404;
+    public static final int INSTALL_EJB_JACC_PROCESSING                 = 0x0405;
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;
     public static final int INSTALL_OSGI_DEPLOYMENT                     = 0x0600;
     public static final int INSTALL_OSGI_MODULE                         = 0x0650;

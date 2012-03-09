@@ -26,6 +26,9 @@ import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.remote.DescriptorBasedEJBClientContextService;
+import org.jboss.as.ejb3.remote.EJBClientClusterConfig;
+import org.jboss.as.ejb3.remote.EJBClientClusterNodeConfig;
+import org.jboss.as.ejb3.remote.JBossEJBClientXmlConfiguration;
 import org.jboss.as.ejb3.remote.LocalEjbReceiver;
 import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.remoting.AbstractOutboundConnectionService;
@@ -33,9 +36,12 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -65,11 +71,17 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         if (ejbClientDescriptorMetaData == null) {
             return;
         }
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        if (module == null) {
+            return;
+        }
         // install the descriptor based EJB client context service
         final ServiceName ejbClientContextServiceName = DescriptorBasedEJBClientContextService.BASE_SERVICE_NAME.append(deploymentUnit.getName());
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+        // create the client configuration from the metadata
+        final EJBClientConfiguration ejbClientConfiguration = this.createClientConfiguration(phaseContext.getServiceRegistry(), module.getClassLoader(), ejbClientDescriptorMetaData);
         // create the service
-        final DescriptorBasedEJBClientContextService service = new DescriptorBasedEJBClientContextService();
+        final DescriptorBasedEJBClientContextService service = new DescriptorBasedEJBClientContextService(ejbClientConfiguration);
         // add the service
         final ServiceBuilder serviceBuilder = serviceTarget.addService(ejbClientContextServiceName, service);
         // add the remoting connection reference dependencies
@@ -102,4 +114,23 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
     public void undeploy(DeploymentUnit context) {
 
     }
+
+    private EJBClientConfiguration createClientConfiguration(final ServiceRegistry serviceRegistry, final ClassLoader classLoader, final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) {
+
+        final JBossEJBClientXmlConfiguration ejbClientConfig = new JBossEJBClientXmlConfiguration();
+        for (final EJBClientDescriptorMetaData.ClusterConfig clusterMetadata : ejbClientDescriptorMetaData.getClusterConfigs()) {
+            final EJBClientClusterConfig clusterConfig = new EJBClientClusterConfig(clusterMetadata, classLoader, serviceRegistry);
+            // add it to the client configuration
+            ejbClientConfig.addClusterConfiguration(clusterConfig);
+
+            for (final EJBClientDescriptorMetaData.ClusterNodeConfig nodeMetadata : clusterMetadata.getClusterNodeConfigs()) {
+                final EJBClientClusterNodeConfig clusterNodeConfig = new EJBClientClusterNodeConfig(nodeMetadata, classLoader, serviceRegistry);
+                clusterConfig.addClusterNode(clusterNodeConfig);
+            }
+
+        }
+        return ejbClientConfig;
+    }
+
+
 }

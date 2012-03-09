@@ -92,7 +92,7 @@
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <arquillian.launch>manual-mode</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>

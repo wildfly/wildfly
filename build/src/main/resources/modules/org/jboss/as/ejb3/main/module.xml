@@ -50,6 +50,9 @@
         <module name="org.jboss.as.weld"/>
         <!-- So we can access its integration API -->
         <module name="org.jboss.as.connector"/>
+        <!-- Need access to org.jboss.as.domain.management.SecurityRealm for authentication of EJB cluster nodes
+         in EJB client context-->
+        <module name="org.jboss.as.domain-management"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.jacorb"/>
         <module name="org.jboss.as.naming"/>

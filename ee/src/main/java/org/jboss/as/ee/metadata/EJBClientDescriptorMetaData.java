@@ -23,7 +23,9 @@
 package org.jboss.as.ee.metadata;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -37,6 +39,8 @@ public class EJBClientDescriptorMetaData {
     private Boolean localReceiverPassByValue;
 
     private Set<String> remotingReceiverConnectionRefs = new HashSet<String>();
+    private Set<ClusterConfig> clusterConfigs = new HashSet<ClusterConfig>();
+
 
     /**
      * Adds a outbound connection reference used by a remoting receivers in the client context represented
@@ -98,5 +102,153 @@ public class EJBClientDescriptorMetaData {
      */
     public boolean isLocalReceiverExcluded() {
         return this.excludeLocalReceiver;
+    }
+
+    public Collection<ClusterConfig> getClusterConfigs() {
+        return Collections.unmodifiableSet(this.clusterConfigs);
+    }
+
+    public ClusterConfig newClusterConfig(final String clusterName) {
+        final ClusterConfig clusterConfig = new ClusterConfig(clusterName);
+        this.clusterConfigs.add(clusterConfig);
+        return clusterConfig;
+    }
+
+    public class ClusterConfig extends CommonConnectionConfig {
+
+        private final String clusterName;
+        private final Set<ClusterNodeConfig> nodes = new HashSet<ClusterNodeConfig>();
+        private long maxAllowedConnectedNodes;
+        private String nodeSelector;
+
+
+        ClusterConfig(final String clusterName) {
+            this.clusterName = clusterName;
+        }
+
+        public ClusterNodeConfig newClusterNode(final String nodeName) {
+            final ClusterNodeConfig node = new ClusterNodeConfig(nodeName);
+            this.nodes.add(node);
+            return node;
+        }
+
+        public Collection<ClusterNodeConfig> getClusterNodeConfigs() {
+            return Collections.unmodifiableSet(this.nodes);
+        }
+
+        public String getClusterName() {
+            return this.clusterName;
+        }
+
+        public long getMaxAllowedConnectedNodes() {
+            return this.maxAllowedConnectedNodes;
+        }
+
+        public void setMaxAllowedConnectedNodes(final long maxAllowedConnectedNodes) {
+            this.maxAllowedConnectedNodes = maxAllowedConnectedNodes;
+        }
+
+        public void setNodeSelector(final String nodeSelector) {
+            this.nodeSelector = nodeSelector;
+        }
+
+        public String getNodeSelector() {
+            return this.nodeSelector;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            ClusterConfig that = (ClusterConfig) o;
+
+            if (!clusterName.equals(that.clusterName)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return clusterName.hashCode();
+        }
+    }
+
+    public class ClusterNodeConfig extends CommonConnectionConfig {
+
+        private final String nodeName;
+
+        ClusterNodeConfig(final String nodeName) {
+            this.nodeName = nodeName;
+        }
+
+        public String getNodeName() {
+            return this.nodeName;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            ClusterNodeConfig that = (ClusterNodeConfig) o;
+
+            if (!nodeName.equals(that.nodeName)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return nodeName.hashCode();
+        }
+    }
+
+    private class CommonConnectionConfig {
+        private Properties connectionOptions;
+        private Properties channelCreationOptions;
+        private long connectTimeout;
+        private String userName;
+        private String securityRealm;
+
+        public void setConnectionOptions(final Properties connectionOptions) {
+            this.connectionOptions = connectionOptions;
+        }
+
+        public void setChannelCreationOptions(final Properties channelCreationOptions) {
+            this.channelCreationOptions = channelCreationOptions;
+        }
+
+        public long getConnectTimeout() {
+            return this.connectTimeout;
+        }
+
+        public void setConnectTimeout(final long timeout) {
+            this.connectTimeout = timeout;
+        }
+
+        public Properties getConnectionOptions() {
+            return this.connectionOptions;
+        }
+
+        public Properties getChannelCreationOptions() {
+            return this.channelCreationOptions;
+        }
+
+        public void setUserName(final String userName) {
+            this.userName = userName;
+        }
+
+        public String getUserName() {
+            return this.userName;
+        }
+
+        public void setSecurityRealm(final String realm) {
+            this.securityRealm = realm;
+        }
+
+        public String getSecurityRealm() {
+            return this.securityRealm;
+        }
     }
 }
