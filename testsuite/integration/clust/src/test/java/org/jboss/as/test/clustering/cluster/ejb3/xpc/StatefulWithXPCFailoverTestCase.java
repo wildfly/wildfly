@@ -37,6 +37,7 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.cluster.ejb3.xpc.bean.StatefulBean;
+import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -124,7 +125,7 @@ public class StatefulWithXPCFailoverTestCase {
         // https://community.jboss.org/thread/176096
         stop(DEPLOYMENT_2, CONTAINER_2);
 
-        DefaultHttpClient client = new DefaultHttpClient();
+        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
         String xpc1_create_url = baseURL1 + "count?command=createEmployee";
         String xpc1_get_url = baseURL1 + "count?command=getEmployee";

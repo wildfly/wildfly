@@ -36,6 +36,7 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyService;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyServiceContextListener;
+import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -106,7 +107,7 @@ public class SingletonTestCase {
         deployer.undeploy(DEPLOYMENT_2);
         controller.stop(CONTAINER_2);
 
-        DefaultHttpClient client = new DefaultHttpClient();
+        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
         // URLs look like "http://IP:PORT/singleton/service"
         String url1 = baseURL1.toString() + "service";

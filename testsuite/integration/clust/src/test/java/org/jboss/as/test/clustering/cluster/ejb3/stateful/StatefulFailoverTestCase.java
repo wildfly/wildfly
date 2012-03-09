@@ -38,6 +38,7 @@ import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.bean.CounterDecorator;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.bean.StatefulBean;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.bean.StatefulCDIInterceptor;
+import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -118,7 +119,7 @@ public class StatefulFailoverTestCase {
         deployer.undeploy(DEPLOYMENT_2);
         controller.stop(CONTAINER_2);
 
-        DefaultHttpClient client = new DefaultHttpClient();
+        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
         String url1 = baseURL1.toString() + "count";
         String url2 = baseURL2.toString() + "count";
@@ -195,7 +196,7 @@ public class StatefulFailoverTestCase {
         deployer.undeploy(DEPLOYMENT_2);
         controller.stop(CONTAINER_2);
 
-        DefaultHttpClient client = new DefaultHttpClient();
+        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
         String url1 = baseURL1.toString() + "count";
         String url2 = baseURL2.toString() + "count";

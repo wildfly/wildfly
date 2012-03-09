@@ -22,18 +22,28 @@
 
 package org.jboss.as.test.http.util;
 
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.cookie.ClientCookie;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.cookie.CookieOrigin;
+import org.apache.http.cookie.CookieSpec;
+import org.apache.http.cookie.CookieSpecFactory;
+import org.apache.http.cookie.CookieSpecRegistry;
 import org.apache.http.impl.client.DefaultHttpClient;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import org.apache.http.impl.cookie.BasicDomainHandler;
+import org.apache.http.impl.cookie.BrowserCompatSpec;
+import org.apache.http.params.HttpParams;
 
 /**
  * Class with http/https utilities.
@@ -76,4 +86,36 @@ public class HttpClientUtils {
         }
     }
 
+    /**
+     * Creates a http client that sends cookies to every domain, not just the originator
+     *
+     * As we don't actually have a load balancer for the clustering tests, we use this instead.
+     *
+     * @return a http client that gives free cookies to everybody
+     */
+    public static DefaultHttpClient relaxedCookieHttpClient() {
+        DefaultHttpClient client = new DefaultHttpClient();
+        final CookieSpecRegistry registry = new CookieSpecRegistry();
+        registry.register("best-match", new CookieSpecFactory() {
+            @Override
+            public CookieSpec newInstance(final HttpParams params) {
+                return new RelaxedBrowserCompatSpec();
+            }
+        });
+        client.setCookieSpecs(registry);
+        return client;
+    }
+
+    public static class RelaxedBrowserCompatSpec extends BrowserCompatSpec {
+
+        public RelaxedBrowserCompatSpec() {
+            super();
+            registerAttribHandler(ClientCookie.DOMAIN_ATTR, new BasicDomainHandler() {
+                @Override
+                public boolean match(final Cookie cookie, final CookieOrigin origin) {
+                    return true;
+                }
+            });
+        }
+    }
 }
