@@ -67,9 +67,9 @@ import org.jboss.security.identity.plugins.SimpleIdentity;
 public class SimpleSecurityManager {
     private ThreadLocalStack<SecurityContext> contexts = new ThreadLocalStack<SecurityContext>();
 
-    private static ISecurityManagement securityManagement = null;
+    private ISecurityManagement securityManagement = null;
 
-    private static PrivilegedAction<SecurityContext> securityContext() {
+    private PrivilegedAction<SecurityContext> securityContext() {
         return new PrivilegedAction<SecurityContext>() {
             public SecurityContext run() {
                 return SecurityContextAssociation.getSecurityContext();
@@ -77,10 +77,12 @@ public class SimpleSecurityManager {
         };
     }
 
-    private static SecurityContext establishSecurityContext(final String securityDomain) {
+    private SecurityContext establishSecurityContext(final String securityDomain) {
         // Do not use SecurityFactory.establishSecurityContext, its static init is broken.
         try {
             final SecurityContext securityContext = SecurityContextFactory.createSecurityContext(securityDomain);
+            if(securityManagement == null)
+                throw SecurityMessages.MESSAGES.securityManagementNotInjected();
             securityContext.setSecurityManagement(securityManagement);
             SecurityContextAssociation.setSecurityContext(securityContext);
             return securityContext;
