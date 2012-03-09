@@ -35,6 +35,41 @@
 
     </target>
 
+    <!-- Build TCP stack config -->
+    <target name="build-clustering-tcp" description="Builds server configurations for TCP tests">
+
+        <echo>clustering-tcp-0 node0: ${node0}</echo>
+        <echo>clustering-tcp-0 node1: ${node1}</echo>
+        <echo>clustering-tcp-0 mcast: ${mcast}</echo>
+
+        <echo message="  =========  Building config clustering-tcp-0  =========  "/>
+        <copy todir="target/jbossas-clustering-tcp-0" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast name="jbossas-clustering-tcp-0"
+                                        node="${node0}"
+                                        mcast="${mcast}"
+                                        mcast.jgroupsDiag="${mcast.jgroupsDiag}"
+                                        mcast.modcluster="${mcast.modcluster}"/>
+        <ts.config-as.add-port-offset name="jbossas-clustering-tcp-0" />
+        <ts.config-as.change-transport-stack name="jbossas-clustering-tcp-0"
+                                             defaultStack="tcp"/>
+
+        <echo message="  =========  Building config clustering-tcp-1  =========  "/>
+        <copy todir="target/jbossas-clustering-tcp-1" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast name="jbossas-clustering-tcp-1"
+                                        node="${node1}"
+                                        mcast="${mcast}"
+                                        mcast.jgroupsDiag="${mcast.jgroupsDiag}"
+                                        mcast.modcluster="${mcast.modcluster}"/>
+        <ts.config-as.add-port-offset name="jbossas-clustering-tcp-1" offset="100" nativePort="9999" httpPort="9990"/>
+        <ts.config-as.change-transport-stack name="jbossas-clustering-tcp-0"
+                                             defaultStack="tcp"/>
+
+    </target>
+
     <target name="build-clustering-udp-jdbc-store" description="Builds server configuration for UDP tests with jdbc-store enabled">
 
         <echo message="Building config clustering-udp-0-jdbc-store"/>
