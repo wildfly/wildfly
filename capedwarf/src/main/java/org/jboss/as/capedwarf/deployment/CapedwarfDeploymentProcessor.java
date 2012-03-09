@@ -126,8 +126,6 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
             moduleSpecification.addSystemDependency(createModuleDependency(loader, CAPEDWARF));
             // add modified AppEngine
             moduleSpecification.addSystemDependency(createModuleDependency(loader, APPENGINE));
-            // workaround Hibernate Search bug
-            moduleSpecification.addSystemDependency(createModuleDependency(loader, HIBERNATE_SEARCH));
         }
     }
 
