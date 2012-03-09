@@ -22,13 +22,9 @@
 
 package org.jboss.as.modcluster;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,20 +32,13 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Jean-Frederic Clere
  */
-class ModClusterSubsystemRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+class ModClusterSubsystemRemove extends AbstractRemoveStepHandler {
 
     static final ModClusterSubsystemRemove INSTANCE = new ModClusterSubsystemRemove();
-    static final PathElement SSLPath = PathElement.pathElement(CommonAttributes.SSL, CommonAttributes.CONFIGURATION);
-    static final PathElement confPath = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         context.removeService(ModClusterService.NAME);
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ModClusterSubsystemDescriptions.getSubsystemRemoveDescription(locale);
     }
 
 }

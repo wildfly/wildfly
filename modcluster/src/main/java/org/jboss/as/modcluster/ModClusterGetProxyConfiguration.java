@@ -22,33 +22,25 @@
 
 package org.jboss.as.modcluster;
 
-import java.net.InetSocketAddress;
-import java.util.Locale;
-import java.util.Map;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
+import java.net.InetSocketAddress;
+import java.util.Map;
+
 import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
-// implements ModelQueryOperationHandler, DescriptionProvider
-public class ModClusterGetProxyConfiguration implements OperationStepHandler, DescriptionProvider{
+public class ModClusterGetProxyConfiguration implements OperationStepHandler {
 
     static final ModClusterGetProxyConfiguration INSTANCE = new ModClusterGetProxyConfiguration();
 
     @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ModClusterSubsystemDescriptions.getProxyConfigurationDescription(locale);
-    }
-
-    @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.isNormalServer() && context.getServiceRegistry(false).getService(ModClusterService.NAME)!=null) {
+        if (context.isNormalServer() && context.getServiceRegistry(false).getService(ModClusterService.NAME) != null) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

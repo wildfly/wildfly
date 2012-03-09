@@ -167,6 +167,7 @@ public class SimpleAttributeDefinitionBuilder {
     }
 
     public SimpleAttributeDefinitionBuilder removeFlag(final AttributeAccess.Flag flag) {
+        if (!isFlagPresent(flag))return this; //if not present no need to remove
         if (flags != null && flags.length > 0) {
             final int length = flags.length;
             final AttributeAccess.Flag[] newFlags = new AttributeAccess.Flag[length - 1];
@@ -182,6 +183,13 @@ public class SimpleAttributeDefinitionBuilder {
             }
         }
         return this;
+    }
+    private boolean isFlagPresent(final AttributeAccess.Flag flag){
+        if (flags==null)return false;
+        for (AttributeAccess.Flag f: flags){
+            if (f.equals(flag))return true;
+        }
+        return false;
     }
 
     public SimpleAttributeDefinitionBuilder setStorageRuntime() {

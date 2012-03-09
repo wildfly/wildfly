@@ -47,16 +47,6 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         return readResource("subsystem.xml");
 
     }
-    @Override
-    protected String getSubsystemXml(String configId) throws IOException {
-        return readResource(configId);
-    }
 
-    @Override
-    protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
-        return Collections.singleton(
-                PathAddress.pathAddress(
-                        PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, mainSubsystemName),
-                        PathElement.pathElement("mod-cluster-config","configuration")));
-    }
+
 }

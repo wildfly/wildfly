@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -53,6 +54,17 @@ public class Util {
         return pe == null ? null : pe.getValue();
     }
 
+    public static ModelNode createAddOperation(final PathAddress address) {
+        return createOperation(ModelDescriptionConstants.ADD,address);
+    }
+
+    public static ModelNode createRemoveOperation(final PathAddress address) {
+        return createOperation(ModelDescriptionConstants.REMOVE,address);
+    }
+
+    public static ModelNode createOperation(final String operationName, final PathAddress address) {
+        return getEmptyOperation(operationName,address.toModelNode());
+    }
     public static ModelNode getEmptyOperation(String operationName, ModelNode address) {
         ModelNode op = new ModelNode();
         op.get(OP).set(operationName);

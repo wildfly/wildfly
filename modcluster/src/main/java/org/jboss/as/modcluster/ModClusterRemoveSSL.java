@@ -22,21 +22,14 @@
 
 package org.jboss.as.modcluster;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.dmr.ModelNode;
 
 /**
  * @author Jean-Frederic Clere
  */
-class ModClusterRemoveSSL extends ReloadRequiredRemoveStepHandler implements DescriptionProvider {
+class ModClusterRemoveSSL extends ReloadRequiredRemoveStepHandler {
 
     static final ModClusterRemoveSSL INSTANCE = new ModClusterRemoveSSL();
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ModClusterSubsystemDescriptions.getModClusterRemoveSSL(locale);
-    }
+
 }

@@ -22,14 +22,6 @@
 
 package org.jboss.as.modcluster;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
@@ -38,14 +30,16 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * {@link ResourceDefinition} implementation for the core mod-cluster SSL configuration resource.
- *
- * TODO this is a minimal implementation for AS7-3933; finish it off with AS7-4050
+ * <p/>
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -86,8 +80,8 @@ public class ModClusterSSLResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = {
-        KEY_ALIAS, PASSWORD, CERTIFICATE_KEY_FILE, CIPHER_SUITE, PROTOCOL, CA_CERTIFICATE_FILE, CA_REVOCATION_URL
+    static final SimpleAttributeDefinition[] ATTRIBUTES = {
+            KEY_ALIAS, PASSWORD, CERTIFICATE_KEY_FILE, CIPHER_SUITE, PROTOCOL, CA_CERTIFICATE_FILE, CA_REVOCATION_URL
     };
 
     public static final Map<String, SimpleAttributeDefinition> ATTRIBUTES_BY_NAME;
@@ -101,18 +95,13 @@ public class ModClusterSSLResourceDefinition extends SimpleResourceDefinition {
     }
 
     public ModClusterSSLResourceDefinition() {
-        // TODO AS7-4050 Use a correct path and use a ResourceDescriptionResolver; register handlers
-        // When doing AS7-4050 note the currently unused ModClusterConfigurationAdd class that should be used or removed
-        super(ModClusterExtension.sslConfigurationPath, ModClusterSubsystemDescriptionProviders.SSL);
+        super(ModClusterExtension.SSL_CONFIGURATION_PATH,
+                ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION, CommonAttributes.SSL),
+                ModClusterAddSSL.INSTANCE,
+                ModClusterRemoveSSL.INSTANCE
+        );
     }
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-         //TODO AS7-4050 get these registered via the constructor
-        resourceRegistration.registerOperationHandler(ADD, ModClusterAddSSL.INSTANCE, ModClusterAddSSL.INSTANCE, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
-        resourceRegistration.registerOperationHandler(REMOVE, ModClusterRemoveSSL.INSTANCE, ModClusterRemoveSSL.INSTANCE, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
-    }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {

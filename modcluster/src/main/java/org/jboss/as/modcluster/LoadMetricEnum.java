@@ -33,6 +33,7 @@ import org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric;
 
 /**
  * Enumeration of mod_cluster load metrics.
+ *
  * @author Paul Ferraro
  */
 public enum LoadMetricEnum {
@@ -44,8 +45,7 @@ public enum LoadMetricEnum {
     RECEIVE_TRAFFIC("receive-traffic", ReceiveTrafficLoadMetric.class),
     SEND_TRAFFIC("send-traffic", SendTrafficLoadMetric.class),
     REQUEST_COUNT("requests", RequestCountLoadMetric.class),
-    BUSY_CONNECTORS("busyness", BusyConnectorsLoadMetric.class),
-    ;
+    BUSY_CONNECTORS("busyness", BusyConnectorsLoadMetric.class),;
 
     private final String type;
     private final Class<? extends LoadMetric> loadMetricClass;
@@ -64,7 +64,7 @@ public enum LoadMetricEnum {
     }
 
     public static LoadMetricEnum forType(String type) {
-        for (LoadMetricEnum metric: LoadMetricEnum.values()) {
+        for (LoadMetricEnum metric : LoadMetricEnum.values()) {
             if (metric.type.equals(type)) {
                 return metric;
             }

@@ -21,24 +21,14 @@
  */
 package org.jboss.as.modcluster;
 
-import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
-
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.catalina.Engine;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.web.WebServer;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
+import org.jboss.dmr.Property;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
+import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
@@ -50,6 +40,17 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
 /**
  * Service configuring and starting modcluster.
@@ -71,17 +72,19 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
 
     /* Depending on configuration we use one of the other */
     private org.jboss.modcluster.ModClusterService service;
-    private ModClusterConfig config;
+
     public ModClusterService(final ModelNode modelconf) {
         this.modelconf = modelconf;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public synchronized void start(StartContext context) throws StartException {
         ROOT_LOGGER.debugf("Starting Mod_cluster Extension");
 
-        config = new ModClusterConfig();
+        ModClusterConfig config = new ModClusterConfig();
 
         // Set some defaults...
         if (!modelconf.hasDefined(CommonAttributes.PROXY_LIST)) {
@@ -109,37 +112,30 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
                 config.setAdvertise(true);
             }
         }
-        if (modelconf.hasDefined(CommonAttributes.SSL)) {
+        if (modelconf.get(ModClusterExtension.SSL_CONFIGURATION_PATH.getKeyValuePair()).isDefined()) {
             // Add SSL configuration.
             config.setSsl(true);
-            final ModelNode ssl = modelconf.get(CommonAttributes.SSL);
-            if (ssl.has(CommonAttributes.KEY_ALIAS))
-                config.setSslKeyAlias(ssl.get(CommonAttributes.KEY_ALIAS).asString());
+            final ModelNode ssl = modelconf.get(ModClusterExtension.SSL_CONFIGURATION_PATH.getKeyValuePair());
+            if (ssl.has(CommonAttributes.KEY_ALIAS)) { config.setSslKeyAlias(ssl.get(CommonAttributes.KEY_ALIAS).asString()); }
             if (ssl.has(CommonAttributes.PASSWORD)) {
                 String password = ssl.get(CommonAttributes.PASSWORD).asString();
                 config.setSslTrustStorePassword(password);
                 config.setSslKeyStorePassword(password);
             }
-            if (ssl.has(CommonAttributes.CERTIFICATE_KEY_FILE))
-                config.setSslKeyStore(ssl.get(CommonAttributes.CERTIFICATE_KEY_FILE).asString());
-            if (ssl.has(CommonAttributes.CIPHER_SUITE))
-                config.setSslCiphers(ssl.get(CommonAttributes.CIPHER_SUITE).asString());
-            if (ssl.has(CommonAttributes.PROTOCOL))
-                config.setSslProtocol(ssl.get(CommonAttributes.PROTOCOL).asString());
-            if (ssl.has(CommonAttributes.CA_CERTIFICATE_FILE))
-                config.setSslTrustStore(ssl.get(CommonAttributes.CA_CERTIFICATE_FILE).asString());
-            if (ssl.has(CommonAttributes.CA_REVOCATION_URL))
-                config.setSslCrlFile(ssl.get(CommonAttributes.CA_REVOCATION_URL).asString());
+            if (ssl.has(CommonAttributes.CERTIFICATE_KEY_FILE)) { config.setSslKeyStore(ssl.get(CommonAttributes.CERTIFICATE_KEY_FILE).asString()); }
+            if (ssl.has(CommonAttributes.CIPHER_SUITE)) { config.setSslCiphers(ssl.get(CommonAttributes.CIPHER_SUITE).asString()); }
+            if (ssl.has(CommonAttributes.PROTOCOL)) { config.setSslProtocol(ssl.get(CommonAttributes.PROTOCOL).asString()); }
+            if (ssl.has(CommonAttributes.CA_CERTIFICATE_FILE)) { config.setSslTrustStore(ssl.get(CommonAttributes.CA_CERTIFICATE_FILE).asString()); }
+            if (ssl.has(CommonAttributes.CA_REVOCATION_URL)) { config.setSslCrlFile(ssl.get(CommonAttributes.CA_REVOCATION_URL).asString()); }
         }
-        if (modelconf.hasDefined(CommonAttributes.ADVERTISE))
-            config.setAdvertise(modelconf.get(CommonAttributes.ADVERTISE).asBoolean());
+        if (modelconf.hasDefined(CommonAttributes.ADVERTISE)) { config.setAdvertise(modelconf.get(CommonAttributes.ADVERTISE).asBoolean()); }
         if (modelconf.hasDefined(CommonAttributes.PROXY_LIST)) {
             config.setProxyList(modelconf.get(CommonAttributes.PROXY_LIST).asString());
         }
-        if (modelconf.hasDefined(CommonAttributes.PROXY_URL))
-            config.setProxyURL(modelconf.get(CommonAttributes.PROXY_URL).asString());
-        if (modelconf.has(CommonAttributes.ADVERTISE_SECURITY_KEY))
+        if (modelconf.hasDefined(CommonAttributes.PROXY_URL)) { config.setProxyURL(modelconf.get(CommonAttributes.PROXY_URL).asString()); }
+        if (modelconf.has(CommonAttributes.ADVERTISE_SECURITY_KEY)) {
             config.setAdvertiseSecurityKey(modelconf.get(CommonAttributes.ADVERTISE_SECURITY_KEY).asString());
+        }
 
         if (modelconf.hasDefined(CommonAttributes.EXCLUDED_CONTEXTS)) {
             // read the default host.
@@ -148,23 +144,18 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             for (String exluded_context : modelconf.get(CommonAttributes.EXCLUDED_CONTEXTS).asString().trim().split(",")) {
                 String[] parts = exluded_context.trim().split(":");
                 if (parts.length != 1) {
-                    if (exluded_contexts == null)
-                        exluded_contexts = "";
-                    else
-                        exluded_contexts = exluded_contexts.concat(",");
+                    if (exluded_contexts == null) { exluded_contexts = ""; } else { exluded_contexts = exluded_contexts.concat(","); }
                     exluded_contexts = exluded_contexts.concat(exluded_context);
                 } else {
-                        if (exluded_contexts == null)
-                            exluded_contexts = "";
-                        else
-                            exluded_contexts = exluded_contexts.concat(",");
-                        exluded_contexts = exluded_contexts.concat(defaulthost).concat(":").concat(exluded_context);
+                    if (exluded_contexts == null) { exluded_contexts = ""; } else { exluded_contexts = exluded_contexts.concat(","); }
+                    exluded_contexts = exluded_contexts.concat(defaulthost).concat(":").concat(exluded_context);
                 }
             }
             config.setExcludedContexts(exluded_contexts);
         }
-        if (modelconf.hasDefined(CommonAttributes.AUTO_ENABLE_CONTEXTS))
+        if (modelconf.hasDefined(CommonAttributes.AUTO_ENABLE_CONTEXTS)) {
             config.setAutoEnableContexts(modelconf.get(CommonAttributes.AUTO_ENABLE_CONTEXTS).asBoolean());
+        }
         if (modelconf.hasDefined(CommonAttributes.STOP_CONTEXT_TIMEOUT)) {
             config.setStopContextTimeout(modelconf.get(CommonAttributes.STOP_CONTEXT_TIMEOUT).asInt());
             config.setStopContextTimeoutUnit(TimeUnit.SECONDS);
@@ -174,52 +165,51 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             config.setSocketTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt() * 1000);
         }
 
-        if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION))
+        if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION)) {
             config.setStickySession(modelconf.get(CommonAttributes.STICKY_SESSION).asBoolean());
-        if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION_REMOVE))
+        }
+        if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION_REMOVE)) {
             config.setStickySessionRemove(modelconf.get(CommonAttributes.STICKY_SESSION_REMOVE).asBoolean());
-        if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION_FORCE))
+        }
+        if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION_FORCE)) {
             config.setStickySessionForce(modelconf.get(CommonAttributes.STICKY_SESSION_FORCE).asBoolean());
-        if (modelconf.hasDefined(CommonAttributes.WORKER_TIMEOUT))
+        }
+        if (modelconf.hasDefined(CommonAttributes.WORKER_TIMEOUT)) {
             config.setWorkerTimeout(modelconf.get(CommonAttributes.WORKER_TIMEOUT).asInt());
-        if (modelconf.hasDefined(CommonAttributes.MAX_ATTEMPTS))
-            config.setMaxAttempts(modelconf.get(CommonAttributes.MAX_ATTEMPTS).asInt());
-        if (modelconf.hasDefined(CommonAttributes.FLUSH_PACKETS))
+        }
+        if (modelconf.hasDefined(CommonAttributes.MAX_ATTEMPTS)) { config.setMaxAttempts(modelconf.get(CommonAttributes.MAX_ATTEMPTS).asInt()); }
+        if (modelconf.hasDefined(CommonAttributes.FLUSH_PACKETS)) {
             config.setFlushPackets(modelconf.get(CommonAttributes.FLUSH_PACKETS).asBoolean());
-        if (modelconf.hasDefined(CommonAttributes.FLUSH_WAIT))
-            config.setFlushWait(modelconf.get(CommonAttributes.FLUSH_WAIT).asInt());
-        if (modelconf.hasDefined(CommonAttributes.PING))
-            config.setPing(modelconf.get(CommonAttributes.PING).asInt());
-        if (modelconf.hasDefined(CommonAttributes.SMAX))
-            config.setSmax(modelconf.get(CommonAttributes.SMAX).asInt());
-        if (modelconf.hasDefined(CommonAttributes.TTL))
-            config.setTtl(modelconf.get(CommonAttributes.TTL).asInt());
-        if (modelconf.hasDefined(CommonAttributes.NODE_TIMEOUT))
-            config.setNodeTimeout(modelconf.get(CommonAttributes.NODE_TIMEOUT).asInt());
-        if (modelconf.hasDefined(CommonAttributes.BALANCER))
-            config.setBalancer(modelconf.get(CommonAttributes.BALANCER).asString());
-        if (modelconf.hasDefined(CommonAttributes.DOMAIN))
-            config.setLoadBalancingGroup(modelconf.get(CommonAttributes.DOMAIN).asString());
+        }
+        if (modelconf.hasDefined(CommonAttributes.FLUSH_WAIT)) { config.setFlushWait(modelconf.get(CommonAttributes.FLUSH_WAIT).asInt()); }
+        if (modelconf.hasDefined(CommonAttributes.PING)) { config.setPing(modelconf.get(CommonAttributes.PING).asInt()); }
+        if (modelconf.hasDefined(CommonAttributes.SMAX)) { config.setSmax(modelconf.get(CommonAttributes.SMAX).asInt()); }
+        if (modelconf.hasDefined(CommonAttributes.TTL)) { config.setTtl(modelconf.get(CommonAttributes.TTL).asInt()); }
+        if (modelconf.hasDefined(CommonAttributes.NODE_TIMEOUT)) { config.setNodeTimeout(modelconf.get(CommonAttributes.NODE_TIMEOUT).asInt()); }
+        if (modelconf.hasDefined(CommonAttributes.BALANCER)) { config.setBalancer(modelconf.get(CommonAttributes.BALANCER).asString()); }
+        if (modelconf.hasDefined(CommonAttributes.LOAD_BALANCING_GROUP)) {
+            config.setLoadBalancingGroup(modelconf.get(CommonAttributes.LOAD_BALANCING_GROUP).asString());
+        }
 
-        if (modelconf.hasDefined(CommonAttributes.SIMPLE_LOAD_PROVIDER)) {
+        if (modelconf.hasDefined(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR)) {
             // TODO it seems we don't support that stuff.
             // LoadBalanceFactorProvider implementation, org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider.
-            final ModelNode node = modelconf.get(CommonAttributes.SIMPLE_LOAD_PROVIDER);
+            final ModelNode node = modelconf.get(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR);
             SimpleLoadBalanceFactorProvider myload = new SimpleLoadBalanceFactorProvider();
-            myload.setLoadBalanceFactor(node.get(CommonAttributes.FACTOR).asInt(1));
+            myload.setLoadBalanceFactor(node.asInt(1));
             load = myload;
         }
 
         Set<LoadMetric> metrics = new HashSet<LoadMetric>();
-        if (modelconf.hasDefined(CommonAttributes.DYNAMIC_LOAD_PROVIDER)) {
-            final ModelNode node = modelconf.get(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
+        if (modelconf.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER.getKeyValuePair()).isDefined()) {
+            final ModelNode node = modelconf.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER.getKeyValuePair());
             int decayFactor = node.get(CommonAttributes.DECAY).asInt(DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR);
             int history = node.get(CommonAttributes.HISTORY).asInt(DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY);
             // We should have bunch of load-metric and/or custom-load-metric here.
             // TODO read the child nodes or what ....String nodes = node.
             if (node.hasDefined(CommonAttributes.LOAD_METRIC)) {
                 addLoadMetrics(metrics, node.get(CommonAttributes.LOAD_METRIC));
-             }
+            }
             if (node.hasDefined(CommonAttributes.CUSTOM_LOAD_METRIC)) {
                 addLoadMetrics(metrics, node.get(CommonAttributes.CUSTOM_LOAD_METRIC));
             }
@@ -244,7 +234,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     }
 
     private boolean isMulticastEnabled(Collection<NetworkInterface> ifaces) {
-        for (NetworkInterface iface: ifaces) {
+        for (NetworkInterface iface : ifaces) {
             try {
                 if (iface.isUp() && (iface.supportsMulticast() || iface.isLoopback())) {
                     return true;
@@ -256,7 +246,9 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public synchronized void stop(StopContext context) {
         if (adapter != null) {
@@ -271,7 +263,8 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     }
 
     private void addLoadMetrics(Set<LoadMetric> metrics, ModelNode nodes) {
-        for (ModelNode node: nodes.asList()) {
+        for (Property p : nodes.asPropertyList()) {
+            ModelNode node = p.getValue();
             double capacity = node.get(CommonAttributes.CAPACITY).asDouble(LoadMetric.DEFAULT_CAPACITY);
             int weight = node.get(CommonAttributes.WEIGHT).asInt(LoadMetric.DEFAULT_WEIGHT);
             Class<? extends LoadMetric> loadMetricClass = null;
@@ -319,26 +312,32 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     public Map<InetSocketAddress, String> getProxyInfo() {
         return service.getProxyInfo();
     }
+
     @Override
     public void refresh() {
         service.refresh();
     }
+
     @Override
     public void reset() {
         service.reset();
     }
+
     @Override
     public void enable() {
         service.enable();
     }
+
     @Override
     public void disable() {
         service.disable();
     }
+
     @Override
     public void stop(int waittime) {
         service.stop(waittime, TimeUnit.SECONDS);
     }
+
     @Override
     public boolean enableContext(String host, String context) {
         return service.enableContext(host, context);
@@ -353,10 +352,12 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     public boolean stopContext(String host, String context, int waittime) {
         return service.stopContext(host, context, waittime, TimeUnit.SECONDS);
     }
+
     @Override
     public void addProxy(String host, int port) {
         service.addProxy(host, port);
     }
+
     @Override
     public void removeProxy(String host, int port) {
         service.removeProxy(host, port);

@@ -21,44 +21,38 @@
  */
 package org.jboss.as.modcluster;
 
-import static org.jboss.as.modcluster.CommonAttributes.CAPACITY;
-import static org.jboss.as.modcluster.CommonAttributes.CLASS;
-import static org.jboss.as.modcluster.CommonAttributes.CONFIGURATION;
-import static org.jboss.as.modcluster.CommonAttributes.CUSTOM_LOAD_METRIC;
-import static org.jboss.as.modcluster.CommonAttributes.DECAY;
-import static org.jboss.as.modcluster.CommonAttributes.DYNAMIC_LOAD_PROVIDER;
-import static org.jboss.as.modcluster.CommonAttributes.FACTOR;
-import static org.jboss.as.modcluster.CommonAttributes.HISTORY;
-import static org.jboss.as.modcluster.CommonAttributes.LOAD_METRIC;
-import static org.jboss.as.modcluster.CommonAttributes.MOD_CLUSTER_CONFIG;
-import static org.jboss.as.modcluster.CommonAttributes.NAME;
-import static org.jboss.as.modcluster.CommonAttributes.SIMPLE_LOAD_PROVIDER;
-import static org.jboss.as.modcluster.CommonAttributes.SSL;
-import static org.jboss.as.modcluster.CommonAttributes.TYPE;
-import static org.jboss.as.modcluster.CommonAttributes.VALUE;
-import static org.jboss.as.modcluster.CommonAttributes.WEIGHT;
-
-
-import javax.xml.stream.XMLStreamException;
-
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import javax.xml.stream.XMLStreamException;
+
+import static org.jboss.as.modcluster.CommonAttributes.CUSTOM_LOAD_METRIC;
+import static org.jboss.as.modcluster.CommonAttributes.DECAY;
+import static org.jboss.as.modcluster.CommonAttributes.HISTORY;
+import static org.jboss.as.modcluster.CommonAttributes.LOAD_METRIC;
+import static org.jboss.as.modcluster.CommonAttributes.NAME;
+import static org.jboss.as.modcluster.CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR;
+import static org.jboss.as.modcluster.CommonAttributes.VALUE;
+
 public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemMarshallingContext> {
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context)
             throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUri(), false);
 
         ModelNode node = context.getModelNode();
-        if (node.get(MOD_CLUSTER_CONFIG).isDefined() && node.get(MOD_CLUSTER_CONFIG).has(CONFIGURATION))
-            writeModClusterConfig(writer, node.get(MOD_CLUSTER_CONFIG).get(CONFIGURATION));
-        else
+        if (node.get(ModClusterExtension.CONFIGURATION_PATH.getKeyValuePair()).isDefined()) {
+            writeModClusterConfig(writer, node.get(ModClusterExtension.CONFIGURATION_PATH.getKeyValuePair()));
+        } else {
             writeModClusterConfig(writer, node);
+        }
         writer.writeEndElement();
     }
 
@@ -68,64 +62,37 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writePropConf(writer, config);
 
         // write the elements.
-        if (config.hasDefined(SIMPLE_LOAD_PROVIDER)) {
-            writeSimpleLoadProvider(writer, config.get(SIMPLE_LOAD_PROVIDER));
+        if (config.hasDefined(SIMPLE_LOAD_PROVIDER_FACTOR)) {
+            writeSimpleLoadProvider(writer, config);
         }
-        if (config.hasDefined(DYNAMIC_LOAD_PROVIDER)) {
-            writeDynamicLoadProvider(writer, config.get(DYNAMIC_LOAD_PROVIDER));
+        if (config.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER.getKeyValuePair()).isDefined()) {
+            writeDynamicLoadProvider(writer, config.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER.getKeyValuePair()));
         }
-        if (config.get(SSL).isDefined() && config.get(SSL).has(CONFIGURATION)) {
-            writeSSL(writer, config.get(SSL).get(CONFIGURATION));
+        if (config.get(ModClusterExtension.SSL_CONFIGURATION_PATH.getKeyValuePair()).isDefined()) {
+            writeSSL(writer, config.get(ModClusterExtension.SSL_CONFIGURATION_PATH.getKeyValuePair()));
         }
         writer.writeEndElement();
     }
 
     /* prop-confType */
     static void writePropConf(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-
-        // Keep these in xsd order. TODO the xsd order isn't so great
-        ModClusterConfigResourceDefinition.ADVERTISE_SOCKET.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.PROXY_LIST.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.PROXY_URL.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.BALANCER.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.DOMAIN.marshallAsAttribute(config, writer); // not in the 1.0 xsd
-        ModClusterConfigResourceDefinition.ADVERTISE.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.ADVERTISE_SECURITY_KEY.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.EXCLUDED_CONTEXTS.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.AUTO_ENABLE_CONTEXTS.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.STOP_CONTEXT_TIMEOUT.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.SOCKET_TIMEOUT.marshallAsAttribute(config, writer);
-
-        ModClusterConfigResourceDefinition.STICKY_SESSION.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.STICKY_SESSION_REMOVE.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.STICKY_SESSION_FORCE.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.WORKER_TIMEOUT.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.MAX_ATTEMPTS.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.FLUSH_PACKETS.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.FLUSH_WAIT.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.PING.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.SMAX.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.TTL.marshallAsAttribute(config, writer);
-        ModClusterConfigResourceDefinition.NODE_TIMEOUT.marshallAsAttribute(config, writer);
-
+        for (SimpleAttributeDefinition def : ModClusterConfigResourceDefinition.ATTRIBUTES) {
+            def.marshallAsAttribute(config, true, writer);
+        }
     }
 
     static void writeSSL(XMLExtendedStreamWriter writer, ModelNode sslConfig) throws XMLStreamException {
         writer.writeStartElement(Element.SSL.getLocalName());
-        ModClusterSSLResourceDefinition.KEY_ALIAS.marshallAsAttribute(sslConfig, writer);
-        ModClusterSSLResourceDefinition.PASSWORD.marshallAsAttribute(sslConfig, writer);
-        ModClusterSSLResourceDefinition.CERTIFICATE_KEY_FILE.marshallAsAttribute(sslConfig, writer);
-        ModClusterSSLResourceDefinition.CIPHER_SUITE.marshallAsAttribute(sslConfig, writer);
-        ModClusterSSLResourceDefinition.PROTOCOL.marshallAsAttribute(sslConfig, writer);
-        ModClusterSSLResourceDefinition.CA_CERTIFICATE_FILE.marshallAsAttribute(sslConfig, writer);
-        ModClusterSSLResourceDefinition.CA_REVOCATION_URL.marshallAsAttribute(sslConfig, writer);
+        for (SimpleAttributeDefinition def : ModClusterSSLResourceDefinition.ATTRIBUTES) {
+            def.marshallAsAttribute(sslConfig, false, writer);
+        }
         writer.writeEndElement();
     }
 
     /* Simple Load provider */
     static void writeSimpleLoadProvider(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
         writer.writeStartElement(Element.SIMPLE_LOAD_PROVIDER.getLocalName());
-        writeAttribute(writer, FACTOR, config);
+        ModClusterConfigResourceDefinition.SIMPLE_LOAD_PROVIDER.marshallAsAttribute(config, false, writer);
         writer.writeEndElement();
     }
 
@@ -147,11 +114,12 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
     /* Load Metric parsing logic */
     static void writeLoadMetric(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        for (ModelNode node : config.asList()) {
+        for (Property prop : config.asPropertyList()) {
+            ModelNode node = prop.getValue();
             writer.writeStartElement(Element.LOAD_METRIC.getLocalName());
-            writeAttribute(writer, TYPE, node);
-            writeAttribute(writer, WEIGHT, node);
-            writeAttribute(writer, CAPACITY, node);
+            LoadMetricDefinition.TYPE.marshallAsAttribute(node, false, writer);
+            LoadMetricDefinition.WEIGHT.marshallAsAttribute(node, false, writer);
+            LoadMetricDefinition.CAPACITY.marshallAsAttribute(node, false, writer);
             if (node.get(CommonAttributes.PROPERTY).isDefined()) {
                 for (Property property : node.get(CommonAttributes.PROPERTY).asPropertyList()) {
                     writeProperty(writer, property);
@@ -163,11 +131,12 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
     /* Custom Load Metric parsing logic */
     static void writeCustomLoadMetric(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        for (ModelNode node : config.asList()) {
+        for (Property prop : config.asPropertyList()) {
+            ModelNode node = prop.getValue();
             writer.writeStartElement(Element.CUSTOM_LOAD_METRIC.getLocalName());
-            writeAttribute(writer, CAPACITY, node);
-            writeAttribute(writer, WEIGHT, node);
-            writeAttribute(writer, CLASS, node);
+            CustomLoadMetricDefinition.CLASS.marshallAsAttribute(node, false, writer);
+            LoadMetricDefinition.WEIGHT.marshallAsAttribute(node, false, writer);
+            LoadMetricDefinition.CAPACITY.marshallAsAttribute(node, false, writer);
             if (node.get(CommonAttributes.PROPERTY).isDefined()) {
                 for (Property property : node.get(CommonAttributes.PROPERTY).asPropertyList()) {
                     writeProperty(writer, property);
