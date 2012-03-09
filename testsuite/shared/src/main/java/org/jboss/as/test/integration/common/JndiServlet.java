@@ -27,8 +27,6 @@ import java.net.URLEncoder;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.naming.NameNotFoundException;
@@ -44,24 +42,26 @@ import javax.servlet.http.HttpServletResponse;
  * 
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-@WebServlet(urlPatterns={"/JndiServlet"})
+@WebServlet(urlPatterns = {"/JndiServlet"})
 public class JndiServlet extends HttpServlet {
-    
-    public static final String NOT_FOUND = "NOT_FOUND";    
-    
+
+    public static final String NOT_FOUND = "NOT_FOUND";
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, NamingException {
 
         response.setContentType("text/plain");
         PrintWriter out = response.getWriter();
 
-        String name = request.getParameter("name");        
-        if (name == null) throw new ServletException("Lookup name not specified.");
+        String name = request.getParameter("name");
+        if (name == null) {
+            throw new ServletException("Lookup name not specified.");
+        }
         InitialContext ctx = new InitialContext();
         Object obj = null;
         try {
             obj = ctx.lookup(name);
-            out.print(obj.getClass().getName());        
+            out.print(obj.getClass().getName());
         } catch (NameNotFoundException nnfe) {
             out.print(NOT_FOUND);
         }
@@ -85,7 +85,7 @@ public class JndiServlet extends HttpServlet {
             throw new ServletException(ne);
         }
     }
-    
+
     /*
      *  Simple servlet's client.
      */
@@ -98,5 +98,4 @@ public class JndiServlet extends HttpServlet {
             return null;
         }
     }
-    
 }

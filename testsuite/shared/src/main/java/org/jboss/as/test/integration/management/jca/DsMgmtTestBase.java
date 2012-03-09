@@ -65,12 +65,12 @@ public class DsMgmtTestBase extends ArquillianResourceMgmtTestBase {
     /*
 
      * Bad model must throw an Exception during setModel methos call. To work around wrong test case
-     * removeDs() method is added. 
+     * removeDs() method is added.
      */
     protected void setBadModel(String filename) throws Exception{
-    	setModel(filename);
-    	takeSnapShot();
-    	removeDs();
+        setModel(filename);
+        takeSnapShot();
+        removeDs();
     }
 
     protected ModelNode readAttribute(ModelNode address, String attribute) throws Exception {
