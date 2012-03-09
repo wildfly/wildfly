@@ -103,7 +103,7 @@ public class JcaExtension implements Extension {
         archiveValidation.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_ARCHIVE_VALIDATION_DESC, false);
 
         for (final ArchiveValidationAdd.ArchiveValidationParameters parameter : ArchiveValidationAdd.ArchiveValidationParameters.values()) {
-            archiveValidation.registerReadWriteAttribute(parameter.getAttribute().getName(), null, new ReloadRequiredWriteAttributeHandler() , AttributeAccess.Storage.CONFIGURATION);
+            archiveValidation.registerReadWriteAttribute(parameter.getAttribute().getName(), null, JcaAttributeWriteHandler.INSTANCE , AttributeAccess.Storage.CONFIGURATION);
         }
 
         final ManagementResourceRegistration beanValidation =
@@ -112,7 +112,7 @@ public class JcaExtension implements Extension {
         beanValidation.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_BEAN_VALIDATION_DESC, false);
 
         for (final BeanValidationAdd.BeanValidationParameters parameter : BeanValidationAdd.BeanValidationParameters.values()) {
-            beanValidation.registerReadWriteAttribute(parameter.getAttribute().getName(), null, new ReloadRequiredWriteAttributeHandler() , AttributeAccess.Storage.CONFIGURATION);
+            beanValidation.registerReadWriteAttribute(parameter.getAttribute().getName(), null, JcaAttributeWriteHandler.INSTANCE  , AttributeAccess.Storage.CONFIGURATION);
         }
 
         final ManagementResourceRegistration cachedConnectionManager =
@@ -121,7 +121,11 @@ public class JcaExtension implements Extension {
         cachedConnectionManager.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_CACHED_CONNECTION_MANAGER_DESC, false);
 
         for (final CachedConnectionManagerAdd.CcmParameters parameter : CachedConnectionManagerAdd.CcmParameters.values()) {
-            cachedConnectionManager.registerReadWriteAttribute(parameter.getAttribute().getName(), null, new ReloadRequiredWriteAttributeHandler() , AttributeAccess.Storage.CONFIGURATION);
+            if (parameter != CachedConnectionManagerAdd.CcmParameters.INSTALL) {
+                cachedConnectionManager.registerReadWriteAttribute(parameter.getAttribute().getName(), null, JcaAttributeWriteHandler.INSTANCE  , AttributeAccess.Storage.CONFIGURATION);
+            } else {
+                cachedConnectionManager.registerReadWriteAttribute(parameter.getAttribute().getName(), null, new ReloadRequiredWriteAttributeHandler(), AttributeAccess.Storage.CONFIGURATION);
+            }
         }
 
         final ManagementResourceRegistration workManager =
