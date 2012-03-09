@@ -28,7 +28,6 @@ import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.as.ejb3.pool.common.MockBean;
 import org.jboss.as.ejb3.pool.common.MockFactory;
 
-import java.sql.Time;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -71,8 +70,8 @@ public class StrictMaxUnitTestCase extends TestCase {
 
         pool.stop();
 
-        assertEquals(10, MockBean.getPostConstructs());
-        assertEquals(10, MockBean.getPreDestroys());
+        assertEquals("MockBean.getPostConstructs()", 10, MockBean.getPostConstructs());
+        assertEquals("MockBean.getPreDestroys()",    10, MockBean.getPreDestroys());
     }
 
     /**
