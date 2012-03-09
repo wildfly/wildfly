@@ -56,8 +56,6 @@ import org.omg.CosCollection.Command;
 class ModClusterSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     static final ModClusterSubsystemAdd INSTANCE = new ModClusterSubsystemAdd();
-    static final PathElement SSLPath = PathElement.pathElement(CommonAttributes.SSL, CommonAttributes.CONFIGURATION);
-    static final PathElement confPath = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
 
     @Override
     protected void populateModel(final ModelNode operation, final Resource resource) throws OperationFailedException {
@@ -68,13 +66,13 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
             }else {
                 configuration = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG);
             }
-            resource.registerChild(confPath, Resource.Factory.create());
-            final Resource conf = resource.getChild(confPath);
+            resource.registerChild(ModClusterExtension.configurationPath, Resource.Factory.create());
+            final Resource conf = resource.getChild(ModClusterExtension.configurationPath);
             final ModelNode confModel = conf.getModel();
             for(final String attribute : configuration.keys()) {
                 if (attribute.equals(CommonAttributes.SSL)) {
-                    conf.registerChild(SSLPath, Resource.Factory.create());
-                    final Resource ssl = conf.getChild(SSLPath);
+                    conf.registerChild(ModClusterExtension.sslConfigurationPath, Resource.Factory.create());
+                    final Resource ssl = conf.getChild(ModClusterExtension.sslConfigurationPath);
                     ModelNode sslnode;
                     if (configuration.get(attribute).hasDefined(CommonAttributes.CONFIGURATION)) {
                         sslnode = configuration.get(attribute).get(CommonAttributes.CONFIGURATION);
