@@ -59,27 +59,27 @@ public class CliArgumentsTestCase extends AbstractCliTestBase {
     
     @Test
     public void testVersionArgument() throws Exception {
-        CLIWrapper cli = new CLIWrapper(false, new String[] {"--version"});
-        String output = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIWrapper cw = new CLIWrapper(true, new String[] {"--version"});
+        String output = cw.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         Assert.assertTrue(output.contains("JBOSS_HOME"));
-        Assert.assertTrue(cli.hasQuit());
+        Assert.assertTrue(cw.hasQuit());
     }
 
     @Test
     public void testCommandArgument() throws Exception {
-        CLIWrapper cli = new CLIWrapper(false, new String[] {"--command=version"});
-        String output = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIWrapper cw = new CLIWrapper(false, new String[] {"--command=version"});
+        String output = cw.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         Assert.assertTrue(output.contains("JBOSS_HOME"));
-        Assert.assertTrue(cli.hasQuit());
+        Assert.assertTrue(cw.hasQuit());
     }
 
     @Test
     public void testCommandsArgument() throws Exception {
         CLIWrapper cli = new CLIWrapper(false, new String[] {getControllerString(), "--commands=version,connect,ls"});
         String output = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        Assert.assertTrue("CLI Output: " + output, output.contains("JBOSS_HOME"));
-        Assert.assertTrue("CLI Output: " + output, output.contains("subsystem"));
-        Assert.assertTrue("CLI Output: " + output, output.contains("extension"));
+        Assert.assertTrue("CLI Output contains JBOSS_HOME: " + output, output.contains("JBOSS_HOME"));
+        Assert.assertTrue("CLI Output contains sybsystem:  " + output, output.contains("subsystem"));
+        Assert.assertTrue("CLI Output contains extension:  " + output, output.contains("extension"));
         
         Assert.assertTrue(cli.hasQuit());
     }
@@ -93,10 +93,10 @@ public class CliArgumentsTestCase extends AbstractCliTestBase {
         FileUtils.writeStringToFile(cliScriptFile, "version" + System.getProperty("line.separator"));
         
         // pass it to CLI
-        CLIWrapper cli = new CLIWrapper(false, new String[] {"--file=" + cliScriptFile.getAbsolutePath()});
-        String output = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        Assert.assertTrue(output.contains("JBOSS_HOME"));
-        Assert.assertTrue(cli.hasQuit());      
+        CLIWrapper cw = new CLIWrapper(false, new String[] {"--file=" + cliScriptFile.getAbsolutePath()});
+        String output = cw.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        Assert.assertTrue("output.contains(\"JBOSS_HOME\")", output.contains("JBOSS_HOME"));
+        Assert.assertTrue("cli.hasQuit()", cw.hasQuit());      
         
         cliScriptFile.delete();
     }
