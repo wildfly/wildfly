@@ -54,7 +54,7 @@ interface CommonAttributes {
     String TTL = "ttl";
     String NODE_TIMEOUT = "node-timeout";
     String BALANCER = "balancer";
-    String DOMAIN = "domain";
+    String LOAD_BALANCING_GROUP = "load-balancing-group";
 
     String LOAD_METRIC = "load-metric";
     String FACTOR = "factor";
@@ -64,7 +64,7 @@ interface CommonAttributes {
     String CAPACITY = "capacity";
     String TYPE = "type";
     String LOAD_PROVIDER = "load-provider";
-    String SIMPLE_LOAD_PROVIDER = "simple-load-provider";
+    String SIMPLE_LOAD_PROVIDER_FACTOR = "simple-load-provider";
     String DYNAMIC_LOAD_PROVIDER = "dynamic-load-provider";
     String CUSTOM_LOAD_METRIC = "custom-load-metric";
     String WEIGHT = "weight";
@@ -72,7 +72,7 @@ interface CommonAttributes {
     String PROPERTY = "property";
     String VALUE = "value";
     String KEY_ALIAS = "key-alias";
-    String PASSWORD = "password" ;
+    String PASSWORD = "password";
     String CERTIFICATE_KEY_FILE = "certificate-key-file";
     String CIPHER_SUITE = "cipher-suite";
     String PROTOCOL = "protocol";
@@ -80,4 +80,29 @@ interface CommonAttributes {
     String CA_CERTIFICATE_FILE = "ca-certificate-file";
     String CA_REVOCATION_URL = "ca-revocation-url";
     String CONFIGURATION = "configuration";
+
+    String PORT = "port";
+    String HOST = "host";
+    String VIRUTAL_HOST = "virtualhost";
+    String CONTEXT = "context";
+    String WAIT_TIME = "waittime";
+
+
+    String LIST_PROXIES = "list-proxies";
+    String READ_PROXIES_INFO = "read-proxies-info";
+    String READ_PROXIES_CONFIGURATION = "read-proxies-configuration";
+    String ADD_PROXY = "add-proxy";
+    String REMOVE_PROXY = "remove-proxy";
+    String REFRESH = "refresh";
+    String RESET = "reset";
+    String ENABLE = "enable";
+    String DISABLE = "disable";
+    String STOP = "stop";
+    String ENABLE_CONTEXT = "enable-context";
+    String DISABLE_CONTEXT = "disable-context";
+    String STOP_CONTEXT = "stop-context";
+    String ADD_METRIC = "add-metric";
+    String ADD_CUSTOM_METRIC = "add-custom-metric";
+    String REMOVE_METRIC = "remove-metric";
+    String REMOVE_CUSTOM_METRIC = "remove-custom-metric";
 }

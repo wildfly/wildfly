@@ -142,7 +142,7 @@ public class PathElement {
      * @return {@code true} if the value is the wildcard value
      */
     public boolean isWildcard() {
-        return WILDCARD_VALUE == value;
+        return WILDCARD_VALUE == value; //this is ok as we are expecting exact same object.
     }
 
     public boolean isMultiTarget() {
@@ -151,6 +151,10 @@ public class PathElement {
 
     public String[] getSegments() {
         return value.split(",");
+    }
+
+    public String[] getKeyValuePair(){
+        return new String[]{key,value};
     }
 
     @Override

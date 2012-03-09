@@ -38,11 +38,10 @@ enum Element {
     ADVERTISE_SOCKET(CommonAttributes.ADVERTISE_SOCKET),
     SSL(CommonAttributes.SSL),
     DYNAMIC_LOAD_PROVIDER(CommonAttributes.DYNAMIC_LOAD_PROVIDER),
-    SIMPLE_LOAD_PROVIDER(CommonAttributes.SIMPLE_LOAD_PROVIDER),
+    SIMPLE_LOAD_PROVIDER(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR),
     LOAD_METRIC(CommonAttributes.LOAD_METRIC),
     CUSTOM_LOAD_METRIC(CommonAttributes.CUSTOM_LOAD_METRIC),
-    PROPERTY(CommonAttributes.PROPERTY),
-    ;
+    PROPERTY(CommonAttributes.PROPERTY),;
 
     private final String name;
 
@@ -65,8 +64,7 @@ enum Element {
         final Map<String, Element> map = new HashMap<String, Element>();
         for (Element element : values()) {
             final String name = element.getLocalName();
-            if (name != null)
-                map.put(name, element);
+            if (name != null) { map.put(name, element); }
         }
         MAP = map;
     }

@@ -22,29 +22,20 @@
 
 package org.jboss.as.modcluster;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
-// implements ModelQueryOperationHandler, DescriptionProvider
-public class ModClusterDisable implements OperationStepHandler, DescriptionProvider{
+public class ModClusterDisable implements OperationStepHandler {
 
     static final ModClusterDisable INSTANCE = new ModClusterDisable();
 
     @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ModClusterSubsystemDescriptions.getDisableDescription(locale);
-    }
-
-    @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.isNormalServer() && context.getServiceRegistry(false).getService(ModClusterService.NAME)!=null) {
+        if (context.isNormalServer() && context.getServiceRegistry(false).getService(ModClusterService.NAME) != null) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

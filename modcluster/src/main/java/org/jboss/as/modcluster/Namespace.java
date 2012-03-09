@@ -21,10 +21,10 @@
  */
 package org.jboss.as.modcluster;
 
-import java.util.List;
-
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
+
+import java.util.List;
 
 /**
  * @author Jean-Frederic Clere
@@ -60,13 +60,6 @@ public enum Namespace {
         return "urn:jboss:domain:" + ModClusterExtension.SUBSYSTEM_NAME + ":" + major + "." + minor;
     }
 
-    public int getMajorVersion() {
-        return this.major;
-    }
-
-    public int getMinorVersion() {
-        return this.minor;
-    }
 
     public XMLElementReader<List<ModelNode>> getXMLReader() {
         return this.reader;

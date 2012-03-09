@@ -44,7 +44,6 @@ interface ModClusterMessages {
      * parameter.
      *
      * @param attributeName the name of the required attribute.
-     *
      * @return the message.
      */
     @Message(id = 11730, value = "A class attribute is needed for %s")
@@ -63,7 +62,6 @@ interface ModClusterMessages {
      * parameter.
      *
      * @param attributeName the name of the required attribute.
-     *
      * @return the message.
      */
     @Message(id = 11732, value = "A type attribute is needed for %s")

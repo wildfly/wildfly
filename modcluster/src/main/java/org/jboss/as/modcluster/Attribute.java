@@ -41,7 +41,7 @@ enum Attribute {
     ADVERTISE(CommonAttributes.ADVERTISE),
     ADVERTISE_SECURITY_KEY(CommonAttributes.ADVERTISE_SECURITY_KEY),
     LOAD_PROVIDER(CommonAttributes.LOAD_PROVIDER),
-    SIMPLE_LOAD_PROVIDER(CommonAttributes.SIMPLE_LOAD_PROVIDER),
+    SIMPLE_LOAD_PROVIDER_FACTOR(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR),
     DYNAMIC_LOAD_PROVIDER(CommonAttributes.DYNAMIC_LOAD_PROVIDER),
     CUSTOM_LOAD_METRIC(CommonAttributes.CUSTOM_LOAD_METRIC),
     EXCLUDED_CONTEXTS(CommonAttributes.EXCLUDED_CONTEXTS),
@@ -61,7 +61,7 @@ enum Attribute {
     TTL(CommonAttributes.TTL),
     NODE_TIMEOUT(CommonAttributes.NODE_TIMEOUT),
     BALANCER(CommonAttributes.BALANCER),
-    DOMAIN(CommonAttributes.DOMAIN),
+    LOAD_BALANCING_GROUP(CommonAttributes.LOAD_BALANCING_GROUP),
 
     FACTOR(CommonAttributes.FACTOR),
     HISTORY(CommonAttributes.HISTORY),
@@ -79,8 +79,7 @@ enum Attribute {
     CIPHER_SUITE(CommonAttributes.CIPHER_SUITE),
     PROTOCOL(CommonAttributes.PROTOCOL),
     CA_CERTIFICATE_FILE(CommonAttributes.CA_CERTIFICATE_FILE),
-    CA_REVOCATION_URL(CommonAttributes.CA_REVOCATION_URL),
-    ;
+    CA_REVOCATION_URL(CommonAttributes.CA_REVOCATION_URL),;
 
     private final String name;
 
@@ -103,8 +102,7 @@ enum Attribute {
         final Map<String, Attribute> map = new HashMap<String, Attribute>();
         for (Attribute element : values()) {
             final String name = element.getLocalName();
-            if (name != null)
-                map.put(name, element);
+            if (name != null) { map.put(name, element); }
         }
         MAP = map;
     }

@@ -22,22 +22,17 @@
 
 package org.jboss.as.modcluster;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -45,10 +40,14 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * {@link ResourceDefinition} implementation for the core mod-cluster configuration resource.
- *
- * TODO this is a minimal implementation for AS7-3933; finish it off with AS7-4050
+ * <p/>
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -75,7 +74,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition ADVERTISE_SECURITY_KEY = SimpleAttributeDefinitionBuilder.create(CommonAttributes.ADVERTISE_SECURITY_KEY, ModelType.STRING, true)
-             .setAllowExpression(true)
+            .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -180,17 +179,45 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    // This is the loadBalancingGroup. TODO rename
-    static final SimpleAttributeDefinition DOMAIN = SimpleAttributeDefinitionBuilder.create(CommonAttributes.DOMAIN, ModelType.STRING, true)
+    static final SimpleAttributeDefinition LOAD_BALANCING_GROUP = SimpleAttributeDefinitionBuilder.create(CommonAttributes.LOAD_BALANCING_GROUP, ModelType.STRING, true)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .addAlternatives("domain")
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = {
-        ADVERTISE_SOCKET, PROXY_LIST, PROXY_URL, ADVERTISE, ADVERTISE_SECURITY_KEY, EXCLUDED_CONTEXTS, AUTO_ENABLE_CONTEXTS,
-            STOP_CONTEXT_TIMEOUT, SOCKET_TIMEOUT, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, WORKER_TIMEOUT,
-            MAX_ATTEMPTS, FLUSH_PACKETS, FLUSH_WAIT, PING, SMAX, TTL, NODE_TIMEOUT, BALANCER, DOMAIN
+    static final SimpleAttributeDefinition SIMPLE_LOAD_PROVIDER = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR, ModelType.INT, true)
+            .addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setXmlName(CommonAttributes.FACTOR)
+                    //.setDefaultValue(new ModelNode(1))
+            .setAllowExpression(true)
+            .setValidator(new IntRangeValidator(1, true, true))
+            .build();
+    // order here controls the order of writing into xml, should follow xsd schema
+    static final SimpleAttributeDefinition[] ATTRIBUTES = {
+            ADVERTISE_SOCKET,
+            PROXY_LIST,
+            PROXY_URL,
+            BALANCER,
+            ADVERTISE,
+            ADVERTISE_SECURITY_KEY,
+            EXCLUDED_CONTEXTS,
+            AUTO_ENABLE_CONTEXTS,
+            STOP_CONTEXT_TIMEOUT,
+            SOCKET_TIMEOUT,
+            STICKY_SESSION,
+            STICKY_SESSION_REMOVE,
+            STICKY_SESSION_FORCE,
+            WORKER_TIMEOUT,
+            MAX_ATTEMPTS,
+            FLUSH_PACKETS,
+            FLUSH_WAIT,
+            PING,
+            SMAX,
+            TTL,
+            NODE_TIMEOUT,
+            LOAD_BALANCING_GROUP // not in the 1.0 xsd
     };
+
 
     public static final Map<String, SimpleAttributeDefinition> ATTRIBUTES_BY_NAME;
 
@@ -203,9 +230,10 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     }
 
     public ModClusterConfigResourceDefinition() {
-        // TODO AS7-4050 Use a correct path and use a ResourceDescriptionResolver; register handlers
-        // When doing AS7-4050 note the currently unused ModClusterConfigurationAdd class that should be used or removed
-        super(ModClusterExtension.configurationPath, ModClusterSubsystemDescriptionProviders.CONFIGURATION);
+        super(ModClusterExtension.CONFIGURATION_PATH,
+                ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION),
+                ModClusterConfigAdd.INSTANCE,
+                new ReloadRequiredRemoveStepHandler());
     }
 
     @Override
@@ -213,66 +241,28 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }
-
-        // Special Attributes.  TODO AS7-4050 properly handle these
-        resourceRegistration.registerReadWriteAttribute(CommonAttributes.DYNAMIC_LOAD_PROVIDER, null, new WriteDynamicLoadProviderOperationHandler(), AttributeAccess.Storage.CONFIGURATION);
-        resourceRegistration.registerReadWriteAttribute(CommonAttributes.SIMPLE_LOAD_PROVIDER, null, new WriteSimpleLoadProviderOperationHandler(), AttributeAccess.Storage.CONFIGURATION);
+        resourceRegistration.registerReadWriteAttribute(SIMPLE_LOAD_PROVIDER, null, new ReloadRequiredWriteAttributeHandler(SIMPLE_LOAD_PROVIDER));
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
 
+        final ResourceDescriptionResolver rootResolver = getResourceDescriptionResolver();
+
         // Metric for the  dynamic-load-provider
         EnumSet<OperationEntry.Flag> runtimeOnlyFlags = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY);
-        resourceRegistration.registerOperationHandler("add-metric", ModClusterAddMetric.INSTANCE, ModClusterAddMetric.INSTANCE, false, runtimeOnlyFlags);
-        resourceRegistration.registerOperationHandler("add-custom-metric", ModClusterAddCustomMetric.INSTANCE, ModClusterAddCustomMetric.INSTANCE, false, runtimeOnlyFlags);
-        resourceRegistration.registerOperationHandler("remove-metric", ModClusterRemoveMetric.INSTANCE, ModClusterRemoveMetric.INSTANCE, false, runtimeOnlyFlags);
-        resourceRegistration.registerOperationHandler("remove-custom-metric", ModClusterRemoveCustomMetric.INSTANCE, ModClusterRemoveCustomMetric.INSTANCE, false, runtimeOnlyFlags);
-    }
 
+        final DescriptionProvider addMetric = new DefaultOperationDescriptionProvider(CommonAttributes.ADD_METRIC, rootResolver, LoadMetricDefinition.ATTRIBUTES);
+        resourceRegistration.registerOperationHandler(CommonAttributes.ADD_METRIC, ModClusterAddMetric.INSTANCE, addMetric, false, runtimeOnlyFlags);
 
-    public static class WriteDynamicLoadProviderOperationHandler implements OperationStepHandler {
+        final DescriptionProvider addCustomMetric = new DefaultOperationDescriptionProvider(CommonAttributes.ADD_CUSTOM_METRIC, rootResolver, CustomLoadMetricDefinition.ATTRIBUTES);
+        resourceRegistration.registerOperationHandler(CommonAttributes.ADD_CUSTOM_METRIC, ModClusterAddCustomMetric.INSTANCE, addCustomMetric, false, runtimeOnlyFlags);
 
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            ModelNode history = operation.get(CommonAttributes.HISTORY);
-            ModelNode decay = operation.get(CommonAttributes.DECAY);
+        final DescriptionProvider removeMetric = new DefaultOperationDescriptionProvider(CommonAttributes.REMOVE_METRIC, rootResolver, LoadMetricDefinition.TYPE);
+        resourceRegistration.registerOperationHandler(CommonAttributes.REMOVE_METRIC, ModClusterRemoveMetric.INSTANCE, removeMetric, false, runtimeOnlyFlags);
 
-            // final ModelNode submodel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-            final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-            final ModelNode currentValue = submodel.get(CommonAttributes.DYNAMIC_LOAD_PROVIDER).clone();
-            if (!history.isDefined())
-                history = currentValue.get(CommonAttributes.HISTORY);
-            submodel.get(CommonAttributes.HISTORY).set(history);
-            if (!decay.isDefined())
-                decay = currentValue.get(CommonAttributes.DECAY);
-            submodel.get(CommonAttributes.DECAY).set(decay);
-
-            submodel.get(CommonAttributes.DYNAMIC_LOAD_PROVIDER).get(CommonAttributes.HISTORY).set(history);
-            submodel.get(CommonAttributes.DYNAMIC_LOAD_PROVIDER).get(CommonAttributes.DECAY).set(decay);
-
-            context.completeStep();
-        }
-
-    }
-
-    public static class WriteSimpleLoadProviderOperationHandler implements OperationStepHandler {
-
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            ModelNode factor = operation.get(CommonAttributes.FACTOR);
-
-            final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-            final ModelNode currentValue = submodel.get(CommonAttributes.SIMPLE_LOAD_PROVIDER).clone();
-            if (!factor.isDefined())
-                factor = currentValue.get(CommonAttributes.HISTORY);
-            submodel.get(CommonAttributes.FACTOR).set(factor);
-
-            submodel.get(CommonAttributes.SIMPLE_LOAD_PROVIDER).get(CommonAttributes.FACTOR).set(factor);
-
-            context.completeStep();
-        }
-
+        final DescriptionProvider removeCustomMetric = new DefaultOperationDescriptionProvider(CommonAttributes.REMOVE_CUSTOM_METRIC, rootResolver, CustomLoadMetricDefinition.CLASS);
+        resourceRegistration.registerOperationHandler(CommonAttributes.REMOVE_CUSTOM_METRIC, ModClusterRemoveCustomMetric.INSTANCE, removeCustomMetric, false, runtimeOnlyFlags);
     }
 }

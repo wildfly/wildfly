@@ -21,82 +21,40 @@
  */
 package org.jboss.as.modcluster;
 
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE;
-import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE_SECURITY_KEY;
-import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE_SOCKET;
-import static org.jboss.as.modcluster.CommonAttributes.AUTO_ENABLE_CONTEXTS;
-import static org.jboss.as.modcluster.CommonAttributes.BALANCER;
-import static org.jboss.as.modcluster.CommonAttributes.CAPACITY;
-import static org.jboss.as.modcluster.CommonAttributes.CA_CERTIFICATE_FILE;
-import static org.jboss.as.modcluster.CommonAttributes.CA_REVOCATION_URL;
-import static org.jboss.as.modcluster.CommonAttributes.CERTIFICATE_KEY_FILE;
-import static org.jboss.as.modcluster.CommonAttributes.CIPHER_SUITE;
-import static org.jboss.as.modcluster.CommonAttributes.CLASS;
-import static org.jboss.as.modcluster.CommonAttributes.CUSTOM_LOAD_METRIC;
-import static org.jboss.as.modcluster.CommonAttributes.DECAY;
-import static org.jboss.as.modcluster.CommonAttributes.DOMAIN;
-import static org.jboss.as.modcluster.CommonAttributes.DYNAMIC_LOAD_PROVIDER;
-import static org.jboss.as.modcluster.CommonAttributes.EXCLUDED_CONTEXTS;
-import static org.jboss.as.modcluster.CommonAttributes.FACTOR;
-import static org.jboss.as.modcluster.CommonAttributes.FLUSH_PACKETS;
-import static org.jboss.as.modcluster.CommonAttributes.FLUSH_WAIT;
-import static org.jboss.as.modcluster.CommonAttributes.HISTORY;
-import static org.jboss.as.modcluster.CommonAttributes.KEY_ALIAS;
-import static org.jboss.as.modcluster.CommonAttributes.LOAD_METRIC;
-import static org.jboss.as.modcluster.CommonAttributes.MAX_ATTEMPTS;
-import static org.jboss.as.modcluster.CommonAttributes.MOD_CLUSTER_CONFIG;
-import static org.jboss.as.modcluster.CommonAttributes.NODE_TIMEOUT;
-import static org.jboss.as.modcluster.CommonAttributes.PASSWORD;
-import static org.jboss.as.modcluster.CommonAttributes.PING;
-import static org.jboss.as.modcluster.CommonAttributes.PROTOCOL;
-import static org.jboss.as.modcluster.CommonAttributes.PROXY_LIST;
-import static org.jboss.as.modcluster.CommonAttributes.PROXY_URL;
-import static org.jboss.as.modcluster.CommonAttributes.SIMPLE_LOAD_PROVIDER;
-import static org.jboss.as.modcluster.CommonAttributes.SMAX;
-import static org.jboss.as.modcluster.CommonAttributes.SOCKET_TIMEOUT;
-import static org.jboss.as.modcluster.CommonAttributes.SSL;
-import static org.jboss.as.modcluster.CommonAttributes.STICKY_SESSION;
-import static org.jboss.as.modcluster.CommonAttributes.STICKY_SESSION_FORCE;
-import static org.jboss.as.modcluster.CommonAttributes.STICKY_SESSION_REMOVE;
-import static org.jboss.as.modcluster.CommonAttributes.STOP_CONTEXT_TIMEOUT;
-import static org.jboss.as.modcluster.CommonAttributes.TTL;
-import static org.jboss.as.modcluster.CommonAttributes.TYPE;
-import static org.jboss.as.modcluster.CommonAttributes.WEIGHT;
-import static org.jboss.as.modcluster.CommonAttributes.WORKER_TIMEOUT;
-
-import java.util.Collections;
-import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
-
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
+import javax.xml.stream.XMLStreamException;
+import java.util.List;
+
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+
 public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<ModelNode>> {
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
         ParseUtils.requireNoAttributes(reader);
 
-        final ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME);
-        address.protect();
+        PathAddress address = PathAddress.pathAddress(ModClusterExtension.SUBSYSTEM_PATH);
 
         final ModelNode subsystem = new ModelNode();
         subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).set(address);
+        subsystem.get(OP_ADDR).set(address.toModelNode());
         list.add(subsystem);
 
         // Reads it
@@ -104,8 +62,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case MOD_CLUSTER_CONFIG:
-                    final ModelNode config = parseModClusterConfig(reader);
-                    subsystem.get(MOD_CLUSTER_CONFIG).set(config);
+                    parseModClusterConfig(reader, list, address);
                     break;
                 default: {
                     throw unexpectedElement(reader);
@@ -114,8 +71,11 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
         }
     }
 
-    static ModelNode parseModClusterConfig(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode config = new ModelNode();
+    static void parseModClusterConfig(XMLExtendedStreamReader reader, List<ModelNode> list, PathAddress parent) throws XMLStreamException {
+        PathAddress address = parent.append(ModClusterExtension.CONFIGURATION_PATH);
+        final ModelNode config = Util.createAddOperation(address);
+        list.add(config);
+
         // Parse the attributes.
         parsePropConf(reader, config);
         // Parse the elements
@@ -123,22 +83,18 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case SIMPLE_LOAD_PROVIDER:
-                    final ModelNode load = parseSimpleLoadProvider(reader);
-                    config.get(SIMPLE_LOAD_PROVIDER).set(load);
+                    parseSimpleLoadProvider(reader, config);
                     break;
                 case DYNAMIC_LOAD_PROVIDER:
-                    final ModelNode dynload = parseDynamicLoadProvider(reader);
-                    config.get(DYNAMIC_LOAD_PROVIDER).set(dynload);
+                    parseDynamicLoadProvider(reader, list, address);
                     break;
                 case SSL:
-                    final ModelNode ssl = parseSSL(reader);
-                    config.get(SSL).set(ssl);
+                    parseSSL(reader, list, address);
                     break;
                 default:
                     throw unexpectedElement(reader);
             }
         }
-        return config;
     }
 
     static void parsePropConf(XMLExtendedStreamReader reader, ModelNode conf) throws XMLStreamException {
@@ -169,7 +125,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                 case TTL:
                 case NODE_TIMEOUT:
                 case BALANCER:
-                case DOMAIN:
+                case LOAD_BALANCING_GROUP:
                     ModClusterConfigResourceDefinition.ATTRIBUTES_BY_NAME.get(attribute.getLocalName()).parseAndSetParameter(value, conf, reader);
                     break;
                 default:
@@ -178,34 +134,33 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
         }
     }
 
-    static ModelNode parseSSL(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode ssl = new ModelNode();
-        ssl.setEmptyObject();
+    static void parseSSL(XMLExtendedStreamReader reader, List<ModelNode> list, PathAddress parent) throws XMLStreamException {
+        PathAddress address = parent.append(ModClusterExtension.SSL_CONFIGURATION_PATH);
+        final ModelNode ssl = Util.createAddOperation(address);
+        list.add(ssl);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-            case KEY_ALIAS:
-            case PASSWORD:
-            case CERTIFICATE_KEY_FILE:
-            case CIPHER_SUITE:
-            case PROTOCOL:
-            case CA_CERTIFICATE_FILE:
-            case CA_REVOCATION_URL:
-                ModClusterSSLResourceDefinition.ATTRIBUTES_BY_NAME.get(attribute.getLocalName()).parseAndSetParameter(value, ssl, reader);
-                break;
-           default:
-                throw unexpectedAttribute(reader, i);
+                case KEY_ALIAS:
+                case PASSWORD:
+                case CERTIFICATE_KEY_FILE:
+                case CIPHER_SUITE:
+                case PROTOCOL:
+                case CA_CERTIFICATE_FILE:
+                case CA_REVOCATION_URL:
+                    ModClusterSSLResourceDefinition.ATTRIBUTES_BY_NAME.get(attribute.getLocalName()).parseAndSetParameter(value, ssl, reader);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         ParseUtils.requireNoContent(reader);
-        return ssl;
     }
 
-    static ModelNode parseSimpleLoadProvider(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode load = new ModelNode();
+    static void parseSimpleLoadProvider(XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -213,18 +168,19 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case FACTOR:
-                    load.get(FACTOR).set(value);
+                    ModClusterConfigResourceDefinition.SIMPLE_LOAD_PROVIDER.parseAndSetParameter(value, operation, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
         }
         ParseUtils.requireNoContent(reader);
-        return load;
+
     }
 
-    static ModelNode parseDynamicLoadProvider(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode load = new ModelNode();
+    static void parseDynamicLoadProvider(XMLExtendedStreamReader reader, List<ModelNode> list, PathAddress parent) throws XMLStreamException {
+        PathAddress address = parent.append(ModClusterExtension.DYNAMIC_LOAD_PROVIDER);
+        final ModelNode load = Util.createAddOperation(address);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -232,37 +188,36 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case HISTORY:
-                    load.get(HISTORY).set(value);
+                    DynamicLoadProviderDefinition.HISTORY.parseAndSetParameter(value, load, reader);
                     break;
                 case DECAY:
-                    load.get(DECAY).set(value);
+                    DynamicLoadProviderDefinition.DECAY.parseAndSetParameter(value, load, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
         }
+        list.add(load);
+        int counter = 0;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             // read the load-metric and the custom-load-metric
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case LOAD_METRIC:
-                    final ModelNode loadmetric = parseLoadMetric(reader);
-                    load.get(LOAD_METRIC).add(loadmetric);
+                    parseLoadMetric(reader, list, address, ++counter);
                     break;
                 case CUSTOM_LOAD_METRIC:
-                    final ModelNode customloadmetric = parseCustomLoadMetric(reader);
-                    load.get(CUSTOM_LOAD_METRIC).add(customloadmetric);
+                    parseCustomLoadMetric(reader, list, address, ++counter);
                     break;
                 default:
                     throw unexpectedElement(reader);
             }
         }
-
-        return load;
     }
 
-    static ModelNode parseLoadMetric(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode load = new ModelNode();
+    static void parseLoadMetric(XMLExtendedStreamReader reader, List<ModelNode> list, PathAddress address, int counter) throws XMLStreamException {
+        PathElement pe = PathElement.pathElement(ModClusterExtension.LOAD_METRIC.getKey(), "metric-" + counter);
+        final ModelNode metric = Util.createAddOperation(address.append(pe));
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -270,35 +225,40 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case TYPE:
-                    load.get(TYPE).set(value);
+                    LoadMetricDefinition.TYPE.parseAndSetParameter(value, metric, reader);
                     break;
                 case CAPACITY:
-                    load.get(CAPACITY).set(value);
+                    LoadMetricDefinition.CAPACITY.parseAndSetParameter(value, metric, reader);
                     break;
                 case WEIGHT:
-                    load.get(WEIGHT).set(value);
+                    LoadMetricDefinition.WEIGHT.parseAndSetParameter(value, metric, reader);
                     break;
 
                 default:
                     throw unexpectedAttribute(reader, i);
             }
         }
+        readProperties(reader, metric);
+        list.add(metric);
+    }
+
+    private static void readProperties(XMLExtendedStreamReader reader, ModelNode metric) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case PROPERTY:
-                    final Property property = parseProperty(reader);
-                    load.get(CommonAttributes.PROPERTY).add(property.getName(), property.getValue());
+                    final Property property = ParseUtils.readProperty(reader);
+                    metric.get(CommonAttributes.PROPERTY).get(property.getName()).set(property.getValue());
                     break;
                 default:
                     throw unexpectedElement(reader);
             }
         }
-        return load;
     }
 
-    static ModelNode parseCustomLoadMetric(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode load = new ModelNode();
+    static void parseCustomLoadMetric(XMLExtendedStreamReader reader, List<ModelNode> list, PathAddress address, int counter) throws XMLStreamException {
+        PathElement pe = PathElement.pathElement(ModClusterExtension.CUSTOM_LOAD_METRIC.getKey(), "metric-" + counter);
+        final ModelNode customMetric = Util.createAddOperation(address.append(pe));
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -306,56 +266,20 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case CAPACITY:
-                    load.get(CAPACITY).set(value);
+                    LoadMetricDefinition.CAPACITY.parseAndSetParameter(value, customMetric, reader);
                     break;
                 case WEIGHT:
-                    load.get(WEIGHT).set(value);
+                    LoadMetricDefinition.WEIGHT.parseAndSetParameter(value, customMetric, reader);
                     break;
                 case CLASS:
-                    load.get(CLASS).set(value);
+                    CustomLoadMetricDefinition.CLASS.parseAndSetParameter(value, customMetric, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
         }
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case PROPERTY:
-                    final Property property = parseProperty(reader);
-                    load.get(CommonAttributes.PROPERTY).add(property.getName(), property.getValue());
-                    break;
-                default:
-                    throw unexpectedElement(reader);
-            }
-        }
-        return load;
+        readProperties(reader, customMetric);
+        list.add(customMetric);
     }
 
-    static Property parseProperty(XMLExtendedStreamReader reader) throws XMLStreamException {
-        String name = null;
-        String value = null;
-
-        for (int i = 0; i < reader.getAttributeCount(); i++) {
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-                case NAME: {
-                    name = reader.getAttributeValue(i);
-                    break;
-                }
-                case VALUE: {
-                    value = reader.getAttributeValue(i);
-                    break;
-                }
-                default: {
-                    throw unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if (name == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME.getLocalName()));
-        }
-        ParseUtils.requireNoContent(reader);
-        return new Property(name, new ModelNode().set(value == null ? "" : value));
-    }
 }

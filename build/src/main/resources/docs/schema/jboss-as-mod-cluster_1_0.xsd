@@ -110,6 +110,11 @@
         <xs:documentation>Time to live (in seconds) for idle connections above smax.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="load-balancing-group" type="xs:string" use="optional" >
+      <xs:annotation>
+        <xs:documentation>Load balancing group</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- general SSL definitions -->
