@@ -1012,7 +1012,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
      * @return the CanonicalFile form for the given name.
      */
     private File[] getFilesFromProperty(final String name, final Properties props) {
-        String sep = props.getProperty("path.separator");
+        String sep = SecurityActions.getSystemProperty("path.separator");
         String value = props.getProperty(name, null);
         if (value != null) {
             final String[] paths = value.split(Pattern.quote(sep));
