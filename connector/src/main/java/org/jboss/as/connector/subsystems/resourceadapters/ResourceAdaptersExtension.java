@@ -133,11 +133,14 @@ public class ResourceAdaptersExtension implements Extension {
     public static final String SUBSYSTEM_NAME = RESOURCEADAPTERS_NAME;
     private static final EnumSet<Flag> RUNTIME_ONLY_FLAG = EnumSet.of(Flag.RUNTIME_ONLY);
 
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+
     @Override
     public void initialize(final ExtensionContext context) {
         SUBSYSTEM_RA_LOGGER.debugf("Initializing ResourceAdapters Extension");
         // Register the remoting subsystem
-        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 1);
+        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION);
 
         ReloadRequiredWriteAttributeHandler disabledRequiredWriteAttributeHandler = new  ReloadRequiredWriteAttributeHandler();
 

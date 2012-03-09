@@ -37,9 +37,10 @@ public enum Namespace {
     // must be first
     UNKNOWN(0, 0, null),
 
+
     INFINISPAN_1_0(1, 0, new InfinispanSubsystemXMLReader_1_0()),
     INFINISPAN_1_1(1, 1, new InfinispanSubsystemXMLReader_1_1()),
-    INFINISPAN_1_2(1, 2, new InfinispanSubsystemXMLReader_1_2());
+    INFINISPAN_1_2(1, 2, new InfinispanSubsystemXMLReader_1_2()); // IMPORTANT: Management API version != XSD version!
 
     private static final String BASE_URN = "urn:jboss:domain:infinispan:";
 

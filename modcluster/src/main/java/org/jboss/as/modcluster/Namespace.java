@@ -34,7 +34,7 @@ public enum Namespace {
     // must be first
     UNKNOWN(0, 0, null),
 
-    MODCLUSTER_1_0(1, 0, new ModClusterSubsystemXMLReader_1_0()),
+    MODCLUSTER_1_0(1, 0, new ModClusterSubsystemXMLReader_1_0()),   // IMPORTANT: Management API version != XSD version!
     ;
     /**
      * The current namespace version.

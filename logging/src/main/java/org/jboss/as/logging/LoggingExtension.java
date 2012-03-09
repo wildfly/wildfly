@@ -101,13 +101,16 @@ public class LoggingExtension implements Extension {
     private static final PathElement periodicHandlersPath = PathElement.pathElement(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER);
     private static final PathElement sizePeriodicHandlersPath = PathElement.pathElement(CommonAttributes.SIZE_ROTATING_FILE_HANDLER);
 
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+
 
     /**
      * {@inheritDoc}
      */
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(LoggingSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewLoggingSubsystemAdd.ADD_INSTANCE, LoggingSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, LoggingDescribeHandler.INSTANCE, LoggingDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);

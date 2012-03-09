@@ -57,6 +57,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
  */
 public class JAXRSubsystemExtension implements Extension {
 
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+
     private final JAXRSubsystemParser parser = new JAXRSubsystemParser();
     private final JAXRConfiguration config = new JAXRConfiguration();
 
@@ -68,7 +71,7 @@ public class JAXRSubsystemExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration subsystem = context.registerSubsystem(JAXRConstants.SUBSYSTEM_NAME, 1, 1);
+        SubsystemRegistration subsystem = context.registerSubsystem(JAXRConstants.SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION);
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new JAXRSubsystemRootResource(config));
         registration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
