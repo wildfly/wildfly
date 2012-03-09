@@ -65,7 +65,7 @@
                                         mcast.jgroupsDiag="${mcast.jgroupsDiag}"
                                         mcast.modcluster="${mcast.modcluster}"/>
         <ts.config-as.add-port-offset name="jbossas-clustering-tcp-1" offset="100" nativePort="9999" httpPort="9990"/>
-        <ts.config-as.change-transport-stack name="jbossas-clustering-tcp-0"
+        <ts.config-as.change-transport-stack name="jbossas-clustering-tcp-1"
                                              defaultStack="tcp"/>
 
     </target>

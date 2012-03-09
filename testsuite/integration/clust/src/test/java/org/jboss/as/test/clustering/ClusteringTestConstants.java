@@ -30,10 +30,10 @@ package org.jboss.as.test.clustering;
 public class ClusteringTestConstants {
 
     /**
-     * Unmanaged (manually managed) container names.
+     * Manual container with unmanaged deployments names.
      */
-    public static final String CONTAINER_1 = "clustering-udp-0";
-    public static final String CONTAINER_2 = "clustering-udp-1";
+    public static final String CONTAINER_1 = "container-0";
+    public static final String CONTAINER_2 = "container-1";
     public static final String[] CONTAINERS = new String[] { CONTAINER_1, CONTAINER_2 };
 
     /**
@@ -43,8 +43,11 @@ public class ClusteringTestConstants {
     public static final String DEPLOYMENT_2 = "deployment-1";
     public static final String[] DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2 };
 
-    public static final String NODE_1 = "node-udp-0";
-    public static final String NODE_2 = "node-udp-1";
+    /**
+     * Node names passed in arquillian.xml via -Djboss.node.name property.
+     */
+    public static final String NODE_1 = "node-0";
+    public static final String NODE_2 = "node-1";
     public static final String[] NODES = new String[] { NODE_1, NODE_2 };
 
     /**
