@@ -22,14 +22,11 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
@@ -44,6 +41,8 @@ import java.util.Set;
 
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
 /**
  * A command line utility to add new users to the mgmt-users.properties files.
  *
@@ -51,7 +50,16 @@ import org.jboss.sasl.util.UsernamePasswordHashUtil;
  */
 public class AddPropertiesUser {
 
-    private static final String[] BAD_USER_NAMES = {"admin", "administrator", "root"};
+    private static final String[] badUsernames = {"admin", "administrator", "root"};
+
+
+    /*
+     * Not using ServerEnvironment
+     */
+   public static final String SERVER_BASE_DIR = "jboss.server.base.dir";
+   public static final String SERVER_CONFIG_DIR = "jboss.server.config.dir";
+   public static final String DOMAIN_BASE_DIR = "jboss.domain.base.dir";
+   public static final String DOMAIN_CONFIG_DIR = "jboss.domain.config.dir";
 
     private static final String DEFAULT_MANAGEMENT_REALM = "ManagementRealm";
     private static final String DEFAULT_APPLICATION_REALM = "ApplicationRealm";
@@ -59,9 +67,6 @@ public class AddPropertiesUser {
     public static final String APPLICATION_USERS_PROPERTIES = "application-users.properties";
     public static final String APPLICATION_ROLES_PROPERTIES = "application-roles.properties";
     public static final String APPLICATION_USERS_SWITCH = "-a";
-
-    private static final char NEW_LINE_CHAR = '\n';
-    private static final char CARRIAGE_RETURN_CHAR = '\r';
 
     private static final String NEW_LINE = "\n";
     private static final String SPACE = " ";
@@ -161,10 +166,6 @@ public class AddPropertiesUser {
 
     private class PropertyFilePrompt implements State {
 
-        private static final int MANAGEMENT = 0;
-        private static final int APPLICATION = 1;
-        private static final int INVALID = 2;
-
         @Override
         public State execute() {
 
@@ -177,25 +178,24 @@ public class AddPropertiesUser {
                 String temp = theConsole.readLine("(a): ");
                 if (temp == null) {
                     /*
-                     * This will return user to the command prompt so add a new line to ensure the command prompt is on the next
-                     * line.
+                     * This will return user to the command prompt so add a new line to
+                     * ensure the command prompt is on the next line.
                      */
                     theConsole.printf(NEW_LINE);
                     return null;
                 }
-
                 if (temp.length() > 0) {
-                    switch (convertResponse(temp)) {
-                        case MANAGEMENT:
+                    switch (temp.charAt(0)) {
+                        case 'a':
+                        case 'A':
                             values.management = true;
                             values.realm = DEFAULT_MANAGEMENT_REALM;
                             return new PropertyFileFinder(values);
-                        case APPLICATION:
+                        case 'b':
+                        case 'B':
                             values.management = false;
                             values.realm = DEFAULT_APPLICATION_REALM;
                             return new PropertyFileFinder(values);
-                        default:
-                            return new ErrorState(MESSAGES.invalidChoiceResponse(), this);
                     }
                 } else {
                     values.management = true;
@@ -204,24 +204,10 @@ public class AddPropertiesUser {
                 }
             }
         }
-
-        private int convertResponse(final String response) {
-            String temp = response.toLowerCase();
-            if ("A".equals(temp) || "a".equals(temp)) {
-                return MANAGEMENT;
-            }
-
-            if ("B".equals(temp) || "b".equals(temp)) {
-                return APPLICATION;
-            }
-
-            return INVALID;
-        }
-
     }
 
     /**
-     * The first state executed, responsible for searching for the relevant properties files.
+     * The first state executed, responsible for searching for the relevent properties files.
      */
     private class PropertyFileFinder implements State {
 
@@ -271,11 +257,12 @@ public class AddPropertiesUser {
         }
 
         private boolean findFiles(final String jbossHome, final List<File> foundFiles, final String fileName) {
-            File standaloneProps = new File(jbossHome + "/standalone/configuration/" + fileName);
+
+            File standaloneProps = buildFilePath(jbossHome, SERVER_CONFIG_DIR, SERVER_BASE_DIR, "standalone", fileName);
             if (standaloneProps.exists()) {
                 foundFiles.add(standaloneProps);
             }
-            File domainProps = new File(jbossHome + "/domain/configuration/" + fileName);
+            File domainProps = buildFilePath(jbossHome, DOMAIN_CONFIG_DIR, DOMAIN_BASE_DIR, "domain", fileName);
             if (domainProps.exists()) {
                 foundFiles.add(domainProps);
             }
@@ -284,6 +271,19 @@ public class AddPropertiesUser {
                 return false;
             }
             return true;
+        }
+
+        private File buildFilePath(final String jbossHome, final String serverConfigDirPropertyName,
+                                   final String serverBaseDirPropertyName, final String defaultBaseDir, final String fileName) {
+
+                String configDirConfiguredPath = System.getProperty(serverConfigDirPropertyName);
+                File configDir =  configDirConfiguredPath != null ? new File(configDirConfiguredPath) : null;
+                if(configDir == null) {
+                    String baseDirConfiguredPath = System.getProperty(serverBaseDirPropertyName);
+                    File baseDir = baseDirConfiguredPath != null ? new File(baseDirConfiguredPath) : new File(jbossHome, defaultBaseDir);
+                    configDir = new File(baseDir, "configuration");
+                }
+                return new File(configDir, fileName);
         }
 
         private Set<String> loadUserNames(final File file) throws IOException {
@@ -421,7 +421,7 @@ public class AddPropertiesUser {
             }
 
             boolean weakUserName = false;
-            for (String current : BAD_USER_NAMES) {
+            for (String current : badUsernames) {
                 if (current.equals(values.userName.toLowerCase())) {
                     weakUserName = true;
                     break;
@@ -599,45 +599,13 @@ public class AddPropertiesUser {
             return null;
         }
 
-        private boolean additionalNewLineNeeded(final File file) throws IOException {
-            FileReader fr = null;
-
-            try {
-                fr = new FileReader(file);
-                char lastChar = 0x00;
-                char[] temp = new char[1024];
-
-                int read = -1;
-                while ((read = fr.read(temp)) > 0) {
-                    lastChar = temp[read - 1];
-                }
-                /*
-                 * It is possible that the final line will also have some whitespace - in that case we want
-                 * a new line otherwise the line we add could become indented.
-                 *
-                 * Depending on where the file was last written the character sequence for a new line can vary,
-                 * if we see either of the characters used for a new line as the last character of the last line
-                 * we assume a new line is already present in the file.
-                 */
-                return lastChar != NEW_LINE_CHAR && lastChar != CARRIAGE_RETURN_CHAR;
-            } finally {
-                safeClose(fr);
-            }
-        }
-
         private void append(final String entry, final File toFile) throws IOException {
             FileWriter fw = null;
             BufferedWriter bw = null;
 
-            boolean additionalNewLineNeeded = additionalNewLineNeeded(toFile);
-
             try {
                 fw = new FileWriter(toFile, true);
                 bw = new BufferedWriter(fw);
-
-                if (additionalNewLineNeeded) {
-                    bw.newLine();
-                }
 
                 bw.append(entry);
                 bw.newLine();
@@ -645,6 +613,7 @@ public class AddPropertiesUser {
                 safeClose(bw);
                 safeClose(fw);
             }
+
         }
     }
 
