@@ -25,7 +25,8 @@
             <remoting-ejb-receiver outbound-connection-ref="remote-ejb-connection"/>
         </ejb-receivers>
         <clusters>
-            <cluster name="ejb" max-allowed-connected-nodes="20" connect-timeout="5000" username="user1" security-realm="PasswordRealm">
+            <cluster name="ejb" max-allowed-connected-nodes="20" cluster-node-selector="org.jboss.as.test.manualmode.ejb.client.cluster.ApplicationSpecificClusterNodeSelector"
+                     connect-timeout="5000" username="user1" security-realm="PasswordRealm">
                 <connection-creation-options>
                     <property name="org.xnio.Options.SSL_ENABLED" value="false"/>
                     <property name="org.xnio.Options.SASL_POLICY_NOANONYMOUS" value="true"/>

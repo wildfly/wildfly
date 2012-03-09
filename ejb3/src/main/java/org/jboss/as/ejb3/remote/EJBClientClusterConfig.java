@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.remote;
 
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.ejb.client.ClusterNodeSelector;
 import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.logging.Logger;
@@ -43,6 +44,7 @@ public class EJBClientClusterConfig extends EJBClientCommonConnectionConfig impl
 
     private final EJBClientDescriptorMetaData.ClusterConfig delegate;
     private final Map<String, EJBClientConfiguration.ClusterNodeConfiguration> nodes = new HashMap<String, EJBClientConfiguration.ClusterNodeConfiguration>();
+    private final ClusterNodeSelector clusterNodeSelector;
 
     public EJBClientClusterConfig(final EJBClientDescriptorMetaData.ClusterConfig clusterConfig, final ClassLoader deploymentClassLoader, final ServiceRegistry serviceRegistry) {
         this.delegate = clusterConfig;
@@ -69,6 +71,17 @@ public class EJBClientClusterConfig extends EJBClientCommonConnectionConfig impl
 
         this.setCallbackHandler(serviceRegistry, clusterConfig.getUserName(), clusterConfig.getSecurityRealm());
 
+        final String nodeSelector = clusterConfig.getNodeSelector();
+        if (nodeSelector != null) {
+            try {
+                final Class<?> nodeSelectorClass = deploymentClassLoader.loadClass(nodeSelector);
+                this.clusterNodeSelector = (ClusterNodeSelector) nodeSelectorClass.newInstance();
+            } catch (Exception e) {
+                throw EjbLogger.EJB3_LOGGER.failureDuringLoadOfClusterNodeSelector(nodeSelector, clusterConfig.getClusterName(), e);
+            }
+        } else {
+            this.clusterNodeSelector = null;
+        }
     }
 
     @Override
@@ -83,7 +96,7 @@ public class EJBClientClusterConfig extends EJBClientCommonConnectionConfig impl
 
     @Override
     public ClusterNodeSelector getClusterNodeSelector() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return this.clusterNodeSelector;
     }
 
     @Override

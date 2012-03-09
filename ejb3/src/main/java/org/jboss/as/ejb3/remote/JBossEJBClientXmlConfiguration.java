@@ -40,26 +40,33 @@ public class JBossEJBClientXmlConfiguration implements EJBClientConfiguration {
 
     @Override
     public String getEndpointName() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        // The jboss-ejb-client.xml will *not* be used to create endpoints
+        return null;
     }
 
     @Override
     public OptionMap getEndpointCreationOptions() {
+        // The jboss-ejb-client.xml will *not* be used to create endpoints
         return OptionMap.EMPTY;
     }
 
     @Override
     public OptionMap getRemoteConnectionProviderCreationOptions() {
+        // The jboss-ejb-client.xml will *not* be used to register connection providers
         return OptionMap.EMPTY;
     }
 
     @Override
     public CallbackHandler getCallbackHandler() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        // The appropriate callback handler will either be available on the remote-outbound-connection
+        // reference or in the cluster configuration of this client context
+        return null;
     }
 
     @Override
     public Iterator<RemotingConnectionConfiguration> getConnectionConfigurations() {
+        // The jboss-ejb-client.xml will *not* be used for auto creating connections to remote servers.
+        // Instead we let the remote-outbound-connection to handle the connection creation/configuration
         return Collections.EMPTY_SET.iterator();
     }
 

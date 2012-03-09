@@ -449,6 +449,13 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 14148, value = "")
     UnsupportedCallbackException unsupportedCallback(@Param Callback current);
 
+    @Message(id = 14149, value = "Could not create an instance of cluster node selector %s for cluster %s")
+    RuntimeException failureDuringLoadOfClusterNodeSelector(final String clusterNodeSelectorName, final String clusterName, @Cause Exception e);
+
+    @LogMessage(level = WARN)
+    @Message(id = 14150, value = "Failed to parse property %s due to %s")
+    void failedToCreateOptionForProperty(String propertyName, String reason);
+
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
     // all used, go to https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
