@@ -1894,6 +1894,11 @@
 
                 <dependency>
                     <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-log</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
                     <artifactId>capedwarf-mail</artifactId>
                 </dependency>
 

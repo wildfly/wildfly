@@ -40,7 +40,7 @@ public class Logger extends Handler {
             return;
 
         try {
-            final Class<?> clazz = appCl.loadClass("org.jboss.capedwarf.common.logging.Logger");
+            final Class<?> clazz = appCl.loadClass("org.jboss.capedwarf.log.Logger");
             final Method method = clazz.getDeclaredMethod("publish", LogRecord.class);
             method.invoke(null, record);
         } catch (Exception ignored) {
