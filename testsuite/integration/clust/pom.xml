@@ -63,6 +63,12 @@
                                             <property name="mcast" value="${mcast}"/>
                                             <target name="build-clustering-udp"/>
                                         </ant>
+                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
+                                            <property name="node0" value="${node0}"/>
+                                            <property name="node1" value="${node1}"/>
+                                            <property name="mcast" value="${mcast}"/>
+                                            <target name="build-clustering-tcp"/>
+                                        </ant>
                                     </target>
                                 </configuration>
                             </execution>

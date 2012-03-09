@@ -114,7 +114,7 @@
         Configure port offset.
         This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}.
     -->
-    <macrodef name="ts.config-as.add-port-offset" description="Add a port offeset a node configuration">
+    <macrodef name="ts.config-as.add-port-offset" description="Add a port offset a node configuration">
 
         <attribute name="name" default="jbossas"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
@@ -155,7 +155,44 @@
         </sequential>
     </macrodef>
 
+    <!--
+        Change default transport stack in clustering server profiles.
+    -->
+    <macrodef name="ts.config-as.change-transport-stack" description="Change default transport stack in clustering server profiles.">
 
+        <attribute name="name" default="jbossas"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="defaultStack" default="udp"/>
+
+        <sequential>
+            <echo message="Changing JGroups stack for config @{name}"/>
+
+            <!-- Process *.xml to *.xml.mod. -->
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
+                  style="${jbossas.ts.integ.dir}/src/test/xslt/changeTransportStack.xsl"
+                  extension=".xml.mod"
+                  useImplicitFileset="false">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-ha.xml"/>
+                    <include name="**/standalone.xml"/>
+                    <include name="**/standalone-full.xml"/>
+                </fileset>
+                <param name="defaultStack" expression="@{defaultStack}"/>
+            </xslt>
+
+            <!-- Move processed files back. -->
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-ha.xml.mod"/>
+                    <include name="**/standalone.xml.mod"/>
+                    <include name="**/standalone-full.xml.mod"/>
+                </fileset>
+                <mapper type="glob" from="*.mod" to="*"/>
+            </move>
+        </sequential>
+    </macrodef>
 
     <!--
         Enable JTS.
