@@ -56,6 +56,11 @@ public class AddPropertiesUser {
 
     private static final String[] BAD_USER_NAMES = {"admin", "administrator", "root"};
 
+    public static final String SERVER_BASE_DIR = "jboss.server.base.dir";
+    public static final String SERVER_CONFIG_DIR = "jboss.server.config.dir";
+    public static final String DOMAIN_BASE_DIR = "jboss.domain.base.dir";
+    public static final String DOMAIN_CONFIG_DIR = "jboss.domain.config.dir";
+
     private static final String DEFAULT_MANAGEMENT_REALM = "ManagementRealm";
     private static final String DEFAULT_APPLICATION_REALM = "ApplicationRealm";
     public static final String MGMT_USERS_PROPERTIES = "mgmt-users.properties";
@@ -299,11 +304,12 @@ public class AddPropertiesUser {
         }
 
         private boolean findFiles(final String jbossHome, final List<File> foundFiles, final String fileName) {
-            File standaloneProps = new File(jbossHome + "/standalone/configuration/" + fileName);
+
+            File standaloneProps = buildFilePath(jbossHome, SERVER_CONFIG_DIR, SERVER_BASE_DIR, "standalone", fileName);
             if (standaloneProps.exists()) {
                 foundFiles.add(standaloneProps);
             }
-            File domainProps = new File(jbossHome + "/domain/configuration/" + fileName);
+            File domainProps = buildFilePath(jbossHome, DOMAIN_CONFIG_DIR, DOMAIN_BASE_DIR, "domain", fileName);
             if (domainProps.exists()) {
                 foundFiles.add(domainProps);
             }
@@ -312,6 +318,19 @@ public class AddPropertiesUser {
                 return false;
             }
             return true;
+        }
+
+        private File buildFilePath(final String jbossHome, final String serverConfigDirPropertyName,
+                                   final String serverBaseDirPropertyName, final String defaultBaseDir, final String fileName) {
+
+                String configDirConfiguredPath = System.getProperty(serverConfigDirPropertyName);
+                File configDir =  configDirConfiguredPath != null ? new File(configDirConfiguredPath) : null;
+                if(configDir == null) {
+                    String baseDirConfiguredPath = System.getProperty(serverBaseDirPropertyName);
+                    File baseDir = baseDirConfiguredPath != null ? new File(baseDirConfiguredPath) : new File(jbossHome, defaultBaseDir);
+                    configDir = new File(baseDir, "configuration");
+                }
+                return new File(configDir, fileName);
         }
 
         private Set<String> loadUserNames(final File file) throws IOException {
