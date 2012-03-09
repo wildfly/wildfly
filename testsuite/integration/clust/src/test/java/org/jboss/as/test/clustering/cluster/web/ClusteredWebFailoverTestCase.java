@@ -38,13 +38,18 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.jboss.as.test.http.util.HttpClientUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
-import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE;
 
 /**
  * Test that failover and undeploy works.
@@ -101,7 +106,7 @@ public abstract class ClusteredWebFailoverTestCase {
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException, ExecutionException {
 
-        DefaultHttpClient client = new DefaultHttpClient();
+        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
         String url1 = baseURL1.toString() + "simple";
         String url2 = baseURL2.toString() + "simple";
@@ -201,7 +206,7 @@ public abstract class ClusteredWebFailoverTestCase {
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException {
 
-        DefaultHttpClient client = new DefaultHttpClient();
+        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
         String url1 = baseURL1.toString() + "simple";
         String url2 = baseURL2.toString() + "simple";

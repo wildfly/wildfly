@@ -136,8 +136,7 @@ public class ManagementClient {
     }
 
     public boolean isServerInRunningState() {
-        try {
-            ModelNode op = Util.getEmptyOperation(READ_ATTRIBUTE_OPERATION, PathAddress.EMPTY_ADDRESS.toModelNode());
+        try {                    ModelNode op = Util.getEmptyOperation(READ_ATTRIBUTE_OPERATION, PathAddress.EMPTY_ADDRESS.toModelNode());
             op.get(NAME).set("server-state");
 
             ModelNode rsp = client.execute(op);
