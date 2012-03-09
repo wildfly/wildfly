@@ -34,7 +34,7 @@
                     <injection-target-class>org.jboss.as.test.iiop.basic.ClientEjb</injection-target-class>
                     <injection-target-name>home</injection-target-name>
                 </injection-target>
-                <lookup-name>corbaname:iiop:${node0}:3628#IIOPBasicBean</lookup-name>
+                <lookup-name>corbaname:iiop:${node1}:3628#IIOPBasicBean</lookup-name>
             </ejb-ref>
             <ejb-ref>
                 <ejb-ref-name>statefulHome</ejb-ref-name>
@@ -42,7 +42,7 @@
                     <injection-target-class>org.jboss.as.test.iiop.basic.ClientEjb</injection-target-class>
                     <injection-target-name>statefulHome</injection-target-name>
                 </injection-target>
-                <lookup-name>corbaname:iiop:${node0}:3628#IIOPBasicStatefulBean</lookup-name>
+                <lookup-name>corbaname:iiop:${node1}:3628#IIOPBasicStatefulBean</lookup-name>
             </ejb-ref>
         </session>
     </enterprise-beans>

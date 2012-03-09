@@ -74,8 +74,8 @@ public class TransactionIIOPInvocationTestCase {
 
         final Properties properties = new Properties();
         properties.putAll(System.getProperties());
-        if(properties.containsKey("node0")) {
-            properties.put("node0", NetworkUtils.formatPossibleIpv6Address((String) properties.get("node0")));
+        if(properties.containsKey("node1")) {
+            properties.put("node1", NetworkUtils.formatPossibleIpv6Address((String) properties.get("node1")));
         }
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "client.jar");
