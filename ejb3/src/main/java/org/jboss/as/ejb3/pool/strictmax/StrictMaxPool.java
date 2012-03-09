@@ -60,7 +60,7 @@ public class StrictMaxPool<T> extends AbstractPool<T> {
      */
     private final LinkedList<T> pool = new LinkedList<T>();
 
-    private int inUse = 0;
+    private volatile int inUse = 0;
 
     public StrictMaxPool(StatelessObjectFactory<T> factory, int maxSize, long timeout, TimeUnit timeUnit) {
         super(factory);
