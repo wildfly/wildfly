@@ -2532,8 +2532,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.osgi.http</groupId>
-      <artifactId>jbosgi-http-api</artifactId>
+      <groupId>org.jboss.osgi</groupId>
+      <artifactId>javax.servlet.api</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>

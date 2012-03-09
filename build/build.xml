@@ -1219,7 +1219,7 @@
         </bundle-def>
 
         <bundle-def name="javax.servlet.api" slot="v25">
-            <maven-bundle group="org.jboss.osgi.http" artifact="jbosgi-http-api"/>
+            <maven-bundle group="org.jboss.osgi" artifact="javax.servlet.api"/>
         </bundle-def>
 
         <bundle-def name="org.jboss.osgi.logging">
