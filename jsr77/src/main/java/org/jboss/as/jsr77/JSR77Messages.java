@@ -106,27 +106,27 @@ public interface JSR77Messages {
     @Message(id = 19903, value = "No attribute called %s")
     AttributeNotFoundException noAttributeCalled(String attribute);
 
-    @Message(id = 19903, value = "No mbean found called %s")
+    @Message(id = 19904, value = "No mbean found called %s")
     InstanceNotFoundException noMBeanCalled(ObjectName name);
 
-    @Message(id = 19904, value = "Should not get called")
+    @Message(id = 19905, value = "Should not get called")
     IllegalStateException shouldNotGetCalled();
 
-    @Message(id = 19905, value = "Could not find %s")
+    @Message(id = 19906, value = "Could not find %s")
     InstanceNotFoundException couldNotFindJ2eeType(String j2eeType);
 
-    @Message(id = 19906, value = "Invalid ObjectName: %s")
+    @Message(id = 19907, value = "Invalid ObjectName: %s")
     IllegalStateException invalidObjectName(@Cause Throwable t, String s);
 
-    @Message(id = 19907, value = "Could not create ObjectName: %s")
+    @Message(id = 19908, value = "Could not create ObjectName: %s")
     IllegalStateException couldNotCreateObjectName(@Cause Throwable t, String s);
 
-    @Message(id = 19908, value = "%s is read-only")
+    @Message(id = 19909, value = "%s is read-only")
     IllegalStateException mbeanIsReadOnly(ObjectName on);
 
-    @Message(id = 19909, value = "Not yet implemented")
+    @Message(id = 19910, value = "Not yet implemented")
     IllegalStateException notYetImplemented();
 
-    @Message(id = 19910, value = "Unknown method: %s")
+    @Message(id = 19911, value = "Unknown method: %s")
     IllegalArgumentException unknownMethod(Method m);
 }
