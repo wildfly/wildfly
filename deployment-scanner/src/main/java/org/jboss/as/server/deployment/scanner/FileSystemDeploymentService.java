@@ -286,6 +286,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private void establishDeployedContentList(File dir) throws OperationFailedException {
         final Set<String> deploymentNames = getDeploymentNames();
         final File[] children = dir.listFiles();
+        if(children == null || children.length == 0) {
+            return;
+        }
         for (File child : children) {
             final String fileName = child.getName();
             if (child.isDirectory()) {
