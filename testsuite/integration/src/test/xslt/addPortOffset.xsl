@@ -6,16 +6,16 @@
         An XSLT style sheet which will add a port offset to a standalone-ha.xml config.
         This is done by changing:
         <server>
-          ...
-          <management>
-            <management-interfaces>
-          <native-interface interface="management" port="$nativeInterfaceManagementPort"/>
-          <http-interface interface="management" port="$nativeInterfaceManagementPort"/>
-        </management-interfaces>
-          </management>
-      ...
-          <socket-binding-group name="standard-sockets" default-interface="public" port-offset="$portOffset">
-      ...
+            ...
+            <management>
+                <management-interfaces>
+                    <native-interface interface="management" port="$nativeInterfaceManagementPort"/>
+                    <http-interface interface="management" port="$nativeInterfaceManagementPort"/>
+                </management-interfaces>
+            </management>
+            ...
+            <socket-binding-group name="standard-sockets" default-interface="public" port-offset="$portOffset">
+            ...
         </server>
     -->
 
