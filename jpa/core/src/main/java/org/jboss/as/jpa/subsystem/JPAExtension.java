@@ -91,10 +91,13 @@ public class JPAExtension implements Extension {
         return update;
     }
 
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+
 
     @Override
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 1);
+        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION);
         final ManagementResourceRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
         PersistenceUnitRegistryImpl persistenceUnitRegistry = new PersistenceUnitRegistryImpl();
         JPASubSystemAdd subsystemAdd = new JPASubSystemAdd(persistenceUnitRegistry);

@@ -54,6 +54,9 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     static final PathElement sslConfigurationPath = PathElement.pathElement(CommonAttributes.SSL, CommonAttributes.CONFIGURATION);
     static final PathElement configurationPath = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG);
 
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+
     /** {@inheritDoc} */
     @Override
     public void initialize(ExtensionContext context) {
@@ -61,7 +64,8 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         EnumSet<Flag> runtimeOnlyFlags = EnumSet.of(Flag.RUNTIME_ONLY);
         ROOT_LOGGER.debugf("Activating Mod_cluster Extension");
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, Namespace.CURRENT.getMajorVersion(), Namespace.CURRENT.getMinorVersion());
+        // IMPORTANT: Management API version != xsd version! Not all Management API changes result in XSD changes
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(ModClusterSubsystemDescriptionProviders.SUBSYSTEM);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, ModClusterSubsystemAdd.INSTANCE, ModClusterSubsystemAdd.INSTANCE, false);
         registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, ModClusterSubsystemRemove.INSTANCE, ModClusterSubsystemRemove.INSTANCE, false);

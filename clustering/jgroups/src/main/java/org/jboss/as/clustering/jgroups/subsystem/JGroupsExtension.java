@@ -55,13 +55,18 @@ public class JGroupsExtension implements Extension {
     private static final PathElement protocolPath = PathElement.pathElement(ModelKeys.PROTOCOL);
     private static final PathElement protocolPropertyPath = PathElement.pathElement(ModelKeys.PROPERTY);
 
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+
     /**
      * {@inheritDoc}
      * @see org.jboss.as.controller.Extension#initialize(org.jboss.as.controller.ExtensionContext)
      */
     @Override
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, Namespace.CURRENT.getMajorVersion(), Namespace.CURRENT.getMinorVersion());
+
+        // IMPORTANT: Management API version != xsd version! Not all Management API changes result in XSD changes
+        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION);
         subsystem.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
 
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JGroupsSubsystemProviders.SUBSYSTEM);

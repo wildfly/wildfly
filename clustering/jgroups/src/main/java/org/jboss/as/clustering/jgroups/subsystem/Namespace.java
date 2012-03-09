@@ -39,7 +39,7 @@ public enum Namespace {
     UNKNOWN(0, 0, null),
 
     JGROUPS_1_0(1, 0, new JGroupsSubsystemXMLReader_1_0()),
-    JGROUPS_1_1(1, 1, new JGroupsSubsystemXMLReader_1_1());
+    JGROUPS_1_1(1, 1, new JGroupsSubsystemXMLReader_1_1());  // IMPORTANT: Management API version != XSD version!
 
     private static final String BASE_URN = "urn:jboss:domain:jgroups:";
 
