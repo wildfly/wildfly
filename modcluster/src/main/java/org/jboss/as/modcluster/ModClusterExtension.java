@@ -52,7 +52,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     public static final String SUBSYSTEM_NAME = "modcluster";
 
     static final PathElement sslConfigurationPath = PathElement.pathElement(CommonAttributes.SSL, CommonAttributes.CONFIGURATION);
-    static final PathElement configurationPath = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG);
+    static final PathElement configurationPath = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG,CommonAttributes.CONFIGURATION);
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
