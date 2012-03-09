@@ -245,4 +245,11 @@ public interface SecurityMessages {
      */
     @Message(id = 13323, value = "Invalid User")
     SecurityException invalidUserException();
+
+    /**
+     * Create a {@link SecurityException} to indicate that the security management has not been injected
+     * @return {@link SecurityException}
+     */
+    @Message(id = 13324, value = "Security Management not injected")
+    SecurityException securityManagementNotInjected();
 }
