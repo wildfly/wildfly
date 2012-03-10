@@ -40,6 +40,10 @@ public class PersistenceProviderDeploymentHolder {
     private final List<PersistenceProvider> providerList = new ArrayList<PersistenceProvider>();
     private final PersistenceProviderAdaptor adapter;
 
+    public PersistenceProviderDeploymentHolder(final List<PersistenceProvider> providerList) {
+        this(providerList, null);
+    }
+
     public PersistenceProviderDeploymentHolder(final List<PersistenceProvider> providerList, final PersistenceProviderAdaptor adapter) {
         this.providerList.addAll(providerList);
         this.adapter = adapter;

@@ -81,10 +81,6 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
 
                     // register persistence provider so javax.persistence.Persistence.createEntityManagerFactory can find it
                     PersistenceProviderResolverImpl.getInstance().addDeploymentSpecificPersistenceProvider(provider, deploymentClassLoaders);
-
-                    // TODO: instead of passing provider in via PersistenceProviderDeploymentHolder,
-                    // it should instead be looked up via PersistenceProviderResolverImpl (still need to pass adapter in
-                    // or add mechanism to deal with it on a per deployment basis).
                     providerList.add(provider);
 
                 } catch (Exception e) {
@@ -108,6 +104,9 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
                     } catch (ClassNotFoundException e) {
                         throw MESSAGES.cannotCreateAdapter(e, adapterClass);
                     }
+                } else {
+                    // register the provider (no adapter specified)
+                    deploymentUnit.putAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER, new PersistenceProviderDeploymentHolder(providerList));
                 }
             }
         }
