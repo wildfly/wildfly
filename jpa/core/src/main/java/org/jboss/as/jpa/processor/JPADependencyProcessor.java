@@ -100,6 +100,14 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         }
     }
 
+    private void addOptionalDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
+                               DeploymentUnit deploymentUnit, ModuleIdentifier... moduleIdentifiers) {
+        for ( ModuleIdentifier moduleIdentifier : moduleIdentifiers) {
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, true, false, false, false));
+            ROOT_LOGGER.debugf("added %s dependency to %s", moduleIdentifier, deploymentUnit.getName());
+        }
+    }
+
     @Override
     public void undeploy(DeploymentUnit context) {
 
@@ -119,7 +127,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         // passed moduleSpecification (for the current deployment unit).
         PersistenceUnitsInApplication persistenceUnitsInApplication = DeploymentUtils.getTopDeploymentUnit(deploymentUnit).getAttachment(PersistenceUnitsInApplication.PERSISTENCE_UNITS_IN_APPLICATION);
         for (PersistenceUnitMetadataHolder holder: persistenceUnitsInApplication.getPersistenceUnitHolders()) {
-            defaultProviderCount += loadPersistenceUnits(moduleLoader, deploymentUnit, moduleDependencies, holder);
+            defaultProviderCount += loadPersistenceUnits(moduleSpecification, moduleLoader, deploymentUnit, moduleDependencies, holder);
         }
 
         // add dependencies for the default persistence provider module
@@ -138,7 +146,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private int loadPersistenceUnits(final ModuleLoader moduleLoader, final DeploymentUnit deploymentUnit, final Set<String> moduleDependencies, final PersistenceUnitMetadataHolder holder) throws
+    private int loadPersistenceUnits(final ModuleSpecification moduleSpecification, final ModuleLoader moduleLoader, final DeploymentUnit deploymentUnit, final Set<String> moduleDependencies, final PersistenceUnitMetadataHolder holder) throws
         DeploymentUnitProcessingException {
         int defaultProviderCount = 0;
         if (holder != null) {
@@ -184,10 +192,15 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
                     // inject other provider modules into application
                     // in case its not obvious, everything but hibernate3 can end up here.  For Hibernate3, the Configuration.PROVIDER_MODULE
                     // should of been specified.
+                    //
+                    // since we don't know (until after PersistenceProviderProcessor runs in a later phase) if the provider
+                    // is packaged with the app or will be accessed as a module, make the module dependency optional (in case it
+                    // doesn't exist).
                     String providerModuleName = Configuration.getProviderModuleNameFromProviderClassName(pu.getPersistenceProviderClassName());
                     if (providerModuleName != null) {
-                        moduleDependencies.add(providerModuleName);
-                        ROOT_LOGGER.debugf("%s is configured to use provider module '%s'", pu.getPersistenceUnitName(), providerModuleName);
+                        addOptionalDependency(moduleSpecification, moduleLoader, deploymentUnit, ModuleIdentifier.fromString(providerModuleName));
+                        ROOT_LOGGER.debugf("%s is configured to use persistence provider '%s', adding an optional dependency on module '%s'",
+                                pu.getPersistenceUnitName(), pu.getPersistenceProviderClassName(), providerModuleName);
                     }
                 }
             }
