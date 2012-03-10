@@ -45,6 +45,8 @@ public interface ControllerClientMessages {
      */
     ControllerClientMessages MESSAGES = Messages.getBundle(ControllerClientMessages.class);
 
+    // 10620 - 10699
+
     /**
      * Creates an exception indicating after starting creation of the rollout plan no deployment actions can be added.
      *
@@ -328,4 +330,32 @@ public interface ControllerClientMessages {
      */
     @Message(id = 10648, value = "Unknown action type %s")
     IllegalStateException unknownActionType(Object type);
+
+    /**
+     * Creates a leak description, used in the controller client to show the original allocation point creating the
+     * client.
+     *
+     * @return the leak description
+     */
+    @Message(id = 10649, value = "Allocation stack trace:")
+    LeakDescription controllerClientNotClosed();
+
+    class LeakDescription extends Throwable {
+        private static final long serialVersionUID = -7193498784746897578L;
+
+        public LeakDescription() {
+            //
+        }
+
+        public LeakDescription(String message) {
+            super(message);
+        }
+
+        @Override
+        public String toString() {
+            // skip the class-name
+            return getLocalizedMessage();
+        }
+    }
+
 }
