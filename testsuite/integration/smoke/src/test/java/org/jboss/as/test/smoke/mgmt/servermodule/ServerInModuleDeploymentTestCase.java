@@ -81,9 +81,9 @@ public class ServerInModuleDeploymentTestCase {
     public void testDeploymentStreamApi() throws Exception {
         final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
                 Simple.class.getPackage());
-        final ServerDeploymentManager manager = ServerDeploymentManager.Factory
-                .create(InetAddress.getByName(managementClient.getMgmtAddress()), managementClient.getMgmtPort(), getCallbackHandler());
+
         final ModelControllerClient client = managementClient.getControllerClient();
+        final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(client);
         testDeployments(client, new DeploymentExecutor() {
 
             @Override
@@ -132,9 +132,9 @@ public class ServerInModuleDeploymentTestCase {
         final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
                 Simple.class.getPackage());
 
-        final ServerDeploymentManager manager = ServerDeploymentManager.Factory
-                .create(InetAddress.getByName(managementClient.getMgmtAddress()), managementClient.getMgmtPort(), getCallbackHandler());
         final ModelControllerClient client = managementClient.getControllerClient();
+        final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(client);
+
         final File dir = new File("target/archives");
         dir.mkdirs();
         final File file = new File(dir, "test-deployment.sar");

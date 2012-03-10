@@ -106,8 +106,8 @@ public final class RemoteDeployer implements Deployer {
             address = InetAddress.getByName("localhost");
         }
         final Integer port = Integer.getInteger(JBWS_DEPLOYER_PORT, PORT);
-        deploymentManager = ServerDeploymentManager.Factory.create(address, port, callbackHandler);
         modelControllerClient = ModelControllerClient.Factory.create(address, port, callbackHandler);
+        deploymentManager = ServerDeploymentManager.Factory.create(modelControllerClient);
     }
 
     @Override

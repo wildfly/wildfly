@@ -302,6 +302,11 @@ public class InputStreamCleanupTestCase {
                 return new TestFuture();
             }
         }
+
+        @Override
+        public void close() throws IOException {
+            //
+        }
     }
 
     private static class TestFuture implements Future<ModelNode> {
