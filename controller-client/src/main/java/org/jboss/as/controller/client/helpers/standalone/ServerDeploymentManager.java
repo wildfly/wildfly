@@ -23,6 +23,7 @@
 package org.jboss.as.controller.client.helpers.standalone;
 
 import javax.security.auth.callback.CallbackHandler;
+import java.io.Closeable;
 import java.net.InetAddress;
 import java.util.concurrent.Future;
 
@@ -34,7 +35,7 @@ import org.jboss.as.controller.client.helpers.standalone.impl.ModelControllerCli
  *
  * @author Brian Stansberry
  */
-public interface ServerDeploymentManager {
+public interface ServerDeploymentManager extends Closeable {
 
     /**
      * Factory used to create an {@link ServerDeploymentManager} instance.
@@ -44,16 +45,22 @@ public interface ServerDeploymentManager {
         /**
          * Create an {@link ServerDeploymentManager} instance for a remote address and port.
          *
+         * This creates a {@code ModelControllerClient} which has to be closed using the
+         * {@link org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager#close()} method.
+         *
          * @param address The remote address to connect to
          * @param port The remote port
          * @return A domain client
          */
         public static ServerDeploymentManager create(final InetAddress address, int port) {
-            return create(ModelControllerClient.Factory.create(address, port));
+            return create(ModelControllerClient.Factory.create(address, port), true);
         }
 
         /**
          * Create an {@link ServerDeploymentManager} instance for a remote address and port.
+         *
+         * This creates a {@code ModelControllerClient} which has to be closed using the
+         * {@link org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager#close()} method.
          *
          * @param address The remote address to connect to
          * @param port The remote port
@@ -61,7 +68,7 @@ public interface ServerDeploymentManager {
          * @return A domain client
          */
         public static ServerDeploymentManager create(final InetAddress address, int port, CallbackHandler handler) {
-            return create(ModelControllerClient.Factory.create(address, port, handler));
+            return create(ModelControllerClient.Factory.create(address, port, handler), true);
         }
 
         /**
@@ -71,7 +78,11 @@ public interface ServerDeploymentManager {
          * @return A domain client
          */
         public static ServerDeploymentManager create(final ModelControllerClient client) {
-            return new ModelControllerClientServerDeploymentManager(client);
+            return create(client, false);
+        }
+
+        static ServerDeploymentManager create(final ModelControllerClient client, final boolean closeClient) {
+            return new ModelControllerClientServerDeploymentManager(client, closeClient);
         }
     }
 

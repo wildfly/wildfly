@@ -18,6 +18,7 @@
  */
 package org.jboss.as.server.deployment.client;
 
+import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
@@ -50,4 +51,8 @@ public class ModelControllerServerDeploymentManager extends AbstractServerDeploy
         return client.executeAsync(executionContext, null);
     }
 
+    @Override
+    public void close() throws IOException {
+        client.close();
+    }
 }
