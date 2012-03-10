@@ -23,7 +23,12 @@
 package org.jboss.as.controller.client;
 
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.WARN;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 /**
@@ -38,4 +43,16 @@ public interface ControllerClientLogger extends BasicLogger {
      * A logger with the default package name.
      */
     ControllerClientLogger ROOT_LOGGER = Logger.getMessageLogger(ControllerClientLogger.class, ControllerClientLogger.class.getPackage().getName());
+
+    // 10600 - 10619 {@see ControllerClientMessages}
+
+    /**
+     * Logs a warn message indicating that a controller client wasn't closed properly.
+     *
+     * @param allocationStackTrace the allocation stack trace
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 10600, value = "Closing leaked controller client")
+    void leakedControllerClient(@Cause Throwable allocationStackTrace);
+
 }
