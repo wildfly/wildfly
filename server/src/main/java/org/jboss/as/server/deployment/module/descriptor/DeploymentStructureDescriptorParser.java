@@ -106,9 +106,9 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final ServiceModuleLoader moduleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
 
-        if(deploymentUnit.getParent() != null) {
+        if (deploymentUnit.getParent() != null) {
             //if the parent has already attached parsed data for this sub deployment we need to process it
-            if(deploymentRoot.hasAttachment(SUB_DEPLOYMENT_STRUCTURE)) {
+            if (deploymentRoot.hasAttachment(SUB_DEPLOYMENT_STRUCTURE)) {
                 final ModuleSpecification subModuleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
                 handleDeployment(deploymentUnit, subModuleSpec, deploymentRoot.getAttachment(SUB_DEPLOYMENT_STRUCTURE));
             }
@@ -147,7 +147,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
             final Map<String, ResourceRoot> subDeploymentMap = new HashMap<String, ResourceRoot>();
             for (final ResourceRoot root : resourceRoots) {
-                if(SubDeploymentMarker.isSubDeployment(root)) {
+                if (SubDeploymentMarker.isSubDeployment(root)) {
                     subDeploymentMap.put(root.getRoot().getPathNameRelativeTo(deploymentRoot.getRoot()), root);
                 }
             }
@@ -164,16 +164,21 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
 
             // handle additional modules
             for (final ModuleStructureSpec additionalModule : result.getAdditionalModules()) {
-                for(final ModuleIdentifier identifier : additionalModule.getAnnotationModules()) {
+                for (final ModuleIdentifier identifier : additionalModule.getAnnotationModules()) {
                     //additional modules don't support annotation imports
                     ServerLogger.DEPLOYMENT_LOGGER.annotationImportIgnored(identifier, additionalModule.getModuleIdentifier());
                 }
-
-                final AdditionalModuleSpecification additional = new AdditionalModuleSpecification(additionalModule .getModuleIdentifier(), additionalModule.getResourceRoots());
+                //log a warning if the resource root is wrong
+                for(final ResourceRoot resourceRoot : additionalModule.getResourceRoots()) {
+                    if(!resourceRoot.getRoot().exists()) {
+                        ServerLogger.DEPLOYMENT_LOGGER.additionalResourceRootDoesNotExist(resourceRoot.getRoot().getPathName());
+                    }
+                }
+                final AdditionalModuleSpecification additional = new AdditionalModuleSpecification(additionalModule.getModuleIdentifier(), additionalModule.getResourceRoots());
                 additional.addAliases(additionalModule.getAliases());
                 additional.addSystemDependencies(additionalModule.getModuleDependencies());
                 deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_MODULES, additional);
-                for(final ResourceRoot root: additionalModule.getResourceRoots()) {
+                for (final ResourceRoot root : additionalModule.getResourceRoots()) {
                     ResourceRootIndexer.indexResourceRoot(root);
                 }
             }
@@ -196,6 +201,8 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 //we already have to the resource root
                 //so now we want to merge it
                 existingRoot.merge(additionalResourceRoot);
+            } else if (!additionalResourceRoot.getRoot().exists()) {
+                ServerLogger.DEPLOYMENT_LOGGER.additionalResourceRootDoesNotExist(additionalResourceRoot.getRoot().getPathName());
             } else {
                 deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, additionalResourceRoot);
                 //compute the annotation index for the root
@@ -207,7 +214,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             moduleSpec.addClassFileTransformer(classFileTransformer);
         }
         //handle annotations
-        for(final ModuleIdentifier dependency : rootDeploymentSpecification.getAnnotationModules()) {
+        for (final ModuleIdentifier dependency : rootDeploymentSpecification.getAnnotationModules()) {
             deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES, dependency);
         }
         moduleSpec.setLocalLast(rootDeploymentSpecification.isLocalLast());

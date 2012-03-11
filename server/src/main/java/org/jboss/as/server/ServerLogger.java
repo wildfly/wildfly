@@ -22,10 +22,6 @@
 
 package org.jboss.as.server;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
 import java.net.URISyntaxException;
 import java.util.jar.Attributes;
 
@@ -42,6 +38,10 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.modules.ModuleIdentifier;
+
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * This module is using message IDs in the range 15700-15999 and 18700-18799.
@@ -352,6 +352,10 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.ERROR)
     @Message(id = 15958, value = "No deployment content with hash %s is available in the deployment content repository for deployment %s. Because this Host Controller is booting in ADMIN-ONLY mode, boot will be allowed to proceed to provide administrators an opportunity to correct this problem. If this Host Controller were not in ADMIN-ONLY mode this would be a fatal boot failure.")
     void reportAdminOnlyMissingDeploymentContent(String contentHash, String deploymentName);
+
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 15959, value = "Additional resource root %s added via jboss-deployment-structure.xml does not exist")
+    void additionalResourceRootDoesNotExist(String resourceRoot);
 
     // NOTE
 }
