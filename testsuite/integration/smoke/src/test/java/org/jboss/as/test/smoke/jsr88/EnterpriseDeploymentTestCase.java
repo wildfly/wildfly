@@ -102,74 +102,94 @@ public class EnterpriseDeploymentTestCase {
     @Test
     public void testDeploymentManager() throws Exception {
         DeploymentManager manager = getDeploymentManager();
-        assertNotNull("DeploymentManager not null", manager);
-        Target target = manager.getTargets()[0];
-        assertEquals("ServerDeploymentManager target", target.getDescription());
+        try {
+            assertNotNull("DeploymentManager not null", manager);
+            Target target = manager.getTargets()[0];
+            assertEquals("ServerDeploymentManager target", target.getDescription());
+        } finally {
+            manager.release();
+        }
     }
 
     @Test
     public void testDistributeWebApp() throws Exception {
         DeploymentManager manager = getDeploymentManager();
-        ProgressObject progress = jsr88Deploy(manager, getWebArchive());
-        TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
         try {
-            DeploymentStatus state = progress.getDeploymentStatus();
-            assertEquals(StateType.COMPLETED, state.getState());
-            assertServletAccess("custom-context");
+            ProgressObject progress = jsr88Deploy(manager, getWebArchive());
+            TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
+            try {
+                DeploymentStatus state = progress.getDeploymentStatus();
+                assertEquals(StateType.COMPLETED, state.getState());
+                assertServletAccess("custom-context");
+            } finally {
+                jsr88Undeploy(manager, targetModules);
+            }
+            try {
+                assertServletAccess("custom-context");
+                fail("Test deployment not undeployed");
+            } catch (IOException e) {
+                // ignore
+            }
         } finally {
-            jsr88Undeploy(manager, targetModules);
-        }
-        try {
-            assertServletAccess("custom-context");
-            fail("Test deployment not undeployed");
-        } catch (IOException e) {
-            // ignore
+            manager.release();
         }
     }
 
     @Test
     public void testDistributeBadWar() throws Exception {
         DeploymentManager manager = getDeploymentManager();
-        ProgressObject progress = jsr88Deploy(manager, getBadWebArchive());
-        TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
         try {
-            DeploymentStatus state = progress.getDeploymentStatus();
-            assertEquals(StateType.FAILED, state.getState());
+            ProgressObject progress = jsr88Deploy(manager, getBadWebArchive());
+            TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
+            try {
+                DeploymentStatus state = progress.getDeploymentStatus();
+                assertEquals(StateType.FAILED, state.getState());
+            } finally {
+                jsr88Undeploy(manager, targetModules);
+            }
         } finally {
-            jsr88Undeploy(manager, targetModules);
+            manager.release();
         }
     }
 
     @Test
     public void testDistributeEjbApp() throws Exception {
         DeploymentManager manager = getDeploymentManager();
-        ProgressObject progress = jsr88Deploy(manager, getEjbArchive());
-        TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
         try {
-            DeploymentStatus state = progress.getDeploymentStatus();
-            assertEquals(StateType.COMPLETED, state.getState());
+            ProgressObject progress = jsr88Deploy(manager, getEjbArchive());
+            TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
+            try {
+                DeploymentStatus state = progress.getDeploymentStatus();
+                assertEquals(StateType.COMPLETED, state.getState());
+            } finally {
+                jsr88Undeploy(manager, targetModules);
+            }
         } finally {
-            jsr88Undeploy(manager, targetModules);
+            manager.release();
         }
     }
 
     @Test
     public void testDistributeEARApp() throws Exception {
         DeploymentManager manager = getDeploymentManager();
-        ProgressObject progress = jsr88Deploy(manager, getEarArchive());
-        TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
         try {
-            DeploymentStatus state = progress.getDeploymentStatus();
-            assertEquals(StateType.COMPLETED, state.getState());
-            assertServletAccess("custom-context");
+            ProgressObject progress = jsr88Deploy(manager, getEarArchive());
+            TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
+            try {
+                DeploymentStatus state = progress.getDeploymentStatus();
+                assertEquals(StateType.COMPLETED, state.getState());
+                assertServletAccess("custom-context");
+            } finally {
+                jsr88Undeploy(manager, targetModules);
+            }
+            try {
+                assertServletAccess("custom-context");
+                fail("Test deployment not undeployed");
+            } catch (Exception e) {
+                // ignore
+            }
         } finally {
-            jsr88Undeploy(manager, targetModules);
-        }
-        try {
-            assertServletAccess("custom-context");
-            fail("Test deployment not undeployed");
-        } catch (Exception e) {
-            // ignore
+            manager.release();
         }
     }
 
@@ -178,58 +198,62 @@ public class EnterpriseDeploymentTestCase {
         String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=" + managementClient.getMgmtAddress() + "&serverPort=" + managementClient.getMgmtPort();
 
         DeploymentManager manager = getDeploymentManager(uri, Authentication.USERNAME, Authentication.PASSWORD);
-        Target[] targets = manager.getTargets();
-        TargetModuleID[] modules = manager.getAvailableModules(ModuleType.EAR, targets);
-        assertNull(modules);
-
-        ProgressObject progress = jsr88Deploy(manager, getEarArchive());
-        TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
         try {
-            // Test getAvailableModules
-            modules = manager.getAvailableModules(ModuleType.EAR, targets);
-            assertNotNull(modules);
-            assertEquals(1, modules.length);
+            Target[] targets = manager.getTargets();
+            TargetModuleID[] modules = manager.getAvailableModules(ModuleType.EAR, targets);
+            assertNull(modules);
 
-            TargetModuleID targetModuleID = modules[0];
-            String moduleID = targetModuleID.getModuleID();
-            assertTrue("Ends with deployment-app.ear", moduleID.endsWith("deployment-app.ear"));
+            ProgressObject progress = jsr88Deploy(manager, getEarArchive());
+            TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
+            try {
+                // Test getAvailableModules
+                modules = manager.getAvailableModules(ModuleType.EAR, targets);
+                assertNotNull(modules);
+                assertEquals(1, modules.length);
 
-            // Test getNonRunningModules
-            modules = manager.getNonRunningModules(ModuleType.EAR, targets);
-            assertEquals("non-running EAR modules count expected to be zero " + modules, 0, modules.length);
+                TargetModuleID targetModuleID = modules[0];
+                String moduleID = targetModuleID.getModuleID();
+                assertTrue("Ends with deployment-app.ear", moduleID.endsWith("deployment-app.ear"));
 
-            // Test getRunningModules
-            modules = manager.getRunningModules(ModuleType.EAR, targets);
-            assertEquals("running EAR modules count expected to be one " + modules, 1, modules.length);
+                // Test getNonRunningModules
+                modules = manager.getNonRunningModules(ModuleType.EAR, targets);
+                assertEquals("non-running EAR modules count expected to be zero " + modules, 0, modules.length);
 
-            targetModuleID = modules[0];
-            moduleID = targetModuleID.getModuleID();
-            assertTrue("Ends with deployment-app.ear", moduleID.endsWith("deployment-app.ear"));
+                // Test getRunningModules
+                modules = manager.getRunningModules(ModuleType.EAR, targets);
+                assertEquals("running EAR modules count expected to be one " + modules, 1, modules.length);
 
-            ProgressObject operationProgress = manager.stop(modules);
-            awaitCompletion(operationProgress, TIMEOUT);
+                targetModuleID = modules[0];
+                moduleID = targetModuleID.getModuleID();
+                assertTrue("Ends with deployment-app.ear", moduleID.endsWith("deployment-app.ear"));
 
-            // Test getRunningModules
-            modules = manager.getRunningModules(ModuleType.EAR, targets);
-            assertEquals("after stopping deployment-app.ear, running EAR modules count expected to be zero" + modules, 0, modules.length);
+                ProgressObject operationProgress = manager.stop(modules);
+                awaitCompletion(operationProgress, TIMEOUT);
 
-            // Test getNonRunningModules
-            modules = manager.getNonRunningModules(ModuleType.EAR, targets);
-            assertEquals("after stopping deployment-app.ear, non-running EAR modules count expected to be one" + modules, 1, modules.length);
+                // Test getRunningModules
+                modules = manager.getRunningModules(ModuleType.EAR, targets);
+                assertEquals("after stopping deployment-app.ear, running EAR modules count expected to be zero" + modules, 0, modules.length);
 
-            operationProgress = manager.start(modules);
-            awaitCompletion(operationProgress, TIMEOUT);
+                // Test getNonRunningModules
+                modules = manager.getNonRunningModules(ModuleType.EAR, targets);
+                assertEquals("after stopping deployment-app.ear, non-running EAR modules count expected to be one" + modules, 1, modules.length);
 
-            // Test getNonRunningModules
-            modules = manager.getNonRunningModules(ModuleType.EAR, targets);
-            assertEquals("after starting deployment-app.ear, non-running EAR modules count expected to be zero" + modules, 0, modules.length);
+                operationProgress = manager.start(modules);
+                awaitCompletion(operationProgress, TIMEOUT);
 
-            // Test getRunningModules
-            modules = manager.getRunningModules(ModuleType.EAR, targets);
-            assertEquals("after starting deployment-app.ear, running EAR modules count expected to be one", 1, modules.length);
+                // Test getNonRunningModules
+                modules = manager.getNonRunningModules(ModuleType.EAR, targets);
+                assertEquals("after starting deployment-app.ear, non-running EAR modules count expected to be zero" + modules, 0, modules.length);
 
+                // Test getRunningModules
+                modules = manager.getRunningModules(ModuleType.EAR, targets);
+                assertEquals("after starting deployment-app.ear, running EAR modules count expected to be one", 1, modules.length);
+
+            } finally {
+                jsr88Undeploy(manager, targetModules);
+            }
         } finally {
-            jsr88Undeploy(manager, targetModules);
+            manager.release();
         }
     }
 
@@ -237,12 +261,16 @@ public class EnterpriseDeploymentTestCase {
     @Ignore("[AS7-2771] ModelControllerClient operations don't fail on invalid username/password")
     public void testListAvailableModulesUnauthorized() throws Exception {
         DeploymentManager manager = getDeploymentManager("nobody", "nopass");
-        Target[] targets = manager.getTargets();
         try {
-            manager.getAvailableModules(ModuleType.EAR, targets);
-            fail("TargetException expected");
-        } catch (TargetException ex) {
-            // expected
+            Target[] targets = manager.getTargets();
+            try {
+                manager.getAvailableModules(ModuleType.EAR, targets);
+                fail("TargetException expected");
+            } catch (TargetException ex) {
+                // expected
+            }
+        } finally {
+            manager.release();
         }
     }
 
@@ -250,12 +278,16 @@ public class EnterpriseDeploymentTestCase {
     public void testListAvailableModulesWrongHost() throws Exception {
         String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=wrongHost";
         DeploymentManager manager = getDeploymentManager(uri, Authentication.USERNAME, Authentication.PASSWORD);
-        Target[] targets = manager.getTargets();
         try {
-            manager.getAvailableModules(ModuleType.EAR, targets);
-            fail("TargetException expected");
-        } catch (TargetException ex) {
-            // expected
+            Target[] targets = manager.getTargets();
+            try {
+                manager.getAvailableModules(ModuleType.EAR, targets);
+                fail("TargetException expected");
+            } catch (TargetException ex) {
+                // expected
+            }
+        } finally {
+            manager.release();
         }
     }
 
@@ -263,12 +295,16 @@ public class EnterpriseDeploymentTestCase {
     public void testListAvailableModulesWrongPort() throws Exception {
         String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverPort=9876";
         DeploymentManager manager = getDeploymentManager(uri, Authentication.USERNAME, Authentication.PASSWORD);
-        Target[] targets = manager.getTargets();
         try {
-            manager.getAvailableModules(ModuleType.EAR, targets);
-            fail("TargetException expected");
-        } catch (TargetException ex) {
-            // expected
+            Target[] targets = manager.getTargets();
+            try {
+                manager.getAvailableModules(ModuleType.EAR, targets);
+                fail("TargetException expected");
+            } catch (TargetException ex) {
+                // expected
+            }
+        } finally {
+            manager.release();
         }
     }
 

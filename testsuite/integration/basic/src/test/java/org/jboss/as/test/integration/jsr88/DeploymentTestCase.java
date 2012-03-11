@@ -98,23 +98,27 @@ public class DeploymentTestCase {
         // [AS7-3474] JSR88 undeployment does not work
 
         DeploymentManager manager = getDeploymentManager();
-        ProgressObject progress = jsr88Deploy(manager, getEarArchive());
-
-        DeploymentStatus state = progress.getDeploymentStatus();
-        assertEquals(StateType.COMPLETED, state.getState());
-        assertServletAccess("custom-context");
-
-        Target[] targets = manager.getTargets();
-        TargetModuleID[] targetModules = manager.getAvailableModules(ModuleType.EAR, targets);
-        assertEquals(1, targetModules.length);
-
-        jsr88Undeploy(manager, targetModules);
-
         try {
+            ProgressObject progress = jsr88Deploy(manager, getEarArchive());
+
+            DeploymentStatus state = progress.getDeploymentStatus();
+            assertEquals(StateType.COMPLETED, state.getState());
             assertServletAccess("custom-context");
-            fail("Test deployment not undeployed");
-        } catch (Exception e) {
-            // ignore
+
+            Target[] targets = manager.getTargets();
+            TargetModuleID[] targetModules = manager.getAvailableModules(ModuleType.EAR, targets);
+            assertEquals(1, targetModules.length);
+
+            jsr88Undeploy(manager, targetModules);
+
+            try {
+                assertServletAccess("custom-context");
+                fail("Test deployment not undeployed");
+            } catch (Exception e) {
+                // ignore
+            }
+        } finally {
+            manager.release();
         }
     }
 

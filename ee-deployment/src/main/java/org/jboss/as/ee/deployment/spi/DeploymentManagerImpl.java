@@ -23,9 +23,12 @@ package org.jboss.as.ee.deployment.spi;
 
 import org.dom4j.Document;
 import org.dom4j.io.SAXReader;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.ee.deployment.spi.configurations.WarConfiguration;
 import org.jboss.as.ee.deployment.spi.status.DeploymentStatusImpl;
 import org.jboss.as.ee.deployment.spi.status.ProgressObjectImpl;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.util.xml.JBossEntityResolver;
 
 import javax.enterprise.deploy.model.DeployableObject;
@@ -43,6 +46,13 @@ import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.RealmCallback;
+import javax.security.sasl.RealmChoiceCallback;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -51,6 +61,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -92,8 +103,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
     private final List<File> tmpFiles = new ArrayList<File>();
     private final URI deployURI;
     private boolean isConnected;
-    private final String username;
-    private final String password;
+    private final ModelControllerClient client;
 
     /**
      * Create a deployment manager for the given URL and connected mode.
@@ -117,8 +127,12 @@ public class DeploymentManagerImpl implements DeploymentManager {
         this.deployURI = deployURI;
         this.isConnected = isConnected;
         this.targets = null;
-        this.username = username;
-        this.password = password;
+        if(isConnected) {
+            this.client = create(deployURI, username, password);
+        } else {
+            this.client = null;
+        }
+
     }
 
     /**
@@ -145,7 +159,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 URIParser parser = new URIParser(deployURI);
                 String targetType = parser.getParameter("targetType");
                 if ("as7".equals(targetType)) {
-                    targets = new Target[]{new DeploymentManagerTarget(deployURI, username, password)};
+                    targets = new Target[]{new DeploymentManagerTarget(deployURI, client)};
                 } else {
                     throw new IllegalArgumentException(MESSAGES.invalidTargetType(deployURI));
                 }
@@ -616,6 +630,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
      */
     public void release() {
         isConnected = false;
+        StreamUtils.safeClose(client);
     }
 
     /**
@@ -831,4 +846,55 @@ public class DeploymentManagerImpl implements DeploymentManager {
             moduleType = type;
         }
     }
+
+    /**
+     * Create a new model controller client.
+     *
+     * @param deployURI the deploy URI
+     * @param username the username
+     * @param password the password
+     * @return the controller client
+     * @throws UnknownHostException
+     */
+    private static ModelControllerClient create(final URI deployURI, final String username, final String password) {
+        try {
+            URIParser parser = new URIParser(deployURI);
+            String serverHost = parser.getParameter("serverHost");
+            String serverPort = parser.getParameter("serverPort");
+            String host = serverHost != null ? serverHost : "127.0.0.1";
+            Integer port = serverPort != null ? Integer.parseInt(serverPort) : 9999;
+            if (username != null && password != null) {
+                return ModelControllerClient.Factory.create(host, port, getCallbackHandler(username, password));
+            } else {
+                return ModelControllerClient.Factory.create(host, port);
+            }
+        } catch (UnknownHostException ex) {
+            throw new IllegalArgumentException(MESSAGES.cannotConnectToManagementTarget(deployURI), ex);
+        }
+    }
+
+    private static CallbackHandler getCallbackHandler(final String username, final String password) {
+        return new CallbackHandler() {
+            public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+                for (Callback current : callbacks) {
+                    if (current instanceof NameCallback) {
+                        NameCallback ncb = (NameCallback) current;
+                        ncb.setName(username);
+                    } else if (current instanceof PasswordCallback) {
+                        PasswordCallback pcb = (PasswordCallback) current;
+                        pcb.setPassword(password.toCharArray());
+                    } else if (current instanceof RealmCallback) {
+                        RealmCallback rcb = (RealmCallback) current;
+                        rcb.setText(rcb.getDefaultText());
+                    } else if (current instanceof RealmChoiceCallback) {
+                        // Ignored but not rejected.
+                    } else {
+                        throw new UnsupportedCallbackException(current);
+                    }
+
+                }
+            }
+        };
+    }
+
 }

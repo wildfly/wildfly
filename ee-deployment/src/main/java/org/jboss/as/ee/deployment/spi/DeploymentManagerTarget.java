@@ -77,24 +77,11 @@ final class DeploymentManagerTarget extends JBossTarget {
     private final ServerDeploymentManager deploymentManager;
     private final URI deployURI;
 
-    public DeploymentManagerTarget(URI deployURI, String username, String password) {
+    public DeploymentManagerTarget(URI deployURI, final ModelControllerClient modelControllerClient) {
         ROOT_LOGGER.debugf("new DeploymentManagerTarget: %s", deployURI);
-        try {
-            URIParser parser = new URIParser(deployURI);
-            String serverHost = parser.getParameter("serverHost");
-            String serverPort = parser.getParameter("serverPort");
-            String host = serverHost != null ? serverHost : "127.0.0.1";
-            Integer port = serverPort != null ? Integer.parseInt(serverPort) : 9999;
-            if (username != null && password != null) {
-                this.modelControllerClient = ModelControllerClient.Factory.create(host, port, getCallbackHandler(username, password));
-            } else {
-                this.modelControllerClient = ModelControllerClient.Factory.create(host, port);
-            }
-            this.deploymentManager = ServerDeploymentManager.Factory.create(modelControllerClient);
-            this.deployURI = deployURI;
-        } catch (UnknownHostException ex) {
-            throw new IllegalArgumentException(MESSAGES.cannotConnectToManagementTarget(deployURI), ex);
-        }
+        this.modelControllerClient = modelControllerClient;
+        this.deploymentManager = ServerDeploymentManager.Factory.create(modelControllerClient);
+        this.deployURI = deployURI;
     }
 
     @Override
@@ -203,27 +190,4 @@ final class DeploymentManagerTarget extends JBossTarget {
         }
     }
 
-    private CallbackHandler getCallbackHandler(final String username, final String password) {
-        return new CallbackHandler() {
-            public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                for (Callback current : callbacks) {
-                    if (current instanceof NameCallback) {
-                        NameCallback ncb = (NameCallback) current;
-                        ncb.setName(username);
-                    } else if (current instanceof PasswordCallback) {
-                        PasswordCallback pcb = (PasswordCallback) current;
-                        pcb.setPassword(password.toCharArray());
-                    } else if (current instanceof RealmCallback) {
-                        RealmCallback rcb = (RealmCallback) current;
-                        rcb.setText(rcb.getDefaultText());
-                    } else if (current instanceof RealmChoiceCallback) {
-                        // Ignored but not rejected.
-                    } else {
-                        throw new UnsupportedCallbackException(current);
-                    }
-
-                }
-            }
-        };
-    }
 }
