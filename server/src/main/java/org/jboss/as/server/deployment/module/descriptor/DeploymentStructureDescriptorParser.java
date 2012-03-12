@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -169,9 +170,12 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                     ServerLogger.DEPLOYMENT_LOGGER.annotationImportIgnored(identifier, additionalModule.getModuleIdentifier());
                 }
                 //log a warning if the resource root is wrong
-                for(final ResourceRoot resourceRoot : additionalModule.getResourceRoots()) {
+                final ListIterator<ResourceRoot> itr = additionalModule.getResourceRoots().listIterator();
+                while (itr.hasNext()) {
+                    final ResourceRoot resourceRoot = itr.next();
                     if(!resourceRoot.getRoot().exists()) {
                         ServerLogger.DEPLOYMENT_LOGGER.additionalResourceRootDoesNotExist(resourceRoot.getRoot().getPathName());
+                        itr.remove();
                     }
                 }
                 final AdditionalModuleSpecification additional = new AdditionalModuleSpecification(additionalModule.getModuleIdentifier(), additionalModule.getResourceRoots());
