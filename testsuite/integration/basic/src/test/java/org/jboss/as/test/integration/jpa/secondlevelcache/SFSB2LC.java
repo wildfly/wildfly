@@ -275,7 +275,7 @@ public class SFSB2LC {
 		
 		try{
 			// this should evict query cache 
-			em.unwrap(Session.class).getSessionFactory().getCache().evictQueryRegions();
+			em.unwrap(Session.class).getSessionFactory().getCache().evictDefaultQueryRegion();
 
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -283,6 +283,43 @@ public class SFSB2LC {
 			em.close();
 		}
 
+	}
+	
+	
+	/**
+	 * Checking if query cache is empty
+	 * @param id Employee's id in the query
+	 */
+	public String queryCacheCheckIfEmpty(String id){
+		
+		EntityManager em = emf.createEntityManager();
+		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
+		stats.clear();
+
+		try{
+	        // the nextTimestamp from infinispan is "return System.currentTimeMillis() / 100;"
+	        Thread.sleep(1000);
+	        
+			String queryString = "from Employee e where e.id > "+id;
+			QueryStatistics queryStats = stats.getQueryStatistics(queryString);
+			Query query = em.createQuery(queryString);
+			query.setHint("org.hibernate.cacheable", true);
+
+			// query - this call shouldn't hit the cache -> query cache is empty
+			query.getResultList();
+			assertEquals("Expected 1 miss in cache"+generateQueryCacheStats(queryStats), 1,  queryStats.getCacheMissCount());
+			assertEquals("Expected 1 put in cache"+generateQueryCacheStats(queryStats), 1,  queryStats.getCachePutCount());
+			assertEquals("Expected no hits in cache"+generateQueryCacheStats(queryStats), 0,  queryStats.getCacheHitCount());
+			
+
+		}catch (AssertionError e) {
+			return e.getMessage();
+		} catch (InterruptedException e) {
+			return e.getMessage();
+		}	finally{
+			em.close();
+		}
+		return "OK";
 	}
 	
 	
