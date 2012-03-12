@@ -211,7 +211,12 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                         case UP_to_STOP_REQUESTED: {
 
                             PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
-                            ManagementResourceRegistration overrideRegistration = registration.getOverrideModel(deploymentUnit.getName());
+                            ManagementResourceRegistration overrideRegistration = registration;
+                            //when you are in deploy you have a registration pointing to deployment=*
+                            //when you are in re-deploy it points to specific deploymentUnit
+                            if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnit.getName()) == null) {
+                                overrideRegistration = registration.getOverrideModel(deploymentUnit.getName());
+                            }
                             if (overrideRegistration.getSubModel(PathAddress.pathAddress(pe)) != null) {
                                 overrideRegistration.unregisterSubModel(pe);
                             }

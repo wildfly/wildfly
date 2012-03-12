@@ -131,8 +131,12 @@ public class RaServicesFactory {
 
                         synchronized (registration) {
                             PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
-
-                            ManagementResourceRegistration overrideRegistration = registration.getOverrideModel(deploymentUnitName);
+                            ManagementResourceRegistration overrideRegistration = registration;
+                            //when you are in deploy you have a registration pointing to deployment=*
+                            //when you are in re-deploy it points to specific deploymentUnit
+                            if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnitName) == null) {
+                                overrideRegistration = registration.getOverrideModel(deploymentUnitName);
+                            }
                             if (overrideRegistration.getSubModel(PathAddress.pathAddress(pe)) != null) {
                                 overrideRegistration.unregisterSubModel(pe);
                             }
