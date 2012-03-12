@@ -226,6 +226,7 @@
            <jms-destinations>
               <jms-queue name="testQueue">
                  <entry name="queue/test"/>
+                 <selector string="color='red'"/>
               </jms-queue>
               <jms-topic name="testTopic">
                  <entry name="topic/test"/>

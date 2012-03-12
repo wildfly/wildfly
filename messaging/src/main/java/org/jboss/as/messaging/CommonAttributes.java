@@ -33,6 +33,7 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.messaging.jms.ConnectionFactoryTypeValidator;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
+import org.jboss.as.messaging.jms.SelectorAttribute;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -411,7 +412,7 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS,
             AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    SimpleAttributeDefinition SELECTOR = new SimpleAttributeDefinition("selector", ModelType.STRING, true);
+    SelectorAttribute SELECTOR = SelectorAttribute.SELECTOR;
 
     SimpleAttributeDefinition SEND_TO_DLA_ON_NO_ROUTE = new SimpleAttributeDefinition("send-to-dla-on-no-route",
             new ModelNode().set(AddressSettings.DEFAULT_SEND_TO_DLA_ON_NO_ROUTE), ModelType.BOOLEAN, true);
@@ -571,6 +572,7 @@ public interface CommonAttributes {
     String SCHEDULED_COUNT = "scheduled-count";
     String SECURITY_SETTING ="security-setting";
     String SECURITY_SETTINGS ="security-settings";
+    String SELECTOR_STRING = "selector";
     String TOPIC_FACTORY = "TOPIC";
     String HORNETQ_SERVER = "hornetq-server";
     String QUEUE_FACTORY = "QUEUE";
