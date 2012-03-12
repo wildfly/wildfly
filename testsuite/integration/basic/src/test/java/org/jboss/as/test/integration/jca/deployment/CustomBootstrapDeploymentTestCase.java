@@ -28,7 +28,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.jca.rar.*;
 import org.jboss.dmr.ModelNode;
@@ -51,7 +51,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 @RunWith(Arquillian.class)
 @ServerSetup(CustomBootstrapDeploymentTestCase.CustomBootstrapDeploymentTestCaseSetup.class)
 @Ignore("AS7-3941,AS7-4035")
-public class CustomBootstrapDeploymentTestCase extends ArquillianResourceMgmtTestBase {
+public class CustomBootstrapDeploymentTestCase extends ContainerResourceMgmtTestBase {
 
     public static String deploymentName = "bootstrap_archive_ij.rar";
     public static String ctx = "customContext";
@@ -109,7 +109,7 @@ public class CustomBootstrapDeploymentTestCase extends ArquillianResourceMgmtTes
 
     /**
      * Define the deployment
-     * 
+     *
      * @return The deployment archive
      */
     @Deployment
@@ -142,7 +142,7 @@ public class CustomBootstrapDeploymentTestCase extends ArquillianResourceMgmtTes
 
     /**
      * Test configuration
-     * 
+     *
      * @throws Throwable Thrown if case of an error
      */
     @Test

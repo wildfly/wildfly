@@ -35,7 +35,7 @@ import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.deployment.rar.inflow.PureInflowResourceAdapter;
 import org.jboss.dmr.ModelNode;
@@ -62,7 +62,7 @@ import static org.junit.Assert.assertNotNull;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(PureTestCase.PureTestCaseSetup.class)
-public class PureTestCase extends ArquillianResourceMgmtTestBase {
+public class PureTestCase extends ContainerResourceMgmtTestBase {
 
     static class PureTestCaseSetup extends AbstractMgmtServerSetupTask {
 

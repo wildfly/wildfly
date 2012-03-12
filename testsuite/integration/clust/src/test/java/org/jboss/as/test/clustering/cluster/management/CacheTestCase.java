@@ -31,15 +31,12 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.JndiServlet;
-import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
@@ -53,17 +50,17 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class CacheTestCase extends AbstractMgmtTestBase {
-        
+
     @ArquillianResource
     private ContainerController controller;
     @ArquillianResource
-    private Deployer deployer;    
-    
+    private Deployer deployer;
+
     private ManagementClient managementClient;
-    
+
     private static final String TEST_CONTAINER = "test-container";
     private static final String TEST_CACHE = "test-local-cache";
-         
+
     @Deployment(name = DEPLOYMENT_1, managed = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> getDeployment() {
@@ -72,12 +69,12 @@ public class CacheTestCase extends AbstractMgmtTestBase {
         war.addClass(JndiServlet.class);
         return war;
     }
-    
+
 
     @Test
     @InSequence(-2)
     public void testStartServer() throws Exception {
-        NodeUtil.start(controller, deployer, CONTAINER_1, DEPLOYMENT_1);                
+        NodeUtil.start(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
     }
 
     @Test
@@ -86,123 +83,123 @@ public class CacheTestCase extends AbstractMgmtTestBase {
         this.managementClient = managementClient;
         ModelNode[] steps = new ModelNode[2];
         steps[0] = createOpNode(
-                "subsystem=infinispan/cache-container=" + TEST_CONTAINER, ModelDescriptionConstants.ADD);       
+                "subsystem=infinispan/cache-container=" + TEST_CONTAINER, ModelDescriptionConstants.ADD);
         steps[1] = createOpNode(
                 "subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/transport=TRANSPORT",
-                ModelDescriptionConstants.ADD);       
-        executeOperation(ModelUtil.createCompositeNode(steps));                        
-        
+                ModelDescriptionConstants.ADD);
+        executeOperation(ModelUtil.createCompositeNode(steps));
+
     }
-    
+
     @Test
     @InSequence(1)
     public void testStopContainers(@ArquillianResource ManagementClient managementClient) throws Exception {
         this.managementClient = managementClient;
-        
-        ModelNode op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER, ModelDescriptionConstants.REMOVE);       
-        executeOperation(op);                     
-        
-        NodeUtil.stop(controller, deployer, CONTAINER_1, DEPLOYMENT_1);                
-    }    
-    @Test    
-    public void testLocalCache(@ArquillianResource ManagementClient managementClient, @ArquillianResource URL url) throws Exception {        
+
+        ModelNode op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER, ModelDescriptionConstants.REMOVE);
+        executeOperation(op);
+
+        NodeUtil.stop(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
+    }
+    @Test
+    public void testLocalCache(@ArquillianResource ManagementClient managementClient, @ArquillianResource URL url) throws Exception {
         this.managementClient = managementClient;
         // add local cache
         ModelNode  op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/local-cache=" + TEST_CACHE,
-                ModelDescriptionConstants.ADD);       
+                ModelDescriptionConstants.ADD);
         op.get("start").set("EAGER");
         op.get("jndi-name").set("java:jboss/caches/TestCache");
-        executeOperation(op);                     
+        executeOperation(op);
 
-        // check that it is available through JNDI        
+        // check that it is available through JNDI
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
         Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
-        
+
         // remove local cache
         op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/local-cache=" + TEST_CACHE,
-                ModelDescriptionConstants.REMOVE);       
-        executeOperation(op);                             
+                ModelDescriptionConstants.REMOVE);
+        executeOperation(op);
 
         // check that it is unregistered
         jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
-        Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);        
+        Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);
     }
 
-    
+
     @Test
-    public void testDistributedCache(@ArquillianResource ManagementClient managementClient,  @ArquillianResource URL url) throws Exception {  
+    public void testDistributedCache(@ArquillianResource ManagementClient managementClient,  @ArquillianResource URL url) throws Exception {
         this.managementClient = managementClient;
         // add local cache
         ModelNode  op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/distributed-cache=" + TEST_CACHE,
-                ModelDescriptionConstants.ADD);       
+                ModelDescriptionConstants.ADD);
         op.get("start").set("EAGER");
         op.get("mode").set("ASYNC");
         op.get("jndi-name").set("java:jboss/caches/TestCache");
-        executeOperation(op);                     
-        
-        
-        // check that it is available through JNDI        
+        executeOperation(op);
+
+
+        // check that it is available through JNDI
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
-        Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);        
-        
+        Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
+
         // remove local cache
         op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/distributed-cache=" + TEST_CACHE,
-                ModelDescriptionConstants.REMOVE);       
-        executeOperation(op);                             
-        
+                ModelDescriptionConstants.REMOVE);
+        executeOperation(op);
+
         // check that it is unregistered
         jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
-        Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);        
+        Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);
     }
 
     @Test
-    public void testReplicatedCache(@ArquillianResource ManagementClient managementClient,  @ArquillianResource URL url) throws Exception {  
+    public void testReplicatedCache(@ArquillianResource ManagementClient managementClient,  @ArquillianResource URL url) throws Exception {
         this.managementClient = managementClient;
         // add local cache
         ModelNode  op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/replicated-cache=" + TEST_CACHE,
-                ModelDescriptionConstants.ADD);       
+                ModelDescriptionConstants.ADD);
         op.get("start").set("EAGER");
         op.get("mode").set("ASYNC");
         op.get("jndi-name").set("java:jboss/caches/TestCache");
-        executeOperation(op);                     
-        
-        // check that it is available through JNDI        
+        executeOperation(op);
+
+        // check that it is available through JNDI
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
         Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
-        
+
         // remove local cache
         op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/replicated-cache=" + TEST_CACHE,
-                ModelDescriptionConstants.REMOVE);       
-        executeOperation(op);                             
+                ModelDescriptionConstants.REMOVE);
+        executeOperation(op);
 
         // check that it is unregistered
         jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
-        Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);        
+        Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);
     }
 
     @Test
-    public void testInvalidationCache(@ArquillianResource ManagementClient managementClient,  @ArquillianResource URL url) throws Exception {    
+    public void testInvalidationCache(@ArquillianResource ManagementClient managementClient,  @ArquillianResource URL url) throws Exception {
         this.managementClient = managementClient;
         // add local cache
         ModelNode  op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/invalidation-cache=" + TEST_CACHE,
-                ModelDescriptionConstants.ADD);       
+                ModelDescriptionConstants.ADD);
         op.get("start").set("EAGER");
         op.get("mode").set("ASYNC");
         op.get("jndi-name").set("java:jboss/caches/TestCache");
-        executeOperation(op);                     
-        
-        // check that it is available through JNDI        
+        executeOperation(op);
+
+        // check that it is available through JNDI
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
         Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
-        
+
         // remove local cache
         op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/invalidation-cache=" + TEST_CACHE,
-                ModelDescriptionConstants.REMOVE);       
-        executeOperation(op);                             
+                ModelDescriptionConstants.REMOVE);
+        executeOperation(op);
 
         // check that it is unregistered
         jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
-        Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);        
+        Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);
     }
 
     @Override

@@ -30,7 +30,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyAdminObjectInterface;
 import org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnection;
@@ -58,7 +58,7 @@ import static org.junit.Assert.assertNotNull;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(ConfigPropertyTestCase.ConfigPropertyTestClassSetup.class)
-public class ConfigPropertyTestCase extends ArquillianResourceMgmtTestBase {
+public class ConfigPropertyTestCase extends ContainerResourceMgmtTestBase {
 
     /**
      * Class that performs setup before the deployment is deployed

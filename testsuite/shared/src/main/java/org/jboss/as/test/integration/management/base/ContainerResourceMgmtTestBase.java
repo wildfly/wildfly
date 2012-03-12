@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.management.base;
 
-import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 
@@ -9,9 +9,9 @@ import org.jboss.as.controller.client.ModelControllerClient;
  *
  * @author Stuart Douglas
  */
-public abstract class ArquillianResourceMgmtTestBase  extends AbstractMgmtTestBase {
+public abstract class ContainerResourceMgmtTestBase extends AbstractMgmtTestBase {
 
-    @ArquillianResource
+    @ContainerResource
     private ManagementClient managementClient;
 
     @Override

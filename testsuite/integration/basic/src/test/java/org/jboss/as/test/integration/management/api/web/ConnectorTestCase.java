@@ -42,7 +42,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.Connector;
-import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
 import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.dmr.ModelNode;
@@ -64,7 +64,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ConnectorTestCase extends ArquillianResourceMgmtTestBase {
+public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
 
     private final File keyStoreFile = new File(System.getProperty("java.io.tmpdir"), "test.keystore");
     private final File keyPEMFile = new File(System.getProperty("java.io.tmpdir"), "newkey.pem");

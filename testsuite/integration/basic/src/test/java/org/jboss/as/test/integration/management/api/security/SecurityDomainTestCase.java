@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.management.api.security;
 
-import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -29,16 +28,16 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
-import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.management.util.SecuredServlet;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,17 +51,11 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SecurityDomainTestCase extends ArquillianResourceMgmtTestBase {
+public class SecurityDomainTestCase extends ContainerResourceMgmtTestBase {
 
-    @ArquillianResource
-    private URL url;
+    @ContainerResource
+    private ManagementClient managementClient;
 
-    @Deployment
-    public static Archive<?> getDeployment() {
-        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(GlobalOpsTestCase.class);
-        return ja;
-    }
 
     @Deployment(name = "secured-servlet", managed = false)
     public static Archive<?> getDeployment2() {
@@ -96,7 +89,7 @@ public class SecurityDomainTestCase extends ArquillianResourceMgmtTestBase {
         // check that the servlet is secured
         boolean failed = false;
         try {
-            String response = HttpRequest.get(url.toString() + "/SecurityDomainTestCase/SecuredServlet", 10, TimeUnit.SECONDS);
+            String response = HttpRequest.get(managementClient.getWebUri() + "/SecurityDomainTestCase/SecuredServlet", 10, TimeUnit.SECONDS);
         } catch (Exception e) {
             assertTrue(e.toString().contains("Status 401"));
             failed = true;
@@ -105,7 +98,7 @@ public class SecurityDomainTestCase extends ArquillianResourceMgmtTestBase {
 
         // check that the security domain is active
         try {
-            String response = HttpRequest.get(url.toString() + "/SecurityDomainTestCase/SecuredServlet", "test", "test", 10, TimeUnit.SECONDS);
+            String response = HttpRequest.get(managementClient.getWebUri() + "/SecurityDomainTestCase/SecuredServlet", "test", "test", 10, TimeUnit.SECONDS);
         } catch (Exception e) {
             throw new Exception("Unable to access secured servlet.", e);
         }

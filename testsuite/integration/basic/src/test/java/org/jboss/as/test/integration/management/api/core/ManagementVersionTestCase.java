@@ -22,20 +22,13 @@
 
 package org.jboss.as.test.integration.management.api.core;
 
-import java.net.URL;
-
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,18 +42,9 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ManagementVersionTestCase extends ArquillianResourceMgmtTestBase {
+public class ManagementVersionTestCase extends ContainerResourceMgmtTestBase {
 
 
-    @ArquillianResource
-    URL url;
-
-    @Deployment
-    public static Archive<?> getDeployment() {
-        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(ManagementVersionTestCase.class);
-        return ja;
-    }
 
     @Test
     public void testRootResource() throws Exception  {

@@ -31,7 +31,7 @@ import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
 import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -54,7 +54,7 @@ import java.util.List;
 @RunAsClient
 @ServerSetup(RaTestConnectionTestCase.RaTestConnectionTestCaseSetup.class)
 @Ignore("AS7-3941")
-public class RaTestConnectionTestCase extends  ArquillianResourceMgmtTestBase {
+public class RaTestConnectionTestCase extends ContainerResourceMgmtTestBase {
     private static ModelNode address;
     private static String deploymentName = "archive_mult.rar";
 

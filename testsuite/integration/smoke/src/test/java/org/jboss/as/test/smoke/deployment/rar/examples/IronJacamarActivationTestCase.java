@@ -26,7 +26,7 @@ import javax.annotation.Resource;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject2;
@@ -48,7 +48,7 @@ import static org.junit.Assert.assertNotNull;
  *         JBQA-5736 -IronJacamar deployment test
  */
 @RunWith(Arquillian.class)
-public class IronJacamarActivationTestCase extends ArquillianResourceMgmtTestBase {
+public class IronJacamarActivationTestCase extends ContainerResourceMgmtTestBase {
 
 
     /**

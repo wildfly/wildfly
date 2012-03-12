@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.DataSourceSubsystemParser;
 import org.jboss.as.connector.subsystems.datasources.Namespace;
-import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -37,7 +37,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
  *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public class DsMgmtTestBase extends ArquillianResourceMgmtTestBase {
+public class DsMgmtTestBase extends ContainerResourceMgmtTestBase {
     public static ModelNode baseAddress;
 
     public static void setBaseAddress(String dsType, String dsName) {
@@ -65,7 +65,7 @@ public class DsMgmtTestBase extends ArquillianResourceMgmtTestBase {
     /*
 
      * Bad model must throw an Exception during setModel methos call. To work around wrong test case
-     * removeDs() method is added. 
+     * removeDs() method is added.
      */
     protected void setBadModel(String filename) throws Exception{
     	setModel(filename);

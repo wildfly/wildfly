@@ -31,7 +31,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.deployment.rar.inflow.PureInflowResourceAdapter;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
@@ -58,7 +58,7 @@ import static org.junit.Assert.assertNotNull;
  *         JBQA-5741 -Inflow RA deployment test
  */
 @RunWith(Arquillian.class)
-public class InflowTestCase extends ArquillianResourceMgmtTestBase {
+public class InflowTestCase extends ContainerResourceMgmtTestBase {
 
 
     /**
