@@ -45,7 +45,7 @@ public class ConnectHandler extends CommandHandlerWithHelp {
     }
 
     @Override
-    public boolean hasArgument(int index) {
+    public boolean hasArgument(CommandContext ctx, int index) {
         return index <= 1;
     }
 

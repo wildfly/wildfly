@@ -58,18 +58,32 @@ public interface CommandHandler {
     void handle(CommandContext ctx) throws CommandLineException;
 
     /**
+     * Returns command argument declared by the command handler
+     * corresponding to the argument name. Or null if the argument
+     * wasn't found among the accepted arguments.
+     *
+     * @param ctx  the current context
+     * @param name  the name of the argument
+     * @return  command argument corresponding to the argument name or null
+     * if the argument name wasn't recognized.
+     */
+    CommandArgument getArgument(CommandContext ctx, String name);
+
+    /**
      * Checks whether the command handler recognizes the argument by the name.
+     * @param ctx  the current context
      * @param name  argument name to check
      * @return  true if the handler recognizes the argument, otherwise - false.
      */
-    boolean hasArgument(String name);
+    boolean hasArgument(CommandContext ctx, String name);
 
     /**
      * Checks whether the command handler accepts an argument with the specified index.
+     * @param ctx  the current context
      * @param index  argument index to check
      * @return  true if the handler accepts an argument with the specified index, otherwise - false.
      */
-    boolean hasArgument(int index);
+    boolean hasArgument(CommandContext ctx, int index);
 
     /**
      * Returns a collection of the command arguments the handler supports in the current context.
