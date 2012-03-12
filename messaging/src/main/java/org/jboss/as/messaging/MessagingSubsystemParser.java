@@ -2113,7 +2113,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     if(queue.has(SELECTOR.getName())) {
                         throw ParseUtils.duplicateNamedElement(reader, Element.SELECTOR.getLocalName());
                     }
-                    handleElementText(reader, element, queue);
+                    requireSingleAttribute(reader, CommonAttributes.STRING);
+                    final String selector = readStringAttributeElement(reader, CommonAttributes.STRING);
+                    SELECTOR.parseAndSetParameter(selector, queue, reader);
                     break;
                 } case DURABLE: {
                     if(queue.has(DURABLE.getName())) {

@@ -187,7 +187,9 @@ public class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLEle
                     if (queue.has(SELECTOR.getName())) {
                         throw ParseUtils.duplicateNamedElement(reader, Element.SELECTOR.getLocalName());
                     }
-                    SELECTOR.parseAndSetParameter(PropertiesValueResolver.replaceProperties(reader.getElementText()), queue, reader);
+                    requireSingleAttribute(reader, CommonAttributes.STRING);
+                    final String selector = PropertiesValueResolver.replaceProperties(readStringAttributeElement(reader, CommonAttributes.STRING));
+                    SELECTOR.parseAndSetParameter(selector, queue, reader);
                     break;
                 }
                 case DURABLE: {
