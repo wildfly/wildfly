@@ -101,12 +101,17 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
     }
 
     @Override
-    public boolean hasArgument(String name) {
+    public CommandArgument getArgument(CommandContext ctx, String name) {
+        return null;
+    }
+
+    @Override
+    public boolean hasArgument(CommandContext ctx, String name) {
         return false;
     }
 
     @Override
-    public boolean hasArgument(int index) {
+    public boolean hasArgument(CommandContext ctx, int index) {
         return false;
     }
 

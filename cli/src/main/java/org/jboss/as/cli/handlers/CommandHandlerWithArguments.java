@@ -24,7 +24,9 @@ package org.jboss.as.cli.handlers;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
@@ -39,7 +41,7 @@ public abstract class CommandHandlerWithArguments implements CommandHandler {
 
     //private Set<String> argumentNames = Collections.emptySet();
     //private int maxArgumentIndex = -1;
-    private List<CommandArgument> args = Collections.emptyList();
+    private Map<String, CommandArgument> args = Collections.emptyMap();
 
     public void addArgument(CommandArgument arg) {
 /*        if(arg.getIndex() > -1) {
@@ -49,35 +51,30 @@ public abstract class CommandHandlerWithArguments implements CommandHandler {
         if(arg.getFullName() == null) {
             throw new IllegalArgumentException("Full name can't be null");
         }
-/*        if(argumentNames.isEmpty()) {
-            argumentNames = new HashSet<String>();
-        }
-        argumentNames.add(arg.getFullName());
-        if(arg.getShortName() != null) {
-            argumentNames.add(arg.getShortName());
-        }
-*/
         if(args.isEmpty()) {
-            args = new ArrayList<CommandArgument>();
+            args = new HashMap<String, CommandArgument>();
         }
-        args.add(arg);
-        //argCompleter.addArgument(arg);
+        args.put(arg.getFullName(), arg);
     }
 
     @Override
-    public boolean hasArgument(String name) {
-        //return argumentNames.contains(name);
-        throw new UnsupportedOperationException("not used yet");
+    public CommandArgument getArgument(CommandContext ctx, String name) {
+        return args.get(name);
     }
 
     @Override
-    public boolean hasArgument(int index) {
+    public boolean hasArgument(CommandContext ctx, String name) {
+        return args.containsKey(name);
+    }
+
+    @Override
+    public boolean hasArgument(CommandContext ctx, int index) {
         //return index <= maxArgumentIndex;
         throw new UnsupportedOperationException("not used yet");
     }
 
     @Override
     public Collection<CommandArgument> getArguments(CommandContext ctx) {
-        return this.args;
+        return this.args.values();
     }
 }

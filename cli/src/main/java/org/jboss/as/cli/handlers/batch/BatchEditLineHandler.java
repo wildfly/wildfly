@@ -186,12 +186,12 @@ public class BatchEditLineHandler extends CommandHandlerWithHelp {
      * It has to accept everything since we don't know what kind of command will be edited.
      */
     @Override
-    public boolean hasArgument(int index) {
+    public boolean hasArgument(CommandContext ctx, int index) {
         return true;
     }
 
     @Override
-    public boolean hasArgument(String name) {
+    public boolean hasArgument(CommandContext ctx, String name) {
         return true;
     }
 }
