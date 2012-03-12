@@ -92,7 +92,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
             final ServiceContainer container = context.getController().getServiceContainer();
             final AS7RaXmlDeployer raDeployer = new AS7RaXmlDeployer(context.getChildTarget(), connectorXmlDescriptor.getUrl(),
-                raName, root, module.getClassLoader(), cmd, raxml, ijmd);
+                raName, root, module.getClassLoader(), cmd, raxml, null);
 
             raDeployer.setConfiguration(config.getValue());
 

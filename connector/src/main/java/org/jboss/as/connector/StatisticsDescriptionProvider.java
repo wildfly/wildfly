@@ -22,6 +22,7 @@
 
     package org.jboss.as.connector;
 
+    import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
     import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
     import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
     import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -117,7 +118,7 @@
                     }
                     node.get(TYPE).set(modelType);
                     node.get(REQUIRED).set(false);
-                    node.get(READ_ONLY).set(true);
+                    node.get(ACCESS_TYPE, READ_ONLY).set(true);
                     attributes.put(name, node);
                 }
             }
