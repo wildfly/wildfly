@@ -188,15 +188,6 @@ public class RespawnTestCase {
 
         readHostControllerServers();
 
-        //Kill a server and make sure that it gets restarted
-        RunningProcess originalServerOne = processUtil.getProcess(processes, SERVER_ONE);
-        Assert.assertNotNull(originalServerOne);
-        processUtil.killProcess(originalServerOne);
-        processes = waitForAllProcesses();
-        RunningProcess respawnedServerOne = processUtil.getProcess(processes, SERVER_ONE);
-        Assert.assertNotNull(respawnedServerOne);
-        Assert.assertFalse(originalServerOne.getProcessId().equals(respawnedServerOne.getProcessId()));
-        readHostControllerServers();
     }
 
     @Test

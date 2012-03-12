@@ -31,7 +31,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -113,12 +112,9 @@ class ManagedServer {
     private final ManagedServer.ManagedServerBootConfiguration bootConfiguration;
 
     private volatile RemoteProxyController proxyController;
-    private volatile int respawnCount;
 
     private volatile InternalState requiredState = InternalState.STOPPED;
     private volatile InternalState internalState = InternalState.STOPPED;
-
-    private static final AtomicIntegerFieldUpdater<ManagedServer> respawnCountUpdater = AtomicIntegerFieldUpdater.newUpdater(ManagedServer.class, "respawnCount");
 
     ManagedServer(final String hostControllerName, final String serverName, final ProcessControllerClient processControllerClient,
             final InetSocketAddress managementSocket, final ManagedServer.ManagedServerBootConfiguration bootConfiguration) {
@@ -198,7 +194,6 @@ class ManagedServer {
         }
         this.requiredState = InternalState.SERVER_STARTED;
         ROOT_LOGGER.startingServer(serverName);
-        resetRespawnCount();
         transition();
     }
 
@@ -315,15 +310,8 @@ class ManagedServer {
         if(required == InternalState.STOPPED && state == InternalState.PROCESS_STOPPING) {
             finishTransition(InternalState.PROCESS_STOPPING, InternalState.PROCESS_STOPPED);
         } else {
-            // In any case it's stopped now
-            this.internalState = InternalState.PROCESS_STOPPED;
-            if(respawnCountUpdater.incrementAndGet(this) >= 10) {
-                this.requiredState = InternalState.FAILED;
-                return;
-            }
-            this.internalState = required == InternalState.SERVER_STARTED ? InternalState.PROCESS_ADDED : InternalState.PROCESS_STOPPED;
-            ROOT_LOGGER.infof("respawning server: %s", serverName);
-            transition();
+            this.requiredState = InternalState.FAILED;
+            internalSetState(null, state, InternalState.PROCESS_STOPPED);
         }
     }
 
@@ -429,15 +417,6 @@ class ManagedServer {
         }
     }
 
-    /**
-     * Reset the respawn count
-     *
-     * @return the respawn count
-     */
-    private int resetRespawnCount() {
-        return respawnCountUpdater.getAndSet(this, 0);
-    }
-
     private static InternalState nextState(final InternalState state, final InternalState required) {
         switch (state) {
             case STOPPED: {
@@ -488,7 +467,7 @@ class ManagedServer {
                 break;
             } case PROCESS_STOPPED: {
                 if(required == InternalState.SERVER_STARTED) {
-                    return InternalState.SERVER_STARTING;
+                    return InternalState.PROCESS_STARTING;
                 } else if( required == InternalState.STOPPED) {
                     return InternalState.PROCESS_REMOVING;
                 }
@@ -642,7 +621,7 @@ class ManagedServer {
 
         @Override
         public void execute(ManagedServer server) throws Exception {
-            resetRespawnCount();
+            //
         }
 
     }
