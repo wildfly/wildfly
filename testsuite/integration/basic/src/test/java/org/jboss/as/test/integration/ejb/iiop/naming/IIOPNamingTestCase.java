@@ -95,7 +95,7 @@ public class IIOPNamingTestCase {
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
         prope.put(Context.PROVIDER_URL, "corbaloc::" + managementClient.getMgmtAddress() +":3528");
         final InitialContext context = new InitialContext(prope);
-        final Object iiopObj = context.lookup("corbaname:iiop:localhost:3528#IIOPNamingBean");
+        final Object iiopObj = context.lookup("corbaname:iiop:" + managementClient.getMgmtAddress() +":3528#IIOPNamingBean");
         final IIOPNamingHome object = (IIOPNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
         final IIOPRemote result = object.create();
         Assert.assertEquals("hello", result.hello());
@@ -194,7 +194,7 @@ public class IIOPNamingTestCase {
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
         prope.put(Context.PROVIDER_URL, "corbaloc::" + managementClient.getMgmtAddress() +":3528");
         final InitialContext context = new InitialContext(prope);
-        final Object iiopObj = context.lookup("corbaname:iiop:localhost:3528#bean/custom/name/IIOPNamingBean");
+        final Object iiopObj = context.lookup("corbaname:iiop:" + managementClient.getMgmtAddress() +":3528#bean/custom/name/IIOPNamingBean");
         final IIOPNamingHome object = (IIOPNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
         final IIOPRemote result = object.create();
         Assert.assertEquals("hello", result.hello());
