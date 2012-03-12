@@ -62,7 +62,7 @@ class AddressSettingsWriteHandler extends AbstractWriteAttributeHandler<AddressS
     @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue,
                                            final ModelNode currentValue, final HandbackHolder<RevertHandback> handbackHolder) throws OperationFailedException {
-        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         final HornetQServer server = AddressSettingAdd.getServer(context, operation);
         if(server != null) {
             final ModelNode model = resource.getModel();
