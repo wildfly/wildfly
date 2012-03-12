@@ -245,7 +245,7 @@ public class JPA2LCTestCase {
  		// evict query cache
  		sfsb.evictQueryCache();
  		
- 		message = sfsb.queryCacheCheck(id);
+ 		message = sfsb.queryCacheCheckIfEmpty(id);
 
  		if (!message.equals("OK")){
  			fail(message);
