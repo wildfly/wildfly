@@ -126,7 +126,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
             public List<String> getAllCandidates(CommandContext ctx) {
-                return Util.getNodeNames(ctx.getModelControllerClient(), null, "profile");
+                return Util.getNodeNames(ctx.getModelControllerClient(), null, Util.PROFILE);
             }}), "--profile") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
@@ -258,7 +258,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             return null;
         }
         final String op = operation.getValue(args);
-        return loadHandler(ctx, op).getArgument(ctx, name);
+        return getHandler(ctx, op).getArgument(ctx, name);
     }
 
     @Override
@@ -272,10 +272,10 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             return Collections.emptyList();
         }
         final String op = operation.getValue(args);
-        return loadHandler(ctx, op).getArguments(ctx);
+        return getHandler(ctx, op).getArguments(ctx);
     }
 
-    private OperationCommand loadHandler(CommandContext ctx, String op) {
+    private OperationCommand getHandler(CommandContext ctx, String op) {
         if(op == null) {
             if(writePropHandler == null) {
                 writePropHandler = new WritePropertyHandler();
@@ -412,7 +412,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     @Override
     public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
         final String operation = this.operation.getValue(ctx.getParsedCommandLine());
-        final OperationCommand opHandler = loadHandler(ctx, operation);
+        final OperationCommand opHandler = getHandler(ctx, operation);
         if(opHandler == null) {
             throw new CommandFormatException("Unexpected command '" + operation + "'");
         }
