@@ -47,13 +47,13 @@ do
              usage
              exit
              ;;
-         n)
+         s)
              SNAPSHOTVERSION=$OPTARG
              ;;
          r)
              RELEASEVERSION=$OPTARG
              ;;
-         s)
+         n)
              NEWSNAPSHOTVERSION=$OPTARG
              ;;
          [?])
