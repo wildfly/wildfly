@@ -52,7 +52,9 @@ public class SocketBindingAddHandler extends AbstractAddStepHandler {
         if (socketBinding.get(INTERFACE).isDefined()) {
             op.get(INTERFACE).set(socketBinding.get(INTERFACE));
         }
-        op.get(PORT).set(socketBinding.get(PORT));
+        if (socketBinding.hasDefined(PORT)) {
+            op.get(PORT).set(socketBinding.get(PORT));
+        }
         if (socketBinding.hasDefined(FIXED_PORT)) {
             op.get(FIXED_PORT).set(socketBinding.get(FIXED_PORT));
         }
