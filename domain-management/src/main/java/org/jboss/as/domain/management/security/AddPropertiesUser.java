@@ -22,7 +22,8 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.msc.service.StartException;
+import org.jboss.sasl.util.UsernamePasswordHashUtil;
 
 import java.io.BufferedWriter;
 import java.io.Closeable;
@@ -36,13 +37,15 @@ import java.io.StringReader;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.jboss.sasl.util.UsernamePasswordHashUtil;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 /**
  * A command line utility to add new users to the mgmt-users.properties files.
@@ -72,6 +75,7 @@ public class AddPropertiesUser {
     private List<File> propertiesFiles;
     private List<File> roleFiles;
     private Set<String> knownUsers;
+    private Map<String,String> knownRoles;
     private State nextState;
 
     private AddPropertiesUser() {
@@ -80,6 +84,7 @@ public class AddPropertiesUser {
         }
         nextState = new PropertyFilePrompt();
     }
+
 
     private AddPropertiesUser(final boolean management, final String user, final char[] password, final String realm) {
         boolean silent = false;
@@ -167,8 +172,8 @@ public class AddPropertiesUser {
 
         @Override
         public State execute() {
-
             Values values = new Values();
+
             theConsole.printf(NEW_LINE);
             theConsole.printf(MESSAGES.filePrompt());
             theConsole.printf(NEW_LINE);
@@ -233,6 +238,7 @@ public class AddPropertiesUser {
 
         @Override
         public State execute() {
+            knownRoles = new HashMap<String, String>();
             String jbossHome = System.getenv("JBOSS_HOME");
             if (jbossHome == null) {
                 return new ErrorState(MESSAGES.jbossHomeNotSet(), null, values);
@@ -243,12 +249,17 @@ public class AddPropertiesUser {
             if (!findFiles(jbossHome, foundFiles, fileName)) {
                 return new ErrorState(MESSAGES.propertiesFileNotFound(fileName), null, values);
             }
-            if(!values.management) {
+            if (!values.management) {
                 List<File> foundRoleFiles = new ArrayList<File>(2);
                 if (!findFiles(jbossHome, foundRoleFiles, APPLICATION_ROLES_PROPERTIES)) {
                     return new ErrorState(MESSAGES.propertiesFileNotFound(APPLICATION_ROLES_PROPERTIES), null, values);
                 }
                 roleFiles = foundRoleFiles;
+                try {
+                    knownRoles = loadAllRoles(foundRoleFiles);
+                } catch (Exception e) {
+                    return new ErrorState(MESSAGES.propertiesFileNotFound(APPLICATION_ROLES_PROPERTIES), null, values);
+                }
             }
 
             propertiesFiles = foundFiles;
@@ -268,6 +279,23 @@ public class AddPropertiesUser {
             } else {
                 return new PromptNewUserState(values);
             }
+        }
+
+        private Map<String,String> loadAllRoles(List<File> foundRoleFiles) throws StartException, IOException {
+            Map<String, String> loadedRoles = new HashMap<String, String>();
+            for (File file : foundRoleFiles) {
+                PropertiesFileLoader propertiesLoad = null;
+                try {
+                    propertiesLoad = new UserPropertiesFileHandler(file.getCanonicalPath());
+                    propertiesLoad.start(null);
+                    loadedRoles.putAll((Map) propertiesLoad.getProperties());
+                }  finally {
+                    if (propertiesLoad!=null) {
+                        propertiesLoad.stop(null);
+                    }
+                }
+            }
+            return loadedRoles;
         }
 
         private boolean findFiles(final String jbossHome, final List<File> foundFiles, final String fileName) {
@@ -321,6 +349,7 @@ public class AddPropertiesUser {
 
         @Override
         public State execute() {
+            State continuingState = new PromptPasswordState(values);
             if (values.isSilentOrNonInteractive() == false) {
                 theConsole.printf(NEW_LINE);
                 theConsole.printf(MESSAGES.enterNewUserDetails());
@@ -361,35 +390,64 @@ public class AddPropertiesUser {
                 }
                 values.userName = existingUsername;
 
-                /*
-                 * Prompt for password.
-                 */
-                theConsole.printf(MESSAGES.passwordPrompt());
-                char[] tempChar = theConsole.readPassword(" : ");
-                if (tempChar == null || tempChar.length == 0) {
-                    return new ErrorState(MESSAGES.noPasswordExiting());
-                }
+                if (knownUsers.contains(values.userName)) {
+                    State duplicateContinuing = values.isSilentOrNonInteractive() ? null : new PromptNewUserState(values);
+                    if (values.isSilentOrNonInteractive()) {
+                        continuingState = new ErrorState(MESSAGES.duplicateUser(values.userName), duplicateContinuing, values);
+                    } else {
+                        String message = MESSAGES.aboutToUpdateUser(values.userName);
+                        String prompt = MESSAGES.isCorrectPrompt();
 
-                theConsole.printf(MESSAGES.passwordConfirmationPrompt());
-                char[] secondTempChar = theConsole.readPassword(" : ");
-                if (secondTempChar == null) {
-                    secondTempChar = new char[0]; // If re-entry missed allow fall through to comparison.
-                }
-
-                if (Arrays.equals(tempChar, secondTempChar) == false) {
-                    return new ErrorState(MESSAGES.passwordMisMatch(), this);
-                }
-                values.password = tempChar;
-
-                if(!values.management) {
-                    theConsole.printf(MESSAGES.rolesPrompt());
-                    values.roles = theConsole.readLine(" : ");
+                        values.existingUser = true;
+                        continuingState = new ConfirmationChoice(message, prompt, continuingState, duplicateContinuing);
+                    }
                 }
             }
 
-            return new WeakCheckState(values);
+            return continuingState;
         }
 
+    }
+
+    private class PromptPasswordState implements State {
+
+        private Values values;
+
+        private PromptPasswordState(Values values) {
+            this.values = values;
+        }
+        @Override
+        public State execute() {
+            State continuingState = new WeakCheckState(values);
+            /*
+            * Prompt for password.
+            */
+            theConsole.printf(MESSAGES.passwordPrompt());
+            char[] tempChar = theConsole.readPassword(" : ");
+            if (tempChar == null || tempChar.length == 0) {
+                return new ErrorState(MESSAGES.noPasswordExiting());
+            }
+
+            theConsole.printf(MESSAGES.passwordConfirmationPrompt());
+            char[] secondTempChar = theConsole.readPassword(" : ");
+            if (secondTempChar == null) {
+                secondTempChar = new char[0]; // If re-entry missed allow fall through to comparison.
+            }
+
+            if (Arrays.equals(tempChar, secondTempChar) == false) {
+                return new ErrorState(MESSAGES.passwordMisMatch(), this);
+            }
+            values.password = tempChar;
+
+            if (!values.management) {
+                theConsole.printf(MESSAGES.rolesPrompt());
+                String userRoles = knownRoles.get(values.userName);
+                values.roles = theConsole.readLine("[%1$2s]: ", (userRoles == null?"":userRoles));
+            }
+
+            return continuingState;
+
+        }
     }
 
     /**
@@ -456,21 +514,20 @@ public class AddPropertiesUser {
 
         @Override
         public State execute() {
-            if (knownUsers.contains(values.userName)) {
-                State continuing = values.isSilentOrNonInteractive() ? null : new PromptNewUserState(values);
-
-                return new ErrorState(MESSAGES.duplicateUser(values.userName), continuing, values);
-            }
-
-            State addState = new AddUser(values);
             final State continuingState;
-            if (values.isSilentOrNonInteractive()) {
-                continuingState = addState;
+            if (values.isExistingUser()) {
+                 continuingState = new UpdateUser(values);
             } else {
-                String message = MESSAGES.aboutToAddUser(values.userName, values.realm);
-                String prompt = MESSAGES.isCorrectPrompt();
+                State addState = new AddUser(values);
 
-                continuingState = new ConfirmationChoice(message, prompt, addState, new PromptNewUserState(values));
+                if (values.isSilentOrNonInteractive()) {
+                    continuingState = addState;
+                } else {
+                    String message = MESSAGES.aboutToAddUser(values.userName, values.realm);
+                    String prompt = MESSAGES.isCorrectPrompt();
+
+                    continuingState = new ConfirmationChoice(message, prompt, addState, new PromptNewUserState(values));
+                }
             }
 
             return continuingState;
@@ -540,13 +597,68 @@ public class AddPropertiesUser {
 
     }
 
+    private class UserPropertiesFileHandler extends PropertiesFileLoader {
+
+        protected UserPropertiesFileHandler(final String path) {
+            super(path);
+        }
+    }
+
+    private class UpdateUser extends UpdatePropertiesHandler implements State {
+
+        private final Values values;
+
+        private UpdateUser(final Values values) {
+            this.values = values;
+        }
+
+        @Override
+        public State execute() {
+            /*
+             * At this point the files have been written and confirmation passed back so nothing else to do.
+             */
+            return update(values);
+        }
+
+        @Override
+        void persist(String[] entry, File file) throws IOException {
+            UserPropertiesFileHandler propertiesHandler = new UserPropertiesFileHandler(file.getAbsolutePath());
+            try {
+                propertiesHandler.start(null);
+                Properties prob = propertiesHandler.getProperties();
+                prob.setProperty(entry[0], entry[1]);
+                propertiesHandler.persistProperties();
+            } catch (StartException e) {
+                throw new IllegalStateException(MESSAGES.unableToUpdateUser(file.getAbsolutePath(), e.getMessage()));
+            } finally {
+                propertiesHandler.stop(null);
+            }
+
+        }
+
+        @Override
+        String consoleUserMessage(String fileName) {
+            return MESSAGES.updateUser(values.userName, fileName);
+        }
+
+        @Override
+        String consoleRolesMessage(String fileName) {
+            return MESSAGES.updatedRoles(values.userName, values.roles, fileName);
+        }
+
+        @Override
+        String errorMessage(String fileName, Throwable e) {
+            return MESSAGES.unableToUpdateUser(fileName, e.getMessage());
+        }
+    }
+
     /**
      * State to perform the actual addition to the discovered properties files.
      * <p/>
      * By this time ALL validation should be complete, this State will only fail for IOExceptions encountered
      * performing the actual writes.
      */
-    private class AddUser implements State {
+    private class AddUser extends UpdatePropertiesHandler implements State {
 
         private final Values values;
 
@@ -556,48 +668,12 @@ public class AddPropertiesUser {
 
         @Override
         public State execute() {
-            String entry;
-
-            try {
-                String hash = new UsernamePasswordHashUtil().generateHashedHexURP(values.userName, values.realm,
-                        values.password);
-                entry = values.userName + "=" + hash;
-            } catch (NoSuchAlgorithmException e) {
-                return new ErrorState(e.getMessage(), null, values);
-            }
-
-            for (File current : propertiesFiles) {
-                try {
-                    append(entry, current);
-                    if (values.isSilent() == false) {
-                        theConsole.printf(MESSAGES.addedUser(values.userName, current.getCanonicalPath()));
-                        theConsole.printf(NEW_LINE);
-                    }
-                } catch (IOException e) {
-                    return new ErrorState(MESSAGES.unableToAddUser(current.getAbsolutePath(), e.getMessage()), null, values);
-                }
-            }
-
-            if(!values.management && values.roles != null && values.roles.length() > 0) {
-                for (final File current : roleFiles) {
-                    String role = values.userName + "=" + values.roles;
-                    try {
-                        append(role, current);
-                        if (values.isSilent() == false) {
-                            theConsole.printf(MESSAGES.addedRoles(values.userName, values.roles, current.getCanonicalPath()));
-                            theConsole.printf(NEW_LINE);
-                        }
-                    } catch (IOException e) {
-                        return new ErrorState(MESSAGES.unableToAddUser(current.getAbsolutePath(), e.getMessage()), null, values);
-                    }
-                }
-            }
-
             /*
-             * At this point the files have been written and confirmation passed back so nothing else to do.
-             */
-            return null;
+            * At this point the files have been written and confirmation passed back so nothing else to do.
+            */
+            return update(values);
         }
+
 
         private boolean additionalNewLineNeeded(final File file) throws IOException {
             FileReader fr = null;
@@ -612,13 +688,13 @@ public class AddPropertiesUser {
                     lastChar = temp[read - 1];
                 }
                 /*
-                 * It is possible that the final line will also have some whitespace - in that case we want
-                 * a new line otherwise the line we add could become indented.
-                 *
-                 * Depending on where the file was last written the character sequence for a new line can vary,
-                 * if we see either of the characters used for a new line as the last character of the last line
-                 * we assume a new line is already present in the file.
-                 */
+                * It is possible that the final line will also have some whitespace - in that case we want
+                * a new line otherwise the line we add could become indented.
+                *
+                * Depending on where the file was last written the character sequence for a new line can vary,
+                * if we see either of the characters used for a new line as the last character of the last line
+                * we assume a new line is already present in the file.
+                */
                 return lastChar != NEW_LINE_CHAR && lastChar != CARRIAGE_RETURN_CHAR;
             } finally {
                 safeClose(fr);
@@ -645,6 +721,27 @@ public class AddPropertiesUser {
                 safeClose(bw);
                 safeClose(fw);
             }
+        }
+
+
+        @Override
+        void persist(String[] entry, File file) throws IOException {
+            append(entry[0] + "=" + entry[1], file);
+        }
+
+        @Override
+        String consoleUserMessage(String filePath) {
+            return MESSAGES.addedUser(values.userName, filePath);
+        }
+
+        @Override
+        String consoleRolesMessage(String filePath) {
+            return MESSAGES.addedRoles(values.userName, values.roles, filePath);
+        }
+
+        @Override
+        String errorMessage(String filePath, Throwable e) {
+            return MESSAGES.unableToAddUser(filePath, e.getMessage());
         }
     }
 
@@ -706,6 +803,7 @@ public class AddPropertiesUser {
         private char[] password;
         private boolean management;
         private String roles;
+        private boolean existingUser = false;
 
         private boolean isSilentOrNonInteractive() {
             return (howInteractive == Interactiveness.NON_INTERACTIVE) || isSilent();
@@ -713,6 +811,10 @@ public class AddPropertiesUser {
 
         private boolean isSilent() {
             return (howInteractive == Interactiveness.SILENT);
+        }
+
+        private boolean isExistingUser() {
+            return existingUser;
         }
     }
 
@@ -724,6 +826,60 @@ public class AddPropertiesUser {
 
         State execute();
 
+    }
+
+    private abstract class UpdatePropertiesHandler {
+        abstract void persist(String[] entry, File file) throws IOException;
+
+        abstract String consoleUserMessage(String fileName);
+
+        abstract String consoleRolesMessage(String fileName);
+
+        abstract String errorMessage(String fileName, Throwable e);
+
+        State update(Values values) {
+            String[] entry = new String[2];
+
+            try {
+                String hash = new UsernamePasswordHashUtil().generateHashedHexURP(values.userName, values.realm,
+                        values.password);
+                entry[0] = values.userName;
+                entry[1] = hash;
+            } catch (NoSuchAlgorithmException e) {
+                return new ErrorState(e.getMessage(), null, values);
+            }
+
+            for (File current : propertiesFiles) {
+                try {
+                    persist(entry, current);
+                    if (values.isSilent() == false) {
+                        theConsole.printf(consoleUserMessage(current.getCanonicalPath()));
+                        theConsole.printf(NEW_LINE);
+                    }
+                } catch (Exception e) {
+                    return new ErrorState(errorMessage(current.getAbsolutePath(), e), null, values);
+                }
+            }
+
+            if (!values.management && values.roles != null) {
+                for (final File current : roleFiles) {
+                    String[] role = {values.userName, values.roles};
+                    try {
+                        persist(role, current);
+                        if (values.isSilent() == false) {
+                            theConsole.printf(consoleRolesMessage(current.getCanonicalPath()));
+                            theConsole.printf(NEW_LINE);
+                        }
+                    } catch (IOException e) {
+                        return new ErrorState(errorMessage(current.getAbsolutePath(), e), null, values);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        ;
     }
 
 }
