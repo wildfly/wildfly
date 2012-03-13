@@ -337,6 +337,10 @@ public abstract class EJBComponent extends BasicComponent {
         return utilities.getSecurityManager().isCallerInRole(securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
     }
 
+    public boolean isStatisticsEnabled() {
+        return utilities.isStatisticsEnabled();
+    }
+
     public Object lookup(String name) throws IllegalArgumentException {
         if (name == null) {
             throw MESSAGES.jndiNameCannotBeNull();

@@ -39,6 +39,8 @@ public class ExecutionTimeInterceptor extends AbstractEJBInterceptor {
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
         final EJBComponent component = getComponent(context, EJBComponent.class);
+        if (!component.isStatisticsEnabled())
+            return context.proceed();
         final Long startWaitTime = (Long) context.getPrivateData(WaitTimeInterceptor.START_WAIT_TIME);
         final long waitTime = startWaitTime != null && startWaitTime != 0L ? System.currentTimeMillis() - startWaitTime : 0L;
         component.getInvocationMetrics().startInvocation();
