@@ -2,13 +2,13 @@
 <cache-container name="jdbccontainer" default-cache="jdbccache">
     <local-cache name="jdbccache">
         <transaction mode="NON_DURABLE_XA"/>
-        <jdbc-store datasource="java:jboss/datasources/ExampleDS" passivation="false" preload="true" purge="false">
+        <string-keyed-jdbc-store datasource="java:jboss/datasources/ExampleDS" passivation="false" preload="true" purge="false">
             <property name="databaseType">H2</property>
-            <entry-table prefix="stringbased">
+            <string-keyed-table prefix="stringbased">
                 <id-column name="id" type="VARCHAR"/>
                 <data-column name="datum" type="BINARY"/>
                 <timestamp-column name="version" type="BIGINT"/>
-            </entry-table>
-        </jdbc-store>
+            </string-keyed-table>
+        </string-keyed-jdbc-store>
     </local-cache>
 </cache-container>
