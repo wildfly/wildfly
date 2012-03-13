@@ -22,6 +22,8 @@
 
 package org.jboss.as.txn.subsystem;
 
+import javax.management.MBeanServer;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
@@ -40,8 +42,6 @@ import org.jboss.as.txn.service.ArjunaObjectStoreEnvironmentService;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
-
-import javax.management.MBeanServer;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
@@ -99,13 +99,14 @@ public class TransactionExtension implements Extension {
         partecipantChild.registerOperationHandler(LogStoreConstants.RECOVER, LogStoreParticipantRecoveryHandler.INSTANCE, LogStoreProviders.RECOVER_OPERATION);
         partecipantChild.registerOperationHandler(LogStoreConstants.REFRESH, LogStoreParticipantRefreshHandler.INSTANCE, LogStoreProviders.REFRESH_OPERATION);
 
-        subsystem.registerXMLElementWriter(TransactionSubsystem11Parser.INSTANCE);
+        subsystem.registerXMLElementWriter(TransactionSubsystem12Parser.INSTANCE);
     }
 
     /** {@inheritDoc} */
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_0.getUriString(), TransactionSubsystem10Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_1.getUriString(), TransactionSubsystem11Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_2.getUriString(), TransactionSubsystem12Parser.INSTANCE);
     }
 
 }
