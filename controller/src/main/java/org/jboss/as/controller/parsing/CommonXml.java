@@ -710,7 +710,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     protected String parseSocketBinding(final XMLExtendedStreamReader reader, final Set<String> interfaces,
             final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
 
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.PORT);
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         String name = null;
 
         final ModelNode binding = new ModelNode();
@@ -1311,8 +1311,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     writeAttribute(writer, Attribute.INTERFACE, attr.asString());
                 }
                 attr = binding.get(PORT);
-                writeAttribute(writer, Attribute.PORT, attr.asString());
-
+                if (attr.isDefined()) {
+                    writeAttribute(writer, Attribute.PORT, attr.asString());
+                }
                 attr = binding.get(FIXED_PORT);
                 if (attr.isDefined() && attr.asBoolean()) {
                     writeAttribute(writer, Attribute.FIXED_PORT, attr.asString());

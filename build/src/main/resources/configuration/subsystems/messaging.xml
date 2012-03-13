@@ -91,8 +91,7 @@
        <replacement placeholder="BROADCAST-GROUPS">
            <broadcast-groups>
                <broadcast-group name="bg-group1">
-                   <group-address>231.7.7.7</group-address>
-                   <group-port>9876</group-port>
+                   <socket-binding>messaging-group</socket-binding>
                    <broadcast-period>5000</broadcast-period>
                    <connector-ref>netty</connector-ref>
                </broadcast-group>
@@ -101,8 +100,7 @@
        <replacement placeholder="DISCOVERY-GROUPS">
            <discovery-groups>
                <discovery-group name="dg-group1">
-                   <group-address>231.7.7.7</group-address>
-                   <group-port>9876</group-port>
+                   <socket-binding>messaging-group</socket-binding>
                    <refresh-timeout>10000</refresh-timeout>
                </discovery-group>
            </discovery-groups>
@@ -123,4 +121,5 @@
    
    <socket-binding name="messaging" port="5445"/>
    <socket-binding name="messaging-throughput" port="5455"/>
+   <socket-binding name="messaging-group" multicast-address="${jboss.messaging.group.address:231.7.7.7}" multicast-port="${jboss.messaging.group.port:9876}"/>
  </config>
