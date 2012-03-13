@@ -22,8 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
-import org.jboss.msc.service.StartException;
-import org.jboss.sasl.util.UsernamePasswordHashUtil;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.BufferedWriter;
 import java.io.Closeable;
@@ -45,7 +44,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.msc.service.StartException;
+import org.jboss.sasl.util.UsernamePasswordHashUtil;
 
 /**
  * A command line utility to add new users to the mgmt-users.properties files.
