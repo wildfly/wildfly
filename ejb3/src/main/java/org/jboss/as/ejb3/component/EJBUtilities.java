@@ -71,6 +71,8 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<UserTransaction> userTransactionValue = new InjectedValue<UserTransaction>();
 
+    private volatile boolean statisticsEnabled = false;
+
     public ActivationSpec createActivationSpecs(final String resourceAdapterName, final Class<?> messageListenerInterface,
                                                 final Properties activationConfigProperties, final ClassLoader classLoader) {
         try {
@@ -198,6 +200,14 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
 
     public boolean hasSecurityManager() {
         return securityManagerValue.getOptionalValue() != null;
+    }
+
+    public boolean isStatisticsEnabled() {
+        return statisticsEnabled;
+    }
+
+    public void setStatisticsEnabled(final boolean b) {
+        this.statisticsEnabled = b;
     }
 
     @Override

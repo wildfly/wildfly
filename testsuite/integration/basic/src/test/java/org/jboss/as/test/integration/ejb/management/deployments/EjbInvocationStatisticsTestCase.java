@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.management.deployments;
 
+import java.io.IOException;
 import java.util.Hashtable;
 
 import javax.naming.Context;
@@ -31,17 +32,24 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static junit.framework.Assert.assertEquals;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.MODULE_NAME;
 import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.componentAddress;
+import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.execute;
 import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.executeOperation;
 import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.getEJBJar;
 import static org.junit.Assert.assertTrue;
@@ -56,8 +64,21 @@ import static org.junit.Assert.assertTrue;
 public class EjbInvocationStatisticsTestCase {
     @ContainerResource
     private ManagementClient managementClient;
+    private Boolean statisticsEnabled;
 
     private static InitialContext context;
+
+    @After
+    public void after() throws IOException {
+        setEnableStatistics(managementClient, statisticsEnabled);
+    }
+
+    @Before
+    public void before() throws IOException {
+        statisticsEnabled = getEnableStatistics(managementClient);
+        setEnableStatistics(managementClient, true);
+        assertEquals(Boolean.TRUE, getEnableStatistics(managementClient));
+    }
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -69,6 +90,32 @@ public class EjbInvocationStatisticsTestCase {
     @Deployment
     public static Archive<?> deployment() {
         return getEJBJar();
+    }
+
+    private static Boolean getEnableStatistics(final ManagementClient managementClient) throws IOException {
+        final ModelNode address = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME)).toModelNode();
+        address.protect();
+        final ModelNode value = readAttribute(managementClient, address, "enable-statistics");
+        if (value.isDefined())
+            return value.asBoolean();
+        return null;
+    }
+
+    private static ModelNode readAttribute(final ManagementClient managementClient, final ModelNode address, final String attributeName) throws IOException {
+        final ModelNode op = new ModelNode();
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
+        op.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        op.get(ModelDescriptionConstants.NAME).set(attributeName);
+        return execute(managementClient, op);
+    }
+
+    private static void setEnableStatistics(final ManagementClient managementClient, final Boolean enableStatistics) throws IOException {
+        final ModelNode address = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME)).toModelNode();
+        address.protect();
+        if (enableStatistics == null)
+            undefineAttribute(managementClient, address, "enable-statistics");
+        else
+            writeAttributeBoolean(managementClient, address, "enable-statistics", enableStatistics);
     }
 
     @Test
@@ -106,5 +153,22 @@ public class EjbInvocationStatisticsTestCase {
             assertEquals(1L, result.get("peak-concurrent-invocations").asLong());
             assertTrue(result.get("wait-time").asLong() >= 0L);
         }        
+    }
+
+    private static ModelNode undefineAttribute(final ManagementClient managementClient, final ModelNode address, final String attributeName) throws IOException {
+        final ModelNode op = new ModelNode();
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION);
+        op.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        op.get(ModelDescriptionConstants.NAME).set(attributeName);
+        return execute(managementClient, op);
+    }
+
+    private static ModelNode writeAttributeBoolean(final ManagementClient managementClient, final ModelNode address, final String attributeName, final boolean value) throws IOException {
+        final ModelNode op = new ModelNode();
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
+        op.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        op.get(ModelDescriptionConstants.NAME).set(attributeName);
+        op.get(ModelDescriptionConstants.VALUE).set(value);
+        return execute(managementClient, op);
     }
 }

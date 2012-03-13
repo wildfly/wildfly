@@ -252,14 +252,7 @@ public class EjbJarRuntimeResourceTestBase {
         }
     }
 
-    static ModelNode executeOperation(final ManagementClient managementClient, final String name, final ModelNode address) throws IOException {
-
-        final ModelNode op = new ModelNode();
-        op.get(ModelDescriptionConstants.OP).set(name);
-        op.get(ModelDescriptionConstants.OP_ADDR).set(address);
-        op.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
-        op.get(ModelDescriptionConstants.OPERATIONS).set(true);
-
+    static ModelNode execute(final ManagementClient managementClient, final ModelNode op) throws IOException {
         ModelNode response = managementClient.getControllerClient().execute(op);
         assertTrue(response.isDefined());
         ModelNode outcome = response.get(ModelDescriptionConstants.OUTCOME);
@@ -270,6 +263,17 @@ public class EjbJarRuntimeResourceTestBase {
         assertEquals(ModelDescriptionConstants.SUCCESS, outcome.asString());
 
         return response.get(ModelDescriptionConstants.RESULT);
+    }
+
+    static ModelNode executeOperation(final ManagementClient managementClient, final String name, final ModelNode address) throws IOException {
+
+        final ModelNode op = new ModelNode();
+        op.get(ModelDescriptionConstants.OP).set(name);
+        op.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        op.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
+        op.get(ModelDescriptionConstants.OPERATIONS).set(true);
+
+        return execute(managementClient, op);
     }
 
     static PathAddress componentAddress(final PathAddress baseAddress, final EJBComponentType type, final String name) {
