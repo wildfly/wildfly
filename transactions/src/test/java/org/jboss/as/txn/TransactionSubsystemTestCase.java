@@ -39,18 +39,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         //This is just copied from standalone.xml testing more combinations would be good
-        return
-            "<subsystem xmlns=\"urn:jboss:domain:transactions:1.1\" >" +
-            "    <core-environment>" +
-            "        <process-id>" +
-            "            <uuid />" +
-            "        </process-id>" +
-            "    </core-environment>" +
-            "    <recovery-environment socket-binding=\"txn-recovery-environment\" status-socket-binding=\"txn-status-manager\"/>" +
- //           "    <object-store/>" +
-            "    <coordinator-environment default-timeout=\"300\"/>" +
-            "    <jts/>"+
-            "</subsystem>";
+        return readResource("subsystem.xml");
     }
 
     @Override
