@@ -54,13 +54,13 @@ public class JaccEarDeploymentProcessor implements DeploymentUnitProcessor {
             deployer = new EarSecurityDeployer();
             JaccService<?> service = deployer.deploy(deploymentUnit);
             if (service != null) {
-                final ServiceName jaccServiceName = JaccService.SERVICE_NAME.append(deploymentUnit.getName());
+                final ServiceName jaccServiceName = deploymentUnit.getServiceName().append(JaccService.SERVICE_NAME);
                 final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
                 ServiceBuilder<?> builder = serviceTarget.addService(jaccServiceName, service);
                 if (deploymentUnit.getParent() != null) {
                     // add dependency to parent policy
                     final DeploymentUnit parentDU = deploymentUnit.getParent();
-                    builder.addDependency(JaccService.SERVICE_NAME.append(parentDU.getName()), PolicyConfiguration.class,
+                    builder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
                             service.getParentPolicyInjector());
                 }
                 builder.setInitialMode(Mode.ACTIVE).install();

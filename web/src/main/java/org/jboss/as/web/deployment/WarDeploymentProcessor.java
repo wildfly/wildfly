@@ -22,8 +22,6 @@
 
 package org.jboss.as.web.deployment;
 
-import static org.jboss.as.web.WebMessages.MESSAGES;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,6 +80,8 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
+
+import static org.jboss.as.web.WebMessages.MESSAGES;
 
 /**
  * {@code DeploymentUnitProcessor} creating the actual deployment services.
@@ -304,12 +304,12 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             JaccService<?> service = deployer.deploy(deploymentUnit);
             if (service != null) {
                 ((WarJaccService) service).setContext(webContext);
-                final ServiceName jaccServiceName = JaccService.SERVICE_NAME.append(deploymentUnit.getName());
+                final ServiceName jaccServiceName = deploymentUnit.getServiceName().append(JaccService.SERVICE_NAME);
                 builder = serviceTarget.addService(jaccServiceName, service);
                 if (deploymentUnit.getParent() != null) {
                     // add dependency to parent policy
                     final DeploymentUnit parentDU = deploymentUnit.getParent();
-                    builder.addDependency(JaccService.SERVICE_NAME.append(parentDU.getName()), PolicyConfiguration.class,
+                    builder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
                             service.getParentPolicyInjector());
                 }
                 // add dependency to web deployment service

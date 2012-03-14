@@ -60,7 +60,7 @@ public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
             ServiceBuilder<?> builder = serviceTarget.addService(jaccServiceName, service);
             if (parentDU != null) {
                 // add dependency to parent policy
-                builder.addDependency(JaccService.SERVICE_NAME.append(parentDU.getName()), PolicyConfiguration.class,
+                builder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
                         service.getParentPolicyInjector());
             }
             builder.setInitialMode(Mode.ACTIVE).install();
@@ -85,10 +85,9 @@ public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     private ServiceName getJaccServiceName(DeploymentUnit deploymentUnit){
-        String name = deploymentUnit.getName();
         final DeploymentUnit parentDU = deploymentUnit.getParent();
         // EJBs maybe included directly in war deployment
-        ServiceName jaccServiceName = JaccService.SERVICE_NAME.append(name).append("ejb");
+        ServiceName jaccServiceName = deploymentUnit.getServiceName().append(JaccService.SERVICE_NAME).append("ejb");
         //Qualify the service name properly with parent DU
         if(parentDU != null) {
             jaccServiceName = jaccServiceName.append(parentDU.getName());
