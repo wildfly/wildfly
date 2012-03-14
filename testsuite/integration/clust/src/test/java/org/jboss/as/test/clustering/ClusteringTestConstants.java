@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.clustering;
 
+import org.jboss.as.test.shared.TimeoutUtil;
+
 /**
  * Test constants statically imported used across the clustering tests.
  *
@@ -51,10 +53,19 @@ public class ClusteringTestConstants {
     public static final String[] NODES = new String[] { NODE_1, NODE_2 };
 
     /**
+     * Name of cluster for remote client.
+     */
+    public static final String CLUSTER_NAME = "ejb";
+    
+    /**
      * Timeouts.
      */
     public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 5000;
     public static final int GRACE_TIME = 20000;
     public static final int GRACE_TIME_TO_REPLICATE = 3000;
 
+    public static final int CLUSTER_ESTABLISHMENT_WAIT_MS = TimeoutUtil.adjust(100);
+    public static final int CLUSTER_ESTABLISHMENT_LOOP_COUNT = 20;
+    public static final int WAIT_FOR_PASSIVATION_MS = TimeoutUtil.adjust(5);
+    public static final int HTTP_REQUEST_WAIT_TIME_S = TimeoutUtil.adjust(5);
 }
