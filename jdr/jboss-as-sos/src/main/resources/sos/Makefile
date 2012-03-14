@@ -14,6 +14,6 @@ clean:
 install:
 	mkdir -p $(DESTDIR)/$(PKGDIR)
 	for p in $(wildcard *.py) ; do \
-		install -m 755 $$p $(DESTDIR)/$(PKGDIR)/$$p; \
+		install -m 644 $$p $(DESTDIR)/$(PKGDIR)/$$p; \
 	done
 	$(PYTHON) -c "import compileall; compileall.compile_dir('$(DESTDIR)/$(PKGDIR)', 1, '$(PYDIR)', 1)"

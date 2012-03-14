@@ -50,7 +50,7 @@ import tempfile
 from sos import _sos as _
 from sos import __version__
 import sos.policies
-from sos.utilities import TarFileArchive, ZipFileArchive, compress
+from sos.utilities import TarFileArchive, ZipFileArchive
 from sos.reporting import Report, Section, Command, CopiedFile, CreatedFile, Alert, Note, PlainTextReport
 
 class TempFileUtil(object):
@@ -424,7 +424,8 @@ class SoSReport(object):
         for plug in plugins:
             plugbase, ext = os.path.splitext(plug)
             try:
-                plugin_classes = import_plugin(plugbase)
+                plugin_classes = import_plugin(plugbase,
+                        tuple(self.policy.valid_subclasses))
 
                 for plugin_class in plugin_classes:
                     if not self.policy.validatePlugin(plugin_class):
@@ -441,12 +442,20 @@ class SoSReport(object):
                     # plug-in is valid, let's decide whether run it or not
                     self.plugin_names.append(plugbase)
 
-                    if any((self._is_skipped(plugbase),
-                            self._is_inactive(plugbase, plugin_class),
-                            self._is_not_default(plugbase, plugin_class),
-                            self._is_not_specified(plugbase),
-                            )):
+                    if  self._is_skipped(plugbase):
+                        self._skip(plugin_class, _("skipped"))
+                        continue
+
+                    if  self._is_inactive(plugbase, plugin_class):
                         self._skip(plugin_class, _("inactive"))
+                        continue
+
+                    if  self._is_not_default(plugbase, plugin_class):
+                        self._skip(plugin_class, _("not default"))
+                        continue
+
+                    if  self._is_not_specified(plugbase):
+                        self._skip(plugin_class, _("not specified"))
                         continue
 
                     self._load(plugin_class)
@@ -644,7 +653,7 @@ class SoSReport(object):
     def setup(self):
         for plugname, plug in self.loaded_plugins:
             try:
-                plug.setArchive(self.archive)
+                plug.archive = self.archive
                 plug.setup()
             except KeyboardInterrupt:
                 raise
@@ -801,9 +810,7 @@ class SoSReport(object):
 
         self._finish_logging()
 
-        self.archive.close()
-
-        final_filename = compress(self.archive, self.opts.compression_type)
+        final_filename = self.archive.compress(self.opts.compression_type)
 
         # automated submission will go here
         if not self.opts.upload:
