@@ -23,6 +23,7 @@
 package org.jboss.as.modcluster;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -98,7 +99,7 @@ public class ModClusterSSLResourceDefinition extends SimpleResourceDefinition {
         super(ModClusterExtension.SSL_CONFIGURATION_PATH,
                 ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION, CommonAttributes.SSL),
                 ModClusterAddSSL.INSTANCE,
-                ModClusterRemoveSSL.INSTANCE
+                new ReloadRequiredRemoveStepHandler()
         );
     }
 

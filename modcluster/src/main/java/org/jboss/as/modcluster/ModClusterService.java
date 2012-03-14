@@ -25,14 +25,9 @@ import org.apache.catalina.Engine;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.web.WebServer;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
 import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
-import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
-import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
-import org.jboss.modcluster.load.metric.LoadMetric;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -45,9 +40,7 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
@@ -61,10 +54,10 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
 
     static final ServiceName NAME = ServiceName.JBOSS.append("mod-cluster");
 
-    private final ModelNode modelconf;
 
     private CatalinaEventHandlerAdapter adapter;
     private LoadBalanceFactorProvider load;
+    private ModClusterConfig config;
 
     private final InjectedValue<WebServer> webServer = new InjectedValue<WebServer>();
     private final InjectedValue<SocketBindingManager> bindingManager = new InjectedValue<SocketBindingManager>();
@@ -73,8 +66,9 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     /* Depending on configuration we use one of the other */
     private org.jboss.modcluster.ModClusterService service;
 
-    public ModClusterService(final ModelNode modelconf) {
-        this.modelconf = modelconf;
+    ModClusterService(ModClusterConfig config, LoadBalanceFactorProvider load) {
+        this.config = config;
+        this.load = load;
     }
 
     /**
@@ -84,11 +78,11 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     public synchronized void start(StartContext context) throws StartException {
         ROOT_LOGGER.debugf("Starting Mod_cluster Extension");
 
-        ModClusterConfig config = new ModClusterConfig();
+        boolean isMulticast = isMulticastEnabled(bindingManager.getValue().getDefaultInterfaceBinding().getNetworkInterfaces());
 
         // Set some defaults...
-        if (!modelconf.hasDefined(CommonAttributes.PROXY_LIST)) {
-            config.setAdvertise(this.isMulticastEnabled(bindingManager.getValue().getDefaultInterfaceBinding().getNetworkInterfaces()));
+        if (config.getProxyList() == null) {
+            config.setAdvertise(isMulticast);
         }
         config.setAdvertisePort(23364);
         config.setAdvertiseGroupAddress("224.0.1.105");
@@ -96,138 +90,38 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         config.setAutoEnableContexts(true);
         config.setStopContextTimeout(10);
         config.setSocketTimeout(20000);
-        config.setExcludedContexts("ROOT,invoker,jbossws,juddi,console");
+
 
         // Read node to set configuration.
-        if (modelconf.hasDefined(CommonAttributes.ADVERTISE_SOCKET)) {
+        if (config.getAdvertise()) {
             // There should be a socket-binding....
             final SocketBinding binding = this.binding.getValue();
             if (binding != null) {
                 config.setAdvertisePort(binding.getMulticastPort());
                 config.setAdvertiseGroupAddress(binding.getMulticastSocketAddress().getHostName());
                 config.setAdvertiseInterface(binding.getSocketAddress().getAddress().getHostAddress());
-                if (!this.isMulticastEnabled(binding.getNetworkInterfaceBinding().getNetworkInterfaces())) {
+                if (!isMulticast) {
                     ROOT_LOGGER.multicastInterfaceNotAvailable();
                 }
-                config.setAdvertise(true);
             }
         }
-        if (modelconf.get(ModClusterExtension.SSL_CONFIGURATION_PATH.getKeyValuePair()).isDefined()) {
-            // Add SSL configuration.
-            config.setSsl(true);
-            final ModelNode ssl = modelconf.get(ModClusterExtension.SSL_CONFIGURATION_PATH.getKeyValuePair());
-            if (ssl.has(CommonAttributes.KEY_ALIAS)) { config.setSslKeyAlias(ssl.get(CommonAttributes.KEY_ALIAS).asString()); }
-            if (ssl.has(CommonAttributes.PASSWORD)) {
-                String password = ssl.get(CommonAttributes.PASSWORD).asString();
-                config.setSslTrustStorePassword(password);
-                config.setSslKeyStorePassword(password);
-            }
-            if (ssl.has(CommonAttributes.CERTIFICATE_KEY_FILE)) { config.setSslKeyStore(ssl.get(CommonAttributes.CERTIFICATE_KEY_FILE).asString()); }
-            if (ssl.has(CommonAttributes.CIPHER_SUITE)) { config.setSslCiphers(ssl.get(CommonAttributes.CIPHER_SUITE).asString()); }
-            if (ssl.has(CommonAttributes.PROTOCOL)) { config.setSslProtocol(ssl.get(CommonAttributes.PROTOCOL).asString()); }
-            if (ssl.has(CommonAttributes.CA_CERTIFICATE_FILE)) { config.setSslTrustStore(ssl.get(CommonAttributes.CA_CERTIFICATE_FILE).asString()); }
-            if (ssl.has(CommonAttributes.CA_REVOCATION_URL)) { config.setSslCrlFile(ssl.get(CommonAttributes.CA_REVOCATION_URL).asString()); }
-        }
-        if (modelconf.hasDefined(CommonAttributes.ADVERTISE)) { config.setAdvertise(modelconf.get(CommonAttributes.ADVERTISE).asBoolean()); }
-        if (modelconf.hasDefined(CommonAttributes.PROXY_LIST)) {
-            config.setProxyList(modelconf.get(CommonAttributes.PROXY_LIST).asString());
-        }
-        if (modelconf.hasDefined(CommonAttributes.PROXY_URL)) { config.setProxyURL(modelconf.get(CommonAttributes.PROXY_URL).asString()); }
-        if (modelconf.has(CommonAttributes.ADVERTISE_SECURITY_KEY)) {
-            config.setAdvertiseSecurityKey(modelconf.get(CommonAttributes.ADVERTISE_SECURITY_KEY).asString());
-        }
-
-        if (modelconf.hasDefined(CommonAttributes.EXCLUDED_CONTEXTS)) {
+        if (config.getExcludedContexts() != null) {
             // read the default host.
             String defaulthost = ((Engine) webServer.getValue().getService().getContainer()).getDefaultHost();
-            String exluded_contexts = null;
-            for (String exluded_context : modelconf.get(CommonAttributes.EXCLUDED_CONTEXTS).asString().trim().split(",")) {
-                String[] parts = exluded_context.trim().split(":");
+            StringBuilder excludedContexts = new StringBuilder();
+            for (String excludedContext : config.getExcludedContexts().split(",")) {
+                String[] parts = excludedContext.trim().split(":");
                 if (parts.length != 1) {
-                    if (exluded_contexts == null) { exluded_contexts = ""; } else { exluded_contexts = exluded_contexts.concat(","); }
-                    exluded_contexts = exluded_contexts.concat(exluded_context);
+                    excludedContexts.append(",").append(excludedContext);
                 } else {
-                    if (exluded_contexts == null) { exluded_contexts = ""; } else { exluded_contexts = exluded_contexts.concat(","); }
-                    exluded_contexts = exluded_contexts.concat(defaulthost).concat(":").concat(exluded_context);
+                    excludedContexts.append(",").append(defaulthost).append(":").append(excludedContext);
                 }
             }
-            config.setExcludedContexts(exluded_contexts);
-        }
-        if (modelconf.hasDefined(CommonAttributes.AUTO_ENABLE_CONTEXTS)) {
-            config.setAutoEnableContexts(modelconf.get(CommonAttributes.AUTO_ENABLE_CONTEXTS).asBoolean());
-        }
-        if (modelconf.hasDefined(CommonAttributes.STOP_CONTEXT_TIMEOUT)) {
-            config.setStopContextTimeout(modelconf.get(CommonAttributes.STOP_CONTEXT_TIMEOUT).asInt());
-            config.setStopContextTimeoutUnit(TimeUnit.SECONDS);
-        }
-        if (modelconf.hasDefined(CommonAttributes.SOCKET_TIMEOUT)) {
-            // the default value is 20000 = 20 seconds.
-            config.setSocketTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt() * 1000);
+            config.setExcludedContexts(excludedContexts.toString());
+        } else {
+            config.setExcludedContexts("ROOT,invoker,jbossws,juddi,console");
         }
 
-        if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION)) {
-            config.setStickySession(modelconf.get(CommonAttributes.STICKY_SESSION).asBoolean());
-        }
-        if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION_REMOVE)) {
-            config.setStickySessionRemove(modelconf.get(CommonAttributes.STICKY_SESSION_REMOVE).asBoolean());
-        }
-        if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION_FORCE)) {
-            config.setStickySessionForce(modelconf.get(CommonAttributes.STICKY_SESSION_FORCE).asBoolean());
-        }
-        if (modelconf.hasDefined(CommonAttributes.WORKER_TIMEOUT)) {
-            config.setWorkerTimeout(modelconf.get(CommonAttributes.WORKER_TIMEOUT).asInt());
-        }
-        if (modelconf.hasDefined(CommonAttributes.MAX_ATTEMPTS)) { config.setMaxAttempts(modelconf.get(CommonAttributes.MAX_ATTEMPTS).asInt()); }
-        if (modelconf.hasDefined(CommonAttributes.FLUSH_PACKETS)) {
-            config.setFlushPackets(modelconf.get(CommonAttributes.FLUSH_PACKETS).asBoolean());
-        }
-        if (modelconf.hasDefined(CommonAttributes.FLUSH_WAIT)) { config.setFlushWait(modelconf.get(CommonAttributes.FLUSH_WAIT).asInt()); }
-        if (modelconf.hasDefined(CommonAttributes.PING)) { config.setPing(modelconf.get(CommonAttributes.PING).asInt()); }
-        if (modelconf.hasDefined(CommonAttributes.SMAX)) { config.setSmax(modelconf.get(CommonAttributes.SMAX).asInt()); }
-        if (modelconf.hasDefined(CommonAttributes.TTL)) { config.setTtl(modelconf.get(CommonAttributes.TTL).asInt()); }
-        if (modelconf.hasDefined(CommonAttributes.NODE_TIMEOUT)) { config.setNodeTimeout(modelconf.get(CommonAttributes.NODE_TIMEOUT).asInt()); }
-        if (modelconf.hasDefined(CommonAttributes.BALANCER)) { config.setBalancer(modelconf.get(CommonAttributes.BALANCER).asString()); }
-        if (modelconf.hasDefined(CommonAttributes.LOAD_BALANCING_GROUP)) {
-            config.setLoadBalancingGroup(modelconf.get(CommonAttributes.LOAD_BALANCING_GROUP).asString());
-        }
-
-        if (modelconf.hasDefined(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR)) {
-            // TODO it seems we don't support that stuff.
-            // LoadBalanceFactorProvider implementation, org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider.
-            final ModelNode node = modelconf.get(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR);
-            SimpleLoadBalanceFactorProvider myload = new SimpleLoadBalanceFactorProvider();
-            myload.setLoadBalanceFactor(node.asInt(1));
-            load = myload;
-        }
-
-        Set<LoadMetric> metrics = new HashSet<LoadMetric>();
-        if (modelconf.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER.getKeyValuePair()).isDefined()) {
-            final ModelNode node = modelconf.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER.getKeyValuePair());
-            int decayFactor = node.get(CommonAttributes.DECAY).asInt(DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR);
-            int history = node.get(CommonAttributes.HISTORY).asInt(DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY);
-            // We should have bunch of load-metric and/or custom-load-metric here.
-            // TODO read the child nodes or what ....String nodes = node.
-            if (node.hasDefined(CommonAttributes.LOAD_METRIC)) {
-                addLoadMetrics(metrics, node.get(CommonAttributes.LOAD_METRIC));
-            }
-            if (node.hasDefined(CommonAttributes.CUSTOM_LOAD_METRIC)) {
-                addLoadMetrics(metrics, node.get(CommonAttributes.CUSTOM_LOAD_METRIC));
-            }
-            if (!metrics.isEmpty()) {
-                DynamicLoadBalanceFactorProvider loader = new DynamicLoadBalanceFactorProvider(metrics);
-                loader.setDecayFactor(decayFactor);
-                loader.setHistory(history);
-                load = loader;
-            }
-        }
-
-        if (load == null) {
-            // Use a default one...
-            ROOT_LOGGER.useDefaultLoadBalancer();
-            SimpleLoadBalanceFactorProvider myload = new SimpleLoadBalanceFactorProvider();
-            myload.setLoadBalanceFactor(1);
-            load = myload;
-        }
         service = new org.jboss.modcluster.ModClusterService(config, load);
         adapter = new CatalinaEventHandlerAdapter(service, webServer.getValue().getServer());
         adapter.start();
@@ -262,39 +156,6 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         return this;
     }
 
-    private void addLoadMetrics(Set<LoadMetric> metrics, ModelNode nodes) {
-        for (Property p : nodes.asPropertyList()) {
-            ModelNode node = p.getValue();
-            double capacity = node.get(CommonAttributes.CAPACITY).asDouble(LoadMetric.DEFAULT_CAPACITY);
-            int weight = node.get(CommonAttributes.WEIGHT).asInt(LoadMetric.DEFAULT_WEIGHT);
-            Class<? extends LoadMetric> loadMetricClass = null;
-            if (node.hasDefined(CommonAttributes.TYPE)) {
-                String type = node.get(CommonAttributes.TYPE).asString();
-                LoadMetricEnum metric = LoadMetricEnum.forType(type);
-                loadMetricClass = (metric != null) ? metric.getLoadMetricClass() : null;
-            } else {
-                String className = node.get(CommonAttributes.CLASS).asString();
-                try {
-                    loadMetricClass = this.getClass().getClassLoader().loadClass(className).asSubclass(LoadMetric.class);
-                } catch (ClassNotFoundException e) {
-                    ROOT_LOGGER.errorAddingMetrics(e);
-                }
-            }
-
-            if (loadMetricClass != null) {
-                try {
-                    LoadMetric metric = loadMetricClass.newInstance();
-                    metric.setCapacity(capacity);
-                    metric.setWeight(weight);
-                    metrics.add(metric);
-                } catch (InstantiationException e) {
-                    ROOT_LOGGER.errorAddingMetrics(e);
-                } catch (IllegalAccessException e) {
-                    ROOT_LOGGER.errorAddingMetrics(e);
-                }
-            }
-        }
-    }
 
     public Injector<WebServer> getWebServer() {
         return webServer;
