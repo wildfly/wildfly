@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Request xmlns="urn:oasis:names:tc:xacm:2.0:context:schema:cd:04"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:oasis:names:tc:xacml:2.0:context:schema:cd:04 http://docs.oasis-open.org/xacml/access_control-xacml-2.0-context-schema-cd-04.xsd">
+	<Subject>
+		<Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
+			DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name">
+			<AttributeValue>
+				${subjectId}
+			</AttributeValue>
+		</Attribute>
+	</Subject>
+	<Resource>
+		<Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
+			DataType="http://www.w3.org/2001/XMLSchema#anyURI">
+			<AttributeValue>
+				file://med/example/record/patient/BartSimpson
+			</AttributeValue>
+		</Attribute>
+	</Resource>
+	<Action>
+		<Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+			DataType="http://www.w3.org/2001/XMLSchema#string">
+			<AttributeValue>
+				read
+			</AttributeValue>
+		</Attribute>
+	</Action>
+	<Environment />
+</Request>

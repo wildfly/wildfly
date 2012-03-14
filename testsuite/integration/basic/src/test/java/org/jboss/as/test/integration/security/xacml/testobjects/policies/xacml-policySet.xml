@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PolicySet 
+    xmlns="urn:oasis:names:tc:xacml:2.0:policy:schema:os" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="urn:oasis:names:tc:xacml:2.0:policy:schema:os 
+      http://docs.oasis-open.org/xacml/access_control-xacml-2.0-policy-schema-os.xsd" 
+    PolicySetId="urn:xacml:2.0:interop:example:policysetid:01" 
+    PolicyCombiningAlgId=
+      "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:permit-overrides">
+  <Description>
+    Policyset to evaluate trade-limit and credit-ext restrictions
+  </Description>
+  <Target/>
+  <PolicyIdReference
+    >urn:xacml:2.0:interop:example:policyid:02</PolicyIdReference>
+  <PolicySet 
+      PolicySetId="urn:xacml:2.0:interop:example:policysetid:06" 
+      PolicyCombiningAlgId=
+        "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:deny-overrides">
+    <Description>
+      Policy for picking up trade-limit or credit-ext obligations
+    </Description>
+    <Target/>
+    <PolicyIdReference
+      >urn:xacml:2.0:interop:example:policyid:03</PolicyIdReference>
+    <PolicyIdReference
+      >urn:xacml:2.0:interop:example:policyid:04</PolicyIdReference>
+    <PolicyIdReference
+      >urn:xacml:2.0:interop:example:policyid:05</PolicyIdReference>
+    <Obligations>
+      <!-- These obligations tell PEP to provide specific data items to the response -->
+      <!-- This obligation says provide the xacml:Decision data to the response -->
+      <Obligation
+          ObligationId="urn:xacml:2.0:interop:example:obligation:decision"
+          FulfillOn="Permit"/>
+      <!-- This obligation says provide the xacml:StatusCode data to the response -->
+      <Obligation
+          ObligationId="urn:xacml:2.0:interop:example:obligation:status-code"
+          FulfillOn="Permit"/>
+      <!-- This obligation says provide the xacml:StatusMessage data to the response -->
+      <Obligation
+          ObligationId="urn:xacml:2.0:interop:example:obligation:status-message"
+          FulfillOn="Permit"/>
+    </Obligations>
+  </PolicySet>
+</PolicySet>
