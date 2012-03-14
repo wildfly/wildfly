@@ -109,7 +109,8 @@
         <!-- Security. -->
         <jvm.args.securityManager></jvm.args.securityManager>
         <jvm.args.securityPolicy></jvm.args.securityPolicy>
-        <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy}</jvm.args.security>
+        <jvm.args.securityManagerOther></jvm.args.securityManagerOther>
+        <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy} ${jvm.args.securityManagerOther}</jvm.args.security>
         
         
         <!-- JaCoCo - Code coverage (-Dcoverage). -->
@@ -667,7 +668,14 @@
             </properties>
         </profile>
 
-
+        <!-- Security Manager Other -->
+        <profile>
+            <id>ts.security.manager.other</id>
+            <activation><property><name>security.manager.other</name></property></activation>
+            <properties>
+                <jvm.args.securityManagerOther>${security.manager.other}</jvm.args.securityManagerOther>
+            </properties>
+        </profile>
 
         <!--
           Database config profiles.

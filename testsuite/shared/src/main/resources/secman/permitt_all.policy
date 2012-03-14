@@ -1,0 +1,7 @@
+// Dummy policy used to test proper argument passing and basic AS7 functionality under Java Security Manager 
+grant {
+   permission java.security.AllPermission;
+};
+
+
+
