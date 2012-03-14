@@ -3,17 +3,14 @@
  */
 package org.jboss.as.txn.service;
 
+import com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean;
 import com.arjuna.ats.internal.arjuna.objectstore.hornetq.HornetqJournalEnvironmentBean;
+import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean;
-import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
-
-import javax.management.MBeanServer;
 
 /**
  * Configures the {@link ObjectStoreEnvironmentBean}s using an injected path.
@@ -22,7 +19,6 @@ import javax.management.MBeanServer;
  */
 public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
 
-    private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<String> pathInjector = new InjectedValue<String>();
     private final boolean useHornetqJournalStore;
 
@@ -68,9 +64,5 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
 
     public InjectedValue<String> getPathInjector() {
         return pathInjector;
-    }
-
-    public InjectedValue<MBeanServer> getMbeanServer() {
-        return mbeanServer;
     }
 }

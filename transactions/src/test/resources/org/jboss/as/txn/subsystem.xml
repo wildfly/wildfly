@@ -5,8 +5,8 @@
         </process-id>
     </core-environment>
     <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
-    <object-store/>
     <coordinator-environment default-timeout="300"/>
+    <object-store path="a"/>
     <jts/>
     <use-hornetq-store/>
 </subsystem>

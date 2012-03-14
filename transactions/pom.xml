@@ -85,15 +85,9 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-jmx</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-subsystem-test</artifactId>
             <scope>test</scope>
         </dependency>
-
-
     </dependencies>
     <build>
         <plugins>

@@ -38,9 +38,9 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.txn.service.ArjunaObjectStoreEnvironmentService;
-import org.jboss.as.txn.service.TxnServices;
+import org.jboss.as.txn.TransactionMessages;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
@@ -58,15 +58,19 @@ public class TransactionExtension implements Extension {
 
     private static final String RESOURCE_NAME = TransactionExtension.class.getPackage().getName() + ".LocalDescriptions";
 
+    private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
+
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, TransactionExtension.class.getClassLoader(), true, true);
     }
 
     static MBeanServer getMBeanServer(OperationContext context) {
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-        final ServiceController<?> serviceController = serviceRegistry.getService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT);
-        final ArjunaObjectStoreEnvironmentService osService = (ArjunaObjectStoreEnvironmentService) serviceController.getService();
-        return osService.getMbeanServer().getValue();
+        final ServiceController<?> serviceController = serviceRegistry.getService(MBEAN_SERVER_SERVICE_NAME);
+        if(serviceController == null) {
+            throw TransactionMessages.MESSAGES.jmxSubsystemNotInstalled();
+        }
+        return (MBeanServer) serviceController.getValue();
     }
 
     /** {@inheritDoc} */

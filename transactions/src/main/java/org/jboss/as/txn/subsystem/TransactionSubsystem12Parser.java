@@ -92,7 +92,7 @@ class TransactionSubsystem12Parser implements XMLStreamConstants, XMLElementRead
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case TRANSACTIONS_1_1: {
+                case TRANSACTIONS_1_2: {
                     final Element element = Element.forName(reader.getLocalName());
                     required.remove(element);
                     if (!encountered.add(element)) {
