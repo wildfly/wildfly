@@ -24,7 +24,7 @@
 # pylint: disable-msg = W0611
 # pylint: disable-msg = W0613
 
-from sos.utilities import sosGetCommandOutput, import_module
+from sos.utilities import sosGetCommandOutput, import_module, grep, fileobj, tail
 from sos import _sos as _
 import inspect
 import os
@@ -37,7 +37,6 @@ import shutil
 from stat import *
 from time import time
 from itertools import *
-from collections import deque
 import logging
 import urllib2
 
@@ -47,8 +46,7 @@ except ImportError:
     import simplejson as json
 
 def commonPrefix(l1, l2, common = None):
-    """
-    Returns a tuple like the following:
+    """Returns a tuple like the following:
         ([common, elements, from l1, and l2], [[tails, from, l1], [tails, from, l2]])
 
     >>> commonPrefix(['usr','share','foo'], ['usr','share','bar'])
@@ -61,9 +59,9 @@ def commonPrefix(l1, l2, common = None):
     return commonPrefix(l1[1:], l2[1:], common+[l1[0]])
 
 def sosRelPath(path1, path2, sep=os.path.sep, pardir=os.path.pardir):
-    ''' return a relative path from path1 equivalent to path path2.
-        In particular: the empty string, if path1 == path2;
-                       path2, if path1 and path2 have no common prefix.
+    '''Return a relative path from path1 equivalent to path path2.  In
+    particular: the empty string, if path1 == path2; path2, if path1 and path2
+    have no common prefix.
     '''
     try:
         common, (u1, u2) = commonPrefix(path1.split(sep), path2.split(sep))
@@ -75,39 +73,65 @@ def sosRelPath(path1, path2, sep=os.path.sep, pardir=os.path.pardir):
     return sep.join( [pardir]*len(u1) + u2 )
 
 
+def regex_findall(regex, fname):
+    '''Return a list of all non overlapping matches in the string(s)'''
+    try:
+        with fileobj(fname) as f:
+            return re.findall(regex, f.read(), re.MULTILINE)
+    except AttributeError:
+        return []
+
+
 class PluginException(Exception):
     pass
 
 
 class Plugin(object):
-    """
-    This is the base class for sosreport plugins. This class should
-    be subclassed by platform specific superclasses. Actual plugins
-    should not subclass this class directly.
+    """ This is the base class for sosreport plugins. Plugins should subclass
+    this and set the class variables where applicable.
+
+    plugin_name is a string returned by plugin.name(). If this is set to None
+    (the default) class_.__name__.tolower() will be returned. Be sure to set
+    this if you are defining multiple plugins that do the same thing on
+    different platforms.
+
+    requires_root is a boolean that specifies whether or not sosreport should
+    execute this plugin as a super user.
+
+    version is a string representing the version of the plugin. This can be
+    useful for post-collection tooling.
+
+    packages is an iterable of the names of packages to check for before
+    running this plugin. If any of these packages is found on the system, the
+    default implementation of checkenabled will return True.
+
+    files is an iterable of the paths of files to check for before running this
+    plugin. If any of these packages is found on the system, the default
+    implementation of checkenabled will return True.
     """
 
+    plugin_name = None
     requires_root = True
     version = 'unversioned'
+    packages = ()
+    files = ()
 
     def __init__(self, commons):
         if not getattr(self, "optionList", False):
-            self.optionList = deque()
+            self.optionList = []
 
-        self.copiedFiles = deque()
-        self.executedCommands = deque()
-        self.diagnose_msgs = deque()
-        self.alerts = deque()
+        self.copiedFiles = []
+        self.executedCommands = []
+        self.diagnose_msgs = []
+        self.alerts = []
         self.customText = ""
-        self.optNames = deque()
-        self.optParms = deque()
+        self.optNames = []
+        self.optParms = []
         self.cInfo = commons
-        self.forbiddenPaths = deque()
-        self.copyPaths = deque()
-        self.copyStrings = deque()
-        self.collectProgs = deque()
-
-        self.packages = deque()
-        self.files = deque()
+        self.forbiddenPaths = []
+        self.copyPaths = []
+        self.copyStrings = []
+        self.collectProgs = []
 
         self.must_exit = False
 
@@ -121,26 +145,25 @@ class Plugin(object):
 
     @classmethod
     def name(class_):
-        "Returns the plugin's name as a string"
+        """Returns the plugin's name as a string. This should return a
+        lowercase string.
+        """
+        if class_.plugin_name:
+            return class_.plugin_name
         return class_.__name__.lower()
-
-    def setArchive(self, archive):
-        self.archive = archive
 
     def policy(self):
         return self.cInfo["policy"]
 
     def isInstalled(self, package_name):
-        '''Is the package $package_name installed?
-        '''
+        '''Is the package $package_name installed?'''
         return (self.policy().pkgByName(package_name) is not None)
 
     def doRegexSub(self, srcpath, regexp, subst):
         '''Apply a regexp substitution to a file archived by sosreport.
-        srcpath is the path in the archive where the file can be found.
-        regexp can be a regexp string or a compiled re object.
-        subst is a string to replace each occurance of regexp in the content
-        of srcpath.
+        srcpath is the path in the archive where the file can be found.  regexp
+        can be a regexp string or a compiled re object.  subst is a string to
+        replace each occurance of regexp in the content of srcpath.
 
         This function returns the number of replacements made.
         '''
@@ -155,16 +178,11 @@ class Plugin(object):
                 return replacements
             else:
                 return 0
-        except Exception:
+        except Exception, e:
             return 0
 
     def doRegexFindAll(self, regex, fname):
-        ''' Return a list of all non overlapping matches in the string(s)
-        '''
-        try:
-            return re.findall(regex, open(fname, 'r').read(), re.MULTILINE)
-        except:  # IOError, AttributeError, etc.
-            return []
+        return regex_findall(regex, fname)
 
     def _path_in_path_list(self, path, path_list):
         for p in path_list:
@@ -213,13 +231,12 @@ class Plugin(object):
     def doCopyFileOrDir(self, srcpath, dest=None, sub=None):
         # pylint: disable-msg = R0912
         # pylint: disable-msg = R0915
-        '''
-        Copy file or directory to the destination tree. If a directory,
-        then everything below it is recursively copied. A list of copied files
-        are saved for use later in preparing a report.  sub can be used to
-        rename the destination of the file, sub should be a two-tuple of
-        (old,new). For example if you passed in ("etc","configurations") for
-        use against /etc/my_file.conf the file would end up at
+        '''Copy file or directory to the destination tree. If a directory, then
+        everything below it is recursively copied. A list of copied files are
+        saved for use later in preparing a report.  sub can be used to rename
+        the destination of the file, sub should be a two-tuple of (old,new).
+        For example if you passed in ("etc","configurations") for use against
+        /etc/my_file.conf the file would end up at
         /configurations/my_file.conf.
         '''
 
@@ -268,21 +285,19 @@ class Plugin(object):
 
 
     def addForbiddenPath(self, forbiddenPath):
-        """Specify a path to not copy, even if it's part of a copyPaths[] entry.
+        """Specify a path to not copy, even if it's part of a copyPaths[]
+        entry.
         """
         # Glob case handling is such that a valid non-glob is a reduced glob
         for filespec in glob.glob(forbiddenPath):
             self.forbiddenPaths.append(filespec)
 
     def getAllOptions(self):
-        """
-        return a list of all options selected
-        """
+        """return a list of all options selected"""
         return (self.optNames, self.optParms)
 
     def setOption(self, optionname, value):
-        ''' set the named option to value.
-        '''
+        '''set the named option to value.'''
         for name, parms in izip(self.optNames, self.optParms):
             if name == optionname:
                 parms['enabled'] = value
@@ -291,8 +306,7 @@ class Plugin(object):
             return False
 
     def isOptionEnabled(self, optionname):
-        ''' Deprecated, use getOption() instead
-        '''
+        '''Deprecated, use getOption() instead'''
         return self.getOption(optionname)
 
     def getOption(self, optionname, default=0):
@@ -300,8 +314,9 @@ class Plugin(object):
         passed in via the command line or set via set_option or via the
         global_plugin_options dictionary, in that order.
 
-        optionaname may be iterable, in which case the first option that matches
-        any of the option names is returned."""
+        optionaname may be iterable, in which case the first option that
+        matches any of the option names is returned.
+        """
 
         def _check(key):
             if hasattr(optionname, "__iter__"):
@@ -322,7 +337,9 @@ class Plugin(object):
         return default
 
     def getOptionAsList(self, optionname, delimiter=",", default=None):
-        '''Will try to return the option as a list separated by the delimiter'''
+        '''Will try to return the option as a list separated by the
+        delimiter.
+        '''
         option = self.getOption(optionname)
         try:
             opt_list = [opt.strip() for opt in option.split(delimiter)]
@@ -331,36 +348,44 @@ class Plugin(object):
             return default
 
     def addCopySpecLimit(self, fname, sizelimit=None, sub=None):
-        """Add a file specification (with limits)
+        """Add a file or glob but limit it to sizelimit megabytes. If fname is
+        a single file the file will be tailed to meet sizelimit. If the first
+        file in a glob is too large it will be tailed to meet the sizelimit.
         """
-        if not ( fname and len(fname) ):
-            # self.soslog.warning("invalid file path")
+        if not (fname and len(fname)):
             return False
+
         files = glob.glob(fname)
         files.sort()
         cursize = 0
         limit_reached = False
         sizelimit *= 1024 * 1024 # in MB
+        flog = None
+
         for flog in files:
             cursize += os.stat(flog)[ST_SIZE]
             if sizelimit and cursize > sizelimit:
                 limit_reached = True
                 break
             self.addCopySpec(flog, sub)
-        # Truncate the first file (others would likely be compressed),
-        # ensuring we get at least some logs
-        # FIXME: figure this out for jython
+
         if flog == files[0] and limit_reached:
-            self.collectExtOutput("tail -c%d %s" % (sizelimit, flog),
-                "tail_" + os.path.basename(flog), flog[1:] + ".tailed")
+            flog_name = flog
+
+            if sub:
+                old, new = sub
+                flog_name = flog.replace(old, new)
+
+            self.addStringAsFile(tail(flog, sizelimit),
+                 flog_name.replace(os.path.sep, ".") + ".tailed")
 
     def addCopySpecs(self, copyspecs, sub=None):
         for copyspec in copyspecs:
             self.addCopySpec(copyspec, sub)
 
     def addCopySpec(self, copyspec, sub=None):
-        """ Add a file specification (can be file, dir,or shell glob) to be
-        copied into the sosreport by this module
+        """Add a file specification (can be file, dir,or shell glob) to be
+        copied into the sosreport by this module.
         """
         if not (copyspec and len(copyspec)):
             # self.soslog.warning("invalid file path")
@@ -371,32 +396,32 @@ class Plugin(object):
                 self.copyPaths.append((filespec, sub))
 
     def callExtProg(self, prog):
-        """ Execute a command independantly of the output gathering part of
-        sosreport
+        """Execute a command independantly of the output gathering part of
+        sosreport.
         """
         # pylint: disable-msg = W0612
         status, shout, runtime = sosGetCommandOutput(prog)
         return (status, shout, runtime)
 
     def checkExtprog(self, prog):
-        """ Execute a command independently of the output gathering part of
+        """Execute a command independently of the output gathering part of
         sosreport and check the return code. Return True for a return code of 0
-        and False otherwise."""
+        and False otherwise.
+        """
         (status, output, runtime) = self.callExtProg(prog)
         return (status == 0)
 
 
-    def collectExtOutput(self, exe, suggest_filename = None, root_symlink = None, timeout = 300):
-        """
-        Run a program and collect the output
-        """
+    def collectExtOutput(self, exe, suggest_filename=None, root_symlink=None, timeout=300):
+        """Run a program and collect the output"""
         self.collectProgs.append( (exe, suggest_filename, root_symlink, timeout) )
 
-    def fileGrep(self, regexp, fname):
-        try:
-            return [l for l in open(fname).readlines() if re.match(regexp, l)]
-        except:  # IOError, AttributeError, etc.
-            return []
+    def fileGrep(self, regexp, *fnames):
+        """Returns lines matched in fnames, where fnames can either be
+        pathnames to files to grep through or open file objects to grep through
+        line by line.
+        """
+        return grep(regexp, *fnames)
 
     def mangleCommand(self, exe):
         # FIXME: this can be improved
@@ -406,7 +431,7 @@ class Plugin(object):
         return mangledname
 
     def makeCommandFilename(self, exe):
-        """ The internal function to build up a filename based on a command """
+        """The internal function to build up a filename based on a command."""
 
         outfn = os.path.join(self.cInfo['cmddir'], self.name(), self.mangleCommand(exe))
 
@@ -427,8 +452,8 @@ class Plugin(object):
         self.copyStrings.append((content, filename))
 
     def collectOutputNow(self, exe, suggest_filename=None, root_symlink=False, timeout=300):
-        """ Execute a command and save the output to a file for inclusion in
-        the report
+        """Execute a command and save the output to a file for inclusion in the
+        report.
         """
         if self.cInfo['cmdlineopts'].profiler:
             start_time = time()
@@ -463,28 +488,26 @@ class Plugin(object):
 
     # For adding warning messages regarding configuration sanity
     def addDiagnose(self, alertstring):
-        """ Add a configuration sanity warning for this plugin. These
-        will be displayed on-screen before collection and in the report as well.
+        """Add a configuration sanity warning for this plugin. These will be
+        displayed on-screen before collection and in the report as well.
         """
         self.diagnose_msgs.append(alertstring)
 
     # For adding output
     def addAlert(self, alertstring):
-        """ Add an alert to the collection of alerts for this plugin. These
+        """Add an alert to the collection of alerts for this plugin. These
         will be displayed in the report
         """
         self.alerts.append(alertstring)
 
     def addCustomText(self, text):
-        """ Append text to the custom text that is included in the report. This
+        """Append text to the custom text that is included in the report. This
         is freeform and can include html.
         """
         self.customText += text
 
     def copyStuff(self):
-        """
-        Collect the data for a plugin
-        """
+        """Collect the data for a plugin."""
         for path, sub in self.copyPaths:
             self.doCopyFileOrDir(path, sub=sub)
 
@@ -515,19 +538,24 @@ class Plugin(object):
             return "<no description available>"
 
     def checkenabled(self):
-        """ This function can be overidden to let the plugin decide whether
-        it should run or not.
+        """This method will be used to verify that a plugin should execute
+        given the condition of the underlying environment. The default
+        implementation will return True if neither class.files or
+        class.packages is specified. If either are specified the plugin will
+        check for the existence of any of the supplied files or packages and
+        return True if any exist. It is encouraged to override this method if
+        this behavior isn't applicabled.
         """
         # some files or packages have been specified for this package
-        if len(self.files) or len(self.packages):
-            for fname in self.files:
-                if os.path.exists(fname):
-                    return True
-            for pkgname in self.packages:
-                if self.isInstalled(pkgname):
-                    return True
-            return False
+        if self.files or self.packages:
+            if isinstance(self.files, basestring):
+                self.files = [self.files]
 
+            if isinstance(self.packages, basestring):
+                self.packages = [self.packages]
+
+            return (any(os.path.exists(fname) for fname in self.files) or
+                    any(self.isInstalled(pkg) for pkg in self.packages))
         return True
 
     def defaultenabled(self):
@@ -636,9 +664,10 @@ class AS7Mixin(object):
                 self.parameters = {}
 
         def url_parts(self):
-            """Generator function to split a url into (key, value) tuples. The url
-            should contain an even number of pairs.  In the case of / the generator
-            will immediately stop iteration."""
+            """Generator function to split a url into (key, value) tuples. The
+            url should contain an even number of pairs.  In the case of / the
+            generator will immediately stop iteration.
+            """
             parts = self.resource.strip("/").split("/")
 
             if parts == ['']:
@@ -731,9 +760,10 @@ class AS7Mixin(object):
             return err_msg
 
     def set_domain_info(self, parameters=None):
-        """This function will add host controller and server instance
-        name data if it is present to the desired resource. This is to support
-        domain-mode operation in AS7"""
+        """This function will add host controller and server instance name data
+        if it is present to the desired resource. This is to support
+            domain-mode operation in AS7.
+        """
         host_controller_name = self.getOption("as7_host_controller_name")
         server_name = self.getOption("as7_server_name")
 
@@ -756,11 +786,15 @@ class AS7Mixin(object):
         self.addStringAsFile(self.query(r), filename=outfile)
 
 
-def import_plugin(name):
+def import_plugin(name, superclasses=None):
     """Import name as a module and return a list of all classes defined in that
-    module"""
+    module. superclasses should be a tuple of valid superclasses to import,
+    this defaults to (Plugin,).
+    """
     try:
         plugin_fqname = "sos.plugins.%s" % name
-        return import_module(plugin_fqname, superclass=Plugin)
+        if not superclasses:
+            superclasses = (Plugin,)
+        return import_module(plugin_fqname, superclasses)
     except ImportError, e:
         return None

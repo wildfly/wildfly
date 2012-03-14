@@ -26,7 +26,6 @@ class AS7(Plugin, IndependentPlugin, AS7Mixin):
           ("port", 'port of the management api for jboss', '', '9990'),
           ("user", 'username for management console', '', None),
           ("pass", 'password for management console', '', None),
-          ("appxml",  "comma separated list of application's whose XML descriptors you want. The keyword 'all' will collect all descriptors in the designated profile(s).", '', False),
     ]
 
     __MD5_CHUNK_SIZE=128
@@ -203,6 +202,8 @@ class AS7(Plugin, IndependentPlugin, AS7Mixin):
             # this is probably not a zipfile so we don't care
             pass
 
+    def checkenabled(self):
+        return self.__getJbossHome()
 
     def setup(self):
 
