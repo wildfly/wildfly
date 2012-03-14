@@ -69,7 +69,7 @@
             <jvm name="default">
                 <heap size="64m" max-size="512m"/>
             </jvm>
-            <socket-binding-group ref="ha-sockets"/>
+            <socket-binding-group ref="full-ha-sockets"/>
         </server-group>
     </server-groups>
 
