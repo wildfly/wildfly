@@ -71,4 +71,9 @@ public enum LoadMetricEnum {
         }
         return null;
     }
+
+    @Override
+    public String toString() {
+        return this.type;
+    }
 }
