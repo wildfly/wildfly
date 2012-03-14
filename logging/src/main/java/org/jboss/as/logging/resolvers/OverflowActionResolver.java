@@ -20,44 +20,36 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.logging.validators;
+package org.jboss.as.logging.resolvers;
 
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 import static org.jboss.as.logging.Logging.createOperationFailure;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.logging.resolvers.SizeResolver;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
+import org.jboss.logmanager.handlers.AsyncHandler.OverflowAction;
 
 /**
- * Date: 07.11.2011
+ * Date: 15.12.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ */ /*
+ * Resolvers
  */
-public class SizeValidator extends ModelTypeValidator {
+public class OverflowActionResolver implements ModelNodeResolver<String> {
 
-    public SizeValidator() {
-        this(false);
-    }
+    public static final OverflowActionResolver INSTANCE = new OverflowActionResolver();
 
-    public SizeValidator(final boolean nullable) {
-        super(ModelType.STRING, nullable);
+    private OverflowActionResolver() {
     }
 
     @Override
-    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-        super.validateParameter(parameterName, value);
-        if (value.isDefined()) {
-            final String stringValue = value.asString();
-            try {
-                SizeResolver.INSTANCE.parseSize(value);
-            } catch (IllegalArgumentException e) {
-                throw createOperationFailure(MESSAGES.invalidSize(stringValue));
-            } catch (IllegalStateException e) {
-                throw createOperationFailure(MESSAGES.invalidSize(stringValue));
-            }
+    public String resolveValue(final OperationContext context, final ModelNode value) throws OperationFailedException {
+        try {
+            return OverflowAction.valueOf(value.asString()).toString();
+        } catch (IllegalArgumentException e) {
+            throw createOperationFailure(MESSAGES.invalidOverflowAction(value.asString()));
         }
     }
 }

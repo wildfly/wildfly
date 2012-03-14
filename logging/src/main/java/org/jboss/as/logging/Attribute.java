@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  *
  */
-public enum Attribute {
+enum Attribute {
 
     UNKNOWN(null),
 

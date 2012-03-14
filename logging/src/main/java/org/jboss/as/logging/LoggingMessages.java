@@ -22,18 +22,15 @@
 
 package org.jboss.as.logging;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.EnumSet;
 
-import org.jboss.as.logging.handlers.console.Target;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.dmr.ModelType;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartException;
 
 /**
  * This module is using message IDs in the range 11500-11599.
@@ -49,66 +46,17 @@ import org.jboss.msc.service.StartException;
  */
 @MessageBundle(projectCode = "JBAS")
 public interface LoggingMessages {
+
     /**
      * The default messages.
      */
     LoggingMessages MESSAGES = Messages.getBundle(LoggingMessages.class);
 
-    /**
-     * Creates an exception indicating the class, represented by the {@code className} parameter, cannot be accessed.
-     *
-     * @param cause     the cause of the error.
-     * @param className the name of the class.
-     *
-     * @return a {@link StartException} for the error.
-     */
-    @Message(id = 11530, value = "Could not access %s.")
-    StartException cannotAccessClass(@Cause Throwable cause, String className);
-
-    /**
-     * Creates an exception indicating the class, represented by the {@code className} parameter, could not be
-     * instantiated.
-     *
-     * @param cause     the cause of the error.
-     * @param className the name of the class.
-     *
-     * @return a {@link StartException} for the error.
-     */
-    @Message(id = 11531, value = "Could not instantiate %s.")
-    StartException cannotInstantiateClass(@Cause Throwable cause, String className);
-
-    /**
-     * Creates an exception indicating the module could not be loaded.
-     *
-     * @param cause      the cause of the error.
-     * @param moduleName the name of the module that could not be loaded.
-     *
-     * @return a {@link StartException} for the error
-     */
-    @Message(id = 11532, value = "Could not load module %s.")
-    StartException cannotLoadModule(@Cause Throwable cause, String moduleName);
-
-    /**
-     * A message indicating the handler, represented by the {@code handlerName} parameter could not be unassigned as it
-     * was not assigned.
-     *
-     * @param handlerName the handler name.
-     *
-     * @return the message.
-     */
-    @Message(id = 11533, value = "Can not unassign handler. Handler %s is not assigned.")
-    String cannotUnassignHandler(String handlerName);
-
-    /**
-     * Creates an exception indicating the class, represented by the {@code className} parameter, could not be found.
-     *
-     * @param cause     the cause of the error.
-     * @param className the name of the class that could not be found.
-     *
-     * @return an {@link StartException} for the error.
-     */
-    @Message(id = 11534, value = "Class '%s' could not be found.")
-    StartException classNotFound(@Cause Throwable cause, String className);
+    // id = 11530, value = "Could not access %s." -- now unused
+    // id = 11531, value = "Could not instantiate %s." -- now unused
+    // id = 11532, value = "Could not load module %s." -- now unused
+    // id = 11533, value = "Can not unassign handler. Handler %s is not assigned." -- now unused
+    // id = 11534, value = "Class '%s' could not be found." -- now unused
 
     /**
      * A message indicating the handler encoding failed to set.
@@ -188,29 +136,8 @@ public interface LoggingMessages {
     @Message(id = 11542, value = "Invalid value for target name. Valid names include: %s")
     String invalidTargetName(EnumSet<Target> targets);
 
-    /**
-     * Creates an exception indicating the class, represented by the {@code className} parameter, is not subclass of
-     * the type.
-     *
-     * @param className the class name.
-     * @param type      the type the class name should be a subtype of.
-     *
-     * @return a {@link StartException} for the error.
-     */
-    @Message(id = 11543, value = "'%s' is not a valid %s.")
-    StartException invalidType(String className, Class<?> type);
-
-    /**
-     * A message indicating the attribute, represented by the {@code name} parameter, is not a valid type.
-     *
-     * @param name      the name of the attribute
-     * @param validType the valid model type.
-     * @param foundType the type found.
-     *
-     * @return the message.
-     */
-    @Message(id = 11549, value = "'%s' is not a valid %s, found type %s.")
-    String invalidType(String name, ModelType validType, ModelType foundType);
+    // id = 11543, value = "'%s' is not a valid %s." -- now unused
+    // id = 11549, value = "'%s' is not a valid %s, found type %s." -- now unused
 
     /**
      * A message indicating the value type key, represented by the {@code kry} parameter, is invalid.
@@ -241,46 +168,10 @@ public interface LoggingMessages {
     @Message(id = 11545, value = "Missing required nested filter element")
     String missingRequiredNestedFilterElement();
 
-    /**
-     * Creates an exception indicating the service has not yet been started.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 11546, value = "Service not started")
-    IllegalStateException serviceNotStarted();
-
-    /**
-     * Creates an exception indicating an unknown parameter type, represented by the {@code type} parameter, for the
-     * property represented by the {@code propertyName} parameter on the class.
-     *
-     * @param type         the parameter type.
-     * @param propertyName the name of the property.
-     * @param clazz        the class the property with the type could not found on.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 11547, value = "Unknown parameter type (%s) for property '%s' on '%s'")
-    IllegalArgumentException unknownParameterType(Class<?> type, String propertyName, Class<?> clazz);
-
-    /**
-     * A message indicating the file was not found.
-     *
-     * @param fileName the file name that was not found.
-     *
-     * @return the message.
-     */
-    @Message(id = 11550, value = "File '%s' was not found.")
-    String fileNotFound(String fileName);
-
-    /**
-     * A message indicating the service was not found.
-     *
-     * @param name the name of the service.
-     *
-     * @return the message.
-     */
-    @Message(id = 11551, value = "Service '%s' was not found.")
-    String serviceNotFound(ServiceName name);
+    // id = 11546, value = "Service not started" -- now unused
+    // id = 11547, value = "Unknown parameter type (%s) for property '%s' on '%s'" -- now unused
+    // id = 11550, value = "File '%s' was not found." -- now unused
+    // id = 11551, value = "Service '%s' was not found." -- now unused
 
     /**
      * A message indicating an absolute path cannot be specified for relative-to.
@@ -356,4 +247,66 @@ public interface LoggingMessages {
      */
     @Message(id = 11558, value = "Handler %s is attached to the following loggers and cannot be removed; %s")
     String handlerAttachedToLoggers(String handlerName, Collection<String> loggers);
+
+    /**
+     * A message indicating the handler configuration could not be found.
+     *
+     * @param name the name of the handler
+     *
+     * @return the message
+     */
+    @Message(id = 11559, value = "Configuration for handler '%s' could not be found.")
+    String handlerConfigurationNotFound(String name);
+
+
+    /**
+     * A message indicating the logger configuration could not be found.
+     *
+     * @param name the name of the logger
+     *
+     * @return the message
+     */
+    @Message(id = 11560, value = "Configuration for logger '%s' could not be found.")
+    String loggerConfigurationNotFound(String name);
+
+    /**
+     * Creates an exception indicating the path manager service has not been started and any changes may be lost as a
+     * result of this.
+     * <p/>
+     * Essentially this means the {@code logging.properties} could not be written out and until the changes may have
+     * been lost unless they were written to the logging subsystem in the XML configuration.
+     *
+     * @return an {@link IllegalStateException} for the error.
+     */
+    @Message(id = 11561, value = "The path manager service does not appear to be started.")
+    IllegalStateException pathManagerServiceNotStarted();
+
+    /**
+     * Creates an exception indicating the method on the class is not supported.
+     *
+     * @param methodName the name of the method
+     * @param className  the name of the class
+     *
+     * @return an {@link UnsupportedOperationException} for the error
+     */
+    @Message(id = 11562, value = "Method %s on class %s is not supported")
+    UnsupportedOperationException unsupportedMethod(String methodName, String className);
+
+    /**
+     * A message indicating a failure to write the configuration file.
+     *
+     * @param fileName the name of the file
+     *
+     * @return the message
+     */
+    @Message(id = 11563, value = "Failed to write configuration file %s")
+    String failedToWriteConfigurationFile(File fileName);
+
+    /**
+     * Creates an exception indicating a failure was detected while performing a rollback.
+     *
+     * @return an {@link IllegalStateException} for the error
+     */
+    @Message(id = 11564, value = "A failure was detecting while performing a rollback.")
+    String rollbackFailure();
 }

@@ -363,6 +363,8 @@ public abstract class AbstractSubsystemTest {
 
         getAllChildAddressesForRemove(pathAddress, addresses, subsystemResource);
 
+        addresses = orderAddressesForRemove(addresses);
+
         ModelNode composite = new ModelNode();
         composite.get(OP).set(CompositeOperationHandler.NAME);
         composite.get(OP_ADDR).setEmptyList();
@@ -385,6 +387,18 @@ public abstract class AbstractSubsystemTest {
         ModelNode model = kernelServices.readWholeModel().get(SUBSYSTEM, mainSubsystemName);
         Assert.assertFalse("Subsystem resources were not removed " + model, model.isDefined());
     }
+
+    /**
+     * Allows for sorting the addresses. Paths that require children or other paths to be removed first must be at the
+     * top of the list as the result is processed in reverse order.
+     *
+     * @param addresses the list of addresses to sort.
+     *
+     * @return a sorted list of the address.
+     */
+    protected List<PathAddress> orderAddressesForRemove(final List<PathAddress> addresses) {
+        return addresses;
+     }
 
     private void getAllChildAddressesForRemove(PathAddress address, List<PathAddress> addresses, Resource resource) {
         List<PathElement> childElements = new ArrayList<PathElement>();

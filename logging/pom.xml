@@ -57,12 +57,11 @@
                         <include>**/*TestCase.java</include>
                     </includes>
                     <enableAssertions>false</enableAssertions>
-                    <systemProperties>
-                        <property>
-                            <name>java.util.logging.manager</name>
-                            <value>org.jboss.logmanager.LogManager</value>
-                        </property>
-                    </systemProperties>
+                    <systemPropertyVariables>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                        <jboss.server.log.dir>${project.build.directory}/logs</jboss.server.log.dir>
+                        <jboss.server.config.dir>${project.build.directory}/config</jboss.server.config.dir>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>

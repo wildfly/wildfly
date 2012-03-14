@@ -23,6 +23,7 @@
 package org.jboss.as.logging.validators;
 
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+import static org.jboss.as.logging.Logging.createOperationFailure;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +35,6 @@ import java.util.logging.Level;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.logging.util.ModelParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -83,7 +83,7 @@ public final class LogLevelValidator extends ModelTypeValidator implements Allow
         Collections.sort(allowedValues, LevelComparator.INSTANCE);
         nodeValues = new ArrayList<ModelNode>(allowedValues.size());
         for (Level level : allowedValues) {
-            nodeValues.add(new ModelNode().set(level.getName()));
+            nodeValues.add(new ModelNode(level.getName()));
         }
     }
 
@@ -93,12 +93,12 @@ public final class LogLevelValidator extends ModelTypeValidator implements Allow
         if (value.isDefined()) {
             final String levelString = value.asString();
             try {
-                final Level level = ModelParser.parseLevel(value);
+                final Level level = Level.parse(levelString);
                 if (!allowedValues.contains(level)) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidLogLevel(levelString)));
+                    throw createOperationFailure(MESSAGES.invalidLogLevel(levelString));
                 }
             } catch (IllegalArgumentException e) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidLogLevel(levelString)));
+                throw createOperationFailure(MESSAGES.invalidLogLevel(levelString));
             }
         }
     }

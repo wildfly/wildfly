@@ -9,7 +9,7 @@
                <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
            </formatter>
        </console-handler>
-       <periodic-rotating-file-handler name="FILE">
+       <periodic-rotating-file-handler name="FILE" autoflush="true">
            <formatter>
                <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
            </formatter>
@@ -22,6 +22,9 @@
        </logger>
        <logger category="org.apache.tomcat.util.modeler">
            <level name="WARN"/>
+       </logger>
+       <logger category="org.jboss.as.config">
+           <level name="DEBUG"/>
        </logger>
        <logger category="sun.rmi">
            <level name="WARN"/>

@@ -1,0 +1,140 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.logging;
+
+import java.util.Set;
+
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.registry.AttributeAccess.Flag;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logmanager.LogContext;
+import org.jboss.logmanager.Logger;
+import org.jboss.logmanager.PropertyConfigurator;
+import org.jboss.logmanager.config.LogContextConfiguration;
+
+/**
+ * A set of utilities for the logging subsystem.
+ *
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @since 7.1.0
+ */
+public final class Logging {
+    private static final Object PROP_CONFIG_LOCK = new Object();
+
+    private Logging() {
+    }
+
+    /**
+     * Gets the log context configuration.
+     *
+     * @return the log context configuration
+     */
+    static LogContextConfiguration getLogContextConfiguration() {
+        return getOrCreatePropertyConfigurator(LogContext.getSystemLogContext()).getLogContextConfiguration();
+    }
+
+    /**
+     * Gets the property configurator. If the {@link PropertyConfigurator} does not exist a new one is created.
+     *
+     * @param logContext the log context used to find the property configurator or to attach it to.
+     *
+     * @return the property configurator
+     */
+    static PropertyConfigurator getOrCreatePropertyConfigurator(final LogContext logContext) {
+        PropertyConfigurator result = (PropertyConfigurator) logContext.getAttachment(CommonAttributes.ROOT_LOGGER_NAME, PropertyConfigurator.ATTACHMENT_KEY);
+        if (result == null) {
+            final Logger root = logContext.getLogger(CommonAttributes.ROOT_LOGGER_NAME);
+            result = (PropertyConfigurator) root.getAttachment(PropertyConfigurator.ATTACHMENT_KEY);
+            if (result == null) {
+                synchronized (PROP_CONFIG_LOCK) {
+                    result = (PropertyConfigurator) logContext.getAttachment(CommonAttributes.ROOT_LOGGER_NAME, PropertyConfigurator.ATTACHMENT_KEY);
+                    if (result == null) {
+                        result = (PropertyConfigurator) root.getAttachment(PropertyConfigurator.ATTACHMENT_KEY);
+                    }
+                    if (result == null) {
+                        result = new PropertyConfigurator(logContext);
+                        PropertyConfigurator current = (PropertyConfigurator) root.attachIfAbsent(PropertyConfigurator.ATTACHMENT_KEY, result);
+                        if (current != null) {
+                            result = current;
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Gets the property configurator. If the {@link PropertyConfigurator} does not exist a new one is created.
+     *
+     * @param logContext the log context used to find the property configurator.
+     *
+     * @return the property configurator
+     */
+    static PropertyConfigurator getPropertyConfigurator(final LogContext logContext) {
+        return (PropertyConfigurator) logContext.getAttachment(CommonAttributes.ROOT_LOGGER_NAME, PropertyConfigurator.ATTACHMENT_KEY);
+    }
+
+    /**
+     * Checks to see within the flags if a restart of any kind is required.
+     *
+     * @param flags the flags to check
+     *
+     * @return {@code true} if a restart is required, otherwise {@code false}
+     */
+    public static boolean requiresRestart(final Set<Flag> flags) {
+        for (Flag flag : flags) {
+            switch (flag) {
+                case RESTART_ALL_SERVICES:
+                case RESTART_JVM:
+                case RESTART_RESOURCE_SERVICES: {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Creates a new {@link OperationFailedException} with the message as a {@link ModelNode model node}.
+     *
+     * @param message the message to initialize the {@link ModelNode model node} with
+     *
+     * @return a new {@link OperationFailedException}
+     */
+    public static OperationFailedException createOperationFailure(final String message) {
+        return new OperationFailedException(new ModelNode(message));
+    }
+
+    /**
+     * Creates a new {@link OperationFailedException} with the message as a {@link ModelNode model node} and the cause.
+     *
+     * @param cause   the cause of the error
+     * @param message the message to initialize the {@link ModelNode model node} with
+     *
+     * @return a new {@link OperationFailedException}
+     */
+    public static OperationFailedException createOperationFailure(final Throwable cause, final String message) {
+        return new OperationFailedException(cause, new ModelNode(message));
+    }
+}
