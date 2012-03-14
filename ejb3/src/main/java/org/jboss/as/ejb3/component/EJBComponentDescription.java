@@ -66,6 +66,7 @@ import org.jboss.as.ejb3.deployment.ApplicableMethodInformation;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
@@ -219,6 +220,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.annotationMethodPermissions = new ApplicableMethodInformation<EJBMethodSecurityAttribute>(componentName, null);
 
 
+        //add a dependency on the module deployment service
+        //we need to make sure this is up before the EJB starts, so that remote invocations are available
+        addDependency(deploymentUnitServiceName.append(ModuleDeployment.SERVICE_NAME), ServiceBuilder.DependencyType.REQUIRED);
 
         getConfigurators().add(new ComponentConfigurator() {
             @Override
