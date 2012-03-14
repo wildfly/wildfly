@@ -169,7 +169,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
             this.name = "/";
             this.value = "";
             this.isLeaf = false;
-            this.seperator = "";
+            this.separator = "";
         }
         /**
          * Constructor for generic folder where resource=*.
