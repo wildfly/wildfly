@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Policy 
+    xmlns="urn:oasis:names:tc:xacml:2.0:policy:schema:os" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="urn:oasis:names:tc:xacml:2.0:policy:schema:os 
+      http://docs.oasis-open.org/xacml/access_control-xacml-2.0-policy-schema-os.xsd" 
+    PolicyId="urn:xacml:2.0:interop:example:policyid:02" 
+    RuleCombiningAlgId=
+      "urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:permit-overrides">
+  <Description>
+    XACML 2.0 Interop Example Policy 02: Only allow a customer whose id matches the 
+	 account owner-id to access the account and only if the account status is active.
+	 Only allow trades that have value within credit-line and trade-limit restrictions.
+  </Description>
+  <Target/>
+  <VariableDefinition VariableId="urn:xacml:2.0:interop:example:variableid:01.2">
+    <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+      <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-one-and-only">
+        <SubjectAttributeDesignator 
+            AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id" 
+            DataType="http://www.w3.org/2001/XMLSchema#string"/>
+      </Apply>
+      <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-one-and-only">
+        <ResourceAttributeDesignator 
+            AttributeId="urn:xacml:2.0:interop:example:resource:owner-id" 
+            DataType="http://www.w3.org/2001/XMLSchema#string"/>
+      </Apply>
+    </Apply>
+  </VariableDefinition>
+  <VariableDefinition VariableId="urn:xacml:2.0:interop:example:variableid:02">
+    <!--  Function to evaluate:                                           -->
+    <!--       ((buy-num-shares x buy-offer-price) lt                     --> 
+    <!--                             (credit-line - current-credit) ) and -->
+    <!--       ((buy-num-shares x buy-offer-price) lt trade-limit)        -->
+    <!--  If both the above expressions true, then Request within limits  -->
+    <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:and">
+      <Apply FunctionId=
+          "urn:oasis:names:tc:xacml:1.0:function:integer-less-than-or-equal">
+        <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-multiply">
+         <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-one-and-only">
+          <SubjectAttributeDesignator 
+              AttributeId="urn:xacml:2.0:interop:example:subject:buy-num-shares" 
+              DataType="http://www.w3.org/2001/XMLSchema#integer"/>
+         </Apply>
+         <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-one-and-only">
+          <SubjectAttributeDesignator 
+              AttributeId="urn:xacml:2.0:interop:example:subject:buy-offer-price" 
+              DataType="http://www.w3.org/2001/XMLSchema#integer"/>
+         </Apply>
+        </Apply>
+        <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-subtract">
+         <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-one-and-only">
+          <ResourceAttributeDesignator 
+            AttributeId="urn:xacml:2.0:interop:example:resource:credit-line" 
+            DataType="http://www.w3.org/2001/XMLSchema#integer"/>
+         </Apply>
+         <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-one-and-only">
+          <ResourceAttributeDesignator 
+            AttributeId="urn:xacml:2.0:interop:example:resource:current-credit" 
+            DataType="http://www.w3.org/2001/XMLSchema#integer"/>
+         </Apply>
+        </Apply>
+      </Apply>
+      <Apply FunctionId=
+          "urn:oasis:names:tc:xacml:1.0:function:integer-less-than-or-equal">
+        <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-multiply">
+         <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-one-and-only">
+          <SubjectAttributeDesignator 
+              AttributeId="urn:xacml:2.0:interop:example:subject:buy-num-shares" 
+              DataType="http://www.w3.org/2001/XMLSchema#integer"/>
+         </Apply>
+         <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-one-and-only">
+          <SubjectAttributeDesignator 
+              AttributeId="urn:xacml:2.0:interop:example:subject:buy-offer-price" 
+              DataType="http://www.w3.org/2001/XMLSchema#integer"/>
+         </Apply>
+        </Apply>
+        <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-one-and-only">
+         <ResourceAttributeDesignator 
+            AttributeId="urn:xacml:2.0:interop:example:resource:trade-limit" 
+            DataType="http://www.w3.org/2001/XMLSchema#integer"/>
+        </Apply>
+      </Apply>
+    </Apply>
+  </VariableDefinition>
+  <Rule RuleId="urn:xacml:2.0:interop:example:ruleid:02" 
+      Effect="Permit">
+    <Description>
+      XACML 2.0 Interop Example Rule 02: Only allow a customer whose id matches the 
+	   account owner-id to access the account and only if the account status is active.
+    </Description>
+    <Target>
+      <!-- This rule permits access to CustomerAccount resources -->
+      <Resources>
+        <!-- CustomerAccount -->
+        <Resource>
+          <ResourceMatch 
+              MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+            <AttributeValue 
+                DataType="http://www.w3.org/2001/XMLSchema#string"
+                  >CustomerAccount</AttributeValue>
+            <ResourceAttributeDesignator 
+                AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
+                DataType="http://www.w3.org/2001/XMLSchema#string"/>
+          </ResourceMatch>
+          <!-- Account must have Active status -->
+          <ResourceMatch 
+              MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+            <AttributeValue 
+                DataType="http://www.w3.org/2001/XMLSchema#string"
+                  >Active</AttributeValue>
+            <ResourceAttributeDesignator 
+                AttributeId="urn:xacml:2.0:interop:example:resource:account-status"
+                DataType="http://www.w3.org/2001/XMLSchema#string"/>
+          </ResourceMatch>
+        </Resource>
+      </Resources>
+      <!-- This rule only applies to the ViewAccount action -->
+      <Actions>
+        <Action>
+          <ActionMatch
+              MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+            <AttributeValue
+                DataType="http://www.w3.org/2001/XMLSchema#string"
+                  >Buy</AttributeValue>
+            <ActionAttributeDesignator
+                AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+                DataType="http://www.w3.org/2001/XMLSchema#string"/>
+          </ActionMatch>
+        </Action>
+      </Actions>
+    </Target>
+    <Condition>
+      <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:and">
+        <VariableReference VariableId="urn:xacml:2.0:interop:example:variableid:01.2"/>
+        <VariableReference VariableId="urn:xacml:2.0:interop:example:variableid:02"/>
+      </Apply>
+    </Condition>
+  </Rule>
+  <Rule RuleId="urn:xacml:2.0:interop:example:ruleid:deny02" Effect="Deny">
+    <Description>
+      This Policy is permit-overrides, therefore if a rule above evaluated to
+      Permit this Rule will be skipped. However, if no Permit was obtained, this
+      Rule evaluates to true and so produces a Deny. Therefore evaluation of this
+      Policy results in either a Permit or Deny which is the intended effect.		
+    </Description>
+    <Target/>
+  </Rule>
+  <Obligations>
+    <!-- These obligations tell PEP to provide specific data items to the response -->
+    <!-- This obligation says provide the xacml:Decision data to the response -->
+    <Obligation
+        ObligationId="urn:xacml:2.0:interop:example:obligation:decision"
+        FulfillOn="Permit"/>
+    <!-- This obligation says provide the xacml:StatusCode data to the response -->
+    <Obligation
+        ObligationId="urn:xacml:2.0:interop:example:obligation:status-code"
+        FulfillOn="Permit"/>
+    <!-- This obligation says provide the xacml:StatusMessage data to the response -->
+    <Obligation
+        ObligationId="urn:xacml:2.0:interop:example:obligation:status-message"
+        FulfillOn="Permit"/>
+    <!-- This obligation says provide the xacml:Decision data to the response -->
+    <Obligation
+        ObligationId="urn:xacml:2.0:interop:example:obligation:decision"
+        FulfillOn="Deny"/>
+    <!-- This obligation says provide the xacml:StatusCode data to the response -->
+    <Obligation
+        ObligationId="urn:xacml:2.0:interop:example:obligation:status-code"
+        FulfillOn="Deny"/>
+    <!-- This obligation says provide the xacml:StatusMessage data to the response -->
+    <Obligation
+        ObligationId="urn:xacml:2.0:interop:example:obligation:status-message"
+        FulfillOn="Deny"/>
+  </Obligations>
+</Policy>

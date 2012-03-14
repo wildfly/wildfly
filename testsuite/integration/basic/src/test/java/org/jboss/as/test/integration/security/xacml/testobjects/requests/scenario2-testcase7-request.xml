@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xacml-context:Request 
+    xmlns:xacml-context="urn:oasis:names:tc:xacml:2.0:context:schema:os" 
+    xmlns="urn:oasis:names:tc:xacml:2.0:context:schema:os" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation=" urn:oasis:names:tc:xacml:2.0:context:schema:os 
+      http://docs.oasis-open.org/xacml/access_control-xacml-2.0-context-schema-os.xsd">
+  <Subject 
+      SubjectCategory="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject">
+    <Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
+        DataType="http://www.w3.org/2001/XMLSchema#string" Issuer="xacml20.interop.com">
+      <AttributeValue>123456</AttributeValue>
+    </Attribute>
+    <Attribute AttributeId="urn:xacml:2.0:interop:example:subject:user-name"
+        DataType="http://www.w3.org/2001/XMLSchema#string" Issuer="xacml20.interop.com">
+      <AttributeValue>John Smith</AttributeValue>
+    </Attribute>
+    <Attribute AttributeId="urn:xacml:2.0:interop:example:subject:buy-num-shares"
+        DataType="http://www.w3.org/2001/XMLSchema#integer"
+        Issuer="xacml20.interop.com">
+      <AttributeValue>1000</AttributeValue>
+    </Attribute>
+    <Attribute AttributeId="urn:xacml:2.0:interop:example:subject:buy-offer-price"
+        DataType="http://www.w3.org/2001/XMLSchema#integer"    
+        Issuer="xacml20.interop.com">
+      <AttributeValue>10</AttributeValue>
+    </Attribute>
+    <Attribute AttributeId="urn:xacml:2.0:interop:example:subject:req-credit-ext-approval"
+        DataType="http://www.w3.org/2001/XMLSchema#string" Issuer="xacml20.interop.com">
+      <AttributeValue>true</AttributeValue>
+    </Attribute>
+    <Attribute AttributeId="urn:xacml:2.0:interop:example:subject:req-trade-approval"
+        DataType="http://www.w3.org/2001/XMLSchema#string" Issuer="xacml20.interop.com">
+      <AttributeValue>true</AttributeValue>
+    </Attribute>
+  </Subject>
+  <Resource>
+    <Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id" 
+        DataType="http://www.w3.org/2001/XMLSchema#string">
+      <AttributeValue>CustomerAccount</AttributeValue>
+    </Attribute>
+    <Attribute AttributeId="urn:xacml:2.0:interop:example:resource:owner-id" 
+        DataType="http://www.w3.org/2001/XMLSchema#string">
+      <AttributeValue>123456</AttributeValue>
+    </Attribute>
+    <Attribute AttributeId="urn:xacml:2.0:interop:example:resource:owner-name" 
+        DataType="http://www.w3.org/2001/XMLSchema#string">
+      <AttributeValue>John Smith</AttributeValue>
+    </Attribute>
+    <Attribute AttributeId="urn:xacml:2.0:interop:example:resource:account-status"
+        DataType="http://www.w3.org/2001/XMLSchema#string">
+      <AttributeValue>Active</AttributeValue>
+    </Attribute>
+    <Attribute AttributeId="urn:xacml:2.0:interop:example:resource:credit-line"
+        DataType="http://www.w3.org/2001/XMLSchema#integer">
+      <AttributeValue>15000</AttributeValue>
+    </Attribute>
+    <Attribute AttributeId="urn:xacml:2.0:interop:example:resource:current-credit"
+        DataType="http://www.w3.org/2001/XMLSchema#integer">
+      <AttributeValue>10000</AttributeValue>
+    </Attribute>
+    <Attribute AttributeId="urn:xacml:2.0:interop:example:resource:trade-limit"
+        DataType="http://www.w3.org/2001/XMLSchema#integer">
+      <AttributeValue>10000</AttributeValue>
+    </Attribute>
+  </Resource>
+  <Action>
+    <Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+        DataType="http://www.w3.org/2001/XMLSchema#string">
+      <AttributeValue>Buy</AttributeValue>
+    </Attribute>
+  </Action>
+  <Environment/>
+</xacml-context:Request>

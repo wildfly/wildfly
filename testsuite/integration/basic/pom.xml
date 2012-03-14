@@ -28,6 +28,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.jboss.security</groupId>
+            <artifactId>jbossxacml</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>jboss</groupId>
             <artifactId>jnp-client</artifactId>
             <version>4.2.2.GA</version>
