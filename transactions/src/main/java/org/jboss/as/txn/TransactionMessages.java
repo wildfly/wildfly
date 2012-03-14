@@ -100,5 +100,8 @@ public interface TransactionMessages {
     @Message(id = 10105, value = "Unknown metric %s")
     String unknownMetric(Object metric);
 
+    @Message(id = 10106, value = "MBean Server service not installed, this functionality is not available if the JMX subsystem has not been installed.")
+    RuntimeException jmxSubsystemNotInstalled();
+
 
 }
