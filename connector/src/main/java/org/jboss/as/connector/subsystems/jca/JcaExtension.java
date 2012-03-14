@@ -36,6 +36,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.threads.BoundedQueueThreadPoolResourceDefinition;
 import org.jboss.as.threads.ThreadsParser;
+import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
@@ -137,9 +138,10 @@ public class JcaExtension implements Extension {
             workManager.registerReadWriteAttribute(parameter.getAttribute().getName(), null, new ReloadRequiredWriteAttributeHandler() , AttributeAccess.Storage.CONFIGURATION);
         }
 
-        workManager.registerSubModel(BoundedQueueThreadPoolResourceDefinition.create(true, WORKMANAGER_SHORT_RUNNING, registerRuntimeOnly));
-        workManager.registerSubModel(BoundedQueueThreadPoolResourceDefinition.create(true, WORKMANAGER_LONG_RUNNING, registerRuntimeOnly));
-
+        workManager.registerSubModel(BoundedQueueThreadPoolResourceDefinition.create(WORKMANAGER_SHORT_RUNNING, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
+                                    ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING), registerRuntimeOnly));
+        workManager.registerSubModel(BoundedQueueThreadPoolResourceDefinition.create(WORKMANAGER_LONG_RUNNING, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
+                                    ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING), registerRuntimeOnly));
 
         final ManagementResourceRegistration bootstrapContext =
             registration.registerSubModel(PathElement.pathElement(BOOTSTRAP_CONTEXT), JcaSubsystemProviders.BOOTSTRAP_CONTEXT_DESC);
@@ -467,13 +469,13 @@ public class JcaExtension implements Extension {
                             case JCA_1_0: {
                                 org.jboss.as.threads.Namespace ns =  org.jboss.as.threads.Namespace.THREADS_1_0;
                                 ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
-                                        ns, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name + "-" + WORKMANAGER_LONG_RUNNING);
+                                        ns, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name);
                                 break;
                             }
                             default: {
                                 org.jboss.as.threads.Namespace ns =  org.jboss.as.threads.Namespace.THREADS_1_1;
                                 ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
-                                        ns, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name + "-" + WORKMANAGER_LONG_RUNNING);
+                                        ns, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name);
                             }
                         }
                         break;
@@ -483,13 +485,13 @@ public class JcaExtension implements Extension {
                             case JCA_1_0: {
                                 org.jboss.as.threads.Namespace ns =  org.jboss.as.threads.Namespace.THREADS_1_0;
                                 ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
-                                        ns, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name + "-" + WORKMANAGER_SHORT_RUNNING);
+                                        ns, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name);
                                 break;
                             }
                             default: {
                                 org.jboss.as.threads.Namespace ns =  org.jboss.as.threads.Namespace.THREADS_1_1;
                                 ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
-                                        ns, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name + "-" + WORKMANAGER_SHORT_RUNNING);
+                                        ns, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name );
                                 break;
                             }
                         }
