@@ -29,6 +29,7 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Company;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Customer;
@@ -56,7 +57,6 @@ import static org.junit.Assert.assertTrue;
  * @author Zbyněk Roubalík
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-4132")
 public class EntityTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_entitytest";
@@ -96,6 +96,7 @@ public class EntityTestCase {
 
 
     @Test
+    @InSequence(1)
     public void testOneToMany() throws Exception {
 
         EntityTest test = lookup("EntityTest", EntityTest.class);
@@ -113,6 +114,7 @@ public class EntityTestCase {
     }
 
     @Test
+    @InSequence(2)
     public void testManyToOne() throws Exception {
 
         EntityTest test = lookup("EntityTest", EntityTest.class);
@@ -132,6 +134,7 @@ public class EntityTestCase {
     }
 
     @Test
+    @InSequence(3)
     public void testManyToMany() throws Exception {
 
         EntityTest test = lookup("EntityTest", EntityTest.class);
@@ -149,6 +152,7 @@ public class EntityTestCase {
     }
 
     @Test
+    @InSequence(4)
     public void testNamedQueries() throws Exception {
 
         EntityTest test = lookup("EntityTest", EntityTest.class);
@@ -160,6 +164,7 @@ public class EntityTestCase {
     }
 
     @Test
+    @InSequence(5)
     public void testFlush() throws Exception {
 
         EntityTest test = lookup("EntityTest", EntityTest.class);
