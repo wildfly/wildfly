@@ -21,20 +21,18 @@
  */
 package org.jboss.as.ejb3.component;
 
-import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
-import javax.resource.ResourceException;
-import javax.resource.spi.ActivationSpec;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
 import java.beans.IntrospectionException;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import javax.resource.ResourceException;
+import javax.resource.spi.ActivationSpec;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
@@ -52,6 +50,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.util.propertyeditor.PropertyEditors;
+
+import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * The gas, water & energy for the EJB subsystem.
@@ -123,6 +124,30 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
         }
     }
 
+    /**
+     * Returns the {@link org.jboss.jca.core.spi.rar.Endpoint} corresponding to the passed <code>resourceAdapterName</code>
+     *
+     * @param resourceAdapterName The resource adapter name
+     * @return
+     */
+    public Endpoint getEndpoint(final String resourceAdapterName) {
+        // first get the ra "identifier" (with which it is registered in the resource adapter repository) for the
+        // ra name
+        final String raIdentifier = ConnectorServices.getRegisteredResourceAdapterIdentifier(resourceAdapterName);
+        if (raIdentifier == null) {
+            throw MESSAGES.unknownResourceAdapter(resourceAdapterName);
+        }
+        final ResourceAdapterRepository resourceAdapterRepository = getResourceAdapterRepository();
+        if (resourceAdapterRepository == null) {
+            throw EJB3_LOGGER.resourceAdapterRepositoryUnAvailable();
+        }
+        try {
+            return resourceAdapterRepository.getEndpoint(raIdentifier);
+        } catch (NotFoundException nfe) {
+            throw EJB3_LOGGER.noSuchEndpointException(resourceAdapterName, nfe);
+        }
+    }
+
     public ResourceAdapterRepository getResourceAdapterRepository() {
         return resourceAdapterRepositoryValue.getOptionalValue();
     }
@@ -173,30 +198,6 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
 
     public boolean hasSecurityManager() {
         return securityManagerValue.getOptionalValue() != null;
-    }
-
-    /**
-     * Returns the {@link Endpoint} corresponding to the passed <code>resourceAdapterName</code>
-     *
-     * @param resourceAdapterName The resource adapter name
-     * @return
-     */
-    public Endpoint getEndpoint(final String resourceAdapterName) {
-        // first get the ra "identifier" (with which it is registered in the resource adapter repository) for the
-        // ra name
-        final String raIdentifier = ConnectorServices.getRegisteredResourceAdapterIdentifier(resourceAdapterName);
-        if (raIdentifier == null) {
-            throw MESSAGES.unknownResourceAdapter(resourceAdapterName);
-        }
-        final ResourceAdapterRepository resourceAdapterRepository = getResourceAdapterRepository();
-        if (resourceAdapterRepository == null) {
-            throw EJB3_LOGGER.resourceAdapterRepositoryUnAvailable();
-        }
-        try {
-            return resourceAdapterRepository.getEndpoint(raIdentifier);
-        } catch (NotFoundException nfe) {
-            throw EJB3_LOGGER.noSuchEndpointException(resourceAdapterName, nfe);
-        }
     }
 
     @Override
