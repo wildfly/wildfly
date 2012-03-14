@@ -24,9 +24,11 @@ package org.jboss.as.txn.subsystem;
 
 import java.util.List;
 
-import javax.management.MBeanServer;
 import javax.transaction.TransactionSynchronizationRegistry;
 
+import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
+import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+import com.arjuna.ats.jts.common.jtsPropertyManager;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -67,10 +69,6 @@ import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
 
-import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
-import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
-import com.arjuna.ats.jts.common.jtsPropertyManager;
-
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
 import static org.jboss.as.txn.subsystem.CommonAttributes.USEHORNETQSTORE;
@@ -89,7 +87,6 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final ServiceName INTERNAL_CORE_ENV_VAR_PATH = TxnServices.JBOSS_TXN_PATHS.append("core-var-dir");
     private static final ServiceName INTERNAL_OBJECTSTORE_PATH = TxnServices.JBOSS_TXN_PATHS.append("object-store");
-
 
     private TransactionSubsystemAdd() {
         //
@@ -288,7 +285,6 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useHornetqJournalStore);
         controllers.add(target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService)
                 .addDependency(INTERNAL_OBJECTSTORE_PATH, String.class, objStoreEnvironmentService.getPathInjector())
-                .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, objStoreEnvironmentService.getMbeanServer())
                 .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
                 .addListener(verificationHandler).setInitialMode(ServiceController.Mode.ACTIVE).install());
 
