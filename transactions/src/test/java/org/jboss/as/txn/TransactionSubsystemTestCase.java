@@ -24,7 +24,6 @@ package org.jboss.as.txn;
 import java.io.IOException;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.txn.subsystem.TransactionExtension;
 
 /**
@@ -48,6 +47,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
             "        </process-id>" +
             "    </core-environment>" +
             "    <recovery-environment socket-binding=\"txn-recovery-environment\" status-socket-binding=\"txn-status-manager\"/>" +
+ //           "    <object-store/>" +
             "    <coordinator-environment default-timeout=\"300\"/>" +
             "    <jts/>"+
             "</subsystem>";
@@ -56,9 +56,5 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         super.compareXml(configId, original, marshalled, true);
-    }
-
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.MANAGEMENT;
     }
 }
