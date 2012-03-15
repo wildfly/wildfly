@@ -23,6 +23,7 @@
 # pylint: disable-msg = R0201
 # pylint: disable-msg = W0611
 # pylint: disable-msg = W0613
+from __future__ import with_statement
 
 from sos.utilities import sosGetCommandOutput, import_module, grep, fileobj, tail
 from sos import _sos as _
@@ -80,6 +81,13 @@ def regex_findall(regex, fname):
             return re.findall(regex, f.read(), re.MULTILINE)
     except AttributeError:
         return []
+
+def mangle_command(command):
+    # FIXME: this can be improved
+    mangledname = re.sub(r"^/(usr/|)(bin|sbin)/", "", command)
+    mangledname = re.sub(r"[^\w\-\.\/]+", "_", mangledname)
+    mangledname = re.sub(r"/", ".", mangledname).strip(" ._-")[0:64]
+    return mangledname
 
 
 class PluginException(Exception):
@@ -424,11 +432,7 @@ class Plugin(object):
         return grep(regexp, *fnames)
 
     def mangleCommand(self, exe):
-        # FIXME: this can be improved
-        mangledname = re.sub(r"^/(usr/|)(bin|sbin)/", "", exe)
-        mangledname = re.sub(r"[^\w\-\.\/]+", "_", mangledname)
-        mangledname = re.sub(r"/", ".", mangledname).strip(" ._-")[0:64]
-        return mangledname
+        return mangle_command(exe)
 
     def makeCommandFilename(self, exe):
         """The internal function to build up a filename based on a command."""
