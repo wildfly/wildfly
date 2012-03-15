@@ -4,6 +4,8 @@
             <!-- disable messaging persistence -->
             <persistence-enabled>false</persistence-enabled>
             <security-domain>someDomain</security-domain>
+            <cluster-user>${messaging.cluster.user.name}</cluster-user>
+            <cluster-password>${messaging.cluster.user.password}</cluster-password>
             <remoting-interceptors>
                 <class-name>foo.bar</class-name>
                 <class-name>bar.foo</class-name>
