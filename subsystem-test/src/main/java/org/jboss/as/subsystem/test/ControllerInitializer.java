@@ -229,7 +229,7 @@ public class ControllerInitializer {
         ManagementResourceRegistration interfaces = rootRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
         interfaces.registerOperationHandler(SpecifiedInterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
         interfaces.registerOperationHandler(SpecifiedInterfaceRemoveHandler.OPERATION_NAME, SpecifiedInterfaceRemoveHandler.INSTANCE, SpecifiedInterfaceRemoveHandler.INSTANCE, false);
-        InterfaceCriteriaWriteHandler.register(interfaces);
+        InterfaceCriteriaWriteHandler.UPDATE_RUNTIME.register(interfaces);
 
         // Sockets
         ManagementResourceRegistration socketGroup = rootRegistration.registerSubModel(new SocketBindingGroupResourceDefinition(BindingGroupAddHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, false));

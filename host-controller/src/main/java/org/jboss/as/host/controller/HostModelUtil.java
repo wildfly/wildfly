@@ -282,7 +282,7 @@ public class HostModelUtil {
         interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, hsiah, hsiah, false);
         HostSpecifiedInterfaceRemoveHandler sirh = new HostSpecifiedInterfaceRemoveHandler();
         interfaces.registerOperationHandler(InterfaceRemoveHandler.OPERATION_NAME, sirh, sirh, false);
-        InterfaceCriteriaWriteHandler.register(interfaces);
+        InterfaceCriteriaWriteHandler.UPDATE_RUNTIME.register(interfaces);
         interfaces.registerOperationHandler(SpecifiedInterfaceResolveHandler.OPERATION_NAME, SpecifiedInterfaceResolveHandler.INSTANCE, SpecifiedInterfaceResolveHandler.INSTANCE);
 
         //server
@@ -313,7 +313,7 @@ public class HostModelUtil {
         ManagementResourceRegistration serverInterfaces = servers.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
         serverInterfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
         serverInterfaces.registerOperationHandler(InterfaceRemoveHandler.OPERATION_NAME, SpecifiedInterfaceRemoveHandler.INSTANCE, SpecifiedInterfaceRemoveHandler.INSTANCE, false);
-        InterfaceCriteriaWriteHandler.register(serverInterfaces);
+        InterfaceCriteriaWriteHandler.CONFIG_ONLY.register(serverInterfaces);
 
         // Server system Properties
         ManagementResourceRegistration serverSysProps = servers.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SERVER_SYSTEM_PROPERTIES_PROVIDER);

@@ -81,8 +81,8 @@ public class ManagementAccessTestCase {
     private static final ModelNode ROOT_PROP_ADDRESS = new ModelNode().add(SYSTEM_PROPERTY, TEST);
     private static final ModelNode OTHER_SERVER_GROUP_ADDRESS = new ModelNode().add(SERVER_GROUP, "other-server-group");
     private static final ModelNode TEST_SERVER_GROUP_ADDRESS = new ModelNode().add(SERVER_GROUP, "test-server-group");
-    private static final ModelNode MASTER_INTERFACE_ADDRESS = new ModelNode().set(MASTER_ROOT_ADDRESS).add(INTERFACE, "public");
-    private static final ModelNode SLAVE_INTERFACE_ADDRESS = new ModelNode().set(SLAVE_ROOT_ADDRESS).add(INTERFACE, "public");
+    private static final ModelNode MASTER_INTERFACE_ADDRESS = new ModelNode().set(MASTER_ROOT_ADDRESS).add(INTERFACE, "management");
+    private static final ModelNode SLAVE_INTERFACE_ADDRESS = new ModelNode().set(SLAVE_ROOT_ADDRESS).add(INTERFACE, "management");
     private static final ModelNode MAIN_RUNNING_SERVER_ADDRESS = new ModelNode().add(HOST, "master").add(SERVER, "main-one");
     private static final ModelNode MAIN_RUNNING_SERVER_CLASSLOADING_ADDRESS = new ModelNode().set(MAIN_RUNNING_SERVER_ADDRESS).add(CORE_SERVICE, PLATFORM_MBEAN).add(TYPE, "class-loading");
     private static final ModelNode OTHER_RUNNING_SERVER_ADDRESS = new ModelNode().add(HOST, "slave").add(SERVER, "other-two");

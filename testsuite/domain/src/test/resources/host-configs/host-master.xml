@@ -44,10 +44,10 @@
         </security-realms>
         <management-interfaces>
             <native-interface security-realm="ManagementRealm">
-                <socket interface="public" port="9999"/>
+                <socket interface="management" port="9999"/>
             </native-interface>
             <http-interface security-realm="ManagementRealm">
-                <socket interface="public" port="9990"/>
+                <socket interface="management" port="9990"/>
             </http-interface>
         </management-interfaces>
     </management>
@@ -60,9 +60,7 @@
         <interface name="management">
             <inet-address value="${jboss.test.host.master.address}"/>
         </interface>
-        <interface name="public">
-            <inet-address value="${jboss.test.host.master.address}"/>
-        </interface>
+        <!-- AS7-4177 specify the "public" interface in each server to test that handling -->
     </interfaces>
 
  	<jvms>
@@ -76,10 +74,20 @@
             <paths>
                 <path name="domainTestPath" path="main-one" relative-to="jboss.server.temp.dir" />
             </paths>
+            <interfaces>
+                <interface name="public">
+                    <inet-address value="${jboss.test.host.master.address}"/>
+                </interface>
+            </interfaces>
             <!-- server-one inherits the default socket-group declared in the server-group -->
             <jvm name="default"/>
         </server>
         <server name="main-two" group="main-server-group" auto-start="false">
+            <interfaces>
+                <interface name="public">
+                    <inet-address value="${jboss.test.host.master.address}"/>
+                </interface>
+            </interfaces>
             <!-- server-two avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
             <socket-bindings socket-binding-group="standard-sockets" port-offset="150"/>
@@ -88,10 +96,21 @@
             </jvm>
         </server>
         <server name="other-one" group="other-server-group" auto-start="false">
+            <interfaces>
+                <interface name="public">
+                    <inet-address value="${jboss.test.host.master.address}"/>
+                </interface>
+            </interfaces>
             <!-- server-three avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
             <socket-bindings port-offset="250"/>
         </server>
-        <server name="reload-one" group="reload-test-group" auto-start="false" />
+        <server name="reload-one" group="reload-test-group" auto-start="false">
+            <interfaces>
+                <interface name="public">
+                    <inet-address value="${jboss.test.host.master.address}"/>
+                </interface>
+            </interfaces>
+        </server>
     </servers>
 </host>

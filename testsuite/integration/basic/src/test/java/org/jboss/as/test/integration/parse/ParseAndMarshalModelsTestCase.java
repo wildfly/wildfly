@@ -580,7 +580,7 @@ public class ParseAndMarshalModelsTestCase {
                 ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
                 HostSpecifiedInterfaceAddHandler hsiah = new HostSpecifiedInterfaceAddHandler();
                 interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, hsiah, hsiah, false);
-                InterfaceCriteriaWriteHandler.register(interfaces);
+                InterfaceCriteriaWriteHandler.UPDATE_RUNTIME.register(interfaces);
 
                 //server
                 ManagementResourceRegistration servers = hostRegistration.registerSubModel(PathElement.pathElement(SERVER_CONFIG), HostDescriptionProviders.SERVER_PROVIDER);
@@ -598,7 +598,7 @@ public class ParseAndMarshalModelsTestCase {
                 //server interfaces
                 ManagementResourceRegistration serverInterfaces = servers.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
                 serverInterfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
-                InterfaceCriteriaWriteHandler.register(serverInterfaces);
+                InterfaceCriteriaWriteHandler.CONFIG_ONLY.register(serverInterfaces);
 
                 // Server system Properties
                 ManagementResourceRegistration serverSysProps = servers.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SERVER_SYSTEM_PROPERTIES_PROVIDER);
@@ -702,21 +702,21 @@ public class ParseAndMarshalModelsTestCase {
         }
     }
 
-    
 
-    
+
+
     //  Get-config methods
-       
+
     private File getLegacyConfigFile(String type, String profile) throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.ts.submodule.dir"), 
+                System.getProperty("jbossas.ts.submodule.dir"),
                 "src/test/resources/legacy-configs/" + type + File.separator + profile
         );
     }
 
     private File getDocsExampleConfigFile(String name) throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.project.dir", "../../.."), 
+                System.getProperty("jbossas.project.dir", "../../.."),
                 "build/src/main/resources/docs/examples/configs" + File.separator + name
         );
     }
@@ -724,7 +724,7 @@ public class ParseAndMarshalModelsTestCase {
 
     private File getGeneratedExampleConfigFile(String name) throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.project.dir", "../../.."), 
+                System.getProperty("jbossas.project.dir", "../../.."),
                 "build/target/generated-configs/docs/examples/configs" + File.separator + name
         );
     }
