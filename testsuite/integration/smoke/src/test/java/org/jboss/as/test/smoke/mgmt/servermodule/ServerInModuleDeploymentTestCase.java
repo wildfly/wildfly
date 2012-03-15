@@ -21,6 +21,11 @@
  */
 package org.jboss.as.test.smoke.mgmt.servermodule;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -29,7 +34,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +46,7 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
 
 import junit.framework.Assert;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
@@ -58,12 +65,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
 /**
  * Tests deployment to a standalone server, both via the client API and by the
  * filesystem scanner.
@@ -81,10 +82,13 @@ public class ServerInModuleDeploymentTestCase {
     public void testDeploymentStreamApi() throws Exception {
         final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
                 Simple.class.getPackage());
+        final JavaArchive archive2 = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
+                Simple.class.getPackage());
+        archive2.addAsManifestResource(new File(getClass().getResource("/servermodule/test-deployment.sar/marker.txt").toURI()));
 
         final ModelControllerClient client = managementClient.getControllerClient();
         final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(client);
-        testDeployments(client, new DeploymentExecutor() {
+        testDeployments(client, false, new DeploymentExecutor() {
 
             @Override
             public void initialDeploy() {
@@ -104,7 +108,7 @@ public class ServerInModuleDeploymentTestCase {
 
             @Override
             public void fullReplace() {
-                final InputStream is = archive.as(ZipExporter.class).exportAsInputStream();
+                final InputStream is = archive2.as(ZipExporter.class).exportAsInputStream();
                 try {
                     Future<?> future = manager.execute(manager.newDeploymentPlan()
                             .replace("test-deployment.sar", is).build());
@@ -131,27 +135,25 @@ public class ServerInModuleDeploymentTestCase {
     public void testDeploymentFileApi() throws Exception {
         final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
                 Simple.class.getPackage());
+        final JavaArchive archive2 = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
+                Simple.class.getPackage());
+        archive2.addAsManifestResource(new File(getClass().getResource("/servermodule/test-deployment.sar/marker.txt").toURI()));
 
         final ModelControllerClient client = managementClient.getControllerClient();
         final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(client);
 
-        final File dir = new File("target/archives");
-        dir.mkdirs();
-        final File file = new File(dir, "test-deployment.sar");
-        archive.as(ZipExporter.class).exportTo(file, true);
-
-        testDeployments(client, new DeploymentExecutor() {
+        testDeployments(client, false, new DeploymentExecutor() {
 
             @Override
             public void initialDeploy() throws IOException {
-                Future<?> future = manager.execute(manager.newDeploymentPlan().add("test-deployment.sar", file)
+                Future<?> future = manager.execute(manager.newDeploymentPlan().add("test-deployment.sar", exportArchive(archive))
                         .deploy("test-deployment.sar").build());
                 awaitDeploymentExecution(future);
             }
 
             @Override
             public void fullReplace() throws IOException {
-                Future<?> future = manager.execute(manager.newDeploymentPlan().replace("test-deployment.sar", file).build());
+                Future<?> future = manager.execute(manager.newDeploymentPlan().replace("test-deployment.sar", exportArchive(archive2)).build());
                 awaitDeploymentExecution(future);
             }
 
@@ -160,6 +162,17 @@ public class ServerInModuleDeploymentTestCase {
                 Future<?> future = manager.execute(manager.newDeploymentPlan().undeploy("test-deployment.sar")
                         .remove("test-deployment.sar").build());
                 awaitDeploymentExecution(future);
+            }
+
+            private File exportArchive(JavaArchive archive) {
+                final File dir = new File("target/archives");
+                dir.mkdirs();
+                final File file = new File(dir, "test-deployment.sar");
+                if (file.exists()) {
+                    file.delete();
+                }
+                archive.as(ZipExporter.class).exportTo(file, true);
+                return file;
             }
         });
 
@@ -195,7 +208,7 @@ public class ServerInModuleDeploymentTestCase {
         final File deployed = new File(deployDir, "test-deployment.sar.deployed");
         Assert.assertFalse(target.exists());
 
-        testDeployments(client, new DeploymentExecutor() {
+        testDeployments(client, true, new DeploymentExecutor() {
             @Override
             public void initialDeploy() throws IOException {
                 // Copy file to deploy directory
@@ -303,7 +316,7 @@ public class ServerInModuleDeploymentTestCase {
         final File deployed = new File(deployDir, "test-deployment.sar.deployed");
         Assert.assertFalse(target.exists());
 
-        testDeployments(client, new DeploymentExecutor() {
+        testDeployments(client, true, new DeploymentExecutor() {
             @Override
             public void initialDeploy() throws IOException {
                 // Copy file to deploy directory
@@ -400,7 +413,7 @@ public class ServerInModuleDeploymentTestCase {
         final File deployed = new File(deployDir, "test-deployment.sar.deployed");
         Assert.assertFalse(deployed.exists());
 
-        testDeployments(client, new DeploymentExecutor() {
+        testDeployments(client, true, new DeploymentExecutor() {
             @Override
             public void initialDeploy() throws IOException {
 
@@ -512,7 +525,7 @@ public class ServerInModuleDeploymentTestCase {
         return deployDir;
     }
 
-    private void testDeployments(ModelControllerClient client, DeploymentExecutor deploymentExecutor) throws Exception {
+    private void testDeployments(ModelControllerClient client, boolean fromFile, DeploymentExecutor deploymentExecutor) throws Exception {
         final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL()).getMBeanServerConnection();
         final ObjectName name = new ObjectName("jboss.test:service=testdeployments");
 
@@ -521,11 +534,24 @@ public class ServerInModuleDeploymentTestCase {
         // mbeanServer.addNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener, null, null);
         try {
             // Initial deploy
+            Set<String> initialHashes = null;
+            if (!fromFile) {
+                initialHashes = getAllDeploymentHashesFromContentDir(true);
+            }
             deploymentExecutor.initialDeploy();
             PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, name));
 
             //listener.await();
             Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
+
+            Set<String> currentHashes = null;
+            String initialDeploymentHash = null;
+            if (!fromFile) {
+                currentHashes = getAllDeploymentHashesFromContentDir(false);
+                currentHashes.removeAll(initialHashes);
+                Assert.assertEquals(1, currentHashes.size());
+                initialDeploymentHash = currentHashes.iterator().next();
+            }
 
             // Full replace
             // listener.reset(2);
@@ -534,6 +560,14 @@ public class ServerInModuleDeploymentTestCase {
 
             // listener.await();
             Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
+
+            if (!fromFile) {
+                currentHashes = getAllDeploymentHashesFromContentDir(false);
+                Assert.assertFalse(currentHashes.contains(initialDeploymentHash)); //Should have been deleted when replaced
+                currentHashes.removeAll(initialHashes);
+                Assert.assertEquals(1, currentHashes.size());
+            }
+
 
             // Undeploy
             // listener.reset(1);
@@ -548,10 +582,38 @@ public class ServerInModuleDeploymentTestCase {
                 Assert.fail("Should not have found MBean");
             } catch (Exception expected) {
             }
+            if (!fromFile) {
+                Assert.assertEquals(initialHashes, getAllDeploymentHashesFromContentDir(false));
+            }
         } finally {
             //mbeanServer.removeNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener);
         }
+    }
 
+    private Set<String> getAllDeploymentHashesFromContentDir(boolean emptyOk){
+        String jbossBaseDir = System.getProperty("jboss.inst");
+        Assert.assertNotNull(jbossBaseDir);
+        File file = new File(jbossBaseDir);
+        Assert.assertTrue(file.exists());
+        file = new File(file, "standalone");
+        Assert.assertTrue(file.exists());
+        file = new File(file, "data");
+        if (!file.exists() && emptyOk) {
+            return new HashSet<String>();
+        }
+        Assert.assertTrue(file.exists());
+        file = new File(file, "content");
+        Assert.assertTrue(file.exists());
+
+        Set<String> hashes = new HashSet<String>();
+        for (File top : file.listFiles()) {
+            if (top.isDirectory() && top.getName().length() == 2) {
+                for (File content : top.listFiles()) {
+                    hashes.add(top.getName() + content.getName());
+                }
+            }
+        }
+        return hashes;
     }
 
     private void awaitDeploymentExecution(Future<?> future) {

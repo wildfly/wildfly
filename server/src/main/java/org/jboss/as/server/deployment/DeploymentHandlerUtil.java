@@ -79,6 +79,10 @@ public class DeploymentHandlerUtil {
             this.relativeTo = relativeTo;
             this.isArchive = isArchive;
         }
+
+        byte[] getHash() {
+            return hash;
+        }
     }
 
     private DeploymentHandlerUtil() {
