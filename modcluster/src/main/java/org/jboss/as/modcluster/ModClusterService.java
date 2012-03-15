@@ -84,13 +84,6 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         if (config.getProxyList() == null) {
             config.setAdvertise(isMulticast);
         }
-        config.setAdvertisePort(23364);
-        config.setAdvertiseGroupAddress("224.0.1.105");
-        config.setAdvertiseInterface(bindingManager.getValue().getDefaultInterfaceAddress().getHostAddress());
-        config.setAutoEnableContexts(true);
-        config.setStopContextTimeout(10);
-        config.setSocketTimeout(20000);
-
 
         // Read node to set configuration.
         if (config.getAdvertise()) {
