@@ -1258,7 +1258,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                 writer.writeEmptyElement(Element.IGNORED_RESOURCE.getLocalName());
             }
 
-            writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+            writer.writeAttribute(Attribute.TYPE.getLocalName(), property.getName());
             IgnoredDomainTypeResourceDefinition.WILDCARD.marshallAsAttribute(ignored, writer);
 
             if (hasNames) {
