@@ -36,7 +36,6 @@ import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.interceptors.UserInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -150,7 +149,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         if (description instanceof EJBComponentDescription) {
 
             //add interceptor to activate the request scope if required
-            final EjbRequestScopeActivationInterceptor.Factory requestFactory = new EjbRequestScopeActivationInterceptor.Factory(weldServiceName, description instanceof MessageDrivenComponentDescription);
+            final EjbRequestScopeActivationInterceptor.Factory requestFactory = new EjbRequestScopeActivationInterceptor.Factory(weldServiceName);
             configuration.addComponentInterceptor(requestFactory, InterceptorOrder.Component.CDI_REQUEST_SCOPE, false);
 
             final Jsr299BindingsInterceptor.Factory aroundInvokeFactory = new Jsr299BindingsInterceptor.Factory(description.getBeanDeploymentArchiveId(), beanName, InterceptionType.AROUND_INVOKE, classLoader);
