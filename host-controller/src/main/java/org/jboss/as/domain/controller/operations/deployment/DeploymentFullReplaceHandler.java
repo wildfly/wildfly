@@ -41,10 +41,12 @@ import static org.jboss.as.domain.controller.operations.deployment.AbstractDeplo
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Locale;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.ResultAction;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -184,6 +186,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
 
         final Resource deployment = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, name)));
         ModelNode deployNode = deployment.getModel();
+        byte[] originalHash = deployNode.get(CONTENT).get(0).hasDefined(HASH) ? deployNode.get(CONTENT).get(0).get(HASH).asBytes() : null;
         deployNode.get(NAME).set(name);
         deployNode.get(RUNTIME_NAME).set(runtimeName);
         deployNode.get(CONTENT).set(content);
@@ -199,7 +202,22 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         // the content repo will already have these, note that content should not be empty
         removeContentAdditions(replaceNode.getModel().require(CONTENT));
 
-        context.completeStep();
+        if (context.completeStep() == ResultAction.KEEP) {
+            if (originalHash != null) {
+                if (deployNode.get(CONTENT).get(0).hasDefined(HASH)) {
+                    byte[] newHash = deployNode.get(CONTENT).get(0).get(HASH).asBytes();
+                    if (!Arrays.equals(originalHash, newHash)) {
+                        contentRepository.removeContent(originalHash);
+                    }
+                }
+            }
+        } else {
+            if (operation.get(CONTENT).get(0).hasDefined(HASH)) {
+                byte[] newHash = operation.get(CONTENT).get(0).get(HASH).asBytes();
+                contentRepository.removeContent(newHash);
+            }
+        }
+
     }
 
     private static void removeAttributes(final ModelNode node, final Iterable<String> attributeNames) {

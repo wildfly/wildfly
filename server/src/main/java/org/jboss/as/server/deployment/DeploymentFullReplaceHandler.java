@@ -42,10 +42,12 @@ import static org.jboss.as.server.deployment.AbstractDeploymentHandler.validateO
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Locale;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.ResultAction;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -150,6 +152,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         if (contentItemNode.hasDefined(HASH)) {
             managedContentValidator.validate(contentItemNode);
             byte[] hash = contentItemNode.require(HASH).asBytes();
+
             contentItem = addFromHash(hash);
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
             contentItem = addFromContentAdditionParameter(context, contentItemNode);
@@ -158,6 +161,8 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         }
 
         boolean start = replaceNode.get(ENABLED).asBoolean();
+
+        byte[] originalHash = replaceNode.get(CONTENT).get(0).hasDefined(HASH) ? replaceNode.get(CONTENT).get(0).get(HASH).asBytes() : null;
 
         final ModelNode deployNode = context.readResourceForUpdate(address).getModel();
         deployNode.get(NAME).set(name);
@@ -171,7 +176,22 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         if (start) {
             DeploymentHandlerUtil.replace(context, replaceNode, runtimeName, name, replacedRuntimeName, contentItem);
         }
-        context.completeStep();
+
+        if (context.completeStep() == ResultAction.KEEP) {
+            if (originalHash != null) {
+                if (replaceNode.get(CONTENT).get(0).hasDefined(HASH)) {
+                    byte[] newHash = replaceNode.get(CONTENT).get(0).get(HASH).asBytes();
+                    if (!Arrays.equals(originalHash, newHash)) {
+                        contentRepository.removeContent(originalHash);
+                    }
+                }
+            }
+        } else {
+            if (replaceNode.get(CONTENT).get(0).hasDefined(HASH)) {
+                byte[] newHash = replaceNode.get(CONTENT).get(0).get(HASH).asBytes();
+                contentRepository.removeContent(newHash);
+            }
+        }
     }
 
     private static void removeAttributes(final ModelNode node, final Iterable<String> attributeNames) {

@@ -22,31 +22,6 @@
 
 package org.jboss.as.test.integration.domain.suites;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Collections;
-import java.util.List;
-
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.test.integration.domain.DomainTestSupport;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
@@ -73,6 +48,31 @@ import static org.jboss.as.test.integration.domain.DomainTestSupport.validateRes
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Collections;
+import java.util.List;
+
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Test of various management operations involving deployment.
@@ -131,16 +131,23 @@ public class DeploymentManagementTestCase {
 
     private static DomainTestSupport testSupport;
     private static WebArchive webArchive;
+    private static WebArchive webArchive2;
     private static File tmpDir;
 
     @BeforeClass
     public static void setupDomain() throws Exception {
 
-        // Create our deployment
+        // Create our deployments
         webArchive = ShrinkWrap.create(WebArchive.class, TEST);
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         URL index = tccl.getResource("helloWorld/index.html");
         webArchive.addAsWebResource(index, "index.html");
+
+        webArchive2 = ShrinkWrap.create(WebArchive.class, TEST);
+        index = tccl.getResource("helloWorld/index.html");
+        webArchive2.addAsWebResource(index, "index.html");
+        index = tccl.getResource("helloWorld/index2.html");
+        webArchive2.addAsWebResource(index, "index2.html");
 
         // Make versions on the filesystem for URL-based deploy and for unmanaged content testing
         tmpDir = new File("target/deployments/" + DeploymentManagementTestCase.class.getSimpleName());
@@ -555,6 +562,26 @@ public class DeploymentManagementTestCase {
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
     }
+
+    @Test
+    public void testFullReplaceDifferentFile() throws Exception {
+        // Establish the deployment
+        testDeploymentViaStream();
+
+        ModelNode content = new ModelNode();
+        content.get(INPUT_STREAM_INDEX).set(0);
+        ModelNode op = createDeploymentFullReplaceOperation(content);
+        OperationBuilder builder = new OperationBuilder(op, true);
+        builder.addInputStream(webArchive2.as(ZipExporter.class).exportAsInputStream());
+
+        executeOnMaster(builder.build());
+
+        //Thread.sleep(1000);
+
+        performHttpCall(DomainTestSupport.masterAddress, 8080);
+        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+    }
+
 
     @Test
     public void testUnmanagedArchiveFullReplace() throws Exception {
