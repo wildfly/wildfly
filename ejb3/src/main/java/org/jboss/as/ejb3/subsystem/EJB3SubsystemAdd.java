@@ -317,9 +317,9 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     .setInitialMode(ServiceController.Mode.PASSIVE)
                     .addListener(verificationHandler)
                     .install());
-        }
 
-        EnableStatisticsWriteHandler.INSTANCE.updateToRuntime(context, model);
+            EnableStatisticsWriteHandler.INSTANCE.updateToRuntime(context, model);
+        }
     }
 
     private void addRemoteInvocationServices(final OperationContext context, final List<ServiceController<?>> newControllers,
