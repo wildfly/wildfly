@@ -19,10 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.test.integration.ejb.mdb.containerstart;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -31,24 +31,20 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.Context;
 import javax.naming.InitialContext;
 
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.jms.HornetQJMSClient;
-import org.hornetq.api.jms.JMSFactoryType;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
-import org.hornetq.jms.client.HornetQQueue;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -65,6 +61,7 @@ import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -77,11 +74,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.jms.DeliveryMode.NON_PERSISTENT;
 import static org.jboss.as.test.integration.common.jms.JMSOperationsProvider.getInstance;
 
 /**
  * Part of migration EJB testsuite (JBAS-7922) to AS7 [JIRA JBQA-5483]. This test covers jira AS7-687 which aims to migrate this
  * test to new testsuite.
+ * Testing undeploying an app in middle of MDB onMessage function and checking whether all messages will processed correctly.
  *
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
@@ -99,16 +98,19 @@ public class SendMessagesTestCase {
     private static String QUEUE_SEND = "queue/sendMessage";
     private static String QUEUE_REPLY = "queue/replyMessage";
 
+    private static final int WAIT_S = TimeoutUtil.adjust(10);
+    private static final int THREAD_WAIT_MS = TimeoutUtil.adjust(1000);
+    private static final int SEND_TIMEOUT_S = TimeoutUtil.adjust(1);
+    
     @ContainerResource
     private ManagementClient managementClient;
 
     static class SendMessagesTestCaseSetup implements ServerSetupTask {
-
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             final JMSOperations operations = getInstance(managementClient);
-            operations.createJmsQueue(QUEUE_SEND, "java:jboss/" + QUEUE_SEND);
-            operations.createJmsQueue(QUEUE_REPLY, "java:jboss/" + QUEUE_REPLY);
+            operations.createJmsQueue(QUEUE_SEND, "java:jboss/exported/" + QUEUE_SEND);
+            operations.createJmsQueue(QUEUE_REPLY, "java:jboss/exported/" + QUEUE_REPLY);
         }
 
         @Override
@@ -122,10 +124,9 @@ public class SendMessagesTestCase {
     @ArquillianResource
     private Deployer deployer;
 
-    @ArquillianResource
-    @OperateOnDeployment("mdb")
-    private InitialContext initialContext;
-
+    @ContainerResource
+    private InitialContext ctx;
+    
     @AfterClass
     public static void afterClass() {
         executor.shutdown();
@@ -142,7 +143,7 @@ public class SendMessagesTestCase {
     @Deployment(name = "mdb", order = 2, testable = false, managed = false)
     public static Archive<?> deploymentMdb() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MBEAN + ".jar")
-                .addClasses(ReplyingMDB.class);
+                .addClasses(ReplyingMDB.class, TimeoutUtil.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment." + SINGLETON + ".jar\n"), "MANIFEST.MF");
         log.info(jar.toString(true));
         return jar;
@@ -160,45 +161,47 @@ public class SendMessagesTestCase {
             throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
         }
     }
-    // end: jms ops
+
 
     private int awaitSingleton(String where) throws Exception {
-        HelperSingleton helper = (HelperSingleton) initialContext.lookup("ejb:/" + SINGLETON + "//HelperSingletonImpl!org.jboss.as.test.integration.ejb.mdb.containerstart.HelperSingleton");
-        // HelperSingleton helper = (HelperSingleton) new InitialContext().lookup("java:global/" + SINGLETON + "/HelperSingletonImpl!org.jboss.as.test.integration.ejb.mdb.containerstart.HelperSingleton");
-        return helper.await(where, 10, TimeUnit.SECONDS);
+        HelperSingleton helper = (HelperSingleton) ctx.lookup(SINGLETON + "/HelperSingletonImpl!org.jboss.as.test.integration.ejb.mdb.containerstart.HelperSingleton");
+        return helper.await(where, WAIT_S, TimeUnit.SECONDS);
     }
 
     private static void sendMessage(Session session, MessageProducer sender, Queue replyQueue, String txt) throws JMSException {
         TextMessage msg = session.createTextMessage(txt);
+        msg.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
         msg.setJMSReplyTo(replyQueue);
-        sender.send(msg);
+        sender.send(msg, NON_PERSISTENT, SEND_TIMEOUT_S, SECONDS.toMillis(WAIT_S));
     }
 
-    /**
-     * We need to run this on client side (necessity of calling deploy through modelcontroller) - currently we need to use HornetQ api for getting queue.
-     */
     @Test
-    public void testShutdown() throws Exception {
+    public void testShutdown(@ArquillianResource @OperateOnDeployment("singleton") ManagementClient client) throws Exception {
         Session session = null;
         MessageProducer sender = null;
         MessageConsumer receiver = null;
-        Connection connection = null;
+        QueueConnection connection = null;
 
         try {
             deployer.deploy("mdb");
+         
+            // InitialContext taken by @ContainerResource leads to exception
+            // javax.naming.NamingException: Failed to lookup [Root exception is java.io.NotSerializableException: org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy]
+            Properties env = new Properties();
+            env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+            env.put(Context.PROVIDER_URL, client.getRemoteEjbURL().toString());
+            env.put(Context.SECURITY_PRINCIPAL, "guest");
+            env.put(Context.SECURITY_CREDENTIALS, "guest");
+            Context ctx = new InitialContext(env);
+            
+            QueueConnectionFactory qcf = (QueueConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
+            Queue queue = (Queue) ctx.lookup(QUEUE_SEND);
+            Queue replyQueue = (Queue) ctx.lookup(QUEUE_REPLY);
 
-            Queue queue = new HornetQQueue(QUEUE_SEND);
-            Queue replyQueue = new HornetQQueue(QUEUE_REPLY);
-            Map<String, Object> connectionParams = new HashMap<String, Object>();
-            connectionParams.put(TransportConstants.HOST_PROP_NAME, managementClient.getMgmtAddress());
-            connectionParams.put(TransportConstants.PORT_PROP_NAME, 5445);
-            TransportConfiguration transportConfiguration = new TransportConfiguration(NettyConnectorFactory.class.getName(), connectionParams);
-            ConnectionFactory cf = (ConnectionFactory)  HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
-            connection = cf.createConnection("guest", "guest");
-
-
+            connection = qcf.createQueueConnection("guest", "guest");
             connection.start();
-            session = connection.createSession(false, QueueSession.AUTO_ACKNOWLEDGE);
+            session = connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
+
             sender = session.createProducer(queue);
             receiver = session.createConsumer(replyQueue);
 
@@ -209,8 +212,8 @@ public class SendMessagesTestCase {
             int awaitInt = awaitSingleton("first test"); // receive of first
             log.debug("testsuite: awaitSingleton() returned: " + awaitInt);
             Future<?> undeployed = executor.submit(undeployTask());
-            // Hmm, we really want to wait for MDB.stop going into the semaphore
-            Thread.sleep(1000);
+            // We want to wait for MDB.stop going into the semaphore
+            Thread.sleep(THREAD_WAIT_MS);
             for (int i = 0; i < 50; i++) {
                 String msg = "Do not lose! (" + i + ")";
                 sendMessage(session, sender, replyQueue, msg); // should be bounced by BlockContainerShutdownInterceptor
@@ -219,9 +222,9 @@ public class SendMessagesTestCase {
             awaitInt = awaitSingleton("second test"); // finalizing first
             log.debug("testsuite: awaitSingleton()2 returned:: " + awaitInt);
 
-            undeployed.get(10, SECONDS);
+            undeployed.get(WAIT_S, SECONDS);
 
-            // deploying via arquillian does not work for some reason
+            // deploying via management client, arquillian deployer does not work for some reason
             final ModelNode deployAddr = new ModelNode();
             deployAddr.get(ClientConstants.OP_ADDR).add("deployment", MBEAN + ".jar");
             deployAddr.get(ClientConstants.OP).set("deploy");
@@ -236,7 +239,7 @@ public class SendMessagesTestCase {
 
             SortedSet<String> received = new TreeSet<String>();
             for (int i = 0; i < (1 + 50 + 10); i++) {
-                Message msg = receiver.receive(SECONDS.toMillis(10));
+                Message msg = receiver.receive(SECONDS.toMillis(WAIT_S));
                 Assert.assertNotNull(msg);
                 String text = ((TextMessage) msg).getText();
                 received.add(text);
@@ -272,7 +275,7 @@ public class SendMessagesTestCase {
             public Void call() throws Exception {
                 ServerDeploymentManager deploymentManager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
                 final DeploymentPlan plan = deploymentManager.newDeploymentPlan().undeploy(MBEAN + ".jar").build();
-                deploymentManager.execute(plan).get(10, TimeUnit.SECONDS);
+                deploymentManager.execute(plan).get(WAIT_S, TimeUnit.SECONDS);
                 return null;
             }
         };

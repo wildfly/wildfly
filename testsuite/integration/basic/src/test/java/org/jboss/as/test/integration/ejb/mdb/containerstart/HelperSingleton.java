@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.ejb.mdb.containerstart;
 
 import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -32,5 +31,4 @@ import java.util.concurrent.TimeoutException;
 public interface HelperSingleton {
     int await(String where, long timeout, TimeUnit unit) throws BrokenBarrierException, TimeoutException, InterruptedException;
     void reset();
-    // CyclicBarrier getBarrier();
 }

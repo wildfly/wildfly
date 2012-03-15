@@ -25,10 +25,10 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
-import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
 import javax.jms.*;
 
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.ejb3.annotation.ResourceAdapter;
 import org.jboss.logging.Logger;
 
@@ -43,7 +43,7 @@ import static javax.jms.DeliveryMode.NON_PERSISTENT;
  */
 @MessageDriven(activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:jboss/queue/sendMessage"),
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:jboss/exported/queue/sendMessage"),
         @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "1"),
         @ActivationConfigProperty(propertyName = "useDLQ", propertyValue = "false") })
 @ResourceAdapter(value = "hornetq-ra.rar")
@@ -56,26 +56,28 @@ public class ReplyingMDB implements MessageListener {
     private QueueConnection connection;
     private QueueSession session;
     private QueueSender sender;
+    
+    private static final int WAIT_S = TimeoutUtil.adjust(10);
 
     public void onMessage(Message message) {
         try {
-            TextMessage reply;
+            TextMessage replyMessage;
             if (message instanceof TextMessage) {
                 String text = ((TextMessage) message).getText();
                 if (text.equals("await")) {
                     // we have received the first message
-                    HelperSingletonImpl.barrier.await(10, SECONDS);
+                    HelperSingletonImpl.barrier.await(WAIT_S, SECONDS);
                     HelperSingletonImpl.barrier.reset();
                     // wait for undeploy
-                    HelperSingletonImpl.barrier.await(10, SECONDS);
+                    HelperSingletonImpl.barrier.await(WAIT_S, SECONDS);
                     HelperSingletonImpl.barrier.reset();
                 }
-                reply = session.createTextMessage("Reply: " + text);
+                replyMessage = session.createTextMessage("Reply: " + text);
             } else {
-                reply = session.createTextMessage("Unknown message");
+                replyMessage = session.createTextMessage("Unknown message");
             }
             Destination destination = message.getJMSReplyTo();
-            sender.send(destination, reply, NON_PERSISTENT, 1, SECONDS.toMillis(10));
+            sender.send(destination, replyMessage, NON_PERSISTENT, 1, SECONDS.toMillis(WAIT_S));
             log.info("onMessage method [OK], msg: " + message.toString());
         } catch (JMSException e) {
             throw new RuntimeException(e);
@@ -102,6 +104,7 @@ public class ReplyingMDB implements MessageListener {
 
     @PreDestroy
     public void preDestroy() {
+        log.info("Destroying MDB " + ReplyingMDB.class.getSimpleName());
         try {
             if (sender != null)
                 sender.close();
