@@ -1,0 +1,3 @@
+<subsystem xmlns="urn:jboss:domain:xts:1.0">
+    <xts-environment url="http://localhost:8080/ws-c11/ActivationService"/>
+</subsystem>

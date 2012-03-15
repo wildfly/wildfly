@@ -22,17 +22,9 @@
 
 package org.jboss.as.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ResourceBundle;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ObjectTypeValidator;
@@ -41,12 +33,21 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 /**
-* Date: 15.11.2011
-*
-* @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
-* @author Richard Achmatowicz (c) 2012 RedHat Inc.
-*/
+ * Date: 15.11.2011
+ *
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author Richard Achmatowicz (c) 2012 RedHat Inc.
+ */
 public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
     private final AttributeDefinition[] valueTypes;
     private final String suffix;
@@ -91,6 +92,22 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
         return result;
     }
 
+    public ModelNode addOperationParameterDescription(final ModelNode resourceDescription, final String operationName,
+                                                      final ResourceDescriptionResolver resolver,
+                                                      final Locale locale, final ResourceBundle bundle) {
+        final ModelNode result = super.addOperationParameterDescription(resourceDescription, operationName, resolver, locale, bundle);
+        addValueTypeDescription(result, getName(), bundle);
+        return result;
+    }
+
+    public ModelNode addResourceAttributeDescription(final ModelNode resourceDescription, final ResourceDescriptionResolver resolver,
+                                                     final Locale locale, final ResourceBundle bundle) {
+        final ModelNode result = super.addResourceAttributeDescription(resourceDescription, resolver, locale, bundle);
+        addValueTypeDescription(result, getName(), bundle);
+        return result;
+    }
+
+
     @Override
     public ModelNode addOperationParameterDescription(ResourceBundle bundle, String prefix, ModelNode operationDescription) {
         final ModelNode result = super.addOperationParameterDescription(bundle, prefix, operationDescription);
@@ -102,7 +119,14 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
         for (AttributeDefinition valueType : valueTypes) {
             // get the value type description of the attribute
             final ModelNode valueTypeDesc = getValueTypeDescription(valueType, false);
-            final String p = (prefix == null || prefix.isEmpty()) ? suffix : String.format("%s.%s", prefix, suffix);
+            final String p;
+            if ((prefix == null || prefix.isEmpty()) && (suffix != null && suffix.isEmpty())) {
+                p = suffix;
+            } else if (suffix == null || suffix.isEmpty()) {
+                p = prefix;
+            } else {
+                p = String.format("%s.%s", prefix, suffix);
+            }
             // get the text description of the attribute
             valueTypeDesc.get(ModelDescriptionConstants.DESCRIPTION).set(valueType.getAttributeTextDescription(bundle, p));
             // set it as one of our value types, and return the value
@@ -110,7 +134,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
             // if it is of type OBJECT itself (add its nested descriptions)
             // seeing that OBJECT represents a grouping, use prefix+"."+suffix for naming the entries
             if (valueType instanceof ObjectTypeAttributeDefinition) {
-               ObjectTypeAttributeDefinition.class.cast(valueType).addValueTypeDescription(childType, p, bundle);
+                ObjectTypeAttributeDefinition.class.cast(valueType).addValueTypeDescription(childType, p, bundle);
             }
             // if it is of type LIST, and its value type
             // seeing that LIST represents a grouping, use prefix+"."+suffix for naming the entries
@@ -227,7 +251,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
 
         public static Builder of(final String name, final AttributeDefinition[] valueTypes, final AttributeDefinition[] moreValueTypes) {
 
-            ArrayList<AttributeDefinition> list = new ArrayList<AttributeDefinition>(Arrays.asList(valueTypes)) ;
+            ArrayList<AttributeDefinition> list = new ArrayList<AttributeDefinition>(Arrays.asList(valueTypes));
             list.addAll(Arrays.asList(moreValueTypes));
             AttributeDefinition[] allValueTypes = new AttributeDefinition[list.size()];
             list.toArray(allValueTypes);
@@ -236,7 +260,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
         }
 
         public ObjectTypeAttributeDefinition build() {
-            if (xmlName == null) xmlName = name;
+            if (xmlName == null) { xmlName = name; }
             return new ObjectTypeAttributeDefinition(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires, flags);
         }
 
