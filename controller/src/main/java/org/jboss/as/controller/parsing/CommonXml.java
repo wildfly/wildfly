@@ -998,7 +998,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void parseDeployments(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list,
-            final boolean allowEnabled) throws XMLStreamException {
+            final Set<Attribute> allowedAttributes, final Set<Element> allowedElements) throws XMLStreamException {
         requireNoAttributes(reader);
 
         final Set<String> names = new HashSet<String>();
@@ -1021,6 +1021,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     throw unexpectedAttribute(reader, i);
                 } else {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    if (!allowedAttributes.contains(attribute)) {
+                        throw unexpectedAttribute(reader, i);
+                    }
                     switch (attribute) {
                         case NAME: {
                             if (!names.add(value)) {
@@ -1034,12 +1037,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             break;
                         }
                         case ENABLED: {
-                            if (allowEnabled) {
-                                startInput = value;
-                                break;
-                            } else {
-                                throw unexpectedAttribute(reader, i);
-                            }
+                            startInput = value;
+                            break;
                         }
                         default:
                             throw unexpectedAttribute(reader, i);
@@ -1061,6 +1060,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 requireNamespace(reader, expectedNs);
                 final Element element = Element.forName(reader.getLocalName());
+                if (!allowedElements.contains(element)) {
+                    throw unexpectedElement(reader);
+                }
                 switch (element) {
                     case CONTENT:
                         parseContentType(reader, deploymentAdd);
@@ -1077,7 +1079,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
 
             deploymentAdd.get(RUNTIME_NAME).set(runtimeName);
-            if (allowEnabled) {
+            if (allowedAttributes.contains(Attribute.ENABLED)) {
                 deploymentAdd.get(ENABLED).set(enabled);
             }
             list.add(deploymentAdd);

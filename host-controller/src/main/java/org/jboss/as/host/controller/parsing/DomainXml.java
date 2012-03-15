@@ -62,6 +62,7 @@ import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROL
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -231,7 +232,8 @@ public class DomainXml extends CommonXml {
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.DEPLOYMENTS) {
-            parseDeployments(reader, address, expectedNs, list, false);
+            parseDeployments(reader, address, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME),
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.SERVER_GROUPS) {
@@ -282,7 +284,8 @@ public class DomainXml extends CommonXml {
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.DEPLOYMENTS) {
-            parseDeployments(reader, address, expectedNs, list, false);
+            parseDeployments(reader, address, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME),
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.SERVER_GROUPS) {
@@ -565,7 +568,7 @@ public class DomainXml extends CommonXml {
                             throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                         }
                         sawDeployments = true;
-                        parseDeployments(reader, groupAddress, expectedNs, list, true);
+                        parseDeployments(reader, groupAddress, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED), Collections.<Element>emptySet());
                         break;
                     }
                     case SYSTEM_PROPERTIES: {

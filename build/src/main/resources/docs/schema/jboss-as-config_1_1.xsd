@@ -114,7 +114,7 @@
                 <xs:element name="profile" type="standalone-profileType" minOccurs="0"/>
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="socket-binding-group" type="standalone-socket-binding-groupType" minOccurs="0" maxOccurs="1"/>
-                <xs:element name="deployments" type="mapped-deploymentsType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="deployments" type="server-deploymentsType" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="optional">
                 <xs:annotation>
@@ -907,7 +907,7 @@
             <xs:element name="jvm" type="namedJvmType" minOccurs="0"/>
             <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="1"/>
 
-            <xs:element name="deployments" type="mapped-deploymentsType" minOccurs="0"/>
+            <xs:element name="deployments" type="server-groupDeploymentsType" minOccurs="0"/>
 
             <xs:element name="system-properties" minOccurs="0" type="properties-with-boottime"/>
         </xs:sequence>
@@ -936,27 +936,33 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="mapped-deploymentsType">
+    <xs:complexType name="server-groupDeploymentsType">
         <xs:annotation>
             <xs:documentation>Contains a list of deployments that have been mapped to a server-group.</xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="deployment" type="mapped-deploymentType" maxOccurs="unbounded"/>
+            <xs:element name="deployment" type="base-deploymentType" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="mapped-deploymentType">
+    <xs:complexType name="server-groupDeploymentType">
         <xs:annotation>
             <xs:documentation>A deployment that has been mapped to a server group.</xs:documentation>
         </xs:annotation>
-        <xs:sequence>
-            <!-- TODO: maxOccurs should be unbounded once overlays are in place -->
-            <xs:choice maxOccurs="1">
-                <xs:element name="content" type="contentType"/>
-                <xs:element name="fs-archive" type="fs-archiveType"/>
-                <xs:element name="fs-exploded" type="fs-explodedType"/>
-            </xs:choice>
-        </xs:sequence>
+        <xs:complexContent>
+            <xs:extension base="base-deploymentType">
+                <!--  TODO clarify what a value of 'false' means -->
+                <xs:attribute name="enabled" use="optional" type="xs:boolean" default="true">
+                    <xs:annotation>
+                        <xs:documentation>Whether the deployment deploy automatically when the server starts up.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="base-deploymentType">
         <xs:attribute name="name" use="required">
             <xs:annotation>
                 <xs:documentation>Unique identifier of the deployment. Must be unique across all deployments.
@@ -973,13 +979,40 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <!--  TODO clarify what a value of 'false' means -->
-        <xs:attribute name="enabled" use="optional" type="xs:boolean" default="true">
-            <xs:annotation>
-                <xs:documentation>Whether the deployment deploy automatically when the server starts up.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="server-deploymentsType">
+        <xs:annotation>
+            <xs:documentation>Contains a list of deployments that have been mapped to a server.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="deployment" type="server-deploymentType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="server-deploymentType">
+        <xs:annotation>
+            <xs:documentation>A deployment that has been mapped to a server.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base-deploymentType">
+                <xs:sequence>
+                    <!-- TODO: maxOccurs should be unbounded once overlays are in place -->
+                    <xs:choice maxOccurs="1">
+                        <xs:element name="content" type="contentType"/>
+                        <xs:element name="fs-archive" type="fs-archiveType"/>
+                        <xs:element name="fs-exploded" type="fs-explodedType"/>
+                    </xs:choice>
+                </xs:sequence>
+                <!--  TODO clarify what a value of 'false' means -->
+                <xs:attribute name="enabled" use="optional" type="xs:boolean" default="true">
+                    <xs:annotation>
+                        <xs:documentation>Whether the deployment deploy automatically when the server starts up.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="contentType">
@@ -1026,11 +1059,11 @@
             <xs:documentation>Contains a list of domain-level deployments</xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="deployment" type="deploymentType" maxOccurs="unbounded"/>
+            <xs:element name="deployment" type="domain-deploymentType" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="deploymentType">
+    <xs:complexType name="domain-deploymentType">
         <xs:annotation>
             <xs:documentation>Deployment represents anything that can be deployed (e.g. an application such as EJB-JAR,
                 WAR, EAR,
@@ -1039,7 +1072,16 @@
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
-            <xs:extension base="mapped-deploymentType" />
+            <xs:extension base="base-deploymentType">
+                <xs:sequence>
+                    <!-- TODO: maxOccurs should be unbounded once overlays are in place -->
+                    <xs:choice maxOccurs="1">
+                        <xs:element name="content" type="contentType"/>
+                        <xs:element name="fs-archive" type="fs-archiveType"/>
+                        <xs:element name="fs-exploded" type="fs-explodedType"/>
+                    </xs:choice>
+                </xs:sequence>
+            </xs:extension>
         </xs:complexContent>
     </xs:complexType>
 
