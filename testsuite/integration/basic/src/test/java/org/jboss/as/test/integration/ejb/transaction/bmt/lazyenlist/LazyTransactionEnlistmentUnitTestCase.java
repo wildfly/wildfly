@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ejb.transaction.bmt.lazyenlist;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.logging.Logger;
@@ -31,16 +32,16 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * Lazy transaction enlistment. Migration test from EJB Testsuite (ejbthree-1028) to AS7 [JIRA JBQA-5483].
- * 
+ *
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 public class LazyTransactionEnlistmentUnitTestCase {
     private static final Logger log = Logger.getLogger(LazyTransactionEnlistmentUnitTestCase.class);
 
@@ -59,7 +60,7 @@ public class LazyTransactionEnlistmentUnitTestCase {
 
     @Test
     public void test() throws Exception {
-        ATM atm = (ATM) ctx.lookup("java:module/" + ATMBean.class.getSimpleName() + "!" + ATM.class.getName());
+        ATM atm = (ATM) ctx.lookup("ejb:/tx-lazy-enlist/" + ATMBean.class.getSimpleName() + "!" + ATM.class.getName());
         // if only
         long id = atm.createAccount(1000000);
         System.out.println("*** id " + id);
@@ -77,9 +78,8 @@ public class LazyTransactionEnlistmentUnitTestCase {
     }
 
     @Test
-    @Ignore("AS7-2874")
     public void testRawSQL() throws Exception {
-        ATM atm = (ATM) ctx.lookup("java:module/" + ATMBean.class.getSimpleName() + "!" + ATM.class.getName());
+        ATM atm = (ATM) ctx.lookup("ejb:/tx-lazy-enlist/" + ATMBean.class.getSimpleName() + "!" + ATM.class.getName());
         // if only
         long id = atm.createAccount(1000000);
         System.out.println("*** id " + id);
