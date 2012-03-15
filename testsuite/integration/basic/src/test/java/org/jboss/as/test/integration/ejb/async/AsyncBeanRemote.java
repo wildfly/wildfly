@@ -4,6 +4,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -38,11 +39,6 @@ public class AsyncBeanRemote implements AsyncBeanRemoteInterface {
         final CountDownLatch latch = new CountDownLatch(1);
         final Future<Boolean> future = asyncBean.futureMethod(latch);
         latch.countDown();
-        if(!AsyncBean.futureMethodCalled) {
-            throw new IllegalArgumentException("futureMethodCalled");
-        }
-        return future;
-    }
-
-    
+        return new AsyncResult<Boolean>(future.get());
+    }  
 }
