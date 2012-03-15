@@ -27,7 +27,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
@@ -49,7 +49,9 @@ import org.jboss.dmr.ModelType;
  */
 public final class InterfaceCriteriaWriteHandler implements OperationStepHandler {
 
-    public static final OperationStepHandler INSTANCE = new InterfaceCriteriaWriteHandler();
+    public static final InterfaceCriteriaWriteHandler UPDATE_RUNTIME = new InterfaceCriteriaWriteHandler(true);
+
+    public static final InterfaceCriteriaWriteHandler CONFIG_ONLY = new InterfaceCriteriaWriteHandler(false);
 
     private static final Map<String, AttributeDefinition> ATTRIBUTES = new HashMap<String, AttributeDefinition>();
     private static final OperationStepHandler VERIFY_HANDLER = new ModelValidationStep();
@@ -61,14 +63,16 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
         }
     }
 
-    public static void register(final ManagementResourceRegistration registration) {
+    public void register(final ManagementResourceRegistration registration) {
         for(final AttributeDefinition def : InterfaceDescription.ROOT_ATTRIBUTES) {
-            registration.registerReadWriteAttribute(def, null, INSTANCE);
+            registration.registerReadWriteAttribute(def, null, this);
         }
     }
 
-    private InterfaceCriteriaWriteHandler() {
-        //
+    private final boolean updateRuntime;
+
+    private InterfaceCriteriaWriteHandler(final boolean updateRuntime) {
+        this.updateRuntime = updateRuntime;
     }
 
     @Override
@@ -85,11 +89,13 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
         } else {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownAttribute(attributeName)));
         }
-        // Require a reload
-        context.reloadRequired();
+        if (updateRuntime) {
+            // Require a reload
+            context.reloadRequired();
+        }
         // Verify the model in a later step
         context.addStep(VERIFY_HANDLER, OperationContext.Stage.MODEL);
-        if (context.completeStep() != OperationContext.ResultAction.KEEP) {
+        if (context.completeStep() != OperationContext.ResultAction.KEEP && updateRuntime) {
             context.revertReloadRequired();
         }
     }
@@ -131,7 +137,7 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
                     }
                 }
             }
-            context.completeStep();
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
 
         boolean isRequired(final AttributeDefinition def, final ModelNode model) {

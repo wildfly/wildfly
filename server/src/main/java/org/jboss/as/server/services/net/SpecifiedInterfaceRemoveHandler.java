@@ -39,7 +39,7 @@ public class SpecifiedInterfaceRemoveHandler extends InterfaceRemoveHandler {
 
     @Override
     protected boolean requiresRuntime(OperationContext context) {
-        return true;
+        return context.getProcessType().isServer();
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {

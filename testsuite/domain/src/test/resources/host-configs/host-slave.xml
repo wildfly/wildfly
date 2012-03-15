@@ -47,10 +47,10 @@
         </security-realms>
         <management-interfaces>
             <native-interface security-realm="ManagementRealm">
-                <socket interface="public" port="19999"/>
+                <socket interface="management" port="19999"/>
             </native-interface>
             <http-interface security-realm="ManagementRealm" console-enabled="false">
-                <socket interface="public" port="19990"/>
+                <socket interface="management" port="19990"/>
             </http-interface>
         </management-interfaces>
     </management>
@@ -75,7 +75,7 @@
 
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.test.host.master.address}"/>
+            <inet-address value="${jboss.test.host.slave.address}"/>
         </interface>
         <interface name="public">
             <inet-address value="${jboss.test.host.slave.address}"/>
@@ -100,8 +100,15 @@
             </jvm>
         </server>
         <server name="other-two" group="other-server-group">
+            <!--AS7-4177 override the host level config to smoke test that handling
+                Note we use the same values; this is just to check for obvious fatal errors -->
+            <interfaces>
+                <interface name="public">
+                    <inet-address value="${jboss.test.host.slave.address}"/>
+                </interface>
+            </interfaces>
             <socket-bindings socket-binding-group="osgi-sockets" port-offset="550"/>
         </server>
-        <server name="reload-two" group="reload-test-group"  auto-start="false" />
+        <server name="reload-two" group="reload-test-group"  auto-start="false"/>
     </servers>
 </host>

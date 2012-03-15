@@ -455,7 +455,7 @@ public class ParseAndMarshalModelsTestCase {
                 ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
                 HostSpecifiedInterfaceAddHandler hsiah = new HostSpecifiedInterfaceAddHandler();
                 interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, hsiah, hsiah, false);
-                InterfaceCriteriaWriteHandler.register(interfaces);
+                InterfaceCriteriaWriteHandler.UPDATE_RUNTIME.register(interfaces);
 
                 //server
                 ManagementResourceRegistration servers = hostRegistration.registerSubModel(PathElement.pathElement(SERVER_CONFIG), HostDescriptionProviders.SERVER_PROVIDER);
@@ -473,7 +473,7 @@ public class ParseAndMarshalModelsTestCase {
                 //server interfaces
                 ManagementResourceRegistration serverInterfaces = servers.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
                 serverInterfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
-                InterfaceCriteriaWriteHandler.register(serverInterfaces);
+                InterfaceCriteriaWriteHandler.CONFIG_ONLY.register(serverInterfaces);
 
                 // Server system Properties
                 ManagementResourceRegistration serverSysProps = servers.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SERVER_SYSTEM_PROPERTIES_PROVIDER);
@@ -576,30 +576,30 @@ public class ParseAndMarshalModelsTestCase {
             controller.execute(op, null, null, null);
         }
     }
-    
-    
+
+
 
     //  Get-config methods
-    
+
     private File getOriginalStandaloneXml(String profile) throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.project.dir", "../../.."), 
+                System.getProperty("jbossas.project.dir", "../../.."),
                 "build/target/generated-configs/standalone/configuration/" + profile
         );
     }
 
     private File getDomainConfigDir() throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.project.dir", "../../.."), 
+                System.getProperty("jbossas.project.dir", "../../.."),
                 "build/target/generated-configs/domain/configuration"
         );
     }
-    
+
     private File getHostConfigDir() throws FileNotFoundException {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.project.dir", "../../.."), 
+                System.getProperty("jbossas.project.dir", "../../.."),
                 "build/src/main/resources/domain/configuration"
         );
     }
