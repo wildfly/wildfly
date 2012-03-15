@@ -97,7 +97,10 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
 
     public static final EJB3Subsystem12Parser INSTANCE = new EJB3Subsystem12Parser();
 
-    private EJB3Subsystem12Parser() {
+    protected EJB3Subsystem12Parser() {
+    }
+
+    protected void writeAttributes(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
     }
 
     /**
@@ -106,12 +109,11 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(EJB3Extension.NAMESPACE_1_2, false);
+        context.startSubsystemElement(getExpectedNamespace().getUriString(), false);
 
         ModelNode model = context.getModelNode();
 
-        if (model.hasDefined(EJB3SubsystemModel.ENABLE_STATISTICS))
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.ENABLE_STATISTICS.getLocalName(), model.require(EJB3SubsystemModel.ENABLE_STATISTICS).asString());
+        writeAttributes(writer, context);
 
         // write the session-bean element
         if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL) || model.hasDefined(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)
@@ -272,6 +274,17 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         }
     }
 
+    protected void readAttribute(final ModelNode subsystemAddOperation, final XMLExtendedStreamReader reader, final int i) throws XMLStreamException {
+        ParseUtils.requireNoNamespaceAttribute(reader, i);
+        throw ParseUtils.unexpectedAttribute(reader, i);
+    }
+
+    protected void readAttributes(final ModelNode subsystemAddOperation, final XMLExtendedStreamReader reader) throws XMLStreamException {
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            readAttribute(subsystemAddOperation, reader, i);
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -285,89 +298,72 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
 
         operations.add(ejb3SubsystemAddOperation);
 
-        for (int i = 0; i < reader.getAttributeCount(); i++) {
-            ParseUtils.requireNoNamespaceAttribute(reader, i);
-            String value = reader.getAttributeValue(i);
-            EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-                case ENABLE_STATISTICS: {
-                    EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
-                    break;
-                }
-                default: {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
+        readAttributes(ejb3SubsystemAddOperation, reader);
+
         // elements
         final EnumSet<EJB3SubsystemXMLElement> encountered = EnumSet.noneOf(EJB3SubsystemXMLElement.class);
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
-            switch (EJB3SubsystemNamespace.forUri(reader.getNamespaceURI())) {
-                case EJB3_1_2: {
-                    final EJB3SubsystemXMLElement element = EJB3SubsystemXMLElement.forName(reader.getLocalName());
-                    if (!encountered.add(element)) {
-                        throw unexpectedElement(reader);
-                    }
-                    switch (element) {
-                        case CACHES: {
-                            this.parseCaches(reader, operations);
-                            break;
-                        }
-                        case PASSIVATION_STORES: {
-                            this.parsePassivationStores(reader, operations);
-                            break;
-                        }
-                        case MDB: {
-                            // read <mdb>
-                            this.parseMDB(reader, operations, ejb3SubsystemAddOperation);
-                            break;
-                        }
-                        case ENTITY_BEAN: {
-                            // read <entity-bean>
-                            this.parseEntityBean(reader, operations, ejb3SubsystemAddOperation);
-                            break;
-                        }
-                        case POOLS: {
-                            // read <pools>
-                            this.parsePools(reader, operations);
-                            break;
-                        }
-                        case REMOTE: {
-                            // read <remote>
-                            parseRemote(reader, operations);
-                            break;
-                        }
-                        case ASYNC: {
-                            // read <remote>
-                            parseAsync(reader, operations);
-                            break;
-                        }
-                        case SESSION_BEAN: {
-                            // read <session-bean>
-                            this.parseSessionBean(reader, operations, ejb3SubsystemAddOperation);
-                            break;
-                        }
-                        case TIMER_SERVICE: {
-                            parseTimerService(reader, operations);
-                            break;
-                        }
-                        case THREAD_POOLS: {
-                            parseThreadPools(reader, operations);
-                            break;
-                        }
-                        case IIOP: {
-                            parseIIOP(reader, operations);
-                            break;
-                        }
-                        case IN_VM_REMOTE_INTERFACE_INVOCATION:
-                            parseInVMRemoteInterfaceInvocation(reader, ejb3SubsystemAddOperation);
-                            break;
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            if (EJB3SubsystemNamespace.forUri(reader.getNamespaceURI()) != getExpectedNamespace()) {
+                throw unexpectedElement(reader);
+            }
+            final EJB3SubsystemXMLElement element = EJB3SubsystemXMLElement.forName(reader.getLocalName());
+            if (!encountered.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case CACHES: {
+                    this.parseCaches(reader, operations);
                     break;
                 }
+                case PASSIVATION_STORES: {
+                    this.parsePassivationStores(reader, operations);
+                    break;
+                }
+                case MDB: {
+                    // read <mdb>
+                    this.parseMDB(reader, operations, ejb3SubsystemAddOperation);
+                    break;
+                }
+                case ENTITY_BEAN: {
+                    // read <entity-bean>
+                    this.parseEntityBean(reader, operations, ejb3SubsystemAddOperation);
+                    break;
+                }
+                case POOLS: {
+                    // read <pools>
+                    this.parsePools(reader, operations);
+                    break;
+                }
+                case REMOTE: {
+                    // read <remote>
+                    parseRemote(reader, operations);
+                    break;
+                }
+                case ASYNC: {
+                    // read <remote>
+                    parseAsync(reader, operations);
+                    break;
+                }
+                case SESSION_BEAN: {
+                    // read <session-bean>
+                    this.parseSessionBean(reader, operations, ejb3SubsystemAddOperation);
+                    break;
+                }
+                case TIMER_SERVICE: {
+                    parseTimerService(reader, operations);
+                    break;
+                }
+                case THREAD_POOLS: {
+                    parseThreadPools(reader, operations);
+                    break;
+                }
+                case IIOP: {
+                    parseIIOP(reader, operations);
+                    break;
+                }
+                case IN_VM_REMOTE_INTERFACE_INVOCATION:
+                    parseInVMRemoteInterfaceInvocation(reader, ejb3SubsystemAddOperation);
+                    break;
                 default: {
                     throw unexpectedElement(reader);
                 }
@@ -1302,6 +1298,10 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             operation.get(PASSIVATE_EVENTS_ON_REPLICATE).set(passivateEventsOnReplicate);
         }
         return operation;
+    }
+
+    protected EJB3SubsystemNamespace getExpectedNamespace() {
+        return EJB3SubsystemNamespace.EJB3_1_2;
     }
 
     private PathAddress getEJB3SubsystemAddress() {
