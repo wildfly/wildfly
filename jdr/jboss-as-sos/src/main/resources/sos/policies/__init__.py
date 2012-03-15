@@ -1,3 +1,5 @@
+from __future__ import with_statement
+
 import os
 import re
 import platform
@@ -129,13 +131,19 @@ No changes will be made to your system.
         self.package_manager = PackageManager()
         self._valid_subclasses = []
 
-    @property
-    def valid_subclasses(self):
+    def get_valid_subclasses(self):
         return [IndependentPlugin] + self._valid_subclasses
 
-    @valid_subclasses.setter
-    def valid_subclasses(self, subclasses):
+    def set_valid_subclasses(self, subclasses):
         self._valid_subclasses = subclasses
+
+    def del_valid_subclasses(self):
+        del self._valid_subclasses
+
+    valid_subclasses = property(get_valid_subclasses,
+            set_valid_subclasses,
+            del_valid_subclasses,
+            "list of subclasses that this policy can process")
 
     def check(self):
         """
