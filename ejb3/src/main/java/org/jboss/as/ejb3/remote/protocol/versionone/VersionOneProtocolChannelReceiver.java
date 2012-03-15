@@ -41,6 +41,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,6 +72,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     private final MarshallerFactory marshallerFactory;
     private final ExecutorService executorService;
     private final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector;
+    private final Set<ClusterTopologyUpdateListener> clusterTopologyUpdateListeners = new HashSet<ClusterTopologyUpdateListener>();
 
     public VersionOneProtocolChannelReceiver(final Channel channel, final DeploymentRepository deploymentRepository,
                                              final EJBRemoteTransactionsRepository transactionsRepository, final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector,
@@ -102,8 +104,13 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             logger.warn("Could not send cluster formation message to the client on channel " + channel, ioe);
         }
         for (final Registry<String, List<ClientMapping>> cluster : clusters) {
-            // add the listener
-            cluster.addListener(new ClusterTopologyUpdateListener(cluster.getName(), this));
+            // add the topology update listener
+            final ClusterTopologyUpdateListener clusterTopologyUpdateListener = new ClusterTopologyUpdateListener(cluster, this);
+            cluster.addListener(clusterTopologyUpdateListener);
+
+            // keep track of this topology update listener so that we can unregister it when the channel is closed and
+            // we no longer are interested in the topology updates
+            this.clusterTopologyUpdateListeners.add(clusterTopologyUpdateListener);
         }
     }
 
@@ -114,8 +121,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
-            this.deploymentRepository.removeListener(this);
-            this.clientMappingRegistryCollector.removeListener(this);
+            this.cleanupOnChannelDown();
         }
     }
 
@@ -126,8 +132,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         } catch (IOException e) {
             // ignore
         } finally {
-            this.deploymentRepository.removeListener(this);
-            this.clientMappingRegistryCollector.removeListener(this);
+            this.cleanupOnChannelDown();
         }
     }
 
@@ -293,13 +298,24 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         }
     }
 
+    /**
+     * Does all the necessary cleanup when a channel is no longer usable
+     */
+    private void cleanupOnChannelDown() {
+        // we no longer are interested in cluster topology updates, so unregister the update listener
+        for (final ClusterTopologyUpdateListener clusterTopologyUpdateListener : this.clusterTopologyUpdateListeners) {
+            clusterTopologyUpdateListener.unregisterListener();
+        }
+        this.deploymentRepository.removeListener(this);
+        this.clientMappingRegistryCollector.removeListener(this);
+    }
+
     private class ChannelCloseHandler implements CloseHandler<Channel> {
 
         @Override
         public void handleClose(Channel closedChannel, IOException exception) {
             logger.debug("Channel " + closedChannel + " closed");
-            VersionOneProtocolChannelReceiver.this.deploymentRepository.removeListener(VersionOneProtocolChannelReceiver.this);
-            VersionOneProtocolChannelReceiver.this.clientMappingRegistryCollector.removeListener(VersionOneProtocolChannelReceiver.this);
+            VersionOneProtocolChannelReceiver.this.cleanupOnChannelDown();
         }
     }
 
@@ -310,10 +326,12 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     private class ClusterTopologyUpdateListener implements Registry.Listener<String, List<ClientMapping>> {
         private final String clusterName;
         private final VersionOneProtocolChannelReceiver channelReceiver;
+        private final Registry<String, List<ClientMapping>> cluster;
 
-        ClusterTopologyUpdateListener(final String clusterName, final VersionOneProtocolChannelReceiver channelReceiver) {
+        ClusterTopologyUpdateListener(Registry<String, List<ClientMapping>> cluster, final VersionOneProtocolChannelReceiver channelReceiver) {
             this.channelReceiver = channelReceiver;
-            this.clusterName = clusterName;
+            this.clusterName = cluster.getName();
+            this.cluster = cluster;
         }
 
         @Override
@@ -337,6 +355,10 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             } catch (IOException ioe) {
                 logger.warn("Could not write a cluster node removal message to channel " + this.channelReceiver.channel, ioe);
             }
+        }
+
+        private void unregisterListener() {
+            this.cluster.removeListener(this);
         }
 
         private void sendClusterNodesRemoved(final Set<String> removedNodes) throws IOException {
