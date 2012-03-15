@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
@@ -46,6 +44,8 @@ import org.jboss.as.threads.ThreadFactoryResolver;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+
 /**
  * Extension that provides the EJB3 subsystem.
  *
@@ -55,9 +55,10 @@ import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
 public class EJB3Extension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "ejb3";
-    public static final String NAMESPACE_1_0 = "urn:jboss:domain:ejb3:1.0";
-    public static final String NAMESPACE_1_1 = "urn:jboss:domain:ejb3:1.1";
-    public static final String NAMESPACE_1_2 = "urn:jboss:domain:ejb3:1.2";
+    public static final String NAMESPACE_1_0 = EJB3SubsystemNamespace.EJB3_1_0.getUriString();
+    public static final String NAMESPACE_1_1 = EJB3SubsystemNamespace.EJB3_1_1.getUriString();
+    public static final String NAMESPACE_1_2 = EJB3SubsystemNamespace.EJB3_1_2.getUriString();
+    public static final String NAMESPACE_1_3 = EJB3SubsystemNamespace.EJB3_1_3.getUriString();
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
@@ -78,7 +79,7 @@ public class EJB3Extension implements Extension {
 
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION);
 
-        subsystem.registerXMLElementWriter(EJB3Subsystem12Parser.INSTANCE);
+        subsystem.registerXMLElementWriter(EJB3Subsystem13Parser.INSTANCE);
 
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(EJB3SubsystemRootResourceDefinition.INSTANCE);
 
@@ -128,6 +129,7 @@ public class EJB3Extension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_0, EJB3Subsystem10Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_1, EJB3Subsystem11Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_2, EJB3Subsystem12Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_3, EJB3Subsystem13Parser.INSTANCE);
     }
 
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {

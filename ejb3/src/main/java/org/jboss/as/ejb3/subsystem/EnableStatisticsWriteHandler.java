@@ -57,9 +57,7 @@ class EnableStatisticsWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
     void updateToRuntime(final OperationContext context, final ModelNode model) throws OperationFailedException {
         final ModelNode enableStatisticsModel = ENABLE_STATISTICS.resolveModelAttribute(context, model);
-        if (!enableStatisticsModel.isDefined())
-            return;
-        final boolean enableStatistics = enableStatisticsModel.asBoolean();
+        final boolean enableStatistics = enableStatisticsModel.isDefined() ? enableStatisticsModel.asBoolean() : false;
         utilities(context).setStatisticsEnabled(enableStatistics);
     }
 
