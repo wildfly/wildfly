@@ -34,9 +34,7 @@ enum Element {
     // must be first
     UNKNOWN(null),
 
-    XTS_ENVIRONMENT("xts-environment"),
-
-    ;
+    XTS_ENVIRONMENT(CommonAttributes.XTS_ENVIRONMENT),;
 
     private final String name;
 
@@ -59,7 +57,7 @@ enum Element {
         final Map<String, Element> map = new HashMap<String, Element>();
         for (Element element : values()) {
             final String name = element.getLocalName();
-            if (name != null) map.put(name, element);
+            if (name != null) { map.put(name, element); }
         }
         MAP = map;
     }

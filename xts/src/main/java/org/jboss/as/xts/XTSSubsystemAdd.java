@@ -22,24 +22,14 @@
 
 package org.jboss.as.xts;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.as.webservices.service.EndpointPublishService;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.jbossts.XTSService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -47,6 +37,13 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.publish.Context;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.jboss.as.xts.XTSSubsystemDefinition.ENVIRONMENT_URL;
 
 
 /**
@@ -75,6 +72,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private static class EndpointInfo {
         String SEIClassname;
         String URLPattern;
+
         EndpointInfo(String seiClassname, String urlPattern) {
             this.SEIClassname = seiClassname;
             this.URLPattern = urlPattern;
@@ -89,6 +87,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     static class ContextInfo {
         String contextPath;
         EndpointInfo[] endpointInfo;
+
         ContextInfo(String contextPath, EndpointInfo[] endpointInfo) {
             this.contextPath = contextPath;
             this.endpointInfo = endpointInfo;
@@ -102,12 +101,12 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
      */
     private static final ContextInfo[] contextDefinitions = {
             new ContextInfo("ws-c11",
-                    new EndpointInfo[] {
+                    new EndpointInfo[]{
                             new EndpointInfo("com.arjuna.webservices11.wscoor.sei.ActivationPortTypeImpl", "ActivationService"),
                             new EndpointInfo("com.arjuna.webservices11.wscoor.sei.RegistrationPortTypeImpl", "RegistrationService")
-                            }),
+                    }),
             new ContextInfo("ws-t11-coordinator",
-                    new EndpointInfo[] {
+                    new EndpointInfo[]{
                             new EndpointInfo("com.arjuna.webservices11.wsat.sei.CoordinatorPortTypeImpl", "CoordinatorService"),
                             new EndpointInfo("com.arjuna.webservices11.wsat.sei.CompletionCoordinatorPortTypeImpl", "CompletionCoordinatorService"),
                             new EndpointInfo("com.arjuna.webservices11.wsat.sei.CompletionCoordinatorRPCPortTypeImpl", "CompletionCoordinatorRPCService"),
@@ -115,28 +114,26 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                             new EndpointInfo("com.arjuna.webservices11.wsba.sei.BusinessAgreementWithParticipantCompletionCoordinatorPortTypeImpl", "BusinessAgreementWithParticipantCompletionCoordinatorService"),
                             new EndpointInfo("com.arjuna.webservices11.wsarjtx.sei.TerminationCoordinatorPortTypeImpl", "TerminationCoordinatorService"),
                             new EndpointInfo("com.arjuna.webservices11.wsarjtx.sei.TerminationCoordinatorRPCPortTypeImpl", "TerminationCoordinatorRPCService")
-                            }),
+                    }),
             new ContextInfo("ws-t11-participant",
-                    new EndpointInfo[] {
+                    new EndpointInfo[]{
                             new EndpointInfo("com.arjuna.webservices11.wsat.sei.ParticipantPortTypeImpl", "ParticipantService"),
                             new EndpointInfo("com.arjuna.webservices11.wsba.sei.BusinessAgreementWithCoordinatorCompletionParticipantPortTypeImpl", "BusinessAgreementWithCoordinatorCompletionParticipantService"),
                             new EndpointInfo("com.arjuna.webservices11.wsba.sei.BusinessAgreementWithParticipantCompletionParticipantPortTypeImpl", "BusinessAgreementWithParticipantCompletionParticipantService"),
-                            }),
+                    }),
             new ContextInfo("ws-t11-client",
-                    new EndpointInfo[] {
+                    new EndpointInfo[]{
                             new EndpointInfo("com.arjuna.webservices11.wsat.sei.CompletionInitiatorPortTypeImpl", "CompletionInitiatorService"),
                             new EndpointInfo("com.arjuna.webservices11.wsarjtx.sei.TerminationParticipantPortTypeImpl", "TerminationParticipantService")
-                            })
-            };
+                    })
+    };
 
     /**
      * the hsot name used when deploying endpoints for the local host via the endpoint publisher service
      */
+    //todo default host should be read from web subsystem / service
     private static final String ENDPOINT_SERVICE_HOST_NAME = "default-host";
 
-    private static final SimpleAttributeDefinition ENVIRONMENT = new SimpleAttributeDefinition(CommonAttributes.XTS_ENVIRONMENT, ModelType.OBJECT, true);
-    private static final AttributeDefinition URL = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.URL, ModelType.STRING, true)
-            .setAllowExpression(true).build();
 
     private XTSSubsystemAdd() {
     }
@@ -147,22 +144,13 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        ModelNode environmentNode = ENVIRONMENT.validateOperation(operation);
-        // URL.validateOperation will do a conversion to ModelType.EXPRESSION if necessary, same as what the parser does
-        // This is necessary to handle the case of the "add" operation being done by a mgmt client post-boot
-        ModelNode urlNode = environmentNode.isDefined() ? URL.validateOperation(environmentNode) : new ModelNode();
-        model.get(CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.URL).set(urlNode);
-        // Brian Stansberry 2012/03/08: TODO get rid of this complex "XTS_ENVIRONMENT" attribute and for legacy
-        // compatibility only add a :read-attribute handler that can synthesize the attribute value from whatever
-        // resource structure replaces it. By "get rid of" I mean either make the "url" attribute a simple child of
-        // the subsystem, or, if there will need to be multiple structures to group sets of attributes together,
-        // create a properly addressable resource for each.
+        ENVIRONMENT_URL.validateAndSet(operation, model);
     }
 
 
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final String coordinatorURL = model.get(CommonAttributes.XTS_ENVIRONMENT,ModelDescriptionConstants.URL).isDefined() ? context.resolveExpressions(model.get(CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.URL)).asString() : null;
+        final String coordinatorURL = ENVIRONMENT_URL.resolveModelAttribute(context, model).asString();
         if (coordinatorURL != null && XtsAsLogger.ROOT_LOGGER.isDebugEnabled()) {
             XtsAsLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s\n", coordinatorURL);
         }
@@ -170,74 +158,74 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final ServiceTarget target = context.getServiceTarget();
 
-                // TODO eventually we should add a config service which manages the XTS configuration
-                // this will allow us to include a switch enabling or disabling deployment of
-                // endpoints specific to client, coordinator or participant and then deploy
-                // and redeploy the relevant endpoints as needed/ the same switches can be used
-                // byte the XTS service to decide whether to perfomr client, coordinator or
-                // participant initialisation. we shoudl also provide config switches which
-                // decide whether to initialise classes and deploy services for AT, BA or both.
-                // for now we will just deploy all the endpoints and always do client, coordinator
-                // and participant init for both AT and BA.
+        // TODO eventually we should add a config service which manages the XTS configuration
+        // this will allow us to include a switch enabling or disabling deployment of
+        // endpoints specific to client, coordinator or participant and then deploy
+        // and redeploy the relevant endpoints as needed/ the same switches can be used
+        // byte the XTS service to decide whether to perfomr client, coordinator or
+        // participant initialisation. we shoudl also provide config switches which
+        // decide whether to initialise classes and deploy services for AT, BA or both.
+        // for now we will just deploy all the endpoints and always do client, coordinator
+        // and participant init for both AT and BA.
 
-                // add an endpoint publisher service for each of the required endpoint contexts
-                // specifying all the relevant URL patterns and SEI classes
+        // add an endpoint publisher service for each of the required endpoint contexts
+        // specifying all the relevant URL patterns and SEI classes
 
-                final ClassLoader loader = XTSService.class.getClassLoader();
-                ServiceBuilder<Context> endpointBuilder;
-                ArrayList<ServiceController<Context>> controllers = new ArrayList<ServiceController<Context>>();
-                for (ContextInfo contextInfo : contextDefinitions) {
-                    String contextName = contextInfo.contextPath;
-                    Map<String, String> map = new HashMap<String, String>();
-                    for (EndpointInfo endpointInfo : contextInfo.endpointInfo) {
-                        map.put(endpointInfo.URLPattern, endpointInfo.SEIClassname);
-                    }
-                    endpointBuilder = EndpointPublishService.createServiceBuilder(target, contextName, loader,
-                            ENDPOINT_SERVICE_HOST_NAME, map);
+        final ClassLoader loader = XTSService.class.getClassLoader();
+        ServiceBuilder<Context> endpointBuilder;
+        ArrayList<ServiceController<Context>> controllers = new ArrayList<ServiceController<Context>>();
+        for (ContextInfo contextInfo : contextDefinitions) {
+            String contextName = contextInfo.contextPath;
+            Map<String, String> map = new HashMap<String, String>();
+            for (EndpointInfo endpointInfo : contextInfo.endpointInfo) {
+                map.put(endpointInfo.URLPattern, endpointInfo.SEIClassname);
+            }
+            endpointBuilder = EndpointPublishService.createServiceBuilder(target, contextName, loader,
+                    ENDPOINT_SERVICE_HOST_NAME, map);
 
-                    controllers.add(endpointBuilder.setInitialMode(Mode.ACTIVE)
-                        .install());
-                }
+            controllers.add(endpointBuilder.setInitialMode(Mode.ACTIVE)
+                    .install());
+        }
 
-                // add an XTS service which depends on all the WS endpoints
+        // add an XTS service which depends on all the WS endpoints
 
-                final XTSManagerService xtsService = new XTSManagerService(coordinatorURL);
+        final XTSManagerService xtsService = new XTSManagerService(coordinatorURL);
 
-                // this service needs to depend on the transaction recovery service
-                // because it can only initialise XTS recovery once the transaction recovery
-                // service has initialised the orb layer
+        // this service needs to depend on the transaction recovery service
+        // because it can only initialise XTS recovery once the transaction recovery
+        // service has initialised the orb layer
 
-                ServiceBuilder<?> xtsServiceBuilder = target.addService(XTSServices.JBOSS_XTS_MAIN, xtsService);
-                xtsServiceBuilder
-                        .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER);
+        ServiceBuilder<?> xtsServiceBuilder = target.addService(XTSServices.JBOSS_XTS_MAIN, xtsService);
+        xtsServiceBuilder
+                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER);
 
-                // this service needs to depend on JBossWS Config Service to be notified of the JBoss WS config (bind address, port etc)
-                xtsServiceBuilder.addDependency(WSServices.CONFIG_SERVICE, ServerConfig.class, xtsService.getWSServerConfig());
+        // this service needs to depend on JBossWS Config Service to be notified of the JBoss WS config (bind address, port etc)
+        xtsServiceBuilder.addDependency(WSServices.CONFIG_SERVICE, ServerConfig.class, xtsService.getWSServerConfig());
 
-                // the service also needs to depend on the endpoint services
-                for (ServiceController<Context> controller : controllers) {
-                    xtsServiceBuilder.addDependency(controller.getName());
-                }
+        // the service also needs to depend on the endpoint services
+        for (ServiceController<Context> controller : controllers) {
+            xtsServiceBuilder.addDependency(controller.getName());
+        }
 
-                xtsServiceBuilder
-                        .setInitialMode(Mode.ACTIVE)
-                        .install();
+        xtsServiceBuilder
+                .setInitialMode(Mode.ACTIVE)
+                .install();
 
-                // WS-AT / JTA Transaction bridge services:
+        // WS-AT / JTA Transaction bridge services:
 
-                final TxBridgeInboundRecoveryService txBridgeInboundRecoveryService = new TxBridgeInboundRecoveryService();
-                ServiceBuilder<?> txBridgeInboundRecoveryServiceBuilder =
-                        target.addService(XTSServices.JBOSS_XTS_TXBRIDGE_INBOUND_RECOVERY, txBridgeInboundRecoveryService);
-                txBridgeInboundRecoveryServiceBuilder.addDependency(XTSServices.JBOSS_XTS_MAIN);
+        final TxBridgeInboundRecoveryService txBridgeInboundRecoveryService = new TxBridgeInboundRecoveryService();
+        ServiceBuilder<?> txBridgeInboundRecoveryServiceBuilder =
+                target.addService(XTSServices.JBOSS_XTS_TXBRIDGE_INBOUND_RECOVERY, txBridgeInboundRecoveryService);
+        txBridgeInboundRecoveryServiceBuilder.addDependency(XTSServices.JBOSS_XTS_MAIN);
 
-                txBridgeInboundRecoveryServiceBuilder.setInitialMode(Mode.ACTIVE).install();
+        txBridgeInboundRecoveryServiceBuilder.setInitialMode(Mode.ACTIVE).install();
 
-                final TxBridgeOutboundRecoveryService txBridgeOutboundRecoveryService = new TxBridgeOutboundRecoveryService();
-                ServiceBuilder<?> txBridgeOutboundRecoveryServiceBuilder =
-                        target.addService(XTSServices.JBOSS_XTS_TXBRIDGE_OUTBOUND_RECOVERY, txBridgeOutboundRecoveryService);
-                txBridgeOutboundRecoveryServiceBuilder.addDependency(XTSServices.JBOSS_XTS_MAIN);
+        final TxBridgeOutboundRecoveryService txBridgeOutboundRecoveryService = new TxBridgeOutboundRecoveryService();
+        ServiceBuilder<?> txBridgeOutboundRecoveryServiceBuilder =
+                target.addService(XTSServices.JBOSS_XTS_TXBRIDGE_OUTBOUND_RECOVERY, txBridgeOutboundRecoveryService);
+        txBridgeOutboundRecoveryServiceBuilder.addDependency(XTSServices.JBOSS_XTS_MAIN);
 
-                txBridgeOutboundRecoveryServiceBuilder.setInitialMode(Mode.ACTIVE).install();
+        txBridgeOutboundRecoveryServiceBuilder.setInitialMode(Mode.ACTIVE).install();
 
     }
 }

@@ -21,12 +21,11 @@
 */
 package org.jboss.as.xts;
 
-import java.io.IOException;
-
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
+import java.io.IOException;
+
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class XTSSubsystemTestCase extends AbstractSubsystemBaseTest {
@@ -37,9 +36,6 @@ public class XTSSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return
-            "<subsystem xmlns=\"urn:jboss:domain:xts:1.0\">" +
-            "    <xts-environment url=\"http://localhost:8080/ws-c11/ActivationService\"/>" +
-            "</subsystem>";
+        return readResource("subsystem.xml");
     }
 }
