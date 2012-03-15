@@ -140,14 +140,17 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private ModelNode resolveConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
         ModelNode res = new ModelNode();
+        ModelNode unresolvedContainer = model.get(Constants.CONTAINER);
         for (AttributeDefinition attr : WebContainerDefinition.CONTAINER_ATTRIBUTES) {
-            res.get(Constants.CONTAINER).get(attr.getName()).set(attr.resolveModelAttribute(context, model));
+            res.get(Constants.CONTAINER).get(attr.getName()).set(attr.resolveModelAttribute(context, unresolvedContainer));
         }
+        ModelNode unresolvedStaticResources = model.get(Constants.STATIC_RESOURCES);
         for (SimpleAttributeDefinition attr : WebStaticResources.STATIC_ATTRIBUTES) {
-            res.get(Constants.STATIC_RESOURCES).get(attr.getName()).set(attr.resolveModelAttribute(context, model));
+            res.get(Constants.STATIC_RESOURCES).get(attr.getName()).set(attr.resolveModelAttribute(context, unresolvedStaticResources));
         }
+        ModelNode unresolvedJspConf = model.get(Constants.JSP_CONFIGURATION);
         for (SimpleAttributeDefinition attr : WebJSPDefinition.JSP_ATTRIBUTES) {
-            res.get(Constants.JSP_CONFIGURATION).get(attr.getName()).set(attr.resolveModelAttribute(context, model));
+            res.get(Constants.JSP_CONFIGURATION).get(attr.getName()).set(attr.resolveModelAttribute(context, unresolvedJspConf));
         }
 
         return res;
