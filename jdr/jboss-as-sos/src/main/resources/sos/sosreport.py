@@ -945,14 +945,15 @@ class SoSReport(object):
 
             self.postproc()
             self.version()
-
         except SystemExit:
             return None
+        except:
+            traceback.print_exc()
 
         try:
             return self.final_work()
-        except Exception, e:
-            traceback.format_exc()
+        except:
+            traceback.print_exc()
 
 def main(args):
     """The main entry point"""
