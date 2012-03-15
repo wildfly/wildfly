@@ -138,9 +138,10 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
         if (modelconf.hasDefined(CommonAttributes.PROXY_LIST)) {
             config.setProxyList(PROXY_LIST.resolveModelAttribute(context, modelconf).asString());
         }
-
+        if (modelconf.hasDefined(CommonAttributes.ADVERTISE_SECURITY_KEY)) {
+            config.setAdvertiseSecurityKey(ADVERTISE_SECURITY_KEY.resolveModelAttribute(context, modelconf).asString());
+        }
         config.setProxyURL(PROXY_URL.resolveModelAttribute(context, modelconf).asString());
-        config.setAdvertiseSecurityKey(ADVERTISE_SECURITY_KEY.resolveModelAttribute(context, modelconf).asString());
         config.setExcludedContexts(EXCLUDED_CONTEXTS.resolveModelAttribute(context, modelconf).asString().trim());
         config.setAutoEnableContexts(AUTO_ENABLE_CONTEXTS.resolveModelAttribute(context, modelconf).asBoolean());
 
