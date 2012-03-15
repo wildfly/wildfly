@@ -128,7 +128,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
             //create service pointing to rar for other future activations
             ServiceName serviceName = ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(deploymentUnitName);
 
-            InactiveResourceAdapterDeploymentService service = new InactiveResourceAdapterDeploymentService(connectorXmlDescriptor, module, deployment, deploymentUnitName, registration);
+            InactiveResourceAdapterDeploymentService service = new InactiveResourceAdapterDeploymentService(connectorXmlDescriptor, module, deployment, deploymentUnitName, registration, serviceTarget);
             ServiceBuilder builder = serviceTarget
                     .addService(serviceName, service);
             builder.setInitialMode(Mode.ACTIVE).install();

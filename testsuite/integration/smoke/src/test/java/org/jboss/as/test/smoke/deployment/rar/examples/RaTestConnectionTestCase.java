@@ -53,10 +53,9 @@ import java.util.List;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(RaTestConnectionTestCase.RaTestConnectionTestCaseSetup.class)
-@Ignore("AS7-3941")
 public class RaTestConnectionTestCase extends ContainerResourceMgmtTestBase {
     private static ModelNode address;
-    private static String deploymentName = "archive_mult.rar";
+    private static String deploymentName = "testcon_mult.rar";
 
     static class RaTestConnectionTestCaseSetup extends AbstractMgmtServerSetupTask {
 
@@ -68,7 +67,7 @@ public class RaTestConnectionTestCase extends ContainerResourceMgmtTestBase {
             address.protect();
             String xml = readXmlResource(System.getProperty("jbossas.ts.submodule.dir") + "/src/test/resources/config/testcon_multiple.xml");
             List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
-           System.out.println(operations);
+            System.out.println(operations);
             executeOperation(operationListToCompositeOperation(operations));
         }
 

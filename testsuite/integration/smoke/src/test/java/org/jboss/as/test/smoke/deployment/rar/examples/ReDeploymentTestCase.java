@@ -31,6 +31,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
@@ -57,10 +58,9 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(ReDeploymentTestCase.ReDeploymentTestCaseSetup.class)
-@Ignore("AS7-3938")
 public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
 
-    static String deploymentName = "basic-after.rar";
+    static String deploymentName = "re-deployment.rar";
 
     @ContainerResource
     private Context context;
@@ -86,7 +86,7 @@ public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
     }
 
     private void setup() throws Exception {
-        String xml = readXmlResource(System.getProperty("jbossas.ts.submodule.dir") + "/src/test/resources/config/basic-after.xml");
+        String xml = readXmlResource(System.getProperty("jbossas.ts.submodule.dir") + "/src/test/resources/config/re-deployment.xml");
         List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdaptersExtension.ResourceAdapterSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
 
@@ -107,7 +107,7 @@ public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
      *
      * @return The deployment archive
      */
-    @Deployment(name = "basic-after.rar", managed=false)
+    @Deployment(name = "re-deployment.rar", managed=false)
     public static ResourceAdapterArchive createDeployment() throws Exception {
 
 
@@ -132,7 +132,7 @@ public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
         setup();
         deployer.undeploy(deploymentName);
         deployer.deploy(deploymentName);
-        MultipleAdminObject1 adminObject1 = (MultipleAdminObject1) context.lookup("after/Name3");
+        MultipleAdminObject1 adminObject1 = (MultipleAdminObject1) context.lookup("redeployed/Name3");
         assertNotNull("AO1 not found", adminObject1);
         deployer.undeploy(deploymentName);
     }
