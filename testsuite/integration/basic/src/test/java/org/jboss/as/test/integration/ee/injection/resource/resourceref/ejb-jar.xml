@@ -27,7 +27,7 @@
             <resource-env-ref>
                 <resource-env-ref-name>MyQueue</resource-env-ref-name>
                 <resource-env-ref-type>javax.jms.Queue</resource-env-ref-type>
-                <mapped-name>java:/queue/test</mapped-name>
+                <mapped-name>java:/queue/myAwesomeQueue</mapped-name>
             </resource-env-ref>
         </session>
 

@@ -22,11 +22,17 @@
 
 package org.jboss.as.test.smoke.jms;
 
+import javax.ejb.EJB;
+import javax.enterprise.event.Observes;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.TextMessage;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
-import org.jboss.as.test.smoke.jms.auxiliary.CreateQueueSetupTask;
+import org.jboss.as.test.jms.auxiliary.CreateQueueSetupTask;
 import org.jboss.as.test.smoke.jms.auxiliary.QueueMessageDrivenBean;
 import org.jboss.as.test.smoke.jms.auxiliary.TransactedQueueMessageSender;
 import org.jboss.logging.Logger;
@@ -38,12 +44,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.EJB;
-import javax.enterprise.event.Observes;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.TextMessage;
 
 /**
  * Tests sending JMS messages to a queue within a transaction

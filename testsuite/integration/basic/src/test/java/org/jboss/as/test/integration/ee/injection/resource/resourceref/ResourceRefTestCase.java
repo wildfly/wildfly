@@ -30,6 +30,8 @@ import javax.sql.DataSource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.jms.auxiliary.CreateQueueSetupTask;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -54,6 +56,7 @@ import org.junit.runner.RunWith;
  * @author Stuart Douglas, Jaikiran Pai, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
+@ServerSetup(CreateQueueSetupTask.class)
 public class ResourceRefTestCase {
     private static final Logger log = Logger.getLogger(ResourceRefTestCase.class);
 
@@ -63,7 +66,7 @@ public class ResourceRefTestCase {
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "managed-bean.war");
         war.addAsWebInfResource(ResourceRefTestCase.class.getPackage(),"web.xml", "web.xml");
-        war.addClasses(ResourceRefTestCase.class, DatasourceManagedBean.class);
+        war.addClasses(ResourceRefTestCase.class, DatasourceManagedBean.class, CreateQueueSetupTask.class);
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "resource-ref-test.jar");
         jar.addClasses(ResourceRefBean.class, ResourceRefRemote.class, StatelessBean.class, StatelessBeanRemote.class, ResUrlChecker.class, ResUrlCheckerBean.class);

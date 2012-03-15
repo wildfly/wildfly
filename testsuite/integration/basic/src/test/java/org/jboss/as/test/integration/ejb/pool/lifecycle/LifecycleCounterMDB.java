@@ -27,7 +27,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
-import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -46,7 +45,7 @@ import javax.naming.NamingException;
 /**
  * @author baranowb
  */
-@MessageDriven(activationConfig = { @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/test") })
+@MessageDriven(activationConfig = { @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/myAwesomeQueue") })
 public class LifecycleCounterMDB implements MessageListener {//TODO: extend ReplyingMDB ?
 
     private static final Logger log = Logger.getLogger(LifecycleCounterMDB.class.getName());

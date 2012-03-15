@@ -39,6 +39,8 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.jms.auxiliary.CreateQueueSetupTask;
 import org.jboss.osgi.spi.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -48,11 +50,12 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests if pooled EJBs have proper lifecycle.
- * 
+ *
  * @author baranowb
- * 
+ *
  */
 @RunWith(Arquillian.class)
+@ServerSetup(CreateQueueSetupTask.class)
 public class PooledEJBLifecycleTestCase {
 
     private static final String MDB_DEPLOYMENT_NAME = "mdb-pool-ejb-callbacks"; // module
@@ -81,6 +84,7 @@ public class PooledEJBLifecycleTestCase {
         archive.addClass(LifecycleCounter.class);
         archive.addClass(LifecycleCounterBean.class);
         archive.addClass(PointlesMathInterface.class);
+        archive.addClass(CreateQueueSetupTask.class);
         log.info(archive.toString(true));
         return archive;
     }
@@ -186,7 +190,7 @@ public class PooledEJBLifecycleTestCase {
         final QueueReceiver receiver = session.createReceiver(replyDestination);
         final Message message = session.createTextMessage("Test");
         message.setJMSReplyTo(replyDestination);
-        final Destination destination = (Destination) ctx.lookup("queue/test");
+        final Destination destination = (Destination) ctx.lookup("queue/myAwesomeQueue");
         final MessageProducer producer = session.createProducer(destination);
         producer.send(message);
         producer.close();
