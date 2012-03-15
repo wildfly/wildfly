@@ -966,8 +966,6 @@
                                                         <exclude name="org/apache/commons/beanutils/**/*"/>
                                                         <!-- AS7-3389 -->
                                                         <exclude name="org/python/jython/standalone/**/*"/>
-                                                        <!-- org/jboss/osgi/metadata/internal/AbstractPackageAttribute -->
-                                                        <exclude name="org/jboss/osgi/framework/main/jbosgi-resolver-metadata-1.0.10.jar"/>
                                                     </fileset>
                                                 </classfiles>
                                                 <sourcefiles encoding="UTF-8">

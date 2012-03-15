@@ -21,6 +21,12 @@
  */
 package org.jboss.as.osgi.service;
 
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
+import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_PREFIX;
+import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SERVICE_PREFIX;
+import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SPEC_SERVICE_PREFIX;
+
 import java.util.List;
 
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -45,15 +51,9 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.framework.ModuleLoaderProvider;
 import org.jboss.osgi.framework.Services;
-import org.jboss.osgi.resolver.XModule;
-import org.jboss.osgi.resolver.XModuleIdentity;
+import org.jboss.osgi.resolver.XIdentityCapability;
+import org.jboss.osgi.resolver.XResource;
 import org.jboss.osgi.spi.NotImplementedException;
-
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
-import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
-import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SERVICE_PREFIX;
-import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SPEC_SERVICE_PREFIX;
 
 /**
  * This is the single {@link ModuleLoader} that the OSGi layer uses for the modules that are associated with the bundles that
@@ -107,13 +107,24 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
     }
 
     /**
+     * Get the module identifier for the given {@link XModule} The returned identifier must be such that it can be used by the
+     * {@link ServiceModuleLoader}
+     */
+    @Override
+    public ModuleIdentifier getModuleIdentifier(XResource resource, int rev) {
+        XIdentityCapability icap = resource.getIdentityCapability();
+        String name = icap.getSymbolicName();
+        String slot = icap.getVersion() + (rev > 0 ? "-rev" + rev : "");
+        return ModuleIdentifier.create(MODULE_PREFIX + name, slot);
+    }
+
+    /**
      * Add a {@link ModuleSpec} for and OSGi module as a service that can later be looked up by the {@link ServiceModuleLoader}
      */
     @Override
     public void addModule(final ModuleSpec moduleSpec) {
         ModuleIdentifier identifier = moduleSpec.getModuleIdentifier();
         ROOT_LOGGER.debugf("Add module spec to loader: %s", identifier);
-
         ServiceName moduleSpecName = ServiceModuleLoader.moduleSpecServiceName(identifier);
         serviceTarget.addService(moduleSpecName, new ValueService<ModuleSpec>(new ImmediateValue<ModuleSpec>(moduleSpec))).install();
     }
@@ -153,29 +164,6 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
             ROOT_LOGGER.debugf("Remove module fom loader: %s", serviceName);
             controller.setMode(Mode.REMOVE);
         }
-    }
-
-    /**
-     * Get the module identifier for the given {@link XModule} The returned identifier must be such that it can be used by the
-     * {@link ServiceModuleLoader}
-     */
-    @Override
-    public ModuleIdentifier getModuleIdentifier(XModule resModule) {
-        if (resModule == null)
-            throw MESSAGES.nullVar("resModule");
-
-        XModuleIdentity moduleId = resModule.getModuleId();
-
-        String slot = moduleId.getVersion().toString();
-        int revision = moduleId.getRevision();
-        if (revision > 0)
-            slot += "-rev" + revision;
-
-        String name = ServiceModuleLoader.MODULE_PREFIX + moduleId.getName();
-        ModuleIdentifier identifier = ModuleIdentifier.create(name, slot);
-        resModule.addAttachment(ModuleIdentifier.class, identifier);
-
-        return identifier;
     }
 
     @Override

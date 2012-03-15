@@ -38,6 +38,7 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
+import org.jboss.modules.log.ModuleLogger;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -190,6 +191,9 @@ public class FrameworkBootstrapService implements Service<Void> {
             props.put(Constants.FRAMEWORK_STORAGE, storage);
         }
 
+        // Provide the ModuleLogger
+        props.put(ModuleLogger.class.getName(), Module.getModuleLogger());
+
         // Setup default system modules
         String sysmodules = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
         if (sysmodules == null) {
@@ -220,10 +224,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             sysPackages.add("org.jboss.as.osgi.service");
             sysPackages.add("org.jboss.logging;version=3.1.0");
             sysPackages.add("org.jboss.osgi.repository;version=1.0");
-            sysPackages.add("org.jboss.osgi.resolver.v2;version=2.0");
             sysPackages.add("org.osgi.service.repository;version=1.0");
-            sysPackages.add("org.osgi.framework.resource;version=1.0");
-            sysPackages.add("org.osgi.framework.wiring;version=1.1");
             sysPackages.add("org.slf4j;version=1.6.1");
             syspackages = sysPackages.toString();
             syspackages = syspackages.substring(1, syspackages.length() - 1);
