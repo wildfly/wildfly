@@ -21,13 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.mdb;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -43,18 +38,27 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.jms.auxiliary.CreateQueueSetupTask;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @RunWith(Arquillian.class)
+@ServerSetup(CreateQueueSetupTask.class)
 public class JMSMessageDrivenBeanTestCase {
     @Deployment
     public static Archive<?> deployment() {
         final Archive<?> deployment = ShrinkWrap.create(JavaArchive.class, "ejb3mdb.jar")
-                .addPackage(ReplyingMDB.class.getPackage());
+                .addPackage(ReplyingMDB.class.getPackage())
+                .addClass(CreateQueueSetupTask.class);
         return deployment;
     }
 
@@ -70,7 +74,7 @@ public class JMSMessageDrivenBeanTestCase {
             final QueueReceiver receiver = session.createReceiver(replyDestination);
             final Message message = session.createTextMessage("Test");
             message.setJMSReplyTo(replyDestination);
-            final Destination destination = (Destination) ctx.lookup("queue/test");
+            final Destination destination = (Destination) ctx.lookup("queue/myAwesomeQueue");
             final MessageProducer producer = session.createProducer(destination);
             producer.send(message);
             producer.close();

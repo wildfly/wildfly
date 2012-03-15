@@ -40,7 +40,7 @@ import javax.jms.TextMessage;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @MessageDriven(activationConfig = {
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/test")
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/myAwesomeQueue")
 })
 public class ReplyingMDB implements MessageListener {
     @Resource(lookup = "java:/JmsXA")

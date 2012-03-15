@@ -82,17 +82,6 @@
                    </entries>
                </pooled-connection-factory>
            </jms-connection-factories>
-
-           <jms-destinations>
-               <jms-queue name="testQueue">
-                   <entry name="queue/test"/>
-                   <entry name="java:jboss/exported/jms/queue/test"/>
-               </jms-queue>
-               <jms-topic name="testTopic">
-                   <entry name="topic/test"/>
-                   <entry name="java:jboss/exported/jms/topic/test"/>
-               </jms-topic>
-           </jms-destinations>
        </hornetq-server>
    </subsystem>
    <supplement name="ha">

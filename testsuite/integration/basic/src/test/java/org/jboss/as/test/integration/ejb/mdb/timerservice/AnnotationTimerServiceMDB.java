@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.mdb.timerservice;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
@@ -28,14 +31,12 @@ import javax.ejb.Timeout;
 import javax.ejb.TimerService;
 import javax.jms.Message;
 import javax.jms.MessageListener;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Stuart Douglas
  */
 @MessageDriven(activationConfig = {
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = "topic/test")
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = "topic/myAwesomeTopic")
 })
 public class AnnotationTimerServiceMDB implements MessageListener {
 
