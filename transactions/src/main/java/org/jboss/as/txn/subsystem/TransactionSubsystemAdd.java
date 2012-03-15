@@ -34,6 +34,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.services.path.RelativePathService;
+import org.jboss.as.jacorb.service.CorbaNamingService;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -386,6 +387,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         //if jts is enabled we need the ORB
         if (jts) {
             transactionManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("jacorb", "orb-service"), ORB.class, transactionManagerService.getOrbInjector());
+            transactionManagerServiceServiceBuilder.addDependency(CorbaNamingService.SERVICE_NAME);
         }
 
         controllers.add(transactionManagerServiceServiceBuilder
