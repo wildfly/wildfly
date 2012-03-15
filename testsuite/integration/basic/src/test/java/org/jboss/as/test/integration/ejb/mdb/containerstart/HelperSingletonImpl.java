@@ -46,8 +46,4 @@ public class HelperSingletonImpl implements HelperSingleton {
     public void reset() {
         barrier.reset();
     }
-    
-    /* public CyclicBarrier getBarrier() {
-        return barrier;
-    } */
 }

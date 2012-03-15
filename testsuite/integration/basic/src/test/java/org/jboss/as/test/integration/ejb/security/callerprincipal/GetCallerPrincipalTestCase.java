@@ -306,7 +306,7 @@ public class GetCallerPrincipalTestCase {
         Session session = null;
 
         try {
-            QueueConnectionFactory qcf = (QueueConnectionFactory) new InitialContext().lookup("java:/RemoteConnectionFactory");
+            QueueConnectionFactory qcf = (QueueConnectionFactory) new InitialContext().lookup("java:/ConnectionFactory");
             Queue queue = (Queue) new InitialContext().lookup("java:jboss/" + QUEUE_NAME);
 
             conn = qcf.createQueueConnection("guest", "guest");
