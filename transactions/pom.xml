@@ -47,6 +47,10 @@
             <artifactId>jboss-as-ee</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-jacorb</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jacorb</groupId>
             <artifactId>jacorb</artifactId>
         </dependency>
