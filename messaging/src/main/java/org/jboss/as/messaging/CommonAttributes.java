@@ -107,12 +107,12 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CLUSTER_CONNECTION_USE_DUPLICATE_DETECTION = new SimpleAttributeDefinition("use-duplicate-detection",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_DUPLICATE_DETECTION), ModelType.BOOLEAN,  true);
 
-    SimpleAttributeDefinition CLUSTER_PASSWORD = new SimpleAttributeDefinition("cluster-password",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD),  ModelType.STRING, true,
+    SimpleAttributeDefinition CLUSTER_PASSWORD = new SimpleAttributeDefinition("cluster-password", "cluster-password",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD), ModelType.STRING, true, true, null,
             AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    SimpleAttributeDefinition CLUSTER_USER = new SimpleAttributeDefinition("cluster-user",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER), ModelType.STRING, true,
+    SimpleAttributeDefinition CLUSTER_USER = new SimpleAttributeDefinition("cluster-user", "cluster-user",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER), ModelType.STRING, true, true, null,
             AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition COMPRESS_LARGE_MESSAGES = new SimpleAttributeDefinition("compress-large-messages",
@@ -331,8 +331,8 @@ public interface CommonAttributes {
     SimpleAttributeDefinition MIN_LARGE_MESSAGE_SIZE = new SimpleAttributeDefinition("min-large-message-size",
             new ModelNode().set(HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE), ModelType.INT,  true, MeasurementUnit.BYTES);
 
-    SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinition("password",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD),  ModelType.STRING, true);
+    SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinition("password", "password",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD), ModelType.STRING, true, true, null);
 
     SimpleAttributeDefinition PAGE_MAX_CACHE_SIZE = new SimpleAttributeDefinition("page-max-cache-size",
             new ModelNode(AddressSettings.DEFAULT_PAGE_MAX_CACHE), ModelType.INT, true);
@@ -466,8 +466,8 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CONNECTION_FACTORY_TYPE = new SimpleAttributeDefinition("factory-type", "factory-type",
             null, ModelType.STRING,  true, false, MeasurementUnit.NONE, ConnectionFactoryTypeValidator.INSTANCE);
 
-    SimpleAttributeDefinition USER = new SimpleAttributeDefinition("user",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER), ModelType.STRING, true);
+    SimpleAttributeDefinition USER = new SimpleAttributeDefinition("user", "user",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER), ModelType.STRING, true, true, null);
 
     SimpleAttributeDefinition USE_GLOBAL_POOLS = new SimpleAttributeDefinition("use-global-pools",
             new ModelNode().set(HornetQClient.DEFAULT_USE_GLOBAL_POOLS), ModelType.BOOLEAN,  true);
