@@ -234,7 +234,8 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
             element = nextElement(reader, DOMAIN_1_0);
         }
         if (element == Element.DEPLOYMENTS) {
-            parseDeployments(reader, address, DOMAIN_1_0, list, true);
+            parseDeployments(reader, address, DOMAIN_1_0, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED),
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
             element = nextElement(reader, DOMAIN_1_0);
         }
 
@@ -343,7 +344,8 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
             element = nextElement(reader, namespace);
         }
         if (element == Element.DEPLOYMENTS) {
-            parseDeployments(reader, address, namespace, list, true);
+            parseDeployments(reader, address, namespace, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED),
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
             element = nextElement(reader, namespace);
         }
 
