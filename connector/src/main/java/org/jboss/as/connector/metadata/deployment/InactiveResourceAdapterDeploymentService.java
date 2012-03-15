@@ -28,6 +28,7 @@ import org.jboss.jca.deployers.DeployersLogger;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -47,8 +48,9 @@ public final class InactiveResourceAdapterDeploymentService implements
     private final InactiveResourceAdapterDeployment value;
 
     public InactiveResourceAdapterDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor,
-                                                    Module module, final String deployment, final String deploymentUnitName, final ManagementResourceRegistration registration) {
-        this.value = new InactiveResourceAdapterDeployment(connectorXmlDescriptor, module, deployment, deploymentUnitName, registration);
+                                                    Module module, final String deployment, final String deploymentUnitName,
+                                                    final ManagementResourceRegistration registration, final ServiceTarget serviceTarget) {
+        this.value = new InactiveResourceAdapterDeployment(connectorXmlDescriptor, module, deployment, deploymentUnitName, registration, serviceTarget);
     }
 
 
@@ -78,15 +80,17 @@ public final class InactiveResourceAdapterDeploymentService implements
         private final String deployment;
         private final String deploymentUnitName;
         private final ManagementResourceRegistration registration;
-
+        private final ServiceTarget serviceTarget;
 
         public InactiveResourceAdapterDeployment(final ConnectorXmlDescriptor connectorXmlDescriptor, final Module module, final String deployment,
-                                                 final String deploymentUnitName, final ManagementResourceRegistration registration) {
+                                                 final String deploymentUnitName, final ManagementResourceRegistration registration,
+                                                 final ServiceTarget serviceTarget) {
             this.connectorXmlDescriptor = connectorXmlDescriptor;
             this.module = module;
             this.deployment = deployment;
             this.deploymentUnitName = deploymentUnitName;
             this.registration = registration;
+            this.serviceTarget = serviceTarget;
         }
 
         public Module getModule() {
@@ -109,6 +113,10 @@ public final class InactiveResourceAdapterDeploymentService implements
             return registration;
         }
 
+        public ServiceTarget getServiceTarget() {
+                    return serviceTarget;
+                }
+
         @Override
         public String toString() {
             return "InactiveResourceAdapterDeployment{" +
@@ -117,6 +125,7 @@ public final class InactiveResourceAdapterDeploymentService implements
                     ", deployment='" + deployment + '\'' +
                     ", deploymentUnitName='" + deploymentUnitName + '\'' +
                     ", registration=" + registration +
+                    ", serviceTarget=" + serviceTarget +
                     '}';
         }
     }

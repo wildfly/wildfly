@@ -1,7 +1,7 @@
 <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
 	<resource-adapters>
 		<resource-adapter>
-			<archive>archive_mult.rar</archive>
+			<archive>testcon_mult.rar</archive>
 			<transaction-support>NoTransaction</transaction-support>
 			<connection-definitions>
 				<connection-definition
