@@ -67,6 +67,7 @@ import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
@@ -560,7 +561,22 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         // setup client side view interceptors
         setupClientViewInterceptors(viewDescription);
         // return created view
+
+        if(viewType == MethodIntf.REMOTE ||
+                viewType == MethodIntf.HOME) {
+            setupRemoteView(viewDescription);
+        }
+
         return viewDescription;
+    }
+
+    protected void setupRemoteView(final EJBViewDescription viewDescription) {
+        viewDescription.getConfigurators().add(new ViewConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.getDependencies().add(EJBRemoteConnectorService.SERVICE_NAME);
+            }
+        });
     }
 
     public Map<String, Collection<String>> getSecurityRoleLinks() {

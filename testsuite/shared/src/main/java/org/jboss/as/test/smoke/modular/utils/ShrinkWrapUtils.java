@@ -21,12 +21,7 @@
  */
 package org.jboss.as.test.smoke.modular.utils;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -36,9 +31,7 @@ import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.FileAsset;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
  *
@@ -57,40 +50,6 @@ public class ShrinkWrapUtils {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, getBaseArchiveName(archiveName));
         addPackages(archive, packages);
         addResources(archiveName, archive);
-        return archive;
-    }
-
-    public static JavaArchive createJavaArchive(String archiveName, Class<?>...classes) {
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, getBaseArchiveName(archiveName));
-        addClasses(archive, classes);
-        addResources(archiveName, archive);
-        return archive;
-    }
-
-    public static WebArchive createWebArchive(String archiveName) {
-        WebArchive archive = ShrinkWrap.create(WebArchive.class, getBaseArchiveName(archiveName));
-        addResources(archiveName, archive);
-        return archive;
-    }
-
-    public static WebArchive createWebArchive(String archiveName, Package...packages) {
-        WebArchive archive = ShrinkWrap.create(WebArchive.class, getBaseArchiveName(archiveName));
-        addPackages(archive, packages);
-        addResources(archiveName, archive);
-        return archive;
-    }
-
-    public static WebArchive createWebArchive(String archiveName, Class<?>...classes) {
-        WebArchive archive = ShrinkWrap.create(WebArchive.class, getBaseArchiveName(archiveName));
-        addClasses(archive, classes);
-        addResources(archiveName, archive);
-        return archive;
-    }
-
-    public static WebArchive createWebArchive(String archiveName, String resourcesName, Class<?>...classes) {
-        WebArchive archive = ShrinkWrap.create(WebArchive.class, getBaseArchiveName(archiveName));
-        addClasses(archive, classes);
-        addResources(resourcesName, archive);
         return archive;
     }
 
@@ -128,40 +87,6 @@ public class ShrinkWrapUtils {
         }
     }
 
-    /**
-     * Writes out a {@link JavaArchive} to the file system
-     *
-     * @param javaArchive The {@link JavaArchive} which will be written out to the file system
-     * @return Returns the {@link File} corresponding to the {@link JavaArchive} which
-     *         was written out to the file system
-     * @throws java.io.IOException
-     */
-    public static File writeToFileSystem(JavaArchive javaArchive, File destDirectory) throws IOException {
-        InputStream inputStream = javaArchive.as(ZipExporter.class).exportAsInputStream();
-        String jarFileName = javaArchive.getName();
-        File jarFile = new File(destDirectory, jarFileName);
-        FileOutputStream fos = new FileOutputStream(jarFile);
-        BufferedOutputStream bos = null;
-        BufferedInputStream bis = null;
-        try {
-            bos = new BufferedOutputStream(fos);
-            bis = new BufferedInputStream(inputStream);
-            byte[] content = new byte[4096];
-            int length;
-            while ((length = bis.read(content)) != -1) {
-                bos.write(content, 0, length);
-            }
-            bos.flush();
-        } finally {
-            if (bos != null) {
-                bos.close();
-            }
-            if (bis != null) {
-                bis.close();
-            }
-        }
-        return jarFile;
-    }
 
     public static void addFiles(Archive<?> archive, File dir, ArchivePath dest) {
         for (String name : dir.list()) {
@@ -182,12 +107,6 @@ public class ShrinkWrapUtils {
     private static void addPackages(ClassContainer<?> archive, Package...packages) {
         for (Package pkg : packages) {
             archive.addPackage(pkg);
-        }
-    }
-
-    private static void addClasses(ClassContainer<?> archive, Class<?>...classes) {
-        for (Class<?> clazz : classes) {
-            archive.addClass(clazz);
         }
     }
 

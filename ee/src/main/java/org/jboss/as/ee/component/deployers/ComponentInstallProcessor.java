@@ -165,6 +165,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             final ViewService viewService = new ViewService(viewConfiguration);
             serviceTarget.addService(serviceName, viewService)
                     .addDependency(createServiceName, Component.class, viewService.getComponentInjector())
+                    .addDependencies(viewConfiguration.getDependencies())
                     .install();
             startBuilder.addDependency(serviceName);
             // The bindings for the view

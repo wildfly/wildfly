@@ -44,6 +44,7 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
@@ -60,13 +61,9 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Assert;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createCompositeNode;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
@@ -80,13 +77,11 @@ public abstract class AbstractMgmtTestBase {
     protected abstract ModelControllerClient getModelControllerClient();
 
     protected ModelNode executeOperation(final ModelNode op, boolean unwrapResult) throws IOException, MgmtOperationException {
-        ModelNode ret = getModelControllerClient().execute(op);
-        if (!unwrapResult) return ret;
-
-        if (!SUCCESS.equals(ret.get(OUTCOME).asString())) {
-            throw new MgmtOperationException("Management operation failed: " + ret.get(FAILURE_DESCRIPTION), op, ret);
+        if(unwrapResult) {
+            return ManagementOperations.executeOperation(getModelControllerClient(), op);
+        } else {
+            return ManagementOperations.executeOperationRaw(getModelControllerClient(), op);
         }
-        return ret.get(RESULT);
     }
 
     protected void executeOperations(final List<ModelNode> operations) throws IOException, MgmtOperationException {

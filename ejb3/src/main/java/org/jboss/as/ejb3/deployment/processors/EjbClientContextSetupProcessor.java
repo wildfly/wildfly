@@ -21,8 +21,12 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
+import org.jboss.as.ejb3.remote.DescriptorBasedEJBClientContextService;
 import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -31,7 +35,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
@@ -61,6 +67,15 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
             logger.debug("Registering EJB client context " + ejbClientContext + " for classloader " + module.getClassLoader());
             tcclBasedEJBClientContextSelector.registerEJBClientContext(ejbClientContext, module.getClassLoader());
         }
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        if(moduleDescription == null) {
+            return;
+        }
+        //we need to make sure all our components have a dependency on the EJB client context
+        final ServiceName clientContextService = getEJBClientContextServiceName(phaseContext);
+        for(final ComponentDescription component : moduleDescription.getComponentDescriptions()) {
+            component.addDependency(clientContextService, ServiceBuilder.DependencyType.REQUIRED);
+        }
     }
 
     @Override
@@ -89,4 +104,23 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
         return ejbClientContextServiceController.getValue();
     }
 
+    private ServiceName getEJBClientContextServiceName(final DeploymentPhaseContext phaseContext) {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final DeploymentUnit parentDeploymentUnit = deploymentUnit.getParent();
+        final EJBClientContext ejbClientContext;
+        // The top level parent deployment unit will have the attachment containing the EJB client context
+        // service name
+        ServiceName serviceName;
+        if (parentDeploymentUnit != null) {
+            ejbClientContext = parentDeploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
+            serviceName = DescriptorBasedEJBClientContextService.BASE_SERVICE_NAME.append(parentDeploymentUnit.getName());
+        } else {
+            ejbClientContext = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
+            serviceName = DescriptorBasedEJBClientContextService.BASE_SERVICE_NAME.append(deploymentUnit.getName());
+        }
+        if (ejbClientContext != null) {
+            return serviceName;
+        }
+        return DefaultEjbClientContextService.DEFAULT_SERVICE_NAME;
+    }
 }
