@@ -50,7 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(CustomBootstrapDeploymentTestCase.CustomBootstrapDeploymentTestCaseSetup.class)
-@Ignore("AS7-3941,AS7-4035")
+@Ignore("AS7-4185")
 public class CustomBootstrapDeploymentTestCase extends ContainerResourceMgmtTestBase {
 
     public static String deploymentName = "bootstrap_archive_ij.rar";
@@ -68,13 +68,7 @@ public class CustomBootstrapDeploymentTestCase extends ContainerResourceMgmtTest
             ModelNode operation = new ModelNode();
 
             try {
-                operation.get(OP).set(ADD);
-                operation.get(OP_ADDR).set(bs_address);
-                operation.get(NAME).set(ctx);
-                operation.get("workmanager").set(wm);
-                executeOperation(operation);
 
-                operation = new ModelNode();
                 operation.get(OP).set(ADD);
                 operation.get(OP_ADDR).set(wm_address);
                 operation.get(NAME).set(wm);
@@ -86,9 +80,15 @@ public class CustomBootstrapDeploymentTestCase extends ContainerResourceMgmtTest
                 operation.get("core-threads").set("20");
                 operation.get("queue-length").set("20");
                 operation.get("max-threads").set("20");
-                operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
                 executeOperation(operation);
 
+                operation = new ModelNode();
+                operation.get(OP).set(ADD);
+                operation.get(OP_ADDR).set(bs_address);
+                operation.get(NAME).set(ctx);
+                operation.get("workmanager").set(wm);
+                executeOperation(operation);
+                
             } catch (Exception e) {
 
                 throw new Exception(e.getMessage() + operation, e);
@@ -99,17 +99,35 @@ public class CustomBootstrapDeploymentTestCase extends ContainerResourceMgmtTest
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
 
             remove(wm_address);
+            remove(bs_address);
+            reload(managementClient);
+
+        }
+
+        public void reload(final ManagementClient managementClient) throws Exception {
             ModelNode operation = new ModelNode();
-            operation.get(OP).set(REMOVE);
-            operation.get(OP_ADDR).set(bs_address);
-            operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            operation.get(OP).set("reload");
             executeOperation(operation);
+            boolean reloaded = false;
+            int i = 0;
+            while (!reloaded) {
+                try {
+                    Thread.sleep(5000);
+                    if (managementClient.isServerInRunningState())
+                        reloaded = true;
+                } catch (Throwable t) {
+                    // nothing to do, just waiting
+                } finally {
+                    if (!reloaded && i++ > 10)
+                        throw new Exception("Server reloading failed");
+                }
+            }
         }
     }
 
     /**
      * Define the deployment
-     *
+     * 
      * @return The deployment archive
      */
     @Deployment
@@ -142,7 +160,7 @@ public class CustomBootstrapDeploymentTestCase extends ContainerResourceMgmtTest
 
     /**
      * Test configuration
-     *
+     * 
      * @throws Throwable Thrown if case of an error
      */
     @Test
@@ -151,8 +169,7 @@ public class CustomBootstrapDeploymentTestCase extends ContainerResourceMgmtTest
         assertNotNull("CF1 not found", connectionFactory1);
         assertNotNull("AO1 not found", adminObject1);
 
-       /* this block doesn't work AS7-4035*/
-        MultipleAdminObject1Impl impl = (MultipleAdminObject1Impl)adminObject1;
+        MultipleAdminObject1Impl impl = (MultipleAdminObject1Impl) adminObject1;
         MultipleResourceAdapter2 adapter = (MultipleResourceAdapter2) impl.getResourceAdapter();
         assertNotNull(adapter);
         assertEquals(wm, adapter.getWorkManagerName());
