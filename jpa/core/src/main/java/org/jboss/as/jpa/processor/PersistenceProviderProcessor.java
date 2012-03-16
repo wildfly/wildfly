@@ -116,10 +116,7 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
      * {@inheritDoc}
      */
     public void undeploy(final DeploymentUnit deploymentUnit) {
-        DeploymentUnit toplevelDeploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
-        final Module module = toplevelDeploymentUnit.getAttachment(Attachments.MODULE);
         Set<ClassLoader> deploymentClassLoaders = allDeploymentModuleClassLoaders(deploymentUnit);
-
         PersistenceProviderResolverImpl.getInstance().clearCachedDeploymentSpecificProviders(deploymentClassLoaders);
     }
 
@@ -130,16 +127,17 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
      * @return
      */
     private Set<ClassLoader> allDeploymentModuleClassLoaders(DeploymentUnit deploymentUnit) {
+        Set<ClassLoader> deploymentClassLoaders = new HashSet<ClassLoader>();
         final DeploymentUnit topDeploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
         final Module toplevelModule = topDeploymentUnit.getAttachment(Attachments.MODULE);
-        Set<ClassLoader> deploymentClassLoaders = new HashSet<ClassLoader>();
-
-        deploymentClassLoaders.add(toplevelModule.getClassLoader());
-        final List<DeploymentUnit> subDeployments = topDeploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
-        for (DeploymentUnit subDeploymentUnit: subDeployments) {
-            final Module subDeploymentModule = subDeploymentUnit.getAttachment(Attachments.MODULE);
-            if (subDeploymentModule != null) {
-                deploymentClassLoaders.add(subDeploymentModule.getClassLoader());
+        if (toplevelModule != null) {
+            deploymentClassLoaders.add(toplevelModule.getClassLoader());
+            final List<DeploymentUnit> subDeployments = topDeploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
+            for (DeploymentUnit subDeploymentUnit: subDeployments) {
+                final Module subDeploymentModule = subDeploymentUnit.getAttachment(Attachments.MODULE);
+                if (subDeploymentModule != null) {
+                    deploymentClassLoaders.add(subDeploymentModule.getClassLoader());
+                }
             }
         }
         return deploymentClassLoaders;

@@ -22,6 +22,9 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -38,12 +41,12 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.metadata.OSGiMetaData;
-
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import org.jboss.osgi.resolver.XEnvironment;
+import org.jboss.osgi.resolver.XResource;
+import org.jboss.osgi.resolver.XResourceBuilder;
+import org.jboss.osgi.resolver.XResourceBuilderFactory;
 
 /**
  * Service responsible for creating and managing the life-cycle of an OSGi deployment.
@@ -57,8 +60,9 @@ public class ModuleRegisterService implements Service<ModuleRegisterService> {
 
     private final Module module;
     private final OSGiMetaData metadata;
-    private final InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
-    private volatile ServiceName installedBundleName;
+    private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
+    private XResource resource;
+
 
     private ModuleRegisterService(Module module, OSGiMetaData metadata) {
         this.module = module;
@@ -70,9 +74,8 @@ public class ModuleRegisterService implements Service<ModuleRegisterService> {
         final ServiceName serviceName = getServiceName(module.getIdentifier());
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         ServiceBuilder<ModuleRegisterService> builder = serviceTarget.addService(serviceName, service);
-        builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
+        builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, service.injectedEnvironment);
         builder.addDependency(ServiceModuleLoader.moduleServiceName(module.getIdentifier()));
-        builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
         builder.install();
     }
 
@@ -85,18 +88,20 @@ public class ModuleRegisterService implements Service<ModuleRegisterService> {
         }
     }
 
-    public static ServiceName getServiceName(ModuleIdentifier moduleIdentifier) {
-        return ModuleRegisterService.SERVICE_NAME_BASE.append(moduleIdentifier.toString());
-    }
-
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
         ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         ROOT_LOGGER.registerModule(module);
         try {
-            ServiceTarget serviceTarget = context.getChildTarget();
-            BundleManagerService bundleManager = injectedBundleManager.getValue();
-            installedBundleName = bundleManager.registerModule(serviceTarget, module, metadata);
+            XResourceBuilder builder = XResourceBuilderFactory.create();
+            if (metadata != null) {
+                builder.loadFrom(metadata);
+            } else {
+                builder.loadFrom(module);
+            }
+            resource = builder.getResource();
+            resource.addAttachment(Module.class, module);
+            injectedEnvironment.getValue().installResources(resource);
         } catch (Throwable t) {
             throw new StartException(MESSAGES.failedToRegisterModule(module), t);
         }
@@ -105,12 +110,9 @@ public class ModuleRegisterService implements Service<ModuleRegisterService> {
     public synchronized void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
         ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
-        ROOT_LOGGER.unregisterModule(module);
-        try {
-            BundleManagerService bundleManager = injectedBundleManager.getValue();
-            bundleManager.unregisterModule(module.getIdentifier());
-        } catch (Throwable t) {
-            ROOT_LOGGER.failedToUninstallModule(t, module);
+        if (resource != null) {
+            ROOT_LOGGER.unregisterModule(module);
+            injectedEnvironment.getValue().uninstallResources(resource);
         }
     }
 
@@ -119,7 +121,7 @@ public class ModuleRegisterService implements Service<ModuleRegisterService> {
         return this;
     }
 
-    public ServiceName getInstalledBundleName() {
-        return installedBundleName;
+    private static ServiceName getServiceName(ModuleIdentifier moduleIdentifier) {
+        return SERVICE_NAME_BASE.append(moduleIdentifier.toString());
     }
 }

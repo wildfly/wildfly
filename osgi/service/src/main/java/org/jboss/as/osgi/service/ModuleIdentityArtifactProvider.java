@@ -21,6 +21,21 @@
  */
 package org.jboss.as.osgi.service;
 
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.osgi.service.FrameworkBootstrapService.SERVICE_BASE_NAME;
+import static org.jboss.osgi.resolver.XResourceConstants.MODULE_IDENTITY_NAMESPACE;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.List;
+
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.modules.ModuleIdentifier;
@@ -38,27 +53,12 @@ import org.jboss.osgi.framework.Constants;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.repository.ArtifactProviderPlugin;
 import org.jboss.osgi.repository.RepositoryResolutionException;
-import org.jboss.osgi.resolver.v2.XResource;
-import org.jboss.osgi.resolver.v2.XResourceBuilder;
+import org.jboss.osgi.repository.URLBasedResourceBuilder;
+import org.jboss.osgi.resolver.XResource;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.resource.Capability;
 import org.osgi.framework.resource.Requirement;
-
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.List;
-
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
-import static org.jboss.as.osgi.service.FrameworkBootstrapService.SERVICE_BASE_NAME;
-import static org.jboss.osgi.resolver.v2.XResourceConstants.MODULE_IDENTITY_NAMESPACE;
 
 /**
  * An {@link ArtifactProviderPlugin} that resolves artifacts from the local modules/bundles location
@@ -121,7 +121,7 @@ final class ModuleIdentityArtifactProvider extends AbstractService<Void> impleme
                     URL baseURL = bundlesDir.toURI().toURL();
                     String contentPath = contentFile.toURI().toURL().toExternalForm();
                     contentPath = contentPath.substring(baseURL.toExternalForm().length());
-                    XResource resource = XResourceBuilder.create(baseURL, contentPath).getResource();
+                    XResource resource = URLBasedResourceBuilder.createResource(baseURL, contentPath);
                     result.add(resource.getIdentityCapability());
                 } else {
                     contentFile = getRepositoryEntry(modulesDir, moduleIdentifier);
@@ -129,7 +129,7 @@ final class ModuleIdentityArtifactProvider extends AbstractService<Void> impleme
                         URL baseURL = modulesDir.toURI().toURL();
                         String contentPath = contentFile.toURI().toURL().toExternalForm();
                         contentPath = contentPath.substring(baseURL.toExternalForm().length());
-                        XResource resource = XResourceBuilder.create(baseURL, contentPath).getResource();
+                        XResource resource = URLBasedResourceBuilder.createResource(baseURL, contentPath);
                         result.add(resource.getIdentityCapability());
                     }
                 }

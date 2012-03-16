@@ -19,8 +19,8 @@ package org.jboss.as.test.smoke.stilts.bundle;
 
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.osgi.resolver.v2.XRequirementBuilder;
-import org.jboss.osgi.resolver.v2.XResourceConstants;
+import org.jboss.osgi.resolver.XRequirementBuilder;
+import org.jboss.osgi.resolver.XResourceConstants;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
