@@ -29,6 +29,7 @@ public class CLIOpResult {
 
     private boolean isOutcomeSuccess;
     private Object result;
+    private Object serverGroups;
 
     /**
      * @return the isOutcomeSuccess
@@ -56,5 +57,19 @@ public class CLIOpResult {
      */
     public void setResult(Object result) {
         this.result = result;
+    }
+
+    /**
+     * @return the serverGroups
+     */
+    public Object getServerGroups() {
+        return serverGroups;
+    }
+
+    /**
+     * @param serverGroups the serverGroups to set
+     */
+    public void setServerGroups(Object serverGroups) {
+        this.serverGroups = serverGroups;
     }
 }
