@@ -681,7 +681,7 @@ class AS7Mixin(object):
                 yield (parts.pop(0), parts.pop(0))
 
     def get_jboss_home(self):
-        return self.getOption(('home', 'as7_home')) or os.getenv("JBOSS_HOME", None)
+        return self._get_opt('home', 'as7_home') or os.getenv("JBOSS_HOME", None)
 
     def query(self, request_obj):
         try:
