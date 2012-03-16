@@ -85,10 +85,12 @@ public class PathElement {
      */
     PathElement(final String key, final String value) {
         if (key == null || !VALID_KEY_PATTERN.matcher(key).matches()) {
-            throw new OperationClientIllegalArgumentException(MESSAGES.invalidPathElementKey(key));
+            final String element = key + "=" + value;
+            throw new OperationClientIllegalArgumentException(MESSAGES.invalidPathElementKey(element, key));
         }
         if (value == null || !VALID_VALUE_PATTERN.matcher(value).matches()) {
-            throw new OperationClientIllegalArgumentException(MESSAGES.invalidPathElementValue(value));
+            final String element = key + "=" + value;
+            throw new OperationClientIllegalArgumentException(MESSAGES.invalidPathElementValue(element, value, ' '));
         }
         boolean multiTarget = false;
         if(key.equals(WILDCARD_VALUE)) {
