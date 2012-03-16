@@ -129,7 +129,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
         // add data source
         cli.sendLine("xa-data-source add --profile=" + profileNames[0] +
-                " --jndi-name=java:jboss/datasources/TestXADS --name=java:jboss/datasources/TestXADS --driver-name=h2");
+                " --jndi-name=java:jboss/datasources/TestXADS --name=java:jboss/datasources/TestXADS --driver-name=h2 --xa-datasource-properties=ServerName=localhost,PortNumber=50011");
 
         //check the data source is listed
         cli.sendLine("cd /profile=" + profileNames[0] + "/subsystem=datasources/xa-data-source");
