@@ -23,12 +23,10 @@
 package org.jboss.as.test.integration.jca.metrics;
 
 
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
-import org.jboss.shrinkwrap.api.Archive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -42,73 +40,72 @@ import static junit.framework.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class XaDataSourceCfgMetricUnitTestCase  extends DsMgmtTestBase{
+public class XaDataSourceCfgMetricUnitTestCase extends DsMgmtTestBase {
 
-	@Deployment
-    public static Archive<?> getDeployment() {
-    	setBaseAddress("xa-data-source", "DS");
-        return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
+    @BeforeClass
+    public static void before() {
+        setBaseAddress("xa-data-source", "DS");
     }
 
     @Test
-    public void testDefaultXaDsAttributes()throws Exception {
-    	setModel("xa-basic-attributes.xml");
-    	assertTrue(readAttribute(baseAddress,"use-ccm").asBoolean());
-        assertTrue(readAttribute(baseAddress,"use-java-context").asBoolean());
-        assertFalse(readAttribute(baseAddress,"spy").asBoolean());
+    public void testDefaultXaDsAttributes() throws Exception {
+        setModel("xa-basic-attributes.xml");
+        assertTrue(readAttribute(baseAddress, "use-ccm").asBoolean());
+        assertTrue(readAttribute(baseAddress, "use-java-context").asBoolean());
+        assertFalse(readAttribute(baseAddress, "spy").asBoolean());
         removeDs();
     }
 
-    @Test(expected=Exception.class)
-    public void testNoXaDsProperties()throws Exception {
-    	setBadModel("wrong-no-xa-ds-properties.xml");
+    @Test(expected = Exception.class)
+    public void testNoXaDsProperties() throws Exception {
+        setBadModel("wrong-no-xa-ds-properties.xml");
     }
 
     @Test
-     public void testDefaultXaDsProperties()throws Exception {
-    	setModel("xa-default-properties.xml");
-        assertTrue(readAttribute(baseAddress,"wrap-xa-resource").asBoolean());
-        removeDs();
-    }
-
-    @Test
-    public void testBooleanPresenceProperties()throws Exception {
-    	setModel("xa-bool-pres-properties.xml");
-    	assertTrue(readAttribute(baseAddress,"no-tx-separate-pool").asBoolean());
-        assertTrue(readAttribute(baseAddress,"interleaving").asBoolean());
-        assertTrue(readAttribute(baseAddress,"set-tx-query-timeout").asBoolean());
-        assertTrue(readAttribute(baseAddress,"share-prepared-statements").asBoolean());
+    public void testDefaultXaDsProperties() throws Exception {
+        setModel("xa-default-properties.xml");
+        assertTrue(readAttribute(baseAddress, "wrap-xa-resource").asBoolean());
         removeDs();
     }
 
     @Test
-    public void testFalseBooleanPresenceProperties()throws Exception {
-    	setModel("xa-false-bool-pres-properties.xml");
-    	assertFalse(readAttribute(baseAddress,"no-tx-separate-pool").asBoolean());
-        assertFalse(readAttribute(baseAddress,"interleaving").asBoolean());
-        assertFalse(readAttribute(baseAddress,"set-tx-query-timeout").asBoolean());
-        assertFalse(readAttribute(baseAddress,"share-prepared-statements").asBoolean());
+    public void testBooleanPresenceProperties() throws Exception {
+        setModel("xa-bool-pres-properties.xml");
+        assertTrue(readAttribute(baseAddress, "no-tx-separate-pool").asBoolean());
+        assertTrue(readAttribute(baseAddress, "interleaving").asBoolean());
+        assertTrue(readAttribute(baseAddress, "set-tx-query-timeout").asBoolean());
+        assertTrue(readAttribute(baseAddress, "share-prepared-statements").asBoolean());
         removeDs();
     }
 
     @Test
-    public void testTrueBooleanPresenceProperties()throws Exception {
-    	setModel("xa-true-bool-pres-properties.xml");
-    	assertTrue(readAttribute(baseAddress,"no-tx-separate-pool").asBoolean());
-        assertTrue(readAttribute(baseAddress,"interleaving").asBoolean());
-        assertTrue(readAttribute(baseAddress,"set-tx-query-timeout").asBoolean());
-        assertTrue(readAttribute(baseAddress,"share-prepared-statements").asBoolean());
+    public void testFalseBooleanPresenceProperties() throws Exception {
+        setModel("xa-false-bool-pres-properties.xml");
+        assertFalse(readAttribute(baseAddress, "no-tx-separate-pool").asBoolean());
+        assertFalse(readAttribute(baseAddress, "interleaving").asBoolean());
+        assertFalse(readAttribute(baseAddress, "set-tx-query-timeout").asBoolean());
+        assertFalse(readAttribute(baseAddress, "share-prepared-statements").asBoolean());
         removeDs();
     }
 
-    @Test(expected=Exception.class)
-    public void testWrongXa2SecurityDomainsProperty()throws Exception {
-    	setBadModel("wrong-xa-2-security-domains.xml");
+    @Test
+    public void testTrueBooleanPresenceProperties() throws Exception {
+        setModel("xa-true-bool-pres-properties.xml");
+        assertTrue(readAttribute(baseAddress, "no-tx-separate-pool").asBoolean());
+        assertTrue(readAttribute(baseAddress, "interleaving").asBoolean());
+        assertTrue(readAttribute(baseAddress, "set-tx-query-timeout").asBoolean());
+        assertTrue(readAttribute(baseAddress, "share-prepared-statements").asBoolean());
+        removeDs();
     }
 
-    @Test(expected=Exception.class)
-    public void testWrongXaResTimeoutProperty()throws Exception {
-    	setBadModel("wrong-xa-res-timeout-property.xml");
+    @Test(expected = Exception.class)
+    public void testWrongXa2SecurityDomainsProperty() throws Exception {
+        setBadModel("wrong-xa-2-security-domains.xml");
+    }
+
+    @Test(expected = Exception.class)
+    public void testWrongXaResTimeoutProperty() throws Exception {
+        setBadModel("wrong-xa-res-timeout-property.xml");
     }
 
 }

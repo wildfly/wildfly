@@ -40,21 +40,21 @@ import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
 @WebServlet(name = "RaServlet", urlPatterns = RaServlet.URL_PATTERN)
 public class RaServlet extends HttpServlet {
 
-	   public static final String SUCCESS = "SUCCESS";
-	   public static final String URL_PATTERN = "/raservlet";
+    public static final String SUCCESS = "SUCCESS";
+    public static final String URL_PATTERN = "/raservlet";
 
-	   @Resource(name = "java:jboss/name1")
-	   private MultipleConnectionFactory1 connectionFactory1;
+    @Resource(name = "java:jboss/name1")
+    private MultipleConnectionFactory1 connectionFactory1;
 
 
-	   @Resource(name="java:jboss/Name3")
-	   private MultipleAdminObject1 adminObject1;
+    @Resource(name = "java:jboss/Name3")
+    private MultipleAdminObject1 adminObject1;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        StringBuffer sb=new StringBuffer();
-        if (connectionFactory1==null)sb.append("CF1 is null.");
-        if (adminObject1==null)sb.append("AO1 is null.");
-    	resp.getOutputStream().print((sb.length()>0)?sb.toString():SUCCESS);
+        StringBuffer sb = new StringBuffer();
+        if (connectionFactory1 == null) sb.append("CF1 is null.");
+        if (adminObject1 == null) sb.append("AO1 is null.");
+        resp.getOutputStream().print((sb.length() > 0) ? sb.toString() : SUCCESS);
     }
 }

@@ -54,8 +54,6 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
-import org.jboss.as.test.smoke.modular.utils.PollingUtils;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;
@@ -199,7 +197,6 @@ public class GetCallerPrincipalTestCase {
                 .addClass(Base64.class)
                 .addClass(SLSBWithoutSecurityDomain.class)
                 .addClass(ISLSBWithoutSecurityDomain.class)
-                .addClass(ShrinkWrapUtils.class)
                 .addClass(PollingUtils.class)
                 .addClass(EntityBean.class)
                 .addClasses(JmsQueueSetup.class, EjbSecurityDomainSetup.class, AbstractSecurityDomainSetup.class, AbstractMgmtTestBase.class)

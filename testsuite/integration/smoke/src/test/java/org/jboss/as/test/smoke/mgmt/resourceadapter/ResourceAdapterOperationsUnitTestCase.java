@@ -22,30 +22,27 @@
 
 package org.jboss.as.test.smoke.mgmt.resourceadapter;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import junit.framework.Assert;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
+import org.jboss.dmr.ModelNode;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.checkModelParams;
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.raAdminProperties;
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.raCommonProperties;
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.raConnectionProperties;
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.setOperationParams;
-
-import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
-import java.util.Properties;
-import java.util.List;
-import java.util.Map;
-import junit.framework.Assert;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Resource adapter operation unit test.
@@ -56,10 +53,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmtTestBase {
 
-    @Deployment
-    public static Archive<?> getDeployment() {
-        return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
-    }
 
     @Test
     public void complexResourceAdapterAddTest() throws Exception {

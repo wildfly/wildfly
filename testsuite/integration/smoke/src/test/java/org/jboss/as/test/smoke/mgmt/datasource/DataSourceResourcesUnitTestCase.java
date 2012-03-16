@@ -27,13 +27,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import junit.framework.Assert;
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -42,18 +39,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 /**
  * Datasource resources unit test.
+ *
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jeff.zhang@jboss.org">Jeff Zhang</a>
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DataSourceResourcesUnitTestCase  extends DsMgmtTestBase{
-
-    @Deployment
-    public static Archive<?> getDeployment() {
-        return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
-    }
+public class DataSourceResourcesUnitTestCase extends DsMgmtTestBase {
 
     @Test
     public void testReadChildrenResources() throws Exception {
@@ -71,10 +64,10 @@ public class DataSourceResourcesUnitTestCase  extends DsMgmtTestBase{
         final Map<String, ModelNode> children = getChildren(result);
         Assert.assertFalse(children.isEmpty());
         for (final Entry<String, ModelNode> child : children.entrySet()) {
-            Assert.assertNotNull("Default datasource not found",child.getKey());
-            Assert.assertTrue("Default datasource have no connection URL",child.getValue().hasDefined("connection-url"));
-            Assert.assertTrue("Default datasource have no JNDI name",child.getValue().hasDefined("jndi-name"));
-            Assert.assertTrue("Default datasource have no driver",child.getValue().hasDefined("driver-name"));
+            Assert.assertNotNull("Default datasource not found", child.getKey());
+            Assert.assertTrue("Default datasource have no connection URL", child.getValue().hasDefined("connection-url"));
+            Assert.assertTrue("Default datasource have no JNDI name", child.getValue().hasDefined("jndi-name"));
+            Assert.assertTrue("Default datasource have no driver", child.getValue().hasDefined("driver-name"));
         }
     }
 
@@ -92,16 +85,16 @@ public class DataSourceResourcesUnitTestCase  extends DsMgmtTestBase{
 
         final ModelNode result = executeOperation(operation);
         final Map<String, ModelNode> children = getChildren(
-            result.get("attributes").get("installed-drivers").get("value-type"));
+                result.get("attributes").get("installed-drivers").get("value-type"));
         Assert.assertFalse(children.isEmpty());
 
         HashSet<String> keys = new HashSet<String>();
         for (final Entry<String, ModelNode> child : children.entrySet()) {
-            Assert.assertNotNull("Default driver description have no attributes",child.getKey());
+            Assert.assertNotNull("Default driver description have no attributes", child.getKey());
             keys.add(child.getKey());
         }
-        Assert.assertTrue("Default driver description have no xa-datasource-class attribute",keys.contains("driver-xa-datasource-class-name"));
-        Assert.assertTrue("Default driver description have no module-slot attribute",keys.contains("module-slot"));
-        Assert.assertTrue("Default driver description have no driver-name attribute",keys.contains("driver-name"));
+        Assert.assertTrue("Default driver description have no xa-datasource-class attribute", keys.contains("driver-xa-datasource-class-name"));
+        Assert.assertTrue("Default driver description have no module-slot attribute", keys.contains("module-slot"));
+        Assert.assertTrue("Default driver description have no driver-name attribute", keys.contains("driver-name"));
     }
 }

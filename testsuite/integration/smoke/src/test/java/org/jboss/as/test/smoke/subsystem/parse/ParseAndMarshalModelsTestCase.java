@@ -21,40 +21,11 @@
 */
 package org.jboss.as.test.smoke.subsystem.parse;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU_AFFINITY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIORITY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +39,6 @@ import javax.xml.namespace.QName;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.AbstractControllerService;
@@ -132,7 +102,6 @@ import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.security.VaultAddHandler;
 import org.jboss.as.test.shared.FileUtils;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -146,17 +115,42 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.vfs.VirtualFile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU_AFFINITY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIORITY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
+
 /**
  * Tests the ability to parse the config files we ship or have shipped in the past, as well as the ability
  * to marshal them back to xml in a manner such that reparsing them produces a consistent in-memory configuration model.
- * <p>
+ * <p/>
  * <b>Note:</b>Non-standard and example configs now go in the basic integration module ParseAndMarshalModelsTestCase.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -168,13 +162,14 @@ public class ParseAndMarshalModelsTestCase {
 
     @Deployment
     public static Archive<?> getDeployment() {
-        return ShrinkWrapUtils.createJavaArchive("bogus.jar", ParseAndMarshalModelsTestCase.class.getPackage())
+        return ShrinkWrap.create(JavaArchive.class)
+                .addPackage(ParseAndMarshalModelsTestCase.class.getPackage())
                 .addClass(FileUtils.class)
                 .add(new Asset() {
                     public InputStream openStream() {
                         return new ByteArrayInputStream("Dependencies: org.jboss.staxmapper,org.jboss.as.controller,org.jboss.as.deployment-repository,org.jboss.as.server,org.jboss.as.host-controller,org.jboss.as.domain-management,org.jboss.as.security\n\n".getBytes());
                     }
-                 }, "META-INF/MANIFEST.MF");
+                }, "META-INF/MANIFEST.MF");
     }
 
     private ServiceContainer serviceContainer;
@@ -193,8 +188,7 @@ public class ParseAndMarshalModelsTestCase {
                 serviceContainer.awaitTermination(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
-            finally {
+            } finally {
                 serviceContainer = null;
             }
         }
@@ -578,7 +572,6 @@ public class ParseAndMarshalModelsTestCase {
     }
 
 
-
     //  Get-config methods
 
     private File getOriginalStandaloneXml(String profile) throws FileNotFoundException {
@@ -674,10 +667,10 @@ public class ParseAndMarshalModelsTestCase {
             registration.setup(rootResource, rootRegistration);
 
             rootRegistration.registerOperationHandler("capture-model", new OperationStepHandler() {
-                        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                            model.set(Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS)));
-                        }
-                    }, getRootDescriptionProvider());
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    model.set(Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS)));
+                }
+            }, getRootDescriptionProvider());
             // TODO maybe make creating of empty nodes part of the MNR description
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), Resource.Factory.create());
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());

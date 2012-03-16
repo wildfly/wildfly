@@ -31,7 +31,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
@@ -60,7 +59,6 @@ public class SarTestCase {
     public void testMBean() throws Exception {
         MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL()).getMBeanServerConnection();
         ObjectName objectName = new ObjectName("jboss:name=test,type=config");
-        PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
         mbeanServer.getAttribute(objectName, "IntervalSeconds");
         mbeanServer.setAttribute(objectName, new Attribute("IntervalSeconds", 2));
     }

@@ -27,7 +27,6 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -60,7 +59,6 @@ public class ManagedBeanTestCase {
         jar.addPackage(SimpleManagedBean.class.getPackage());
         jar.addPackage(ManagedBeanTestCase.class.getPackage());
         jar.addPackage(BeanWithSimpleInjected.class.getPackage());
-        jar.addClass(PollingUtils.class);
         ear.add(jar, "/", ZipExporter.class);
 
         return ear;

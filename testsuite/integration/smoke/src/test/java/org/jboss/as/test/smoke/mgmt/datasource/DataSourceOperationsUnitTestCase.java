@@ -38,21 +38,16 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
-import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.addExtensionProperties;
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.checkModelParams;
@@ -783,7 +778,6 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://127.0.0.1:9999")).getMBeanServerConnection();
         ObjectName objectName = new ObjectName("jboss:name=test,type=fakejndi");
-        PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
         Object o = mbeanServer.invoke(objectName, "lookup", new Object[]{name}, new String[]{"java.lang.String"});
         return expected.cast(o);
     }
