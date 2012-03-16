@@ -13,6 +13,20 @@ public abstract class ContainerResourceMgmtTestBase extends AbstractMgmtTestBase
 
     @ContainerResource
     private ManagementClient managementClient;
+    
+    
+
+    public ManagementClient getManagementClient() {
+        return managementClient;
+    }
+
+
+
+    public void setManagementClient(ManagementClient managementClient) {
+        this.managementClient = managementClient;
+    }
+
+
 
     @Override
     protected ModelControllerClient getModelControllerClient() {
