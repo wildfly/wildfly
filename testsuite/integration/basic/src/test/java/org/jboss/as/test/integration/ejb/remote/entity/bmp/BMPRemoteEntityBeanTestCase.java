@@ -22,15 +22,14 @@
 
 package org.jboss.as.test.integration.ejb.remote.entity.bmp;
 
-import static org.junit.Assert.fail;
+import java.rmi.NoSuchObjectException;
+import java.rmi.RemoteException;
+import java.util.Collection;
 
 import javax.ejb.EJBMetaData;
 import javax.ejb.Handle;
 import javax.ejb.HomeHandle;
 import javax.ejb.RemoveException;
-import java.rmi.NoSuchObjectException;
-import java.rmi.RemoteException;
-import java.util.Collection;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -47,6 +46,8 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.fail;
 
 /**
  * Tests bean managed persistence
@@ -65,7 +66,7 @@ public class BMPRemoteEntityBeanTestCase {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackage(BMPRemoteEntityBeanTestCase.class.getPackage());
-        jar.addAsManifestResource("ejb/remote/entity/bmp/ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(BMPRemoteEntityBeanTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         ear.addAsModule(jar);
         return ear;
     }

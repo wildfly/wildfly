@@ -3,7 +3,6 @@ package org.jboss.as.test.integration.ws.context.application;
 import java.net.URL;
 
 import junit.framework.Assert;
-
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -11,9 +10,8 @@ import org.junit.Test;
 
 /**
  * Base class for context.application tests. Unit test checks if context-root parameter is honored regardles of deploy content.
- * 
+ *
  * @author baranowb
- * 
  */
 public class ContextRootTestBase {
 
@@ -33,15 +31,10 @@ public class ContextRootTestBase {
 
         war.addClass(beanClass);
 
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        war.addAsWebResource(ContextRootTestBase.class.getPackage(), "index.html", "index.html");
 
-        // war.addAsWebResource(tccl.getResource(DEPLOYMENT_RESOURCES + "/application.xml"), "application.xml");
-        war.addAsWebResource(tccl.getResource(DEPLOYMENT_RESOURCES + "/index.html"), "index.html");
-        war.addAsWebResource(tccl.getResource(DEPLOYMENT_RESOURCES + "/index.xhtml"), "index.xhtml");
-
-        war.addAsWebInfResource(tccl.getResource(DEPLOYMENT_RESOURCES + "/WEB-INF/templates"), "templates");
-        war.addAsWebInfResource(tccl.getResource(DEPLOYMENT_RESOURCES + "/WEB-INF/beans.xml"), "beans.xml");
-        war.addAsWebInfResource(tccl.getResource(DEPLOYMENT_RESOURCES + "/WEB-INF/faces-config.xml"), "faces-config.xml");
+        war.addAsWebInfResource(ContextRootTestBase.class.getPackage(), "beans.xml", "beans.xml");
+        war.addAsWebInfResource(ContextRootTestBase.class.getPackage(), "faces-config.xml", "faces-config.xml");
         return war;
     }
 

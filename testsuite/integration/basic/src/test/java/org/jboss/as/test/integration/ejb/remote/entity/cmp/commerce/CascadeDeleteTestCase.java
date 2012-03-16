@@ -21,11 +21,10 @@
  */
 package org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce;
 
-import static org.junit.Assert.fail;
+import java.util.Iterator;
 
 import javax.ejb.EJBHome;
 import javax.ejb.ObjectNotFoundException;
-import java.util.Iterator;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -39,6 +38,8 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.fail;
+
 @RunWith(Arquillian.class)
 @RunAsClient
 public class CascadeDeleteTestCase {
@@ -51,8 +52,8 @@ public class CascadeDeleteTestCase {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackage(CascadeDeleteTestCase.class.getPackage());
-        jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
+        jar.addAsManifestResource(CascadeDeleteTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(CascadeDeleteTestCase.class.getPackage(), "jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
         ear.addAsModule(jar);
         return ear;
     }

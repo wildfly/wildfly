@@ -80,7 +80,7 @@ public class PoolOverrideTestCase {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb-pool-override-test.jar");
         jar.addPackage(PoolAnnotatedEJB.class.getPackage());
-        jar.addAsManifestResource("ejb/pool/override/jboss-ejb3.xml", "jboss-ejb3.xml");
+        jar.addAsManifestResource(PoolOverrideTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         return jar;
     }
 

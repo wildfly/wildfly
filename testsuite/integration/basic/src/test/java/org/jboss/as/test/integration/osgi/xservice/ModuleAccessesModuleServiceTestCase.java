@@ -22,6 +22,10 @@
 
 package org.jboss.as.test.integration.osgi.xservice;
 
+import java.io.InputStream;
+
+import javax.inject.Inject;
+
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -43,9 +47,6 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.inject.Inject;
-import java.io.InputStream;
 
 /**
  * A test that shows how a module can access another module's service.
@@ -117,8 +118,7 @@ public class ModuleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
     public static JavaArchive getClientModuleArchive() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, CLIENT_MODULE_NAME);
         archive.addClasses(ClientModuleOneActivator.class);
-        String activatorPath = "META-INF/services/" + ServiceActivator.class.getName();
-        archive.addAsResource("osgi/xservice/client-module-one/" + activatorPath, activatorPath);
+        archive.addAsServiceProvider(ServiceActivator.class, ClientModuleOneActivator.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
@@ -133,8 +133,7 @@ public class ModuleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
     public static JavaArchive getTargetModuleArchive() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, TARGET_MODULE_NAME);
         archive.addClasses(Echo.class, EchoService.class, TargetModuleActivator.class);
-        String activatorPath = "META-INF/services/" + ServiceActivator.class.getName();
-        archive.addAsResource("osgi/xservice/target-module/" + activatorPath, activatorPath);
+        archive.addAsServiceProvider(ServiceActivator.class, TargetModuleActivator.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();

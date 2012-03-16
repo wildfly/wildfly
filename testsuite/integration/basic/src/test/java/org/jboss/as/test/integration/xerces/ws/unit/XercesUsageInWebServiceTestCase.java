@@ -32,6 +32,7 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.xerces.XercesUsageServlet;
 import org.jboss.as.test.integration.xerces.ws.XercesUsageWSEndpoint;
 import org.jboss.as.test.integration.xerces.ws.XercesUsageWebService;
 import org.jboss.logging.Logger;
@@ -69,9 +70,9 @@ public class XercesUsageInWebServiceTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, WEBSERVICE_WEB_APP_CONTEXT + ".war");
         war.addClasses(XercesUsageWebService.class, XercesUsageWSEndpoint.class);
         // add a web.xml containing the webservice mapping as a servlet
-        war.addAsWebInfResource("xerces/xerces-webservice-web.xml", "web.xml");
+        war.addAsWebInfResource(XercesUsageServlet.class.getPackage(), "xerces-webservice-web.xml", "web.xml");
         // add a dummy xml to parse
-        war.addAsResource("xerces/dummy.xml", "dummy.xml");
+        war.addAsResource(XercesUsageServlet.class.getPackage(), "dummy.xml", "dummy.xml");
 
         // add the xerces jar in the .war/WEB-INF/lib
         war.addAsLibrary("xerces/xercesImpl.jar", "xercesImpl.jar");

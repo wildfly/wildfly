@@ -67,7 +67,7 @@ public class EJBClientUserTransactionTestCase {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackage(EJBClientUserTransactionTestCase.class.getPackage());
-        jar.addAsManifestResource("ejb/remote/client/tx/persistence.xml", "persistence.xml");
+        jar.addAsManifestResource(EJBClientUserTransactionTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
 
         ear.addAsModule(jar);
 

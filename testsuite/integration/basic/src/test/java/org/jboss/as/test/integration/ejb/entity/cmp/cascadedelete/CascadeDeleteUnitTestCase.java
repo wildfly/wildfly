@@ -23,15 +23,17 @@ package org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete;
 
 import javax.ejb.ObjectNotFoundException;
 import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.test.integration.ejb.entity.cmp.AbstractCmpTest;
 import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.fail;
 
 
 /**
@@ -47,8 +49,8 @@ public class CascadeDeleteUnitTestCase extends AbstractCmpTest {
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "cmp-cascadedelete.jar");
         jar.addPackage(AccountBean.class.getPackage());
-        jar.addAsManifestResource("ejb/entity/cmp/cascadedelete/ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource("ejb/entity/cmp/cascadedelete/jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
+        jar.addAsManifestResource(CascadeDeleteUnitTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(CascadeDeleteUnitTestCase.class.getPackage(), "jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
         AbstractCmpTest.addDeploymentAssets(jar);
         return jar;
     }

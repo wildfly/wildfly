@@ -52,8 +52,8 @@ public class JaxrConnectionFactoryBindingTestCase {
     public static WebArchive deployment() {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "jaxr-connection-test.war");
         archive.addClasses(JaxrServlet.class);
-        archive.addAsWebInfResource("jaxr/webA.xml", "web.xml");
-        archive.addAsWebInfResource("jaxr/jboss-webA.xml", "jboss-web.xml");
+        archive.addAsWebInfResource(JaxrConnectionFactoryBindingTestCase.class.getPackage(), "webA.xml", "web.xml");
+        archive.addAsWebInfResource(JaxrConnectionFactoryBindingTestCase.class.getPackage(), "jboss-webA.xml", "jboss-web.xml");
         return archive;
     }
 

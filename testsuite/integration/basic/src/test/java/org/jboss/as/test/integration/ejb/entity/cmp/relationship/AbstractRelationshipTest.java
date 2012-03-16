@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.ejb.entity.cmp.relationship;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.test.integration.ejb.entity.cmp.AbstractCmpTest;
-import org.jboss.as.test.integration.ejb.entity.cmp.TransactionWrappingSessionBean;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -32,7 +31,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 /**
  * @author John Bailey
  */
-public abstract class AbstractRelationshipTest extends AbstractCmpTest{
+public abstract class AbstractRelationshipTest extends AbstractCmpTest {
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "cmp-relationship.jar");
@@ -44,8 +43,8 @@ public abstract class AbstractRelationshipTest extends AbstractCmpTest{
         jar.addPackage(org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.ABTestCase.class.getPackage());
         jar.addPackage(org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.ABTestCase.class.getPackage());
         jar.addPackage(AbstractRelationshipTest.class.getPackage());
-        jar.addAsManifestResource("ejb/entity/cmp/relationship/ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource("ejb/entity/cmp/relationship/jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
+        jar.addAsManifestResource(AbstractRelationshipTest.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(AbstractRelationshipTest.class.getPackage(), "jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
         AbstractCmpTest.addDeploymentAssets(jar);
         return jar;
     }

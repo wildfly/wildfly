@@ -110,7 +110,7 @@ public class EJBClientDescriptorTestCase {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_ONE + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
-        jar.addAsManifestResource("ejb/client/descriptor/jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
         return jar;
     }
 
@@ -119,7 +119,7 @@ public class EJBClientDescriptorTestCase {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_TWO + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
-        jar.addAsManifestResource("ejb/client/descriptor/no-ejb-receiver-jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "no-ejb-receiver-jboss-ejb-client.xml", "jboss-ejb-client.xml");
         return jar;
     }
 
@@ -128,7 +128,7 @@ public class EJBClientDescriptorTestCase {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_THREE + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
-        jar.addAsManifestResource("ejb/client/descriptor/local-and-remote-receiver-jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "local-and-remote-receiver-jboss-ejb-client.xml", "jboss-ejb-client.xml");
         return jar;
     }
 

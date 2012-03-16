@@ -78,7 +78,7 @@ public class XercesUsageTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, WEB_APP_CONTEXT + ".war");
         war.addClasses(XercesUsageServlet.class);
         // add a dummy xml to parse
-        war.addAsResource("xerces/dummy.xml", "dummy.xml");
+        war.addAsResource(XercesUsageServlet.class.getPackage(), "dummy.xml", "dummy.xml");
 
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "xerces-usage.ear");
         // add the .war
@@ -100,7 +100,7 @@ public class XercesUsageTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, JSF_WEB_APP_CONTEXT + ".war");
         war.addClasses(XercesUsageServlet.class, JSFManagedBean.class);
         // add a dummy xml to parse
-        war.addAsResource("xerces/dummy.xml", "dummy.xml");
+        war.addAsResource(XercesUsageServlet.class.getPackage(), "dummy.xml", "dummy.xml");
 
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "xerces-usage-jsf.ear");
         // add the .war

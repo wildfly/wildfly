@@ -69,7 +69,7 @@ public class ConfiguredResourceAdapterNameTestCase {
                         JmsQueueSetup.class)
                 .addPackage(JMSOperations.class.getPackage())
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF")
-                .addAsManifestResource("ejb/mdb/configuredresourceadapter/jboss-ejb3.xml", "jboss-ejb3.xml");
+                .addAsManifestResource(ConfiguredResourceAdapterNameTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         logger.info(ejbJar.toString(true));
         return ejbJar;
     }

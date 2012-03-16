@@ -56,7 +56,7 @@ public class BMPEntityBeanTestCase {
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME);
         war.addPackage(BMPEntityBeanTestCase.class.getPackage());
-        war.addAsWebInfResource("ejb/entity/bmp/ejb-jar.xml", "ejb-jar.xml");
+        war.addAsWebInfResource(BMPEntityBeanTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         return war;
     }
 

@@ -21,6 +21,13 @@
  */
 package org.jboss.as.test.integration.osgi.jaxp;
 
+import java.io.InputStream;
+import java.net.URL;
+
+import javax.inject.Inject;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
@@ -33,12 +40,6 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.xml.sax.InputSource;
-
-import javax.inject.Inject;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
-import java.io.InputStream;
-import java.net.URL;
 
 /**
  * Test XPathFactory.newInstance.
@@ -57,7 +58,7 @@ public class XPathFactoryTestCase {
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "xpath-test.jar");
-        archive.addAsResource("osgi/jaxp/simple.xml", "simple.xml");
+        archive.addAsResource(XPathFactoryTestCase.class.getPackage(), "simple.xml", "simple.xml");
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();

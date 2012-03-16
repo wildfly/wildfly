@@ -91,7 +91,7 @@ public class RestEasyIntegrationTestCase {
     public static WebArchive endpointWar() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
         archive.addClass(SimpleRestEndpoint.class);
-        archive.setWebXML("osgi/jaxrs/web.xml");
+        archive.setWebXML(RestEasyIntegrationTestCase.class.getPackage(), "web.xml");
         // [SHRINKWRAP-278] WebArchive.setManifest() results in WEB-INF/classes/META-INF/MANIFEST.MF
         archive.add(new Asset() {
             public InputStream openStream() {

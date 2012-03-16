@@ -33,9 +33,10 @@ import org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.Cm
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.fail;
 
 
 /**
@@ -69,8 +70,8 @@ public class OptimisticLockUnitTestCase extends AbstractCmpTest {
         jar.addPackage(TestSession.class.getPackage());
         jar.addPackage(CmpEntityBean.class.getPackage());
         jar.addPackage(CmpEntityLocal.class.getPackage());
-        jar.addAsManifestResource("ejb/entity/cmp/optimisticlock/ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource("ejb/entity/cmp/optimisticlock/jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
+        jar.addAsManifestResource(OptimisticLockUnitTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(OptimisticLockUnitTestCase.class.getPackage(), "jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
         AbstractCmpTest.addDeploymentAssets(jar);
         return jar;
     }

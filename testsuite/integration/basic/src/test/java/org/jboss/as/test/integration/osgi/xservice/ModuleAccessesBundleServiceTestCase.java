@@ -22,6 +22,12 @@
 
 package org.jboss.as.test.integration.osgi.xservice;
 
+import java.io.InputStream;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import javax.inject.Inject;
+
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -50,11 +56,6 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
-
-import javax.inject.Inject;
-import java.io.InputStream;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -150,8 +151,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
     public static JavaArchive getClientModuleArchive() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, CLIENT_MODULE_NAME);
         archive.addClasses(ClientModuleTwoActivator.class);
-        String activatorPath = "META-INF/services/" + ServiceActivator.class.getName();
-        archive.addAsResource("osgi/xservice/client-module-two/" + activatorPath, activatorPath);
+        archive.addAsServiceProvider(ServiceActivator.class, ClientModuleTwoActivator.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();

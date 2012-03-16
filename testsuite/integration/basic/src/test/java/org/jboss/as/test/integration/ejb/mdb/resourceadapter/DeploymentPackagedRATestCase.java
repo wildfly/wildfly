@@ -51,7 +51,7 @@ public class DeploymentPackagedRATestCase {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_NAME + ".ear");
 
         final JavaArchive rar = ShrinkWrap.create(JavaArchive.class, RAR_NAME + ".rar");
-        rar.addAsManifestResource("ejb/mdb/resourceadapter/ra.xml", "ra.xml");
+        rar.addAsManifestResource(DeploymentPackagedRATestCase.class.getPackage(), "ra.xml", "ra.xml");
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, EJB_JAR_NAME + ".jar");
         ejbJar.addClasses(NonJMSMDB.class, DeploymentPackagedRATestCase.class);

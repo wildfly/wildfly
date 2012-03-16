@@ -14,13 +14,9 @@ public class AnnotatedDeployTestCase extends ContextRootTestBase {
 
     @Deployment
     public static EnterpriseArchive createDeployment() {
-
         final WebArchive war = createWAR(SampleBeanWebService.class);
-
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_DEPLOYMENT_UNIT_NAME);
-        ear.addAsManifestResource(tccl.getResource(DEPLOYMENT_RESOURCES + "/application.xml"), "application.xml");
+        ear.addAsManifestResource(AnnotatedDeployTestCase.class.getPackage(), "application.xml", "application.xml");
         ear.addAsModule(war);
         System.out.println(ear.toString(true));
         return ear;

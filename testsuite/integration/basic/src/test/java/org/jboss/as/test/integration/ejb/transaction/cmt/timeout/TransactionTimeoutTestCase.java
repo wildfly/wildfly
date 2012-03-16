@@ -49,7 +49,7 @@ public class TransactionTimeoutTestCase {
         jar.addClass(BeanWithTimeoutValue.class);
         jar.addClass(TimeoutRemoteView.class);
         jar.addClass(TimeoutLocalView.class);
-        jar.addAsManifestResource("ejb/transaction/cmt/timeout/jboss-ejb3.xml", "jboss-ejb3.xml");
+        jar.addAsManifestResource(TransactionTimeoutTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         return jar;
     }
 
@@ -57,17 +57,17 @@ public class TransactionTimeoutTestCase {
      */
     @Test
     public void testBeanTimeouts() throws Exception {
-        TimeoutRemoteView remoteView = (TimeoutRemoteView)(new InitialContext().lookup("java:module/BeanWithTimeoutValue!org.jboss.as.test.integration.ejb.transaction.cmt.timeout.TimeoutRemoteView"));
-        TimeoutLocalView localView = (TimeoutLocalView)(new InitialContext().lookup("java:module/BeanWithTimeoutValue!org.jboss.as.test.integration.ejb.transaction.cmt.timeout.TimeoutLocalView"));
+        TimeoutRemoteView remoteView = (TimeoutRemoteView) (new InitialContext().lookup("java:module/BeanWithTimeoutValue!org.jboss.as.test.integration.ejb.transaction.cmt.timeout.TimeoutRemoteView"));
+        TimeoutLocalView localView = (TimeoutLocalView) (new InitialContext().lookup("java:module/BeanWithTimeoutValue!org.jboss.as.test.integration.ejb.transaction.cmt.timeout.TimeoutLocalView"));
 
-        long timeoutValue=-1;
-        timeoutValue=(long)remoteView.getBeanTimeout();
+        long timeoutValue = -1;
+        timeoutValue = (long) remoteView.getBeanTimeout();
         Assert.assertEquals("Bean-level timeout failed", 5l, timeoutValue);
-        timeoutValue=(long)remoteView.getBeanMethodTimeout();
+        timeoutValue = (long) remoteView.getBeanMethodTimeout();
         Assert.assertEquals("Bean-method timeout failed", 6l, timeoutValue);
-        timeoutValue=(long)remoteView.getRemoteMethodTimeout();
+        timeoutValue = (long) remoteView.getRemoteMethodTimeout();
         Assert.assertEquals("Remote-method timeout failed", 7l, timeoutValue);
-        timeoutValue=(long)localView.getLocalViewTimeout();
+        timeoutValue = (long) localView.getLocalViewTimeout();
         Assert.assertEquals("Local-view timeout failed", 8l, timeoutValue);
     }
 
