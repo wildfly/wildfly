@@ -42,12 +42,22 @@ public class InfinispanJndiName {
         return value.startsWith("java:") ? JndiName.of(value) : JndiName.of(DEFAULT_JNDI_NAMESPACE).append(value.startsWith("/") ? value.substring(1) : value);
     }
 
-    public static String createJndiNameOrDefault(String jndiNameString, String containerName, String cacheName) {
+    public static String createCacheJndiNameOrDefault(String jndiNameString, String containerName, String cacheName) {
         JndiName jndiName = null ;
         if (jndiNameString != null) {
            jndiName = InfinispanJndiName.toJndiName(jndiNameString) ;
         } else {
             jndiName = InfinispanJndiName.defaultCacheJndiName(containerName, cacheName);
+        }
+        return jndiName.getAbsoluteName();
+    }
+
+    public static String createCacheContainerJndiNameOrDefault(String jndiNameString, String containerName) {
+        JndiName jndiName = null ;
+        if (jndiNameString != null) {
+           jndiName = InfinispanJndiName.toJndiName(jndiNameString) ;
+        } else {
+            jndiName = InfinispanJndiName.defaultCacheContainerJndiName(containerName);
         }
         return jndiName.getAbsoluteName();
     }
