@@ -23,10 +23,13 @@
 package org.jboss.as.modcluster;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
@@ -69,11 +72,7 @@ import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PROTOCOL;
  * @author Tomaz Cerar
  */
 class ModClusterSubsystemAdd extends AbstractAddStepHandler {
-
     static final ModClusterSubsystemAdd INSTANCE = new ModClusterSubsystemAdd();
-
-    private ModClusterConfig config;
-    private LoadBalanceFactorProvider load;
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
@@ -81,9 +80,10 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
 
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         final ModelNode modelConfig = fullModel.get(ModClusterExtension.CONFIGURATION_PATH.getKeyValuePair());
-        prepareServiceConfiguration(context, modelConfig);
+        final ModClusterConfig config = getModClusterConfig(context, modelConfig);
+        final LoadBalanceFactorProvider loadProvider = getModClusterLoadProvider(context, modelConfig);
         // Add mod_cluster service
-        final ModClusterService service = new ModClusterService(config, load);
+        final ModClusterService service = new ModClusterService(config, loadProvider);
         final ServiceBuilder<ModCluster> serviceBuilder = context.getServiceTarget().addService(ModClusterService.NAME, service)
                 .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer())
                 .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getBindingManager())
@@ -97,19 +97,36 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
         newControllers.add(serviceBuilder.install());
     }
 
+    /*
+    this is here so legacy configuration can be supported
+     */
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        if (operation.hasDefined(CommonAttributes.MOD_CLUSTER_CONFIG)) {
+            PathAddress opAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+            PathAddress parent = opAddress.append(ModClusterExtension.CONFIGURATION_PATH);
+            ModelNode targetOperation = Util.createAddOperation(parent);
+            for (AttributeDefinition def : ModClusterConfigResourceDefinition.ATTRIBUTES) {
+                def.validateAndSet(operation, targetOperation);
+            }
+            context.addStep(targetOperation, ModClusterConfigAdd.INSTANCE, OperationContext.Stage.IMMEDIATE);
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        }
+    }
+
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
     }
 
-    private void prepareServiceConfiguration(final OperationContext context, ModelNode modelconf) throws OperationFailedException {
-        config = new ModClusterConfig();
-        config.setAdvertise(ADVERTISE.resolveModelAttribute(context, modelconf).asBoolean());
+    private ModClusterConfig getModClusterConfig(final OperationContext context, ModelNode model) throws OperationFailedException {
+        ModClusterConfig config = new ModClusterConfig();
+        config.setAdvertise(ADVERTISE.resolveModelAttribute(context, model).asBoolean());
 
-        if (modelconf.get(SSL_CONFIGURATION_PATH.getKeyValuePair()).isDefined()) {
+        if (model.get(SSL_CONFIGURATION_PATH.getKeyValuePair()).isDefined()) {
             // Add SSL configuration.
             config.setSsl(true);
-            final ModelNode ssl = modelconf.get(SSL_CONFIGURATION_PATH.getKeyValuePair());
+            final ModelNode ssl = model.get(SSL_CONFIGURATION_PATH.getKeyValuePair());
             ModelNode keyAlias = KEY_ALIAS.resolveModelAttribute(context, ssl);
             ModelNode password = PASSWORD.resolveModelAttribute(context, ssl);
             if (keyAlias.isDefined()) {
@@ -135,53 +152,57 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
                 config.setSslCrlFile(CA_REVOCATION_URL.resolveModelAttribute(context, ssl).asString());
             }
         }
-        if (modelconf.hasDefined(CommonAttributes.PROXY_LIST)) {
-            config.setProxyList(PROXY_LIST.resolveModelAttribute(context, modelconf).asString());
+        if (model.hasDefined(CommonAttributes.PROXY_LIST)) {
+            config.setProxyList(PROXY_LIST.resolveModelAttribute(context, model).asString());
         }
-        if (modelconf.hasDefined(CommonAttributes.ADVERTISE_SECURITY_KEY)) {
-            config.setAdvertiseSecurityKey(ADVERTISE_SECURITY_KEY.resolveModelAttribute(context, modelconf).asString());
+        if (model.hasDefined(CommonAttributes.ADVERTISE_SECURITY_KEY)) {
+            config.setAdvertiseSecurityKey(ADVERTISE_SECURITY_KEY.resolveModelAttribute(context, model).asString());
         }
-        config.setProxyURL(PROXY_URL.resolveModelAttribute(context, modelconf).asString());
-        config.setExcludedContexts(EXCLUDED_CONTEXTS.resolveModelAttribute(context, modelconf).asString().trim());
-        config.setAutoEnableContexts(AUTO_ENABLE_CONTEXTS.resolveModelAttribute(context, modelconf).asBoolean());
+        config.setProxyURL(PROXY_URL.resolveModelAttribute(context, model).asString());
+        config.setExcludedContexts(EXCLUDED_CONTEXTS.resolveModelAttribute(context, model).asString().trim());
+        config.setAutoEnableContexts(AUTO_ENABLE_CONTEXTS.resolveModelAttribute(context, model).asBoolean());
 
-        config.setStopContextTimeout(STOP_CONTEXT_TIMEOUT.resolveModelAttribute(context, modelconf).asInt());
+        config.setStopContextTimeout(STOP_CONTEXT_TIMEOUT.resolveModelAttribute(context, model).asInt());
         config.setStopContextTimeoutUnit(TimeUnit.valueOf(STOP_CONTEXT_TIMEOUT.getMeasurementUnit().getName()));
         //config.setStopContextTimeoutUnit(TimeUnit.SECONDS); //todo use AttributeDefinition.getMeasurementUnit
         // the default value is 20000 = 20 seconds.
-        config.setSocketTimeout(SOCKET_TIMEOUT.resolveModelAttribute(context, modelconf).asInt() * 1000);
-        config.setStickySession(STICKY_SESSION.resolveModelAttribute(context, modelconf).asBoolean());
-        config.setStickySessionRemove(STICKY_SESSION_REMOVE.resolveModelAttribute(context, modelconf).asBoolean());
-        config.setStickySessionForce(STICKY_SESSION_FORCE.resolveModelAttribute(context, modelconf).asBoolean());
-        config.setWorkerTimeout(WORKER_TIMEOUT.resolveModelAttribute(context, modelconf).asInt());
-        config.setMaxAttempts(MAX_ATTEMPTS.resolveModelAttribute(context, modelconf).asInt());
-        config.setFlushPackets(FLUSH_PACKETS.resolveModelAttribute(context, modelconf).asBoolean());
-        config.setFlushWait(FLUSH_WAIT.resolveModelAttribute(context, modelconf).asInt());
-        config.setPing(PING.resolveModelAttribute(context, modelconf).asInt());
-        config.setSmax(SMAX.resolveModelAttribute(context, modelconf).asInt());
-        config.setTtl(TTL.resolveModelAttribute(context, modelconf).asInt());
-        config.setNodeTimeout(NODE_TIMEOUT.resolveModelAttribute(context, modelconf).asInt());
+        config.setSocketTimeout(SOCKET_TIMEOUT.resolveModelAttribute(context, model).asInt() * 1000);
+        config.setStickySession(STICKY_SESSION.resolveModelAttribute(context, model).asBoolean());
+        config.setStickySessionRemove(STICKY_SESSION_REMOVE.resolveModelAttribute(context, model).asBoolean());
+        config.setStickySessionForce(STICKY_SESSION_FORCE.resolveModelAttribute(context, model).asBoolean());
+        config.setWorkerTimeout(WORKER_TIMEOUT.resolveModelAttribute(context, model).asInt());
+        config.setMaxAttempts(MAX_ATTEMPTS.resolveModelAttribute(context, model).asInt());
+        config.setFlushPackets(FLUSH_PACKETS.resolveModelAttribute(context, model).asBoolean());
+        config.setFlushWait(FLUSH_WAIT.resolveModelAttribute(context, model).asInt());
+        config.setPing(PING.resolveModelAttribute(context, model).asInt());
+        config.setSmax(SMAX.resolveModelAttribute(context, model).asInt());
+        config.setTtl(TTL.resolveModelAttribute(context, model).asInt());
+        config.setNodeTimeout(NODE_TIMEOUT.resolveModelAttribute(context, model).asInt());
 
-        if (modelconf.hasDefined(CommonAttributes.BALANCER)) {
-            config.setBalancer(BALANCER.resolveModelAttribute(context, modelconf).asString());
+        if (model.hasDefined(CommonAttributes.BALANCER)) {
+            config.setBalancer(BALANCER.resolveModelAttribute(context, model).asString());
         }
-        if (modelconf.hasDefined(CommonAttributes.LOAD_BALANCING_GROUP)) {
-            config.setLoadBalancingGroup(LOAD_BALANCING_GROUP.resolveModelAttribute(context, modelconf).asString());
+        if (model.hasDefined(CommonAttributes.LOAD_BALANCING_GROUP)) {
+            config.setLoadBalancingGroup(LOAD_BALANCING_GROUP.resolveModelAttribute(context, model).asString());
         }
+        return config;
+    }
 
-        if (modelconf.hasDefined(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR)) {
+    private LoadBalanceFactorProvider getModClusterLoadProvider(final OperationContext context, ModelNode model) throws OperationFailedException {
+        LoadBalanceFactorProvider load = null;
+        if (model.hasDefined(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR)) {
             // TODO it seems we don't support that stuff.
-            int value = ModClusterConfigResourceDefinition.SIMPLE_LOAD_PROVIDER.resolveModelAttribute(context, modelconf).asInt(1);
+            int value = ModClusterConfigResourceDefinition.SIMPLE_LOAD_PROVIDER.resolveModelAttribute(context, model).asInt(1);
             SimpleLoadBalanceFactorProvider myload = new SimpleLoadBalanceFactorProvider();
             myload.setLoadBalanceFactor(value);
             load = myload;
         }
 
         Set<LoadMetric> metrics = new HashSet<LoadMetric>();
-        if (modelconf.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER.getKeyValuePair()).isDefined()) {
-            final ModelNode node = modelconf.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER.getKeyValuePair());
-            int decayFactor = DynamicLoadProviderDefinition.DECAY.resolveModelAttribute(context, modelconf).asInt();
-            int history = DynamicLoadProviderDefinition.HISTORY.resolveModelAttribute(context, modelconf).asInt();
+        if (model.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER.getKeyValuePair()).isDefined()) {
+            final ModelNode node = model.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER.getKeyValuePair());
+            int decayFactor = DynamicLoadProviderDefinition.DECAY.resolveModelAttribute(context, model).asInt();
+            int history = DynamicLoadProviderDefinition.HISTORY.resolveModelAttribute(context, model).asInt();
             if (node.hasDefined(CommonAttributes.LOAD_METRIC)) {
                 addLoadMetrics(metrics, node.get(CommonAttributes.LOAD_METRIC), context);
             }
@@ -195,7 +216,9 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
                 load = loader;
             }
         }
+        return load;
     }
+
 
     private void addLoadMetrics(Set<LoadMetric> metrics, ModelNode nodes, final OperationContext context) throws OperationFailedException {
         for (Property p : nodes.asPropertyList()) {

@@ -61,6 +61,8 @@ enum Attribute {
     TTL(CommonAttributes.TTL),
     NODE_TIMEOUT(CommonAttributes.NODE_TIMEOUT),
     BALANCER(CommonAttributes.BALANCER),
+    @Deprecated
+    DOMAIN(CommonAttributes.DOMAIN),
     LOAD_BALANCING_GROUP(CommonAttributes.LOAD_BALANCING_GROUP),
 
     FACTOR(CommonAttributes.FACTOR),

@@ -28,8 +28,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 public class ModClusterAddMetric implements OperationStepHandler {
@@ -39,24 +39,17 @@ public class ModClusterAddMetric implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        PathAddress parent = PathAddress.pathAddress(ModClusterExtension.SUBSYSTEM_PATH,
-                ModClusterExtension.CONFIGURATION_PATH,
-                ModClusterExtension.DYNAMIC_LOAD_PROVIDER);
-        String name = getNextMetricName(context);
+
+        PathAddress opAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+        PathAddress parent = opAddress.append(ModClusterExtension.DYNAMIC_LOAD_PROVIDER);
+        String name = LoadMetricDefinition.TYPE.resolveModelAttribute(context, operation).asString();
         ModelNode targetOperation = Util.createAddOperation(parent.append(PathElement.pathElement(ModClusterExtension.LOAD_METRIC.getKey(), name)));
 
         for (AttributeDefinition def : LoadMetricDefinition.ATTRIBUTES) {
-            targetOperation.get(def.getName()).set(operation.get(def.getName())); //do not do resolving here as it will be done by target operation
+            def.validateAndSet(operation, targetOperation);
         }
         context.addStep(targetOperation, LoadMetricAdd.INSTANCE, OperationContext.Stage.IMMEDIATE);
-        context.completeStep();
-    }
-
-    private String getNextMetricName(OperationContext context) {
-        //context.
-        Resource loadProvider = context.readResource(PathAddress.pathAddress(ModClusterExtension.DYNAMIC_LOAD_PROVIDER));
-        int current = loadProvider.getChildrenNames(CommonAttributes.LOAD_METRIC).size();
-        return "metric-" + (current + 1);
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
 }
