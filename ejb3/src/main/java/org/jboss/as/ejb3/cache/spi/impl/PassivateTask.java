@@ -41,10 +41,12 @@ public class PassivateTask<K> implements Runnable {
 
     @Override
     public void run() {
-        try {
-            this.cache.passivate(id);
-        } catch (RuntimeException e) {
-            log.info(e.getMessage(), e);
+        if (!Thread.currentThread().isInterrupted()) {
+            try {
+                this.cache.passivate(id);
+            } catch (RuntimeException e) {
+                log.info(e.getMessage(), e);
+            }
         }
     }
 }

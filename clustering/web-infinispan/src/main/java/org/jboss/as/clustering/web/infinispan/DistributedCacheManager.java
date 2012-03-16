@@ -329,7 +329,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     @Override
     public Map<String, String> getSessionIds() {
         Map<String, String> result = new HashMap<String, String>();
-        for (String sessionId: this.cache.keySet()) {
+        for (String sessionId: this.cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING, Flag.SKIP_REMOTE_LOOKUP, Flag.SKIP_CACHE_LOAD).keySet()) {
             result.put(sessionId, null);
         }
         return result;

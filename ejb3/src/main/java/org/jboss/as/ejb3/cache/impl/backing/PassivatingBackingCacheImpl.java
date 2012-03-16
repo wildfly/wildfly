@@ -309,10 +309,10 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
     public void stop() {
         notifyLifecycleListeners(LifecycleState.STOPPING);
         try {
-            store.stop();
             if (this.threadFactory != null) {
                 this.executor.shutdownNow();
             }
+            store.stop();
             notifyLifecycleListeners(LifecycleState.STOPPED);
         } catch (RuntimeException e) {
             notifyLifecycleListeners(LifecycleState.FAILED);

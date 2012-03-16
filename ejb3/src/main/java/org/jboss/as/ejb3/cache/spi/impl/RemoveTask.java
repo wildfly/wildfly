@@ -46,10 +46,12 @@ public class RemoveTask<K> implements Runnable {
      */
     @Override
     public void run() {
-        try {
-            this.cache.remove(this.id);
-        } catch (RuntimeException e) {
-            log.warn(e.getMessage(), e);
+        if (!Thread.currentThread().isInterrupted()) {
+            try {
+                this.cache.remove(this.id);
+            } catch (RuntimeException e) {
+                log.warn(e.getMessage(), e);
+            }
         }
     }
 }
