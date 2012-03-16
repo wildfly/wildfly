@@ -31,7 +31,7 @@ import org.jboss.modules.Module;
 import org.jboss.osgi.metadata.OSGiMetaData;
 
 /**
- * Processes deployments that have OSGi metadata attached.
+ * Processes deployments that have a Module attached.
  *
  * If so, it creates an {@link ModuleRegisterService}.
  *
@@ -47,7 +47,7 @@ public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         final Module module = depUnit.getAttachment(Attachments.MODULE);
         final OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaData(depUnit);
-        if (module != null && metadata != null) {
+        if (module != null) {
             ModuleRegisterService.addService(phaseContext, module, metadata);
         }
     }
@@ -55,8 +55,7 @@ public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
         final Module module = depUnit.getAttachment(Attachments.MODULE);
-        final OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaData(depUnit);
-        if (module != null && metadata != null) {
+        if (module != null) {
             ModuleRegisterService.removeService(depUnit);
         }
     }
