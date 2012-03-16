@@ -49,8 +49,8 @@ public class HelpTestCase extends AbstractCliTestBase {
     @AfterClass
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
-    }   
-    
+    }
+
     @Test
     public void testHelpCommand() throws Exception {
         cli.sendLine("help");
@@ -86,36 +86,6 @@ public class HelpTestCase extends AbstractCliTestBase {
     @Test
     public void testJmsConnectionFactoryHelp() throws Exception {
         testCmdHelp("connection-factory");
-    }
-
-    @Test
-    public void testDeprecatedAddJmsQueueHelp() throws Exception {
-        testCmdHelp("add-jms-queue");
-    }
-
-    @Test
-    public void testDeprecatedRemoveJmsQueueHelp() throws Exception {
-        testCmdHelp("remove-jms-queue");
-    }
-
-    @Test
-    public void testDeprecatedAddJmsTopicHelp() throws Exception {
-        testCmdHelp("add-jms-topic");
-    }
-
-    @Test
-    public void testDeprecatedRemoveJmsTopicHelp() throws Exception {
-        testCmdHelp("remove-jms-topic");
-    }
-
-    @Test
-    public void testDeprecatedAddJmsCfHelp() throws Exception {
-        testCmdHelp("add-jms-cf");
-    }
-
-    @Test
-    public void testDeprecatedRemoveJmsCfHelp() throws Exception {
-        testCmdHelp("remove-jms-cf");
     }
 
     @Test
