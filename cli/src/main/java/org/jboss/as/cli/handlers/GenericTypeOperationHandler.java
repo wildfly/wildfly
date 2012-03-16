@@ -593,22 +593,26 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
         buf.append("\nSYNOPSIS\n\n");
         buf.append(commandName).append(" --help [--properties | --commands] |\n");
-        for(int i = 0; i <= commandName.length(); ++i) {
-            buf.append(' ');
-        }
-        buf.append(name.getFullName()).append("=<value> --<property>=<value> (--<property>=<value>)* |\n");
-        for(int i = 0; i <= commandName.length(); ++i) {
-            buf.append(' ');
-        }
-        buf.append("<command> ").append(name.getFullName()).append("=<value> (--<parameter>=<value>)*");
-
-        if(ctx.isDomainMode()) {
-            buf.append('\n');
+        if(isDependsOnProfile() && ctx.isDomainMode()) {
             for(int i = 0; i <= commandName.length(); ++i) {
                 buf.append(' ');
             }
-            buf.append("[--headers={operation_header (;operation_header)*}]");
+            buf.append("--profile=<profile_name>\n");
         }
+        for(int i = 0; i <= commandName.length(); ++i) {
+            buf.append(' ');
+        }
+        buf.append('(').append(name.getFullName()).append("=<resource_id> (--<property>=<value>)*) |\n");
+        for(int i = 0; i <= commandName.length(); ++i) {
+            buf.append(' ');
+        }
+        buf.append("(<command> ").append(name.getFullName()).append("=<resource_id> (--<parameter>=<value>)*)");
+
+        buf.append('\n');
+        for(int i = 0; i <= commandName.length(); ++i) {
+            buf.append(' ');
+        }
+        buf.append("[--headers={<operation_header> (;<operation_header>)*}]");
 
         buf.append("\n\nDESCRIPTION\n\n");
         buf.append("The command is used to manage resources of type " + this.nodeType + ".");
@@ -653,6 +657,10 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         buf.append("\n                        To get the complete description of a specific command (including its parameters,");
         buf.append("\n                        their types and descriptions), execute ").append(commandName).append(" <command> --help.");
 
+        if(isDependsOnProfile() && ctx.isDomainMode()) {
+            buf.append("\n\n--profile    - the name of the profile the target resource belongs to.");
+        }
+
         buf.append("\n\n").append(name.getFullName()).append("   - ");
         if(idProperty == null) {
             buf.append("is the name of the resource that completes the path ").append(nodeType).append(" and \n");
@@ -675,10 +683,8 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         buf.append("\n               For a complete list of available parameter names of a specific <command>,");
         buf.append("\n               their types and descriptions, execute ").append(commandName).append(" <command> --help.");
 
-        if(ctx.isDomainMode()) {
-            buf.append("\n\n--headers    - a list of operation headers separated by a semicolon. For the list of supported");
-            buf.append("\n               headers, please, refer to the domain management documentation or use tab-completion.");
-        }
+        buf.append("\n\n--headers    - a list of operation headers separated by a semicolon. For the list of supported");
+        buf.append("\n               headers, please, refer to the domain management documentation or use tab-completion.");
 
         ctx.printLine(buf.toString());
     }
