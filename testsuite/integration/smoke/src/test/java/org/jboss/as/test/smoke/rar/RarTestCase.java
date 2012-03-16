@@ -26,7 +26,7 @@ import javax.naming.InitialContext;
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.smoke.modular.utils.PollingUtils;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -43,11 +43,13 @@ public class RarTestCase {
 
     private static final String JNDI_NAME = "java:/eis/HelloWorld";
 
+    @ArquillianResource
+    private InitialContext initialContext;
+
     @Deployment
     public static Archive<?> getDeployment(){
 
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "rar-example.rar");
-        archive.addClass(PollingUtils.class);
         archive.addPackage(RarTestCase.class.getPackage());
         archive.addAsManifestResource(RarTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml");
         return archive;
@@ -66,11 +68,7 @@ public class RarTestCase {
     }
 
     private HelloWorldConnection getConnection() throws Exception {
-        InitialContext context = new InitialContext();
-        //HelloWorldConnectionFactory factory = (HelloWorldConnectionFactory)context.lookup(JNDI_NAME);
-        PollingUtils.JndiLookupTask task = new PollingUtils.JndiLookupTask(context, JNDI_NAME);
-        PollingUtils.retryWithTimeout(10000, task);
-        HelloWorldConnectionFactory factory = task.getResult(HelloWorldConnectionFactory.class);
+        HelloWorldConnectionFactory factory = (HelloWorldConnectionFactory)initialContext.lookup(JNDI_NAME);
 
         HelloWorldConnection conn = factory.getConnection();
         if (conn == null) {

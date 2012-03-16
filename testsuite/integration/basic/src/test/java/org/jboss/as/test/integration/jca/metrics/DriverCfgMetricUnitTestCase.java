@@ -23,12 +23,10 @@
 package org.jboss.as.test.integration.jca.metrics;
 
 
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
-import org.jboss.shrinkwrap.api.Archive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,10 +41,9 @@ import static junit.framework.Assert.assertEquals;
 @RunAsClient
 public class DriverCfgMetricUnitTestCase  extends DsMgmtTestBase{
 
-	@Deployment
-    public static Archive<?> getDeployment() {
+	@BeforeClass
+    public static void before() {
     	setBaseAddress("jdbc-driver", "name");
-        return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }
 
     @Test

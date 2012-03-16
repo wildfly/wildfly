@@ -19,27 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.deployment.rar.examples;
+package org.jboss.as.test.smoke.deployment.rar.tests;
 
 import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.resource.spi.ActivationSpec;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
-import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.deployment.rar.inflow.PureInflowResourceAdapter;
-import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
+import org.jboss.jca.core.spi.rar.Endpoint;
+import org.jboss.jca.core.spi.rar.MessageListener;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -58,32 +55,11 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- *         JBQA-5742 -Pure RA deployment test
+ *         JBQA-5741 -Inflow RA deployment test
  */
 @RunWith(Arquillian.class)
-@ServerSetup(PureTestCase.PureTestCaseSetup.class)
-public class PureTestCase extends ContainerResourceMgmtTestBase {
+public class InflowTestCase extends ContainerResourceMgmtTestBase {
 
-    static class PureTestCaseSetup extends AbstractMgmtServerSetupTask {
-
-        @Override
-        public void doSetup(final ManagementClient managementClient) throws Exception {
-            String xml = readXmlResource(System.getProperty("jbossas.ts.submodule.dir") + "/src/test/resources/config/pure.xml");
-            List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
-            executeOperation(operationListToCompositeOperation(operations));
-
-        }
-
-        @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-
-            final ModelNode address = new ModelNode();
-            address.add("subsystem", "resource-adapters");
-            address.add("resource-adapter", "pure.rar");
-            address.protect();
-            remove(address);
-        }
-    }
 
     /**
      * Define the deployment
@@ -92,17 +68,18 @@ public class PureTestCase extends ContainerResourceMgmtTestBase {
      */
     @Deployment
     public static ResourceAdapterArchive createDeployment() throws Exception {
-        String deploymentName = "pure.rar";
+        String deploymentName = "inflow.rar";
 
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
-        ja.addClasses(PureInflowResourceAdapter.class, PureTestCase.class,
-                MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class, PureTestCaseSetup.class);
+        ja.addPackage(PureInflowResourceAdapter.class.getPackage()).
+                addClasses(InflowTestCase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
         ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
+                .addAsManifestResource("rar/" + deploymentName + "/META-INF/ironjacamar.xml", "ironjacamar.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"), "MANIFEST.MF");
 
         return raa;
@@ -123,18 +100,26 @@ public class PureTestCase extends ContainerResourceMgmtTestBase {
         assertNotNull(controller);
         ResourceAdapterRepository repository = (ResourceAdapterRepository) controller.getValue();
         assertNotNull(repository);
-        Set<String> ids = repository.getResourceAdapters();
+        Set<String> ids = repository.getResourceAdapters(javax.jms.MessageListener.class);
 
         assertNotNull(ids);
-        //On a running server it's 3 beacause HornetQResourceAdapter is always present  + ra itself and 1 actrivation from DMR
-        assertEquals(2, ids.size());
+        assertEquals(1, ids.size());
 
-        for (String piId : ids) {
-            assertNotNull(piId);
-            System.out.println("PID:" + piId);
-            assertNotNull(repository.getResourceAdapter(piId));
-        }
+        String piId = ids.iterator().next();
+        assertNotNull(piId);
 
+        Endpoint endpoint = repository.getEndpoint(piId);
+        assertNotNull(endpoint);
+
+        List<MessageListener> listeners = repository.getMessageListeners(piId);
+        assertNotNull(listeners);
+        assertEquals(1, listeners.size());
+
+        MessageListener listener = listeners.get(0);
+
+        ActivationSpec as = listener.getActivation().createInstance();
+        assertNotNull(as);
+        assertNotNull(as.getResourceAdapter());
     }
 
     @Test
@@ -146,13 +131,10 @@ public class PureTestCase extends ContainerResourceMgmtTestBase {
         Set<String> ids = repository.getResourceAdapters();
 
         assertNotNull(ids);
-        //on a running server it's always 2 beacause HornetQResourceAdapter is always present
         assertEquals(1, ids.size());
 
-        for (String piId : ids) {
-            assertNotNull(piId);
-            System.out.println("PID:" + piId);
-            assertNotNull(repository.getResourceAdapter(piId));
-        }
+        String piId = ids.iterator().next();
+        assertNotNull(piId);
+        assertNotNull(repository.getResourceAdapter(piId));
     }
 }

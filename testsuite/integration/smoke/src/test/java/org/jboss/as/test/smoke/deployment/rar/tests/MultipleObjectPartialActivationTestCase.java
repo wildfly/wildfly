@@ -19,8 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.deployment.rar.examples;
+package org.jboss.as.test.smoke.deployment.rar.tests;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -35,12 +36,12 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.staxmapper.XMLElementReader;
@@ -52,28 +53,28 @@ import static org.junit.Assert.assertNotNull;
 
 
 /**
- * @author <a href="robert.reimann@googlemail.com">Robert Reimann</a>
- *         Deployment of a RAR packaged inside an EAR.
+ * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
+ *         JBQA-5739 multiple object activation (partial)
  */
 @RunWith(Arquillian.class)
-@ServerSetup(EarPackagedDeploymentTestCase.EarPackagedDeploymentTestCaseSetup.class)
-public class EarPackagedDeploymentTestCase extends ContainerResourceMgmtTestBase {
+@ServerSetup(MultipleObjectPartialActivationTestCase.MultipleObjectPartialActivationTestCaseSetup.class)
+public class MultipleObjectPartialActivationTestCase extends ContainerResourceMgmtTestBase {
 
-    static class EarPackagedDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
+    static class MultipleObjectPartialActivationTestCaseSetup extends AbstractMgmtServerSetupTask {
 
         @Override
         public void doSetup(final ManagementClient managementClient) throws Exception{
-                String xml = readXmlResource(System.getProperty("jbossas.ts.submodule.dir") + "/src/test/resources/config/ear_packaged.xml");
+                String xml = FileUtils.readFile(MultipleObjectPartialActivationTestCase.class, "multiple_part.xml");
                 List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
-                executeOperation( operationListToCompositeOperation(operations));
+                executeOperation(operationListToCompositeOperation(operations));
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception{
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws IOException, MgmtOperationException {
 
             final ModelNode address = new ModelNode();
             address.add("subsystem", "resource-adapters");
-            address.add("resource-adapter", "ear_packaged.ear#ear_packaged.rar");
+            address.add("resource-adapter", "archive_multi_partial.rar");
             address.protect();
             remove(address);
         }
@@ -85,27 +86,23 @@ public class EarPackagedDeploymentTestCase extends ContainerResourceMgmtTestBase
      * @return The deployment archive
      */
     @Deployment
-    public static EnterpriseArchive createDeployment() throws Exception {
-
-        String deploymentName = "ear_packaged.ear";
-        String subDeploymentName = "ear_packaged.rar";
+    public static ResourceAdapterArchive createDeployment() throws Exception {
+        String deploymentName = "archive_multi_partial.rar";
 
         ResourceAdapterArchive raa =
-                ShrinkWrap.create(ResourceAdapterArchive.class, subDeploymentName);
+                ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-                addClasses(EarPackagedDeploymentTestCase.class,  MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+                addClasses(MultipleObjectPartialActivationTestCase.class, AbstractMgmtTestBase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class, MultipleObjectPartialActivationTestCaseSetup.class, AbstractMgmtServerSetupTask.class );
 
         ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
-        raa.addAsManifestResource("rar/" + subDeploymentName + "/META-INF/ra.xml", "ra.xml")
+        raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
-
-        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, deploymentName);
-        ear.addAsModule(raa);
-        ear.addAsManifestResource("rar/" + deploymentName + "/META-INF/application.xml", "application.xml");
-        return ear;
+        ;
+        //org.apache.httpcomponents,
+        return raa;
     }
 
     @Resource(mappedName = "java:jboss/name1")
@@ -123,7 +120,6 @@ public class EarPackagedDeploymentTestCase extends ContainerResourceMgmtTestBase
      */
     @Test
     public void testConfiguration() throws Throwable {
-
         assertNotNull("CF1 not found", connectionFactory1);
         assertNotNull("AO1 not found", adminObject1);
     }

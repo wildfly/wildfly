@@ -19,30 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.deployment.rar.examples;
+package org.jboss.as.test.smoke.deployment.rar.tests.afterresourcecreation;
 
 import java.util.List;
+
 import javax.naming.Context;
-import org.jboss.arquillian.container.test.api.Deployer;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
+import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,22 +52,20 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- *         JBQA-5968 test for undeployment and re-deployment
+ *         JBQA-5841 test for RA activation
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(ReDeploymentTestCase.ReDeploymentTestCaseSetup.class)
-public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
+@ServerSetup(AfterResourceCreationDeploymentTestCase.AfterResourceCreationDeploymentTestCaseSetup.class)
+public class AfterResourceCreationDeploymentTestCase extends ContainerResourceMgmtTestBase {
 
-    static String deploymentName = "re-deployment.rar";
+    static String deploymentName = "basic-after.rar";
 
     @ContainerResource
     private Context context;
 
-    @ArquillianResource
-    private Deployer deployer;
 
-    static class ReDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
+    static class AfterResourceCreationDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception{
@@ -86,7 +83,7 @@ public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
     }
 
     private void setup() throws Exception {
-        String xml = readXmlResource(System.getProperty("jbossas.ts.submodule.dir") + "/src/test/resources/config/re-deployment.xml");
+        String xml = FileUtils.readFile(AfterResourceCreationDeploymentTestCase.class, "basic-after.xml");
         List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdaptersExtension.ResourceAdapterSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
 
@@ -107,7 +104,7 @@ public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
      *
      * @return The deployment archive
      */
-    @Deployment(name = "re-deployment.rar", managed=false)
+    @Deployment(name = "basic-after.rar")
     public static ResourceAdapterArchive createDeployment() throws Exception {
 
 
@@ -117,7 +114,7 @@ public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
         ja.addPackage(MultipleConnectionFactory1.class.getPackage());
         raa.addAsLibrary(ja);
 
-        raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml");
+        raa.addAsManifestResource(AfterResourceCreationDeploymentTestCase.class.getPackage(),"ra.xml", "ra.xml");
         return raa;
     }
 
@@ -128,13 +125,9 @@ public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
      */
     @Test
     public void testConfiguration() throws Throwable {
-        deployer.deploy(deploymentName);
         setup();
-        deployer.undeploy(deploymentName);
-        deployer.deploy(deploymentName);
-        MultipleAdminObject1 adminObject1 = (MultipleAdminObject1) context.lookup("redeployed/Name3");
+        MultipleAdminObject1 adminObject1 = (MultipleAdminObject1) context.lookup("after/Name3");
         assertNotNull("AO1 not found", adminObject1);
-        deployer.undeploy(deploymentName);
     }
 
 }

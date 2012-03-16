@@ -21,11 +21,6 @@
  */
 package org.jboss.as.test.smoke.mgmt.servermodule;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -46,7 +41,6 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
 
 import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
@@ -56,14 +50,18 @@ import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.test.smoke.mgmt.servermodule.archive.sar.Simple;
-import org.jboss.as.test.smoke.modular.utils.PollingUtils;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 /**
  * Tests deployment to a standalone server, both via the client API and by the
@@ -80,11 +78,13 @@ public class ServerInModuleDeploymentTestCase {
 
     @Test
     public void testDeploymentStreamApi() throws Exception {
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
-                Simple.class.getPackage());
-        final JavaArchive archive2 = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
-                Simple.class.getPackage());
-        archive2.addAsManifestResource(new File(getClass().getResource("/servermodule/test-deployment.sar/marker.txt").toURI()));
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test-deployment.sar")
+                .addPackage(Simple.class.getPackage())
+                .addAsManifestResource(ServerInModuleDeploymentTestCase.class.getPackage(), "jboss-service.xml", "jboss-service.xml");
+        final JavaArchive archive2 = ShrinkWrap.create(JavaArchive.class, "test-deployment.sar")
+                .addPackage(Simple.class.getPackage())
+                .addAsManifestResource(ServerInModuleDeploymentTestCase.class.getPackage(), "jboss-service.xml", "jboss-service.xml");
+        archive2.addAsManifestResource(ServerInModuleDeploymentTestCase.class.getPackage(), "marker.txt", "marker.txt");
 
         final ModelControllerClient client = managementClient.getControllerClient();
         final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(client);
@@ -133,11 +133,13 @@ public class ServerInModuleDeploymentTestCase {
 
     @Test
     public void testDeploymentFileApi() throws Exception {
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
-                Simple.class.getPackage());
-        final JavaArchive archive2 = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
-                Simple.class.getPackage());
-        archive2.addAsManifestResource(new File(getClass().getResource("/servermodule/test-deployment.sar/marker.txt").toURI()));
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test-deployment.sar")
+                .addPackage(Simple.class.getPackage())
+                .addAsManifestResource(ServerInModuleDeploymentTestCase.class.getPackage(), "jboss-service.xml", "jboss-service.xml");
+        final JavaArchive archive2 = ShrinkWrap.create(JavaArchive.class, "test-deployment.sar")
+                .addPackage(Simple.class.getPackage())
+                .addAsManifestResource(ServerInModuleDeploymentTestCase.class.getPackage(), "jboss-service.xml", "jboss-service.xml");
+        archive2.addAsManifestResource(ServerInModuleDeploymentTestCase.class.getPackage(), "marker.txt", "marker.txt");
 
         final ModelControllerClient client = managementClient.getControllerClient();
         final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(client);
@@ -191,8 +193,9 @@ public class ServerInModuleDeploymentTestCase {
 
     @Test
     public void testFilesystemDeployment_Marker() throws Exception {
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
-                Simple.class.getPackage());
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test-deployment.sar")
+                .addPackage(Simple.class.getPackage())
+                .addAsManifestResource(ServerInModuleDeploymentTestCase.class.getPackage(), "jboss-service.xml", "jboss-service.xml");
         final File dir = new File("target/archives");
         dir.mkdirs();
         final File file = new File(dir, "test-deployment.sar");
@@ -236,6 +239,13 @@ public class ServerInModuleDeploymentTestCase {
                     StreamUtils.safeClose(out);
                 }
                 Assert.assertTrue(dodeploy.exists());
+                while (!deployed.exists()) {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
 
             @Override
@@ -299,8 +309,9 @@ public class ServerInModuleDeploymentTestCase {
 
     @Test
     public void testFilesystemDeployment_Auto() throws Exception {
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
-                Simple.class.getPackage());
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test-deployment.sar")
+                .addPackage(Simple.class.getPackage())
+                .addAsManifestResource(ServerInModuleDeploymentTestCase.class.getPackage(), "jboss-service.xml", "jboss-service.xml");
         final File dir = new File("target/archives");
         dir.mkdirs();
         final File file = new File(dir, "test-deployment.sar");
@@ -337,6 +348,13 @@ public class ServerInModuleDeploymentTestCase {
                 }
 
                 Assert.assertTrue(file.exists());
+                while (!deployed.exists()) {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
 
             @Override
@@ -404,8 +422,9 @@ public class ServerInModuleDeploymentTestCase {
         final String scannerName = "exploded";
         addDeploymentScanner(deployDir, client, scannerName, false);
 
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
-                Simple.class.getPackage());
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test-deployment.sar")
+                .addPackage(Simple.class.getPackage())
+                .addAsManifestResource(ServerInModuleDeploymentTestCase.class.getPackage(), "jboss-service.xml", "jboss-service.xml");
         final File dir = new File("target/archives");
         dir.mkdirs();
         archive.as(ExplodedExporter.class).exportExploded(deployDir);
@@ -426,6 +445,13 @@ public class ServerInModuleDeploymentTestCase {
                     StreamUtils.safeClose(out);
                 }
                 Assert.assertTrue(dodeploy.exists());
+                while (!deployed.exists()) {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
 
             @Override
@@ -539,7 +565,6 @@ public class ServerInModuleDeploymentTestCase {
                 initialHashes = getAllDeploymentHashesFromContentDir(true);
             }
             deploymentExecutor.initialDeploy();
-            PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, name));
 
             //listener.await();
             Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
@@ -556,7 +581,6 @@ public class ServerInModuleDeploymentTestCase {
             // Full replace
             // listener.reset(2);
             deploymentExecutor.fullReplace();
-            PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, name));
 
             // listener.await();
             Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
@@ -590,7 +614,7 @@ public class ServerInModuleDeploymentTestCase {
         }
     }
 
-    private Set<String> getAllDeploymentHashesFromContentDir(boolean emptyOk){
+    private Set<String> getAllDeploymentHashesFromContentDir(boolean emptyOk) {
         String jbossBaseDir = System.getProperty("jboss.inst");
         Assert.assertNotNull(jbossBaseDir);
         File file = new File(jbossBaseDir);

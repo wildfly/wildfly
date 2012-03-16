@@ -37,8 +37,8 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.http.Authentication;
 import org.jboss.as.test.smoke.mgmt.servermodule.archive.sar.Simple;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
@@ -88,10 +88,11 @@ public class HttpDeploymentUploadUnitTestCase {
 
         try {
             // Create the HTTP connection to the upload URL
-            connection =getHttpURLConnection(uploadUrl, "multipart/form-data; boundary=" + BOUNDARY_PARAM);
+            connection = getHttpURLConnection(uploadUrl, "multipart/form-data; boundary=" + BOUNDARY_PARAM);
 
             // Grab the test WAR file and get a stream to its contents to be included in the POST.
-            final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-http-deployment.sar", Simple.class.getPackage());
+            final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test-http-deployment.sar")
+                    .addPackage(Simple.class.getPackage());
             os = new BufferedOutputStream(connection.getOutputStream());
             is = new BufferedInputStream(archive.as(ZipExporter.class).exportAsInputStream());
 
@@ -119,8 +120,7 @@ public class HttpDeploymentUploadUnitTestCase {
             assertEquals(SUCCESS, node.require(OUTCOME).asString());
 
             connection.disconnect();
-        }
-        finally {
+        } finally {
             closeQuietly(is);
             closeQuietly(os);
             try {
@@ -139,7 +139,7 @@ public class HttpDeploymentUploadUnitTestCase {
     }
 
     private HttpURLConnection getHttpURLConnection(final String url, final String contentType) throws IOException {
-        HttpURLConnection connection =(HttpURLConnection) new URL(url).openConnection();
+        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setDoInput(true);
         connection.setDoOutput(true);
         connection.setRequestMethod(POST_REQUEST_METHOD);
@@ -196,19 +196,19 @@ public class HttpDeploymentUploadUnitTestCase {
         final StringBuilder builder = new StringBuilder();
         builder.append(BOUNDARY);
         builder.append(CRLF);
-        if(contentDisposition != null && contentDisposition.length() > 0) {
+        if (contentDisposition != null && contentDisposition.length() > 0) {
             builder.append(String.format("Content-Disposition: %s", contentDisposition));
             builder.append(CRLF);
         }
 
-        if(contentType != null && contentType.length() > 0) {
+        if (contentType != null && contentType.length() > 0) {
             builder.append(String.format("Content-Type: %s", contentType));
             builder.append(CRLF);
         }
 
         builder.append(CRLF);
 
-        if(content != null && content.length() > 0) {
+        if (content != null && content.length() > 0) {
             builder.append(content);
         }
         return builder.toString();
@@ -218,19 +218,20 @@ public class HttpDeploymentUploadUnitTestCase {
         final byte[] buffer = new byte[1024];
         int numRead = 0;
 
-        while(numRead > -1) {
+        while (numRead > -1) {
             numRead = is.read(buffer);
-            if(numRead > 0) {
-                os.write(buffer,0,numRead);
+            if (numRead > 0) {
+                os.write(buffer, 0, numRead);
             }
         }
     }
 
     private void closeQuietly(final Closeable closeable) {
-        if(closeable != null) {
+        if (closeable != null) {
             try {
                 closeable.close();
-            } catch (final IOException e) {}
+            } catch (final IOException e) {
+            }
         }
     }
 }

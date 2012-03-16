@@ -22,6 +22,7 @@
 package org.jboss.as.test.smoke.webservices;
 
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
@@ -34,7 +35,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.test.smoke.modular.utils.PollingUtils;
+import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.webservices.dmr.WSExtension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -67,7 +68,7 @@ public class WSTestCase {
 
     @Test
     public void testWSDL() throws Exception {
-        String s = performCall("?wsdl", null);
+        String s = performCall("?wsdl");
         Assert.assertNotNull(s);
         Assert.assertTrue(s.contains("wsdl:definitions"));
     }
@@ -94,8 +95,7 @@ public class WSTestCase {
             Assert.assertTrue(endpoint.hasDefined("wsdl-url"));
 
             final URL url = new URL(endpoint.get("wsdl-url").asString());
-            PollingUtils.UrlConnectionTask task = new PollingUtils.UrlConnectionTask(url, null);
-            PollingUtils.retryWithTimeout(10000, task);
+            HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS);
 
             // Read a metric
             final ModelNode readAttribute = new ModelNode();
@@ -119,10 +119,8 @@ public class WSTestCase {
     }
 
 
-    private String performCall(String params, String request) throws Exception {
+    private String performCall(String params) throws Exception {
         URL url = new URL(this.url.toExternalForm() + "ws-example/" + params);
-        PollingUtils.UrlConnectionTask task = new PollingUtils.UrlConnectionTask(url, request);
-        PollingUtils.retryWithTimeout(10000, task);
-        return task.getResponse();
+        return HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS);
     }
 }

@@ -22,13 +22,14 @@
 package org.jboss.as.test.smoke.jaxrs;
 
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.smoke.modular.utils.PollingUtils;
+import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -63,8 +64,6 @@ public class JaxrsTestCase {
 
     private String performCall() throws Exception {
         URL url = new URL(this.url.toExternalForm() + "helloworld");
-        PollingUtils.UrlConnectionTask task = new PollingUtils.UrlConnectionTask(url);
-        PollingUtils.retryWithTimeout(10000, task);
-        return task.getResponse();
+        return HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS);
     }
 }

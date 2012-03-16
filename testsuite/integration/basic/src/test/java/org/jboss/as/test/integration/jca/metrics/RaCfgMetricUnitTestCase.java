@@ -23,27 +23,21 @@
 package org.jboss.as.test.integration.jca.metrics;
 
 
-import static junit.framework.Assert.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-
-import java.net.URL;
 import java.util.List;
-import org.junit.AfterClass;
-import org.jboss.arquillian.container.test.api.Deployment;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.Archive;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * Resource adapters configuration and metrics unit test.
@@ -75,11 +69,6 @@ public class RaCfgMetricUnitTestCase  extends DsMgmtTestBase{
 	    String xml=readXmlResource(System.getProperty("jbossas.ts.integ.dir")+"/basic/src/test/resources/jca/metrics/ra/"+modelName+".xml");
         List<ModelNode> operations=xmlToModelOperations(xml,Namespace.CURRENT.getUriString(),new ResourceAdapterSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
-    }
-
-	@Deployment
-    public static Archive<?> getDeployment() {
-		return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }
 
     @Test
