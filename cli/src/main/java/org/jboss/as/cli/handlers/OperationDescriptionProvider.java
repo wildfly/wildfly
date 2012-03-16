@@ -19,18 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.handlers.jca;
+package org.jboss.as.cli.handlers;
 
 import org.jboss.as.cli.CommandContext;
-
+import org.jboss.as.cli.CommandLineException;
+import org.jboss.dmr.ModelNode;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class DataSourceRemoveHandler extends BaseDataSourceRemoveHandler {
+public interface OperationDescriptionProvider {
 
-    public DataSourceRemoveHandler(CommandContext ctx) {
-        super(ctx, "data-source-remove", "data-source");
-    }
+    ModelNode getOperationDescription(CommandContext ctx) throws CommandLineException;
+
 }

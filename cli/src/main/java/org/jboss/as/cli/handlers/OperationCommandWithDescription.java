@@ -19,32 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.handlers.jca;
+package org.jboss.as.cli.handlers;
 
-import org.jboss.as.cli.CommandContext;
-
+import org.jboss.as.cli.OperationCommand;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class DataSourceModifyHandler extends BaseDataSourceModifyHandler {
+public interface OperationCommandWithDescription extends OperationCommand, OperationDescriptionProvider {
 
-    public DataSourceModifyHandler(CommandContext ctx) {
-        super(ctx, "data-source-modify", "data-source");
-    }
-
-/*    @Override
-    public RequestParamArgWithValue initRequiredArguments() {
-        ArgumentWithoutValue lastRequired = super.initRequiredArguments();
-        RequestParamArgWithValue connectionUrl = new RequiredRequestParamArg("connection-url", this, "--connection-url");
-        return connectionUrl;
-    }
-
-    @Override
-    public void initOptionalArguments(ArgumentWithoutValue lastRequired) {
-        super.initOptionalArguments(lastRequired);
-        RequestParamArgWithValue connectionProperties = new RequestParamPropertiesArg("connection-properties", this);
-    }
-*/
 }

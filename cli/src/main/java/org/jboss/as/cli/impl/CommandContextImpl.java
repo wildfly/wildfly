@@ -106,20 +106,9 @@ import org.jboss.as.cli.handlers.batch.BatchListHandler;
 import org.jboss.as.cli.handlers.batch.BatchMoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRemoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRunHandler;
-import org.jboss.as.cli.handlers.jca.DataSourceAddHandler;
-import org.jboss.as.cli.handlers.jca.DataSourceModifyHandler;
-import org.jboss.as.cli.handlers.jca.DataSourceRemoveHandler;
-import org.jboss.as.cli.handlers.jca.XADataSourceAddHandler;
-import org.jboss.as.cli.handlers.jca.XADataSourceModifyHandler;
-import org.jboss.as.cli.handlers.jca.XADataSourceRemoveHandler;
+import org.jboss.as.cli.handlers.jca.XADataSourceAddCompositeHandler;
 import org.jboss.as.cli.handlers.jms.CreateJmsResourceHandler;
 import org.jboss.as.cli.handlers.jms.DeleteJmsResourceHandler;
-import org.jboss.as.cli.handlers.jms.JmsCFAddHandler;
-import org.jboss.as.cli.handlers.jms.JmsCFRemoveHandler;
-import org.jboss.as.cli.handlers.jms.JmsQueueAddHandler;
-import org.jboss.as.cli.handlers.jms.JmsQueueRemoveHandler;
-import org.jboss.as.cli.handlers.jms.JmsTopicAddHandler;
-import org.jboss.as.cli.handlers.jms.JmsTopicRemoveHandler;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
@@ -303,26 +292,15 @@ class CommandContextImpl implements CommandContext {
 
         // data-source
         cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/data-source", null), "data-source");
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/xa-data-source", null), "xa-data-source");
-        // deprecated and hidden from the tab-completion
-        cmdRegistry.registerHandler(new DataSourceAddHandler(this), false, "add-data-source");
-        cmdRegistry.registerHandler(new DataSourceModifyHandler(this), false, "modify-data-source");
-        cmdRegistry.registerHandler(new DataSourceRemoveHandler(this), false, "remove-data-source");
-        cmdRegistry.registerHandler(new XADataSourceAddHandler(this), false, "add-xa-data-source");
-        cmdRegistry.registerHandler(new XADataSourceRemoveHandler(this), false, "remove-xa-data-source");
-        cmdRegistry.registerHandler(new XADataSourceModifyHandler(this), false, "modify-xa-data-source");
+        GenericTypeOperationHandler xaDsHandler = new GenericTypeOperationHandler(this, "/subsystem=datasources/xa-data-source", null);
+        // override the add operation with the handler that accepts xa props
+        xaDsHandler.addHandler("add", new XADataSourceAddCompositeHandler(this, "/subsystem=datasources/xa-data-source"));
+        cmdRegistry.registerHandler(xaDsHandler, "xa-data-source");
 
         // JMS
         cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=messaging/hornetq-server=default/jms-queue", "queue-address"), "jms-queue");
         cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=messaging/hornetq-server=default/jms-topic", "topic-address"), "jms-topic");
         cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=messaging/hornetq-server=default/connection-factory", null), "connection-factory");
-        // deprecated and hidden from the tab-completion
-        cmdRegistry.registerHandler(new JmsQueueAddHandler(this), false, "add-jms-queue");
-        cmdRegistry.registerHandler(new JmsQueueRemoveHandler(this), false, "remove-jms-queue");
-        cmdRegistry.registerHandler(new JmsTopicAddHandler(this), false, "add-jms-topic");
-        cmdRegistry.registerHandler(new JmsTopicRemoveHandler(this), false, "remove-jms-topic");
-        cmdRegistry.registerHandler(new JmsCFAddHandler(this), false, "add-jms-cf");
-        cmdRegistry.registerHandler(new JmsCFRemoveHandler(this), false, "remove-jms-cf");
         // these are used for the cts setup
         cmdRegistry.registerHandler(new CreateJmsResourceHandler(this), false, "create-jms-resource");
         cmdRegistry.registerHandler(new DeleteJmsResourceHandler(this), false, "delete-jms-resource");
