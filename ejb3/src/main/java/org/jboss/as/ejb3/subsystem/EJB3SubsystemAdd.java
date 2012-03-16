@@ -37,6 +37,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.security.ServerSecurityManager;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSourceService;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -119,7 +120,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.omg.PortableServer.POA;
 
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
@@ -128,8 +128,6 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ENABLE_STATISTICS;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE;
 
 /**
  * Add operation handler for the EJB3 subsystem.
@@ -145,18 +143,9 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        model.get(DEFAULT_MDB_INSTANCE_POOL).set(operation.get(DEFAULT_MDB_INSTANCE_POOL));
-        model.get(DEFAULT_SLSB_INSTANCE_POOL).set(operation.get(DEFAULT_SLSB_INSTANCE_POOL));
-        model.get(DEFAULT_ENTITY_BEAN_INSTANCE_POOL).set(operation.get(DEFAULT_ENTITY_BEAN_INSTANCE_POOL));
-        model.get(DEFAULT_SFSB_CACHE).set(operation.get(DEFAULT_SFSB_CACHE));
-        model.get(DEFAULT_CLUSTERED_SFSB_CACHE).set(operation.get(DEFAULT_CLUSTERED_SFSB_CACHE));
-        model.get(DEFAULT_RESOURCE_ADAPTER_NAME).set(operation.get(DEFAULT_RESOURCE_ADAPTER_NAME));
-        model.get(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT).set(operation.get(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT));
-        model.get(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT).set(operation.get(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT));
-        model.get(DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING).set(operation.get(DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING));
-        model.get(ENABLE_STATISTICS).set(operation.get(ENABLE_STATISTICS));
-        model.get(IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE).set(operation.get(IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE));
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        for (SimpleAttributeDefinition attr : EJB3SubsystemRootResourceDefinition.ATTRIBUTES)
+            attr.validateAndSet(operation, model);
     }
 
     @Override
