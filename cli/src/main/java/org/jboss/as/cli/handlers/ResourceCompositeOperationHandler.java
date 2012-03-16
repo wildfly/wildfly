@@ -162,7 +162,7 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
     @Override
     protected ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
 
-        final String name = ResourceCompositeOperationHandler.this.name.getValue(ctx.getParsedCommandLine(), true);
+        final ModelNode address = buildOperationAddress(ctx);
 
         final ModelNode composite = new ModelNode();
         composite.get(Util.OPERATION).set(Util.COMPOSITE);
@@ -170,20 +170,6 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
         final ModelNode steps = composite.get(Util.STEPS);
 
         final ParsedCommandLine parsedArgs = ctx.getParsedCommandLine();
-
-        ModelNode address = new ModelNode();
-        if(isDependsOnProfile() && ctx.isDomainMode()) {
-            final String profile = ResourceCompositeOperationHandler.this.profile.getValue(parsedArgs);
-            if(profile == null) {
-                throw new OperationFormatException("Required argument --profile is missing.");
-            }
-            address.add(Util.PROFILE, profile);
-        }
-
-        for(OperationRequestAddress.Node node : getRequiredAddress()) {
-            address.add(node.getType(), node.getName());
-        }
-        address.add(getRequiredType(), name);
 
         for(String opName : this.ops) {
             final ModelNode req = new ModelNode();
@@ -222,6 +208,26 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
         return composite;
     }
 
+    protected ModelNode buildOperationAddress(CommandContext ctx) throws CommandFormatException {
+
+        final String name = ResourceCompositeOperationHandler.this.name.getValue(ctx.getParsedCommandLine(), true);
+
+        ModelNode address = new ModelNode();
+        if(isDependsOnProfile() && ctx.isDomainMode()) {
+            final String profile = ResourceCompositeOperationHandler.this.profile.getValue(ctx.getParsedCommandLine());
+            if(profile == null) {
+                throw new OperationFormatException("Required argument --profile is missing.");
+            }
+            address.add(Util.PROFILE, profile);
+        }
+
+        for(OperationRequestAddress.Node node : getRequiredAddress()) {
+            address.add(node.getType(), node.getName());
+        }
+        address.add(getRequiredType(), name);
+        return address;
+    }
+
     private Map<String,CommandArgument> allArgs;
 
     @Override
@@ -237,14 +243,7 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
         }
 
         if(allArgs == null) {
-            allArgs = new HashMap<String, CommandArgument>();
-            for(String opName : ops) {
-                try {
-                    allArgs.putAll(getOperationArguments(ctx, opName));
-                } catch (CommandLineException e) {
-                    return null;
-                }
-            }
+            allArgs = loadArguments(ctx);
         }
         return allArgs.get(name);
     }
@@ -262,16 +261,21 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
         }
 
         if(allArgs == null) {
-            allArgs = new HashMap<String, CommandArgument>();
-            for(String opName : ops) {
-                try {
-                    allArgs.putAll(getOperationArguments(ctx, opName));
-                } catch (CommandLineException e) {
-                    return Collections.emptyList();
-                }
-            }
+            allArgs = loadArguments(ctx);
         }
         return allArgs.values();
+    }
+
+    protected Map<String, CommandArgument> loadArguments(CommandContext ctx) {
+        final Map<String, CommandArgument> allArgs = new HashMap<String, CommandArgument>();
+        for(String opName : ops) {
+            try {
+                allArgs.putAll(getOperationArguments(ctx, opName));
+            } catch (CommandLineException e) {
+                return Collections.emptyMap();
+            }
+        }
+        return allArgs;
     }
 
     protected Map<String, ArgumentWithValue> getOperationArguments(CommandContext ctx, String opName) throws CommandLineException {

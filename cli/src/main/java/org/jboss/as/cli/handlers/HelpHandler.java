@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 
 /**
@@ -53,7 +54,7 @@ public class HelpHandler extends CommandHandlerWithHelp {
      * @see org.jboss.as.cli.CommandHandler#handle(org.jboss.as.cli.Context)
      */
     @Override
-    public void handle(CommandContext ctx) throws CommandFormatException {
+    public void handle(CommandContext ctx) throws CommandLineException {
         boolean printCommands;
         try {
             printCommands = commands.isPresent(ctx.getParsedCommandLine());
