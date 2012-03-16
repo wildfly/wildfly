@@ -61,14 +61,14 @@ public class LoadMetricAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        if (context.isNormalServer()) {
+        if (context.isNormalServer() && !context.isBooting()) {
             context.reloadRequired();
         }
 
         context.completeStep(new OperationContext.RollbackHandler() {
             @Override
             public void handleRollback(OperationContext context, ModelNode operation) {
-                if (context.isNormalServer()) {
+                if (context.isNormalServer() && !context.isBooting()) {
                     context.revertReloadRequired();
                 }
             }

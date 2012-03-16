@@ -30,6 +30,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.modcluster.ModClusterExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.junit.Test;
 
 /**
  *
@@ -42,11 +44,36 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension());
     }
 
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem.xml");
+    @Test
+     public void testXsd10() throws Exception {
+         standardSubsystemTest("subsystem_1_0.xml");
+     }
 
-    }
+
+     @Override
+     protected String getSubsystemXml() throws IOException {
+         return readResource("subsystem.xml");
+     }
+
+     @Override
+     protected String getSubsystemXml(String configId) throws IOException {
+         return readResource(configId);
+     }
+
+
+     @Override
+     protected AdditionalInitialization createAdditionalInitialization() {
+         return AdditionalInitialization.MANAGEMENT;
+     }
+
+     @Override
+     protected void compareXml(String configId, String original, String marshalled) throws Exception {
+         if (configId != null && configId.equals("subsystem_1_0.xml")) {
+             return;
+         }
+
+         super.compareXml(configId, original, marshalled, true);
+     }
 
 
 }

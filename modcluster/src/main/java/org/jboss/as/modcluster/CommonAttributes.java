@@ -54,6 +54,8 @@ interface CommonAttributes {
     String TTL = "ttl";
     String NODE_TIMEOUT = "node-timeout";
     String BALANCER = "balancer";
+    @Deprecated
+    String DOMAIN = "domain";
     String LOAD_BALANCING_GROUP = "load-balancing-group";
 
     String LOAD_METRIC = "load-metric";
