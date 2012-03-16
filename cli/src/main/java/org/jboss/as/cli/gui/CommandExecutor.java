@@ -34,21 +34,15 @@ import org.jboss.dmr.ModelNode;
 public class CommandExecutor {
 
     private ModelControllerClient client;
-    private DefaultCallbackHandler parsedCmd = new DefaultCallbackHandler(true);
     private CommandContext cmdCtx;
-    private CommandLineParser parser;
 
     public CommandExecutor(CommandContext cmdCtx) {
         this.cmdCtx = cmdCtx;
         this.client = cmdCtx.getModelControllerClient();
-        this.parser = cmdCtx.getCommandLineParser();
     }
 
     public synchronized ModelNode doCommand(String command) throws CommandFormatException, IOException {
-//        System.out.println("command=" + command);
-        parsedCmd.rootNode(0);
-        parser.parse(command, parsedCmd);
-        ModelNode request = parsedCmd.toOperationRequest(cmdCtx);
+        ModelNode request = cmdCtx.buildRequest(command);
         return client.execute(request);
     }
 
