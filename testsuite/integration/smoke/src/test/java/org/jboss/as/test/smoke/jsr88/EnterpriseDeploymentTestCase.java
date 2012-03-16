@@ -84,9 +84,24 @@ import static org.junit.Assert.fail;
 public class EnterpriseDeploymentTestCase {
 
     private static final long TIMEOUT = 10000;
-    private static final String WAR_JBOSS_FILE = "WEB-INF/jboss-web.xml";
-    private static final String JAR_JBOSS_FILE = "META-INF/jboss.xml";
-    private static final String EAR_JBOSS_FILE = "META-INF/jboss-app.xml";
+
+    private static enum Descriptor {
+        WAR_JBOSS_FILE("jboss-web.xml", "WEB-INF"),
+        JAR_JBOSS_FILE("jboss.xml", "META-INF"),
+        EAR_JBOSS_FILE("jboss-app.xml", "META-INF");
+
+        private final String name;
+        private final String path;
+
+        private Descriptor(final String name, final String path) {
+            this.name = name;
+            this.path = path;
+        }
+
+        public String fullPath() {
+            return path + "/" + name;
+        }
+    }
 
     @ArquillianResource
     private URL url;
@@ -388,25 +403,25 @@ public class EnterpriseDeploymentTestCase {
 
     private InputStream createDeploymentPlan(String deploymentFile) throws Exception {
 
-        String jbossDescriptorName = null;
+        Descriptor jbossDescriptorName = null;
         if (deploymentFile.endsWith(".war"))
-            jbossDescriptorName = WAR_JBOSS_FILE;
+            jbossDescriptorName = Descriptor.WAR_JBOSS_FILE;
         else if (deploymentFile.endsWith(".jar"))
-            jbossDescriptorName = JAR_JBOSS_FILE;
+            jbossDescriptorName = Descriptor.JAR_JBOSS_FILE;
         else if (deploymentFile.endsWith(".ear"))
-            jbossDescriptorName = EAR_JBOSS_FILE;
+            jbossDescriptorName = Descriptor.EAR_JBOSS_FILE;
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         JarOutputStream plan = new JarOutputStream(baos);
 
-        URL descriptorURL = getClass().getClassLoader().getResource("jsr88/" + jbossDescriptorName);
+        URL descriptorURL = getClass().getResource(jbossDescriptorName.name);
         File jbossDescriptorFile = new File(descriptorURL.getPath());
-        JarUtils.addJarEntry(plan, "!/" + jbossDescriptorName, new FileInputStream(jbossDescriptorFile));
+        JarUtils.addJarEntry(plan, "!/" + jbossDescriptorName.fullPath(), new FileInputStream(jbossDescriptorFile));
 
         // Setup deployment plan meta data with propriatary descriptor
         DeploymentMetaData metaData = new DeploymentMetaData(deploymentFile);
 
-        String[] strs = jbossDescriptorName.split("/");
+        String[] strs = jbossDescriptorName.fullPath().split("/");
         metaData.addEntry(deploymentFile, strs[strs.length - 1]);
 
         // Add the meta data to the deployment plan
@@ -422,29 +437,30 @@ public class EnterpriseDeploymentTestCase {
     private Archive<?> getWebArchive() {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "deployment-web.war");
         archive.addClasses(SampleServlet.class);
-        archive.setWebXML("jsr88/WEB-INF/web.xml");
+        archive.setWebXML(EnterpriseDeploymentTestCase.class.getPackage(), "web.xml");
         return archive;
     }
 
     private Archive<?> getBadWebArchive() {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "deployment-bad-web.war");
         archive.addClasses(SampleServlet.class);
-        archive.setWebXML("jsr88/WEB-INF/badweb.xml");
+        archive.setWebXML(EnterpriseDeploymentTestCase.class.getPackage(), "badweb.xml");
         return archive;
     }
 
     private Archive<?> getEjbArchive() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "deployment-ejb.jar");
         archive.addClasses(Echo.class, EchoHome.class, EchoBean.class);
-        archive.addAsManifestResource("jsr88/META-INF/ejb-jar.xml", "ejb-jar.xml");
+        archive.addAsManifestResource(EnterpriseDeploymentTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         return archive;
     }
 
     private Archive<?> getEarArchive() {
         EnterpriseArchive archive = ShrinkWrap.create(EnterpriseArchive.class, "deployment-app.ear");
-        archive.setApplicationXML("jsr88/META-INF/application.xml");
+        archive.setApplicationXML(EnterpriseDeploymentTestCase.class.getPackage(), "application.xml");
         archive.add(getWebArchive(), "/", ZipExporter.class);
         archive.add(getEjbArchive(), "/", ZipExporter.class);
         return archive;
     }
+
 }
