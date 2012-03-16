@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.deployment.rar.tests;
+package org.jboss.as.test.smoke.deployment.rar.tests.configproperty;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -163,9 +163,8 @@ public class ConfigPropertyTestCase extends ContainerResourceMgmtTestBase {
         ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
-        raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
+        raa.addAsManifestResource(ConfigPropertyTestCase.class.getPackage(), "ra.xml", "ra.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
-        ;
 
         return raa;
     }

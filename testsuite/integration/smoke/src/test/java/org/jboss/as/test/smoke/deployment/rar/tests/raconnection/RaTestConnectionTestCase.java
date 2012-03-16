@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.deployment.rar.tests;
+package org.jboss.as.test.smoke.deployment.rar.tests.raconnection;
 
 import java.util.List;
 
@@ -48,7 +48,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- *        JBQA-5967 test connection in pool
+ *         JBQA-5967 test connection in pool
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -83,25 +83,23 @@ public class RaTestConnectionTestCase extends ContainerResourceMgmtTestBase {
      *
      * @return The deployment archive
      */
-   @Deployment
-    public static ResourceAdapterArchive createDeployment()  throws Exception{
-
-
+    @Deployment
+    public static ResourceAdapterArchive createDeployment() throws Exception {
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
-         JavaArchive ja = ShrinkWrap.create(JavaArchive.class,  "multiple.jar");
+        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage());
         raa.addAsLibrary(ja);
-        raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml");
+        raa.addAsManifestResource(RaTestConnectionTestCase.class.getPackage(), "ra.xml", "ra.xml");
         return raa;
     }
 
 
     @Test
-    public void testConnection() throws Exception{
-        ModelNode testAddress=address.clone();
-        testAddress.add("connection-definitions","Pool1");
-        ModelNode op=new ModelNode();
+    public void testConnection() throws Exception {
+        ModelNode testAddress = address.clone();
+        testAddress.add("connection-definitions", "Pool1");
+        ModelNode op = new ModelNode();
         op.get(OP).set("test-connection-in-pool");
         op.get(OP_ADDR).set(testAddress);
         assertTrue(executeOperation(op).asBoolean());
@@ -109,10 +107,10 @@ public class RaTestConnectionTestCase extends ContainerResourceMgmtTestBase {
     }
 
     @Test
-    public void flushConnections() throws Exception{
-        ModelNode testAddress=address.clone();
-        testAddress.add("connection-definitions","Pool1");
-        ModelNode op=new ModelNode();
+    public void flushConnections() throws Exception {
+        ModelNode testAddress = address.clone();
+        testAddress.add("connection-definitions", "Pool1");
+        ModelNode op = new ModelNode();
         op.get(OP).set("flush-idle-connection-in-pool");
         op.get(OP_ADDR).set(testAddress);
         executeOperation(op);

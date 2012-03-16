@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.deployment.rar.tests;
+package org.jboss.as.test.smoke.deployment.rar.tests.multiobjectpartialactivation;
 
 import java.io.IOException;
 import java.util.List;
@@ -38,9 +38,7 @@ import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBa
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1;
-import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject2;
 import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
-import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory2;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -56,19 +54,19 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- *         JBQA-5738 multiple object activation(full)
+ *         JBQA-5739 multiple object activation (partial)
  */
 @RunWith(Arquillian.class)
-@ServerSetup(MultipleObjectActivationTestCase.MultipleObjectActivationTestCaseSetup.class)
-public class MultipleObjectActivationTestCase extends ContainerResourceMgmtTestBase {
+@ServerSetup(MultipleObjectPartialActivationTestCase.MultipleObjectPartialActivationTestCaseSetup.class)
+public class MultipleObjectPartialActivationTestCase extends ContainerResourceMgmtTestBase {
 
-    static class MultipleObjectActivationTestCaseSetup extends AbstractMgmtServerSetupTask {
+    static class MultipleObjectPartialActivationTestCaseSetup extends AbstractMgmtServerSetupTask {
 
         @Override
-        public void doSetup(final ManagementClient managementClient) throws Exception {
-            String xml = FileUtils.readFile(MultipleObjectActivationTestCase.class, "multiple.xml");
-            List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
-            executeOperation(operationListToCompositeOperation(operations));
+        public void doSetup(final ManagementClient managementClient) throws Exception{
+                String xml = FileUtils.readFile(MultipleObjectPartialActivationTestCase.class, "multiple_part.xml");
+                List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
+                executeOperation(operationListToCompositeOperation(operations));
         }
 
         @Override
@@ -76,7 +74,7 @@ public class MultipleObjectActivationTestCase extends ContainerResourceMgmtTestB
 
             final ModelNode address = new ModelNode();
             address.add("subsystem", "resource-adapters");
-            address.add("resource-adapter", "archive_mult.rar");
+            address.add("resource-adapter", "archive_multi_partial.rar");
             address.protect();
             remove(address);
         }
@@ -89,34 +87,31 @@ public class MultipleObjectActivationTestCase extends ContainerResourceMgmtTestB
      */
     @Deployment
     public static ResourceAdapterArchive createDeployment() throws Exception {
-        String deploymentName = "archive_mult.rar";
+        String deploymentName = "archive_multi_partial.rar";
 
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-                addClasses(MultipleObjectActivationTestCase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+                addClasses(MultipleObjectPartialActivationTestCase.class, AbstractMgmtTestBase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class, MultipleObjectPartialActivationTestCaseSetup.class, AbstractMgmtServerSetupTask.class );
 
         ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
-        raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
+        raa.addAsManifestResource(MultipleObjectPartialActivationTestCase.class.getPackage(), "ra.xml", "ra.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
-        ;
+
+        //org.apache.httpcomponents,
         return raa;
     }
 
     @Resource(mappedName = "java:jboss/name1")
     private MultipleConnectionFactory1 connectionFactory1;
 
-    @Resource(mappedName = "java:jboss/name2")
-    private MultipleConnectionFactory2 connectionFactory2;
 
     @Resource(mappedName = "java:jboss/Name3")
     private MultipleAdminObject1 adminObject1;
 
-    @Resource(mappedName = "java:jboss/Name4")
-    private MultipleAdminObject2 adminObject2;
 
     /**
      * Test configuration
@@ -126,8 +121,6 @@ public class MultipleObjectActivationTestCase extends ContainerResourceMgmtTestB
     @Test
     public void testConfiguration() throws Throwable {
         assertNotNull("CF1 not found", connectionFactory1);
-        assertNotNull("CF2 not found", connectionFactory2);
         assertNotNull("AO1 not found", adminObject1);
-        assertNotNull("AO2 not found", adminObject2);
     }
 }

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.deployment.rar.tests;
+package org.jboss.as.test.smoke.deployment.rar.tests.eardeployment;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -79,8 +79,8 @@ public class EarDeploymentTestCase extends ContainerResourceMgmtTestBase {
                 ShrinkWrap.create(ResourceAdapterArchive.class, subdeploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage());
-        raa.addAsManifestResource("rar/" + subdeploymentName + "/META-INF/ironjacamar.xml", "ironjacamar.xml")
-                .addAsManifestResource("rar/" + subdeploymentName + "/META-INF/ra.xml", "ra.xml")
+        raa.addAsManifestResource(EarDeploymentTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml")
+                .addAsManifestResource(EarDeploymentTestCase.class.getPackage(), "ra.xml", "ra.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"), "MANIFEST.MF");
         ;
 
