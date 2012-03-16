@@ -857,12 +857,13 @@ public interface ControllerMessages {
     /**
      * Creates an exception indicating the {@code key} is invalid.
      *
+     * @param element the path element
      * @param key the invalid value.
      *
      * @return an {@link OperationFailedRuntimeException} for the error.
      */
-    @Message(id = 14701, value = "Invalid key specification %s")
-    String invalidPathElementKey(String key);
+    @Message(id = 14701, value = "Invalid resource address element '%s'. The key '%s' is not valid for an element in a resource address.")
+    String invalidPathElementKey(String element, String key);
 
     /**
      * Creates an exception indicating the load factor must be greater than 0 and less than or equal to 1.
@@ -1092,12 +1093,14 @@ public interface ControllerMessages {
     /**
      * Creates an exception indicating the {@code value} is invalid.
      *
+     * @param element the path element
      * @param value the invalid value.
+     * @param character the invalid character
      *
      * @return an {@link OperationFailedRuntimeException} for the error.
      */
-    @Message(id = 14719, value = "Invalid value specification %s")
-    String invalidPathElementValue(String value);
+    @Message(id = 14719, value = "Invalid resource address element '%s'. The value '%s' is not valid for an element in a resource address. Character '%s' is not allowed.")
+    String invalidPathElementValue(String element, String value, Character character);
 
     /**
      * A message indicating the {@code value} for the parameter, represented by the {@code name} parameter, is invalid.
