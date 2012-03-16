@@ -21,6 +21,7 @@
  */
 package org.jboss.as.security.service;
 
+import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -35,7 +36,7 @@ import org.jboss.security.ISecurityManagement;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author Anil Saldhana
  */
-public class SimpleSecurityManagerService implements Service<SimpleSecurityManager> {
+public class SimpleSecurityManagerService implements Service<ServerSecurityManager> {
     public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("simple-security-manager");
 
     private final SimpleSecurityManager securityManager = new SimpleSecurityManager();
@@ -51,7 +52,7 @@ public class SimpleSecurityManagerService implements Service<SimpleSecurityManag
     }
 
     @Override
-    public SimpleSecurityManager getValue() throws IllegalStateException, IllegalArgumentException {
+    public ServerSecurityManager getValue() throws IllegalStateException, IllegalArgumentException {
         return securityManager;
     }
 
