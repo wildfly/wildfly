@@ -32,6 +32,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService;
@@ -122,7 +123,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
                 authTruststore = authentication.require(TRUSTSTORE);
             }
             if (authentication.hasDefined(JAAS)) {
-                authenticationName = addJaasService(authentication.require(JAAS), realmServiceName, serviceTarget, newControllers);
+                authenticationName = addJaasService(authentication.require(JAAS), realmServiceName, serviceTarget, newControllers, context.isNormalServer());
             } else if (authentication.hasDefined(LDAP)) {
                 authenticationName = addLdapService(authentication.require(LDAP), realmServiceName, serviceTarget, newControllers);
             } else if (authentication.hasDefined(PROPERTIES)) {
@@ -168,11 +169,16 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     }
 
     private ServiceName addJaasService(ModelNode jaas, ServiceName realmServiceName, ServiceTarget serviceTarget,
-            List<ServiceController<?>> newControllers) {
+            List<ServiceController<?>> newControllers, boolean injectServerManager) {
         ServiceName jaasServiceName = realmServiceName.append(JaasCallbackHandler.SERVICE_SUFFIX);
         JaasCallbackHandler jaasCallbackHandler = new JaasCallbackHandler(jaas.get(NAME).asString());
 
         ServiceBuilder<?> jaasBuilder = serviceTarget.addService(jaasServiceName, jaasCallbackHandler);
+        if (injectServerManager) {
+            jaasBuilder.addDependency(ServiceName.JBOSS.append("security", "simple-security-manager"),
+                    ServerSecurityManager.class, jaasCallbackHandler.getSecurityManagerValue());
+        }
+
         newControllers.add(jaasBuilder.setInitialMode(ON_DEMAND).install());
 
         return jaasServiceName;

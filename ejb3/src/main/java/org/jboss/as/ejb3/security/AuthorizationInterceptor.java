@@ -27,10 +27,10 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
+import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 /**
@@ -95,7 +95,7 @@ public class AuthorizationInterceptor implements Interceptor {
             final Collection<String> allowedRoles = ejbMethodSecurityMetaData.getRolesAllowed();
             if (!allowedRoles.isEmpty()) {
                 // call the security API to do authorization check
-                final SimpleSecurityManager securityManager = ejbComponent.getSecurityManager();
+                final ServerSecurityManager securityManager = ejbComponent.getSecurityManager();
                 final EJBSecurityMetaData ejbSecurityMetaData = ejbComponent.getSecurityMetaData();
                 if (!securityManager.isCallerInRole(ejbSecurityMetaData.getSecurityRoles(), ejbSecurityMetaData.getSecurityRoleLinks(), allowedRoles.toArray(new String[allowedRoles.size()]))) {
                     throw MESSAGES.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());

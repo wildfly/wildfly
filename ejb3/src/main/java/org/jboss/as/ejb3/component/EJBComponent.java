@@ -40,6 +40,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
+import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
@@ -282,7 +283,7 @@ public abstract class EJBComponent extends BasicComponent {
         }
     }
 
-    public SimpleSecurityManager getSecurityManager() {
+    public ServerSecurityManager getSecurityManager() {
         return utilities.getSecurityManager();
     }
 

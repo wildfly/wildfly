@@ -24,10 +24,10 @@ package org.jboss.as.ejb3.security;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
@@ -46,7 +46,7 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
             throw MESSAGES.unexpectedComponent(component, EJBComponent.class);
         }
         final EJBComponent ejbComponent = (EJBComponent) component;
-        final SimpleSecurityManager securityManager = ejbComponent.getSecurityManager();
+        final ServerSecurityManager securityManager = ejbComponent.getSecurityManager();
         final EJBSecurityMetaData securityMetaData = ejbComponent.getSecurityMetaData();
         final String securityDomain = securityMetaData.getSecurityDomain();
         if (securityDomain == null) {

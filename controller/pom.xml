@@ -133,6 +133,11 @@
             <artifactId>jboss-logmanager</artifactId>
             <scope>test</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-ejb</artifactId>
+        </dependency>        
 
     </dependencies>
 

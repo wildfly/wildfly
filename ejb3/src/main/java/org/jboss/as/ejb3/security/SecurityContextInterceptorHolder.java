@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.security;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.security.service.SimpleSecurityManager;
+import org.jboss.as.controller.security.ServerSecurityManager;
 
 /**
  * A simple transfer object
@@ -32,7 +32,7 @@ import org.jboss.as.security.service.SimpleSecurityManager;
  * @author anil saldhana
  */
 class SecurityContextInterceptorHolder {
-    SimpleSecurityManager securityManager;
+    ServerSecurityManager securityManager;
     String securityDomain, runAs, runAsPrincipal;
     Set<String> extraRoles;
     Map<String, Set<String>> principalVsRolesMap;
@@ -40,7 +40,7 @@ class SecurityContextInterceptorHolder {
     public SecurityContextInterceptorHolder() {
     }
 
-    public SecurityContextInterceptorHolder setSecurityManager(SimpleSecurityManager ssm) {
+    public SecurityContextInterceptorHolder setSecurityManager(ServerSecurityManager ssm) {
         this.securityManager = ssm;
         return this;
     }

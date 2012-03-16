@@ -37,10 +37,12 @@ import javax.security.auth.login.LoginException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
+import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 
 /**
@@ -56,6 +58,8 @@ public class JaasCallbackHandler implements Service<DomainCallbackHandler>, Doma
             VerifyPasswordCallback.class, SubjectCallback.class };
 
     private final String name;
+
+    private final InjectedValue<ServerSecurityManager> securityManagerValue = new InjectedValue<ServerSecurityManager>();
 
     public JaasCallbackHandler(final String name) {
         this.name = name;
@@ -105,33 +109,52 @@ public class JaasCallbackHandler implements Service<DomainCallbackHandler>, Doma
         }
         final char[] password = verifyPasswordCallback.getPassword().toCharArray();
 
-        try {
-            Subject subject = subjectCallback != null && subjectCallback.getSubject() != null ? subjectCallback.getSubject() : new Subject();
-            LoginContext ctx = new LoginContext(name, subject, new CallbackHandler() {
+        Subject subject = subjectCallback != null && subjectCallback.getSubject() != null ? subjectCallback.getSubject()
+                : new Subject();
+        ServerSecurityManager securityManager;
+        if ((securityManager = securityManagerValue.getOptionalValue()) != null) {
+            try {
+                securityManager.push(name, userName, password, subject);
+                verifyPasswordCallback.setVerified(true);
+                subject.getPrivateCredentials().add(new PasswordCredential(userName, password));
+                if (subjectCallback != null) {
+                    // Only want to deliberately pass it back if authentication completed.
+                    subjectCallback.setSubject(subject);
+                }
+            } catch (SecurityException e) {
+                verifyPasswordCallback.setVerified(false);
+            } finally {
+                securityManager.pop();
+            }
 
-                public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                    for (Callback current : callbacks) {
-                        if (current instanceof NameCallback) {
-                            NameCallback ncb = (NameCallback) current;
-                            ncb.setName(userName);
-                        } else if (current instanceof PasswordCallback) {
-                            PasswordCallback pcb = (PasswordCallback) current;
-                            pcb.setPassword(password);
-                        } else {
-                            throw new UnsupportedCallbackException(current);
+        } else {
+            try {
+                LoginContext ctx = new LoginContext(name, subject, new CallbackHandler() {
+
+                    public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+                        for (Callback current : callbacks) {
+                            if (current instanceof NameCallback) {
+                                NameCallback ncb = (NameCallback) current;
+                                ncb.setName(userName);
+                            } else if (current instanceof PasswordCallback) {
+                                PasswordCallback pcb = (PasswordCallback) current;
+                                pcb.setPassword(password);
+                            } else {
+                                throw new UnsupportedCallbackException(current);
+                            }
                         }
                     }
+                });
+                ctx.login();
+                verifyPasswordCallback.setVerified(true);
+                subject.getPrivateCredentials().add(new PasswordCredential(userName, password));
+                if (subjectCallback != null) {
+                    // Only want to deliberately pass it back if authentication completed.
+                    subjectCallback.setSubject(subject);
                 }
-            });
-            ctx.login();
-            verifyPasswordCallback.setVerified(true);
-            subject.getPrivateCredentials().add(new PasswordCredential(userName, password));
-            if (subjectCallback != null) {
-                // Only want to deliberately pass it back if authentication completed.
-                subjectCallback.setSubject(subject);
+            } catch (LoginException e) {
+                verifyPasswordCallback.setVerified(false);
             }
-        } catch (LoginException e) {
-            verifyPasswordCallback.setVerified(false);
         }
     }
 
@@ -151,6 +174,10 @@ public class JaasCallbackHandler implements Service<DomainCallbackHandler>, Doma
     }
 
     public void stop(final StopContext context) {
+    }
+
+    public InjectedValue<ServerSecurityManager> getSecurityManagerValue() {
+        return securityManagerValue;
     }
 
     public DomainCallbackHandler getValue() throws IllegalStateException, IllegalArgumentException {

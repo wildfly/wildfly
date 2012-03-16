@@ -37,6 +37,7 @@ import java.util.UUID;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.domain.management.security.PasswordCredential;
 import org.jboss.as.security.SecurityMessages;
@@ -64,7 +65,7 @@ import org.jboss.security.identity.plugins.SimpleIdentity;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class SimpleSecurityManager {
+public class SimpleSecurityManager implements ServerSecurityManager {
     private ThreadLocalStack<SecurityContext> contexts = new ThreadLocalStack<SecurityContext>();
 
     private ISecurityManagement securityManagement = null;
@@ -109,6 +110,14 @@ public class SimpleSecurityManager {
         if (principal == null)
             return getUnauthenticatedIdentity().asPrincipal();
         return principal;
+    }
+
+    public Subject getSubject() {
+        final SecurityContext securityContext = doPrivileged(securityContext());
+        if (securityContext != null) {
+            return securityContext.getSubjectInfo().getAuthenticatedSubject();
+        }
+        return null;
     }
 
     /**
@@ -269,7 +278,7 @@ public class SimpleSecurityManager {
 
             // If we have a trusted identity no need for a re-auth.
             if (authenticated == false) {
-                authenticated = authenticate(current);
+                authenticated = authenticate(current, null);
             }
             if (authenticated == false) {
                 // TODO - Better type needed.
@@ -286,10 +295,38 @@ public class SimpleSecurityManager {
         }
     }
 
-    private boolean authenticate(SecurityContext context) {
+    public void push(final String securityDomain, String userName, char[] password, final Subject subject) {
+        final SecurityContext previous = SecurityContextAssociation.getSecurityContext();
+        contexts.push(previous);
+        SecurityContext current = establishSecurityContext(securityDomain);
+        if (previous != null) {
+            current.setSubjectInfo(previous.getSubjectInfo());
+            current.setIncomingRunAs(previous.getOutgoingRunAs());
+        }
+
+        RunAs currentRunAs = current.getIncomingRunAs();
+        boolean trusted = currentRunAs != null && currentRunAs instanceof RunAsIdentity;
+
+        if (trusted == false) {
+            SecurityContextUtil util = current.getUtil();
+            util.createSubjectInfo(new SimplePrincipal(userName), new String(password), subject);
+            if (authenticate(current, subject) == false) {
+                throw SecurityMessages.MESSAGES.invalidUserException();
+            }
+        }
+
+        if (previous != null && previous.getOutgoingRunAs() != null) {
+            // Ensure the propagation continues.
+            current.setOutgoingRunAs(previous.getOutgoingRunAs());
+        }
+    }
+
+    private boolean authenticate(SecurityContext context, Subject subject) {
         SecurityContextUtil util = context.getUtil();
         SubjectInfo subjectInfo = context.getSubjectInfo();
-        Subject subject = new Subject();
+        if (subject == null) {
+            subject = new Subject();
+        }
         Principal principal = util.getUserPrincipal();
         Object credential = util.getCredential();
 

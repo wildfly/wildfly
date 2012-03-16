@@ -37,8 +37,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
-import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.jca.core.spi.rar.Activation;
 import org.jboss.jca.core.spi.rar.Endpoint;
 import org.jboss.jca.core.spi.rar.MessageListener;
@@ -65,7 +65,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "utilities");
 
     private final InjectedValue<ResourceAdapterRepository> resourceAdapterRepositoryValue = new InjectedValue<ResourceAdapterRepository>();
-    private final InjectedValue<SimpleSecurityManager> securityManagerValue = new InjectedValue<SimpleSecurityManager>();
+    private final InjectedValue<ServerSecurityManager> securityManagerValue = new InjectedValue<ServerSecurityManager>();
     private final InjectedValue<TransactionManager> transactionManagerValue = new InjectedValue<TransactionManager>();
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<UserTransaction> userTransactionValue = new InjectedValue<UserTransaction>();
@@ -131,14 +131,14 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
         return resourceAdapterRepositoryValue;
     }
 
-    public SimpleSecurityManager getSecurityManager() {
-        final SimpleSecurityManager securityManager = securityManagerValue.getOptionalValue();
+    public ServerSecurityManager getSecurityManager() {
+        final ServerSecurityManager securityManager = securityManagerValue.getOptionalValue();
         if (securityManager == null)
             throw MESSAGES.securityNotEnabled();
         return securityManager;
     }
 
-    public Injector<SimpleSecurityManager> getSecurityManagerInjector() {
+    public Injector<ServerSecurityManager> getSecurityManagerInjector() {
         return securityManagerValue;
     }
 
