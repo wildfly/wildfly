@@ -93,11 +93,6 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
         return archive;
     }
 
-    @Override
-    ServiceContainer getServiceContainer() {
-        return serviceContainer;
-    }
-
     @Test
     public void bundleInvokesModuleService() throws Exception {
         // Deploy the non-OSGi module which contains the target service
@@ -105,11 +100,7 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
         try {
             // Check that the target service is up
             ServiceName targetService = ServiceName.parse("jboss.osgi.example.target.service");
-            assertServiceState(targetService, State.UP, 5000);
-
-            // Register the target module with the OSGi layer
-            Bundle targetBundle = registerModule(ModuleIdentifier.create("deployment." + TARGET_MODULE_NAME));
-            assertEquals("Bundle INSTALLED", Bundle.INSTALLED, targetBundle.getState());
+            assertServiceState(serviceContainer, targetService, State.UP, 5000);
 
             // Install the client bundle
             InputStream input = deployer.getDeployment(CLIENT_BUNDLE_NAME);
