@@ -9,6 +9,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.DEFAULT_CACHE;
 import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.JNDI_NAME;
 
 import java.io.BufferedReader;
@@ -40,11 +41,67 @@ public class OperationSequencesTestCase extends AbstractSubsystemTest {
         super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension());
     }
 
-    // list the names of the services which have been installed
-    // System.out.println("service names = " + servicesA.getContainer().getServiceNames());
+    @Test
+    public void testCacheContainerAddRemoveAddSequence() throws Exception {
 
-    //ModelNode model = servicesA.readWholeModel();
-    // System.out.println("model = " + model.asString());
+        // Parse and install the XML into the controller
+        String subsystemXml = getSubsystemXml() ;
+        KernelServices servicesA = super.installInController(subsystemXml) ;
+
+        ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
+        ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
+        ModelNode addCacheOp = getLocalCacheAddOperation("maximal2", "fred");
+        ModelNode removeCacheOp = getLocalCacheRemoveOperation("maximal2", "fred");
+
+        // add a cache container
+        ModelNode result = servicesA.executeOperation(addContainerOp);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        // add a local cache
+        result = servicesA.executeOperation(addCacheOp);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        // remove the cache container
+        result = servicesA.executeOperation(removeContainerOp);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        // add the same cache container
+        result = servicesA.executeOperation(addContainerOp);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        // add the same local cache
+        result = servicesA.executeOperation(addCacheOp);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+    }
+
+    @Test
+    public void testCacheContainerRemoveRemoveSequence() throws Exception {
+
+        // Parse and install the XML into the controller
+        String subsystemXml = getSubsystemXml() ;
+        KernelServices servicesA = super.installInController(subsystemXml) ;
+
+        ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
+        ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
+        ModelNode addCacheOp = getLocalCacheAddOperation("maximal2", "fred");
+        ModelNode removeCacheOp = getLocalCacheRemoveOperation("maximal2", "fred");
+
+        // add a cache container
+        ModelNode result = servicesA.executeOperation(addContainerOp);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        // add a local cache
+        result = servicesA.executeOperation(addCacheOp);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        // remove the cache container
+        result = servicesA.executeOperation(removeContainerOp);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        // remove the cache container again
+        result = servicesA.executeOperation(removeContainerOp);
+        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+    }
 
     @Test
     public void testLocalCacheAddRemoveAddSequence() throws Exception {
@@ -59,18 +116,14 @@ public class OperationSequencesTestCase extends AbstractSubsystemTest {
         // add a local cache
         ModelNode result = servicesA.executeOperation(addOp);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        System.out.println("result = " + result.toString());
 
         // remove the local cache
         result = servicesA.executeOperation(removeOp);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        System.out.println("result = " + result.toString());
 
         // add the same local cache
         result = servicesA.executeOperation(addOp);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        System.out.println("result = " + result.toString());
-
     }
 
     @Test
@@ -86,22 +139,41 @@ public class OperationSequencesTestCase extends AbstractSubsystemTest {
         // add a local cache
         ModelNode result = servicesA.executeOperation(addOp);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        System.out.println("result = " + result.toString());
 
         // remove the local cache
         result = servicesA.executeOperation(removeOp);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        System.out.println("result = " + result.toString());
 
         // remove the same local cache
         result = servicesA.executeOperation(removeOp);
         Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
-        System.out.println("result = " + result.toString());
+    }
+
+
+    private ModelNode getCacheContainerAddOperation(String containerName) {
+        // create the address of the cache
+        PathAddress containerAddr = getCacheContainerAddress(containerName);
+        ModelNode addOp = new ModelNode() ;
+        addOp.get(OP).set(ADD);
+        addOp.get(OP_ADDR).set(containerAddr.toModelNode());
+        // required attributes
+        addOp.get(DEFAULT_CACHE).set("default");
+
+        return addOp ;
+    }
+
+    private ModelNode getCacheContainerRemoveOperation(String containerName) {
+        // create the address of the cache
+        PathAddress containerAddr = getCacheContainerAddress(containerName);
+        ModelNode removeOp = new ModelNode() ;
+        removeOp.get(OP).set(REMOVE);
+        removeOp.get(OP_ADDR).set(containerAddr.toModelNode());
+
+        return removeOp ;
     }
 
 
     private ModelNode getLocalCacheAddOperation(String containerName, String cacheName) {
-
         // create the address of the cache
         PathAddress localCacheAddr = getCacheAddress(containerName, cacheName, ModelKeys.LOCAL_CACHE);
         ModelNode addOp = new ModelNode() ;
@@ -114,7 +186,6 @@ public class OperationSequencesTestCase extends AbstractSubsystemTest {
     }
 
     private ModelNode getLocalCacheRemoveOperation(String containerName, String cacheName) {
-
         // create the address of the cache
         PathAddress localCacheAddr = getCacheAddress(containerName, cacheName, ModelKeys.LOCAL_CACHE);
         ModelNode removeOp = new ModelNode() ;
@@ -123,6 +194,15 @@ public class OperationSequencesTestCase extends AbstractSubsystemTest {
 
         return removeOp ;
     }
+
+    private PathAddress getCacheContainerAddress(String containerName) {
+        // create the address of the cache
+        PathAddress containerAddr = PathAddress.pathAddress(
+                PathElement.pathElement(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME),
+                PathElement.pathElement("cache-container",containerName));
+        return containerAddr ;
+    }
+
 
     private PathAddress getCacheAddress(String containerName, String cacheName, String cacheType) {
         // create the address of the cache

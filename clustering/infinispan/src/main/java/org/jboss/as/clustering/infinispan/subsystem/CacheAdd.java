@@ -48,7 +48,6 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.server.ServerEnvironment;
@@ -221,11 +220,11 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         // remove the binder service
         ModelNode resolvedValue = null;
         final String jndiNameString = ((resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, model)).isDefined()) ? resolvedValue.asString() : null;
-        final String jndiName = InfinispanJndiName.createJndiNameOrDefault(jndiNameString, containerName, cacheName);
+        final String jndiName = InfinispanJndiName.createCacheJndiNameOrDefault(jndiNameString, containerName, cacheName);
         ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
         context.removeService(bindInfo.getBinderServiceName()) ;
         // remove the CacheService instance
-        context.removeService(EmbeddedCacheManagerService.getServiceName(containerName).append(cacheName));
+        context.removeService(CacheService.getServiceName(containerName, cacheName));
         // remove the cache configuration service
         context.removeService(CacheConfigurationService.getServiceName(containerName, cacheName));
 
@@ -273,8 +272,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
         CacheDependencies cacheDependencies = new CacheDependencies(containerInjection);
         CacheService<Object, Object> cacheService = new CacheService<Object, Object>(cacheName, cacheDependencies);
-        ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
-        ServiceName cacheServiceName = containerServiceName.append(cacheName);
+        ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
         ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
         Configuration config = builder.build();
 
@@ -302,10 +300,9 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                                                                             String containerName, String cacheName, String jndiNameString,
                                                                             ServiceVerificationHandler verificationHandler) {
 
-        String jndiName = InfinispanJndiName.createJndiNameOrDefault(jndiNameString, containerName, cacheName);
+        String jndiName = InfinispanJndiName.createCacheJndiNameOrDefault(jndiNameString, containerName, cacheName);
 
-        ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
-        ServiceName cacheServiceName = containerServiceName.append(cacheName);
+        ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
         ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
 
         BinderService binder = new BinderService(bindInfo.getBindName());
