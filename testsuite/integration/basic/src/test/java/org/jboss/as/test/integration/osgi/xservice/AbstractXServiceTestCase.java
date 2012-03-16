@@ -24,22 +24,10 @@ package org.jboss.as.test.integration.osgi.xservice;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.osgi.framework.BundleManagerService;
-import org.jboss.osgi.framework.FutureServiceValue;
-import org.jboss.osgi.framework.Services;
-import org.osgi.framework.Bundle;
 
 /**
  * Abstract base for XService testing.
@@ -49,37 +37,8 @@ import org.osgi.framework.Bundle;
  */
 abstract class AbstractXServiceTestCase {
 
-    abstract ServiceContainer getServiceContainer();
-
-    @SuppressWarnings("unchecked")
-    Bundle registerModule(ModuleIdentifier identifier) throws Exception {
-
-        // Make sure we have an active framework
-        ServiceController<Void> frameworkController = (ServiceController<Void>) getServiceContainer().getRequiredService(Services.FRAMEWORK_ACTIVATOR);
-        new FutureServiceValue<Void>(frameworkController).get();
-
-        // Get the {@link BundleManagerService}
-        ServiceController<BundleManagerService> bundleManagerService = (ServiceController<BundleManagerService>) getServiceContainer().getRequiredService(Services.BUNDLE_MANAGER);
-        BundleManagerService bundleManager = bundleManagerService.getValue();
-
-        ServiceController<ModuleLoader> moduleLoaderService = (ServiceController<ModuleLoader>) getServiceContainer().getRequiredService(ServiceName.parse("jboss.as.service-module-loader"));
-        ModuleLoader moduleLoader = moduleLoaderService.getValue();
-        Module module = moduleLoader.loadModule(identifier);
-
-        ServiceTarget serviceTarget = getServiceContainer().subTarget();
-        ServiceName serviceName = bundleManager.registerModule(serviceTarget, module, null);
-        return getBundleFromService(serviceName);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Bundle getBundleFromService(ServiceName serviceName) throws ExecutionException, TimeoutException {
-        ServiceController<Bundle> controller = (ServiceController<Bundle>) getServiceContainer().getService(serviceName);
-        FutureServiceValue<Bundle> future = new FutureServiceValue<Bundle>(controller);
-        return future.get(5, TimeUnit.SECONDS);
-    }
-
-    void assertServiceState(ServiceName serviceName, State expState, long timeout) throws Exception {
-        ServiceController<?> controller = getServiceContainer().getService(serviceName);
+    void assertServiceState(ServiceContainer serviceContainer, ServiceName serviceName, State expState, long timeout) throws Exception {
+        ServiceController<?> controller = serviceContainer.getService(serviceName);
         State state = controller != null ? controller.getState() : null;
         while ((state == null || state != expState) && timeout > 0) {
             try {
@@ -87,7 +46,7 @@ abstract class AbstractXServiceTestCase {
             } catch (InterruptedException ex) {
                 // ignore
             }
-            controller = getServiceContainer().getService(serviceName);
+            controller = serviceContainer.getService(serviceName);
             state = controller != null ? controller.getState() : null;
             timeout -= 100;
         }
