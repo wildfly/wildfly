@@ -272,7 +272,7 @@ class SoSReport(object):
             # device, so we call the default hook
             sys.__excepthook__(etype, eval_, etrace)
         else:
-            import pdb
+            import traceback, pdb
             # we are NOT in interactive mode, print the exception...
             traceback.print_exception(etype, eval_, etrace, limit=2, file=sys.stdout)
             print
@@ -945,15 +945,10 @@ class SoSReport(object):
 
             self.postproc()
             self.version()
+
+            return self.final_work()
         except SystemExit:
             return None
-        except:
-            traceback.print_exc()
-
-        try:
-            return self.final_work()
-        except:
-            traceback.print_exc()
 
 def main(args):
     """The main entry point"""
