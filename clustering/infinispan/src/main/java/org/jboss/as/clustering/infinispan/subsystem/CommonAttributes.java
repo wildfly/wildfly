@@ -177,7 +177,7 @@ public interface CommonAttributes {
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(5000))
+                    .setDefaultValue(new ModelNode().set(60000))
                     .build();
     SimpleAttributeDefinition ISOLATION =
             new SimpleAttributeDefinitionBuilder(ModelKeys.ISOLATION, ModelType.STRING, true)
@@ -242,7 +242,7 @@ public interface CommonAttributes {
                     .setXmlName(Attribute.MAX_ENTRIES.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(10000))
+                    .setDefaultValue(new ModelNode().set(-1))
                     .build();
     SimpleAttributeDefinition MAX_IDLE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.MAX_IDLE, ModelType.LONG, true)

@@ -127,7 +127,10 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
         EmbeddedCacheManager container = groupCache.getCacheManager();
         ConfigurationBuilder builder = new ConfigurationBuilder().read(groupCacheConfiguration);
         if (this.maxSize > 0) {
-            builder.eviction().strategy(EvictionStrategy.LRU).maxEntries(this.maxSize);
+            if (!groupCacheConfiguration.eviction().strategy().isEnabled()) {
+                builder.eviction().strategy(EvictionStrategy.LRU);
+            }
+            builder.eviction().maxEntries(this.maxSize);
         }
         groupCache.getCacheManager().defineConfiguration(beanName, builder.build());
         Cache<MarshalledValue<K, MarshallingContext>, MarshalledValue<E, MarshallingContext>> cache = container.<MarshalledValue<K, MarshallingContext>, MarshalledValue<E, MarshallingContext>>getCache(beanName).getAdvancedCache().with(this.getClass().getClassLoader());

@@ -387,6 +387,12 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                     .lifespan(lifespan)
                     .wakeUpInterval(interval)
             ;
+            // Only enable the reaper thread if we need it
+            if ((maxIdle > 0) || (lifespan > 0)) {
+                builder.expiration().enableReaper();
+            } else {
+                builder.expiration().disableReaper();
+            }
         }
 
         // stores are a child resource

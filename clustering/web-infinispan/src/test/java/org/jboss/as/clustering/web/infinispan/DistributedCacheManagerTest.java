@@ -415,6 +415,8 @@ public class DistributedCacheManagerTest {
     public void getSessionIds() {
         String sessionId = "abc";
 
+        when(this.cache.getAdvancedCache()).thenReturn(this.cache);
+        when(this.cache.withFlags(Flag.SKIP_LOCKING, Flag.SKIP_REMOTE_LOOKUP, Flag.SKIP_CACHE_LOAD)).thenReturn(this.cache);
         when(this.cache.keySet()).thenReturn(Collections.singleton(sessionId));
 
         Map<String, String> result = this.manager.getSessionIds();

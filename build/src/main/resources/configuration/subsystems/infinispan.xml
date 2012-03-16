@@ -48,14 +48,14 @@
             <cache-container name="ejb" aliases="sfsb sfsb-cache" default-cache="repl">
                 <transport lock-timeout="60000"/>
                 <replicated-cache name="repl" mode="ASYNC" batching="true">
-                    <eviction strategy="LRU"/>
+                    <eviction strategy="LRU" max-entries="10000"/>
                     <file-store/>
                 </replicated-cache>
                 <!-- Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
                 the socketbinding referenced by the EJB remoting connector -->
                 <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
                 <distributed-cache name="dist" mode="ASYNC" batching="true">
-                    <eviction strategy="LRU"/>
+                    <eviction strategy="LRU" max-entries="10000"/>
                     <file-store/>
                 </distributed-cache>
             </cache-container>
