@@ -56,11 +56,11 @@ import org.junit.runner.RunWith;
 public class DataSourceTestCase extends AbstractCliTestBase {
 
     @ArquillianResource URL url;
-    
+
     private static final String[][] DS_PROPS = new String[][] {
         {"idle-timeout-minutes", "5"}
     };
-    
+
     @Deployment
     public static Archive<?> getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "DataSourceTestCase.war");
@@ -105,20 +105,20 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         assertTrue(ls.contains("TestDS"));
 
         // enable data source
-        cli.sendLine("data-source enable --name=TestDS");                
+        cli.sendLine("data-source enable --name=TestDS");
         cli.waitForPrompt(WAIT_TIMEOUT);
 
-        // check that it is available through JNDI        
+        // check that it is available through JNDI
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/datasources/TestDS");
         Assert.assertEquals("org.jboss.jca.adapters.jdbc.WrapperDataSource", jndiClass);
 
     }
 
     private void testRemoveDataSource() throws Exception {
-                
+
         // disable data source
         //cli.sendLine("data-source disable --name=TestDS");
-                
+
         // remove data source
         //cli.sendLine("data-source remove --name=TestDS");
         cli.sendLine("/subsystem=datasources/data-source=TestDS:remove{allow-resource-service-restart=true}");
@@ -127,11 +127,11 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         cli.sendLine("cd /subsystem=datasources/data-source");
         cli.sendLine("ls");
         String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        assertFalse(ls.contains("java:jboss/datasources/TestDS"));        
+        assertFalse(ls.contains("java:jboss/datasources/TestDS"));
 
-        // check that it is not available through JNDI        
+        // check that it is not available through JNDI
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/datasources/TestDS");
-        Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);                       
+        Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);
 
     }
 
@@ -158,26 +158,26 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     private void testAddXaDataSource() throws Exception {
 
         // add data source
-        cli.sendLine("xa-data-source add --name=TestXADS --jndi-name=java:jboss/datasources/TestXADS --driver-name=h2");
+        cli.sendLine("xa-data-source add --name=TestXADS --jndi-name=java:jboss/datasources/TestXADS --driver-name=h2 --xa-datasource-properties=ServerName=localhost,PortNumber=50011");
 
         //check the data source is listed
         cli.sendLine("cd /subsystem=datasources/xa-data-source");
         cli.sendLine("ls");
         String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(ls.contains("TestXADS"));
-        
+
         // add URL property
         cli.sendLine(
-                "/subsystem=datasources/xa-data-source=TestXADS/xa-datasource-properties=URL:add(value=\"jdbc:h2:mem:test\")");        
-        
+                "/subsystem=datasources/xa-data-source=TestXADS/xa-datasource-properties=URL:add(value=\"jdbc:h2:mem:test\")");
+
         // enable data source
-        cli.sendLine("xa-data-source enable --name=TestXADS");                
+        cli.sendLine("xa-data-source enable --name=TestXADS");
         cli.waitForPrompt(WAIT_TIMEOUT);
-        
-        // check that it is available through JNDI        
+
+        // check that it is available through JNDI
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/datasources/TestXADS");
         Assert.assertEquals("org.jboss.jca.adapters.jdbc.WrapperDataSource", jndiClass);
-        
+
 
     }
 
@@ -191,10 +191,10 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         cli.sendLine("ls");
         String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertFalse(ls.contains("TestXADS"));
-        
-        // check that it is no more available through JNDI        
+
+        // check that it is no more available through JNDI
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/datasources/TestXADS");
-        Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);        
+        Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);
 
     }
 
