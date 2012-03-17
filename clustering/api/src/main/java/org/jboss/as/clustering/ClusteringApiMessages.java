@@ -48,7 +48,7 @@ public interface ClusteringApiMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 10220, value = "Caught raw Throwable on remote invocation")
+    @Message(id = 10210, value = "Caught raw Throwable on remote invocation")
     RuntimeException caughtRemoteInvocationThrowable(@Cause Throwable cause);
 
     /**
@@ -58,7 +58,7 @@ public interface ClusteringApiMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 10221, value = "%s is null")
+    @Message(id = 10211, value = "%s is null")
     IllegalArgumentException nullVar(String name);
 
     /**
@@ -70,7 +70,7 @@ public interface ClusteringApiMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10222, value = "Must set %s before calling %s")
+    @Message(id = 10212, value = "Must set %s before calling %s")
     IllegalStateException varNotSet(String name, String methodName);
 
     /**
@@ -80,7 +80,7 @@ public interface ClusteringApiMessages {
      *
      * @return the message.
      */
-    @Message(id = 10223, value = "Cannot acquire lock %s from cluster")
+    @Message(id = 10213, value = "Cannot acquire lock %s from cluster")
     String cannotAcquireLock(Serializable lockName);
 
     /**
@@ -88,7 +88,7 @@ public interface ClusteringApiMessages {
      *
      * @return the message.
      */
-    @Message(id = 10224, value = "Unable to acquire lock as it is held by unknown")
+    @Message(id = 10214, value = "Unable to acquire lock as it is held by unknown")
     String cannotAcquireHeldLock();
 
     /**
@@ -98,7 +98,7 @@ public interface ClusteringApiMessages {
      *
      * @return the message.
      */
-    @Message(id = 10225, value = "Unable to acquire lock as it is held by %s")
+    @Message(id = 10215, value = "Unable to acquire lock as it is held by %s")
     String cannotAcquireHeldLock(ClusterNode node);
 
     /**
@@ -111,7 +111,7 @@ public interface ClusteringApiMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 10226, value = "%s %s is not compatible with %s %s")
+    @Message(id = 10216, value = "%s %s is not compatible with %s %s")
     IllegalArgumentException incompatibleDispatcher(String dispatcherName, GroupRpcDispatcher dispatcher, String notifierName, GroupMembershipNotifier notifier);
 
     /**
@@ -122,7 +122,7 @@ public interface ClusteringApiMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10227, value = "Must call %s before first call to %s")
+    @Message(id = 10217, value = "Must call %s before first call to %s")
     IllegalStateException invalidMethodCall(String firstMethod, String secondMethod);
 
     /**
@@ -132,7 +132,7 @@ public interface ClusteringApiMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10228, value = "Should not receive unlock calls for remote node %s")
+    @Message(id = 10218, value = "Should not receive unlock calls for remote node %s")
     IllegalStateException receivedUnlockForRemoteNode(ClusterNode caller);
 
     /**
@@ -142,6 +142,6 @@ public interface ClusteringApiMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 10229, value = "Failed releasing remote lock")
+    @Message(id = 10219, value = "Failed releasing remote lock")
     RuntimeException remoteLockReleaseFailure(@Cause Throwable cause);
 }

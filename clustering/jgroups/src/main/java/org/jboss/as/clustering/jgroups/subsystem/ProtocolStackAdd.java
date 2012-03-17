@@ -41,7 +41,6 @@ import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
 import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
 import org.jboss.as.clustering.jgroups.TransportConfiguration;
-import org.jboss.as.clustering.jgroups.TransportConfiguration.Topology;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -111,7 +110,6 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         // add steps to initialize *optional* PROTOCOL parameters
         if (operation.hasDefined(ModelKeys.PROTOCOLS)) {
 
-            ModelNode protocolsNode = operation.get(ModelKeys.PROTOCOLS);
             List<ModelNode> protocols = operation.get(ModelKeys.PROTOCOLS).asList();
             // because we use stage IMMEDIATE when creating protocols, unless we reverse the order
             // of the elements in the LIST, they will get applied in reverse order - the last step
