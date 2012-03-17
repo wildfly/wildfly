@@ -39,7 +39,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.Callable;
@@ -65,11 +64,9 @@ import org.jboss.as.clustering.SerializableStateTransferResult;
 import org.jboss.as.clustering.StateTransferProvider;
 import org.jboss.as.clustering.StateTransferResult;
 import org.jboss.as.clustering.StreamStateTransferResult;
-import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.ClassLoaderAwareUpHandler;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.clustering.msc.AsynchronousService;
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.ClassResolver;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
@@ -129,24 +126,6 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
 
     private static final byte NULL_VALUE = 0;
     private static final byte SERIALIZABLE_VALUE = 1;
-    // TODO add Streamable support
-    // private static final byte STREAMABLE_VALUE = 2;
-
-    private enum State {
-        STOPPED,
-        STOPPING,
-        STARTING,
-        STARTED,
-        FAILED,
-        DESTROYED,
-        CREATED,
-        UNREGISTERED,
-        ;
-        @Override
-        public String toString() {
-            return this.name().substring(0, 1) + this.name().substring(1).toLowerCase(Locale.US);
-        }
-    }
 
     public static ServiceName getServiceName(String name) {
         return ServiceName.JBOSS.append("cluster").append(name);
@@ -179,7 +158,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
      */
     @Override
     public void start(StartContext context) throws StartException {
-        this.setChannel(this.channelRef.getValue());
+        this.channel = this.channelRef.getValue();
 
         try {
             this.start();
@@ -202,24 +181,16 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
     // Attributes ----------------------------------------------------
     static final MarshallerFactory marshallerFactory = Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader());
 
-    private ChannelFactory channelFactory;
-    private String stackName;
-    private String groupName;
-
-    private boolean channelSelfConnected;
-
     /** The JGroups channel */
-    Channel channel;
-    /** the local JG IP Address */
-    private Address localJGAddress = null;
+    volatile Channel channel;
     /** me as a ClusterNode */
-    ClusterNode me = null;
+    volatile ClusterNode me = null;
     /** The current view of the group */
     private volatile GroupView groupView = new GroupView();
 
     private long method_call_timeout = 60000;
     final short scopeId;
-    private RpcDispatcher dispatcher = null;
+    private volatile RpcDispatcher dispatcher = null;
     final Map<String, Object> rpcHandlers = new ConcurrentHashMap<String, Object>();
     private boolean directlyInvokeLocal;
     final Map<String, ClassResolver> resolvers = new ConcurrentHashMap<String, ClassResolver>();
@@ -231,16 +202,13 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
     /** The HAMembershipListener and HAMembershipExtendedListeners */
     private final List<GroupMembershipListener> syncMembershipListeners = new CopyOnWriteArrayList<GroupMembershipListener>();
     /** The handler used to send membership change notifications asynchronously */
-    private AsynchEventHandler asynchHandler;
+    private final AsynchEventHandler asynchHandler = new AsynchEventHandler(new ViewChangeEventProcessor(), "AsynchViewChangeHandler");
 
     private long state_transfer_timeout = 60000;
-    String stateIdPrefix;
+    volatile String stateIdPrefix;
     final Map<String, StateTransferProvider> stateProviders = new ConcurrentHashMap<String, StateTransferProvider>();
     final Map<String, StateTransferTask<?, ?>> stateTransferTasks = new ConcurrentHashMap<String, StateTransferTask<?, ?>>();
 
-    /** The cluster instance log category */
-    protected ClusteringImplLogger log = Logger.getMessageLogger(ClusteringImplLogger.class, getClass().getName());
-    ClusteringImplLogger clusterLifeCycleLog = Logger.getMessageLogger(ClusteringImplLogger.class, getClass().getName() + ".lifecycle");
     private final List<String> history = new LinkedList<String>();
     private int maxHistoryLength = 100;
 
@@ -250,10 +218,6 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
     final ThreadGate flushBlockGate = new ThreadGate();
 
     private final ClusterNodeFactory nodeFactory = new ClusterNodeFactoryImpl();
-
-    final Object channelLock = new Object();
-
-    private State state = State.UNREGISTERED;
 
     // Static --------------------------------------------------------
 
@@ -268,12 +232,12 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
 
     @Override
     public String getNodeName() {
-        return this.me == null ? null : this.me.getName();
+        return (this.me != null) ? this.me.getName() : null;
     }
 
     @Override
     public String getGroupName() {
-        return this.groupName;
+        return (this.channel != null) ? this.channel.getClusterName() : null;
     }
 
     public List<String> getCurrentView() {
@@ -370,16 +334,16 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         MethodCall m = new MethodCall(serviceName + "." + methodName, args, types);
         RequestOptions options = new RequestOptions(ResponseMode.GET_ALL, methodTimeout, false, new NoHandlerForRPCRspFilter(filter));
         if (excludeSelf) {
-            options.setExclusionList(this.localJGAddress);
+            options.setExclusionList(this.channel.getAddress());
         }
 
         if (this.channel.flushSupported()) {
             this.flushBlockGate.await(this.getMethodCallTimeout());
         }
 
-        boolean trace = this.log.isTraceEnabled();
+        boolean trace = ClusteringImplLogger.ROOT_LOGGER.isTraceEnabled();
         if (trace) {
-            this.log.tracef("calling synchronous method on cluster, serviceName=%s, methodName=%s, members=%s, excludeSelf=%s", serviceName, methodName, this.groupView, excludeSelf);
+            ClusteringImplLogger.ROOT_LOGGER.tracef("calling synchronous method on cluster, serviceName=%s, methodName=%s, members=%s, excludeSelf=%s", serviceName, methodName, this.groupView, excludeSelf);
         }
         try {
             RspList<T> rsp = this.dispatcher.callRemoteMethods(null, m, options);
@@ -437,12 +401,12 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
      */
     @Override
     public <T> T callMethodOnCoordinatorNode(String serviceName, String methodName, Object[] args, Class<?>[] types, boolean excludeSelf, long methodTimeout, boolean unordered) throws Exception {
-        boolean trace = this.log.isTraceEnabled();
+        boolean trace = ClusteringImplLogger.ROOT_LOGGER.isTraceEnabled();
 
         MethodCall m = new MethodCall(serviceName + "." + methodName, args, types);
 
         if (trace) {
-            this.log.tracef("callMethodOnCoordinatorNode(false), objName=%s, methodName=%s", serviceName, methodName);
+            ClusteringImplLogger.ROOT_LOGGER.tracef("callMethodOnCoordinatorNode(false), objName=%s, methodName=%s", serviceName, methodName);
         }
 
         // the first cluster view member is the coordinator
@@ -496,12 +460,12 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         if (!(targetNode instanceof ClusterNodeImpl)) {
             throw MESSAGES.invalidTargetNodeInstance(targetNode, ClusterNodeImpl.class);
         }
-        boolean trace = this.log.isTraceEnabled();
+        boolean trace = ClusteringImplLogger.ROOT_LOGGER.isTraceEnabled();
 
         MethodCall m = new MethodCall(serviceName + "." + methodName, args, types);
 
         if (trace) {
-            this.log.tracef("callMethodOnNode( objName=%s, methodName=%s )", serviceName, methodName);
+            ClusteringImplLogger.ROOT_LOGGER.tracef("callMethodOnNode( objName=%s, methodName=%s )", serviceName, methodName);
         }
         if (this.directlyInvokeLocal && this.me.equals(targetNode)) {
             return this.<T>invokeDirectly(serviceName, methodName, args, types, null, null);
@@ -540,12 +504,12 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         if (!(targetNode instanceof ClusterNodeImpl)) {
             throw MESSAGES.invalidTargetNodeInstance(targetNode, ClusterNodeImpl.class);
         }
-        boolean trace = this.log.isTraceEnabled();
+        boolean trace = ClusteringImplLogger.ROOT_LOGGER.isTraceEnabled();
 
         MethodCall m = new MethodCall(serviceName + "." + methodName, args, types);
 
         if (trace) {
-            this.log.tracef("callAsyncMethodOnNode( objName=%s, methodName=%s )" + methodName, serviceName, methodName);
+            ClusteringImplLogger.ROOT_LOGGER.tracef("callAsyncMethodOnNode( objName=%s, methodName=%s )" + methodName, serviceName, methodName);
         }
 
         if (this.directlyInvokeLocal && this.me.equals(targetNode)) {
@@ -584,14 +548,14 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         MethodCall m = new MethodCall(serviceName + "." + methodName, args, types);
         RequestOptions options = new RequestOptions(ResponseMode.GET_NONE, this.getMethodCallTimeout(), false, new NoHandlerForRPCRspFilter());
         if (excludeSelf) {
-            options.setExclusionList(this.localJGAddress);
+            options.setExclusionList(this.channel.getAddress());
         }
 
         if (this.channel.flushSupported()) {
             this.flushBlockGate.await(this.getMethodCallTimeout());
         }
-        if (this.log.isTraceEnabled()) {
-            this.log.tracef("calling asynch method on cluster, serviceName=%s, methodName=%s, members=%s, excludeSelf=%s",
+        if (ClusteringImplLogger.ROOT_LOGGER.isTraceEnabled()) {
+            ClusteringImplLogger.ROOT_LOGGER.tracef("calling asynch method on cluster, serviceName=%s, methodName=%s, members=%s, excludeSelf=%s",
                     serviceName, methodName, this.groupView, excludeSelf);
         }
         try {
@@ -620,12 +584,12 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
     public void callAsyncMethodOnCoordinatorNode(String serviceName, String methodName, Object[] args, Class<?>[] types,
             boolean excludeSelf, boolean unordered) throws Exception {
 
-        boolean trace = this.log.isTraceEnabled();
+        boolean trace = ClusteringImplLogger.ROOT_LOGGER.isTraceEnabled();
 
         MethodCall m = new MethodCall(serviceName + "." + methodName, args, types);
 
         if (trace) {
-            this.log.tracef("callMethodOnCoordinatorNode(false), objName=%s, methodName=%s", serviceName, methodName);
+            ClusteringImplLogger.ROOT_LOGGER.tracef("callMethodOnCoordinatorNode(false), objName=%s, methodName=%s", serviceName, methodName);
         }
 
         // the first cluster view member is the coordinator
@@ -715,7 +679,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
             future = new FutureTask<SerializableStateTransferResult>(newTask);
         } else if (task instanceof SerializableStateTransferTask) {
             // Unlikely scenario
-            log.receivedConcurrentStateRequests(serviceName);
+            ClusteringImplLogger.ROOT_LOGGER.receivedConcurrentStateRequests(serviceName);
             future = new FutureTask<SerializableStateTransferResult>((SerializableStateTransferTask) task);
         } else {
             throw MESSAGES.stateTransferAlreadyPending(serviceName, "input stream");
@@ -743,7 +707,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
             future = new FutureTask<StreamStateTransferResult>(newTask);
         } else if (task instanceof StreamStateTransferTask) {
             // Unlikely scenario
-            log.receivedConcurrentStateRequests(serviceName);
+            ClusteringImplLogger.ROOT_LOGGER.receivedConcurrentStateRequests(serviceName);
             future = new FutureTask<StreamStateTransferResult>((StreamStateTransferTask) task);
         } else {
             throw MESSAGES.stateTransferAlreadyPending(serviceName, "deserialized object");
@@ -812,22 +776,6 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         return Version.description + "( " + Version.string_version + ")";
     }
 
-    public ChannelFactory getChannelFactory() {
-        return this.channelFactory;
-    }
-
-    public void setChannelFactory(ChannelFactory factory) {
-        this.channelFactory = factory;
-    }
-
-    public String getChannelStackName() {
-        return this.stackName;
-    }
-
-    public void setChannelStackName(String stackName) {
-        this.stackName = stackName;
-    }
-
     @Override
     public long getMethodCallTimeout() {
         return this.method_call_timeout;
@@ -837,146 +785,33 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         this.method_call_timeout = timeout;
     }
 
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
-    }
-
     public void setChannel(Channel channel) {
         this.channel = channel;
-        this.groupName = channel.getClusterName();
     }
 
-    // Lifecycle ----------------------------------------------------------------
-
-    public void create() throws Exception {
-
-        if (state == State.CREATED || state == State.STARTING || state == State.STARTED || state == State.STOPPING || state == State.STOPPED) {
-            log.debugf("Ignoring create call; current state is %s", this.state);
-            return;
+    public void start() {
+        if (this.channel == null) {
+            throw ClusteringImplMessages.MESSAGES.channelNotDefined();
+        }
+        if (!this.channel.isConnected()) {
+            throw ClusteringImplMessages.MESSAGES.channelNotConnected(this.channel.getName());
         }
 
-        createService();
-        state = State.CREATED;
-    }
-
-    public void start() throws Exception {
-        if (state == State.STARTING || state == State.STARTED || state == State.STOPPING) {
-            log.debugf("Ignoring start call; current state is %s", this.state);
-            return;
-        }
-
-        if (state != State.CREATED && state != State.STOPPED && state != State.FAILED) {
-            log.debug("Start requested before create, calling create now");
-            create();
-        }
-
-        state = State.STARTING;
-        try {
-            startService();
-            state = State.STARTED;
-        } catch (Throwable t) {
-            state = State.FAILED;
-            if (this.channel != null && this.channelSelfConnected) {
-                this.log.debugf("Caught exception after channel connected; closing channel -- %s", t.getLocalizedMessage());
-                this.channel.close();
-                this.channel = null;
-            }
-            if (t instanceof Exception)
-                throw (Exception) t;
-            else if (t instanceof Error)
-                throw (Error) t;
-            else
-                throw new RuntimeException(t);
-        }
-    }
-
-    public void stop() {
-        if (state != State.STARTED) {
-            log.debugf("Ignoring stop call; current state is %s", this.state);
-            return;
-        }
-
-        state = State.STOPPING;
-        try {
-            stopService();
-            state = State.STOPPED;
-        } catch (InterruptedException e) {
-            state = State.FAILED;
-            Thread.currentThread().interrupt();
-            log.exceptionInStop(e);
-        } catch (Exception e) {
-            state = State.FAILED;
-            log.exceptionInStop(e);
-        } catch (Error e) {
-            state = State.FAILED;
-            throw e;
-        }
-
-    }
-
-    public void destroy() {
-        if (state == State.DESTROYED) {
-            log.debugf("Ignoring destroy call; current state is %s", this.state);
-            return;
-        }
-
-        if (state == State.STARTED) {
-            log.debug("Destroy requested before stop, calling stop now");
-            stop();
-        }
-        try {
-            destroyService();
-        } catch (Exception e) {
-            log.errorDestroyingService(e);
-        }
-        state = State.DESTROYED;
-    }
-
-    public State getState() {
-        return state;
-    }
-
-    // Protected --------------------------------------------------------------
-
-    protected void createService() throws Exception {
-        this.setupLoggers(this.getGroupName());
-
-        // Create the asynchronous handler for view changes
-        this.asynchHandler = new AsynchEventHandler(new ViewChangeEventProcessor(), "AsynchViewChangeHandler");
-    }
-
-    protected void startService() throws Exception {
-        this.stateIdPrefix = getClass().getName() + "." + this.scopeId + ".";
-
-        if (this.channel == null || !this.channel.isOpen()) {
-            this.log.debugf("Creating Channel for partition %s using stack %s", this.getGroupName(), this.getChannelStackName());
-
-            this.channel = this.createChannel();
-        }
+        this.stateIdPrefix = this.getClass().getName() + "." + this.scopeId + ".";
 
         // Subscribe to events generated by the channel
         MembershipListener meml = new MembershipListenerImpl();
         MessageListener msgl = this.stateIdPrefix == null ? null : new MessageListenerImpl();
-        this.dispatcher = new RpcHandler(this.scopeId, this.channel, msgl, meml, new RequestMarshallerImpl(),
-                new ResponseMarshallerImpl());
+        this.dispatcher = new RpcHandler(this.scopeId, this.channel, msgl, meml, new RequestMarshallerImpl(), new ResponseMarshallerImpl());
 
-        if (!this.channel.isConnected()) {
-            this.channelSelfConnected = true;
-            this.channel.connect(this.getGroupName());
-
-            this.log.debug("Get current members");
-            this.waitForView();
-        } else {
-            meml.viewAccepted(this.channel.getView());
-            // Since we haven't triggered a flush, we need to manually open the gate to allow rpcs.
-            this.flushBlockGate.open();
-        }
+        meml.viewAccepted(this.channel.getView());
+        // Since we haven't triggered a flush, we need to manually open the gate to allow rpcs.
+        this.flushBlockGate.open();
 
         this.directlyInvokeLocal = this.channel.getDiscardOwnMessages();
 
         // get current JG group properties
-        this.localJGAddress = this.channel.getAddress();
-        this.me = this.nodeFactory.getClusterNode(localJGAddress);
+        this.me = this.nodeFactory.getClusterNode(this.channel.getAddress());
 
         this.verifyNodeIsUnique();
 
@@ -984,52 +819,12 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         this.asynchHandler.start();
     }
 
-    protected void stopService() throws Exception {
-        try {
-            this.asynchHandler.stop();
-        } catch (Exception e) {
-            this.log.failedToStop(e, "asynchHandler");
-        }
+    public void stop() {
+        this.asynchHandler.stop();
 
-        // NR 200505 : [JBCLUSTER-38] replace channel.close() by a disconnect and
-        // add the destroyPartition() step
-        try {
-            if (this.channelSelfConnected && this.channel != null && this.channel.isConnected()) {
-                this.channelSelfConnected = false;
-                this.channel.disconnect();
-                this.channel.close();
-            }
-        } catch (Exception e) {
-            this.log.channelDisconnectError(e);
-        } finally {
-            this.channel = null;
+        if (this.dispatcher != null) {
+            this.dispatcher.stop();
         }
-    }
-
-    protected void destroyService() {
-        // no-op
-    }
-
-    protected Channel createChannel() {
-        ChannelFactory factory = this.getChannelFactory();
-        if (factory == null) {
-            throw MESSAGES.haPartitionConfigHasNo("JChannelFactory");
-        }
-        String stack = this.getChannelStackName();
-        if (stack == null) {
-            throw MESSAGES.haPartitionConfigHasNo("multiplexer stack");
-        }
-        try {
-            return factory.createChannel(this.getGroupName());
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw MESSAGES.failedToCreateMultiplexChannel(e);
-        }
-    }
-
-    protected Channel getChannel() {
-        return this.channel;
     }
 
     protected void registerGroupMembershipListener(GroupMembershipListener listener, boolean sync) {
@@ -1153,12 +948,6 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         return output.toByteArray();
     }
 
-    private void notifyChannelLock() {
-        synchronized (this.channelLock) {
-            this.channelLock.notifyAll();
-        }
-    }
-
     private <T> List<T> processResponseList(RspList<T> rspList, boolean trace) {
         List<T> result = new ArrayList<T>(rspList.size());
         if (rspList != null) {
@@ -1167,7 +956,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
                 if (response.wasReceived()) {
                     result.add(response.getValue());
                 } else if (trace) {
-                    this.log.tracef("Ignoring non-received response: %s", response);
+                    ClusteringImplLogger.ROOT_LOGGER.tracef("Ignoring non-received response: %s", response);
                 }
             }
 
@@ -1184,27 +973,24 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
 
         if (oldMembers.viewId == -1) {
             // Initial viewAccepted
-            this.log.debugf("ViewAccepted: initial members set for partition %s: %s (%s)", this.getGroupName(), newGroupView.viewId, this.groupView);
+            ClusteringImplLogger.ROOT_LOGGER.debugf("ViewAccepted: initial members set for partition %s: %s (%s)", this.getGroupName(), newGroupView.viewId, this.groupView);
 
-            this.log.numberOfClusterMembers(newGroupView.allMembers.size());
+            ClusteringImplLogger.ROOT_LOGGER.numberOfClusterMembers(newGroupView.allMembers.size());
             for (ClusterNode node : newGroupView.allMembers) {
-                this.log.debug(node);
+                ClusteringImplLogger.ROOT_LOGGER.debug(node);
             }
-
-            // Wake up the deployer thread blocking in waitForView
-            this.notifyChannelLock();
         } else {
             int difference = newGroupView.allMembers.size() - oldMembers.allMembers.size();
 
             boolean merge = newView instanceof MergeView;
             if (this.isCoordinator()) {
-                this.clusterLifeCycleLog.newClusterCurrentView(this.groupName, newGroupView.viewId, difference, merge, newGroupView.allMembers);
+                ClusteringImplLogger.ROOT_LOGGER.newClusterCurrentView(this.channel.getClusterName(), newGroupView.viewId, difference, merge, newGroupView.allMembers);
             } else {
-                this.log.newClusterView(this.getGroupName(), newGroupView.viewId, this.groupView, difference, merge);
+                ClusteringImplLogger.ROOT_LOGGER.newClusterView(this.getGroupName(), newGroupView.viewId, this.groupView, difference, merge);
             }
 
-            this.log.debugf("dead members: %s", newGroupView.deadMembers);
-            this.log.debugf("membership changed from %d to %d", oldMembers.allMembers.size(), newGroupView.allMembers.size());
+            ClusteringImplLogger.ROOT_LOGGER.debugf("dead members: %s", newGroupView.deadMembers);
+            ClusteringImplLogger.ROOT_LOGGER.debugf("membership changed from %d to %d", oldMembers.allMembers.size(), newGroupView.allMembers.size());
 
             // Put the view change to the asynch queue
             this.asynchHandler.queueEvent(newGroupView);
@@ -1216,38 +1002,6 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         }
 
         return newGroupView;
-    }
-
-    private void waitForView() throws Exception {
-        boolean intr = false;
-        try {
-            synchronized (this.channelLock) {
-                if (this.getCurrentViewId() == -1) {
-                    try {
-                        this.channelLock.wait(this.getMethodCallTimeout());
-                    } catch (InterruptedException iex) {
-                        intr = true;
-                    }
-
-                    if (this.groupView == null) {
-                        throw MESSAGES.viewNotReceived("Channel");
-                    }
-                }
-            }
-        } finally {
-            if (intr)
-                Thread.currentThread().interrupt();
-        }
-    }
-
-    private void setupLoggers(String partitionName) {
-        if (partitionName == null) {
-            this.log = Logger.getMessageLogger(ClusteringImplLogger.class, getClass().getName());
-            this.clusterLifeCycleLog = Logger.getMessageLogger(ClusteringImplLogger.class, getClass().getName() + ".lifecycle");
-        } else {
-            this.log = Logger.getMessageLogger(ClusteringImplLogger.class, getClass().getName() + "." + partitionName);
-            this.clusterLifeCycleLog = Logger.getMessageLogger(ClusteringImplLogger.class, getClass().getName() + ".lifecycle." + partitionName);
-        }
     }
 
     private void verifyNodeIsUnique() throws IllegalStateException {
@@ -1323,7 +1077,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
     }
 
     void notifyListeners(List<GroupMembershipListener> listeners, long viewID, List<ClusterNode> allMembers, List<ClusterNode> deadMembers, List<ClusterNode> newMembers, List<List<ClusterNode>> originatingGroups) {
-        this.log.debugf("Begin notifyListeners, viewID: %d", viewID);
+        ClusteringImplLogger.ROOT_LOGGER.debugf("Begin notifyListeners, viewID: %d", viewID);
         for (GroupMembershipListener listener : listeners) {
             try {
                 if (originatingGroups != null) {
@@ -1333,11 +1087,11 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
                 }
             } catch (Throwable e) {
                 // a problem in a listener should not prevent other members to receive the new view
-                this.log.memberShipListenerCallbackFailure(e, listener);
+                ClusteringImplLogger.ROOT_LOGGER.membershipListenerCallbackFailure(e, listener);
             }
         }
 
-        this.log.debugf("End notifyListeners, viewID: %d", viewID);
+        ClusteringImplLogger.ROOT_LOGGER.debugf("End notifyListeners, viewID: %d", viewID);
     }
 
     // Inner classes -------------------------------------------------
@@ -1472,22 +1226,22 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
             Object body = null;
             Object retval = null;
             Object handler = null;
-            boolean trace = CoreGroupCommunicationService.this.log.isTraceEnabled();
+            boolean trace = ClusteringImplLogger.ROOT_LOGGER.isTraceEnabled();
             String service = null;
             byte[] request_bytes = null;
 
             if (trace) {
-                CoreGroupCommunicationService.this.log.tracef("Partition %s received msg", CoreGroupCommunicationService.this.getGroupName());
+                ClusteringImplLogger.ROOT_LOGGER.tracef("Partition %s received msg", CoreGroupCommunicationService.this.getGroupName());
             }
             if (req == null || req.getRawBuffer() == null) {
-                CoreGroupCommunicationService.this.log.nullPartitionMessage(CoreGroupCommunicationService.this.getGroupName());
+                ClusteringImplLogger.ROOT_LOGGER.nullPartitionMessage(CoreGroupCommunicationService.this.getGroupName());
                 return null;
             }
 
             try {
                 Object wrapper = CoreGroupCommunicationService.this.objectFromByteBufferInternal(null, req.getRawBuffer(), req.getOffset(), req.getLength());
                 if (wrapper == null || !(wrapper instanceof Object[])) {
-                    CoreGroupCommunicationService.this.log.invalidPartitionMessageWrapper(CoreGroupCommunicationService.this.getGroupName());
+                    ClusteringImplLogger.ROOT_LOGGER.invalidPartitionMessageWrapper(CoreGroupCommunicationService.this.getGroupName());
                     return null;
                 }
 
@@ -1500,12 +1254,12 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
                 handler = CoreGroupCommunicationService.this.rpcHandlers.get(service);
                 if (handler == null) {
                     if (trace) {
-                        CoreGroupCommunicationService.this.log.tracef("Partition %s no rpc handler registered under service %s", CoreGroupCommunicationService.this.getGroupName(), service);
+                        ClusteringImplLogger.ROOT_LOGGER.tracef("Partition %s no rpc handler registered under service %s", CoreGroupCommunicationService.this.getGroupName(), service);
                     }
                     return new NoHandlerForRPC();
                 }
             } catch (Exception e) {
-                CoreGroupCommunicationService.this.log.partitionFailedUnserialing(e, CoreGroupCommunicationService.this.getGroupName(), req);
+                ClusteringImplLogger.ROOT_LOGGER.partitionFailedDeserializing(e, CoreGroupCommunicationService.this.getGroupName(), req);
                 return null;
             }
 
@@ -1517,12 +1271,12 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
             try {
                 body = CoreGroupCommunicationService.this.objectFromByteBufferInternal(resolver, request_bytes, 0, request_bytes.length);
             } catch (Exception e) {
-                CoreGroupCommunicationService.this.log.partitionFailedExtractingMessageBody(e, CoreGroupCommunicationService.this.getGroupName());
+                ClusteringImplLogger.ROOT_LOGGER.partitionFailedExtractingMessageBody(e, CoreGroupCommunicationService.this.getGroupName());
                 return null;
             }
 
             if (body == null || !(body instanceof MethodCall)) {
-                CoreGroupCommunicationService.this.log.invalidPartitionMessage(CoreGroupCommunicationService.this.getGroupName());
+                ClusteringImplLogger.ROOT_LOGGER.invalidPartitionMessage(CoreGroupCommunicationService.this.getGroupName());
                 return null;
             }
 
@@ -1531,15 +1285,15 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
             String methodName = method_call.getName();
 
             if (trace) {
-                CoreGroupCommunicationService.this.log.tracef("full methodName: %s", methodName);
+                ClusteringImplLogger.ROOT_LOGGER.tracef("full methodName: %s", methodName);
             }
 
             int idx = methodName.lastIndexOf('.');
             String handlerName = methodName.substring(0, idx);
             String newMethodName = methodName.substring(idx + 1);
             if (trace) {
-                CoreGroupCommunicationService.this.log.tracef("handlerName: %s methodName: %s", handlerName, newMethodName);
-                CoreGroupCommunicationService.this.log.tracef("Handle: %s",  methodName);
+                ClusteringImplLogger.ROOT_LOGGER.tracef("handlerName: %s methodName: %s", handlerName, newMethodName);
+                ClusteringImplLogger.ROOT_LOGGER.tracef("Handle: %s",  methodName);
             }
 
             // prepare method call
@@ -1557,11 +1311,11 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
                     retval = new HAServiceResponse(handlerName, retbytes);
                 }
                 if (trace) {
-                    CoreGroupCommunicationService.this.log.tracef("rpc call return value: %s", retval);
+                    ClusteringImplLogger.ROOT_LOGGER.tracef("rpc call return value: %s", retval);
                 }
             } catch (Throwable t) {
                 if (trace) {
-                    CoreGroupCommunicationService.this.log.tracef(t, "Partition %s rpc call threw exception", CoreGroupCommunicationService.this.getGroupName());
+                    ClusteringImplLogger.ROOT_LOGGER.tracef(t, "Partition %s rpc call threw exception", CoreGroupCommunicationService.this.getGroupName());
                 }
                 retval = t;
             }
@@ -1694,23 +1448,19 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         @Override
         public void suspect(org.jgroups.Address suspected_mbr) {
             CoreGroupCommunicationService.this.logHistory(MESSAGES.nodeSuspected(suspected_mbr));
-            if (CoreGroupCommunicationService.this.isCoordinator()) {
-                CoreGroupCommunicationService.this.clusterLifeCycleLog.suspectedMember(suspected_mbr);
-            } else {
-                CoreGroupCommunicationService.this.log.suspectedMember(suspected_mbr);
-            }
+            ClusteringImplLogger.ROOT_LOGGER.suspectedMember(suspected_mbr);
         }
 
         @Override
         public void block() {
             CoreGroupCommunicationService.this.flushBlockGate.close();
-            CoreGroupCommunicationService.this.log.debugf("Block processed at %s", CoreGroupCommunicationService.this.me);
+            ClusteringImplLogger.ROOT_LOGGER.debugf("Block processed at %s", CoreGroupCommunicationService.this.me);
         }
 
         @Override
         public void unblock() {
             CoreGroupCommunicationService.this.flushBlockGate.open();
-            CoreGroupCommunicationService.this.log.debugf("Unblock processed at %s", CoreGroupCommunicationService.this.me);
+            ClusteringImplLogger.ROOT_LOGGER.debugf("Unblock processed at %s", CoreGroupCommunicationService.this.me);
         }
 
         /**
@@ -1727,9 +1477,9 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
                 processViewChange(newView);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
-                CoreGroupCommunicationService.this.log.methodFailure(ex, "ViewAccepted");
+                ClusteringImplLogger.ROOT_LOGGER.methodFailure(ex, "ViewAccepted");
             } catch (Exception ex) {
-                CoreGroupCommunicationService.this.log.methodFailure(ex, "ViewAccepted");
+                ClusteringImplLogger.ROOT_LOGGER.methodFailure(ex, "ViewAccepted");
             }
         }
     }
@@ -1762,7 +1512,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
                     out.write(bytes);
                 }
             } catch (IOException e) {
-                CoreGroupCommunicationService.this.log.methodFailure(e, "getState");
+                ClusteringImplLogger.ROOT_LOGGER.methodFailure(e, "getState");
             }
         }
 
@@ -1783,7 +1533,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
                     }
                 }
             } catch (IOException e) {
-                CoreGroupCommunicationService.this.log.methodFailure(e, "setState");
+                ClusteringImplLogger.ROOT_LOGGER.methodFailure(e, "setState");
             }
         }
     }
@@ -1813,7 +1563,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
                     this.isStateSet = false;
                     start = System.currentTimeMillis();
                     try {
-                        CoreGroupCommunicationService.this.getChannel().getState(null, CoreGroupCommunicationService.this.getStateTransferTimeout());
+                        CoreGroupCommunicationService.this.channel.getState(null, CoreGroupCommunicationService.this.getStateTransferTimeout());
                         synchronized (this) {
                             while (!this.isStateSet) {
                                 if (this.setStateException != null) {
@@ -1828,25 +1578,12 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
                             }
                         }
                         stop = System.currentTimeMillis();
-                        CoreGroupCommunicationService.this.log.debugf("serviceState was retrieved successfully (in %d milliseconds)", stop - start);
+                        ClusteringImplLogger.ROOT_LOGGER.debugf("serviceState was retrieved successfully (in %d milliseconds)", stop - start);
                         return createStateTransferResult(true, state, null);
                     } catch (StateTransferException e) {
                         // No one provided us with serviceState.
-                        // We need to find out if we are the coordinator, so we must
-                        // block until viewAccepted() is called at least once
-                        synchronized (CoreGroupCommunicationService.this.channelLock) {
-                            while (CoreGroupCommunicationService.this.getCurrentView().size() == 0) {
-                                CoreGroupCommunicationService.this.log.debug("waiting on viewAccepted()");
-                                try {
-                                    CoreGroupCommunicationService.this.channelLock.wait();
-                                } catch (InterruptedException iex) {
-                                    Thread.currentThread().interrupt();
-                                }
-                            }
-                        }
-
                         if (CoreGroupCommunicationService.this.isCoordinator()) {
-                            CoreGroupCommunicationService.this.log.debugf("State could not be retrieved for service %s (we are the first member in group)", serviceName);
+                            ClusteringImplLogger.ROOT_LOGGER.debugf("State could not be retrieved for service %s (we are the first member in group)", serviceName);
                         } else {
                             throw MESSAGES.initialTransferFailed("serviceState");
                         }
@@ -1864,7 +1601,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         void setState(byte[] state) {
             try {
                 if (state == null) {
-                    CoreGroupCommunicationService.this.log.debugf("transferred state for service %s is null (may be first member in cluster)", serviceName);
+                    ClusteringImplLogger.ROOT_LOGGER.debugf("transferred state for service %s is null (may be first member in cluster)", serviceName);
                 } else {
                     ByteArrayInputStream bais = new ByteArrayInputStream(state);
                     setState(bais);
@@ -1885,7 +1622,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         protected abstract void setState(InputStream is) throws IOException, ClassNotFoundException;
 
         private void recordSetStateFailure(Throwable t) {
-            CoreGroupCommunicationService.this.log.failedSettingServiceProperty(t, "serviceState", serviceName);
+            ClusteringImplLogger.ROOT_LOGGER.failedSettingServiceProperty(t, "serviceState", serviceName);
             if (t instanceof Exception) {
                 this.setStateException = (Exception) t;
             } else {
@@ -1995,7 +1732,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
             try {
                 CoreGroupCommunicationService.this.invokeDirectly(serviceName, methodName, args, types, null, null);
             } catch (Exception e) {
-                log.caughtErrorInvokingAsyncMethod(e, methodName, serviceName);
+                ClusteringImplLogger.ROOT_LOGGER.caughtErrorInvokingAsyncMethod(e, methodName, serviceName);
             }
         }
 

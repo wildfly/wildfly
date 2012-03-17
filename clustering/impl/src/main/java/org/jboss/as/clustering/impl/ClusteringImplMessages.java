@@ -26,7 +26,6 @@ import java.util.Collection;
 
 import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.ClusteringApiMessages;
-import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
@@ -52,7 +51,7 @@ public interface ClusteringImplMessages extends ClusteringApiMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10280, value = "Address %s not registered in transport layer")
+    @Message(id = 10240, value = "Address %s not registered in transport layer")
     IllegalStateException addressNotRegistered(Address address);
 
     /**
@@ -63,28 +62,14 @@ public interface ClusteringImplMessages extends ClusteringApiMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10281, value = "Found member %s in current view that duplicates us (%s). This node cannot join partition until duplicate member has  been removed")
+    @Message(id = 10241, value = "Found member %s in current view that duplicates us (%s). This node cannot join partition until duplicate member has  been removed")
     IllegalStateException duplicateViewFound(ClusterNode newNode, ClusterNode currentNode);
 
-    /**
-     * Creates an exception indicating a failure to create a multiplexed channel.
-     *
-     * @param cause the cause of the error.
-     *
-     * @return a {@link RuntimeException} for the error.
-     */
-    @Message(id = 10282, value = "Failure creating multiplexed Channel")
-    RuntimeException failedToCreateMultiplexChannel(@Cause Throwable cause);
+    @Message(id = 10242, value = "Channel not defined")
+    IllegalStateException channelNotDefined();
 
-    /**
-     * Creates an exception indicating a {@code HAPartitionConfig} does not have the type.
-     *
-     * @param type the type that configuration does not have.
-     *
-     * @return an {@code IllegalStateException} for the error.
-     */
-    @Message(id = 10283, value = "HAPartitionConfig has no %s")
-    IllegalStateException haPartitionConfigHasNo(String type);
+    @Message(id = 10243, value = "Channel %s is not connected")
+    IllegalStateException channelNotConnected(String name);
 
     /**
      * Creates an exception indicating the initial transfer failed.
@@ -93,7 +78,7 @@ public interface ClusteringImplMessages extends ClusteringApiMessages {
      *
      * @return an {@link IllegalStateException} for he error.
      */
-    @Message(id = 10284, value = "Initial %s transfer failed")
+    @Message(id = 10244, value = "Initial %s transfer failed")
     IllegalStateException initialTransferFailed(String transferName);
 
     /**
@@ -104,7 +89,7 @@ public interface ClusteringImplMessages extends ClusteringApiMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 10285, value = "targetNode %s is not an instance of %s -- only targetNodes provided by this HAPartition should be used")
+    @Message(id = 10245, value = "targetNode %s is not an instance of %s -- only targetNodes provided by this HAPartition should be used")
     IllegalArgumentException invalidTargetNodeInstance(ClusterNode targetNode, Class<? extends ClusterNode> type);
 
     /**
@@ -114,7 +99,7 @@ public interface ClusteringImplMessages extends ClusteringApiMessages {
      *
      * @return the message.
      */
-    @Message(id = 10286, value = "Node suspected: %s")
+    @Message(id = 10246, value = "Node suspected: %s")
     String nodeSuspected(Address suspectedMember);
 
     /**
@@ -126,7 +111,7 @@ public interface ClusteringImplMessages extends ClusteringApiMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10288, value = "State transfer task for %s that will return an %s is already pending")
+    @Message(id = 10247, value = "State transfer task for %s that will return an %s is already pending")
     IllegalStateException stateTransferAlreadyPending(String serviceName, String returnType);
 
     /**
@@ -138,17 +123,6 @@ public interface ClusteringImplMessages extends ClusteringApiMessages {
      *
      * @return the message.
      */
-    @Message(id = 10290, value = "New view: %s with viewId: %d (old view: %s)")
+    @Message(id = 10248, value = "New view: %s with viewId: %d (old view: %s)")
     String viewCreated(Collection<ClusterNode> allMembers, long id, CoreGroupCommunicationService.GroupView oldView);
-
-    /**
-     * Creates an exception indicating that no view was received from the object name represented by the
-     * {@code fromObjectName} parameter.
-     *
-     * @param fromObjectName the from object name.
-     *
-     * @return an {@link IllegalStateException} for the error.
-     */
-    @Message(id = 10291, value = "No view received from %s")
-    IllegalStateException viewNotReceived(String fromObjectName);
 }
