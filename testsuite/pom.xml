@@ -192,6 +192,26 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.jboss.jsfunit</groupId>
+            <artifactId>jsfunit-arquillian</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.jsfunit</groupId>
+            <artifactId>jboss-jsfunit-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.protocol</groupId>
+            <artifactId>arquillian-protocol-servlet</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-spi</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
             <artifactId>arquillian-testenricher-initialcontext</artifactId>
         </dependency>
