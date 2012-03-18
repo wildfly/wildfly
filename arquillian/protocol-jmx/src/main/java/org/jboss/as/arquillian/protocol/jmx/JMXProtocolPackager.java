@@ -117,7 +117,11 @@ public class JMXProtocolPackager implements DeploymentPackager {
         // Merge the auxiliary archives and collect the loadable extensions
         final Set<String> loadableExtensions = new HashSet<String>();
         final String loadableExtensionsPath = "META-INF/services/" + RemoteLoadableExtension.class.getName();
+        boolean jsfUnit = false;
         for (Archive<?> aux : auxArchives) {
+            if(aux.getName().equals("arquillian-jsfunit.jar")) {
+                jsfUnit = true;
+            }
             Node node = aux.get(loadableExtensionsPath);
             if (node != null) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(node.getAsset().openStream()));
@@ -137,22 +141,29 @@ public class JMXProtocolPackager implements DeploymentPackager {
         loadableExtensions.add(JMXProtocolEndpointExtension.class.getName());
         loadableExtensions.add(InContainerManagementClientExtension.class.getName());
 
+        final StringBuffer dependencies = new StringBuffer();
+        dependencies.append("org.jboss.as.jmx,");
+        dependencies.append("org.jboss.as.server,");
+        dependencies.append("org.jboss.as.controller-client,");
+        dependencies.append("org.jboss.as.osgi,");
+        dependencies.append("org.jboss.jandex,");
+        dependencies.append("org.jboss.logging,");
+        dependencies.append("org.jboss.modules,");
+        dependencies.append("org.jboss.dmr,");
+        dependencies.append("org.jboss.msc,");
+        dependencies.append("org.jboss.osgi.framework,");
+        dependencies.append("org.osgi.core,");
+        if(jsfUnit) {
+            //horrible horrible hack
+            //because JSFunit bundles up a whole heap of extra stuff
+            //we need to add this dependency to prevent class cast exceptions
+            dependencies.append("org.apache.xalan,");
+            dependencies.append("org.apache.xerces export");
+        }
         // Generate the manifest with it's dependencies
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
-                StringBuffer dependencies = new StringBuffer();
-                dependencies.append("org.jboss.as.jmx,");
-                dependencies.append("org.jboss.as.server,");
-                dependencies.append("org.jboss.as.controller-client,");
-                dependencies.append("org.jboss.as.osgi,");
-                dependencies.append("org.jboss.jandex,");
-                dependencies.append("org.jboss.logging,");
-                dependencies.append("org.jboss.modules,");
-                dependencies.append("org.jboss.dmr,");
-                dependencies.append("org.jboss.msc,");
-                dependencies.append("org.jboss.osgi.framework,");
-                dependencies.append("org.osgi.core");
                 builder.addManifestHeader("Dependencies", dependencies.toString());
                 return builder.openStream();
             }

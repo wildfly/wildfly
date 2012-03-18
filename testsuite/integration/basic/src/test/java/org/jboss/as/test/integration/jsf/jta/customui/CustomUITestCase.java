@@ -14,70 +14,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.test.integration.jsf.jta;
+package org.jboss.as.test.integration.jsf.jta.customui;
 
 import java.util.logging.Logger;
 
 import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OverProtocol;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.jsf.jta.customui.HelloUIComponent;
-import org.jboss.as.test.integration.jsf.jta.login.SimpleLogin;
+import org.jboss.as.test.integration.jsf.jta.JTATestsBase;
+import org.jboss.as.test.integration.jsf.jta.SimpleLogin;
 import org.jboss.jsfunit.api.InitialPage;
 import org.jboss.jsfunit.jsfsession.JSFClientSession;
 import org.jboss.jsfunit.jsfsession.JSFServerSession;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 
 /**
- * 
  * Simple class to test if custom UI component has access to user transaction.
+ *
  * @author baranowb
- * 
  */
 @RunWith(Arquillian.class)
 public class CustomUITestCase extends JTATestsBase {
-
-
     private static final Logger log = Logger.getLogger(CustomUITestCase.class.getName());
     private static final String DEPLOYMENT_PHASE_CONTEXT = "jsf-jta-customui";
-    private static final String DEPLOYMENT_NAME = DEPLOYMENT_PHASE_CONTEXT+".war";
-    private static final String RESOURCES_LOCATION = "org/jboss/as/test/integration/jsf/jta/customui";
-    // ----------------- DEPLOYMENTS ------------
+    private static final String DEPLOYMENT_NAME = DEPLOYMENT_PHASE_CONTEXT + ".war";
 
     @Deployment
     @OverProtocol("Servlet 3.0")
     public static Archive<WebArchive> createDeployment() {
-
-        // add test classes
-        Class[] classes = new Class[]{SimpleLogin.class,CustomUITestCase.class};
-        Package[] packages = new Package[]{HelloUIComponent.class.getPackage()};
-        String[] resources = new String[]{"index.xhtml"};
-        String[] webInfResources = new String[]{"web.xml","faces-config.xml","custom.taglib.xml","jboss-deployment-structure.xml"};
-        
-        final WebArchive archive = createArchive(DEPLOYMENT_NAME, classes, packages, RESOURCES_LOCATION, resources, webInfResources);
-        log.info(archive.toString(true));
-        
-        return archive;
+        WebArchive a = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
+                .addPackage(CustomUITestCase.class.getPackage())
+                .addClasses(SimpleLogin.class, JTATestsBase.class)
+                .addAsWebInfResources(CustomUITestCase.class.getPackage(), "web.xml", "web.xml")
+                .addAsWebInfResource(CustomUITestCase.class.getPackage(), "faces-config.xml", "faces-config.xml")
+                .addAsWebInfResource(CustomUITestCase.class.getPackage(), "custom.taglib.xml", "custom.taglib.xml")
+                .addAsWebResource(CustomUITestCase.class.getPackage(), "index.xhtml", "index.xhtml");
+        log.info(a.toString(true));
+        return a;
     }
 
     @Test
     @InitialPage("/index.jsf")
-    public void testPhaseListener(JSFServerSession server, JSFClientSession client) throws Exception{
+    public void testPhaseListener(JSFServerSession server, JSFClientSession client) throws Exception {
         // NOTE: if I fail, check server log, JSFUnit masks real cause cause it seems to be last in chain
-        //      , so if assertFails in PhaseListener class, it will show '500' return status saying 
+        //      , so if assertFails in PhaseListener class, it will show '500' return status saying
         //      'cant inject parameters' - it happens even when JSFSession is created by hand.
-       
-    	Assert.assertNotNull(server);
-    	Assert.assertNotNull(client);
-    	Assert.assertEquals("Wrong view ID!!!", "/index.xhtml",server.getCurrentViewID());
-    	
-    	
+
+        Assert.assertNotNull(server);
+        Assert.assertNotNull(client);
+        Assert.assertEquals("Wrong view ID!!!", "/index.xhtml", server.getCurrentViewID());
+
+
     }
-   
+
 }
