@@ -25,7 +25,6 @@ import org.jboss.metadata.web.jboss.JBossServletsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
-import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
@@ -47,7 +46,6 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
 
         if (!JaxrsDeploymentMarker.isJaxrsDeployment(deploymentUnit)) {
             return;
@@ -76,13 +74,10 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                 final ParamValueMetaData param = it.next();
                 if (param.getParamName().equals(RESTEASY_SCAN)) {
                     it.remove();
-                    JAXRS_LOGGER.resteasyScanWarning(RESTEASY_SCAN);
                 } else if (param.getParamName().equals(RESTEASY_SCAN_RESOURCES)) {
                     it.remove();
-                    JAXRS_LOGGER.resteasyScanWarning(RESTEASY_SCAN_RESOURCES);
                 } else if (param.getParamName().equals(RESTEASY_SCAN_PROVIDERS)) {
                     it.remove();
-                    JAXRS_LOGGER.resteasyScanWarning(RESTEASY_SCAN_PROVIDERS);
                 }
             }
         }
@@ -154,12 +149,6 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
 
         if (resteasy.hasBootClasses() || resteasy.isDispatcherCreated())
             return;
-
-        //if there are no JAX-RS classes in the app just return
-        if (resteasy.getScannedApplicationClass() == null
-                && resteasy.getScannedJndiComponentResources().isEmpty()
-                && resteasy.getScannedProviderClasses().isEmpty()
-                && resteasy.getScannedResourceClasses().isEmpty()) return;
 
         boolean useScannedClass = false;
         String servletName;
