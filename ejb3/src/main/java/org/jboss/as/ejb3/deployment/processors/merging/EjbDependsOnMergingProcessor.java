@@ -32,6 +32,8 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -42,20 +44,21 @@ import org.jboss.msc.service.ServiceBuilder.DependencyType;
 
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * @author Stuart Douglas
  * @author James R. Perkins Jr. (jrp)
  */
-public class EjbDependsOnMergingProcessor extends AbstractMergingProcessor<SingletonComponentDescription> {
+public class EjbDependsOnMergingProcessor extends AbstractMergingProcessor<SessionBeanComponentDescription> {
 
     public EjbDependsOnMergingProcessor() {
-        super(SingletonComponentDescription.class);
+        super(SessionBeanComponentDescription.class);
     }
 
     @Override
-    protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SingletonComponentDescription description) throws DeploymentUnitProcessingException {
+    protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription description) throws DeploymentUnitProcessingException {
         final EEModuleClassDescription classDescription = applicationClasses.getClassByName(componentClass.getName());
-        if(classDescription == null) {
+        if (classDescription == null) {
             return;
         }
 
@@ -73,7 +76,7 @@ public class EjbDependsOnMergingProcessor extends AbstractMergingProcessor<Singl
     }
 
     @Override
-    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SingletonComponentDescription description) throws DeploymentUnitProcessingException {
+    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription description) throws DeploymentUnitProcessingException {
 
         final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
@@ -88,21 +91,23 @@ public class EjbDependsOnMergingProcessor extends AbstractMergingProcessor<Singl
     }
 
 
-    private void setupDependencies(final SingletonComponentDescription description, final EEApplicationDescription applicationDescription, final ResourceRoot deploymentRoot, final String[] annotationValues) throws DeploymentUnitProcessingException {
+    private void setupDependencies(final EJBComponentDescription description, final EEApplicationDescription applicationDescription, final ResourceRoot deploymentRoot, final String[] annotationValues) throws DeploymentUnitProcessingException {
         for (final String annotationValue : annotationValues) {
 
             final Set<ComponentDescription> components = applicationDescription.getComponents(annotationValue, deploymentRoot.getRoot());
             if (components.isEmpty()) {
-                throw MESSAGES.failToFindEjbRefByDependsOn(annotationValue,description.getComponentClassName());
+                throw MESSAGES.failToFindEjbRefByDependsOn(annotationValue, description.getComponentClassName());
             } else if (components.size() != 1) {
-                throw MESSAGES.failToCallEjbRefByDependsOn(annotationValue,description.getComponentClassName(),components);
+                throw MESSAGES.failToCallEjbRefByDependsOn(annotationValue, description.getComponentClassName(), components);
             }
             final ComponentDescription component = components.iterator().next();
 
             description.addDependency(component.getStartServiceName(), DependencyType.REQUIRED);
-            description.getDependsOn().add(component.getStartServiceName());
-            if (ROOT_LOGGER.isDebugEnabled()) {
-                ROOT_LOGGER.debugf(description.getEJBName() + " bean is dependent on " + component.getComponentName());
+            if (description instanceof SingletonComponentDescription) {
+                ((SingletonComponentDescription)description).getDependsOn().add(component.getStartServiceName());
+                if (ROOT_LOGGER.isDebugEnabled()) {
+                    ROOT_LOGGER.debugf(description.getEJBName() + " bean is dependent on " + component.getComponentName());
+                }
             }
         }
     }
