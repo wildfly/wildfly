@@ -304,10 +304,10 @@ public class DomainLifecycleUtil {
                 return result;
             }
         } catch(Exception e) {
-            if(e instanceof IOException) {
-                throw (IOException) e;
-            } else if(e instanceof ExecutionException) {
+            if(e instanceof ExecutionException) {
                 // ignore, this might happen if the channel gets closed before we got the response
+            } else if(e instanceof IOException) {
+                throw (IOException) e;
             } else {
                 throw new RuntimeException(e);
             }

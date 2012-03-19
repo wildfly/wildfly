@@ -50,6 +50,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.checkState;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.getServerConfigAddress;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.waitUntilState;
 
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -69,6 +71,7 @@ import org.junit.runners.Parameterized;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Emanuel Muckenhuber
@@ -309,8 +312,11 @@ public class ServerManagementTestCase {
 
         // check that the servers are up
         waitUntilState(masterClient, "master", "main-one", "STARTED");
-        waitUntilState(masterClient, "master", "main-one", "STARTED");
+        // waitUntilState(masterClient, "master", "other-one", "STARTED");
 
+        // Wait for the slave to reconnect
+        waitForHost(masterClient, "slave");
+        //Assert.assertTrue(checkState(masterClient, getServerConfigAddress("slave", "main-tree"), "STARTED"));
     }
 
     private void executeLifecycleOperation(final ModelControllerClient client, String opName) throws IOException {
@@ -387,4 +393,30 @@ public class ServerManagementTestCase {
         }
     }
 
+    private static void waitForHost(final ModelControllerClient client, final String hostName) throws Exception {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_CHILDREN_NAMES_OPERATION);
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(CHILD_TYPE).set(HOST);
+        final ModelNode host = new ModelNode().set(hostName);
+        final long timeout = 30L;
+        final TimeUnit timeUnit = TimeUnit.SECONDS;
+        final long deadline = System.currentTimeMillis() + timeUnit.toMillis(timeout);
+        for(;;) {
+            final long remaining = deadline - System.currentTimeMillis();
+            final ModelNode result = client.execute(operation);
+            if(result.get(RESULT).asList().contains(host)) {
+                return;
+            }
+            if(remaining <= 0) {
+                return;
+            }
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+    }
 }
