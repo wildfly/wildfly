@@ -66,16 +66,18 @@ public class XADataSourceAddCompositeHandler extends ResourceCompositeOperationH
         final ModelNode req = super.buildRequestWithoutHeaders(ctx);
         final ModelNode steps = req.get(Util.STEPS);
 
-        final String xaPropsStr = xaProps.getValue(ctx.getParsedCommandLine(), true);
-        final List<Property> propsList = xaProps.getValueConverter().fromString(xaPropsStr).asPropertyList();
-        for(Property prop : propsList) {
-            final ModelNode address = this.buildOperationAddress(ctx);
-            address.add(XA_DATASOURCE_PROPERTIES, prop.getName());
-            final ModelNode addProp = new ModelNode();
-            addProp.get(Util.ADDRESS).set(address);
-            addProp.get(Util.OPERATION).set(Util.ADD);
-            addProp.get(Util.VALUE).set(prop.getValue());
-            steps.add(addProp);
+        final String xaPropsStr = xaProps.getValue(ctx.getParsedCommandLine());
+        if(xaPropsStr != null) {
+            final List<Property> propsList = xaProps.getValueConverter().fromString(xaPropsStr).asPropertyList();
+            for(Property prop : propsList) {
+                final ModelNode address = this.buildOperationAddress(ctx);
+                address.add(XA_DATASOURCE_PROPERTIES, prop.getName());
+                final ModelNode addProp = new ModelNode();
+                addProp.get(Util.ADDRESS).set(address);
+                addProp.get(Util.OPERATION).set(Util.ADD);
+                addProp.get(Util.VALUE).set(prop.getValue());
+                steps.add(addProp);
+            }
         }
         return req;
     }
@@ -110,7 +112,7 @@ public class XADataSourceAddCompositeHandler extends ResourceCompositeOperationH
 
         xaProps.get(Util.DESCRIPTION).set("A comma-separated list of XA datasource properties in key=value pair format.");
         xaProps.get(Util.TYPE).set(ModelType.LIST);
-        xaProps.get(Util.REQUIRED).set(true);
+        xaProps.get(Util.REQUIRED).set(false);
         xaProps.get(Util.NILLABLE).set(false);
 
         return result;
