@@ -22,36 +22,40 @@
 package org.jboss.as.server.deployment;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
-
-import java.io.File;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 class PathContentServitor extends AbstractService<VirtualFile> {
     private final String unresolvedPath;
-    private final InjectedValue<String> relativePathValue = new InjectedValue<String>();
+    private final String relativeTo;
+    private final InjectedValue<PathManager> pathManagerValue = new InjectedValue<PathManager>();
+    private volatile PathManager.Callback.Handle callbackHandle;
 
-    static ServiceController<VirtualFile> addService(final ServiceTarget serviceTarget, final ServiceName serviceName, final String path, final ServiceName relativeToServiceName, final ServiceVerificationHandler verificationHandler) {
-        final PathContentServitor service = new PathContentServitor(path);
+    static ServiceController<VirtualFile> addService(final ServiceTarget serviceTarget, final ServiceName serviceName, final String path, final String relativeTo, final ServiceVerificationHandler verificationHandler) {
+        final PathContentServitor service = new PathContentServitor(path, relativeTo);
         ServiceBuilder<VirtualFile> builder = serviceTarget.addService(serviceName, service);
-        if (relativeToServiceName != null) {
-             builder.addDependency(relativeToServiceName, String.class, service.relativePathValue);
-        }
+        builder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.pathManagerValue);
         builder.addListener(verificationHandler);
         return builder.install();
     }
 
-    private PathContentServitor(final String relativePath) {
+    private PathContentServitor(final String relativePath, final String relativeTo) {
         this.unresolvedPath = relativePath;
+        this.relativeTo = relativeTo;
     }
 
     @Override
@@ -60,13 +64,24 @@ class PathContentServitor extends AbstractService<VirtualFile> {
     }
 
     private String resolvePath() {
-        String base = relativePathValue.getOptionalValue();
-        if (base != null) {
-            base = base.endsWith(File.separator) ? base.substring(0, base.length() -1) : base;
-            return base + File.separatorChar + unresolvedPath;
-        } else {
-            return unresolvedPath;
-        }
-
+        return pathManagerValue.getValue().resolveRelativePathEntry(unresolvedPath, relativeTo);
     }
+
+    @Override
+    public void start(StartContext context) throws StartException {
+        super.start(context);
+        if (relativeTo != null) {
+            callbackHandle = pathManagerValue.getValue().registerCallback(relativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
+        }
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        super.stop(context);
+        if (callbackHandle != null) {
+            callbackHandle.remove();
+        }
+    }
+
+
 }

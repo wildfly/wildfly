@@ -54,4 +54,8 @@ public interface BackingCacheEntryStoreSource<K extends Serializable, V extends 
     <E extends SerializationGroupMember<K, V, G>> BackingCacheEntryStore<K, V, E> createIntegratedObjectStore(String beanName, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout);
 
     void addDependencies(ServiceTarget target, ServiceBuilder<?> builder);
+
+    void started();
+
+    void stopped();
 }

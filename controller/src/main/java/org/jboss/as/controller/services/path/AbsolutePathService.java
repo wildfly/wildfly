@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.services.path;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 
 import java.io.File;
@@ -75,21 +76,26 @@ public class AbsolutePathService extends AbstractPathService {
         return svc;
     }
 
+    public static String convertPath(String abstractPath) {
+        if (abstractPath == null) {
+            throw MESSAGES.nullVar("abstractPath");
+        }
+        if (abstractPath.length() == 0) {
+            throw MESSAGES.emptyVar("abstractPath");
+        }
+        // Use File.getAbsolutePath() to make relative paths absolute
+        File f = new File(abstractPath);
+        return f.getAbsolutePath();
+
+    }
+
     public static void addService(final ServiceName name, final ModelNode element, final ServiceTarget serviceTarget) {
         final String path = element.require(PATH).asString();
         addService(name, path, serviceTarget, null);
     }
 
     public AbsolutePathService(final String abstractPath) {
-        if (abstractPath == null) {
-            throw new IllegalArgumentException("abstractPath is null");
-        }
-        if (abstractPath.length() == 0) {
-            throw new IllegalArgumentException("abstractPath is empty");
-        }
-        // Use File.getAbsolutePath() to make relative paths absolute
-        File f = new File(abstractPath);
-        absolutePath = f.getAbsolutePath();
+        absolutePath = convertPath(abstractPath);
     }
 
     @Override

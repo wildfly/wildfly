@@ -56,6 +56,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.ServerControllerModelUtil;
@@ -284,7 +285,8 @@ public class ServerControllerUnitTestCase {
             final String hostControllerName = "hostControllerName"; // Host Controller name may not be null when in a managed domain
             final ServerEnvironment environment = new ServerEnvironment(hostControllerName, properties, new HashMap<String, String>(), null, ServerEnvironment.LaunchType.DOMAIN, null, new ProductConfig(Module.getBootModuleLoader(), "."));
             final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL));
-            ServerControllerModelUtil.initOperations(rootRegistration, MockRepository.INSTANCE, persister, environment, processState, null, null, extensionRegistry, false, MockRepository.INSTANCE);
+            ServerControllerModelUtil.initOperations(rootRegistration, MockRepository.INSTANCE, persister, environment,
+                    processState, null, null, extensionRegistry, false, MockRepository.INSTANCE, MOCK_PATH_MANAGER);
         }
 
         @Override
@@ -433,6 +435,10 @@ public class ServerControllerUnitTestCase {
         }
 
     }
+
+    private static PathManagerService MOCK_PATH_MANAGER = new PathManagerService() {
+
+    };
 
     private enum Nesting {
         TOP,

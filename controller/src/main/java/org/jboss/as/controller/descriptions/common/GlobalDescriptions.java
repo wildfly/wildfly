@@ -65,7 +65,7 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry
  */
 public class GlobalDescriptions {
-    private static final String RESOURCE_NAME = PathDescription.class.getPackage().getName() + ".LocalDescriptions";
+    private static final String RESOURCE_NAME = GlobalDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
     public static ModelNode getReadResourceOperationDescription(Locale locale) {
         ResourceBundle bundle = getResourceBundle(locale);

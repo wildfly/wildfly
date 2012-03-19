@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.timerservice.persistence.filestore;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -41,6 +44,7 @@ import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.persistence.TimerEntity;
@@ -60,9 +64,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-
 /**
  * File based persistent timer store.
  * <p/>
@@ -80,7 +81,11 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
-    private final InjectedValue<String> baseDir = new InjectedValue<String>();
+    private final InjectedValue<PathManager> pathManager = new InjectedValue<PathManager>();
+    private final String path;
+    private final String pathRelativeTo;
+    private File baseDir;
+    private PathManager.Callback.Handle callbackHandle;
 
 
     /**
@@ -90,8 +95,10 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     private final ConcurrentMap<String, Lock> locks = new ConcurrentHashMap<String, Lock>();
     private final ConcurrentMap<String, String> directories = new ConcurrentHashMap<String, String>();
 
-    public FileTimerPersistence(final boolean createIfNotExists) {
+    public FileTimerPersistence(final boolean createIfNotExists, final String path, final String pathRelativeTo) {
         this.createIfNotExists = createIfNotExists;
+        this.path = path;
+        this.pathRelativeTo = pathRelativeTo;
     }
 
     @Override
@@ -103,7 +110,10 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
 
         this.configuration = configuration;
         this.factory = factory;
-        final File baseDir = new File(this.baseDir.getValue());
+        if (pathRelativeTo != null) {
+            callbackHandle = pathManager.getValue().registerCallback(pathRelativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
+        }
+        baseDir = new File(pathManager.getValue().resolveRelativePathEntry(path, pathRelativeTo));
         if (!baseDir.exists()) {
             if (createIfNotExists) {
                 if (!baseDir.mkdirs()) {
@@ -124,6 +134,9 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         timers.clear();
         locks.clear();
         directories.clear();
+        if (callbackHandle != null) {
+            callbackHandle.remove();
+        }
         factory = null;
         configuration = null;
     }
@@ -351,7 +364,6 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     private String getDirectory(String timedObjectId) {
         String dirName = directories.get(timedObjectId);
         if (dirName == null) {
-            final File baseDir = new File(this.baseDir.getValue());
             dirName = baseDir.getAbsolutePath() + File.separator + timedObjectId.replace(File.separator, "-");
             File file = new File(dirName);
             if (!file.exists()) {
@@ -463,7 +475,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         return moduleLoader;
     }
 
-    public InjectedValue<String> getBaseDir() {
-        return baseDir;
+    public InjectedValue<PathManager> getPathManager() {
+        return pathManager;
     }
 }

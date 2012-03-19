@@ -80,6 +80,7 @@ import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -121,7 +122,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
     }
 
     @Override
-    DescriptionProvider getRootDescriptionProvider() {
+    protected DescriptionProvider getRootDescriptionProvider() {
         return rootDescriptionProvider;
     }
 
@@ -131,7 +132,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
     }
 
     @Override
-    protected void initModel(ManagementResourceRegistration rootRegistration) {
+    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
         rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
         rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));

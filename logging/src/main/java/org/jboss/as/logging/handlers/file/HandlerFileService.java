@@ -22,7 +22,7 @@
 
 package org.jboss.as.logging.handlers.file;
 
-import org.jboss.as.controller.services.path.AbstractPathService;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -36,36 +36,44 @@ import org.jboss.msc.value.InjectedValue;
  * @author John Bailey
  */
 public class HandlerFileService implements Service<String> {
-    private static final char SEPARATOR = '/';
-    private final InjectedValue<String> relativeTo = new InjectedValue<String>();
+    private final InjectedValue<PathManager> pathManager = new InjectedValue<PathManager>();
     private String path;
+    private String relativeTo;
 
-    private volatile String fileName;
+    private String fileName;
+    private PathManager.Callback.Handle callbackHandle;
 
-    public HandlerFileService(final String path) {
+    public HandlerFileService(final String path, final String relativeTo) {
         this.path = path;
+        this.relativeTo = relativeTo;
     }
 
     public synchronized void start(StartContext context) throws StartException {
-        final String value = relativeTo.getOptionalValue();
-        fileName = value != null && !AbstractPathService.isAbsoluteUnixOrWindowsPath(path) ? (value + SEPARATOR + path) : path;
+        fileName = pathManager.getValue().resolveRelativePathEntry(path, relativeTo);
+        if (relativeTo == null) {
+            //TODO we really want to take some action when the file is updated instead of putting in the restarted state
+            callbackHandle = pathManager.getValue().registerCallback(relativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
+        }
     }
 
     public synchronized void stop(StopContext context) {
         fileName = null;
+        if (callbackHandle != null) {
+            callbackHandle.remove();
+        }
     }
 
     public synchronized void setPath(final String path) {
         this.path = path;
-        final String value = relativeTo.getOptionalValue();
-        fileName = value != null && !AbstractPathService.isAbsoluteUnixOrWindowsPath(path) ? (value + SEPARATOR + path) : path;
+        fileName = pathManager.getValue().resolveRelativePathEntry(path, relativeTo);
     }
 
     public String getValue() throws IllegalStateException, IllegalArgumentException {
         return fileName;
     }
 
-    public Injector<String> getRelativeToInjector() {
-        return relativeTo;
+    public Injector<PathManager> getPathManagerInjector() {
+        return pathManager;
     }
+
 }

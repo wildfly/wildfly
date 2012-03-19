@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEC
 
 import java.util.Locale;
 
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -35,11 +34,13 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
@@ -70,6 +71,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
     private final LocalHostControllerInfoImpl hostControllerInfo;
     private final ExtensionRegistry extensionRegistry;
     private final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry;
+    private final PathManagerService pathManager;
 
     public RemoteDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
                                                final LocalHostControllerInfoImpl hostControllerInfo,
@@ -77,7 +79,8 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
                                                final ContentRepository contentRepository,
                                                final HostFileRepository fileRepository,
                                                final ExtensionRegistry extensionRegistry,
-                                               final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
+                                               final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+                                               final PathManagerService pathManager) {
         this.rootRegistration = rootRegistration;
         this.overallConfigPersister = overallConfigPersister;
         this.contentRepository = contentRepository;
@@ -85,6 +88,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
         this.hostControllerInfo = hostControllerInfo;
         this.extensionRegistry = extensionRegistry;
         this.ignoredDomainResourceRegistry = ignoredDomainResourceRegistry;
+        this.pathManager = pathManager;
     }
 
     @Override
@@ -119,7 +123,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
         overallConfigPersister.initializeDomainConfigurationPersister(true);
 
         DomainModelUtil.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(),
-                contentRepository, fileRepository, hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry);
+                contentRepository, fileRepository, hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry, pathManager);
     }
 
     //Done by DomainModelControllerService

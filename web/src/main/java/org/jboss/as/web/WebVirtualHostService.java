@@ -29,6 +29,7 @@ import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.valves.AccessLogValve;
 import org.apache.catalina.valves.ExtendedAccessLogValve;
 import org.jboss.as.clustering.web.sso.SSOClusterManager;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.web.sso.ClusteredSingleSignOn;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -47,35 +48,41 @@ public class WebVirtualHostService implements Service<VirtualHost> {
 
     private final String name;
     private final String[] aliases;
+    private final String tempPathName;
     private String defaultWebModule;
     private boolean hasWelcomeRoot;
     private ModelNode accessLog;
     private ModelNode rewrite;
     private ModelNode sso;
 
-    private final InjectedValue<String> tempPathInjector = new InjectedValue<String>();
-    private final InjectedValue<String> accessLogPathInjector = new InjectedValue<String>();
+    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
     private final InjectedValue<WebServer> webServer = new InjectedValue<WebServer>();
     private final InjectedValue<SSOClusterManager> ssoManager = new InjectedValue<SSOClusterManager>();
 
     private VirtualHost host;
 
-    public WebVirtualHostService(String name, String[] aliases, boolean hasWelcomeRoot) {
+    private volatile String accessLogPath;
+    private volatile String accessLogRelativeTo;
+    private PathManager.Callback.Handle callbackHandle;
+
+    public WebVirtualHostService(String name, String[] aliases, boolean hasWelcomeRoot, String tempPathName) {
         this.name = name;
         this.aliases = aliases;
         this.hasWelcomeRoot = hasWelcomeRoot;
+        this.tempPathName = tempPathName;
     }
 
     /** {@inheritDoc} */
     public synchronized void start(StartContext context) throws StartException {
         final StandardHost host = new StandardHost();
-        host.setAppBase(tempPathInjector.getValue());
+        host.setAppBase(pathManagerInjector.getValue().getPathEntry(tempPathName).resolvePath());
         host.setName(name);
         for(final String alias : aliases) {
             host.addAlias(alias);
         }
         if(accessLog != null) {
-            host.addValve(createAccessLogValve(host, accessLogPathInjector.getValue(), accessLog));
+            host.addValve(createAccessLogValve(host, pathManagerInjector.getValue().resolveRelativePathEntry(accessLogPath, accessLogRelativeTo), accessLog));
+            pathManagerInjector.getValue().registerCallback(accessLogRelativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
         }
         if(rewrite != null) {
             host.addValve(createRewriteValve(host, rewrite));
@@ -98,6 +105,9 @@ public class WebVirtualHostService implements Service<VirtualHost> {
 
     /** {@inheritDoc} */
     public synchronized void stop(StopContext context) {
+        if (callbackHandle != null) {
+            callbackHandle.remove();
+        }
         final VirtualHost host = this.host;
         this.host = null;
         final WebServer server = webServer.getValue();
@@ -117,6 +127,11 @@ public class WebVirtualHostService implements Service<VirtualHost> {
         this.accessLog = accessLog;
     }
 
+    void setAccessLogPaths(String accessLogPath, String accessLogRelativeTo) {
+        this.accessLogPath = accessLogPath;
+        this.accessLogRelativeTo = accessLogRelativeTo;
+    }
+
     void setRewrite(ModelNode rewrite) {
         this.rewrite = rewrite;
     }
@@ -133,12 +148,8 @@ public class WebVirtualHostService implements Service<VirtualHost> {
         this.defaultWebModule = defaultWebModule;
     }
 
-    public InjectedValue<String> getAccessLogPathInjector() {
-        return accessLogPathInjector;
-    }
-
-    public InjectedValue<String> getTempPathInjector() {
-        return tempPathInjector;
+    public InjectedValue<PathManager> getPathManagerInjector() {
+        return pathManagerInjector;
     }
 
     public InjectedValue<WebServer> getWebServer() {

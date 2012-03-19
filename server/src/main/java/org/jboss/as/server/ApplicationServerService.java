@@ -36,7 +36,6 @@ import java.util.TreeSet;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.deployment.DeploymentMountProvider;
 import org.jboss.as.server.mgmt.domain.RemoteFileRepository;
@@ -160,29 +159,9 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         // Add server environment
         ServerEnvironmentService.addService(serverEnvironment, serviceTarget);
 
-        // Add environment paths
-        AbsolutePathService.addService(ServerEnvironment.HOME_DIR, serverEnvironment.getHomeDir().getAbsolutePath(), serviceTarget);
-        AbsolutePathService.addService(ServerEnvironment.SERVER_BASE_DIR, serverEnvironment.getServerBaseDir().getAbsolutePath(), serviceTarget);
-        AbsolutePathService.addService(ServerEnvironment.SERVER_CONFIG_DIR, serverEnvironment.getServerConfigurationDir().getAbsolutePath(), serviceTarget);
-        AbsolutePathService.addService(ServerEnvironment.SERVER_DATA_DIR, serverEnvironment.getServerDataDir().getAbsolutePath(), serviceTarget);
-        AbsolutePathService.addService(ServerEnvironment.SERVER_LOG_DIR, serverEnvironment.getServerLogDir().getAbsolutePath(), serviceTarget);
-        AbsolutePathService.addService(ServerEnvironment.SERVER_TEMP_DIR, serverEnvironment.getServerTempDir().getAbsolutePath(), serviceTarget);
-        AbsolutePathService.addService(ServerEnvironment.CONTROLLER_TEMP_DIR, serverEnvironment.getControllerTempDir().getAbsolutePath(), serviceTarget);
-
-        // Add system paths
-        AbsolutePathService.addService("user.dir", System.getProperty("user.dir"), serviceTarget);
-        AbsolutePathService.addService("user.home", System.getProperty("user.home"), serviceTarget);
-        AbsolutePathService.addService("java.home", System.getProperty("java.home"), serviceTarget);
-
-        // In the domain mode add a few more paths
-        if(serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.DOMAIN) {
-            if(serverEnvironment.getDomainBaseDir() != null) {
-                AbsolutePathService.addService(ServerEnvironment.DOMAIN_BASE_DIR, serverEnvironment.getDomainBaseDir().getAbsolutePath(), serviceTarget);
-            }
-            if(serverEnvironment.getDomainConfigurationDir() != null) {
-                AbsolutePathService.addService(ServerEnvironment.DOMAIN_CONFIG_DIR, serverEnvironment.getDomainConfigurationDir().getAbsolutePath(), serviceTarget);
-            }
-        }
+        //Add server path manager service
+        ServerPathManagerService serverPathManagerService = new ServerPathManagerService();
+        ServerPathManagerService.addService(serviceTarget, serverPathManagerService, serverEnvironment);
 
         // BES 2011/06/11 -- moved this to AbstractControllerService.start()
 //        processState.setRunning();
