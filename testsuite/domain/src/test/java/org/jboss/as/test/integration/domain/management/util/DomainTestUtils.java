@@ -49,6 +49,18 @@ public class DomainTestUtils {
     }
 
     /**
+     * Get the address for a host.
+     *
+     * @param hostName the host name
+     * @return the address
+     */
+    public static ModelNode getHostAddress(final String hostName) {
+        final ModelNode address = new ModelNode();
+        address.add(HOST, hostName);
+        return address;
+    }
+
+    /**
      * Get the address for a running server.
      *
      * @param hostName the host name
@@ -56,8 +68,7 @@ public class DomainTestUtils {
      * @return the address
      */
     public static ModelNode getRunningServerAddress(final String hostName, final String serverName) {
-        final ModelNode address = new ModelNode();
-        address.add(HOST, hostName);
+        final ModelNode address = getHostAddress(hostName);
         address.add(SERVER_CONFIG, serverName);
         return address;
     }
@@ -70,8 +81,7 @@ public class DomainTestUtils {
      * @return the address
      */
     public static ModelNode getServerConfigAddress(final String hostName, final String serverName) {
-        final ModelNode address = new ModelNode();
-        address.add(HOST, hostName);
+        final ModelNode address = getHostAddress(hostName);
         address.add(SERVER_CONFIG, serverName);
         return address;
     }
