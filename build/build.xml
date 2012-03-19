@@ -761,10 +761,6 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-ee"/>
         </module-def>
 
-        <module-def name="org.jboss.as.ee.deployment">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-ee-deployment"/>
-        </module-def>
-
         <module-def name="org.jboss.as.ejb3">
             <maven-resource group="org.jboss.as" artifact="jboss-as-ejb3"/>
         </module-def>
@@ -775,6 +771,10 @@
 
         <module-def name="org.jboss.as.jsr77">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jsr77"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.jsr88">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jsr88"/>
         </module-def>
 
         <module-def name="org.jboss.as.jacorb">

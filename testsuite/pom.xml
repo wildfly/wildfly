@@ -1002,7 +1002,6 @@
                                                     <fileset dir="../deployment-scanner/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../domain-http/interface/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../domain-management/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../ee-deployment/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../ee/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../ejb3/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../embedded/src/main/java"><include name="**/*.java"/></fileset>
@@ -1019,6 +1018,7 @@
                                                     <fileset dir="../jpa/spi/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../jpa/util/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../jsr77/src/main/java"><include name="**/*.java"/></fileset>
+                                                    <fileset dir="../jsr88/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../logging/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../mail/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../management-client-content/src/main/java"><include name="**/*.java"/></fileset>
