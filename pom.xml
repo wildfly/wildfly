@@ -916,7 +916,7 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-ee-deployment</artifactId>
+                <artifactId>jboss-as-jsr88</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -6013,7 +6013,7 @@
                 <module>deployment-scanner</module>
                 <module>dist</module>
                 <module>ee</module>
-                <module>ee-deployment</module>
+                <module>jsr88</module>
                 <module>ejb3</module>
                 <module>host-controller</module>
                 <module>jacorb</module>
