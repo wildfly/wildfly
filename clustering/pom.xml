@@ -51,6 +51,10 @@
         <module>ejb3-infinispan</module>
     </modules>
 
+    <properties>
+        <version.byteman>2.0.1</version.byteman>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -61,6 +65,37 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman</artifactId>
+            <scope>test</scope>
+            <version>${version.byteman}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-submit</artifactId>
+            <scope>test</scope>
+            <version>${version.byteman}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-install</artifactId>
+            <scope>test</scope>
+            <version>${version.byteman}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-bmunit</artifactId>
+            <scope>test</scope>
+            <version>${version.byteman}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun</groupId>
+            <artifactId>tools</artifactId>
+            <scope>system</scope>
+            <version>1.6</version>
+            <systemPath>/opt/jdk-1.6.0_26/lib/tools.jar</systemPath>
         </dependency>
     </dependencies>
 </project>
