@@ -69,6 +69,7 @@ public abstract class BackingCacheEntryStoreSourceService<K extends Serializable
      */
     @Override
     public void start(StartContext context) {
+        source.started();
     }
 
     /**
@@ -77,5 +78,6 @@ public abstract class BackingCacheEntryStoreSourceService<K extends Serializable
      */
     @Override
     public void stop(StopContext context) {
+        source.stopped();
     }
 }

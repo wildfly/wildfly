@@ -19,20 +19,21 @@
 package org.jboss.as.host.controller.operations;
 
 
-import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
 
 import java.util.Locale;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
@@ -57,6 +58,7 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
     private final ContentRepository contentRepository;
     private final DomainController domainController;
     private final ExtensionRegistry extensionRegistry;
+    private final PathManagerService pathManager;
 
     public static LocalDomainControllerAddHandler getInstance(final ManagementResourceRegistration rootRegistration,
                                                                  final LocalHostControllerInfoImpl hostControllerInfo,
@@ -64,9 +66,10 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
                                                                  final HostFileRepository fileRepository,
                                                                  final ContentRepository contentRepository,
                                                                  final DomainController domainController,
-                                                                 final ExtensionRegistry extensionRegistry) {
+                                                                 final ExtensionRegistry extensionRegistry,
+                                                                 final PathManagerService pathManager) {
         return new LocalDomainControllerAddHandler(rootRegistration, hostControllerInfo, overallConfigPersister,
-                fileRepository, contentRepository, domainController, extensionRegistry);
+                fileRepository, contentRepository, domainController, extensionRegistry, pathManager);
     }
 
     protected LocalDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
@@ -75,7 +78,8 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
                                     final HostFileRepository fileRepository,
                                     final ContentRepository contentRepository,
                                     final DomainController domainController,
-                                    final ExtensionRegistry extensionRegistry) {
+                                    final ExtensionRegistry extensionRegistry,
+                                    final PathManagerService pathManager) {
         this.rootRegistration = rootRegistration;
         this.overallConfigPersister = overallConfigPersister;
         this.fileRepository = fileRepository;
@@ -83,6 +87,7 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
         this.contentRepository = contentRepository;
         this.domainController = domainController;
         this.extensionRegistry = extensionRegistry;
+        this.pathManager = pathManager;
     }
 
     @Override
@@ -107,7 +112,7 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
         overallConfigPersister.initializeDomainConfigurationPersister(false);
 
         DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(),
-                contentRepository, fileRepository, domainController, extensionRegistry);
+                contentRepository, fileRepository, domainController, extensionRegistry, pathManager);
     }
 
 

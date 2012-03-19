@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +40,10 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.persistence.NullConfigurationPersister;
+import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -49,6 +54,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
+import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.After;
 import org.junit.Before;
 
@@ -57,8 +63,9 @@ import org.junit.Before;
  */
 public abstract class AbstractControllerTestBase {
 
-    abstract DescriptionProvider getRootDescriptionProvider();
-    abstract void initModel(final ManagementResourceRegistration registration);
+    protected abstract DescriptionProvider getRootDescriptionProvider();
+    protected abstract void initModel(final Resource rootResource, final ManagementResourceRegistration registration);
+
     protected ModelNode createCoreModel() {
         return new ModelNode();
     }
@@ -77,6 +84,10 @@ public abstract class AbstractControllerTestBase {
 
     public ModelController getController() {
         return controller;
+    }
+
+    public ServiceContainer getContainer() {
+        return container;
     }
 
     @Before
@@ -109,12 +120,16 @@ public abstract class AbstractControllerTestBase {
         }
     }
 
+    protected void addBootOperations(List<ModelNode> bootOperations) {
+
+    }
+
     class ModelControllerService extends AbstractControllerService {
 
-        private final CountDownLatch latch = new CountDownLatch(1);
+        private final CountDownLatch latch = new CountDownLatch(2);
 
         ModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState, final ProcessType processType) {
-            super(processType, new RunningModeControl(RunningMode.NORMAL), new NullConfigurationPersister(), processState, getRootDescriptionProvider(), null, ExpressionResolver.DEFAULT);
+            super(processType, new RunningModeControl(RunningMode.NORMAL), new EmptyConfigurationPersister(), processState, getRootDescriptionProvider(), null, ExpressionResolver.DEFAULT);
         }
 
         @Override
@@ -126,11 +141,58 @@ public abstract class AbstractControllerTestBase {
             }
         }
 
+        @Override
+        protected boolean boot(List<ModelNode> bootOperations, boolean rollbackOnRuntimeFailure)
+                throws ConfigurationPersistenceException {
+            try {
+                addBootOperations(bootOperations);
+                return super.boot(bootOperations, rollbackOnRuntimeFailure);
+            } finally {
+                latch.countDown();
+            }
+        }
+
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             try {
-                AbstractControllerTestBase.this.initModel(rootRegistration);
+                AbstractControllerTestBase.this.initModel(rootResource, rootRegistration);
             } catch(Exception e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    static class EmptyConfigurationPersister extends AbstractConfigurationPersister {
+
+        public EmptyConfigurationPersister() {
+            super(null);
+        }
+
+        public EmptyConfigurationPersister(XMLElementWriter<ModelMarshallingContext> rootDeparser) {
+            super(rootDeparser);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public PersistenceResource store(final ModelNode model, Set<PathAddress> affectedAddresses) {
+            return NullPersistenceResource.INSTANCE;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public List<ModelNode> load() {
+            return new ArrayList<ModelNode>();
+        }
+
+        private static class NullPersistenceResource implements ConfigurationPersister.PersistenceResource {
+
+            private static final NullPersistenceResource INSTANCE = new NullPersistenceResource();
+
+            @Override
+            public void commit() {
+            }
+
+            @Override
+            public void rollback() {
             }
         }
     }

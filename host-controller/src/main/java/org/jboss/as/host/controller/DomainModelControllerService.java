@@ -70,6 +70,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
@@ -143,6 +144,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final ExtensionRegistry extensionRegistry;
     private final ControlledProcessState processState;
     private final IgnoredDomainResourceRegistry ignoredRegistry;
+    private final PathManagerService pathManager;
 
     private volatile ServerInventory serverInventory;
 
@@ -151,7 +153,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                                             final HostControllerEnvironment environment,
                                                             final HostRunningModeControl runningModeControl,
                                                             final ControlledProcessState processState,
-                                                            final BootstrapListener bootstrapListener) {
+                                                            final BootstrapListener bootstrapListener,
+                                                            final PathManagerService pathManager){
         final Map<String, ProxyController> hostProxies = new ConcurrentHashMap<String, ProxyController>();
         final Map<String, ProxyController> serverProxies = new ConcurrentHashMap<String, ProxyController>();
         final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(processState, environment);
@@ -163,7 +166,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 hostProxies, serverProxies, ignoredRegistry);
         DomainModelControllerService service = new DomainModelControllerService(environment, runningModeControl, processState,
                 hostControllerInfo, contentRepository, hostProxies, serverProxies, prepareStepHandler, vaultReader,
-                ignoredRegistry, bootstrapListener);
+                ignoredRegistry, bootstrapListener, pathManager);
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(HostControllerService.HC_EXECUTOR_SERVICE_NAME, ExecutorService.class, service.getExecutorServiceInjector())
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
@@ -181,7 +184,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final PrepareStepHandler prepareStepHandler,
                                          final AbstractVaultReader vaultReader,
                                          final IgnoredDomainResourceRegistry ignoredRegistry,
-                                         final BootstrapListener bootstrapListener) {
+                                         final BootstrapListener bootstrapListener,
+                                         final PathManagerService pathManager) {
         super(ProcessType.HOST_CONTROLLER, runningModeControl, null, processState,
                 DomainDescriptionProviders.ROOT_PROVIDER, prepareStepHandler, new RuntimeExpressionResolver(vaultReader));
         this.environment = environment;
@@ -199,6 +203,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.ignoredRegistry = ignoredRegistry;
         this.bootstrapListener = bootstrapListener;
         this.extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
+        this.pathManager = pathManager;
     }
 
     @Override
@@ -305,7 +310,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         DomainModelUtil.updateCoreModel(rootResource, environment);
         HostModelUtil.createHostRegistry(rootRegistration, hostControllerConfigurationPersister, environment, runningModeControl,
                 localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, contentRepository,
-                this, extensionRegistry,vaultReader, ignoredRegistry, processState);
+                this, extensionRegistry,vaultReader, ignoredRegistry, processState, pathManager);
         this.modelNodeRegistration = rootRegistration;
     }
 

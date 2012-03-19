@@ -27,6 +27,7 @@ import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.core.StandardService;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -45,18 +46,20 @@ class WebServerService implements WebServer, Service<WebServer> {
     private final String defaultHost;
     private final boolean useNative;
     private final String instanceId;
+    private final String tempPathName;
 
     private Engine engine;
     private StandardServer server;
     private StandardService service;
 
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
-    private final InjectedValue<String> pathInjector = new InjectedValue<String>();
+    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
 
-    public WebServerService(final String defaultHost, final boolean useNative, final String instanceId) {
+    public WebServerService(final String defaultHost, final boolean useNative, final String instanceId, final String tempPathName) {
         this.defaultHost = defaultHost;
         this.useNative = useNative;
         this.instanceId = instanceId;
+        this.tempPathName = tempPathName;
     }
 
     /** {@inheritDoc} */
@@ -69,7 +72,7 @@ class WebServerService implements WebServer, Service<WebServer> {
             }
         }
 
-        System.setProperty("catalina.home", pathInjector.getValue());
+        System.setProperty("catalina.home", pathManagerInjector.getValue().getPathEntry(tempPathName).resolvePath());
         final StandardServer server = new StandardServer();
 
         final StandardService service = new StandardService();
@@ -150,8 +153,8 @@ class WebServerService implements WebServer, Service<WebServer> {
         return mbeanServer;
     }
 
-    InjectedValue<String> getPathInjector() {
-        return pathInjector;
+    InjectedValue<PathManager> getPathManagerInjector() {
+        return pathManagerInjector;
     }
 
     public StandardServer getServer() {

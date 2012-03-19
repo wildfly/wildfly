@@ -218,4 +218,12 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
             return provider.getValue();
         }
     }
+
+    @Override
+    public void started() {
+    }
+
+    @Override
+    public void stopped() {
+    }
 }

@@ -22,6 +22,10 @@
 
 package org.jboss.as.web;
 
+import java.util.List;
+
+import javax.management.MBeanServer;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -30,7 +34,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.services.path.AbstractPathService;
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -56,9 +61,6 @@ import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
-
-import javax.management.MBeanServer;
-import java.util.List;
 
 /**
  * Adds the web subsystem.
@@ -125,9 +127,9 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        final WebServerService service = new WebServerService(defaultVirtualServer, useNative, instanceId);
+        final WebServerService service = new WebServerService(defaultVirtualServer, useNative, instanceId, TEMP_DIR);
         newControllers.add(context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB, service)
-                .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getPathInjector())
+                .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManagerInjector())
                 .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
                 .setInitialMode(Mode.ON_DEMAND)
                 .install());

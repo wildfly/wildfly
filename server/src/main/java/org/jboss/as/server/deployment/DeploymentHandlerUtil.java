@@ -39,7 +39,6 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.services.path.RelativePathService;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -151,9 +150,7 @@ public class DeploymentHandlerUtil {
         else {
             final String path = contents[0].path;
             final String relativeTo = contents[0].relativeTo;
-
-            final ServiceName relativeToPathServiceName = relativeTo != null ? RelativePathService.pathNameOf(relativeTo) : null;
-            contentService = PathContentServitor.addService(serviceTarget, contentsServiceName, path, relativeToPathServiceName, verificationHandler);
+            contentService = PathContentServitor.addService(serviceTarget, contentsServiceName, path, relativeTo, verificationHandler);
         }
         controllers.add(contentService);
 

@@ -34,7 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIORITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
@@ -44,17 +43,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,7 +86,6 @@ import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.JVMHandlers;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
-import org.jboss.as.controller.operations.common.PathAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyValueWriteAttributeHandler;
@@ -108,6 +100,8 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.services.path.PathManagerService;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
@@ -493,7 +487,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(ProcessType.STANDALONE_SERVER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 ServerControllerModelUtil.updateCoreModel(model, null);
-                ServerControllerModelUtil.initOperations(rootRegistration, new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, new MockFileRepository());
+                ServerControllerModelUtil.initOperations(rootRegistration, new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, new MockFileRepository(), MOCK_PATH_MANAGER);
             }
         });
 
@@ -573,8 +567,7 @@ public class ParseAndMarshalModelsTestCase {
                 JVMHandlers.register(jvms);
 
                 //Paths
-                ManagementResourceRegistration paths = hostRegistration.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_PATH_PROVIDER);
-                paths.registerOperationHandler(PathAddHandler.OPERATION_NAME, PathAddHandler.SPECIFIED_INSTANCE, PathAddHandler.SPECIFIED_INSTANCE, false);
+                ManagementResourceRegistration paths = hostRegistration.registerSubModel(PathResourceDefinition.createSpecified(MOCK_PATH_MANAGER));
 
                 //interface
                 ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
@@ -593,8 +586,7 @@ public class ParseAndMarshalModelsTestCase {
 
 
                 //server paths
-                ManagementResourceRegistration serverPaths = servers.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
-                serverPaths.registerOperationHandler(PathAddHandler.OPERATION_NAME, PathAddHandler.SPECIFIED_INSTANCE, PathAddHandler.SPECIFIED_INSTANCE, false);
+                ManagementResourceRegistration serverPaths = servers.registerSubModel(PathResourceDefinition.createSpecifiedNoServices(MOCK_PATH_MANAGER));
                 //server interfaces
                 ManagementResourceRegistration serverInterfaces = servers.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
                 serverInterfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
@@ -646,7 +638,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(ProcessType.HOST_CONTROLLER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 DomainModelUtil.updateCoreModel(resource, null);
-                DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, new MockContentRepository(), new MockFileRepository(), new MockDomainController(), extensionRegistry);
+                DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, new MockContentRepository(), new MockFileRepository(), new MockDomainController(), extensionRegistry, MOCK_PATH_MANAGER);
             }
         });
 
@@ -880,7 +872,7 @@ public class ParseAndMarshalModelsTestCase {
          * Create the ServerAddHandler
          */
         protected MockLocalDomainControllerAddHandler() {
-            super(null, null, null, null, null, null, null);
+            super(null, null, null, null, null, null, null, MOCK_PATH_MANAGER);
         }
 
         @Override
@@ -895,7 +887,7 @@ public class ParseAndMarshalModelsTestCase {
          * Create the ServerAddHandler
          */
         protected MockRemoteDomainControllerAddHandler() {
-            super(null, null, null, null, null, null, null);
+            super(null, null, null, null, null, null, null, MOCK_PATH_MANAGER);
         }
 
         @Override
@@ -903,4 +895,7 @@ public class ParseAndMarshalModelsTestCase {
             // no-op
         }
     }
+
+    private static PathManagerService MOCK_PATH_MANAGER = new PathManagerService() {
+    };
 }

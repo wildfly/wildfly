@@ -240,6 +240,16 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     protected void writePaths(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
         List<Property> paths = node.asPropertyList();
+
+        for (Iterator<Property> it = paths.iterator() ; it.hasNext() ; ) {
+            ModelNode path = it.next().getValue();
+
+            if (!path.isDefined()) {
+                //The runtime resources for the hardcoded paths don't appear in the model
+                it.remove();
+            }
+        }
+
         if (paths.size() > 0) {
             writer.writeStartElement(Element.PATHS.getLocalName());
 

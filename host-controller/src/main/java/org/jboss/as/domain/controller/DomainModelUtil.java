@@ -36,7 +36,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
@@ -71,8 +70,6 @@ import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
 import org.jboss.as.controller.operations.common.JVMHandlers;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
-import org.jboss.as.controller.operations.common.PathAddHandler;
-import org.jboss.as.controller.operations.common.PathRemoveHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
@@ -96,6 +93,8 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
+import org.jboss.as.controller.services.path.PathManagerService;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
 import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
@@ -180,23 +179,26 @@ public class DomainModelUtil {
 
     public static void initializeMasterDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                                   final ContentRepository contentRepository, final HostFileRepository fileRepository,
-                                                                  final DomainController domainController, final ExtensionRegistry extensionRegistry) {
+                                                                  final DomainController domainController, final ExtensionRegistry extensionRegistry,
+                                                                  final PathManagerService pathManager) {
         initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true, domainController,
-                domainController.getLocalHostInfo(), extensionRegistry, null);
+                domainController.getLocalHostInfo(), extensionRegistry, null, pathManager);
     }
 
     public static void initializeSlaveDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                                  final ContentRepository contentRepository, final HostFileRepository fileRepository,
                                                                  final LocalHostControllerInfo hostControllerInfo, final ExtensionRegistry extensionRegistry,
-                                                             final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
+                                                             final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+                                                             final PathManagerService pathManager) {
         initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, false, null,
-                hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry);
+                hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry, pathManager);
     }
 
     private static void initializeDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                              final ContentRepository contentRepo, final HostFileRepository fileRepository, final boolean isMaster,
                                                              final DomainController domainController, final LocalHostControllerInfo hostControllerInfo,
-                                                             final ExtensionRegistry extensionRegistry, final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
+                                                             final ExtensionRegistry extensionRegistry, final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+                                                             final PathManagerService pathManager) {
 
         final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
         final EnumSet<OperationEntry.Flag> masterOnly = EnumSet.of(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY);
@@ -257,9 +259,7 @@ public class DomainModelUtil {
         profile.registerOperationHandler(REMOVE, ProfileRemoveHandler.INSTANCE, ProfileRemoveHandler.INSTANCE, false);
         profile.registerOperationHandler(DESCRIBE, ProfileDescribeHandler.INSTANCE, ProfileDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE, readOnly);
 
-        final ManagementResourceRegistration paths = root.registerSubModel(PathElement.pathElement(PATH), DomainDescriptionProviders.PATH_DESCRIPTION);
-        paths.registerOperationHandler(ADD, PathAddHandler.NAMED_INSTANCE, PathAddHandler.NAMED_INSTANCE, false);
-        paths.registerOperationHandler(REMOVE, PathRemoveHandler.NAMED_INSTANCE, PathRemoveHandler.NAMED_INSTANCE, false);
+        root.registerSubModel(PathResourceDefinition.createNamed(pathManager));
 
         final ManagementResourceRegistration socketBindingGroup = root.registerSubModel(new SocketBindingGroupResourceDefinition(SocketBindingGroupAddHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, true));
         socketBindingGroup.registerSubModel(SocketBindingResourceDefinition.INSTANCE);

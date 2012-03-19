@@ -35,8 +35,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.services.path.AbsolutePathService;
-import org.jboss.as.controller.services.path.RelativePathService;
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.ejb3.deployment.processors.AroundTimeoutAnnotationParsingProcessor;
 import org.jboss.as.ejb3.deployment.processors.TimerServiceDeploymentProcessor;
 import org.jboss.as.ejb3.deployment.processors.annotation.TimerServiceAnnotationProcessor;
@@ -100,14 +100,6 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
 
                 //install the ejb timer service data store path service
                 if (path != null) {
-                    if (relativeTo != null) {
-                        RelativePathService.addService(TimerServiceDeploymentProcessor.PATH_SERVICE_NAME, path, false, relativeTo,
-                                context.getServiceTarget(), newControllers, verificationHandler);
-                    } else {
-                        AbsolutePathService.addService(TimerServiceDeploymentProcessor.PATH_SERVICE_NAME, path,
-                                context.getServiceTarget(), newControllers, verificationHandler);
-                    }
-
                     //we only add the timer service DUP's when the timer service in enabled in XML
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_TIMEOUT_ANNOTATION, new TimerServiceAnnotationProcessor());
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_AROUNDTIMEOUT_ANNOTATION, new AroundTimeoutAnnotationParsingProcessor());
@@ -119,10 +111,10 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
 
         newControllers.add(context.getServiceTarget().addService(TimerServiceDeploymentProcessor.TIMER_SERVICE_NAME, new TimerValueService())
                 .install());
-        final FileTimerPersistence fileTimerPersistence = new FileTimerPersistence(true);
+        final FileTimerPersistence fileTimerPersistence = new FileTimerPersistence(true, path, relativeTo);
         newControllers.add(context.getServiceTarget().addService(FileTimerPersistence.SERVICE_NAME, fileTimerPersistence)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, fileTimerPersistence.getModuleLoader())
-                .addDependency(TimerServiceDeploymentProcessor.PATH_SERVICE_NAME, String.class, fileTimerPersistence.getBaseDir())
+                .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, fileTimerPersistence.getPathManager())
                 .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, fileTimerPersistence.getTransactionManager())
                 .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class, fileTimerPersistence.getTransactionSynchronizationRegistry())
                 .install());

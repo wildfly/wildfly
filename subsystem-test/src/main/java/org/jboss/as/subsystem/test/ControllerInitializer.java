@@ -30,11 +30,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.common.PathDescription.RELATIVE_TO;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,8 +47,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
-import org.jboss.as.controller.operations.common.PathAddHandler;
-import org.jboss.as.controller.operations.common.PathRemoveHandler;
 import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
@@ -57,6 +55,8 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
+import org.jboss.as.controller.services.path.PathManagerService;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
@@ -80,6 +80,11 @@ public class ControllerInitializer {
     protected final Map<String, Integer> socketBindings = new HashMap<String, Integer>();
     protected final Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<String, OutboundSocketBinding>();
     protected final Map<String, PathInfo> paths = new HashMap<String, PathInfo>();
+    private volatile PathManagerService pathManager;
+
+    void setPathManger(PathManagerService pathManager) {
+        this.pathManager = pathManager;
+    }
 
     /**
      * Adds a system property to the model.
@@ -252,9 +257,7 @@ public class ControllerInitializer {
             return;
         }
         rootResource.getModel().get(PATH);
-        ManagementResourceRegistration paths = rootRegistration.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_PATH_PROVIDER);
-        paths.registerOperationHandler(PathAddHandler.OPERATION_NAME, PathAddHandler.SPECIFIED_INSTANCE, PathAddHandler.SPECIFIED_INSTANCE, false);
-        paths.registerOperationHandler(PathRemoveHandler.OPERATION_NAME, PathRemoveHandler.SPECIFIED_INSTANCE, PathRemoveHandler.SPECIFIED_INSTANCE, false);
+        ManagementResourceRegistration paths = rootRegistration.registerSubModel(PathResourceDefinition.createSpecified(pathManager));
     }
 
     /**

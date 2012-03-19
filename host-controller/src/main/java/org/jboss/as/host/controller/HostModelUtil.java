@@ -30,7 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIORITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
@@ -63,8 +62,6 @@ import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
 import org.jboss.as.controller.operations.common.JVMHandlers;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
-import org.jboss.as.controller.operations.common.PathAddHandler;
-import org.jboss.as.controller.operations.common.PathRemoveHandler;
 import org.jboss.as.controller.operations.common.ProcessReloadHandler;
 import org.jboss.as.controller.operations.common.ProcessStateAttributeHandler;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
@@ -85,6 +82,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
+import org.jboss.as.controller.services.path.PathManagerService;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.deployment.HostProcessReloadHandler;
@@ -150,7 +149,8 @@ public class HostModelUtil {
                                           final ExtensionRegistry extensionRegistry,
                                           final AbstractVaultReader vaultReader,
                                           final IgnoredDomainResourceRegistry ignoredRegistry,
-                                          final ControlledProcessState processState) {
+                                          final ControlledProcessState processState,
+                                          final PathManagerService pathManager) {
         // Add of the host itself
         ManagementResourceRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST), HostDescriptionProviders.HOST_ROOT_PROVIDER);
         LocalHostAddHandler handler = new LocalHostAddHandler(environment, ignoredRegistry);
@@ -250,11 +250,11 @@ public class HostModelUtil {
 
 
         LocalDomainControllerAddHandler localDcAddHandler = LocalDomainControllerAddHandler.getInstance(root, hostControllerInfo,
-                configurationPersister, localFileRepository, contentRepository, domainController, extensionRegistry);
+                configurationPersister, localFileRepository, contentRepository, domainController, extensionRegistry, pathManager);
         hostRegistration.registerOperationHandler(LocalDomainControllerAddHandler.OPERATION_NAME, localDcAddHandler, localDcAddHandler, false);
         hostRegistration.registerOperationHandler(LocalDomainControllerRemoveHandler.OPERATION_NAME, LocalDomainControllerRemoveHandler.INSTANCE, LocalDomainControllerRemoveHandler.INSTANCE, false);
         RemoteDomainControllerAddHandler remoteDcAddHandler = new RemoteDomainControllerAddHandler(root, hostControllerInfo,
-                configurationPersister, contentRepository, remoteFileRepository, extensionRegistry, ignoredRegistry);
+                configurationPersister, contentRepository, remoteFileRepository, extensionRegistry, ignoredRegistry, pathManager);
         hostRegistration.registerOperationHandler(RemoteDomainControllerAddHandler.OPERATION_NAME, remoteDcAddHandler, remoteDcAddHandler, false);
         hostRegistration.registerOperationHandler(RemoteDomainControllerRemoveHandler.OPERATION_NAME, RemoteDomainControllerRemoveHandler.INSTANCE, RemoteDomainControllerRemoveHandler.INSTANCE, false);
 
@@ -272,9 +272,7 @@ public class HostModelUtil {
         JVMHandlers.register(jvms);
 
         //Paths
-        ManagementResourceRegistration paths = hostRegistration.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_PATH_PROVIDER);
-        paths.registerOperationHandler(PathAddHandler.OPERATION_NAME, PathAddHandler.SPECIFIED_INSTANCE, PathAddHandler.SPECIFIED_INSTANCE, false);
-        paths.registerOperationHandler(PathRemoveHandler.OPERATION_NAME, PathRemoveHandler.SPECIFIED_INSTANCE, PathRemoveHandler.SPECIFIED_INSTANCE, false);
+        hostRegistration.registerSubModel(PathResourceDefinition.createSpecified(pathManager));
 
         //interface
         ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
@@ -306,9 +304,8 @@ public class HostModelUtil {
         servers.registerOperationHandler(ServerStopHandler.OPERATION_NAME, stopHandler, stopHandler, EnumSet.of(OperationEntry.Flag.HOST_CONTROLLER_ONLY));
 
         //server paths
-        ManagementResourceRegistration serverPaths = servers.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
-        serverPaths.registerOperationHandler(PathAddHandler.OPERATION_NAME, PathAddHandler.SPECIFIED_NO_SERVICES_INSTANCE, PathAddHandler.SPECIFIED_NO_SERVICES_INSTANCE, false);
-        serverPaths.registerOperationHandler(PathRemoveHandler.OPERATION_NAME, PathRemoveHandler.SPECIFIED_NO_SERVICES_INSTANCE, PathRemoveHandler.SPECIFIED_NO_SERVICES_INSTANCE, false);
+        servers.registerSubModel(PathResourceDefinition.createSpecifiedNoServices(pathManager));
+
         //server interfaces
         ManagementResourceRegistration serverInterfaces = servers.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
         serverInterfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
