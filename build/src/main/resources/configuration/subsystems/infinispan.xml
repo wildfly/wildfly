@@ -79,7 +79,7 @@
                <distributed-cache name="default" owners="2" mode="ASYNC" indexing="LOCAL">
                    <transaction mode="NON_XA"/>
                    <eviction strategy="NONE"/>
-                   <indexing-properties>
+                   <!-- indexing-properties>
                        <property name="hibernate.search.default.directory_provider">
                            infinispan
                        </property>
@@ -92,7 +92,7 @@
                        <property name="hibernate.search.default.infinispan.cachemanager_jndiname">
                            java:jboss/infinispan/container/HibernateSearch
                        </property>
-                   </indexing-properties>
+                   </indexing-properties -->
                </distributed-cache>
                <replicated-cache name="data" mode="ASYNC">
                    <transaction mode="NON_XA"/>
