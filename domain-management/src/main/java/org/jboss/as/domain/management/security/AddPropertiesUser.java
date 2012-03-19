@@ -32,7 +32,9 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,6 +76,7 @@ public class AddPropertiesUser {
     private static final String NEW_LINE = "\n";
     private static final String SPACE = " ";
     private static final Properties argsCliProps = new Properties();
+    private static char[] VALID_PUNCTUATION = {'.', '@', '\\', '=', ','};
 
     private final Console theConsole = System.console();
 
@@ -335,9 +338,9 @@ public class AddPropertiesUser {
 
         private Set<String> loadUserNames(final File file) throws IOException {
 
-            FileInputStream fis = null;
+            InputStreamReader fis = null;
             try {
-                fis = new FileInputStream(file);
+                fis = new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8"));
                 Properties tempProps = new Properties();
                 tempProps.load(fis);
 
@@ -485,6 +488,11 @@ public class AddPropertiesUser {
             this.values = values;
         }
 
+        private boolean isValidPunctuation(char currentChar) {
+            Arrays.sort(VALID_PUNCTUATION);
+            return (Arrays.binarySearch(VALID_PUNCTUATION,currentChar) >= 0);
+        }
+
         @Override
         public State execute() {
             State retryState = values.isSilentOrNonInteractive() ? null : new PromptNewUserState(values);
@@ -494,7 +502,7 @@ public class AddPropertiesUser {
             }
 
             for (char currentChar : values.userName.toCharArray()) {
-                if ((Character.isLetter(currentChar) || Character.isDigit(currentChar)) == false) {
+                if ((!isValidPunctuation(currentChar)) && (Character.isLetter(currentChar) || Character.isDigit(currentChar)) == false) {
                     return new ErrorState(MESSAGES.usernameNotAlphaNumeric(), retryState);
                 }
             }
@@ -695,59 +703,20 @@ public class AddPropertiesUser {
             return update(values);
         }
 
-
-        private boolean additionalNewLineNeeded(final File file) throws IOException {
-            FileReader fr = null;
-
-            try {
-                fr = new FileReader(file);
-                char lastChar = 0x00;
-                char[] temp = new char[1024];
-
-                int read = -1;
-                while ((read = fr.read(temp)) > 0) {
-                    lastChar = temp[read - 1];
-                }
-                /*
-                * It is possible that the final line will also have some whitespace - in that case we want
-                * a new line otherwise the line we add could become indented.
-                *
-                * Depending on where the file was last written the character sequence for a new line can vary,
-                * if we see either of the characters used for a new line as the last character of the last line
-                * we assume a new line is already present in the file.
-                */
-                return lastChar != NEW_LINE_CHAR && lastChar != CARRIAGE_RETURN_CHAR;
-            } finally {
-                safeClose(fr);
-            }
-        }
-
-        private void append(final String entry, final File toFile) throws IOException {
-            FileWriter fw = null;
-            BufferedWriter bw = null;
-
-            boolean additionalNewLineNeeded = additionalNewLineNeeded(toFile);
-
-            try {
-                fw = new FileWriter(toFile, true);
-                bw = new BufferedWriter(fw);
-
-                if (additionalNewLineNeeded) {
-                    bw.newLine();
-                }
-
-                bw.append(entry);
-                bw.newLine();
-            } finally {
-                safeClose(bw);
-                safeClose(fw);
-            }
-        }
-
-
         @Override
         void persist(String[] entry, File file) throws IOException {
-            append(entry[0] + "=" + entry[1], file);
+            UserPropertiesFileHandler propertiesHandler = new UserPropertiesFileHandler(file.getAbsolutePath());
+            try {
+                propertiesHandler.start(null);
+                Properties prob = propertiesHandler.getProperties();
+                prob.setProperty(entry[0], entry[1]);
+                propertiesHandler.persistProperties();
+            } catch (StartException e) {
+                throw new IllegalStateException(MESSAGES.unableToAddUser(file.getAbsolutePath(), e.getMessage()));
+            } finally {
+                propertiesHandler.stop(null);
+            }
+
         }
 
         @Override
