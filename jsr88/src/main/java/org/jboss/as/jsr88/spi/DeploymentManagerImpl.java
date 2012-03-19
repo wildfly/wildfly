@@ -30,6 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -616,7 +617,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             URIParser parser = new URIParser(deployURI);
             String serverHost = parser.getParameter("serverHost");
             String serverPort = parser.getParameter("serverPort");
-            String host = serverHost != null ? serverHost : "127.0.0.1";
+            String host = serverHost != null ? serverHost : InetAddress.getLocalHost().getHostAddress();
             Integer port = serverPort != null ? Integer.parseInt(serverPort) : 9999;
             if (username != null && password != null) {
                 return ModelControllerClient.Factory.create(host, port, getCallbackHandler(username, password));
