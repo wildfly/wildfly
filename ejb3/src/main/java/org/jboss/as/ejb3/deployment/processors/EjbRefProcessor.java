@@ -78,7 +78,7 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
             for (EJBReferenceMetaData ejbRef : ejbRefs) {
                 String name = ejbRef.getEjbRefName();
                 String ejbName = ejbRef.getLink();
-                String lookup = ejbRef.getLookupName();
+                String lookup = ejbRef.getLookupName() != null ? ejbRef.getLookupName() : ejbRef.getMappedName();
                 String remoteInterface = ejbRef.getRemote();
                 String home = ejbRef.getHome();
                 Class<?> remoteInterfaceType = null;
@@ -142,7 +142,7 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                 for (EJBLocalReferenceMetaData ejbRef : ejbLocalRefs) {
                     String name = ejbRef.getEjbRefName();
                     String ejbName = ejbRef.getLink();
-                    String lookup = ejbRef.getLookupName();
+                    String lookup = ejbRef.getLookupName() != null ? ejbRef.getLookupName() : ejbRef.getMappedName();
                     String localInterface = ejbRef.getLocal();
                     String localHome = ejbRef.getLocalHome();
                     Class<?> localInterfaceType = null;
