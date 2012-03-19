@@ -45,7 +45,7 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * Tests for RESTEasy configuration parameter 'resteasy.scan.resources'
- *
+ * 
  * @author Pavel Janousek
  */
 @RunWith(Arquillian.class)
@@ -54,49 +54,66 @@ public class ResteasyScanResourcesTestCase {
 
     private static final String depNameTrue = "dep_true";
     private static final String depNameFalse = "dep_false";
-    private static final String depNameFalseAS7_3034 = "dep_false_as7_3034";
     private static final String depNameInvalid = "dep_invalid";
+    private static final String depNameTrueApp = "dep_true_app";
+    private static final String depNameFalseApp = "dep_false_app";
+    private static final String depNameInvalidApp = "dep_invalid_app";
 
     @Deployment(name = depNameTrue, managed = true)
     public static Archive<?> deploy_true() {
         return ShrinkWrap.create(WebArchive.class, depNameTrue + ".war")
-                .addPackage(ResteasyScanResourcesTestCase.class.getPackage())
-                .setWebXML(webXml("resteasy.scan.resources", "true"));
+                .addClasses(ResteasyScanResourcesTestCase.class, HelloWorldResource.class)
+                .setWebXML(webXmlWithMapping("resteasy.scan.resources", "true"));
     }
 
     @Deployment(name = depNameFalse, managed = true)
     public static Archive<?> deploy_false() {
         return ShrinkWrap.create(WebArchive.class, depNameFalse + ".war")
-                .addPackage(ResteasyScanResourcesTestCase.class.getPackage())
-                .setWebXML(webXml("resteasy.scan.resources", "false"));
-    }
-
-    @Deployment(name = depNameFalseAS7_3034, managed = false)
-    public static Archive<?> deploy_false_as7_3034() {
-        return ShrinkWrap.create(WebArchive.class, depNameFalseAS7_3034 + ".war")
-                .addPackage(ResteasyScanResourcesTestCase.class.getPackage())
-                .addPackage(HelloWorldApplication.class.getPackage());
+                .addClasses(ResteasyScanResourcesTestCase.class, HelloWorldResource.class)
+                .setWebXML(webXmlWithMapping("resteasy.scan.resources", "false"));
     }
 
     @Deployment(name = depNameInvalid, managed = false)
     public static Archive<?> deploy_invalid() {
         return ShrinkWrap.create(WebArchive.class, depNameInvalid + ".war")
-                .addPackage(ResteasyScanResourcesTestCase.class.getPackage())
-                .setWebXML(webXml("resteasy.scan.resources", "blah"));
-
+                .addClasses(ResteasyScanResourcesTestCase.class, HelloWorldResource.class)
+                .setWebXML(webXmlWithMapping("resteasy.scan.resources", "blah"));
     }
 
-    private static StringAsset webXml(String paramName, String paramValue) {
-        return WebXml.get("<servlet-mapping>\n"
-                + "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n"
-                + "        <url-pattern>/myjaxrs/*</url-pattern>\n"
-                + "</servlet-mapping>\n"
-                + "\n"
-                + "<context-param>\n"
-                + "        <param-name>" + paramName + "</param-name>\n"
-                + "        <param-value>" + paramValue + "</param-value>\n"
-                + "</context-param>\n"
-                + "\n");
+    @Deployment(name = depNameTrueApp, managed = true)
+    public static Archive<?> deploy_true_app() {
+        return ShrinkWrap.create(WebArchive.class, depNameTrueApp + ".war")
+                .addClasses(ResteasyScanResourcesTestCase.class, HelloWorldResource.class, HelloWorldApplication.class)
+                .setWebXML(webXml("resteasy.scan.resources", "true"));
+    }
+
+    @Deployment(name = depNameFalseApp, managed = true)
+    public static Archive<?> deploy_false_app() {
+        return ShrinkWrap.create(WebArchive.class, depNameFalseApp + ".war")
+                .addClasses(ResteasyScanResourcesTestCase.class, HelloWorldResource.class, HelloWorldApplication.class)
+                .setWebXML(webXml("resteasy.scan.resources", "false"));
+    }
+
+    @Deployment(name = depNameInvalidApp, managed = false)
+    public static Archive<?> deploy_invalid_app() {
+        return ShrinkWrap.create(WebArchive.class, depNameInvalidApp + ".war")
+                .addClasses(ResteasyScanResourcesTestCase.class, HelloWorldResource.class, HelloWorldApplication.class)
+                .setWebXML(webXml("resteasy.scan.resources", "blah"));
+    }
+
+    private static StringAsset webXml(final String paramName, final String paramValue) {
+        return WebXml.get(getCfgString(paramName, paramValue));
+    }
+
+    private static StringAsset webXmlWithMapping(final String paramName, final String paramValue) {
+        return WebXml.get("<servlet-mapping>\n" + "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n"
+                + "        <url-pattern>/myjaxrs/*</url-pattern>\n" + "</servlet-mapping>\n"
+                + getCfgString(paramName, paramValue));
+    }
+
+    private static String getCfgString(final String paramName, final String paramValue) {
+        return "<context-param>\n" + "        <param-name>" + paramName + "</param-name>\n" + "        <param-value>"
+                + paramValue + "</param-value>\n" + "</context-param>\n" + "\n";
     }
 
     @ArquillianResource
@@ -104,28 +121,20 @@ public class ResteasyScanResourcesTestCase {
 
     @Test
     @OperateOnDeployment(depNameTrue)
-    public void testDeployTrue1(@ArquillianResource URL url) throws Exception {
+    public void testDeployTrue(@ArquillianResource URL url) throws Exception {
         String result = HttpRequest.get(url.toExternalForm() + "myjaxrs/helloworld", 10, TimeUnit.SECONDS);
         assertEquals("Hello World!", result);
     }
 
     @Test
     @OperateOnDeployment(depNameFalse)
-    public void testDeployFalse1(@ArquillianResource URL url) throws Exception {
+    public void testDeployFalse(@ArquillianResource URL url) throws Exception {
         try {
             @SuppressWarnings("unused")
             String result = HttpRequest.get(url.toExternalForm() + "myjaxrs/helloworld", 10, TimeUnit.SECONDS);
             Assert.fail("Scan of Resources is disabled so we should not pass to there - HTTP 404 must occur!");
         } catch (Exception e) {
-        }
-    }
-
-    @Test
-    public void testDeployFalse_AS7_3043() throws Exception {
-        try {
-            deployer.deploy(depNameFalseAS7_3034);
-            Assert.fail("Test should not go there - invalid deployment (duplicated javax.ws.rs.core.Application)! Possible regression of AS7-3034 found");
-        } catch (Exception e) {
+            Assert.assertTrue(e.toString().contains("HTTP Status 404"));
         }
     }
 
@@ -138,4 +147,31 @@ public class ResteasyScanResourcesTestCase {
         }
     }
 
+    @Test
+    @OperateOnDeployment(depNameTrueApp)
+    public void testDeployTrueApp(@ArquillianResource URL url) throws Exception {
+        String result = HttpRequest.get(url.toExternalForm() + "app1/helloworld", 10, TimeUnit.SECONDS);
+        assertEquals("Hello World!", result);
+    }
+
+    @Test
+    @OperateOnDeployment(depNameFalseApp)
+    public void testDeployFalseApp(@ArquillianResource URL url) throws Exception {
+        try {
+            @SuppressWarnings("unused")
+            String result = HttpRequest.get(url.toExternalForm() + "app1/helloworld", 10, TimeUnit.SECONDS);
+            Assert.fail("Scan of Resources is disabled so we should not pass to there - HTTP 404 must occur!");
+        } catch (Exception e) {
+            Assert.assertTrue(e.toString().contains("HTTP Status 404"));
+        }
+    }
+
+    @Test
+    public void testDeployInvalidApp() throws Exception {
+        try {
+            deployer.deploy(depNameInvalidApp);
+            Assert.fail("Test should not go here - invalid deployment (invalid value of resteasy.scan.resources)!");
+        } catch (Exception e) {
+        }
+    }
 }
