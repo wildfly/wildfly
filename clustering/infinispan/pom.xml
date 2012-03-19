@@ -122,6 +122,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <useManifestOnlyJar>false</useManifestOnlyJar>
+                    <parallel>false</parallel>
                 </configuration>
             </plugin>
             <plugin>

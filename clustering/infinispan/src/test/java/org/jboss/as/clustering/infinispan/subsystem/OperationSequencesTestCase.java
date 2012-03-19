@@ -1,5 +1,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.DEFAULT_CACHE;
+import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.JNDI_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -8,9 +10,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
-import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.DEFAULT_CACHE;
-import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.JNDI_NAME;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,15 +23,19 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.byteman.contrib.bmunit.BMRule;
+import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
 * Test case for testing sequences of management operations.
 *
 * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
 */
+@RunWith(BMUnitRunner.class)
 public class OperationSequencesTestCase extends AbstractSubsystemTest {
 
     static final String SUBSYSTEM_XML_FILE = "subsystem-infinispan_1_2.xml" ;
@@ -101,6 +104,35 @@ public class OperationSequencesTestCase extends AbstractSubsystemTest {
         // remove the cache container again
         result = servicesA.executeOperation(removeContainerOp);
         Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+    }
+
+    @Test
+    @BMRule(name="Test remove rollback operation",
+            targetClass="org.jboss.as.clustering.infinispan.subsystem.CacheContainerRemove",
+            targetMethod="removeExistingCacheServices",
+            targetLocation="AT ENTRY",
+            action="$1.setRollbackOnly()")
+    public void testCacheContainerRemoveRollback() throws Exception {
+
+        // Parse and install the XML into the controller
+        String subsystemXml = getSubsystemXml() ;
+        KernelServices servicesA = super.installInController(subsystemXml) ;
+
+        ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
+        ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
+        ModelNode addCacheOp = getLocalCacheAddOperation("maximal2", "fred");
+
+        // add a cache container
+        ModelNode result = servicesA.executeOperation(addContainerOp);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        // add a local cache
+        result = servicesA.executeOperation(addCacheOp);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        // remove the cache container
+        result = servicesA.executeOperation(removeContainerOp);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
     }
 
     @Test
