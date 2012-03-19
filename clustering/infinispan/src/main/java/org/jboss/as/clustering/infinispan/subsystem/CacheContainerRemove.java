@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -34,6 +35,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -61,13 +63,90 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler {
         CacheContainerAdd.INSTANCE.removeRuntimeServices(context, operation, model);
     }
 
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
+    /**
+     * Method to re-install any services associated with existing local caches.
+     *
+     * @param context
+     * @param operation
+     * @param model
+     * @throws OperationFailedException
+     */
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+
+        final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+        final String containerName = address.getLastElement().getValue();
+        // used by service installation
+        final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler() ;
+
+        // re-install the cache container services
+        CacheContainerAdd.INSTANCE.installRuntimeServices(context, operation, model, verificationHandler, null);
+
+        // re-install any existing cache services
+        reinstallExistingCacheServices(context, model, containerName, verificationHandler);
     }
 
+
+    /**
+     * Method to reinstall any services associated with existing caches.
+     *
+     * @param context
+     * @param model
+     * @param containerName
+     * @throws OperationFailedException
+     */
+    private void reinstallExistingCacheServices(OperationContext context, ModelNode model, String containerName, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+
+        // re-install the services of any local caches
+        List<Property> localCacheList = getCachesFromParentModel(ModelKeys.LOCAL_CACHE, model);
+        // don't know why extended for loop doesn't detect null list ...
+        if (localCacheList != null)
+            for (Property localCache : localCacheList) {
+                String localCacheName = localCache.getName();
+                ModelNode localCacheModel = localCache.getValue();
+                ModelNode localCacheAddOp = createCacheAddOperation(ModelKeys.LOCAL_CACHE, containerName, localCacheName);
+                LocalCacheAdd.INSTANCE.installRuntimeServices(context, localCacheAddOp, localCacheModel, verificationHandler, null);
+            }
+
+        // re-install the services of any invalidation caches
+        List<Property> invalidationCacheList = getCachesFromParentModel(ModelKeys.INVALIDATION_CACHE, model);
+        if (invalidationCacheList != null)
+            for (Property invCache : invalidationCacheList) {
+                String invCacheName = invCache.getName();
+                ModelNode invCacheModel = invCache.getValue();
+                ModelNode invCacheAddOp = createCacheAddOperation(ModelKeys.INVALIDATION_CACHE, containerName, invCacheName);
+                InvalidationCacheAdd.INSTANCE.installRuntimeServices(context, invCacheAddOp, invCacheModel, verificationHandler, null);
+            }
+        // re-install the services of any replicated caches
+        List<Property> replCacheList = getCachesFromParentModel(ModelKeys.REPLICATED_CACHE, model);
+        if (replCacheList != null)
+            for (Property replCache : replCacheList) {
+                String replCacheName = replCache.getName();
+                ModelNode replCacheModel = replCache.getValue();
+                ModelNode replCacheAddOp = createCacheAddOperation(ModelKeys.REPLICATED_CACHE, containerName, replCacheName);
+                ReplicatedCacheAdd.INSTANCE.installRuntimeServices(context, replCacheAddOp, replCacheModel, verificationHandler, null);
+            }
+        // re-install the services of any distributed caches
+        List<Property> distCacheList = getCachesFromParentModel(ModelKeys.DISTRIBUTED_CACHE, model);
+        if (distCacheList != null)
+            for (Property distCache : distCacheList) {
+                String distCacheName = distCache.getName();
+                ModelNode distCacheModel = distCache.getValue();
+                ModelNode distCacheAddOp = createCacheAddOperation(ModelKeys.DISTRIBUTED_CACHE, containerName, distCacheName);
+                DistributedCacheAdd.INSTANCE.installRuntimeServices(context, distCacheAddOp, distCacheModel, verificationHandler, null);
+            }
+    }
+
+    /**
+     * Method to remove any services associated with existing caches.
+     *
+     * @param context
+     * @param model
+     * @param containerName
+     * @throws OperationFailedException
+     */
     private void removeExistingCacheServices(OperationContext context, ModelNode model, String containerName) throws OperationFailedException {
 
-        // remove any local caches
+        // remove the services of any local caches
         List<Property> localCacheList = getCachesFromParentModel(ModelKeys.LOCAL_CACHE, model);
         // don't know why extended for loop doesn't detect null list ...
         if (localCacheList != null)
@@ -78,7 +157,7 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler {
                 LocalCacheAdd.INSTANCE.removeRuntimeServices(context, localCacheRemoveOp, localCacheModel);
             }
 
-        // remove any invalidation caches
+        // remove the services of any invalidation caches
         List<Property> invalidationCacheList = getCachesFromParentModel(ModelKeys.INVALIDATION_CACHE, model);
         if (invalidationCacheList != null)
             for (Property invCache : invalidationCacheList) {
@@ -87,7 +166,7 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler {
                 ModelNode invCacheRemoveOp = createCacheRemoveOperation(ModelKeys.INVALIDATION_CACHE, containerName, invCacheName);
                 InvalidationCacheAdd.INSTANCE.removeRuntimeServices(context, invCacheRemoveOp, invCacheModel);
             }
-        // remove any replicated caches
+        // remove the services of any replicated caches
         List<Property> replCacheList = getCachesFromParentModel(ModelKeys.REPLICATED_CACHE, model);
         if (replCacheList != null)
             for (Property replCache : replCacheList) {
@@ -96,7 +175,7 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler {
                 ModelNode replCacheRemoveOp = createCacheRemoveOperation(ModelKeys.REPLICATED_CACHE, containerName, replCacheName);
                 ReplicatedCacheAdd.INSTANCE.removeRuntimeServices(context, replCacheRemoveOp, replCacheModel);
             }
-        // remove any distributed caches
+        // remove the services of any distributed caches
         List<Property> distCacheList = getCachesFromParentModel(ModelKeys.DISTRIBUTED_CACHE, model);
         if (distCacheList != null)
             for (Property distCache : distCacheList) {
@@ -126,6 +205,16 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler {
         removeOp.get(OP_ADDR).set(cacheAddr.toModelNode());
 
         return removeOp;
+    }
+
+    private ModelNode createCacheAddOperation(String cacheType, String containerName, String cacheName) {
+        // create the address of the cache
+        PathAddress cacheAddr = getCacheAddress(containerName, cacheName, cacheType);
+        ModelNode addOp = new ModelNode();
+        addOp.get(OP).set(ADD);
+        addOp.get(OP_ADDR).set(cacheAddr.toModelNode());
+
+        return addOp;
     }
 
     private PathAddress getCacheAddress(String containerName, String cacheName, String cacheType) {
