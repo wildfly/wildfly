@@ -841,7 +841,7 @@
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-ee-deployment</artifactId>
+                    <artifactId>jboss-as-jsr88</artifactId>
                 </dependency>
 
                 <dependency>
