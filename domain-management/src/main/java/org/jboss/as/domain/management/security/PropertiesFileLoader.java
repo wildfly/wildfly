@@ -172,7 +172,6 @@ public abstract class PropertiesFileLoader {
                 bw.append(escapedUserName + "=" + toSave.getProperty((String) currentKey));
                 bw.newLine();
             }
-            bw.newLine();
         } finally {
             safeClose(bw);
             safeClose(br);

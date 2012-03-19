@@ -76,7 +76,7 @@ public class AddPropertiesUser {
     private static final String NEW_LINE = "\n";
     private static final String SPACE = " ";
     private static final Properties argsCliProps = new Properties();
-    private static char[] VALID_PUNCTUATION = {'.', '@', '\\', '=', ','};
+    private static char[] VALID_PUNCTUATION = {'.', '@', '\\', '=', ',','/'};
 
     private final Console theConsole = System.console();
 
