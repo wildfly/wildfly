@@ -31,7 +31,7 @@ import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
 
 /**
- * JBossAsManagedContainer
+ * The managed deployable container.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010
@@ -72,23 +72,24 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         }
 
         try {
-            final String jbossHomeDir = config.getJbossHome();
+            final String jbossHome = config.getJbossHome();
+            File jbossHomeDir = new File(jbossHome).getCanonicalFile();
+            if (jbossHomeDir.isDirectory() == false)
+                throw new IllegalStateException("Cannot find: " + jbossHomeDir);
+
             String modulesPath = config.getModulePath();
             if (modulesPath == null || modulesPath.isEmpty()) {
-                modulesPath = jbossHomeDir + File.separatorChar + "modules";
+                modulesPath = jbossHome + File.separatorChar + "modules";
             }
-            File modulesDir = new File(modulesPath);
-            if (modulesDir.isDirectory() == false)
-                throw new IllegalStateException("Cannot find: " + modulesDir);
 
-            String bundlesPath = modulesDir.getParent() + File.separator + "bundles";
-            File bundlesDir = new File(bundlesPath);
-            if (bundlesDir.isDirectory() == false)
-                throw new IllegalStateException("Cannot find: " + bundlesDir);
+            String bundlesPath = config.getBundlePath();
+            if (bundlesPath == null || bundlesPath.isEmpty()) {
+                bundlesPath = jbossHome + File.separatorChar + "bundles";
+            }
 
             final String additionalJavaOpts = config.getJavaVmArguments();
 
-            File modulesJar = new File(jbossHomeDir + File.separatorChar + "jboss-modules.jar");
+            File modulesJar = new File(jbossHome + File.separatorChar + "jboss-modules.jar");
             if (!modulesJar.exists())
                 throw new IllegalStateException("Cannot find: " + modulesJar);
 
@@ -108,11 +109,11 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 cmd.add("-ea");
             }
 
-            cmd.add("-Djboss.home.dir=" + jbossHomeDir);
-            cmd.add("-Dorg.jboss.boot.log.file=" + jbossHomeDir + "/standalone/log/boot.log");
-            cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + CONFIG_PATH + "logging.properties");
-            cmd.add("-Djboss.modules.dir=" + modulesDir.getCanonicalPath());
-            cmd.add("-Djboss.bundles.dir=" + bundlesDir.getCanonicalPath());
+            cmd.add("-Djboss.home.dir=" + jbossHome);
+            cmd.add("-Dorg.jboss.boot.log.file=" + jbossHome + "/standalone/log/boot.log");
+            cmd.add("-Dlogging.configuration=file:" + jbossHome + CONFIG_PATH + "logging.properties");
+            cmd.add("-Djboss.modules.dir=" + modulesPath);
+            cmd.add("-Djboss.bundles.dir=" + bundlesPath);
             cmd.add("-jar");
             cmd.add(modulesJar.getAbsolutePath());
             cmd.add("-mp");

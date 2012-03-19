@@ -22,10 +22,10 @@ import org.jboss.arquillian.container.spi.client.deployment.Validate;
 import org.jboss.as.arquillian.container.CommonContainerConfiguration;
 
 /**
- * JBossAsManagedConfiguration
+ * The managed container configuration
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
- * @version $Revision: $
+ * @author Thomas.Diesler@jboss.com
  */
 public class ManagedContainerConfiguration extends CommonContainerConfiguration {
 
@@ -34,6 +34,8 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
     private String javaHome = System.getenv("JAVA_HOME");
 
     private String modulePath = System.getProperty("module.path");
+
+    private String bundlePath = System.getProperty("bundle.path");
 
     private String javaVmArguments = System.getProperty("jboss.options", "-Xmx512m -XX:MaxPermSize=128m");
 
@@ -158,6 +160,14 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     public void setModulePath(final String modulePath) {
         this.modulePath = modulePath;
+    }
+
+    public String getBundlePath() {
+        return bundlePath;
+    }
+
+    public void setBundlePath(String bundlePath) {
+        this.bundlePath = bundlePath;
     }
 
     public boolean isAllowConnectingToRunningServer() {
