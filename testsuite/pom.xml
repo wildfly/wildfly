@@ -407,6 +407,7 @@
                         <jboss.dist>${jboss.dist}</jboss.dist>
                         <jboss.home>${basedir}/target/jbossas</jboss.home>
                         <module.path>${jboss.dist}/modules</module.path>
+                        <bundle.path>${jboss.dist}/bundles</bundle.path>
                     </systemPropertyVariables>
                     <!-- Arquillian's config files. -->
                     <additionalClasspathElements combine.children="append">
