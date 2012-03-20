@@ -114,8 +114,7 @@
         <version.org.apache.felix.configadmin>1.2.8</version.org.apache.felix.configadmin>
         <version.org.apache.felix.log>1.0.0</version.org.apache.felix.log>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
-        <version.org.apache.juddi.juddi-client>3.1.3</version.org.apache.juddi.juddi-client>
-        <version.org.apache.juddi.uddi-ws>3.1.3</version.org.apache.juddi.uddi-ws>
+        <version.org.apache.juddi>3.1.3</version.org.apache.juddi>
         <version.org.apache.juddi.scout>1.2.6</version.org.apache.juddi.scout>
         <version.org.apache.httpcomponents.httpclient>4.1.2</version.org.apache.httpcomponents.httpclient>
         <version.org.apache.httpcomponents.httpcore>4.1.4</version.org.apache.httpcomponents.httpcore>
@@ -146,7 +145,7 @@
         <version.org.jboss.as.console>1.1.0.FINAL</version.org.jboss.as.console>
         <version.org.jboss.as.jbossweb-native>2.0.10.Final</version.org.jboss.as.jbossweb-native>
         <version.org.jboss.classfilewriter>1.0.1.Final</version.org.jboss.classfilewriter>
-        <version.org.jboss.common-core>2.2.17.GA</version.org.jboss.common-core>
+        <version.org.jboss.jboss-common-core>2.2.17.GA</version.org.jboss.jboss-common-core>
         <version.org.jboss.com.sun.httpserver>1.0.0.Final</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb-client>1.0.5.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.0.0</version.org.jboss.ejb3.ext-api>
@@ -422,6 +421,7 @@
                                             <exclude>com.gwtplatform:gwtp-all</exclude>
                                             <exclude>commons-httpclient:commons-httpclient</exclude>
                                             <exclude>commons-logging:commons-logging</exclude>
+                                            <exclude>commons-logging:commons-logging-api</exclude>
                                             <exclude>concurrent:concurrent</exclude>
                                             <exclude>jacorb:jacorb</exclude>
                                             <exclude>javassist:javassist</exclude>
@@ -1275,6 +1275,20 @@
                 <groupId>commons-configuration</groupId>
                 <artifactId>commons-configuration</artifactId>
                 <version>${version.commons-configuration}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-beanutils</groupId>
+                        <artifactId>commons-beanutils-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-digester</groupId>
+                        <artifactId>commons-digester</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -1445,6 +1459,12 @@
                 <groupId>jline</groupId>
                 <artifactId>jline</artifactId>
                 <version>${version.jline}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>junit</groupId>
+                        <artifactId>junit</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -2797,11 +2817,15 @@
             <dependency>
                 <groupId>org.apache.juddi</groupId>
                 <artifactId>juddi-client</artifactId>
-                <version>${version.org.apache.juddi.juddi-client}</version>
+                <version>${version.org.apache.juddi}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2809,11 +2833,19 @@
             <dependency>
                 <groupId>org.apache.juddi</groupId>
                 <artifactId>uddi-ws</artifactId>
-                <version>${version.org.apache.juddi.uddi-ws}</version>
+                <version>${version.org.apache.juddi}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>geronimo-jaxws_2.2_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2927,6 +2959,10 @@
               <artifactId>scout</artifactId>
               <version>${version.org.apache.juddi.scout}</version>
               <exclusions>
+                  <exclusion>
+                      <groupId>commons-logging</groupId>
+                      <artifactId>commons-logging-api</artifactId>
+                  </exclusion>
                   <exclusion>
                       <groupId>org.apache.geronimo.specs</groupId>
                       <artifactId>geronimo-activation_1.1_spec</artifactId>
@@ -3294,7 +3330,7 @@
             <dependency>
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-common-core</artifactId>
-                <version>${version.org.jboss.common-core}</version>
+                <version>${version.org.jboss.jboss-common-core}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
