@@ -95,7 +95,7 @@
             <artifactId>tools</artifactId>
             <scope>system</scope>
             <version>1.6</version>
-            <systemPath>/opt/jdk-1.6.0_26/lib/tools.jar</systemPath>
+            <systemPath>${java.home}/../lib/tools.jar</systemPath>
         </dependency>
     </dependencies>
 </project>
