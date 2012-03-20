@@ -103,29 +103,29 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
     }
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        // Because we use child resources in a read-only manner to configure the cache container, replace the local model with the full model
+        model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         installRuntimeServices(context, operation, model, verificationHandler, newControllers) ;
     }
 
-    protected void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        // Because we use child resources in a read-only manner to configure the cache container, replace the local model with the full model
-        model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+    protected void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode containerModel, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final PathAddress address = getCacheContainerAddressFromOperation(operation);
         final String name = address.getLastElement().getValue();
         final ServiceTarget target = context.getServiceTarget();
 
         // pick up the attribute values from the model
         ModelNode resolvedValue = null ;
         // make default cache non required (AS7-3488)
-        final String defaultCache = ((resolvedValue = CommonAttributes.DEFAULT_CACHE.resolveModelAttribute(context, model)).isDefined()) ? resolvedValue.asString() : null ;
-        final String jndiNameString = ((resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, model)).isDefined()) ? resolvedValue.asString() : null ;
-        final String listenerExecutor = ((resolvedValue = CommonAttributes.LISTENER_EXECUTOR.resolveModelAttribute(context, model)).isDefined()) ? resolvedValue.asString() : null ;
-        final String evictionExecutor = ((resolvedValue = CommonAttributes.EVICTION_EXECUTOR.resolveModelAttribute(context, model)).isDefined()) ? resolvedValue.asString() : null ;
-        final String replicationQueueExecutor = ((resolvedValue = CommonAttributes.REPLICATION_QUEUE_EXECUTOR.resolveModelAttribute(context, model)).isDefined()) ? resolvedValue.asString() : null ;
-        final ServiceController.Mode initialMode = StartMode.valueOf(CommonAttributes.START.resolveModelAttribute(context, model).asString()).getMode();
+        final String defaultCache = ((resolvedValue = CommonAttributes.DEFAULT_CACHE.resolveModelAttribute(context, containerModel)).isDefined()) ? resolvedValue.asString() : null ;
+        final String jndiNameString = ((resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, containerModel)).isDefined()) ? resolvedValue.asString() : null ;
+        final String listenerExecutor = ((resolvedValue = CommonAttributes.LISTENER_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined()) ? resolvedValue.asString() : null ;
+        final String evictionExecutor = ((resolvedValue = CommonAttributes.EVICTION_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined()) ? resolvedValue.asString() : null ;
+        final String replicationQueueExecutor = ((resolvedValue = CommonAttributes.REPLICATION_QUEUE_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined()) ? resolvedValue.asString() : null ;
+        final ServiceController.Mode initialMode = StartMode.valueOf(CommonAttributes.START.resolveModelAttribute(context, containerModel).asString()).getMode();
 
         ServiceName[] aliases = null;
-        if (model.hasDefined(ModelKeys.ALIASES)) {
+        if (containerModel.hasDefined(ModelKeys.ALIASES)) {
             List<ModelNode> list = operation.get(ModelKeys.ALIASES).asList();
             aliases = new ServiceName[list.size()];
             for (int i = 0; i < list.size(); i++) {
@@ -133,7 +133,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             }
         }
 
-        boolean hasTransport = model.hasDefined(ModelKeys.TRANSPORT) && model.get(ModelKeys.TRANSPORT).hasDefined(ModelKeys.TRANSPORT_NAME);
+        boolean hasTransport = containerModel.hasDefined(ModelKeys.TRANSPORT) && containerModel.get(ModelKeys.TRANSPORT).hasDefined(ModelKeys.TRANSPORT_NAME);
 
         // if we have a transport defined, pick up the transport-related attributes and install a channel
         String stack = null ;
@@ -143,7 +143,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         Transport transportConfig = null ;
 
         if (hasTransport) {
-            ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+            ModelNode transport = containerModel.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
 
             stack = ((resolvedValue = CommonAttributes.STACK.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : null ;
             // if cluster is not defined, use the cache container name as the default
@@ -189,7 +189,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
     protected void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+        final PathAddress address = getCacheContainerAddressFromOperation(operation);
         final String containerName = address.getLastElement().getValue();
 
         // need to remove all container-related services started, in reverse order
@@ -225,6 +225,10 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         ;
 
         return channelBuilder.install();
+    }
+
+    protected PathAddress getCacheContainerAddressFromOperation(ModelNode operation) {
+        return PathAddress.pathAddress(operation.get(OP_ADDR)) ;
     }
 
     protected ServiceController<EmbeddedCacheManagerConfiguration> installContainerConfigurationService(ServiceTarget target,
