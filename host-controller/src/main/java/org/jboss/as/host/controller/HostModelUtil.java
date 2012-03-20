@@ -201,7 +201,7 @@ public class HostModelUtil {
                 ResolveExpressionOnHostHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS));
 
         HostProcessReloadHandler reloadHandler = new HostProcessReloadHandler(HostControllerService.HC_SERVICE_NAME, runningModeControl, HostRootDescription.getResourceDescriptionResolver("host"));
-        hostRegistration.registerOperationHandler(ProcessReloadHandler.OPERATION_NAME, reloadHandler, reloadHandler);
+        hostRegistration.registerOperationHandler(ProcessReloadHandler.OPERATION_NAME, reloadHandler, reloadHandler, EnumSet.of(Flag.HOST_CONTROLLER_ONLY));
         RunningModeReadHandler.createAndRegister(runningModeControl, hostRegistration);
 
         DomainServerLifecycleHandlers.initializeServerInventory(serverInventory);
