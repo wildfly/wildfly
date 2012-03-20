@@ -184,6 +184,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         result = result.replace("${jboss.management.http.port:9990}", "9990");
         result = result.replace("${jboss.management.https.port:9443}", "9443");
         result = result.replace("${jboss.domain.master.port:9999}", "9999");
+        result = result.replace("${jboss.messaging.group.port:9876}", "9876");
         result = result.replace("${jboss.socket.binding.port-offset:0}", "0");
         return result;
     }
