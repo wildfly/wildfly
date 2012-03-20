@@ -41,11 +41,9 @@ import javax.swing.tree.TreeSelectionModel;
  */
 public class ManagementModel extends JPanel {
 
-    private JTextField cmdText;
     private CommandExecutor executor;
 
     public ManagementModel() {
-        this.cmdText = GuiMain.getCommandText();
         this.executor = GuiMain.getExecutor();
         setLayout(new BorderLayout(10,10));
         add(new JLabel("Right-click a node to choose an operation.  Close/Open a folder to refresh.  Hover for help."), BorderLayout.NORTH);
@@ -91,7 +89,7 @@ public class ManagementModel extends JPanel {
 
         public void valueChanged(TreeSelectionEvent tse) {
             ManagementModelNode selected = (ManagementModelNode) tse.getPath().getLastPathComponent();
-            cmdText.setText(selected.addressPath());
+            GuiMain.getCommandLine().getCmdText().setText(selected.addressPath());
         }
     }
 
@@ -105,7 +103,7 @@ public class ManagementModel extends JPanel {
 
         public ManagementTreeMouseListener(JTree tree) {
             this.tree = tree;
-            this.popup = new OperationMenu(executor, tree, cmdText);
+            this.popup = new OperationMenu(executor, tree);
         }
 
         @Override

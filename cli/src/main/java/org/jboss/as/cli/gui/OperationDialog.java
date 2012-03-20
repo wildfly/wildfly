@@ -198,9 +198,10 @@ public class OperationDialog extends JDialog {
             command.append(OperationDialog.this.opName);
             addRequestProps(command, OperationDialog.this.props);
 
-            GuiMain.getCommandText().setText(command.toString());
+            JTextComponent cmdText = GuiMain.getCommandLine().getCmdText();
+            cmdText.setText(command.toString());
             OperationDialog.this.dispose();
-            GuiMain.getCommandText().requestFocus();
+            cmdText.requestFocus();
         }
 
         private void addRequestProps(StringBuilder command, SortedSet<RequestProp> reqProps) {

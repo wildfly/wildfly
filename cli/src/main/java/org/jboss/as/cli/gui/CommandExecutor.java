@@ -21,8 +21,6 @@ package org.jboss.as.cli.gui;
 import java.io.IOException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.operation.CommandLineParser;
-import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
@@ -41,9 +39,48 @@ public class CommandExecutor {
         this.client = cmdCtx.getModelControllerClient();
     }
 
+    /**
+     * Submit a command to the server.
+     *
+     * @param command The CLI command
+     * @return The DMR response as a ModelNode
+     * @throws CommandFormatException
+     * @throws IOException
+     */
     public synchronized ModelNode doCommand(String command) throws CommandFormatException, IOException {
         ModelNode request = cmdCtx.buildRequest(command);
         return client.execute(request);
+    }
+
+    public synchronized Response doCommandFullResponse(String command) throws CommandFormatException, IOException {
+        ModelNode request = cmdCtx.buildRequest(command);
+        ModelNode response = client.execute(request);
+        return new Response(command, request, response);
+    }
+
+    public static class Response {
+        private String command;
+        private ModelNode dmrRequest;
+        private ModelNode dmrResponse;
+
+        Response(String command, ModelNode dmrRequest, ModelNode dmrResponse) {
+            this.command = command;
+            this.dmrRequest = dmrRequest;
+            this.dmrResponse = dmrResponse;
+        }
+
+        public String getCommand() {
+            return command;
+        }
+
+        public ModelNode getDmrRequest() {
+            return dmrRequest;
+        }
+
+        public ModelNode getDmrResponse() {
+            return dmrResponse;
+        }
+
     }
 
 }

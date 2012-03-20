@@ -24,8 +24,8 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
-import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.text.JTextComponent;
 import org.jboss.as.cli.gui.ManagementModelNode.UserObject;
 import org.jboss.dmr.ModelNode;
 
@@ -42,12 +42,10 @@ public class OperationMenu extends JPopupMenu {
 
     private CommandExecutor executor;
     private JTree invoker;
-    private JTextField cmdText;
 
-    public OperationMenu(CommandExecutor executor, JTree invoker, JTextField cmdText) {
+    public OperationMenu(CommandExecutor executor, JTree invoker) {
         this.executor = executor;
         this.invoker = invoker;
-        this.cmdText = cmdText;
         setLightWeightPopupEnabled(true);
         setOpaque(true);
     }
@@ -117,6 +115,7 @@ public class OperationMenu extends JPopupMenu {
         }
 
         public void actionPerformed(ActionEvent ae) {
+            JTextComponent cmdText = GuiMain.getCommandLine().getCmdText();
             ModelNode requestProperties = opDescription.get("result", "request-properties");
             if ((requestProperties == null) || (!requestProperties.isDefined()) || requestProperties.asList().isEmpty()) {
                 cmdText.setText(addressPath + ":" + opName);
