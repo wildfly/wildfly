@@ -159,8 +159,9 @@ public class SimpleSecurityManager implements ServerSecurityManager {
      * @param roleNames The role names for which the caller is being checked for
      * @return true if the user is in <b>any</b> one of the <code>roleNames</code>. Else returns false
      */
-    public boolean isCallerInRole(final SecurityRolesMetaData mappedRoles, final Map<String, Collection<String>> roleLinks,
+    public boolean isCallerInRole(final Object incommingMappedRoles, final Map<String, Collection<String>> roleLinks,
                                   final String... roleNames) {
+        final SecurityRolesMetaData mappedRoles = (SecurityRolesMetaData) incommingMappedRoles;
         final SecurityContext securityContext = doPrivileged(securityContext());
         if (securityContext == null) {
             return false;

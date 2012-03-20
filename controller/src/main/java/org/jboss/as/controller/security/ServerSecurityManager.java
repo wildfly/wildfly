@@ -29,8 +29,6 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
-import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
-
 /**
  * Interface to the servers security manager implementation.
  *
@@ -47,10 +45,7 @@ public interface ServerSecurityManager {
 
     Subject getSubject();
 
-    // TODO - Look to replace SecurityRolesMetaData to eliminate this dependency.
-    boolean isCallerInRole(final SecurityRolesMetaData mappedRoles, final Map<String, Collection<String>> roleLinks,
+    boolean isCallerInRole(final Object mappedRoles, final Map<String, Collection<String>> roleLinks,
             final String... roleNames);
-
-
 
 }
