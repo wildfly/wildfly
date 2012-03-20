@@ -24,14 +24,12 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import org.jboss.dmr.ModelNode;
 
 /**
  * This class executes whatever command is on the command line.
@@ -44,7 +42,6 @@ public class DoOperationActionListener extends AbstractAction {
 
     private CommandExecutor executor;
 
-    private JTextField cmdText;
     private JTextComponent output;
     private JTabbedPane tabs;
 
@@ -52,17 +49,16 @@ public class DoOperationActionListener extends AbstractAction {
 
     public DoOperationActionListener(JTextComponent output, JTabbedPane tabs) {
         this.executor = GuiMain.getExecutor();
-        this.cmdText = GuiMain.getCommandText();
         this.output = output;
         this.tabs = tabs;
     }
 
     public void actionPerformed(ActionEvent ae) {
-        String command = cmdText.getText();
+        String command = GuiMain.getCommandLine().getCmdText().getText();
         try {
             cmdHistory.push(command);
-            ModelNode result = executor.doCommand(command);
-            postOutput(command, result.toString());
+            CommandExecutor.Response response = executor.doCommandFullResponse(command);
+            postOutput(response);
         } catch (Exception e) {
             try {
                 postOutput(command, e.getMessage());
@@ -78,9 +74,24 @@ public class DoOperationActionListener extends AbstractAction {
         return Collections.unmodifiableList(this.cmdHistory);
     }
 
+    private void postOutput(CommandExecutor.Response response) throws BadLocationException {
+        boolean verbose = GuiMain.getCommandLine().isVerbose();
+        if (verbose) {
+            postVerboseOutput(response);
+        } else {
+            postOutput(response.getCommand(), response.getDmrResponse().toString());
+        }
+    }
+
     private void postOutput(String command, String response) throws BadLocationException {
         processOutput(response + "\n\n", null);
         processBoldOutput(command + "\n");
+    }
+
+    private void postVerboseOutput(CommandExecutor.Response response) throws BadLocationException {
+        processOutput(response.getDmrResponse().toString() + "\n\n", null);
+        processOutput(response.getDmrRequest().toString() + "\n\n", null);
+        processBoldOutput(response.getCommand() + "\n");
     }
 
     private void processBoldOutput(String text) throws BadLocationException {

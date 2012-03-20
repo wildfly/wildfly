@@ -26,17 +26,17 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.net.URL;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import javax.swing.KeyStroke;
 import javax.swing.ToolTipManager;
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.gui.metacommand.DeployAction;
 
 /**
  * Static main class for the GUI.
@@ -44,16 +44,14 @@ import org.jboss.as.cli.CommandContext;
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class GuiMain {
-    private static final String SUBMIT_ACTION = "submit-action";
     private static JFrame frame;
-    private static JTextField cmdText = new JTextField();
 
     private static CommandExecutor executor;
 
     private static Container contentPane;
     private static JPanel mainPanel = new JPanel();
 
-    private static JButton submitButton = new JButton("Submit");
+    private static CommandLine cmdLine;
     private static JTextPane output = new JTextPane();
     private static JTabbedPane tabs;
     private static DoOperationActionListener opListener;
@@ -76,11 +74,11 @@ public class GuiMain {
     }
 
     /**
-     * Get the main command text field.
+     * Get the main command line.
      * @return The main command text field.
      */
-    public static JTextField getCommandText() {
-        return cmdText;
+    public static CommandLine getCommandLine() {
+        return cmdLine;
     }
 
     /**
@@ -102,6 +100,7 @@ public class GuiMain {
                 System.exit(0);
             }
         });
+        frame.setJMenuBar(makeMenuBar());
         frame.setSize(800, 600);
 
         contentPane = frame.getContentPane();
@@ -110,14 +109,30 @@ public class GuiMain {
 
         mainPanel.setLayout(new BorderLayout(5,5));
         tabs = makeTabbedPane();
-        opListener = new DoOperationActionListener(output, tabs);
-        output.addMouseListener(new SelectPreviousOpMouseAdapter(output, cmdText, opListener));
 
-        mainPanel.add(makeCommandLine(), BorderLayout.NORTH);
+        opListener = new DoOperationActionListener(output, tabs);
+        cmdLine = new CommandLine(opListener);
+
+        output.addMouseListener(new SelectPreviousOpMouseAdapter(output, opListener));
+
+        mainPanel.add(cmdLine, BorderLayout.NORTH);
         mainPanel.add(tabs, BorderLayout.CENTER);
 
-        //frame.pack();
         frame.setVisible(true);
+    }
+
+    private static JMenuBar makeMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu metaCmdMenu = new JMenu("Meta Commands");
+        metaCmdMenu.setMnemonic(KeyEvent.VK_M);
+        menuBar.add(metaCmdMenu);
+
+        JMenuItem deploy = new JMenuItem(new DeployAction());
+        deploy.setMnemonic(KeyEvent.VK_D);
+        metaCmdMenu.add(deploy);
+
+        return menuBar;
     }
 
     private static JTabbedPane makeTabbedPane() {
@@ -125,22 +140,6 @@ public class GuiMain {
         tabs.addTab("Command Builder", new JScrollPane(new ManagementModel()));
         tabs.addTab("Output", makeOutputDisplay());
         return tabs;
-    }
-
-    private static JPanel makeCommandLine() {
-        JPanel cmdLine = new JPanel();
-        cmdLine.setLayout(new BorderLayout(2,5));
-        cmdLine.add(new JLabel("cmd>"), BorderLayout.WEST);
-        cmdText.setText("/");
-        cmdLine.add(cmdText, BorderLayout.CENTER);
-
-        KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true);
-        cmdText.getInputMap().put(enterKey, SUBMIT_ACTION);
-        cmdText.getActionMap().put(SUBMIT_ACTION, opListener);
-
-        submitButton.addActionListener(opListener);
-        cmdLine.add(submitButton, BorderLayout.EAST);
-        return cmdLine;
     }
 
     private static JPanel makeOutputDisplay() {

@@ -36,13 +36,11 @@ import javax.swing.text.Utilities;
  */
 public class SelectPreviousOpMouseAdapter extends MouseAdapter implements ClipboardOwner {
     private JTextPane output;
-    private JTextField cmdText;
     private DoOperationActionListener opListener;
     private Clipboard systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
-    public SelectPreviousOpMouseAdapter(JTextPane output, JTextField cmdText, DoOperationActionListener opListener) {
+    public SelectPreviousOpMouseAdapter(JTextPane output, DoOperationActionListener opListener) {
         this.output = output;
-        this.cmdText = cmdText;
         this.opListener = opListener;
     }
 
@@ -58,7 +56,7 @@ public class SelectPreviousOpMouseAdapter extends MouseAdapter implements Clipbo
             String line = output.getDocument().getText(rowStart, rowEnd - rowStart);
             if (opListener.getCmdHistory().contains(line)) {
                 output.select(rowStart, rowEnd);
-                cmdText.setText(line);
+                GuiMain.getCommandLine().getCmdText().setText(line);
                 systemClipboard.setContents(new StringSelection(line), this);
             }
         } catch (BadLocationException e) {
