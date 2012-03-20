@@ -42,7 +42,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -55,12 +54,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.Services;
-import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResource;
-import org.jboss.osgi.resolver.XResourceBuilder;
-import org.jboss.osgi.resolver.XResourceBuilderFactory;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -111,16 +106,6 @@ public class ArquillianService implements Service<ArquillianService> {
             throw new StartException("Failed to start Arquillian Test Runner", t);
         }
 
-        // Register the arquillian service with the OSGi environment
-        ModuleClassLoader classLoader = ((ModuleClassLoader) ArquillianService.class.getClassLoader());
-        Module module = classLoader.getModule();
-        OSGiMetaData metadata = getOSGiMetaData();
-        XResourceBuilder builder = XResourceBuilderFactory.create();
-        resource = builder.loadFrom(metadata).getResource();
-        resource.addAttachment(Module.class, module);
-        XEnvironment env = injectedEnvironment.getValue();
-        env.installResources(resource);
-
         final ArquillianService arqService = this;
         listener = new AbstractServiceListener<Object>() {
 
@@ -148,15 +133,6 @@ public class ArquillianService implements Service<ArquillianService> {
             }
         };
         serviceContainer.addListener(listener);
-    }
-
-    private OSGiMetaData getOSGiMetaData() {
-        OSGiMetaDataBuilder builder = OSGiMetaDataBuilder.createBuilder("arquillian-service");
-        builder.addExportPackages("org.jboss.arquillian.container.test.api", "org.jboss.arquillian.junit");
-        builder.addExportPackages("org.jboss.arquillian.osgi", "org.jboss.arquillian.test.api");
-        builder.addExportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
-        builder.addExportPackages("org.junit", "org.junit.runner");
-        return builder.getOSGiMetaData();
     }
 
     public synchronized void stop(StopContext context) {
