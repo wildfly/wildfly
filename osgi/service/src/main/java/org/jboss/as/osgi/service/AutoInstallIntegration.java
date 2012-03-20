@@ -183,7 +183,9 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
                     // Start the resolvable bundles one-by-one
                     for (ServiceName serviceName : resolvableServices) {
                         OSGiCapability moduleMetaData = installedServices.get(serviceName);
-                        startBundle(serviceContainer, serviceName, moduleMetaData);
+                        ServiceController<?> controller = serviceContainer.getRequiredService(serviceName);
+                        Bundle bundle = (Bundle) controller.getValue();
+                        startBundle(bundle, moduleMetaData.getStartLevel());
                     }
                     ROOT_LOGGER.debugf("Auto bundles bundles started");
                 }
@@ -277,15 +279,16 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
         return bundleManager.installBundle(serviceTarget, dep);
     }
 
-    void startBundle(final ServiceContainer serviceContainer, ServiceName serviceName, OSGiCapability moduleMetaData) {
-        ServiceController<Bundle> controller = (ServiceController<Bundle>) serviceContainer.getRequiredService(serviceName);
-        Bundle bundle = controller.getValue();
-        StartLevel startLevel = injectedStartLevel.getValue();
-        startLevel.setBundleStartLevel(bundle, moduleMetaData.getStartLevel());
-        try {
-            bundle.start();
-        } catch (BundleException ex) {
-            ROOT_LOGGER.cannotStart(ex, bundle);
+    void startBundle(final Bundle bundle, Integer startLevel) {
+        PackageAdmin packageAdmin = injectedPackageAdmin.getValue();
+        if (packageAdmin.getBundleType(bundle) != PackageAdmin.BUNDLE_TYPE_FRAGMENT) {
+            StartLevel startLevelService = injectedStartLevel.getValue();
+            startLevelService.setBundleStartLevel(bundle, startLevel);
+            try {
+                bundle.start();
+            } catch (BundleException ex) {
+                ROOT_LOGGER.cannotStart(ex, bundle);
+            }
         }
     }
 
@@ -337,17 +340,20 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
 
         if (event.isRemoved() == false) {
             try {
-                for (final OSGiCapability module : injectedSubsystemState.getValue().getCapabilities()) {
-                    if (module.getIdentifier().toString().equals(event.getId())) {
-                        final ServiceName serviceName = installModule(injectedBundleManager.getValue(), module);
+                for (final OSGiCapability moduleMetaData : injectedSubsystemState.getValue().getCapabilities()) {
+                    if (moduleMetaData.getIdentifier().toString().equals(event.getId())) {
+                        final ServiceName serviceName = installModule(injectedBundleManager.getValue(), moduleMetaData);
                         if (serviceName != null) {
-                            ServiceBuilder<Void> builder = serviceController.getServiceContainer().addService(
+                            final ServiceContainer serviceContainer = serviceController.getServiceContainer();
+                            ServiceBuilder<Void> builder = serviceContainer.addService(
                                     ServiceName.of(Services.AUTOINSTALL_PROVIDER, "ModuleUpdater", "" + updateServiceIdCounter.incrementAndGet()),
                                     new AbstractService<Void>() {
                                         @Override
                                         public void start(StartContext context) throws StartException {
                                             try {
-                                                startBundle(serviceController.getServiceContainer(), serviceName, module);
+                                                ServiceController<?> controller = serviceContainer.getRequiredService(serviceName);
+                                                Bundle bundle = (Bundle) controller.getValue();
+                                                startBundle(bundle, moduleMetaData.getStartLevel());
                                             } finally {
                                                 // Remove this temporary service
                                                 context.getController().setMode(Mode.REMOVE);
