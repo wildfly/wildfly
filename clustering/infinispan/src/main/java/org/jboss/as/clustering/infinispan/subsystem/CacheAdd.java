@@ -136,7 +136,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         // the name attribute is required, and can always be found from the operation address
-        PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+        PathAddress cacheAddress = getCacheAddressFromOperation(operation);
         String cacheName = cacheAddress.getLastElement().getValue();
         model.get(ModelKeys.NAME).set(cacheName);
 
@@ -146,24 +146,30 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+
+        // Because we use child resources in a read-only manner to configure the cache, replace the local model with the full model
+        ModelNode cacheModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+
+        // we also need the containerModel
+        PathAddress containerAddress = getCacheContainerAddressFromOperation(operation);
+        ModelNode containerModel = context.readResourceFromRoot(containerAddress).getModel();
+
         // install the services from a reusable method
-        installRuntimeServices(context, operation, model, verificationHandler, newControllers);
+        installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler, newControllers);
     }
 
-    protected void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        // Because we use child resources in a read-only manner to configure the cache, replace the local model with the full model
-        model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+    protected void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode containerModel, ModelNode cacheModel, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         // get all required addresses, names and service names
-        PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-        PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size() - 1);
+        PathAddress cacheAddress = getCacheAddressFromOperation(operation);
+        PathAddress containerAddress = getCacheContainerAddressFromOperation(operation);
         String cacheName = cacheAddress.getLastElement().getValue();
         String containerName = containerAddress.getLastElement().getValue();
 
         // get model attributes
         ModelNode resolvedValue = null;
-        final String jndiName = ((resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, model)).isDefined()) ? resolvedValue.asString() : null;
-        final ServiceController.Mode initialMode = StartMode.valueOf(CommonAttributes.START.resolveModelAttribute(context, model).asString()).getMode();
+        final String jndiName = ((resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, cacheModel)).isDefined()) ? resolvedValue.asString() : null;
+        final ServiceController.Mode initialMode = StartMode.valueOf(CommonAttributes.START.resolveModelAttribute(context, cacheModel).asString()).getMode();
 
         // create a list for dependencies which may need to be added during processing
         List<Dependency<?>> dependencies = new LinkedList<Dependency<?>>();
@@ -171,13 +177,11 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         ConfigurationBuilder builder = new ConfigurationBuilder().read(getDefaultConfiguration(this.mode));
 
         // process cache configuration ModelNode describing overrides to defaults
-        processModelNode(context, containerName, model, builder, dependencies);
+        processModelNode(context, containerName, cacheModel, builder, dependencies);
 
         // get container Model to pick up the value of the default cache of the container
         // AS7-3488 make default-cache no required attribute
-        Resource rootResource = context.readResourceFromRoot(containerAddress);
-        ModelNode container = rootResource.getModel();
-        String defaultCache = CommonAttributes.DEFAULT_CACHE.resolveModelAttribute(context, container).asString();
+        String defaultCache = CommonAttributes.DEFAULT_CACHE.resolveModelAttribute(context, containerModel).asString();
 
         InjectedValue<EmbeddedCacheManager> containerInjection = new InjectedValue<EmbeddedCacheManager>();
         ServiceTarget target = context.getServiceTarget();
@@ -210,8 +214,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     protected void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model)
             throws OperationFailedException {
         // get container and cache addresses
-        final PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR)) ;
-        final PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size()-1) ;
+        final PathAddress cacheAddress = getCacheAddressFromOperation(operation) ;
+        final PathAddress containerAddress = getCacheContainerAddressFromOperation(operation) ;
         // get container and cache names
         final String cacheName = cacheAddress.getLastElement().getValue() ;
         final String containerName = containerAddress.getLastElement().getValue() ;
@@ -229,6 +233,16 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         context.removeService(CacheConfigurationService.getServiceName(containerName, cacheName));
 
         log.debugf("cache %s removed for container %s", cacheName, containerName);
+    }
+
+    protected PathAddress getCacheAddressFromOperation(ModelNode operation) {
+        return PathAddress.pathAddress(operation.get(OP_ADDR)) ;
+    }
+
+    protected PathAddress getCacheContainerAddressFromOperation(ModelNode operation) {
+        final PathAddress cacheAddress = getCacheAddressFromOperation(operation) ;
+        final PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size()-1) ;
+        return containerAddress ;
     }
 
     protected ServiceController<Configuration> installCacheConfigurationService(ServiceTarget target,

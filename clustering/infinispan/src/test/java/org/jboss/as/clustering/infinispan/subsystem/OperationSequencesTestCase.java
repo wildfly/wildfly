@@ -26,6 +26,7 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -131,8 +132,20 @@ public class OperationSequencesTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         // remove the cache container
+        // the remove has OperationContext.setRollbackOnly() injected
+        // and so is expected to fail
         result = servicesA.executeOperation(removeContainerOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+
+        // need to check that all services are correctly re-installed
+        ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName("maximal2");
+
+        ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName("maximal2", "fred");
+        ServiceName cacheServiceName = CacheService.getServiceName("maximal2", "fred");
+
+        Assert.assertNotNull("cache container service not installed", servicesA.getContainer().getService(containerServiceName));
+        Assert.assertNotNull("cache configuration service not installed", servicesA.getContainer().getService(cacheConfigurationServiceName));
+        Assert.assertNotNull("cache service not installed", servicesA.getContainer().getService(cacheServiceName));
     }
 
     @Test

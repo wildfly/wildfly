@@ -33,20 +33,25 @@ public class CacheRemove extends AbstractRemoveStepHandler {
         }
     }
 
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode cacheModel) throws OperationFailedException {
+
+        // we also need the containerModel to re-install cache services
+        final PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size()-1) ;
+        ModelNode containerModel = context.readResourceFromRoot(containerAddress).getModel();
 
         // re-add the services if the remove failed
         String cacheType = getCacheType(operation) ;
         ServiceVerificationHandler verificationHandler = null ;
 
         if (cacheType.equals(ModelKeys.LOCAL_CACHE)) {
-            LocalCacheAdd.INSTANCE.installRuntimeServices(context, operation, model, verificationHandler, null);
+            LocalCacheAdd.INSTANCE.installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler, null);
         } else if (cacheType.equals(ModelKeys.INVALIDATION_CACHE)) {
-            InvalidationCacheAdd.INSTANCE.installRuntimeServices(context, operation, model, verificationHandler, null);
+            InvalidationCacheAdd.INSTANCE.installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler, null);
         } else if (cacheType.equals(ModelKeys.REPLICATED_CACHE)) {
-            ReplicatedCacheAdd.INSTANCE.installRuntimeServices(context, operation, model, verificationHandler, null);
+            ReplicatedCacheAdd.INSTANCE.installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler, null);
         } else if (cacheType.equals(ModelKeys.DISTRIBUTED_CACHE)) {
-            DistributedCacheAdd.INSTANCE.installRuntimeServices(context, operation, model, verificationHandler, null);
+            DistributedCacheAdd.INSTANCE.installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler, null);
         }
     }
 
