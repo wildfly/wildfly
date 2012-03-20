@@ -1,17 +1,18 @@
-package org.jboss.as.test.integration.jsf.jta.validator;
+package org.jboss.as.test.integration.jsf.jta;
+
+import java.util.logging.Logger;
 
 import junit.framework.Assert;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OverProtocol;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.jsf.jta.JTATestsBase;
-import org.jboss.as.test.integration.jsf.jta.SimpleLogin;
-import org.jboss.as.test.integration.jsf.jta.phase.PhaseListenerTestCase;
+import org.jboss.as.test.integration.jsf.jta.login.SimpleLogin;
+import org.jboss.as.test.integration.jsf.jta.login.validator.LoginValidator;
 import org.jboss.jsfunit.api.InitialPage;
 import org.jboss.jsfunit.jsfsession.JSFClientSession;
 import org.jboss.jsfunit.jsfsession.JSFServerSession;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,20 +20,26 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class ValidatorTestCase extends JTATestsBase {
 
+    private static final Logger log = Logger.getLogger(ValidatorTestCase.class.getName());
     private static final String DEPLOYMENT_PHASE_CONTEXT = "jsf-jta-validator";
     private static final String DEPLOYMENT_NAME = DEPLOYMENT_PHASE_CONTEXT + ".war";
+    private static final String RESOURCES_LOCATION = "org/jboss/as/test/integration/jsf/jta/validator";
 
     // ----------------- DEPLOYMENTS ------------
-
+    
     @Deployment
     @OverProtocol("Servlet 3.0")
     public static Archive<WebArchive> createDeployment() {
-        return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
-                .addPackage(ValidatorTestCase.class.getPackage())
-                .addClasses(SimpleLogin.class, JTATestsBase.class)
-                .addAsWebInfResources(ValidatorTestCase.class.getPackage(), "web.xml", "web.xml")
-                .addAsWebInfResource(ValidatorTestCase.class.getPackage(), "faces-config.xml", "faces-config.xml")
-                .addAsWebResource(ValidatorTestCase.class.getPackage(), "index.xhtml", "index.xhtml");
+
+        // add test classes
+        Class[] classes = new Class[] { SimpleLogin.class, ValidatorTestCase.class, LoginValidator.class };
+        String[] resources = new String[] { "index.xhtml" };
+        String[] webInfResources = new String[] { "web.xml", "faces-config.xml", "jboss-deployment-structure.xml" };
+
+        final WebArchive archive = createArchive(DEPLOYMENT_NAME, classes, null, RESOURCES_LOCATION, resources, webInfResources);
+        log.info(archive.toString(true));
+
+        return archive;
     }
 
     @Test

@@ -9,7 +9,7 @@
 	<!-- if faces config is empty, even annotations are not processed... -->
 	<managed-bean>
 		<managed-bean-name>SimpleLogin</managed-bean-name>
-		<managed-bean-class>org.jboss.as.test.integration.jsf.jta.SimpleLogin</managed-bean-class>
+		<managed-bean-class>org.jboss.as.test.integration.jsf.jta.login.SimpleLogin</managed-bean-class>
 		<managed-bean-scope>session</managed-bean-scope>
 	</managed-bean>
 	<component>

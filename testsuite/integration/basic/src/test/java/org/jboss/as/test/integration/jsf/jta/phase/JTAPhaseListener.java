@@ -28,6 +28,8 @@ import javax.faces.event.PhaseEvent;
 import javax.faces.event.PhaseId;
 import javax.faces.event.PhaseListener;
 
+import org.jboss.as.test.integration.jsf.jta.PhaseListenerTestCase;
+
 
 /**
  * @author baranowb

@@ -44,10 +44,12 @@ import javax.faces.event.ValueChangeListener;
 import javax.faces.render.Renderer;
 import javax.faces.validator.Validator;
 
+import org.jboss.as.test.integration.jsf.jta.CustomUITestCase;
+
 
 /**
  * @author baranowb
- *
+ * 
  */
 @SuppressWarnings("deprecation")
 public class HelloUIComponent extends UIInput {
@@ -67,7 +69,7 @@ public class HelloUIComponent extends UIInput {
         CustomUITestCase.doLookupTest();
         return super.getAttributes();
     }
-
+    
     @Override
     public ValueBinding getValueBinding(String name) {
         CustomUITestCase.doLookupTest();
@@ -301,7 +303,7 @@ public class HelloUIComponent extends UIInput {
         CustomUITestCase.doLookupTest();
         super.setTransient(transientFlag);
     }
-
+    
     @Override
     public ValueExpression getValueExpression(String name) {
         CustomUITestCase.doLookupTest();
@@ -546,6 +548,6 @@ public class HelloUIComponent extends UIInput {
     public Object getValue() {
         CustomUITestCase.doLookupTest();
         return super.getValue();
-    }
-
+    }    
+    
 }

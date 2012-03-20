@@ -1,4 +1,4 @@
-package org.jboss.as.test.integration.jsf.jta;
+package org.jboss.as.test.integration.jsf.jta.login;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -13,7 +13,7 @@ public class CheckLogin {
 
     String loginname;
     String password;
-
+    
     public CheckLogin() {
         // TODO Auto-generated constructor stub
     }
