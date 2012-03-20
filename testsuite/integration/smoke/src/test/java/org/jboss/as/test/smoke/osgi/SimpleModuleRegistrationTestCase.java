@@ -17,9 +17,13 @@
 package org.jboss.as.test.smoke.osgi;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.osgi.framework.resource.ResourceConstants.IDENTITY_NAMESPACE;
+import static org.osgi.framework.resource.ResourceConstants.IDENTITY_TYPE_UNKNOWN;
 
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 
 import javax.inject.Inject;
@@ -28,6 +32,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleService;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XIdentityCapability;
@@ -43,6 +48,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Version;
 import org.osgi.framework.resource.Capability;
+import org.osgi.framework.resource.Resource;
+import org.osgi.framework.resource.ResourceConstants;
+import org.osgi.framework.resource.Wire;
+import org.osgi.service.resolver.Resolver;
 
 /**
  * Test the registration of a non-OSGi deployment.
@@ -74,8 +83,8 @@ public class SimpleModuleRegistrationTestCase {
 
         // Build a package requirement
         XResourceBuilder builder = XResourceBuilderFactory.create();
-        String pkgname = SimpleService.class.getPackage().getName();
-        XPackageRequirement req = builder.addPackageRequirement(pkgname, null, null);
+        builder.addIdentityCapability("somename", null, IDENTITY_TYPE_UNKNOWN, null, null);
+        XPackageRequirement req = builder.addPackageRequirement(SimpleService.class.getPackage().getName(), null, null);
 
         // Find the providers for the requirement
         SortedSet<Capability> caps = getEnvironment().findProviders(req);
@@ -89,8 +98,36 @@ public class SimpleModuleRegistrationTestCase {
         assertEquals("unknown", icap.getType());
     }
 
+    @Test
+    public void testResolveModule() throws Exception {
+
+        // Build a resource with a package requirement
+        XResourceBuilder builder = XResourceBuilderFactory.create();
+        builder.addIdentityCapability("somename", null, IDENTITY_TYPE_UNKNOWN, null, null);
+        builder.addPackageRequirement(SimpleService.class.getPackage().getName(), null, null);
+        XResource resource = builder.getResource();
+
+        // Find the providers
+        XEnvironment env = getEnvironment();
+        Map<Resource, List<Wire>> wiremap = getResolver().resolve(env, Collections.singleton(resource), null);
+        assertEquals(2, wiremap.size());
+
+        // Verify the wires
+        List<Wire> wires = wiremap.get(resource);
+        assertEquals(1, wires.size());
+        Wire wire = wires.get(0);
+        assertEquals(resource, wire.getRequirer());
+        XResource provider = (XResource) wire.getProvider();
+        XIdentityCapability icap = provider.getIdentityCapability();
+        assertEquals("deployment.example-module-reg", icap.getSymbolicName());
+    }
+
     private XEnvironment getEnvironment() {
-        assertNotNull("ServiceContainer injected", container);
         return (XEnvironment) container.getService(Services.ENVIRONMENT).getValue();
+    }
+
+    private Resolver getResolver() {
+        ServiceName serviceName = ServiceName.JBOSS.append("osgi", "as", "resolver");
+        return (Resolver) container.getService(serviceName).getValue();
     }
 }
