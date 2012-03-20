@@ -23,6 +23,7 @@ import java.net.URL;
 import junit.framework.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -37,6 +38,7 @@ import org.junit.runner.RunWith;
  * @author <a href="http://community.jboss.org/people/dan.j.allen">Dan Allen</a>
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 public class ManagedAsClientWebArchiveServletTestCase {
 
     @Deployment(testable = false)
@@ -46,14 +48,14 @@ public class ManagedAsClientWebArchiveServletTestCase {
 
     @ArquillianResource
     URL deploymentUrl;
-    
+
     @Test
     public void shouldBeAbleToInvokeServlet() throws Exception {
         Assert.assertNotNull(deploymentUrl);
         String result = getContent(new URL(deploymentUrl.toString() + HelloWorldServlet.URL_PATTERN.substring(1)));
         Assert.assertEquals(HelloWorldServlet.GREETING, result);
     }
-    
+
     private String getContent(URL url) throws Exception {
         InputStream is = url.openStream();
         ByteArrayOutputStream out = new ByteArrayOutputStream();

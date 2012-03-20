@@ -5,6 +5,7 @@
 	<container qualifier="jboss" default="true">
 		<configuration>
 			<property name="jbossHome">target/jbossas</property>
+            <property name="allowConnectingToRunningServer">true</property>
 		</configuration>
 	</container>
 </arquillian>
