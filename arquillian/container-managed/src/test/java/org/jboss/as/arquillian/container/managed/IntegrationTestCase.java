@@ -33,7 +33,6 @@ import org.junit.runner.RunWith;
  * IntegrationTestCase
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
- * @version $Revision: $
  */
 @RunWith(Arquillian.class)
 public class IntegrationTestCase {

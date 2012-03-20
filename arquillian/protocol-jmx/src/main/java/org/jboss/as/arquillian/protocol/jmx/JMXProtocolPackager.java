@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -61,6 +62,7 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.UrlAsset;
 import org.jboss.shrinkwrap.api.container.ManifestContainer;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.osgi.framework.Constants;
 
 /**
  * A {@link DeploymentPackager} for the JMXProtocol.
@@ -119,7 +121,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         final String loadableExtensionsPath = "META-INF/services/" + RemoteLoadableExtension.class.getName();
         boolean jsfUnit = false;
         for (Archive<?> aux : auxArchives) {
-            if(aux.getName().equals("arquillian-jsfunit.jar")) {
+            if (aux.getName().equals("arquillian-jsfunit.jar")) {
                 jsfUnit = true;
             }
             Node node = aux.get(loadableExtensionsPath);
@@ -153,7 +155,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         dependencies.append("org.jboss.msc,");
         dependencies.append("org.jboss.osgi.framework,");
         dependencies.append("org.osgi.core,");
-        if(jsfUnit) {
+        if (jsfUnit) {
             //horrible horrible hack
             //because JSFunit bundles up a whole heap of extra stuff
             //we need to add this dependency to prevent class cast exceptions
@@ -176,6 +178,28 @@ public class JMXProtocolPackager implements DeploymentPackager {
             throw new RuntimeException("No arquillian-service/" + serviceActivatorPath + " found by classloader: " + this.getClass().getClassLoader());
         }
         archive.addAsResource(new UrlAsset(serviceActivatorURL), serviceActivatorPath);
+
+        // Add resource capabilities for registration with the Environment
+        archive.addAsResource(new Asset() {
+            public InputStream openStream() {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                try {
+                    Properties props = new Properties();
+                    props.setProperty(Constants.BUNDLE_SYMBOLICNAME, "arquillian-service");
+                    StringBuilder builder = new StringBuilder();
+                    builder.append("org.jboss.arquillian.container.test.api,org.jboss.arquillian.junit,");
+                    builder.append("org.jboss.arquillian.osgi,org.jboss.arquillian.test.api,");
+                    builder.append("org.jboss.shrinkwrap.api,org.jboss.shrinkwrap.api.asset,org.jboss.shrinkwrap.api.spec,");
+                    builder.append("org.junit,org.junit.runner");
+                    props.setProperty(Constants.EXPORT_PACKAGE, builder.toString());
+                    props.store(baos, null);
+                } catch (IOException ex) {
+                    throw new IllegalStateException("Cannot write osgi metadata", ex);
+                }
+                return new ByteArrayInputStream(baos.toByteArray());
+            }
+
+        }, "META-INF/jbosgi-xservice.properties");
 
         // Replace the loadable extensions with the collected set
         archive.delete(ArchivePaths.create(loadableExtensionsPath));
@@ -209,7 +233,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         final Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
 
         // Don't enrich with Modules Dependencies if this is a OSGi bundle
-        if(BundleInfo.isValidBundleManifest(manifest)) {
+        if (BundleInfo.isValidBundleManifest(manifest)) {
             return;
         }
         Attributes attributes = manifest.getMainAttributes();
@@ -230,15 +254,15 @@ public class JMXProtocolPackager implements DeploymentPackager {
         ArchivePath manifestPath = ArchivePaths.create(JarFile.MANIFEST_NAME);
         appArchive.delete(manifestPath);
         appArchive.add(new Asset() {
-                    public InputStream openStream() {
-                        try {
-                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                            manifest.write(baos);
-                            return new ByteArrayInputStream(baos.toByteArray());
-                        } catch (IOException ex) {
-                            throw new IllegalStateException("Cannot write manifest", ex);
-                        }
-                    }
-                }, manifestPath);
+            public InputStream openStream() {
+                try {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    manifest.write(baos);
+                    return new ByteArrayInputStream(baos.toByteArray());
+                } catch (IOException ex) {
+                    throw new IllegalStateException("Cannot write manifest", ex);
+                }
+            }
+        }, manifestPath);
     }
 }

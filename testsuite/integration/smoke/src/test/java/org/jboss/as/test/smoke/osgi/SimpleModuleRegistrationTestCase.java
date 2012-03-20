@@ -17,31 +17,44 @@
 package org.jboss.as.test.smoke.osgi;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.osgi.framework.resource.ResourceConstants.IDENTITY_NAMESPACE;
+import static org.osgi.framework.resource.ResourceConstants.IDENTITY_TYPE_UNKNOWN;
 
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
 
 import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleService;
-import org.jboss.osgi.framework.Constants;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.resolver.XEnvironment;
+import org.jboss.osgi.resolver.XIdentityCapability;
+import org.jboss.osgi.resolver.XPackageRequirement;
+import org.jboss.osgi.resolver.XResource;
+import org.jboss.osgi.resolver.XResourceBuilder;
+import org.jboss.osgi.resolver.XResourceBuilderFactory;
 import org.jboss.osgi.spi.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
-import org.osgi.service.packageadmin.ExportedPackage;
-import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.framework.Version;
+import org.osgi.framework.resource.Capability;
+import org.osgi.framework.resource.Resource;
+import org.osgi.framework.resource.ResourceConstants;
+import org.osgi.framework.resource.Wire;
+import org.osgi.service.resolver.Resolver;
 
 /**
- * Test the registration of a non-OSGi deployement.
+ * Test the registration of a non-OSGi deployment.
  *
  * @author thomas.diesler@jboss.com
  */
@@ -49,7 +62,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
 public class SimpleModuleRegistrationTestCase {
 
     @Inject
-    public BundleContext bundleContext;
+    public ServiceContainer container;
 
     @Deployment
     public static JavaArchive createdeployment() {
@@ -58,42 +71,63 @@ public class SimpleModuleRegistrationTestCase {
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.osgi.core");
+                builder.addManifestHeader("Dependencies", "org.osgi.core,org.jboss.osgi.framework");
                 return builder.openStream();
             }
         });
-        archive.addAsManifestResource(new StringAsset(
-                Constants.BUNDLE_SYMBOLICNAME + ": " + archive.getName() + "\n" +
-                Constants.EXPORT_PACKAGE + ": " + SimpleService.class.getPackage().getName()),
-                "jbosgi-xservice.properties");
         return archive;
     }
 
     @Test
-    public void testModuleRegistered() throws Exception {
+    public void testFindPackageCapability() throws Exception {
 
-        assertNotNull("BundleContext injected", bundleContext);
+        // Build a package requirement
+        XResourceBuilder builder = XResourceBuilderFactory.create();
+        builder.addIdentityCapability("somename", null, IDENTITY_TYPE_UNKNOWN, null, null);
+        XPackageRequirement req = builder.addPackageRequirement(SimpleService.class.getPackage().getName(), null, null);
 
-        ServiceReference sref = bundleContext.getServiceReference(PackageAdmin.class.getName());
-        PackageAdmin pa = (PackageAdmin) bundleContext.getService(sref);
-        assertNotNull("PackageAdmin not null", pa);
+        // Find the providers for the requirement
+        SortedSet<Capability> caps = getEnvironment().findProviders(req);
+        assertEquals(1, caps.size());
 
-        Bundle[] bundles = pa.getBundles("example-module-reg", null);
-        assertNotNull("Bundles not null", bundles);
-        assertEquals("One bundle", 1, bundles.length);
+        // Verify resource identity
+        XResource xres = (XResource) caps.first().getResource();
+        XIdentityCapability icap = xres.getIdentityCapability();
+        assertEquals("deployment.example-module-reg", icap.getSymbolicName());
+        assertEquals(Version.emptyVersion, icap.getVersion());
+        assertEquals("unknown", icap.getType());
+    }
 
-        Bundle bundle = bundles[0];
-        assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+    @Test
+    public void testResolveModule() throws Exception {
 
-        Class<?> clazz = bundle.loadClass(SimpleService.class.getName());
-        assertNotNull("Loaded class", clazz);
-        assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+        // Build a resource with a package requirement
+        XResourceBuilder builder = XResourceBuilderFactory.create();
+        builder.addIdentityCapability("somename", null, IDENTITY_TYPE_UNKNOWN, null, null);
+        builder.addPackageRequirement(SimpleService.class.getPackage().getName(), null, null);
+        XResource resource = builder.getResource();
 
-        ExportedPackage[] exportedPackages = pa.getExportedPackages(bundle);
-        assertNotNull("ExportedPackages not null", exportedPackages);
-        assertEquals("One ExportedPackage", 1, exportedPackages.length);
+        // Find the providers
+        XEnvironment env = getEnvironment();
+        Map<Resource, List<Wire>> wiremap = getResolver().resolve(env, Collections.singleton(resource), null);
+        assertEquals(2, wiremap.size());
 
-        ExportedPackage exportedPackage = exportedPackages[0];
-        assertEquals(SimpleService.class.getPackage().getName(), exportedPackage.getName());
+        // Verify the wires
+        List<Wire> wires = wiremap.get(resource);
+        assertEquals(1, wires.size());
+        Wire wire = wires.get(0);
+        assertEquals(resource, wire.getRequirer());
+        XResource provider = (XResource) wire.getProvider();
+        XIdentityCapability icap = provider.getIdentityCapability();
+        assertEquals("deployment.example-module-reg", icap.getSymbolicName());
+    }
+
+    private XEnvironment getEnvironment() {
+        return (XEnvironment) container.getService(Services.ENVIRONMENT).getValue();
+    }
+
+    private Resolver getResolver() {
+        ServiceName serviceName = ServiceName.JBOSS.append("osgi", "as", "resolver");
+        return (Resolver) container.getService(serviceName).getValue();
     }
 }
