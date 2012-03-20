@@ -97,11 +97,6 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
     @Inject
     public BundleContext systemContext;
 
-    @Override
-    ServiceContainer getServiceContainer() {
-        return serviceContainer;
-    }
-
     @Test
     public void moduleInvokesBundleService() throws Exception {
 
@@ -136,7 +131,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
             try {
                 // Check that the client service is up
                 ServiceName clientService = ServiceName.parse("jboss.osgi.example.invoker.service");
-                assertServiceState(clientService, State.UP, 5000);
+                assertServiceState(serviceContainer, clientService, State.UP, 5000);
             } finally {
                 // Undeploy the client module
                 deployer.undeploy(CLIENT_MODULE_NAME);

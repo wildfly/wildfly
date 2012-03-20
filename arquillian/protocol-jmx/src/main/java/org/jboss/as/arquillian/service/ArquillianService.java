@@ -22,6 +22,8 @@
 
 package org.jboss.as.arquillian.service;
 
+import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collections;
@@ -40,7 +42,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -52,12 +53,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.BundleManagerService;
-import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
+import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.resolver.XEnvironment;
+import org.jboss.osgi.resolver.XResource;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
-
-import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Arquillian service.
@@ -74,17 +73,20 @@ public class ArquillianService implements Service<ArquillianService> {
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
+    private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
     private final Set<ArquillianConfig> deployedTests = new HashSet<ArquillianConfig>();
     private ServiceContainer serviceContainer;
     private ServiceTarget serviceTarget;
     private JMXTestRunner jmxTestRunner;
+    private XResource resource;
     AbstractServiceListener<Object> listener;
 
     public static void addService(final ServiceTarget serviceTarget) {
         ArquillianService service = new ArquillianService();
-        ServiceBuilder<?> serviceBuilder = serviceTarget.addService(ArquillianService.SERVICE_NAME, service);
-        serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
-        serviceBuilder.install();
+        ServiceBuilder<?> builder = serviceTarget.addService(ArquillianService.SERVICE_NAME, service);
+        builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
+        builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, service.injectedEnvironment);
+        builder.install();
     }
 
     ServiceContainer getServiceContainer() {
@@ -135,6 +137,10 @@ public class ArquillianService implements Service<ArquillianService> {
 
     public synchronized void stop(StopContext context) {
         log.debugf("Stopping Arquillian Test Runner");
+        if (resource != null) {
+            XEnvironment env = injectedEnvironment.getValue();
+            env.uninstallResources(resource);
+        }
         try {
             if (jmxTestRunner != null) {
                 jmxTestRunner.unregisterMBean(injectedMBeanServer.getValue());
@@ -191,24 +197,6 @@ public class ArquillianService implements Service<ArquillianService> {
             }
         }
         return getArquillianConfig(className, -1);
-    }
-
-    void registerArquillianServiceWithOSGi(BundleManagerService bundleManager) {
-        ModuleClassLoader classLoader = ((ModuleClassLoader) ArquillianService.class.getClassLoader());
-        Module module = classLoader.getModule();
-        if (bundleManager.getBundle(module.getIdentifier()) == null) {
-            OSGiMetaDataBuilder builder = OSGiMetaDataBuilder.createBuilder("arquillian-service");
-            builder.addExportPackages("org.jboss.arquillian.container.test.api", "org.jboss.arquillian.junit");
-            builder.addExportPackages("org.jboss.arquillian.osgi", "org.jboss.arquillian.test.api");
-            builder.addExportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
-            builder.addExportPackages("org.junit", "org.junit.runner");
-            try {
-                log.infof("Register arquillian service with OSGi layer");
-                bundleManager.registerModule(serviceTarget, module, builder.getOSGiMetaData());
-            } catch (BundleException ex) {
-                log.errorf(ex, "Cannot register arquillian service with OSGi layer");
-            }
-        }
     }
 
     class ExtendedJMXTestRunner extends JMXTestRunner {

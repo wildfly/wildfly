@@ -67,10 +67,6 @@ public interface OSGiLogger extends BasicLogger {
     void failedToUninstallDeployment(@Cause Throwable cause, Deployment deployment);
 
     @LogMessage(level = ERROR)
-    @Message(id = 11903, value = "Failed to uninstall module: %s")
-    void failedToUninstallModule(@Cause Throwable cause, Module module);
-
-    @LogMessage(level = ERROR)
     @Message(id = 11904, value = "Cannot add module as it was not found: %s")
     void moduleNotFound(String moduleId);
 
