@@ -25,6 +25,7 @@ import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -107,8 +108,7 @@ public class ManagementHttpServer {
 
     public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog, ModelControllerClient modelControllerClient, Executor executor, SecurityRealm securityRealm, ConsoleMode consoleMode, String consoleSlot)
             throws IOException {
-        Map<String, String> configuration = new HashMap<String, String>(1);
-        configuration.put("sun.net.httpserver.maxReqTime", "15"); // HTTP Server to close connections if initial request not received within 15 seconds.
+        Map<String, String> configuration = Collections.emptyMap();
 
         Authenticator auth = null;
         final CertAuth certAuthMode;
