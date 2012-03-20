@@ -4,8 +4,12 @@
 
 	<container qualifier="jboss" default="true">
 		<configuration>
-			<property name="jbossHome">target/jbossas</property>
-            <property name="allowConnectingToRunningServer">true</property>
+                        <property name="jbossHome">target/jbossas</property>
+			<!-- 
+			     Please leave this as false. It is a good, early catch for the reviewers to make
+			     sure that they have not left a stale server running when merging pull requests
+                        -->
+                        <property name="allowConnectingToRunningServer">false</property>
 		</configuration>
 	</container>
 </arquillian>
