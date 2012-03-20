@@ -278,6 +278,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>commons-configuration</groupId>
+                    <artifactId>commons-configuration</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>commons-pool</groupId>
                     <artifactId>commons-pool</artifactId>
                 </dependency>
@@ -563,8 +568,18 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.apache.juddi</groupId>
+                    <artifactId>juddi-client</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.apache.juddi.scout</groupId>
                     <artifactId>scout</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.juddi</groupId>
+                    <artifactId>uddi-ws</artifactId>
                 </dependency>
 
                 <dependency>
@@ -892,6 +907,11 @@
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-mail</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-management-client-content</artifactId>
                 </dependency>
 
                 <dependency>
