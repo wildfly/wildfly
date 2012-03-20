@@ -413,31 +413,31 @@ public class OperationValidator {
     private void checkType(final ModelType modelType, final ModelNode value) {
         switch (modelType) {
             case BIG_DECIMAL:
-                value.asBigDecimal();
+                value.resolve().asBigDecimal();
                 break;
             case BIG_INTEGER:
-                value.asBigInteger();
+                value.resolve().asBigInteger();
                 break;
             case BOOLEAN:
-                value.asBoolean();
+                value.resolve().asBoolean();
                 break;
             case BYTES:
-                value.asBytes();
+                value.resolve().asBytes();
                 break;
             case DOUBLE:
-                value.asDouble();
+                value.resolve().asDouble();
                 break;
             case EXPRESSION:
                 value.asString();
                 break;
             case INT:
-                value.asInt();
+                value.resolve().asInt();
                 break;
             case LIST:
                 value.asList();
                 break;
             case LONG:
-                value.asLong();
+                value.resolve().asLong();
                 break;
             case OBJECT:
                 value.asObject();
@@ -449,7 +449,7 @@ public class OperationValidator {
                 value.asString();
                 break;
             case TYPE:
-                value.asType();
+                value.resolve().asType();
                 break;
         }
     }
