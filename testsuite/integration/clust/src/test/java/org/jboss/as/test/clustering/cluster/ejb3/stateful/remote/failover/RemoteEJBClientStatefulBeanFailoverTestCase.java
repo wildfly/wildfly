@@ -48,6 +48,7 @@ import org.junit.runner.RunWith;
  * This test also replicates some decorated CDI beans, to make sure they are replicated correctly.
  *
  * @author Jaikiran Pai
+ * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -102,6 +103,22 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
      */
     @Test
     public void testFailoverFromRemoteClientWhenOneNodeGoesDown() throws Exception {
+        this.failoverFromRemoteClient(false);
+    }
+
+    /**
+     * Same as above, but application gets undeployed while the server keeps running.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testFailoverFromRemoteClientWhenOneNodeUndeploys() throws Exception {
+        this.failoverFromRemoteClient(true);
+
+        //Assert.fail("Show me the logs.");
+    }
+
+    private void failoverFromRemoteClient(boolean undeployOnly) throws Exception {
         // Container is unmanaged, so start it ourselves
         this.container.start(CONTAINER_1);
         // deploy to container1
@@ -134,12 +151,18 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
             final String previousInvocationNodeName = result.getNodeName();
             // the value is configured in arquillian.xml of the project
             if (previousInvocationNodeName.equals(NODE_1)) {
-                this.deployer.undeploy(DEPLOYMENT_1);
-                this.container.stop(CONTAINER_1);
+                if (undeployOnly) {
+                    this.deployer.undeploy(DEPLOYMENT_1);
+                } else {
+                    this.container.stop(CONTAINER_1);
+                }
                 container1Stopped = true;
             } else {
-                this.deployer.undeploy(DEPLOYMENT_2);
-                this.container.stop(CONTAINER_2);
+                if (undeployOnly) {
+                    this.deployer.undeploy(DEPLOYMENT_2);
+                } else {
+                    this.container.stop(CONTAINER_2);
+                }
                 container2Stopped = true;
             }
             // invoke again
