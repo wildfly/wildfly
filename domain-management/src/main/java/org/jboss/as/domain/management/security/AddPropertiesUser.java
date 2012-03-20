@@ -438,30 +438,32 @@ public class AddPropertiesUser {
         @Override
         public State execute() {
             State continuingState = new WeakCheckState(values);
-            /*
-            * Prompt for password.
-            */
-            theConsole.printf(MESSAGES.passwordPrompt());
-            char[] tempChar = theConsole.readPassword(" : ");
-            if (tempChar == null || tempChar.length == 0) {
-                return new ErrorState(MESSAGES.noPasswordExiting());
-            }
+            if (values.isSilentOrNonInteractive() == false) {
+                /*
+                * Prompt for password.
+                */
+                theConsole.printf(MESSAGES.passwordPrompt());
+                char[] tempChar = theConsole.readPassword(" : ");
+                if (tempChar == null || tempChar.length == 0) {
+                    return new ErrorState(MESSAGES.noPasswordExiting());
+                }
 
-            theConsole.printf(MESSAGES.passwordConfirmationPrompt());
-            char[] secondTempChar = theConsole.readPassword(" : ");
-            if (secondTempChar == null) {
-                secondTempChar = new char[0]; // If re-entry missed allow fall through to comparison.
-            }
+                theConsole.printf(MESSAGES.passwordConfirmationPrompt());
+                char[] secondTempChar = theConsole.readPassword(" : ");
+                if (secondTempChar == null) {
+                    secondTempChar = new char[0]; // If re-entry missed allow fall through to comparison.
+                }
 
-            if (Arrays.equals(tempChar, secondTempChar) == false) {
-                return new ErrorState(MESSAGES.passwordMisMatch(), this);
-            }
-            values.password = tempChar;
+                if (Arrays.equals(tempChar, secondTempChar) == false) {
+                    return new ErrorState(MESSAGES.passwordMisMatch(), this);
+                }
+                values.password = tempChar;
 
-            if (!values.management) {
-                theConsole.printf(MESSAGES.rolesPrompt());
-                String userRoles = knownRoles.get(values.userName);
-                values.roles = theConsole.readLine("[%1$2s]: ", (userRoles == null?"":userRoles));
+                if (!values.management) {
+                    theConsole.printf(MESSAGES.rolesPrompt());
+                    String userRoles = knownRoles.get(values.userName);
+                    values.roles = theConsole.readLine("[%1$2s]: ", (userRoles == null?"":userRoles));
+                }
             }
 
             return continuingState;
