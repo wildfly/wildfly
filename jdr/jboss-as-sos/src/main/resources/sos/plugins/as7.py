@@ -95,7 +95,7 @@ class AS7(Plugin, IndependentPlugin, AS7Mixin):
         if jar_info_list:
             jar_info_list.sort()
             self.addStringAsFile("\n".join([
-                "%s\n%s\n%s\n" % (name, checksum, manifest)
+                "%s\n%s\n%s\n===\n" % (name, checksum, manifest)
                 for (name, checksum, manifest) in jar_info_list]),
                 'jarinfo.txt')
         else:
