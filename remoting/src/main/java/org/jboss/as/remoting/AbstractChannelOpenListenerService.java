@@ -122,12 +122,13 @@ public abstract class AbstractChannelOpenListenerService<T> implements Service<V
 
     @Override
     public void registrationTerminated() {
+        final Set<T> copy;
         synchronized (channels) {
             // Copy off the set to avoid ConcurrentModificationException
-            final Set<T> copy = new HashSet<T>(channels);
-            for (T channel : copy) {
-                closeChannelOnShutdown(channel);
-            }
+            copy = new HashSet<T>(channels);
+        }
+        for (final T channel : copy) {
+            closeChannelOnShutdown(channel);
         }
     }
 

@@ -74,6 +74,7 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
 
     // Try to reconnect to the remote DC
     private final AtomicBoolean reconnect = new AtomicBoolean();
+    private final AtomicBoolean reconnecting = new AtomicBoolean();
 
     private volatile Connection connection;
     private volatile Channel channel;
@@ -156,29 +157,31 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
     private synchronized RegistrationResult connectSync() throws IOException {
         boolean ok = false;
         try {
-            final ProtocolChannelClient client = ProtocolChannelClient.create(configuration);
-            CallbackHandler callbackHandler = null;
-            SSLContext sslContext = null;
-            if (realm != null) {
-                sslContext = realm.getSSLContext();
-                CallbackHandlerFactory handlerFactory = realm.getSecretCallbackHandlerFactory();
-                if (handlerFactory != null) {
-                    callbackHandler = handlerFactory.getCallbackHandler(localHostName);
-                }
-            }
-            // Connect
-            connection = client.connectSync(callbackHandler, Collections.<String, String> emptyMap(), sslContext);
-            connection.addCloseHandler(new CloseHandler<Connection>() {
-                @Override
-                public void handleClose(final Connection closed, final IOException exception) {
-                    synchronized (this) {
-                        if(connection == closed) {
-                            connection = null;
-                            connectionClosed();
-                        }
+            if(connection == null) {
+                final ProtocolChannelClient client = ProtocolChannelClient.create(configuration);
+                CallbackHandler callbackHandler = null;
+                SSLContext sslContext = null;
+                if (realm != null) {
+                    sslContext = realm.getSSLContext();
+                    CallbackHandlerFactory handlerFactory = realm.getSecretCallbackHandlerFactory();
+                    if (handlerFactory != null) {
+                        callbackHandler = handlerFactory.getCallbackHandler(localHostName);
                     }
                 }
-            });
+                // Connect
+                connection = client.connectSync(callbackHandler, Collections.<String, String> emptyMap(), sslContext);
+                connection.addCloseHandler(new CloseHandler<Connection>() {
+                    @Override
+                    public void handleClose(final Connection closed, final IOException exception) {
+                        synchronized (this) {
+                            if(connection == closed) {
+                                connection = null;
+                                connectionClosed();
+                            }
+                        }
+                    }
+                });
+            }
             channel = connection.openChannel(CHANNEL_SERVICE_TYPE, OptionMap.EMPTY).get();
             channel.addCloseHandler(new CloseHandler<Channel>() {
                 @Override
@@ -229,36 +232,47 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
                 connection.closeAsync();
             }
         } else {
-            HostControllerLogger.ROOT_LOGGER.lostRemoteDomainConnection();
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    final ReconnectPolicy policy = reconnectPolicy;
-                    for(;;) {
+            if(reconnecting.compareAndSet(false, true)) {
+                HostControllerLogger.ROOT_LOGGER.lostRemoteDomainConnection();
+                executorService.execute(new Runnable() {
+
+                    @Override
+                    public void run() {
                         try {
-                            // Wait before reconnecting
-                            policy.wait(reconnectionCount++);
-                            // Check if the connection was closed
-                            if(! reconnect.get()) {
-                                return;
-                            }
-                            // reconnect
-                            HostControllerLogger.ROOT_LOGGER.debugf("trying to reconnect to remote host-controller");
-                            final RegistrationResult result = connectSync();
-                            if(result.isOK()) {
-                                // Reconnected
-                                HostControllerLogger.ROOT_LOGGER.reconnectedToMaster();
-                                return;
-                            }
-                        } catch(IOException e) {
-                            HostControllerLogger.ROOT_LOGGER.debugf(e, "failed to reconnect to the remote host-controller");
-                        } catch(InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            return;
+                            reconnect();
+                        } finally {
+                            reconnecting.set(false);
                         }
                     }
-                }
-            });
+
+                    private void reconnect() {
+                        final ReconnectPolicy policy = reconnectPolicy;
+                        for(;;) {
+                            try {
+                                // Wait before reconnecting
+                                policy.wait(reconnectionCount++);
+                                // Check if the connection was closed
+                                if(! reconnect.get()) {
+                                    return;
+                                }
+                                // reconnect
+                                HostControllerLogger.ROOT_LOGGER.debugf("trying to reconnect to remote host-controller");
+                                final RegistrationResult result = connectSync();
+                                if(result.isOK()) {
+                                    // Reconnected
+                                    HostControllerLogger.ROOT_LOGGER.reconnectedToMaster();
+                                    return;
+                                }
+                            } catch(InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                                return;
+                            } catch(Exception e) {
+                                HostControllerLogger.ROOT_LOGGER.debugf(e, "failed to reconnect to the remote host-controller");
+                            }
+                        }
+                    }
+                });
+            }
         }
     }
 
