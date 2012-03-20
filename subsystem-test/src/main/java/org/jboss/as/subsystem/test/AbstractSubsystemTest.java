@@ -336,8 +336,6 @@ public abstract class AbstractSubsystemTest {
         //sharedState = svc.state;
         svc.latch.await();
         ModelController controller = svc.getValue();
-        ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
-        controller.execute(setup, null, null, null);
         processState.setRunning();
 
         KernelServices kernelServices = new KernelServices(container, controller, persister, new OperationValidator(svc.rootRegistration));
