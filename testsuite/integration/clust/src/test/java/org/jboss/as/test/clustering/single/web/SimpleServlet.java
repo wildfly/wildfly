@@ -38,6 +38,7 @@ import javax.servlet.http.HttpSession;
 @WebServlet(urlPatterns = { "/simple" })
 public class SimpleServlet extends HttpServlet {
     private static final long serialVersionUID = -592774116315946908L;
+    public static final String REQUEST_DURATION_PARAM = "requestduration";
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -51,6 +52,16 @@ public class SimpleServlet extends HttpServlet {
         }
         resp.setIntHeader("value", custom.getValue());
         resp.setHeader("serialized", Boolean.toString(custom.wasSerialized()));
+
+        // Long running request?
+        if (req.getParameter(REQUEST_DURATION_PARAM) != null) {
+            int duration = Integer.valueOf(req.getParameter(REQUEST_DURATION_PARAM));
+            try {
+                Thread.sleep(duration);
+            } catch (InterruptedException ex) {
+            }
+        }
+
         resp.getWriter().write("Success");
     }
 

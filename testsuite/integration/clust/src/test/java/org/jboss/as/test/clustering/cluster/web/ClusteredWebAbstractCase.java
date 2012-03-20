@@ -24,11 +24,17 @@ package org.jboss.as.test.clustering.cluster.web;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.*;
@@ -57,6 +63,7 @@ import org.jboss.as.test.clustering.NodeUtil;
 @RunAsClient
 public class ClusteredWebAbstractCase {
 
+    private static final int REQUEST_DURATION = 10000;
     @ArquillianResource
     private ContainerController controller;
     @ArquillianResource
@@ -171,6 +178,70 @@ public class ClusteredWebAbstractCase {
             response.getEntity().getContent().close();
         } finally {
             client.getConnectionManager().shutdown();
+        }
+    }
+
+    /**
+     * Test that a session it is gracefully served.
+     */
+    @Test
+    public void testGracefulServerOnShutdown(
+            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
+            throws IllegalStateException, IOException, InterruptedException, Exception {
+
+        final DefaultHttpClient client = new DefaultHttpClient();
+        String url1 = baseURL1.toString() + "simple";
+
+        // Make sure a normal request will succeed
+        HttpResponse response = client.execute(new HttpGet(url1));
+        Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+        response.getEntity().getContent().close();
+
+        // Send a long request - in parallel
+        String longRunningUrl = url1 + "?" + SimpleServlet.REQUEST_DURATION_PARAM + "=" + REQUEST_DURATION;
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<HttpResponse> future = executor.submit(new RequestTask(client, longRunningUrl));
+
+        // Make sure long request has started
+        Thread.sleep(1000);
+
+        // Shutdown server
+        controller.stop(CONTAINER_1);
+
+        // Get result of long request
+        // This request should succeed since it initiated before server shutdown
+        try {
+            response = future.get();
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            response.getEntity().getContent().close();
+        } catch (ExecutionException e) {
+            e.printStackTrace(System.err);
+            Assert.fail(e.getCause().getMessage());
+        }
+
+        // Subsequent requests get connection refused (compared to AS5 where you still get 404)
+    }
+
+    /**
+     * Request task to request a long running URL and then undeploy / shutdown the server.
+     */
+    private class RequestTask implements Callable<HttpResponse> {
+
+        private HttpClient client;
+        private String url;
+
+        RequestTask(HttpClient client, String url) {
+            this.client = client;
+            this.url = url;
+        }
+
+        @Override
+        public HttpResponse call() throws Exception {
+            try {
+                return client.execute(new HttpGet(url));
+            } finally {
+                client.getConnectionManager().closeExpiredConnections();
+            }
         }
     }
 }
