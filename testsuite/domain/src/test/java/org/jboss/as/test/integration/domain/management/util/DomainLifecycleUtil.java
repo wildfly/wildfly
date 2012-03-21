@@ -214,14 +214,14 @@ public class DomainLifecycleUtil {
             long start = System.currentTimeMillis();
             long deadline = start + configuration.getStartupTimeoutInSeconds() * 1000;
             // Wait a while before starting to check for the servers
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.SECONDS.sleep(2);
             while (serversAvailable == false) {
                 long remaining = deadline - System.currentTimeMillis();
                 if(remaining <= 0) {
                     break;
                 }
                 if (!serversAvailable) {
-                    Thread.sleep(100);
+                    TimeUnit.MILLISECONDS.sleep(250);
                 }
                 serversAvailable = areServersStarted();
             }
@@ -354,6 +354,7 @@ public class DomainLifecycleUtil {
             try {
                 // Open a connection
                 connection.connect();
+                return;
             } catch (IOException e) {
                 remaining = deadline - System.currentTimeMillis();
                 if(remaining <= 0) {
@@ -368,7 +369,7 @@ public class DomainLifecycleUtil {
      *
      * @return the domain client
      */
-    public DomainClient createClient() {
+    public DomainClient createDomainClient() {
         final DomainTestConnection connection = this.connection;
         if(connection == null) {
             throw new IllegalStateException();

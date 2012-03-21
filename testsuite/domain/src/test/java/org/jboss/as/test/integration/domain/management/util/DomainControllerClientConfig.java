@@ -69,6 +69,14 @@ public class DomainControllerClientConfig implements Closeable {
         this.destroyExecutor = destroyExecutor;
     }
 
+    /**
+     * Create a connection wrapper.
+     *
+     * @param connectionURI the connection URI
+     * @param callbackHandler the callback handler
+     * @return the connection wrapper
+     * @throws IOException
+     */
     DomainTestConnection createConnection(final URI connectionURI, final CallbackHandler callbackHandler) throws IOException {
         final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
         configuration.setEndpoint(endpoint);
