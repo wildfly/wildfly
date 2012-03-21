@@ -25,6 +25,7 @@ package org.jboss.as.test.clustering.cluster.ejb3.stateless.bean;
 import javax.ejb.Remote;
 import javax.ejb.TransactionAttributeType;
 
+import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.ejb3.annotation.Clustered;
 
 /**
@@ -43,6 +44,6 @@ public class StatelessBean implements Stateless {
     @javax.ejb.TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public String getNodeName() {
-        return System.getProperty("jboss.node.name");
+        return NodeNameGetter.getNodeName();
     }
 }

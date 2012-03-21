@@ -32,6 +32,10 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME_TO
 import static org.jboss.as.test.clustering.ClusteringTestConstants.NODES;
 import static org.junit.Assert.assertEquals;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -41,29 +45,35 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
+import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
 import org.jboss.as.test.clustering.cluster.ejb3.stateless.bean.Stateless;
 import org.jboss.as.test.clustering.cluster.ejb3.stateless.bean.StatelessBean;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * @author Paul Ferraro
- *
+ * @author Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class RemoteStatelessFailoverTestCase {
-
+    private static final Logger log = Logger.getLogger(RemoteStatelessFailoverTestCase.class);
     private static final String MODULE_NAME = "remote-ejb-client-stateless-bean-failover-test";
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
     private static EJBDirectory context;
+    
+    private static final Integer PORT_2 = 4547;
+    private static final String REMOTE_PORT_PROPERTY_NAME = "remote.connection.default.port";
 
     @ArquillianResource
     private ContainerController container;
@@ -89,6 +99,8 @@ public class RemoteStatelessFailoverTestCase {
     private static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(StatelessBean.class.getPackage());
+        ejbJar.addClass(NodeNameGetter.class);
+        log.info(ejbJar.toString(true));
         return ejbJar;
     }
 
@@ -164,6 +176,89 @@ public class RemoteStatelessFailoverTestCase {
                 this.stop(i);
             }
         }
+    }
+    
+    /**
+     * Basic load balance testing. A random distribution is used amongst nodes for client now.
+     */
+    @Test
+    public void testLoadbalance() throws Exception {
+        this.start(0);
+        this.deploy(0);
+        this.start(1);
+        this.deploy(1);
+
+        final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
+        
+        int numberOfServers = 2;
+        int numberOfCalls = 50;
+        // there will be at least 20% of calls processed by all servers  
+        double serversProccessedAtLeast = 0.2;
+        
+        try {        
+            Stateless bean = context.lookupStateless(StatelessBean.class, Stateless.class);
+
+            String node = bean.getNodeName();
+            log.info("Node called : " + node);
+    
+            validateBalancing(bean, numberOfCalls, numberOfServers, serversProccessedAtLeast);
+    
+            Properties contextChangeProperties = new Properties();
+            contextChangeProperties.put(REMOTE_PORT_PROPERTY_NAME, PORT_2.toString());
+            EJBClientContextSelector.setup(CLIENT_PROPERTIES, contextChangeProperties);
+    
+            bean = context.lookupStateless(StatelessBean.class, Stateless.class);
+            node = bean.getNodeName();
+            log.info("Node called : " + node);
+    
+            validateBalancing(bean, numberOfCalls, numberOfServers, serversProccessedAtLeast);
+    
+            this.stop(0);
+            node = bean.getNodeName();
+            log.info("Node called : " + node);
+    
+            this.start(0);
+            node = bean.getNodeName();
+            log.info("Node called : " + node);
+    
+            validateBalancing(bean, numberOfCalls, numberOfServers, serversProccessedAtLeast);
+        } finally {
+            // reset the selector
+            if (previousSelector != null) {
+                EJBClientContext.setSelector(previousSelector);
+            }
+            // shutdown the containers
+            for (int i = 0; i < NODES.length; ++i) {
+                this.undeploy(i);
+                this.stop(i);
+            }
+        }
+    }
+
+    /**
+     * Method calls the bean function getNodeName() {numCalls} times and checks whether all servers processed at least part of calls. 
+     * The necessary number of processed calls by each server is {minPercentage} of the number of all calls.
+     */
+    private void validateBalancing(Stateless bean, int numCalls, int expectedServers, double minPercentage) {
+        Map<String, Integer> callCount = new HashMap<String, Integer>();
+        int maxNumOfProcessedCalls = -1;
+        int minNumOfProcessedCalls = Integer.MAX_VALUE;
+        
+        for (int i = 0; i < numCalls; i++) {
+            String nodeName = bean.getNodeName();
+
+            Integer count = callCount.get(nodeName);
+            count = count == null ? 1 : ++count;
+            callCount.put(nodeName, count);
+        }
+        Assert.assertEquals(expectedServers, callCount.size());
+    
+        for (Integer count : callCount.values()) {
+            maxNumOfProcessedCalls = count > maxNumOfProcessedCalls ? count : maxNumOfProcessedCalls;
+            minNumOfProcessedCalls = count < minNumOfProcessedCalls ? count : minNumOfProcessedCalls;
+        }
+        log.info("All " + expectedServers + " servers processed at least " + minNumOfProcessedCalls + " calls");
+        Assert.assertTrue(minPercentage * numCalls <= minNumOfProcessedCalls);
     }
 
     private void deploy(int index) {
