@@ -193,7 +193,7 @@ public class HostModelUtil {
         hostRegistration.registerOperationHandler(StartServersHandler.OPERATION_NAME, ssh, ssh, false, OperationEntry.EntryType.PRIVATE);
 
         HostShutdownHandler hsh = new HostShutdownHandler(domainController);
-        hostRegistration.registerOperationHandler(HostShutdownHandler.OPERATION_NAME, hsh, hsh);
+        hostRegistration.registerOperationHandler(HostShutdownHandler.OPERATION_NAME, hsh, hsh, EnumSet.of(Flag.HOST_CONTROLLER_ONLY));
 
         hostRegistration.registerOperationHandler(ResolveExpressionHandler.OPERATION_NAME, ResolveExpressionHandler.INSTANCE,
                 ResolveExpressionHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY));
