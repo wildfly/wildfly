@@ -22,6 +22,15 @@
 
 package org.jboss.as.naming;
 
+import java.security.Permission;
+
+import javax.naming.Context;
+import javax.naming.InvalidNameException;
+import javax.naming.Name;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.Cause;
@@ -29,13 +38,6 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.msc.service.ServiceName;
-
-import javax.naming.Context;
-import javax.naming.InvalidNameException;
-import javax.naming.Name;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
-import java.security.Permission;
 
 /**
  * Date: 17.06.2011
@@ -373,4 +375,7 @@ public interface NamingMessages {
 
     @Message(id = 11863, value = "Invalid name for context binding %s")
     DeploymentUnitProcessingException invalidNameForContextBinding(String name);
+
+    @Message(id = 11864, value = "Invaliding binding name %s, name must start with one of %s")
+    OperationFailedException invalidNamespaceForBinding(String name, String namespaces);
 }

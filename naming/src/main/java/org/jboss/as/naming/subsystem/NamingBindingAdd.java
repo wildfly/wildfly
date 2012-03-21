@@ -21,15 +21,7 @@
  */
 package org.jboss.as.naming.subsystem;
 
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CLASS;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.LOOKUP;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
-
+import java.util.Arrays;
 import java.util.List;
 
 import javax.naming.InitialContext;
@@ -43,6 +35,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.NamingMessages;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -57,6 +50,15 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CLASS;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.LOOKUP;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
+
 /**
  * A {@link org.jboss.as.controller.AbstractAddStepHandler} to handle the add operation for simple JNDI bindings
  *
@@ -64,6 +66,7 @@ import org.jboss.msc.value.ImmediateValue;
  */
 public class NamingBindingAdd extends AbstractAddStepHandler {
 
+    private static final String[] GLOBAL_NAMESPACES = {"java:global", "java:jboss", "java:/"};
 
     static final NamingBindingAdd INSTANCE = new NamingBindingAdd();
 
@@ -78,6 +81,16 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
     }
 
     void installRuntimeServices(final OperationContext context, final String name, final ModelNode model, ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+        boolean allowed = false;
+        for(String ns : GLOBAL_NAMESPACES) {
+            if(name.startsWith(ns)) {
+                allowed = true;
+                break;
+            }
+        }
+        if(!allowed) {
+            throw NamingMessages.MESSAGES.invalidNamespaceForBinding(name, Arrays.toString(GLOBAL_NAMESPACES));
+        }
         final String type = model.require(BINDING_TYPE).asString();
         if (type.equals(SIMPLE)) {
             installSimpleBinding(context, name, model, verificationHandler, newControllers);
