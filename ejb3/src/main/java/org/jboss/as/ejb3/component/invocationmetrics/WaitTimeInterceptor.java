@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,18 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.ejb3.component.invocationmetrics;
 
-package org.jboss.as.test.integration.ejb.management.deployments;
-
-import javax.ejb.Remote;
+import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
+import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 
 /**
- * Dummy interface for session beans in this class.
- *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-@Remote
-public interface BusinessInterface {
+public class WaitTimeInterceptor extends AbstractEJBInterceptor {
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new WaitTimeInterceptor());
 
-    void doIt();
+    static final Object START_WAIT_TIME = new Object();
+
+    private WaitTimeInterceptor() {
+    }
+
+    @Override
+    public Object processInvocation(final InterceptorContext context) throws Exception {
+        context.putPrivateData(START_WAIT_TIME, System.currentTimeMillis());
+        return context.proceed();
+    }
 }

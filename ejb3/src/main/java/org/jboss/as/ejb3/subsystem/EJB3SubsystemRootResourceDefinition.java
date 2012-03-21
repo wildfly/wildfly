@@ -88,6 +88,10 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                     .setAllowNull(true)
                     .build();
 
+    public static final SimpleAttributeDefinition ENABLE_STATISTICS =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_STATISTICS, ModelType.BOOLEAN, true)
+                    .build();
+
     public static final SimpleAttributeDefinition PASS_BY_VALUE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
@@ -102,6 +106,20 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
     }
 
+    static final SimpleAttributeDefinition[] ATTRIBUTES = {
+            DEFAULT_CLUSTERED_SFSB_CACHE,
+            DEFAULT_ENTITY_BEAN_INSTANCE_POOL,
+            DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING,
+            DEFAULT_MDB_INSTANCE_POOL,
+            DEFAULT_RESOURCE_ADAPTER_NAME,
+            DEFAULT_SFSB_CACHE,
+            DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT,
+            DEFAULT_SLSB_INSTANCE_POOL,
+            DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT,
+            ENABLE_STATISTICS,
+            PASS_BY_VALUE,
+    };
+
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SFSB_CACHE, null, EJB3SubsystemDefaultCacheWriteHandler.SFSB_CACHE);
@@ -113,6 +131,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         resourceRegistration.registerReadWriteAttribute(DEFAULT_RESOURCE_ADAPTER_NAME, null, DefaultResourceAdapterWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT, null, DefaultSingletonBeanAccessTimeoutWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT, null, DefaultStatefulBeanAccessTimeoutWriteHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(ENABLE_STATISTICS, null, EnableStatisticsWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(PASS_BY_VALUE, null, EJBRemoteInvocationPassByValueWriteHandler.INSTANCE);
     }
 }

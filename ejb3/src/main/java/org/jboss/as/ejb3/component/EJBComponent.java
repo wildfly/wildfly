@@ -43,6 +43,7 @@ import javax.transaction.UserTransaction;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
+import org.jboss.as.ejb3.component.invocationmetrics.InvocationMetrics;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
@@ -92,6 +93,8 @@ public abstract class EJBComponent extends BasicComponent {
     private final String moduleName;
     private final String distinctName;
     private final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository;
+
+    private final InvocationMetrics invocationMetrics = new InvocationMetrics();
 
     /**
      * Construct a new instance.
@@ -334,6 +337,10 @@ public abstract class EJBComponent extends BasicComponent {
         return utilities.getSecurityManager().isCallerInRole(securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
     }
 
+    public boolean isStatisticsEnabled() {
+        return utilities.isStatisticsEnabled();
+    }
+
     public Object lookup(String name) throws IllegalArgumentException {
         if (name == null) {
             throw MESSAGES.jndiNameCannotBeNull();
@@ -454,5 +461,9 @@ public abstract class EJBComponent extends BasicComponent {
 
     public AllowedMethodsInformation getAllowedMethodsInformation() {
         return AllowedMethodsInformation.INSTANCE;
+    }
+
+    public InvocationMetrics getInvocationMetrics() {
+        return invocationMetrics;
     }
 }

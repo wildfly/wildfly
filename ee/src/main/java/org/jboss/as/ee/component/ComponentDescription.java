@@ -148,7 +148,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
         if (deploymentUnitServiceName == null) {
             throw MESSAGES.nullVar("deploymentUnitServiceName");
         }
-        serviceName = deploymentUnitServiceName.append("component").append(componentName);
+        serviceName = BasicComponent.serviceNameOf(deploymentUnitServiceName, componentName);
         this.componentName = componentName;
         this.componentClassName = componentClassName;
         configurators.addLast(FIRST_CONFIGURATOR);
