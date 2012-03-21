@@ -36,7 +36,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,8 +62,6 @@ public class TestRequiredAddressingTestCase {
                 addClasses(ServiceIface.class, ServiceImplAddressingRequired.class, WSHandler.class).
                 addAsResource(WSHandler.class.getPackage(), "ws-handler.xml", "org/jboss/as/test/integration/ws/wsa/ws-handler.xml");
         log.info(war.toString(true));
-
-        war.as(ZipExporter.class).exportTo(new File("/tmp/jaxws-wsa.war"), true);
 
         return war;
     }
