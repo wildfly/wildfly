@@ -58,7 +58,7 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME_TO
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class ClusteredWebFailoverTestCase {
+public abstract class ClusteredWebFailoverAbstractCase {
 
     /** Controller for testing failover and undeploy **/
     @ArquillianResource
