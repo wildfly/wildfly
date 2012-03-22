@@ -49,9 +49,11 @@ import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.server.Services;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
@@ -133,6 +135,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         ServiceTarget target = context.getServiceTarget();
         ServiceName configServiceName = EmbeddedCacheManagerConfigurationService.getServiceName(name);
         ServiceBuilder<EmbeddedCacheManagerConfiguration> configBuilder = target.addService(configServiceName, new EmbeddedCacheManagerConfigurationService(name, defaultCache, dependencies))
+                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, dependencies.getModuleLoaderInjector())
                 .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, dependencies.getMBeanServerInjector())
                 .addDependency(DependencyType.OPTIONAL, EmbeddedCacheManagerConfigurationService.getClassLoaderServiceName(name), ClassLoader.class, dependencies.getClassLoaderInjector())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
@@ -213,6 +216,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         private final InjectedValue<ScheduledExecutorService> replicationQueueExecutor = new InjectedValue<ScheduledExecutorService>();
         private final InjectedValue<ClassLoader> loader = new InjectedValue<ClassLoader>();
         private final EmbeddedCacheManagerConfigurationService.TransportConfiguration transport;
+        private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
 
         EmbeddedCacheManagerDependencies(EmbeddedCacheManagerConfigurationService.TransportConfiguration transport) {
             this.transport = transport;
@@ -236,6 +240,10 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         Injector<ClassLoader> getClassLoaderInjector() {
             return this.loader;
+        }
+
+        Injector<ModuleLoader> getModuleLoaderInjector() {
+            return this.moduleLoader;
         }
 
         @Override
@@ -266,6 +274,11 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         @Override
         public ClassLoader getClassLoader() {
             return this.loader.getOptionalValue();
+        }
+
+        @Override
+        public ModuleLoader getModuleLoader() {
+            return this.moduleLoader.getValue();
         }
     }
 

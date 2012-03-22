@@ -94,7 +94,7 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         builder.storeAsBinary().enable().storeKeysAsBinary(false).storeValuesAsBinary(true);
         container.defineConfiguration(name, builder.build());
 
-        AdvancedCache<String, Map<Object, Object>> sessionCache = container.<String, Map<Object, Object>>getCache(name).getAdvancedCache().with(this.getClass().getClassLoader());
+        AdvancedCache<String, Map<Object, Object>> sessionCache = container.<String, Map<Object, Object>>getCache(name).getAdvancedCache();
         BatchingManager batchingManager = new TransactionBatchingManager(sessionCache.getTransactionManager());
         SessionAttributeStorage<T> storage = this.storageFactory.createStorage(manager.getReplicationConfig().getReplicationGranularity(), this.marshallerFactory.createMarshaller(manager));
 

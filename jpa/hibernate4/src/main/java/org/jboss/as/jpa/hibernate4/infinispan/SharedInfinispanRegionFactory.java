@@ -24,6 +24,7 @@ package org.jboss.as.jpa.hibernate4.infinispan;
 
 import java.util.Properties;
 
+import org.infinispan.AdvancedCache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.server.CurrentServiceContainer;
@@ -56,5 +57,12 @@ public class SharedInfinispanRegionFactory extends InfinispanRegionFactory {
     @Override
     public void stop() {
         // Do not attempt to stop our cache manager because it wasn't created by this region factory.
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    protected AdvancedCache createCacheWrapper(AdvancedCache cache) {
+        cache.start();
+        return cache;
     }
 }

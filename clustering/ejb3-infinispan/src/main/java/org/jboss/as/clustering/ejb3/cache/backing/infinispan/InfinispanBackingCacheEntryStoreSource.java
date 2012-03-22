@@ -30,7 +30,6 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.HashableMarshalledValueFactory;
 import org.jboss.as.clustering.MarshalledValue;
 import org.jboss.as.clustering.MarshalledValueFactory;
 import org.jboss.as.clustering.MarshallingContext;
@@ -111,13 +110,12 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
     @Override
     public <E extends SerializationGroup<K, V, G>> BackingCacheEntryStore<G, Cacheable<G>, E> createGroupIntegratedObjectStore(PassivationManager<G, E> passivationManager, StatefulTimeoutInfo timeout) {
         @SuppressWarnings("unchecked")
-        Cache<MarshalledValue<G, MarshallingContext>, MarshalledValue<E, MarshallingContext>> cache = this.groupCache.getValue().getAdvancedCache().with(this.getClass().getClassLoader());
+        Cache<G, MarshalledValue<E, MarshallingContext>> cache = this.groupCache.getValue();
         MarshallingContext context = new MarshallingContext(this.factory, passivationManager.getMarshallingConfiguration());
-        MarshalledValueFactory<MarshallingContext> keyFactory = new HashableMarshalledValueFactory(context);
         MarshalledValueFactory<MarshallingContext> valueFactory = new SimpleMarshalledValueFactory(context);
         @SuppressWarnings("unchecked")
         Registry<String, ?> registry = this.registry.getValue();
-        return new InfinispanBackingCacheEntryStore<G, Cacheable<G>, E, MarshallingContext>(cache, this.invoker, null, timeout, this, false, keyFactory, valueFactory, context, null, null, registry);
+        return new InfinispanBackingCacheEntryStore<G, Cacheable<G>, E, MarshallingContext>(cache, this.invoker, null, timeout, this, false, valueFactory, context, null, null, registry);
     }
 
     @Override
@@ -133,19 +131,18 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
             builder.eviction().maxEntries(this.maxSize);
         }
         groupCache.getCacheManager().defineConfiguration(beanName, builder.build());
-        Cache<MarshalledValue<K, MarshallingContext>, MarshalledValue<E, MarshallingContext>> cache = container.<MarshalledValue<K, MarshallingContext>, MarshalledValue<E, MarshallingContext>>getCache(beanName).getAdvancedCache().with(this.getClass().getClassLoader());
+        Cache<K, MarshalledValue<E, MarshallingContext>> cache = container.<K, MarshalledValue<E, MarshallingContext>>getCache(beanName);
         MarshallingContext context = new MarshallingContext(this.factory, passivationManager.getMarshallingConfiguration());
-        MarshalledValueFactory<MarshallingContext> keyFactory = new HashableMarshalledValueFactory(context);
         MarshalledValueFactory<MarshallingContext> valueFactory = new SimpleMarshalledValueFactory(context);
-        LockKeyFactory<K, MarshallingContext> lockKeyFactory = new LockKeyFactory<K, MarshallingContext>() {
+        LockKeyFactory<K> lockKeyFactory = new LockKeyFactory<K>() {
             @Override
-            public Serializable createLockKey(MarshalledValue<K, MarshallingContext> key) {
-                return new AbstractMap.SimpleImmutableEntry<MarshalledValue<K, MarshallingContext>, String>(key, beanName);
+            public Serializable createLockKey(K key) {
+                return new AbstractMap.SimpleImmutableEntry<K, String>(key, beanName);
             }
         };
         @SuppressWarnings("unchecked")
         Registry<String, ?> registry = this.registry.getValue();
-        return new InfinispanBackingCacheEntryStore<K, V, E, MarshallingContext>(cache, this.invoker, this.passivateEventsOnReplicate ? passivationManager : null, timeout, this, true, keyFactory, valueFactory, context, this.lockManager.getValue(), lockKeyFactory, registry);
+        return new InfinispanBackingCacheEntryStore<K, V, E, MarshallingContext>(cache, this.invoker, this.passivateEventsOnReplicate ? passivationManager : null, timeout, this, true, valueFactory, context, this.lockManager.getValue(), lockKeyFactory, registry);
     }
 
     @Override

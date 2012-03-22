@@ -82,17 +82,21 @@
     <pbcast.NAKACK use_mcast_xmit="true"
         retransmit_timeout="300,600,1200,2400,4800"
         discard_delivered_msgs="true"/>
-    <UNICAST2 timeout="300,600,1200,2400,3600"/>
-    <pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
+    <UNICAST2 timeout="300,600,1200,2400,3600"
+        stable_interval="5000"
+        max_bytes="1m"/>
+    <pbcast.STABLE stability_delay="1000"
+        desired_avg_gossip="50000"
         max_bytes="400000"/>
     <pbcast.GMS print_local_addr="true" 
         join_timeout="3000"
-        view_bundling="true"                   
+        view_bundling="true"
         view_ack_collection_timeout="5000"
         resume_task_timeout="7500"/>
     <UFC max_credits="2000000" ignore_synchronous_response="true"/>
     <MFC max_credits="2000000" ignore_synchronous_response="true"/>
     <FRAG2 frag_size="60000"/>
+    <RSVP timeout="60000" resend_interval="500" ack_on_delivery="false"/>
     <pbcast.STATE_TRANSFER/>
     <pbcast.FLUSH timeout="0" start_flush_timeout="10000"/>
 </config>

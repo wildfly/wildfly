@@ -64,18 +64,19 @@ import org.jboss.as.clustering.SerializableStateTransferResult;
 import org.jboss.as.clustering.StateTransferProvider;
 import org.jboss.as.clustering.StateTransferResult;
 import org.jboss.as.clustering.StreamStateTransferResult;
-import org.jboss.as.clustering.jgroups.ClassLoaderAwareUpHandler;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.clustering.msc.AsynchronousService;
-import org.jboss.marshalling.ClassResolver;
+import org.jboss.as.server.Services;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.marshalling.SimpleClassResolver;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.marshalling.reflect.ReflectiveCreator;
 import org.jboss.marshalling.reflect.SunReflectiveCreator;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -91,7 +92,6 @@ import org.jgroups.MergeView;
 import org.jgroups.Message;
 import org.jgroups.MessageListener;
 import org.jgroups.StateTransferException;
-import org.jgroups.UpHandler;
 import org.jgroups.Version;
 import org.jgroups.View;
 import org.jgroups.blocks.MethodCall;
@@ -132,6 +132,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
     }
 
     private final InjectedValue<Channel> channelRef = new InjectedValue<Channel>();
+    private final InjectedValue<ModuleLoader> loaderRef = new InjectedValue<ModuleLoader>();
 
     public CoreGroupCommunicationService(short scope) {
         this.scopeId = scope;
@@ -140,6 +141,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
     public ServiceBuilder<CoreGroupCommunicationService> build(ServiceTarget target, String name) {
         return target.addService(getServiceName(name), this)
             .addDependency(ChannelService.getServiceName(name), Channel.class, this.channelRef)
+            .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loaderRef)
         ;
     }
 
@@ -159,7 +161,9 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
     @Override
     public void start(StartContext context) throws StartException {
         this.channel = this.channelRef.getValue();
-
+        this.marshallingConfig.setClassResolver(ModularClassResolver.getInstance(this.loaderRef.getValue()));
+        this.marshallingConfig.setSerializedCreator(new SunReflectiveCreator());
+        this.marshallingConfig.setExternalizerCreator(new ReflectiveCreator());
         try {
             this.start();
         } catch (Exception e) {
@@ -181,6 +185,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
     // Attributes ----------------------------------------------------
     static final MarshallerFactory marshallerFactory = Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader());
 
+    final MarshallingConfiguration marshallingConfig = new MarshallingConfiguration();
     /** The JGroups channel */
     volatile Channel channel;
     /** me as a ClusterNode */
@@ -193,7 +198,6 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
     private volatile RpcDispatcher dispatcher = null;
     final Map<String, Object> rpcHandlers = new ConcurrentHashMap<String, Object>();
     private boolean directlyInvokeLocal;
-    final Map<String, ClassResolver> resolvers = new ConcurrentHashMap<String, ClassResolver>();
 
     /** Do we send any membership change notifications synchronously? */
     private boolean allowSyncListeners = false;
@@ -291,23 +295,8 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
      * {@inheritDoc}
      */
     @Override
-    public void registerRPCHandler(String objName, Object subscriber, ClassResolver resolver) {
-        this.registerRPCHandler(objName, subscriber);
-        this.resolvers.put(objName, resolver);
-    }
-
-    @Override
-    public void registerRPCHandler(String serviceName, Object handler, ClassLoader classLoader) {
-        this.registerRPCHandler(serviceName, handler, new SimpleClassResolver(classLoader));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void unregisterRPCHandler(String objName, Object subscriber) {
         this.rpcHandlers.remove(objName);
-        this.resolvers.remove(objName);
     }
 
     /**
@@ -871,15 +860,9 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
     /**
      * Creates an object from a byte buffer
      */
-    Object objectFromByteBufferInternal(ClassResolver resolver, byte[] buffer, int offset, int length) throws Exception {
+    Object objectFromByteBufferInternal(byte[] buffer, int offset, int length) throws Exception {
         if (buffer == null) return null;
-        MarshallingConfiguration config = new MarshallingConfiguration();
-        config.setSerializedCreator(new SunReflectiveCreator());
-        config.setExternalizerCreator(new ReflectiveCreator());
-        if (resolver != null) {
-            config.setClassResolver(resolver);
-        }
-        Unmarshaller unmarshaller = marshallerFactory.createUnmarshaller(config);
+        Unmarshaller unmarshaller = marshallerFactory.createUnmarshaller(this.marshallingConfig);
         unmarshaller.start(Marshalling.createByteInput(new ByteArrayInputStream(buffer, offset, length)));
         try {
             return unmarshaller.readObject();
@@ -892,7 +875,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
      * Serializes an object into a byte buffer. The object has to implement interface Serializable or Externalizable
      */
     byte[] objectToByteBufferInternal(Object object) throws Exception {
-        Marshaller marshaller = marshallerFactory.createMarshaller(new MarshallingConfiguration());
+        Marshaller marshaller = marshallerFactory.createMarshaller(this.marshallingConfig);
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         marshaller.start(Marshalling.createByteOutput(output));
         marshaller.writeObject(object);
@@ -903,7 +886,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
     /**
      * Creates a response object from a byte buffer - optimized for response marshalling
      */
-    Object objectFromByteBufferResponseInternal(ClassResolver resolver, byte[] buffer, int offset, int length) throws Exception {
+    Object objectFromByteBufferResponseInternal(byte[] buffer, int offset, int length) throws Exception {
         if (buffer == null) {
             return null;
         }
@@ -912,13 +895,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
             return null;
         }
 
-        MarshallingConfiguration config = new MarshallingConfiguration();
-        config.setSerializedCreator(new SunReflectiveCreator());
-        config.setExternalizerCreator(new ReflectiveCreator());
-        if (resolver != null) {
-            config.setClassResolver(resolver);
-        }
-        Unmarshaller unmarshaller = marshallerFactory.createUnmarshaller(config);
+        Unmarshaller unmarshaller = marshallerFactory.createUnmarshaller(this.marshallingConfig);
         unmarshaller.start(Marshalling.createByteInput(new ByteArrayInputStream(buffer, offset, length)));
         // read past the null/serializable byte
         unmarshaller.read();
@@ -938,7 +915,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
             return new byte[] { NULL_VALUE };
         }
 
-        Marshaller marshaller = marshallerFactory.createMarshaller(new MarshallingConfiguration());
+        Marshaller marshaller = marshallerFactory.createMarshaller(this.marshallingConfig);
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         marshaller.start(Marshalling.createByteOutput(output));
         // write a marker to stream to distinguish from null value stream
@@ -1158,7 +1135,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
 
         @Override
         public Object objectFromBuffer(byte[] buf, int offset, int length) throws Exception {
-            return CoreGroupCommunicationService.this.objectFromByteBufferInternal(null, buf, offset, length);
+            return CoreGroupCommunicationService.this.objectFromByteBufferInternal(buf, offset, length);
         }
     }
 
@@ -1174,20 +1151,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
 
         @Override
         public Object objectFromBuffer(byte[] buf, int offset, int length) throws Exception {
-            Object retval = CoreGroupCommunicationService.this.objectFromByteBufferResponseInternal(new SimpleClassResolver(HAServiceResponse.class.getClassLoader()), buf, offset, length);
-            // HAServiceResponse is only received when a scoped classloader is required for unmarshalling
-            if (!(retval instanceof HAServiceResponse)) {
-                return retval;
-            }
-
-            String serviceName = ((HAServiceResponse) retval).getServiceName();
-            byte[] payload = ((HAServiceResponse) retval).getPayload();
-
-            ClassResolver resolver = CoreGroupCommunicationService.this.resolvers.get(serviceName);
-            if (resolver == null) {
-                resolver = new SimpleClassResolver(CoreGroupCommunicationService.class.getClassLoader());
-            }
-            return CoreGroupCommunicationService.this.objectFromByteBufferResponseInternal(resolver, payload, offset, length);
+            return CoreGroupCommunicationService.this.objectFromByteBufferResponseInternal(buf, offset, length);
         }
     }
 
@@ -1205,11 +1169,6 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
             setChannel(channel);
             channel.addChannelListener(this);
             start();
-        }
-
-        @Override
-        public UpHandler getProtocolAdapter() {
-            return new ClassLoaderAwareUpHandler(this.prot_adapter, CoreGroupCommunicationService.class.getClassLoader());
         }
 
         /**
@@ -1239,7 +1198,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
             }
 
             try {
-                Object wrapper = CoreGroupCommunicationService.this.objectFromByteBufferInternal(null, req.getRawBuffer(), req.getOffset(), req.getLength());
+                Object wrapper = CoreGroupCommunicationService.this.objectFromByteBufferInternal(req.getRawBuffer(), req.getOffset(), req.getLength());
                 if (wrapper == null || !(wrapper instanceof Object[])) {
                     ClusteringImplLogger.ROOT_LOGGER.invalidPartitionMessageWrapper(CoreGroupCommunicationService.this.getGroupName());
                     return null;
@@ -1263,13 +1222,8 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
                 return null;
             }
 
-            // If client registered the service with a classloader, override the thread classloader here
-            ClassResolver resolver = CoreGroupCommunicationService.this.resolvers.get(service);
-            if (resolver == null) {
-                resolver = new SimpleClassResolver(CoreGroupCommunicationService.class.getClassLoader());
-            }
             try {
-                body = CoreGroupCommunicationService.this.objectFromByteBufferInternal(resolver, request_bytes, 0, request_bytes.length);
+                body = CoreGroupCommunicationService.this.objectFromByteBufferInternal(request_bytes, 0, request_bytes.length);
             } catch (Exception e) {
                 ClusteringImplLogger.ROOT_LOGGER.partitionFailedExtractingMessageBody(e, CoreGroupCommunicationService.this.getGroupName());
                 return null;
@@ -1305,11 +1259,6 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
              */
             try {
                 retval = method_call.invoke(handler);
-                if (resolver != null) {
-                    // wrap the response so that the service name can be accessed during unmarshalling of the response
-                    byte[] retbytes = CoreGroupCommunicationService.this.objectToByteBufferResponseInternal(retval);
-                    retval = new HAServiceResponse(handlerName, retbytes);
-                }
                 if (trace) {
                     ClusteringImplLogger.ROOT_LOGGER.tracef("rpc call return value: %s", retval);
                 }
@@ -1417,28 +1366,6 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
      */
     public static class NoHandlerForRPC implements Serializable {
         static final long serialVersionUID = -1263095408483622838L;
-    }
-
-    /**
-     * Used internally when an RPC call requires a custom classloader for unmarshalling
-     */
-    private static class HAServiceResponse implements Serializable {
-        private static final long serialVersionUID = -6485594652749906437L;
-        private final String serviceName;
-        private final byte[] payload;
-
-        public HAServiceResponse(String serviceName, byte[] payload) {
-            this.serviceName = serviceName;
-            this.payload = payload;
-        }
-
-        public String getServiceName() {
-            return this.serviceName;
-        }
-
-        public byte[] getPayload() {
-            return this.payload;
-        }
     }
 
     /**

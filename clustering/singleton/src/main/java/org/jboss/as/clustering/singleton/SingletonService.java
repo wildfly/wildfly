@@ -34,7 +34,6 @@ import org.jboss.as.clustering.GroupRpcDispatcher;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.service.ServiceProviderRegistry;
 import org.jboss.as.clustering.service.ServiceProviderRegistryService;
-import org.jboss.marshalling.ClassResolver;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -64,7 +63,6 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
 
     volatile ServiceProviderRegistry registry;
     volatile GroupRpcDispatcher dispatcher;
-    private volatile ClassResolver resolver;
     private volatile SingletonElectionPolicy electionPolicy;
     private volatile SingletonRpcHandler<T> handler;
     private volatile ServiceRegistry container;
@@ -107,11 +105,7 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
         this.registry = this.registryRef.getValue();
         final String name = this.singletonServiceName.getCanonicalName();
         this.handler = new RpcHandler(this.dispatcher, name);
-        if (this.resolver != null) {
-            this.dispatcher.registerRPCHandler(name, this, this.resolver);
-        } else {
-            this.dispatcher.registerRPCHandler(name, this);
-        }
+        this.dispatcher.registerRPCHandler(name, this);
         this.registry.register(name, this);
     }
 
@@ -125,10 +119,6 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
     @Override
     public boolean isMaster() {
         return this.master.get();
-    }
-
-    public void setClassResolver(ClassResolver resolver) {
-        this.resolver = resolver;
     }
 
     public void setElectionPolicy(SingletonElectionPolicy electionPolicy) {

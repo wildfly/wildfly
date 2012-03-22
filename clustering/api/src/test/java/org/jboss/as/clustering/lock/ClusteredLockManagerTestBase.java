@@ -10,7 +10,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -31,7 +30,6 @@ import org.jboss.as.clustering.GroupRpcDispatcher;
 import org.jboss.as.clustering.MockClusterNode;
 import org.jboss.as.clustering.ResponseFilter;
 import org.jboss.as.clustering.lock.AbstractClusterLockSupport.RpcTarget;
-import org.jboss.marshalling.ClassResolver;
 import org.junit.Test;
 import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentCaptor;
@@ -101,7 +99,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
 
         testee.start();
 
-        verify(rpcDispatcher).registerRPCHandler(eq("test"), any(RpcTarget.class), isA(ClassResolver.class));
+        verify(rpcDispatcher).registerRPCHandler(eq("test"), any(RpcTarget.class));
         verify(notifier).registerGroupMembershipListener(testee);
 
         assertEquals("Current view is correct", 1, testee.getCurrentView().size());
@@ -507,7 +505,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
 
         testee.start();
         
-        verify(rpcDispatcher).registerRPCHandler(eq("test"), c.capture(), isA(ClassResolver.class));
+        verify(rpcDispatcher).registerRPCHandler(eq("test"), c.capture());
         verify(notifier).registerGroupMembershipListener(same(testee));
         verify(handler).setLocalNode(same(node));
         

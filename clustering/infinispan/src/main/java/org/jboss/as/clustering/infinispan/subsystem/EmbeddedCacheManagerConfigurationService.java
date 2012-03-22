@@ -34,6 +34,8 @@ import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.jboss.as.clustering.infinispan.ChannelProvider;
 import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
+import org.jboss.marshalling.ModularClassResolver;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -62,6 +64,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
 
     interface Dependencies {
         ClassLoader getClassLoader();
+        ModuleLoader getModuleLoader();
         TransportConfiguration getTransportConfiguration();
         MBeanServer getMBeanServer();
         Executor getListenerExecutor();
@@ -109,6 +112,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
             loader = EmbeddedCacheManagerConfiguration.class.getClassLoader();
         }
         builder.classLoader(loader);
+        builder.serialization().classResolver(ModularClassResolver.getInstance(this.dependencies.getModuleLoader()));
         builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
 
         TransportConfiguration transport = this.dependencies.getTransportConfiguration();
