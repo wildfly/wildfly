@@ -187,7 +187,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
     }
 
     protected boolean boot(List<ModelNode> bootOperations, boolean rollbackOnRuntimeFailure) throws ConfigurationPersistenceException {
-        return controller.boot(bootOperations, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT, false);
+        return controller.boot(bootOperations, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT, rollbackOnRuntimeFailure);
     }
 
     protected void finishBoot() throws ConfigurationPersistenceException {
