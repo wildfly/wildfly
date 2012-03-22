@@ -57,7 +57,6 @@ public class NativeManagementWriteAttributeHandler extends AbstractWriteAttribut
         return false;
     }
 
-
     @Override
     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
         final ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
@@ -68,12 +67,10 @@ public class NativeManagementWriteAttributeHandler extends AbstractWriteAttribut
     private void installNativeManagementService(final OperationContext context, final ModelNode subModel, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
 
         // Remove the old connector
-        final ModelNode portNode = NativeManagementResourceDefinition.NATIVE_PORT.resolveModelAttribute(context, subModel);
-        int port = portNode.isDefined() ? portNode.asInt() : 0;
         ManagementRemotingServices.removeConnectorServices(context, ManagementRemotingServices.MANAGEMENT_CONNECTOR);
 
         NativeManagementAddHandler.populateHostControllerInfo(hostControllerInfo, context, subModel);
-        NativeManagementAddHandler.installNativeManagementServices(context.getServiceTarget(), hostControllerInfo, verificationHandler, null);
+        NativeManagementAddHandler.installNativeManagementServices(context.getServiceTarget(), hostControllerInfo, verificationHandler, null, false);
 
     }
 

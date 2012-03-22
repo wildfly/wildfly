@@ -55,6 +55,7 @@ class ServerInventoryService implements Service<ServerInventory> {
 
     private final InjectedValue<ProcessControllerConnectionService> client = new InjectedValue<ProcessControllerConnectionService>();
     private final InjectedValue<NetworkInterfaceBinding> interfaceBinding = new InjectedValue<NetworkInterfaceBinding>();
+    private final InjectedValue<ServerInventoryCallbackService> serverCallback = new InjectedValue<ServerInventoryCallbackService>();
     private final DomainController domainController;
     private final HostControllerEnvironment environment;
     private final HostRunningModeControl runningModeControl;
@@ -74,17 +75,13 @@ class ServerInventoryService implements Service<ServerInventory> {
 
     static Future<ServerInventory> install(final ServiceTarget serviceTarget, final DomainController domainController, final HostRunningModeControl runningModeControl, final HostControllerEnvironment environment,
                                            final String interfaceBinding, final int port){
-        final ServerInventoryCallbackService callbackService = new ServerInventoryCallbackService();
-        serviceTarget.addService(ServerInventoryCallbackService.SERVICE_NAME, callbackService)
-                .addDependency(ServerInventoryService.SERVICE_NAME, ServerInventory.class, callbackService.getServerInventoryInjectedValue())
-                .setInitialMode(ON_DEMAND)
-                .install();
 
         final ServerInventoryService inventory = new ServerInventoryService(domainController, runningModeControl, environment, port);
         serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
                 .addDependency(HostControllerService.HC_EXECUTOR_SERVICE_NAME, ExecutorService.class, inventory.executorService)
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, inventory.getClient())
                 .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceBinding), NetworkInterfaceBinding.class, inventory.interfaceBinding)
+                .addDependency(ServerInventoryCallbackService.SERVICE_NAME, ServerInventoryCallbackService.class, inventory.serverCallback)
                 .addDependency(ManagementChannelRegistryService.SERVICE_NAME)
                 .install();
         return inventory.futureInventory;
@@ -99,6 +96,7 @@ class ServerInventoryService implements Service<ServerInventory> {
             final InetSocketAddress binding = new InetSocketAddress(interfaceBinding.getValue().getAddress(), port);
             serverInventory = new ServerInventoryImpl(domainController, environment, binding, processControllerConnectionService.getClient());
             processControllerConnectionService.setServerInventory(serverInventory);
+            serverCallback.getValue().setCallbackHandler(serverInventory.getServerCallbackHandler());
             futureInventory.setInventory(serverInventory);
         } catch (Exception e) {
             futureInventory.setFailure(e);
@@ -124,6 +122,7 @@ class ServerInventoryService implements Service<ServerInventory> {
                         serverInventory = null;
                         // client.getValue().setServerInventory(null);
                     } finally {
+                        serverCallback.getValue().setCallbackHandler(null);
                         context.complete();
                     }
                 }

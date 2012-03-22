@@ -22,35 +22,63 @@
 package org.jboss.as.host.controller;
 
 
+import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jboss.msc.service.Service;
+import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import java.io.IOException;
+
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class ServerInventoryCallbackService implements Service<CallbackHandler> {
+class ServerInventoryCallbackService implements CallbackHandler, Service<CallbackHandler> {
 
     static final ServiceName SERVICE_NAME = ServerInventoryService.SERVICE_NAME.append("callback");
 
-    private final InjectedValue<ServerInventory> serverInventoryInjectedValue = new InjectedValue<ServerInventory>();
+    static void install(final ServiceTarget serviceTarget) {
+        final ServerInventoryCallbackService callbackService = new ServerInventoryCallbackService();
+        serviceTarget.addService(ServerInventoryCallbackService.SERVICE_NAME, callbackService)
+                .setInitialMode(ON_DEMAND)
+                .install();
+    }
+
+    private volatile CallbackHandler callbackHandler;
 
     public void start(StartContext startContext) throws StartException {
+        //
     }
 
     public void stop(StopContext stopContext) {
-    }
-
-    public InjectedValue<ServerInventory> getServerInventoryInjectedValue() {
-        return serverInventoryInjectedValue;
+        //
     }
 
     public CallbackHandler getValue() throws IllegalStateException, IllegalArgumentException {
-        return serverInventoryInjectedValue.getValue().getServerCallbackHandler();
+        return this;
+    }
+
+    /**
+     * Set the callback handler, once the server inventory is started.
+     *
+     * @param callbackHandler the server inventory callback handler
+     */
+    protected void setCallbackHandler(CallbackHandler callbackHandler) {
+        this.callbackHandler = callbackHandler;
+    }
+
+    @Override
+    public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+        final CallbackHandler callbackHandler = this.callbackHandler;
+        if(callbackHandler != null) {
+            callbackHandler.handle(callbacks);
+        }
     }
 }
