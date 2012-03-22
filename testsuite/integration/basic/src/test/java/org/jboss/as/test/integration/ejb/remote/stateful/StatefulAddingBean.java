@@ -49,6 +49,11 @@ public class StatefulAddingBean implements RemoteInterface {
     }
 
     @Override
+    public ValueWrapper getValue() {
+        return new ValueWrapper();
+    }
+
+    @Override
     @Remove
     public void remove() {
 
