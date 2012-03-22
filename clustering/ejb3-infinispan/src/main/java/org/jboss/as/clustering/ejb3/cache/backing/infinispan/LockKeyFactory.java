@@ -24,12 +24,10 @@ package org.jboss.as.clustering.ejb3.cache.backing.infinispan;
 
 import java.io.Serializable;
 
-import org.jboss.as.clustering.MarshalledValue;
-
 /**
  * Factory for creating keys for use by a lock manager.
  * @author Paul Ferraro
  */
-public interface LockKeyFactory<K, C> {
-    Serializable createLockKey(MarshalledValue<K, C> key);
+public interface LockKeyFactory<K> {
+    Serializable createLockKey(K key);
 }

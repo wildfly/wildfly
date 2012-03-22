@@ -292,7 +292,6 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         final boolean batching = CommonAttributes.BATCHING.resolveModelAttribute(context, cache).asBoolean();
         final boolean asyncMarshalling = CommonAttributes.ASYNC_MARSHALLING.resolveModelAttribute(context, cache).asBoolean();
 
-        builder.classLoader(this.getClass().getClassLoader());
         // set the cache mode
         CacheMode cacheMode = CacheMode.valueOf(cache.require(ModelKeys.MODE).asString());
         builder.clustering().cacheMode(cacheMode);

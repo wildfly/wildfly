@@ -23,8 +23,6 @@ package org.jboss.as.clustering;
 
 import java.util.List;
 
-import org.jboss.marshalling.ClassResolver;
-
 /**
  * Provide Remote Procedure Call services to a set of nodes that share a common group communication infrastructure.
  *
@@ -49,29 +47,6 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
      * @param handler object to be called when receiving a RPC for its key.
      */
     void registerRPCHandler(String serviceName, Object handler);
-
-    /**
-     * Use {@link #registerRPCHandler(String, Object, ClassResolver)} instead.
-     * @param serviceName Name of the subscribing service (demultiplexing key)
-     * @param handler object to be called when receiving a RPC for its key.
-     * @param classloader ClassLoader to be used when marshalling and unmarshalling RPC requests and responses.
-     */
-    @Deprecated
-    void registerRPCHandler(String serviceName, Object handler, ClassLoader classLoader);
-
-    /**
-     * Register an object upon which RPCs associated with the given serviceName will be invoked. The partition receives RPC
-     * calls from other nodes in the cluster and demultiplexes them, according to a service name, to a particular service.
-     * Consequently, each service must first subscribe with a particular service name in the partition. The subscriber does not
-     * need to implement any specific interface: the call is handled dynamically through reflection. In cases where the client
-     * is using a scoped class resolver, the client will need to provide a reference to the class resolver if the service's RPC calls
-     * use custom parameter or response object types. The class resolver will be used to deserialize the RPC and/or response.
-     *
-     * @param serviceName Name of the subscribing service (demultiplexing key)
-     * @param handler object to be called when receiving a RPC for its key.
-     * @param resolver ClassResolver to be used when marshalling and unmarshalling RPC requests and responses.
-     */
-    void registerRPCHandler(String serviceName, Object handler, ClassResolver resolver);
 
     /**
      * Unregister the service from the partition

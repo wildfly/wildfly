@@ -24,6 +24,8 @@ package org.jboss.as.jpa.hibernate3.infinispan;
 
 import java.util.Properties;
 
+import org.hibernate.cache.infinispan.impl.ClassLoaderAwareCache;
+import org.infinispan.AdvancedCache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.server.CurrentServiceContainer;
@@ -50,6 +52,13 @@ public class SharedInfinispanRegionFactory extends InfinispanRegionFactory {
         ServiceName serviceName = EmbeddedCacheManagerService.getServiceName(container);
         ServiceRegistry registry = CurrentServiceContainer.getServiceContainer();
         return (EmbeddedCacheManager) registry.getRequiredService(serviceName).getValue();
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    protected ClassLoaderAwareCache createCacheWrapper(AdvancedCache cache) {
+        cache.start();
+        return super.createCacheWrapper(cache);
     }
 
     @Override

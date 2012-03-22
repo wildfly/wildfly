@@ -33,10 +33,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
-import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
@@ -208,31 +206,27 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
         }
     }
 
-    @CacheEntryCreated
-    public void created(CacheEntryCreatedEvent<Address, Map.Entry<K, V>> event) {
-        if (event.isPre() || event.isOriginLocal()) return;
-        if (!this.listeners.isEmpty()) {
-            Map.Entry<K, V> entry = event.getCache().get(event.getKey());
-            if (entry != null) {
-                for (Listener<K, V> listener: this.listeners) {
-                    listener.addedEntries(Collections.singletonMap(entry.getKey(), entry.getValue()));
-                }
-            }
-        }
-    }
+    // Yes, this could be static - but it references instance types
+    private ThreadLocal<Map.Entry<K, V>> entry = new ThreadLocal<Map.Entry<K, V>>();
 
     @CacheEntryModified
     public void modified(CacheEntryModifiedEvent<Address, Map.Entry<K, V>> event) {
-        if (event.isPre() || event.isOriginLocal()) return;
-        if (!this.listeners.isEmpty()) {
-            Map.Entry<K, V> entry = event.getValue();
-            Map.Entry<K, V> old = event.getCache().get(event.getKey());
-            if (entry != null) {
-                for (Listener<K, V> listener: this.listeners) {
-                    if (old == null) {
-                        listener.addedEntries(Collections.singletonMap(entry.getKey(), entry.getValue()));
-                    } else {
-                        listener.updatedEntries(Collections.singletonMap(entry.getKey(), entry.getValue()));
+        if (event.isOriginLocal()) return;
+        if (event.isPre()) {
+            this.entry.set(event.getValue());
+        } else {
+            Map.Entry<K, V> old = this.entry.get();
+            this.entry.remove();
+            if (!this.listeners.isEmpty()) {
+                Map.Entry<K, V> entry = event.getValue();
+                if (entry != null) {
+                    Map<K, V> entries = Collections.singletonMap(entry.getKey(), entry.getValue());
+                    for (Listener<K, V> listener: this.listeners) {
+                        if (old == null) {
+                            listener.addedEntries(entries);
+                        } else {
+                            listener.updatedEntries(entries);
+                        }
                     }
                 }
             }
@@ -241,12 +235,17 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
 
     @CacheEntryRemoved
     public void removed(CacheEntryRemovedEvent<Address, Map.Entry<K, V>> event) {
-        // Need to run prior to removal, so the cache entry is available
-        if (!event.isPre() || event.isOriginLocal()) return;
-        Map.Entry<K, V> entry = event.getValue();
-        if (entry != null) {
-            for (Listener<K, V> listener: this.listeners) {
-                listener.removedEntries(Collections.singleton(entry.getKey()));
+        if (event.isOriginLocal()) return;
+        if (event.isPre()) {
+            this.entry.set(event.getValue());
+        } else {
+            Map.Entry<K, V> entry = this.entry.get();
+            this.entry.remove();
+            if (entry != null) {
+                Set<K> keys = Collections.singleton(entry.getKey());
+                for (Listener<K, V> listener: this.listeners) {
+                    listener.removedEntries(keys);
+                }
             }
         }
     }

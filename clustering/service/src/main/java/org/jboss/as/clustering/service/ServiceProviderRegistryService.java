@@ -126,7 +126,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
         this.notifier.registerGroupMembershipListener(this);
         @SuppressWarnings("unchecked")
         Cache<String, Map<ClusterNode, Void>> cache = this.cacheRef.getValue();
-        this.cache = new AtomicMapCache<String, ClusterNode, Void>(cache.getAdvancedCache().with(this.getClass().getClassLoader()));
+        this.cache = new AtomicMapCache<String, ClusterNode, Void>(cache.getAdvancedCache());
         this.cache.addListener(this);
     }
 

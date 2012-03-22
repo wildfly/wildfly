@@ -21,8 +21,6 @@
  */
 package org.jboss.as.jpa.hibernate4.infinispan;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.EnumSet;
 import java.util.Properties;
 
@@ -93,13 +91,7 @@ public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.Infi
     @SuppressWarnings("rawtypes")
     @Override
     protected AdvancedCache createCacheWrapper(AdvancedCache cache) {
-        PrivilegedAction<ClassLoader> action = new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                return Thread.currentThread().getContextClassLoader();
-            }
-        };
-        return cache.with(AccessController.doPrivileged(action));
+        return cache;
     }
 
     static class NotifyingListener<T> extends AbstractServiceListener<T> {

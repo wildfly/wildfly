@@ -42,7 +42,6 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.as.clustering.infinispan.invoker.BatchOperation;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.registry.Registry;
@@ -175,7 +174,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
             }
         };
 
-        this.batch(operation);
+        this.invoke(operation);
     }
 
     /**
@@ -272,7 +271,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
                 return null;
             }
         };
-        this.batch(operation);
+        this.invoke(operation);
     }
 
     /**
@@ -476,10 +475,6 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
 
     private void trace(String message, Object... args) {
         ROOT_LOGGER.tracef(message, args);
-    }
-
-    private <R> R batch(Operation<R> operation) {
-        return this.invoke(new BatchOperation<String, Map<Object, Object>, R>(operation));
     }
 
     private <R> R invoke(CacheInvoker.Operation<String, Map<Object, Object>, R> operation) {

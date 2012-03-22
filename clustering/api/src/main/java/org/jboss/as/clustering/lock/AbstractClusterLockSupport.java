@@ -36,7 +36,6 @@ import org.jboss.as.clustering.GroupMembershipListener;
 import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.GroupRpcDispatcher;
 import org.jboss.as.clustering.lock.ClusterLockState.State;
-import org.jboss.marshalling.SimpleClassResolver;
 
 import static org.jboss.as.clustering.ClusteringApiLogger.ROOT_LOGGER;
 import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
@@ -248,7 +247,7 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
         this.localHandler.setLocalNode(this.me);
 
         this.rpcTarget = new RpcTarget(this);
-        this.rpcDispatcher.registerRPCHandler(this.serviceHAName, this.rpcTarget, new SimpleClassResolver(rpcDispatcher.getClass().getClassLoader()));
+        this.rpcDispatcher.registerRPCHandler(this.serviceHAName, this.rpcTarget);
         this.membershipNotifier.registerGroupMembershipListener(this);
 
         List<ClusterNode> allMembers = new ArrayList<ClusterNode>();

@@ -300,7 +300,7 @@ public final class SSOClusterManager implements org.jboss.as.clustering.web.sso.
     @Override
     public void start() throws Exception {
         @SuppressWarnings("rawtypes")
-        AdvancedCache cache = this.cacheRef.getValue().getAdvancedCache().with(this.getClass().getClassLoader());
+        AdvancedCache cache = this.cacheRef.getValue().getAdvancedCache();
         this.cache = cache;
         this.credentialCache = cache;
         this.sessionCache = new AtomicMapCache<SessionKey, FullyQualifiedSessionId, Void>(cache);
