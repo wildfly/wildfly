@@ -126,4 +126,16 @@ public interface MessagingLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 11606, value = "Could not close file %s")
     void couldNotCloseFile(String file, @Cause Throwable cause);
+
+    /**
+     * Logs a warning message indicating the messaging object bound to the JNDI name represented by
+     * the {@code jndiName) has not be unbound in a timely fashion.
+     *
+     * @param jndiName the name the messaging object was bound to.
+     * @param timeout  the timeout value
+     * @param timeUnit the timeout time unit
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11607, value = "Failed to unbind messaging object bound to jndi name %s in %d %s")
+    void failedToUnbindJndiName(String jndiName, long timeout, String timeUnit);
 }
