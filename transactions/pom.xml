@@ -88,8 +88,6 @@
             <artifactId>jboss-as-subsystem-test</artifactId>
             <scope>test</scope>
         </dependency>
-
-
     </dependencies>
     <build>
         <plugins>
