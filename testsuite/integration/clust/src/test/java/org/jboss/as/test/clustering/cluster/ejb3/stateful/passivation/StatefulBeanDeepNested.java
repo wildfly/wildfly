@@ -22,27 +22,16 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.passivation;
 
-import javax.ejb.Remote;
+import javax.ejb.Stateful;
+
+import org.jboss.ejb3.annotation.Cache;
 
 /**
+ * Simple bean which will be injected in {@link StatefulBeanNested}.
  * @author Ondrej Chaloupka
  */
-@Remote
-public interface StatefulBeanRemote {
-    int getNumber();
-    String setNumber(int number);
-    String incrementNumber();
-    void setPassivationNode(String node);
-    String getPassivatedBy();
-    
-    // nested bean working methods
-    void resetNestedBean();
-    int getNestedBeanActivatedCalled();
-    int getNestedBeanPassivatedCalled();
-    int getDeepNestedBeanActivatedCalled();
-    int getDeepNestedBeanPassivatedCalled();
-    String getNestedBeanNodeName();
-    int getRemoteNestedBeanPassivatedCalled();
-    int getRemoteNestedBeanActivatedCalled();
-    String getRemoteNestedBeanNodeName();
+@Stateful
+@Cache("StatefulTreeCache")
+public class StatefulBeanDeepNested extends StatefulBeanNestedParent implements StatefulBeanDeepNestedRemote {
+
 }

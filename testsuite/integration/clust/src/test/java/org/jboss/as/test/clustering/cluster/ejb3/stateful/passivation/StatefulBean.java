@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.passivation;
 
+import javax.ejb.EJB;
 import javax.ejb.PostActivate;
 import javax.ejb.PrePassivate;
 import javax.ejb.Stateful;
@@ -36,13 +37,19 @@ import org.jboss.logging.Logger;
 @Clustered
 @Stateful
 public class StatefulBean implements StatefulBeanRemote {
-    private static Logger log = Logger.getLogger(StatefulBean.class);
+    private static Logger log = Logger.getLogger(StatefulBean.class);    
     private int number;
-    private String passivatedBy;
+    private String passivatedBy = "unknown";
     private String actIfIsNode;
     private int postActivateCalled = 0;
     private int prePassivateCalled = 0;
+    
+    @EJB
+    private StatefulBeanNested beanNested;
 
+    @EJB(lookup = "java:global/cluster-passivation-test-helper/StatefulBeanDeepNested!org.jboss.as.test.clustering.cluster.ejb3.stateful.passivation.StatefulBeanDeepNestedRemote")
+    private StatefulBeanDeepNestedRemote beanNestedRemote;
+    
     /**
      * Getting number.
      */
@@ -89,5 +96,35 @@ public class StatefulBean implements StatefulBeanRemote {
     public void postActivate() {
         postActivateCalled++;
         log.info("Activating with number: " + number + " and was passivated by " + getPassivatedBy() + ", postActivate method called " + postActivateCalled + " times");
+    }
+    
+    public void resetNestedBean() {
+        beanNested.reset();
+        beanNested.resetDeepNested();
+        beanNestedRemote.reset();
+    }
+    public int getNestedBeanActivatedCalled() {
+        return beanNested.getActivatedCalled();
+    }
+    public int getNestedBeanPassivatedCalled() {
+        return beanNested.getPassivatedCalled();
+    }
+    public int getDeepNestedBeanActivatedCalled() {
+        return beanNested.getDeepNestedActivatedCalled();
+    }
+    public int getDeepNestedBeanPassivatedCalled() {
+        return beanNested.getDeepNestedPassivatedCalled();
+    }
+    public String getNestedBeanNodeName() {
+        return beanNested.getNodeName();
+    }
+    public int getRemoteNestedBeanPassivatedCalled() {
+        return beanNestedRemote.getPassivatedCalled();
+    }
+    public int getRemoteNestedBeanActivatedCalled() {
+        return beanNestedRemote.getActivatedCalled();
+    }
+    public String getRemoteNestedBeanNodeName() {
+        return beanNestedRemote.getNodeName();
     }
 }

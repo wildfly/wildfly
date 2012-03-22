@@ -22,27 +22,48 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.passivation;
 
-import javax.ejb.Remote;
+import javax.ejb.PostActivate;
+import javax.ejb.PrePassivate;
+
+import org.jboss.as.test.clustering.NodeNameGetter;
+import org.jboss.logging.Logger;
 
 /**
  * @author Ondrej Chaloupka
  */
-@Remote
-public interface StatefulBeanRemote {
-    int getNumber();
-    String setNumber(int number);
-    String incrementNumber();
-    void setPassivationNode(String node);
-    String getPassivatedBy();
+public class StatefulBeanNestedParent {
+    private static final Logger log = Logger.getLogger(StatefulBeanNestedParent.class);
     
-    // nested bean working methods
-    void resetNestedBean();
-    int getNestedBeanActivatedCalled();
-    int getNestedBeanPassivatedCalled();
-    int getDeepNestedBeanActivatedCalled();
-    int getDeepNestedBeanPassivatedCalled();
-    String getNestedBeanNodeName();
-    int getRemoteNestedBeanPassivatedCalled();
-    int getRemoteNestedBeanActivatedCalled();
-    String getRemoteNestedBeanNodeName();
+    private int passivatedCalled = 0;
+    private int activatedCalled = 0;
+    
+    public void reset() {
+        passivatedCalled = 0;
+        activatedCalled = 0;
+    }
+    
+    public String getNodeName() {
+        return NodeNameGetter.getNodeName();
+    }
+    
+    public int getPassivatedCalled() {
+        return passivatedCalled;
+    }
+    
+    public int getActivatedCalled() {
+        return activatedCalled;
+    }
+    
+    @PrePassivate
+    public void prePassivate() {
+        passivatedCalled++;
+        log.info(this.getClass().getSimpleName() + " prePassivated() called " + passivatedCalled + " times");
+    }
+    
+    @PostActivate
+    public void postActivate() {
+        activatedCalled++;
+        log.info(this.getClass().getSimpleName() + " postActivate() called " + activatedCalled + " times");
+    }
+    
 }
