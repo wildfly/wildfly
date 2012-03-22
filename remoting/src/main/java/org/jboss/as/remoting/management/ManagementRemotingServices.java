@@ -25,6 +25,7 @@ package org.jboss.as.remoting.management;
 
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
+import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
 import java.util.List;
 
@@ -105,13 +106,24 @@ public final class ManagementRemotingServices extends RemotingServices {
             final ServiceName operationHandlerName,
             final ServiceVerificationHandler verificationHandler,
             final List<ServiceController<?>> newControllers) {
+        installManagementChannelOpenListenerService(serviceTarget, endpointName, channelName, operationHandlerName, verificationHandler, newControllers, false);
+    }
+
+    public static void installManagementChannelOpenListenerService(
+            final ServiceTarget serviceTarget,
+            final ServiceName endpointName,
+            final String channelName,
+            final ServiceName operationHandlerName,
+            final ServiceVerificationHandler verificationHandler,
+            final List<ServiceController<?>> newControllers,
+            final boolean onDemand) {
 
         final ManagementChannelOpenListenerService channelOpenListenerService = new ManagementChannelOpenListenerService(channelName, OptionMap.EMPTY);
         final ServiceBuilder<?> builder = serviceTarget.addService(channelOpenListenerService.getServiceName(endpointName), channelOpenListenerService)
                 .addDependency(endpointName, Endpoint.class, channelOpenListenerService.getEndpointInjector())
                 .addDependency(operationHandlerName, ManagementChannelInitialization.class, channelOpenListenerService.getOperationHandlerInjector())
                 .addDependency(ManagementChannelRegistryService.SERVICE_NAME, ManagementChannelRegistryService.class, channelOpenListenerService.getRegistry())
-                .setInitialMode(ACTIVE);
+                .setInitialMode(onDemand ? ON_DEMAND : ACTIVE);
 
         addController(newControllers, verificationHandler, builder);
     }

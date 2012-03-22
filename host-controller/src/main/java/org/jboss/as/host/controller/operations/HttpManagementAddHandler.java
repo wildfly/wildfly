@@ -87,11 +87,9 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         populateHostControllerInfo(hostControllerInfo, context, model);
-
-        if (!context.isBooting()) {
-            installHttpManagementServices(context.getRunningMode(), context.getServiceTarget(), hostControllerInfo, environment, verificationHandler);
-        }
-        // else DomainModelControllerService does the service install
+        // DomainModelControllerService requires this service
+        final boolean onDemand = context.isBooting();
+        installHttpManagementServices(context.getRunningMode(), context.getServiceTarget(), hostControllerInfo, environment, verificationHandler, onDemand);
     }
 
     @Override
@@ -115,7 +113,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
 
     public static void installHttpManagementServices(final RunningMode runningMode, final ServiceTarget serviceTarget, final LocalHostControllerInfo hostControllerInfo,
                                                final HostControllerEnvironment environment,
-                                               final ServiceVerificationHandler verificationHandler) {
+                                               final ServiceVerificationHandler verificationHandler, boolean onDemand) {
 
         String interfaceName = hostControllerInfo.getHttpManagementInterface();
         int port = hostControllerInfo.getHttpManagementPort();
@@ -153,7 +151,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
             builder.addListener(verificationHandler);
         }
 
-        builder.setInitialMode(ServiceController.Mode.ACTIVE)
+        builder.setInitialMode(onDemand ? ServiceController.Mode.ON_DEMAND : ServiceController.Mode.ACTIVE)
                 .install();
 
     }

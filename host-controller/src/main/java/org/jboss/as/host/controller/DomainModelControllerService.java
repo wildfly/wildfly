@@ -22,6 +22,7 @@
 
 package org.jboss.as.host.controller;
 
+import org.jboss.as.controller.ServiceVerificationHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -38,6 +39,7 @@ import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OptionalDataException;
 import java.security.AccessController;
 import java.util.Iterator;
 import java.util.Map;
@@ -48,6 +50,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -95,8 +98,12 @@ import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.repository.LocalFileRepository;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.RuntimeExpressionResolver;
+import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -311,18 +318,17 @@ public class DomainModelControllerService extends AbstractControllerService impl
         boolean ok = false;
         boolean reachedServers = false;
         try {
+            // Install server inventory callback
+            ServerInventoryCallbackService.install(serviceTarget);
+
             // Parse the host.xml and invoke all the ops. The ops should rollback on any Stage.RUNTIME failure
             ok = boot(hostControllerConfigurationPersister.load(), true);
 
             final RunningMode currentRunningMode = runningModeControl.getRunningMode();
 
             if (ok) {
-                // Install the core remoting endpoint and listener
-                ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                        hostControllerInfo.getLocalHostName(), EndpointService.EndpointType.MANAGEMENT, null, null);
 
                 // Now we know our management interface configuration. Install the server inventory
-                ManagementChannelRegistryService.addService(serviceTarget);
                 Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, runningModeControl, environment,
                         hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
 
@@ -388,16 +394,21 @@ public class DomainModelControllerService extends AbstractControllerService impl
             }
 
             if (ok) {
-                // TODO look into adding some of these services in the handlers, but ON-DEMAND.
-                // Then here just add some simple service that demands them
-
+                // Install the server > host operation handler
                 ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME, proxyExecutor, localFileRepository);
 
-                NativeManagementAddHandler.installNativeManagementServices(serviceTarget, hostControllerInfo, null, null);
+                // demand native mgmt services
+                serviceTarget.addService(ServiceName.JBOSS.append("native-mgmt-startup"), Service.NULL)
+                        .addDependency(ManagementRemotingServices.channelServiceName(ManagementRemotingServices.MANAGEMENT_ENDPOINT, ManagementRemotingServices.SERVER_CHANNEL))
+                        .setInitialMode(ServiceController.Mode.ACTIVE)
+                        .install();
 
-                if (hostControllerInfo.getHttpManagementInterface() != null) {
-                    HttpManagementAddHandler.installHttpManagementServices(currentRunningMode, serviceTarget, hostControllerInfo, environment, null);
-                }
+                // demand http mgmt services
+                serviceTarget.addService(ServiceName.JBOSS.append("http-mgmt-startup"), Service.NULL)
+                        .addDependency(ServiceBuilder.DependencyType.OPTIONAL, HttpManagementService.SERVICE_NAME)
+                        .setInitialMode(ServiceController.Mode.ACTIVE)
+                        .install();
+
                 reachedServers = true;
                 if (currentRunningMode == RunningMode.NORMAL) {
                     startServers();

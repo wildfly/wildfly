@@ -36,6 +36,8 @@ import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.host.controller.DomainModelControllerService;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
+import org.jboss.as.remoting.EndpointService;
+import org.jboss.as.remoting.management.ManagementChannelRegistryService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
@@ -75,11 +77,14 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
                                   final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         populateHostControllerInfo(hostControllerInfo, context, model);
+        final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        if (!context.isBooting()) {
-            installNativeManagementServices(context.getServiceTarget(), hostControllerInfo, verificationHandler, newControllers);
-        }
-        // else DomainModelControllerService does the service install
+        ManagementChannelRegistryService.addService(serviceTarget);
+        ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
+                hostControllerInfo.getLocalHostName(), EndpointService.EndpointType.MANAGEMENT, null, null);
+
+        final boolean onDemand = context.isBooting();
+        installNativeManagementServices(serviceTarget, hostControllerInfo, verificationHandler, newControllers, onDemand);
     }
 
     static void populateHostControllerInfo(LocalHostControllerInfoImpl hostControllerInfo, OperationContext context, ModelNode model) throws OperationFailedException {
@@ -92,7 +97,9 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
 
     public static void installNativeManagementServices(final ServiceTarget serviceTarget, final LocalHostControllerInfo hostControllerInfo,
                                                        final ServiceVerificationHandler verificationHandler,
-                                                       final List<ServiceController<?>> newControllers) {
+                                                       final List<ServiceController<?>> newControllers,
+                                                       final boolean onDemand) {
+
         ServiceName realmSvcName = null;
         String nativeSecurityRealm = hostControllerInfo.getNativeManagementSecurityRealm();
         if (nativeSecurityRealm != null) {
@@ -103,11 +110,11 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
                 NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(hostControllerInfo.getNativeManagementInterface());
 
         ManagementRemotingServices.installDomainConnectorServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), realmSvcName, null, null);
+                nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), realmSvcName, verificationHandler, newControllers);
 
         ManagementRemotingServices.installManagementChannelOpenListenerService(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
                 ManagementRemotingServices.SERVER_CHANNEL,
-                ServerToHostOperationHandlerFactoryService.SERVICE_NAME, verificationHandler, newControllers);
+                ServerToHostOperationHandlerFactoryService.SERVICE_NAME, verificationHandler, newControllers, onDemand);
 
         ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
                 new ModelControllerClientOperationHandlerFactoryService(),
