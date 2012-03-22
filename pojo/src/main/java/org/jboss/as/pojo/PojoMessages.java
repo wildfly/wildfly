@@ -310,4 +310,25 @@ public interface PojoMessages {
      */
     @Message(id = 17079, value = "Ambiguous match %s.")
     IllegalArgumentException ambiguousMatch(Object info);
+
+    /**
+     * Ambiguous match.
+     *
+     * @param info the info
+     * @param name the name
+     * @param clazz the class
+     * @return a {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 17080, value = "Ambiguous match of %s for name %s on class %s.")
+    IllegalArgumentException ambiguousMatch(Object info, String name, String clazz);
+
+    /**
+     * Field not found.
+     *
+     * @param name the method name
+     * @param clazz the class
+     * @return a {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 17081, value = "Field not found %s for class %s.")
+    IllegalArgumentException fieldNotFound(String name, String clazz);
 }
