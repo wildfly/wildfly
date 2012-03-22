@@ -109,6 +109,22 @@ public class EJBClientAPIUsageTestCase {
     }
 
     /**
+     * Test bean returning a value object with a transient field.  Will test that the transient field is set to null (just like java serialization would do)
+     * instead of a non-null value (non-null came ValueWrapper class initializer if this fails).
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testValueObjectWithTransientField() throws Exception {
+        final StatelessEJBLocator<EchoRemote> locator = new StatelessEJBLocator(EchoRemote.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), "");
+        final EchoRemote proxy = EJBClient.createProxy(locator);
+        String shouldBeNil = proxy.getValue().getShouldBeNilAfterUnmarshalling();
+        Assert.assertNull("transient field should be serialized as null but was '" + shouldBeNil +"'",
+                shouldBeNil);
+    }
+
+
+    /**
      * Test a invocation on the remote view of a stateless bean which is configured for user interceptors
      *
      * @throws Exception

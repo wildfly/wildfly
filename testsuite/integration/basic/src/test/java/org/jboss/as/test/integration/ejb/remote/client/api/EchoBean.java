@@ -79,4 +79,9 @@ public class EchoBean implements EchoRemote {
         requestScopedBean.setState(requestScopedBean.getState() + 10);
         return requestScopedBean.getState() == 20;
     }
+
+    @Override
+    public ValueWrapper getValue() {
+        return new ValueWrapper();
+    }
 }

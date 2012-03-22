@@ -74,4 +74,20 @@ public class StatefulInVmRemoteInvocationTestCase {
 
         }
     }
+
+    /**
+     * Test bean returning a value object with a transient field.  Will test that the transient field is set to null
+     * (just like java serialization would do)
+     * instead of a non-null value (non-null came ValueWrapper class initializer if this fails).
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testValueObjectWithTransientField() throws Exception {
+        RemoteInterface bean = lookup(StatefulAddingBean.class.getSimpleName(), RemoteInterface.class);
+        Assert.assertNull("transient field should be serialized as null but was '" + bean.getValue().getShouldBeNilAfterUnmarshalling() +"'",
+                bean.getValue().getShouldBeNilAfterUnmarshalling());
+        bean.remove();
+    }
+
 }

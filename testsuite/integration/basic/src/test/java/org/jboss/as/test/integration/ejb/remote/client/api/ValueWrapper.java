@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,20 +22,24 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api;
 
-import java.util.concurrent.Future;
+import java.io.IOException;
+import java.io.Serializable;
 
 /**
- * User: jpai
+ * Java serialization will not invoke the class initializer during unmarshalling, resulting in
+ * shouldBeNilAfterUnmarshalling being left as null.  This helps test if JBoss marshalling does the same.
  */
-public interface EchoRemote {
+public class ValueWrapper implements Serializable {
+    public static String INITIALIZER_CONSTANT = "FIVE";
 
-    String echo(String message);
+    private transient String shouldBeNilAfterUnmarshalling = initializer();
 
-    Future<String> asyncEcho(String message, long delayInMilliSec);
+    private String initializer() {
+        return INITIALIZER_CONSTANT;
+    }
 
-    EchoRemote getBusinessObject();
+    public String getShouldBeNilAfterUnmarshalling() {
+        return shouldBeNilAfterUnmarshalling;
+    }
 
-    boolean testRequestScopeActive();
-
-    ValueWrapper getValue();
 }

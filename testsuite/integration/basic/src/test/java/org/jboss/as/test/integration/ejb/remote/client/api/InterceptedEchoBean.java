@@ -72,4 +72,9 @@ public class InterceptedEchoBean implements EchoRemote {
         //not used
         return false;
     }
+
+    @Override
+    public ValueWrapper getValue() {
+        return null;
+    }
 }
