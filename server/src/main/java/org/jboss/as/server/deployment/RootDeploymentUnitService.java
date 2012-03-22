@@ -23,6 +23,7 @@
 package org.jboss.as.server.deployment;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.client.DeploymentMetadata;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -44,6 +45,7 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
     private final DeploymentUnit parent;
     private final ImmutableManagementResourceRegistration registration;
     private final ManagementResourceRegistration mutableRegistration;
+    private final DeploymentMetadata userdata;
     private final ServiceVerificationHandler serviceVerificationHandler;
     private Resource resource;
 
@@ -56,9 +58,10 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
      * @param registration the registration
      * @param mutableRegistration the mutable registration
      * @param resource the model
+     * @param userdata the user data
      * @param serviceVerificationHandler
      */
-    public RootDeploymentUnitService(final String name, final String managementName, final DeploymentUnit parent, final ImmutableManagementResourceRegistration registration, final ManagementResourceRegistration mutableRegistration, Resource resource, final ServiceVerificationHandler serviceVerificationHandler) {
+    public RootDeploymentUnitService(final String name, final String managementName, final DeploymentUnit parent, final ImmutableManagementResourceRegistration registration, final ManagementResourceRegistration mutableRegistration, Resource resource, DeploymentMetadata userdata, final ServiceVerificationHandler serviceVerificationHandler) {
         this.serviceVerificationHandler = serviceVerificationHandler;
         assert name != null : "name is null";
         this.name = name;
@@ -66,6 +69,7 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
         this.parent = parent;
         this.registration = registration;
         this.mutableRegistration = mutableRegistration;
+        this.userdata = userdata;
         this.resource = resource;
     }
 
@@ -74,6 +78,7 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
         deploymentUnit.putAttachment(Attachments.RUNTIME_NAME, name);
         deploymentUnit.putAttachment(Attachments.MANAGEMENT_NAME, managementName);
         deploymentUnit.putAttachment(Attachments.DEPLOYMENT_CONTENTS, contentsInjector.getValue());
+        deploymentUnit.putAttachment(Attachments.DEPLOYMENT_METADATA, userdata);
         deploymentUnit.putAttachment(DeploymentModelUtils.REGISTRATION_ATTACHMENT, registration);
         deploymentUnit.putAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT, mutableRegistration);
         deploymentUnit.putAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE, resource);

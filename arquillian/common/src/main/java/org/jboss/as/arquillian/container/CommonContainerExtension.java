@@ -36,6 +36,7 @@ public class CommonContainerExtension implements LoadableExtension {
         builder.service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
         builder.service(DeploymentExceptionTransformer.class, ExceptionTransformer.class);
         builder.service(ResourceProvider.class, ManagementClientProvider.class);
+        builder.service(ResourceProvider.class, ArchiveDeployerProvider.class);
         builder.service(TestEnricher.class, ContainerResourceTestEnricher.class);
 
         builder.observer(ServerSetupObserver.class);

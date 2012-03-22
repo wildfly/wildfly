@@ -33,16 +33,18 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.controller.client.DeploymentMetadata;
 import org.jboss.as.controller.client.helpers.standalone.AddDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentAction.Type;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.InitialDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.ReplaceDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.UndeployDeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentAction.Type;
 import org.jboss.as.protocol.StreamUtils;
 
 /**
@@ -56,6 +58,7 @@ class DeploymentPlanBuilderImpl
     private final boolean shutdown;
     private final long gracefulShutdownPeriod;
     private final boolean globalRollback;
+    private final Map<String, Object> metadata;
     private volatile boolean cleanupInFinalize = true;
 
     private final List<DeploymentActionImpl> deploymentActions = new ArrayList<DeploymentActionImpl>();
@@ -64,10 +67,12 @@ class DeploymentPlanBuilderImpl
         this.shutdown = false;
         this.globalRollback = true;
         this.gracefulShutdownPeriod = -1;
+        this.metadata = null;
     }
 
     DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing) {
         this.deploymentActions.addAll(existing.deploymentActions);
+        this.metadata = existing.metadata;
         this.shutdown = existing.shutdown;
         this.globalRollback = existing.globalRollback;
         this.gracefulShutdownPeriod = existing.gracefulShutdownPeriod;
@@ -76,6 +81,7 @@ class DeploymentPlanBuilderImpl
 
     DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, boolean globalRollback) {
         this.deploymentActions.addAll(existing.deploymentActions);
+        this.metadata = existing.metadata;
         this.shutdown = false;
         this.globalRollback = globalRollback;
         this.gracefulShutdownPeriod = -1;
@@ -84,9 +90,19 @@ class DeploymentPlanBuilderImpl
 
     DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, long gracefulShutdownPeriod) {
         this.deploymentActions.addAll(existing.deploymentActions);
+        this.metadata = existing.metadata;
         this.shutdown = true;
         this.globalRollback = false;
         this.gracefulShutdownPeriod = gracefulShutdownPeriod;
+        existing.cleanupInFinalize = false;
+    }
+
+    DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, Map<String, Object> userdata) {
+        this.deploymentActions.addAll(existing.deploymentActions);
+        this.metadata = userdata;
+        this.shutdown = existing.shutdown;
+        this.globalRollback = existing.globalRollback;
+        this.gracefulShutdownPeriod = existing.gracefulShutdownPeriod;
         existing.cleanupInFinalize = false;
     }
 
@@ -127,7 +143,7 @@ class DeploymentPlanBuilderImpl
 
     @Override
     public DeploymentPlan build() {
-        DeploymentPlan dp = new DeploymentPlanImpl(Collections.unmodifiableList(deploymentActions), globalRollback, shutdown, gracefulShutdownPeriod);
+        DeploymentPlan dp = new DeploymentPlanImpl(Collections.unmodifiableList(deploymentActions), new DeploymentMetadata(metadata), globalRollback, shutdown, gracefulShutdownPeriod);
         cleanupInFinalize = false;
         return dp;
     }
@@ -193,9 +209,11 @@ class DeploymentPlanBuilderImpl
         return new DeploymentPlanBuilderImpl(this, mod);
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.deployment.client.api.server.AddDeploymentPlanBuilder#andDeploy()
-     */
+    @Override
+    public AddDeploymentPlanBuilder addMetadata(Map<String, Object> userdata) {
+        return new DeploymentPlanBuilderImpl(this, userdata);
+    }
+
     @Override
     public DeploymentPlanBuilder andDeploy() {
         String addedKey = getAddedContentKey();
@@ -203,9 +221,6 @@ class DeploymentPlanBuilderImpl
         return new DeploymentPlanBuilderImpl(this, deployMod);
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.deployment.client.api.server.AddDeploymentPlanBuilder#andReplace(java.lang.String)
-     */
     @Override
     public ReplaceDeploymentPlanBuilder andReplace(String toReplace) {
         String newContentKey = getAddedContentKey();

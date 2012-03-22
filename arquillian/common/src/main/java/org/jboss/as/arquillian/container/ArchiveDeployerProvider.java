@@ -24,24 +24,22 @@ import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.test.api.ArquillianResource;
 
 /**
- * {@link OperatesOnDeploymentAwareProvider} implementation to
- * provide {@link ManagementClient} injection to {@link ArquillianResource}-
- * annotated fields.
- * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
+ *
+ * @author Thomas.Diesler@jboss.com
  */
-public class ManagementClientProvider extends OperatesOnDeploymentAwareProvider {
+public class ArchiveDeployerProvider extends OperatesOnDeploymentAwareProvider {
 
     @Inject
-    private Instance<ManagementClient> managementClient;
+    private Instance<ArchiveDeployer> archiveDeployer;
 
     @Override
     public boolean canProvide(final Class<?> type) {
-        return type.isAssignableFrom(ManagementClient.class);
+        return type.isAssignableFrom(ArchiveDeployer.class);
     }
 
     @Override
     public Object doLookup(final ArquillianResource resource, final Annotation... qualifiers) {
-        return managementClient.get();
+        return archiveDeployer.get();
     }
 
 }

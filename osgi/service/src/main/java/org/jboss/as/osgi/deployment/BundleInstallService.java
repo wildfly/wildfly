@@ -24,6 +24,7 @@ package org.jboss.as.osgi.deployment;
 
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -37,6 +38,8 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.framework.Services;
+import org.osgi.framework.Bundle;
+import org.osgi.service.startlevel.StartLevel;
 
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
@@ -92,10 +95,13 @@ public class BundleInstallService implements Service<BundleInstallService> {
         ServiceController<?> controller = context.getController();
         ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         try {
-            ServiceTarget serviceTarget = context.getChildTarget();
+            ServiceTarget childTarget = context.getChildTarget();
             BundleManagerService bundleManager = injectedBundleManager.getValue();
-            installedBundleName = bundleManager.installBundle(serviceTarget, deployment);
+            installedBundleName = bundleManager.installBundle(childTarget, deployment);
             injectedStartTracker.getValue().addInstalledBundle(installedBundleName, deployment);
+            if (deployment.getStartLevel() != null) {
+                BundleStartLevelService.addService(childTarget, installedBundleName, deployment.getStartLevel());
+            }
         } catch (Throwable t) {
             throw new StartException(MESSAGES.failedToInstallDeployment(deployment), t);
         }
@@ -127,5 +133,30 @@ public class BundleInstallService implements Service<BundleInstallService> {
 
     public ServiceName getInstalledBundleName() {
         return installedBundleName;
+    }
+
+    static class BundleStartLevelService extends AbstractService<Void> {
+        private InjectedValue<StartLevel> injectedStartLevel = new InjectedValue<StartLevel>();
+        private InjectedValue<Bundle> injectedBundle = new InjectedValue<Bundle>();
+        private final Integer bundleStartLevel;
+
+        static void addService(ServiceTarget serviceTarget, ServiceName installedBundleName, Integer bundleStartLevel) {
+            BundleStartLevelService service = new BundleStartLevelService(bundleStartLevel);
+            ServiceBuilder<Void> builder = serviceTarget.addService(installedBundleName.append("startlevel"), service);
+            builder.addDependency(Services.START_LEVEL, StartLevel.class, service.injectedStartLevel);
+            builder.addDependency(installedBundleName, Bundle.class, service.injectedBundle);
+            builder.install();
+        }
+
+        private BundleStartLevelService(Integer bundleStartLevel) {
+            this.bundleStartLevel = bundleStartLevel;
+        }
+
+        public void start(StartContext context) throws StartException {
+            Bundle bundle = injectedBundle.getValue();
+            StartLevel startLevel = injectedStartLevel.getValue();
+            startLevel.setBundleStartLevel(bundle, bundleStartLevel);
+            context.getController().setMode(Mode.REMOVE);
+        };
     }
 }

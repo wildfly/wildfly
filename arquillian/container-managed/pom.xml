@@ -137,6 +137,10 @@
                           <name>module.path</name>
                           <value>${jboss.home}/modules</value>
                         </property>
+                        <property>
+                          <name>bundle.path</name>
+                          <value>${jboss.home}/bundles</value>
+                        </property>
                     </systemProperties>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>

@@ -33,6 +33,7 @@ import java.util.UUID;
 import org.jboss.as.controller.client.helpers.domain.DeploymentAction;
 import org.jboss.as.controller.client.helpers.domain.DeploymentSetPlan;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlan;
+import org.jboss.dmr.ModelNode;
 
 
 /**
@@ -46,6 +47,7 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
 
     private final UUID uuid;
     private final List<DeploymentAction> deploymentActions = new ArrayList<DeploymentAction>();
+    private final ModelNode metadata;
     private final boolean rollback;
     private final boolean shutdown;
     private final long gracefulShutdownPeriod;
@@ -55,6 +57,7 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
         this.uuid = UUID.randomUUID();
         this.rollback = true;
         this.shutdown = false;
+        this.metadata = null;
         this.gracefulShutdownPeriod = -1;
         this.serverGroupPlans.add(new LinkedHashSet<ServerGroupDeploymentPlan>());
     }
@@ -62,11 +65,12 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
     private DeploymentSetPlanImpl(final UUID uuid,
             final List<DeploymentAction> actions,
             final List<Set<ServerGroupDeploymentPlan>> serverGroupPlans,
+            final ModelNode metadata,
             final boolean rollback,
-            final boolean shutdown,
-            final long gracefulTimeout) {
+            final boolean shutdown, final long gracefulTimeout) {
         this.uuid = uuid;
         this.deploymentActions.addAll(actions);
+        this.metadata = metadata;
         this.rollback = rollback;
         this.shutdown = shutdown;
         this.gracefulShutdownPeriod = gracefulTimeout;
@@ -92,6 +96,11 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
     @Override
     public boolean isRollback() {
         return rollback;
+    }
+
+    @Override
+    public ModelNode getMetadata() {
+        return metadata != null ? metadata : new ModelNode();
     }
 
     @Override
@@ -138,33 +147,38 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
     }
 
     DeploymentSetPlanImpl addAction(final DeploymentAction action) {
-        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.rollback, this.shutdown, this.gracefulShutdownPeriod);
+        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.metadata, this.rollback, this.shutdown, this.gracefulShutdownPeriod);
         result.deploymentActions.add(action);
         return result;
     }
 
+    DeploymentSetPlanImpl addMetadata(final ModelNode userdata) {
+        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, userdata, this.rollback, this.shutdown, this.gracefulShutdownPeriod);
+        return result;
+    }
+
     DeploymentSetPlanImpl setRollback() {
-        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, true, this.shutdown, this.gracefulShutdownPeriod);
+        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.metadata, true, this.shutdown, this.gracefulShutdownPeriod);
         return result;
     }
 
     DeploymentSetPlanImpl setNoRollback() {
-        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, false, this.shutdown, this.gracefulShutdownPeriod);
+        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.metadata, false, this.shutdown, this.gracefulShutdownPeriod);
         return result;
     }
 
     DeploymentSetPlanImpl setShutdown() {
-        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.rollback, true, -1);
+        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.metadata, this.rollback, true, -1);
         return result;
     }
 
     DeploymentSetPlanImpl setGracefulTimeout(long timeout) {
-        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.rollback, this.shutdown, timeout);
+        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.metadata, this.rollback, this.shutdown, timeout);
         return result;
     }
 
     DeploymentSetPlanImpl storeServerGroup(final ServerGroupDeploymentPlan groupPlan) {
-        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.rollback, this.shutdown, this.gracefulShutdownPeriod);
+        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.metadata, this.rollback, this.shutdown, this.gracefulShutdownPeriod);
         Set<ServerGroupDeploymentPlan> set = result.serverGroupPlans.get(result.serverGroupPlans.size() - 1);
         set.remove(groupPlan);
         set.add(groupPlan);
@@ -172,7 +186,7 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
     }
 
     DeploymentSetPlanImpl storeRollToServerGroup(final ServerGroupDeploymentPlan groupPlan) {
-        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.rollback, this.shutdown, this.gracefulShutdownPeriod);
+        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.metadata, this.rollback, this.shutdown, this.gracefulShutdownPeriod);
         Set<ServerGroupDeploymentPlan> set = result.serverGroupPlans.get(result.serverGroupPlans.size() - 1);
         result.serverGroupPlans.set(result.serverGroupPlans.size() - 1, Collections.unmodifiableSet(set));
         set = new LinkedHashSet<ServerGroupDeploymentPlan>();

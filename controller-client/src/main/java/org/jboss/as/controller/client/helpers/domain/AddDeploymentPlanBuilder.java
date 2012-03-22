@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.domain;
 
+import org.jboss.dmr.ModelNode;
+
 /**
  * Variant of a {@link DeploymentPlanBuilder} that exposes
  * directives that are only applicable following an <code>add</code> directive.
@@ -48,4 +50,6 @@ public interface AddDeploymentPlanBuilder extends DeploymentActionsCompleteBuild
      * @return a builder that can continue building the overall deployment plan
      */
     ReplaceDeploymentPlanBuilder andReplace(String toReplace);
+
+    AddDeploymentPlanBuilder addMetadata(ModelNode metadata);
 }

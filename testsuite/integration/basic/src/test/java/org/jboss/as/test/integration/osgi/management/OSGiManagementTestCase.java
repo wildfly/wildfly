@@ -61,7 +61,7 @@ public class OSGiManagementTestCase extends AbstractCliTestBase {
 
         // Get the current startlevel
         String startLevel = getFrameworkStartLevel();
-        
+
         // If the startlevel is not defined the subsystem is down
         // [TODO] define a more explicit runtime atttribute
         if ("undefined".equals(startLevel)) {
@@ -70,7 +70,7 @@ public class OSGiManagementTestCase extends AbstractCliTestBase {
             assertTrue(cliresult.isIsOutcomeSuccess());
             assertEquals("1", getFrameworkStartLevel());
         } else if ("1".equals(startLevel)) {
-            // Nothing to do            
+            // Nothing to do
         } else {
             fail("Unexpected startlevel: " + startLevel);
         }
@@ -111,7 +111,6 @@ public class OSGiManagementTestCase extends AbstractCliTestBase {
     private String getFrameworkStartLevel() throws Exception {
         cli.sendLine("/subsystem=osgi:read-attribute(name=startlevel)");
         CLIOpResult cliresult = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-
         assertTrue(cliresult.isIsOutcomeSuccess());
         return (String)cliresult.getResult();
     }

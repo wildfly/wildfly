@@ -113,7 +113,7 @@ public class ManagementClient {
         return webUri;
     }
 
-    public ProtocolMetaData getDeploymentMetaData(String deploymentName) {
+    public ProtocolMetaData getProtocolMetaData(String deploymentName) {
         URI webURI = getWebUri();
 
         ProtocolMetaData metaData = new ProtocolMetaData();
@@ -162,26 +162,6 @@ public class ManagementClient {
                 }
             }
         }
-    }
-
-    //-------------------------------------------------------------------------------------||
-    // Subsystem URI Lookup ---------------------------------------------------------------||
-    //-------------------------------------------------------------------------------------||
-
-    private URI extractSubSystemURI(String subsystem) {
-        try {
-            if (rootNode == null) {
-                readRootNode();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        if ("web".equals(subsystem)) {
-            String socketBinding = rootNode.get("subsystem").get("web").get("connector").get("http").get("socket-binding").asString();
-            return getBinding("http", socketBinding);
-        }
-        throw new IllegalArgumentException("No handler for subsystem " + subsystem);
     }
 
     private void readRootNode() throws Exception {
