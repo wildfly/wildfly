@@ -849,7 +849,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 }
             }
             if(name == null) {
-                ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
             }
 
             final ModelNode acceptorAddress = address.clone();
@@ -866,7 +866,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 } case NETTY_ACCEPTOR: {
                     acceptorAddress.add(REMOTE_ACCEPTOR, name);
                     if(socketBinding == null) {
-                        ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
+                        throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
                     }
                     operation.get(SOCKET_BINDING.getName()).set(socketBinding);
                     parseTransportConfigurationParams(reader, operation, false);
