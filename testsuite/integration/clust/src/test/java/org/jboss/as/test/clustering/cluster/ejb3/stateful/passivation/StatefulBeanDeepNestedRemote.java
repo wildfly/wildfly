@@ -28,21 +28,9 @@ import javax.ejb.Remote;
  * @author Ondrej Chaloupka
  */
 @Remote
-public interface StatefulBeanRemote {
-    int getNumber();
-    String setNumber(int number);
-    String incrementNumber();
-    void setPassivationNode(String node);
-    String getPassivatedBy();
-    
-    // nested bean working methods
-    void resetNestedBean();
-    int getNestedBeanActivatedCalled();
-    int getNestedBeanPassivatedCalled();
-    int getDeepNestedBeanActivatedCalled();
-    int getDeepNestedBeanPassivatedCalled();
-    String getNestedBeanNodeName();
-    int getRemoteNestedBeanPassivatedCalled();
-    int getRemoteNestedBeanActivatedCalled();
-    String getRemoteNestedBeanNodeName();
+public interface StatefulBeanDeepNestedRemote {
+    void reset();
+    String getNodeName();
+    int getPassivatedCalled();
+    int getActivatedCalled();
 }

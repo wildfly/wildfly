@@ -22,27 +22,43 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.passivation;
 
-import javax.ejb.Remote;
+import javax.ejb.EJB;
+import javax.ejb.LocalBean;
+import javax.ejb.Stateful;
+
+import org.jboss.as.test.clustering.NodeNameGetter;
+import org.jboss.ejb3.annotation.Cache;
+import org.jboss.logging.Logger;
 
 /**
+ * Simple Stateful bean to be nested in other bean.
+ * 
  * @author Ondrej Chaloupka
  */
-@Remote
-public interface StatefulBeanRemote {
-    int getNumber();
-    String setNumber(int number);
-    String incrementNumber();
-    void setPassivationNode(String node);
-    String getPassivatedBy();
+@Stateful
+@Cache("StatefulTreeCache")
+@LocalBean
+public class StatefulBeanNested extends StatefulBeanNestedParent {
+    private static final Logger log = Logger.getLogger(StatefulBeanNested.class);
     
-    // nested bean working methods
-    void resetNestedBean();
-    int getNestedBeanActivatedCalled();
-    int getNestedBeanPassivatedCalled();
-    int getDeepNestedBeanActivatedCalled();
-    int getDeepNestedBeanPassivatedCalled();
-    String getNestedBeanNodeName();
-    int getRemoteNestedBeanPassivatedCalled();
-    int getRemoteNestedBeanActivatedCalled();
-    String getRemoteNestedBeanNodeName();
+    @EJB
+    StatefulBeanDeepNestedRemote deepNestedBean;
+    
+    public String getNodeName() {
+        String nodeName = NodeNameGetter.getNodeName();
+        log.info("Bean " + this.getClass().getSimpleName() + " was called on " + nodeName);
+        return nodeName;
+    }
+    
+    public int getDeepNestedPassivatedCalled() {
+        return deepNestedBean.getPassivatedCalled();
+    }
+    
+    public int getDeepNestedActivatedCalled() {
+        return deepNestedBean.getActivatedCalled();
+    }
+    
+    public void resetDeepNested() {
+        deepNestedBean.reset();
+    }
 }

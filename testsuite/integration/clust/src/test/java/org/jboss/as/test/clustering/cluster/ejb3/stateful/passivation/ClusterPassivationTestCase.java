@@ -52,6 +52,7 @@ import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -69,11 +70,12 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 @RunAsClient
 public class ClusterPassivationTestCase {
     private static Logger log = Logger.getLogger(ClusterPassivationTestCase.class);
-    public static String ARCHIVE_NAME = "cluster-passivation-test";
+    public static final String ARCHIVE_NAME = "cluster-passivation-test";
+    public static final String ARCHIVE_NAME_HELPER = "cluster-passivation-test-helper";
 
-    private static String SERVLET_INFO_URL = "nodename";
-    private static String IDLE_TIMEOUT_ATTR = "idle-timeout";
-    private static String PASSIVATE_EVENTS_ON_REPLICATE_ATTR = "passivate-events-on-replicate";
+    private static final String IDLE_TIMEOUT_ATTR = "idle-timeout";
+    private static final String PASSIVATE_EVENTS_ON_REPLICATE_ATTR = "passivate-events-on-replicate";
+    private static final String HELPER_DEPLOYMENT = "helper-";
 
     @ArquillianResource
     private ContainerController controller;
@@ -106,13 +108,34 @@ public class ClusterPassivationTestCase {
         Archive<?> archive = createDeployment();
         return archive;
     }
+    
+    @Deployment(name = HELPER_DEPLOYMENT +  DEPLOYMENT_1, managed = true, testable = false)
+    @TargetsContainer(CONTAINER_1)
+    public static Archive<?> helpDeployment0() {
+        Archive<?> archive = createHelperDeployment();
+        return archive;
+    }
+
+    @Deployment(name = HELPER_DEPLOYMENT + DEPLOYMENT_2, managed = true, testable = false)
+    @TargetsContainer(CONTAINER_2)
+    public static Archive<?> helpDeployment1() {
+        Archive<?> archive = createHelperDeployment();
+        return archive;
+    }
 
     private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
         war.addPackage(ClusterPassivationTestCase.class.getPackage());
         war.addClasses(NodeNameGetter.class, NodeInfoServlet.class);
-        System.out.println(war.toString(true));
+        log.info(war.toString(true));
         return war;
+    }
+    
+    private static Archive<?> createHelperDeployment() {
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME_HELPER + ".jar");
+        jar.addClasses(StatefulBeanDeepNested.class, StatefulBeanDeepNestedRemote.class, StatefulBeanNestedParent.class, NodeNameGetter.class);
+        log.info(jar.toString(true));
+        return jar;
     }
 
     /**
@@ -273,23 +296,40 @@ public class ClusterPassivationTestCase {
         int clientNumber = 40;
         String calledNodeFirst = statefulBeanRemote.setNumber(clientNumber);
         statefulBeanRemote.setPassivationNode(calledNodeFirst);
+        statefulBeanRemote.incrementNumber(); // 41
+        Assert.assertEquals(++clientNumber, statefulBeanRemote.getNumber()); // 41
+        // nodeName of nested bean should be the same as the node of parent
+        Assert.assertEquals("Nested bean has to be called on the same node as parent one", calledNodeFirst, statefulBeanRemote.getRemoteNestedBeanNodeName());
         log.info("Called node name first: " + calledNodeFirst);
         Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation
-        statefulBeanRemote.incrementNumber(); // 41
 
-        // A small hack - deleting node (by name) from cluster which this client knows.
-        // It means that the next request (ejb call) will be passed to another server
+        // A small hack - deleting node (by name) from cluster which this client knows
+        // It means that the next request (ejb call) will be passed to the server #2
         EJBClientContext.requireCurrent().getClusterContext(CLUSTER_NAME).removeClusterNode(calledNodeFirst);
-        // Calling on another (second) server
-        Assert.assertEquals(++clientNumber, statefulBeanRemote.getNumber()); // 41
-        // this was redefined in @PrePassivate method on first server - checking whether second server knows about it
+        
         if (isPassivation) {
-            // depends on call of method setPassivationNode()
-            Assert.assertEquals(calledNodeFirst, statefulBeanRemote.getPassivatedBy());
+            // this was redefined in @PrePassivate method on first server - checking whether second server knows about it
+            Assert.assertEquals("Supposing to get passivation node which was set", calledNodeFirst, statefulBeanRemote.getPassivatedBy());
+            // Nested beans have to be passivated as well
+            Assert.assertTrue("Passivation of nested bean was not propagated", statefulBeanRemote.getNestedBeanPassivatedCalled() > 0);
+            Assert.assertTrue("Activation of nested bean was not propagated", statefulBeanRemote.getNestedBeanActivatedCalled() > 0);
+            Assert.assertTrue("Passivation of deep nested bean was not propagated", statefulBeanRemote.getDeepNestedBeanPassivatedCalled() > 0);
+            Assert.assertTrue("Activation of deep nested bean was not propagated",statefulBeanRemote.getDeepNestedBeanActivatedCalled() > 0);
+            Assert.assertTrue("Passivation of remote bean was not propagated", statefulBeanRemote.getRemoteNestedBeanPassivatedCalled() > 0);
+            Assert.assertTrue("Activation of remote bean was not propagated", statefulBeanRemote.getRemoteNestedBeanActivatedCalled() > 0);
+            statefulBeanRemote.resetNestedBean();
         } else {
             Assert.assertNull("We suppose that the passivation is not provided.", statefulBeanRemote.getPassivatedBy());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getNestedBeanPassivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0,  statefulBeanRemote.getNestedBeanActivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getDeepNestedBeanPassivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getDeepNestedBeanActivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getRemoteNestedBeanPassivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getRemoteNestedBeanActivatedCalled());            
         }
+        
         String calledNodeSecond = statefulBeanRemote.incrementNumber(); // 42
+        Assert.assertEquals("Nested bean has to be calledn on the same node as parent one", calledNodeSecond, statefulBeanRemote.getNestedBeanNodeName());
         statefulBeanRemote.setPassivationNode(calledNodeSecond);
         log.info("Called node name second: " + calledNodeSecond);
         Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation
@@ -308,18 +348,32 @@ public class ClusterPassivationTestCase {
         // Calling on first server
         String calledNode = statefulBeanRemote.incrementNumber(); // 43
         // Checking called node and set number
-        Assert.assertEquals(calledNodeFirst, calledNode);
+        Assert.assertEquals("It can't be node " + calledNodeSecond + " because is switched off", calledNodeFirst, calledNode);
         if (isPassivation) {
-            Assert.assertEquals(calledNodeSecond, statefulBeanRemote.getPassivatedBy());
+            Assert.assertEquals("Supposing to get passivation node which was set", calledNodeSecond, statefulBeanRemote.getPassivatedBy());
+            Assert.assertTrue("Passivation of nested bean was not propagated", statefulBeanRemote.getNestedBeanPassivatedCalled() > 0);
+            Assert.assertTrue("Activation of nested bean was not propagated", statefulBeanRemote.getNestedBeanActivatedCalled() > 0);
+            Assert.assertTrue("Passivation of deep nested bean was not propagated", statefulBeanRemote.getDeepNestedBeanPassivatedCalled() > 0);
+            Assert.assertTrue("Activation of deep nested bean was not propagated",statefulBeanRemote.getDeepNestedBeanActivatedCalled() > 0);
+            Assert.assertTrue("Passivation of remote bean was not propagated", statefulBeanRemote.getRemoteNestedBeanPassivatedCalled() > 0);
+            Assert.assertTrue("Activation of remote bean was not propagated", statefulBeanRemote.getRemoteNestedBeanActivatedCalled() > 0);
+            statefulBeanRemote.resetNestedBean();
         } else {
             Assert.assertNull("We suppose that the passivation is not provided.", statefulBeanRemote.getPassivatedBy());
+            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getNestedBeanPassivatedCalled());
+            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getNestedBeanActivatedCalled());
+            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getDeepNestedBeanPassivatedCalled());
+            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getDeepNestedBeanActivatedCalled());
+            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getRemoteNestedBeanPassivatedCalled());
+            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getRemoteNestedBeanActivatedCalled());
         }
         Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation
-        Assert.assertEquals(++clientNumber, statefulBeanRemote.getNumber());
+        Assert.assertEquals(++clientNumber, statefulBeanRemote.getNumber()); // 43
     }
 
     @Test
     @InSequence(1)
+    @Ignore("AS7-4266")
     public void testPassivationOverNodesPassivated(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) InitialContext ctx,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
@@ -332,9 +386,9 @@ public class ClusterPassivationTestCase {
         startServers(client1, client2);
     }
 
-    @Ignore("AS7-4246")
     @Test
     @InSequence(2)
+    @Ignore("AS7-4246")
     public void testPassivationOverNodesNotPassivated(
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) InitialContext ctx,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
