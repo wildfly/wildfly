@@ -297,7 +297,8 @@ public class ServerControllerModelUtil {
         sysProps.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, spah, spah, false);
         SystemPropertyRemoveHandler sprh = new SystemPropertyRemoveHandler(serverEnvironment);
         sysProps.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, sprh, sprh, false);
-        sysProps.registerReadWriteAttribute(VALUE, null, SystemPropertyValueWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        SystemPropertyValueWriteAttributeHandler spvwah = new SystemPropertyValueWriteAttributeHandler(serverEnvironment);
+        sysProps.registerReadWriteAttribute(VALUE, null, spvwah, AttributeAccess.Storage.CONFIGURATION);
 
         //vault
         ManagementResourceRegistration vault = root.registerSubModel(PathElement.pathElement(CORE_SERVICE, VAULT), CommonProviders.VAULT_PROVIDER);
