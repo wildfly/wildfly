@@ -20,6 +20,7 @@ package org.jboss.as.cli.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Dialog;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -59,7 +60,7 @@ public class OperationDialog extends JDialog {
     private SortedSet<RequestProp> props;
 
     public OperationDialog(ManagementModelNode node, String opName, String strDescription, ModelNode requestProperties) {
-        super(GuiMain.getFrame(), opName, true);
+        super(GuiMain.getMainWindow(), opName, Dialog.ModalityType.APPLICATION_MODAL);
         this.node = node;
         this.opName = opName;
 

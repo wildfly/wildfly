@@ -131,7 +131,7 @@ public class OperationMenu extends JPopupMenu {
             }
 
             OperationDialog dialog = new OperationDialog(node, opName, strDescription, requestProperties);
-            dialog.setLocationRelativeTo(GuiMain.getFrame());
+            dialog.setLocationRelativeTo(GuiMain.getMainWindow());
             dialog.setVisible(true);
         }
 
