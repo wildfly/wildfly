@@ -38,6 +38,10 @@ import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
  */
 public class EJBClientContextSelector {
     public static ContextSelector<EJBClientContext> setup(String file) throws IOException {
+        return setup(file, null);
+    }
+    
+    public static ContextSelector<EJBClientContext> setup(String file, Properties propertiesToReplace) throws IOException {
         // setup the selector
         final InputStream inputStream = EJBClientContextSelector.class.getClassLoader().getResourceAsStream(file);
         if (inputStream == null) {
@@ -45,6 +49,14 @@ public class EJBClientContextSelector {
         }
         final Properties properties = new Properties();
         properties.load(inputStream);
+        
+        // add or replace properties passed from file
+        if(propertiesToReplace != null) {
+            for(Object key: propertiesToReplace.keySet()) {
+                properties.put(key, propertiesToReplace.get(key));
+            }
+        }
+        
         final EJBClientConfiguration ejbClientConfiguration = new PropertiesBasedEJBClientConfiguration(properties);
         final ConfigBasedEJBClientContextSelector selector = new ConfigBasedEJBClientContextSelector(ejbClientConfiguration);
 
