@@ -21,6 +21,7 @@ package org.jboss.as.cli.gui;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -34,9 +35,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.gui.metacommand.DeployAction;
+import org.jboss.as.cli.gui.metacommand.UndeployAction;
 
 /**
  * Static main class for the GUI.
@@ -69,8 +72,8 @@ public class GuiMain {
      * Get the singleton JFrame instance for the GUI
      * @return The JFrame
      */
-    public static JFrame getFrame() {
-        return frame;
+    public static Window getMainWindow() {
+        return SwingUtilities.getWindowAncestor(mainPanel);
     }
 
     /**
@@ -131,6 +134,10 @@ public class GuiMain {
         JMenuItem deploy = new JMenuItem(new DeployAction());
         deploy.setMnemonic(KeyEvent.VK_D);
         metaCmdMenu.add(deploy);
+
+        JMenuItem unDeploy = new JMenuItem(new UndeployAction());
+        deploy.setMnemonic(KeyEvent.VK_U);
+        metaCmdMenu.add(unDeploy);
 
         return menuBar;
     }
