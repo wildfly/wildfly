@@ -17,6 +17,10 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.deployment.Validate;
 import org.jboss.as.arquillian.container.CommonContainerConfiguration;
@@ -28,6 +32,11 @@ import org.jboss.as.arquillian.container.CommonContainerConfiguration;
  * @author Thomas.Diesler@jboss.com
  */
 public class ManagedContainerConfiguration extends CommonContainerConfiguration {
+
+    /**
+     * Default timeout value waiting on ports is 10 seconds
+     */
+    private static final Integer DEFAULT_VALUE_WAIT_FOR_PORTS_TIMEOUT_SECONDS = 10;
 
     private String jbossHome = System.getenv("JBOSS_HOME");
 
@@ -48,6 +57,10 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
     private boolean allowConnectingToRunningServer = false;
 
     private boolean enableAssertions = true;
+
+    private Integer[] waitForPorts;
+
+    private Integer waitForPortsTimeoutInSeconds;
 
     public ManagedContainerConfiguration() {
         // if no javaHome is set use java.home of already running jvm
@@ -184,5 +197,27 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     public void setEnableAssertions(final boolean enableAssertions) {
         this.enableAssertions = enableAssertions;
+    }
+
+    public Integer[] getWaitForPorts() {
+        return waitForPorts;
+    }
+
+    public void setWaitForPorts(String waitForPorts) {
+        final Scanner scanner = new Scanner(waitForPorts);
+        final List<Integer> list = new ArrayList<Integer>();
+        while (scanner.hasNextInt()) {
+            list.add(scanner.nextInt());
+        }
+        this.waitForPorts = list.toArray(new Integer[] {});
+    }
+
+    public Integer getWaitForPortsTimeoutInSeconds() {
+        return waitForPortsTimeoutInSeconds != null ? waitForPortsTimeoutInSeconds
+            : DEFAULT_VALUE_WAIT_FOR_PORTS_TIMEOUT_SECONDS;
+    }
+
+    public void setWaitForPortsTimeoutInSeconds(final Integer waitForPortsTimeoutInSeconds) {
+        this.waitForPortsTimeoutInSeconds = waitForPortsTimeoutInSeconds;
     }
 }

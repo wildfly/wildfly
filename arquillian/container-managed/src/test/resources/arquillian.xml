@@ -10,6 +10,15 @@
 			     sure that they have not left a stale server running when merging pull requests
                         -->
                         <property name="allowConnectingToRunningServer">false</property>
+
+			<!--
+			
+			Space-delimited list of ports on which to wait 
+			<property name="waitForPorts">2222</property>
+			
+			Time, in seconds, to wait on the above ports
+			<property name="waitForPortsTimeoutInSeconds">20</property>
+			 -->
 		</configuration>
 	</container>
 </arquillian>
