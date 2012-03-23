@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.OperationContext;
@@ -38,14 +39,11 @@ public class LogStoreParticipantRefreshHandler implements OperationStepHandler {
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         MBeanServer mbs = TransactionExtension.getMBeanServer(context);
-        ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        ModelNode onAttribute = subModel.get(LogStoreConstants.JMX_ON_ATTRIBUTE);
-        String jmxName = onAttribute.asString();
-        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
-        final ModelNode model = resource.getModel();
-
+        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         try {
-            ObjectName on = new ObjectName(jmxName);
+            final ObjectName on = LogStoreResource.getObjectName(resource);
+            final ModelNode model = resource.getModel().clone();
+
             AttributeList attributes = mbs.getAttributes(on, LogStoreConstants.PARTICIPANT_JMX_NAMES);
 
             for (javax.management.Attribute attribute : attributes.asList()) {
@@ -58,7 +56,8 @@ public class LogStoreParticipantRefreshHandler implements OperationStepHandler {
                         aNode.set(attribute.getValue().toString());
                 }
             }
-
+            // Replace the model
+            resource.writeModel(model);
         } catch (Exception e) {
             throw new OperationFailedException("JMX error: ", e);
         }

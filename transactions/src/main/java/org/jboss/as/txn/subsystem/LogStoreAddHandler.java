@@ -19,30 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.txn.subsystem;
 
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-
-import java.util.List;
 
 /**
  *
  * @author <a href="stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-class LogStoreAddHandler extends AbstractBoottimeAddStepHandler {
+class LogStoreAddHandler implements OperationStepHandler {
     public static final LogStoreAddHandler INSTANCE = new LogStoreAddHandler();
 
     private LogStoreAddHandler() {
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        // Add the log store resource
+        final Resource resource = new LogStoreResource();
+        final ModelNode model = resource.getModel();
         for (final SimpleAttributeDefinition attribute : LogStoreProviders.LOG_STORE_ATTRIBUTE) {
                 if (operation.get(attribute.getName()).isDefined())  {
                     attribute.validateAndSet(operation, model);
@@ -50,12 +52,9 @@ class LogStoreAddHandler extends AbstractBoottimeAddStepHandler {
                     model.get(attribute.getName()).set(attribute.getDefaultValue());
                 }
         }
+        context.addResource(PathAddress.EMPTY_ADDRESS, resource);
+        context.completeStep();
     }
 
-    @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model,
-                                   ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
-            throws UnsupportedOperationException {
-    }
 
 }
