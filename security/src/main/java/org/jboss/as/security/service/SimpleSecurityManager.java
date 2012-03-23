@@ -39,6 +39,7 @@ import javax.security.auth.Subject;
 
 import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.controller.security.SubjectUserInfo;
+import org.jboss.as.controller.security.UniqueIdUserInfo;
 import org.jboss.as.domain.management.security.PasswordCredential;
 import org.jboss.as.security.SecurityMessages;
 import org.jboss.as.security.remoting.RemotingContext;
@@ -268,7 +269,16 @@ public class SimpleSecurityManager implements ServerSecurityManager {
                         credential = new String(pc.getCredential());
                         RemotingContext.clear(); // Now that it has been used clear it.
                     }
+                    if ((p == null || credential == null) && userInfo instanceof UniqueIdUserInfo) {
+                        UniqueIdUserInfo uinfo = (UniqueIdUserInfo) userInfo;
+                        p = new SimplePrincipal(sinfo.getUserName());
+                        credential = uinfo.getId();
+                        // In this case we do not clear the RemotingContext as it is still to be used
+                        // here extracting the ID just ensures we are not continually calling the modules
+                        // for each invocation.
+                    }
                 }
+
                 if (p == null || credential == null) {
                     p = new SimplePrincipal(UUID.randomUUID().toString());
                     credential = UUID.randomUUID().toString();

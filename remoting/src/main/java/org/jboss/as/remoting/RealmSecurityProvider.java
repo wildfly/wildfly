@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.net.ssl.SSLContext;
 import javax.security.auth.Subject;
@@ -50,6 +51,7 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.controller.security.SubjectUserInfo;
+import org.jboss.as.controller.security.UniqueIdUserInfo;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
 import org.jboss.as.domain.management.security.RealmUser;
@@ -445,32 +447,34 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
         }
     }
 
-    private static class RealmSubjectUserInfo implements SubjectUserInfo, UserInfo {
+    private static class RealmSubjectUserInfo implements SubjectUserInfo, UserInfo, UniqueIdUserInfo {
 
         private final String userName;
         private final Subject subject;
+        private final String id;
 
         private RealmSubjectUserInfo(Subject subject) {
             this.subject = subject;
             Set<RealmUser> userPrinc = subject.getPrincipals(RealmUser.class);
             userName = userPrinc.isEmpty() ? null : userPrinc.iterator().next().getName();
+            id = UUID.randomUUID().toString();
         }
 
         public String getUserName() {
             return userName;
         }
 
-        @Override
         public Collection<Principal> getPrincipals() {
             return subject.getPrincipals();
         }
 
-        @Override
         public Subject getSubject() {
             return subject;
         }
 
-
+        public String getId() {
+            return id;
+        }
 
     }
 
