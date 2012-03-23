@@ -77,9 +77,9 @@
                         <jboss.test.host.slave.address>${node1}</jboss.test.host.slave.address>
                     </systemPropertyVariables>
                     <includes>
-                         <include>org/jboss/as/test/integration/respawn/*TestCase.java</include>
                          <include>org/jboss/as/test/integration/domain/*TestCase.java</include>
                          <include>org/jboss/as/test/integration/domain/suites/*TestSuite.java</include>
+                         <include>org/jboss/as/test/integration/respawn/*TestCase.java</include>
                     </includes>
                 </configuration>
             </plugin>

@@ -24,11 +24,12 @@ package org.jboss.as.controller.client.helpers.domain.impl;
 
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
+import java.util.Map;
+
 import org.jboss.as.controller.client.helpers.domain.AddDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeployDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ReplaceDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBuilder;
-import org.jboss.dmr.ModelNode;
 
 
 /**
@@ -63,10 +64,9 @@ class AddDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implements 
     }
 
     @Override
-    public AddDeploymentPlanBuilder addMetadata(ModelNode userdata) {
-        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
-        currentSet.addMetadata(userdata);
-        return this;
+    public AddDeploymentPlanBuilderImpl addMetadata(Map<String, Object> userdata) {
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan().addMetadata(userdata);
+        return new AddDeploymentPlanBuilderImpl(this, currentSet);
     }
 
     @Override

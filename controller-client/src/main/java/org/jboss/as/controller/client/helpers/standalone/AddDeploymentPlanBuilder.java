@@ -52,7 +52,6 @@ public interface AddDeploymentPlanBuilder extends DeploymentPlanBuilder {
      */
     ReplaceDeploymentPlanBuilder andReplace(String toReplace);
 
-
     /**
      * Add some user defined metadata to the {@link DeploymentPlan}.
      * See {@link DeploymentMetadata} for the set of supported types.

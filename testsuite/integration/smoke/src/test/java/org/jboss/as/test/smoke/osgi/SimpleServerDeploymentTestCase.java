@@ -16,7 +16,7 @@
  */
 package org.jboss.as.test.smoke.osgi;
 
-import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_METADATA_STARTLEVEL;
+import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -32,8 +32,8 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
-import org.jboss.as.controller.client.helpers.ServerDeploymentHelper;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.as.test.osgi.OSGiTestSupport;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -54,7 +54,7 @@ import org.osgi.service.startlevel.StartLevel;
  * @since 22-Mar-2012
  */
 @RunWith(Arquillian.class)
-public class SimpleModelControllerClientTestCase {
+public class SimpleServerDeploymentTestCase {
 
     static final String BUNDLE_DEPLOYMENT_NAME = "test-bundle";
 
@@ -73,7 +73,7 @@ public class SimpleModelControllerClientTestCase {
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-bundle");
-        archive.addClasses(OSGiTestSupport.class);
+        archive.addClasses(ServerDeploymentHelper.class, OSGiTestSupport.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -94,16 +94,20 @@ public class SimpleModelControllerClientTestCase {
         ModelControllerClient client = getModelControllerClient();
         assertNotNull("ModelControllerClient available", client);
 
+        // Setup the deployment metadata
+        Map<String, Object> userdata = new HashMap<String, Object>();
+        userdata.put(DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL, Integer.valueOf(20));
+
+        // Deploy the bundle
         InputStream input = deployer.getDeployment(BUNDLE_DEPLOYMENT_NAME);
         ServerDeploymentHelper server = new ServerDeploymentHelper(client);
-        Map<String, Object> userdata = new HashMap<String, Object>();
-        userdata.put(DEPLOYMENT_METADATA_STARTLEVEL, Integer.valueOf(20));
         String runtimeName = server.deploy(BUNDLE_DEPLOYMENT_NAME, input, userdata);
 
         // Find the deployed bundle
         Bundle bundle = OSGiTestSupport.getDeployedBundle(context, BUNDLE_DEPLOYMENT_NAME, null);
         assertNotNull("Bundle installed", bundle);
 
+        // Verify that the bundle got installed in @ the specified start level
         int bundleStartLevel = startLevel.getBundleStartLevel(bundle);
         assertEquals("Bundle @ given level", 20, bundleStartLevel);
 

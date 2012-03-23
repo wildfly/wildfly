@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.controller.client.DeploymentMetadata;
 
 /**
  * Encapsulates a related set of actions a {@link DomainDeploymentManager} should
@@ -73,9 +73,9 @@ public interface DeploymentSetPlan {
     /**
      * Get the metadata associated with this deployment plan.
      *
-     * @return The meta data node.
+     * @return The meta data.
      */
-    ModelNode getMetadata();
+    DeploymentMetadata getMetadata();
 
     /**
      * Gets whether the deployment set plan is organized around

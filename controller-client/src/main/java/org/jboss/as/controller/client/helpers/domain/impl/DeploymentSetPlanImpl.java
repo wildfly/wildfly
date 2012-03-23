@@ -27,13 +27,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.jboss.as.controller.client.DeploymentMetadata;
 import org.jboss.as.controller.client.helpers.domain.DeploymentAction;
 import org.jboss.as.controller.client.helpers.domain.DeploymentSetPlan;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlan;
-import org.jboss.dmr.ModelNode;
 
 
 /**
@@ -47,7 +48,7 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
 
     private final UUID uuid;
     private final List<DeploymentAction> deploymentActions = new ArrayList<DeploymentAction>();
-    private final ModelNode metadata;
+    private final DeploymentMetadata metadata;
     private final boolean rollback;
     private final boolean shutdown;
     private final long gracefulShutdownPeriod;
@@ -57,15 +58,15 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
         this.uuid = UUID.randomUUID();
         this.rollback = true;
         this.shutdown = false;
-        this.metadata = null;
         this.gracefulShutdownPeriod = -1;
+        this.metadata = DeploymentMetadata.UNDEFINED;
         this.serverGroupPlans.add(new LinkedHashSet<ServerGroupDeploymentPlan>());
     }
 
     private DeploymentSetPlanImpl(final UUID uuid,
             final List<DeploymentAction> actions,
             final List<Set<ServerGroupDeploymentPlan>> serverGroupPlans,
-            final ModelNode metadata,
+            final DeploymentMetadata metadata,
             final boolean rollback,
             final boolean shutdown, final long gracefulTimeout) {
         this.uuid = uuid;
@@ -99,8 +100,8 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
     }
 
     @Override
-    public ModelNode getMetadata() {
-        return metadata != null ? metadata : new ModelNode();
+    public DeploymentMetadata getMetadata() {
+        return metadata;
     }
 
     @Override
@@ -152,8 +153,8 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
         return result;
     }
 
-    DeploymentSetPlanImpl addMetadata(final ModelNode userdata) {
-        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, userdata, this.rollback, this.shutdown, this.gracefulShutdownPeriod);
+    DeploymentSetPlanImpl addMetadata(final Map<String, Object> userdata) {
+        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, new DeploymentMetadata(userdata), this.rollback, this.shutdown, this.gracefulShutdownPeriod);
         return result;
     }
 

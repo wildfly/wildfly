@@ -72,7 +72,7 @@ public interface DeploymentPlan extends Serializable {
     /**
      * Get the metadata associated with this deployment plan.
      *
-     * @return The meta data node.
+     * @return The meta data.
      */
     DeploymentMetadata getMetadata();
 

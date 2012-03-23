@@ -230,6 +230,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             sysPackages.add("org.jboss.as.configadmin.service");
             sysPackages.add("org.jboss.as.controller.client");
             sysPackages.add("org.jboss.as.controller.client.helpers");
+            sysPackages.add("org.jboss.as.controller.client.helpers.domain");
             sysPackages.add("org.jboss.as.controller.client.helpers.standalone");
             sysPackages.add("org.jboss.as.osgi");
             sysPackages.add("org.jboss.logging;version=3.1.0");

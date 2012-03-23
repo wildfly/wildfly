@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.ServerDeploymentHelper;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;

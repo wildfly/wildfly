@@ -22,7 +22,10 @@
 
 package org.jboss.as.controller.client.helpers.domain;
 
-import org.jboss.dmr.ModelNode;
+import java.util.Map;
+
+import org.jboss.as.controller.client.DeploymentMetadata;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 
 /**
  * Variant of a {@link DeploymentPlanBuilder} that exposes
@@ -51,5 +54,11 @@ public interface AddDeploymentPlanBuilder extends DeploymentActionsCompleteBuild
      */
     ReplaceDeploymentPlanBuilder andReplace(String toReplace);
 
-    AddDeploymentPlanBuilder addMetadata(ModelNode metadata);
+    /**
+     * Add some user defined metadata to the {@link DeploymentPlan}.
+     * See {@link DeploymentMetadata} for the set of supported types.
+     *
+     * @return a builder that can continue building the overall deployment plan
+     */
+    AddDeploymentPlanBuilder addMetadata(Map<String, Object> userdata);
 }

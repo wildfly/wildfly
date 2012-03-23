@@ -56,6 +56,7 @@ public class BundleInstallService implements Service<BundleInstallService> {
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("osgi", "deployment");
 
     private final Deployment deployment;
+    private InjectedValue<StartLevel> injectedStartLevel = new InjectedValue<StartLevel>();
     private InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
     private InjectedValue<BundleStartTracker> injectedStartTracker = new InjectedValue<BundleStartTracker>();
     private ServiceName installedBundleName;
@@ -72,6 +73,7 @@ public class BundleInstallService implements Service<BundleInstallService> {
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         ServiceBuilder<BundleInstallService> builder = serviceTarget.addService(serviceName, service);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
+        builder.addDependency(Services.START_LEVEL, StartLevel.class, service.injectedStartLevel);
         builder.addDependency(BundleStartTracker.SERVICE_NAME, BundleStartTracker.class, service.injectedStartTracker);
         builder.addDependency(deploymentUnitName(contextName));
         builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
@@ -98,9 +100,14 @@ public class BundleInstallService implements Service<BundleInstallService> {
             ServiceTarget childTarget = context.getChildTarget();
             BundleManagerService bundleManager = injectedBundleManager.getValue();
             installedBundleName = bundleManager.installBundle(childTarget, deployment);
-            injectedStartTracker.getValue().addInstalledBundle(installedBundleName, deployment);
-            if (deployment.getStartLevel() != null) {
-                BundleStartLevelService.addService(childTarget, installedBundleName, deployment.getStartLevel());
+            BundleStartTracker startTracker = injectedStartTracker.getValue();
+            StartLevel startLevel = injectedStartLevel.getValue();
+            Integer bundleStartLevel = deployment.getStartLevel();
+            if (bundleStartLevel != null) {
+                BundleStartLevelService.addService(childTarget, installedBundleName, bundleStartLevel);
+            }
+            if (bundleStartLevel == null || bundleStartLevel <= startLevel.getStartLevel()) {
+                startTracker.addInstalledBundle(installedBundleName, deployment);
             }
         } catch (Throwable t) {
             throw new StartException(MESSAGES.failedToInstallDeployment(deployment), t);

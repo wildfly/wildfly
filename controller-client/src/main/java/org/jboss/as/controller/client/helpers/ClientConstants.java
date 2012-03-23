@@ -55,5 +55,5 @@ public class ClientConstants {
     public static final String DEPLOYMENT_REPLACE_OPERATION = "replace-deployment";
     public static final String DEPLOYMENT_UNDEPLOY_OPERATION = "undeploy";
 
-    public static final String DEPLOYMENT_METADATA_STARTLEVEL = "startlevel";
+    public static final String DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL = "bundle.startlevel";
 }
