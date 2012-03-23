@@ -70,7 +70,7 @@ public class SignEncryptMultipleClientsTestCase {
                 addClasses(ServiceIface.class, ServiceImpl.class, KeystorePasswordCallback.class).
                 addAsResource(ServiceIface.class.getPackage(), "bob.jks", "bob.jks").
                 addAsResource(ServiceIface.class.getPackage(), "bob.properties", "bob.properties").
-                addAsWebInfResource(ServiceIface.class.getPackage(), "wsdl/SecurityService.wsdl", "wsdl/SecurityService.wsdl").
+                addAsWebInfResource(ServiceIface.class.getPackage(), "wsdl/SecurityService-sign-encrypt.wsdl", "wsdl/SecurityService.wsdl").
                 addAsWebInfResource(ServiceIface.class.getPackage(), "wsdl/SecurityService_schema1.xsd", "wsdl/SecurityService_schema1.xsd").
                 addAsWebInfResource(SignEncryptMultipleClientsTestCase.class.getPackage(), "multiple-clients-jaxws-endpoint-config.xml", "jaxws-endpoint-config.xml");
 
