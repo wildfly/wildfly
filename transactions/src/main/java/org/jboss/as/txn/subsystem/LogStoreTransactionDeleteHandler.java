@@ -19,19 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.txn.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
-import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 public class LogStoreTransactionDeleteHandler implements OperationStepHandler {
@@ -40,31 +38,28 @@ public class LogStoreTransactionDeleteHandler implements OperationStepHandler {
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         MBeanServer mbs = TransactionExtension.getMBeanServer(context);
-        ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        ModelNode onAttribute = subModel.get(LogStoreConstants.JMX_ON_ATTRIBUTE);
-        String jmxName = onAttribute.asString();
+        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
 
         try {
-            ObjectName on = new ObjectName(jmxName);
+            final ObjectName on = LogStoreResource.getObjectName(resource);
 
             //  Invoke operation
             mbs.invoke(on, "remove", null, null);
-
-            try {
-                // validate that the MBean was removed:
-                mbs.getObjectInstance( new ObjectName(jmxName));
-            } catch (InstanceNotFoundException e) {
-                // success, the MBean was deleted
-                context.removeResource(PathAddress.EMPTY_ADDRESS);
-                context.completeStep();
-            } catch (MalformedObjectNameException e) {
-                throw new OperationFailedException(e.getMessage());
-            }
+//           TODO refresh the view, perhaps just execute probe again?
+//            try {
+//                // validate that the MBean was removed:
+//                mbs.getObjectInstance( new ObjectName(jmxName));
+//            } catch (InstanceNotFoundException e) {
+//                // success, the MBean was deleted
+//                context.removeResource(PathAddress.EMPTY_ADDRESS);
+//                context.completeStep();
+//            } catch (MalformedObjectNameException e) {
+//                throw new OperationFailedException(e.getMessage());
+//            }
 
         } catch (Exception e) {
             throw new OperationFailedException(e.getMessage());
         }
-
 
     }
 }

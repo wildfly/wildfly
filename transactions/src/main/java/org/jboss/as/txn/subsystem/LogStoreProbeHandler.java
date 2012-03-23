@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -90,16 +90,6 @@ public class LogStoreProbeHandler implements OperationStepHandler {
         return values;
     }
 
-    private void removeTransactions(OperationContext context) {
-        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
-
-        for (Resource resource1 : resource.getChildren(LogStoreConstants.TRANSACTIONS)) {
-            String txid = resource1.getModel().get(LogStoreConstants.TRANSACTION_ID.getName()).asString();
-
-            resource.removeChild(PathElement.pathElement(LogStoreConstants.TRANSACTIONS, txid));
-        }
-    }
-
     private void addAttributes(ModelNode node, Map<String, String> model2JmxNames, Map<String, String> attributes) {
         for (Map.Entry<String, String> e : model2JmxNames.entrySet()) {
             String attributeValue = attributes.get(e.getValue());
@@ -109,13 +99,13 @@ public class LogStoreProbeHandler implements OperationStepHandler {
         }
     }
 
-    private void addParticipants(OperationContext context, ModelNode operation, ModelNode parent, Set<ObjectInstance> participants, MBeanServer mbs)
+    private void addParticipants(final Resource parent, Set<ObjectInstance> participants, MBeanServer mbs)
             throws IntrospectionException, InstanceNotFoundException, IOException, ReflectionException {
         int i = 1;
 
         for (ObjectInstance participant : participants) {
-            final ModelNode participantAddress = parent.clone();
-            final ModelNode participantOperation = new ModelNode();
+            final Resource resource = new LogStoreResource.LogStoreRuntimeResource(participant.getObjectName());
+            final ModelNode model = resource.getModel();
             Map<String, String> pAttributes = getMBeanValues(mbs,  participant.getObjectName(),
                     LogStoreConstants.PARTICIPANT_JMX_NAMES);
             String pAddress = pAttributes.get(JNDI_PROPNAME);
@@ -125,21 +115,15 @@ public class LogStoreProbeHandler implements OperationStepHandler {
                 pAddress = pAttributes.get(JNDI_PROPNAME);
             }
 
-            operation.get(OP).set(ADD);
+            addAttributes(model, LogStoreConstants.MODEL_TO_JMX_PARTICIPANT_NAMES, pAttributes);
+            // model.get(LogStoreConstants.JMX_ON_ATTRIBUTE).set(participant.getObjectName().getCanonicalName());
 
-            participantAddress.add(LogStoreConstants.PARTICIPANTS, pAddress);
-
-            participantOperation.get(OP_ADDR).set(participantAddress);
-            addAttributes(participantOperation, LogStoreConstants.MODEL_TO_JMX_PARTICIPANT_NAMES, pAttributes);
-            participantOperation.get(LogStoreConstants.JMX_ON_ATTRIBUTE).set(
-                    participant.getObjectName().getCanonicalName());
-
-            context.addStep(participantOperation, LogStoreParticipantAddHandler.INSTANCE, OperationContext.Stage.MODEL);
+            final PathElement element = PathElement.pathElement(LogStoreConstants.PARTICIPANTS, pAddress);
+            parent.registerChild(element, resource);
         }
     }
 
-    private void addTransactions(
-            OperationContext context, ModelNode operation, Set<ObjectInstance> transactions, MBeanServer mbs)
+    private void addTransactions(final Resource parent, Set<ObjectInstance> transactions, MBeanServer mbs)
             throws IntrospectionException, InstanceNotFoundException, IOException,
             ReflectionException, MalformedObjectNameException {
 
@@ -147,32 +131,28 @@ public class LogStoreProbeHandler implements OperationStepHandler {
             String transactionId = oi.getObjectName().getCanonicalName();
 
             if (!transactionId.contains("puid") && transactionId.contains("itype")) {
-                final ModelNode transactionAddress = operation.get("address").clone();
-                final ModelNode transactionOperation = new ModelNode();
+                final Resource transaction = new LogStoreResource.LogStoreRuntimeResource(oi.getObjectName());
+                final ModelNode model = transaction.getModel();
 
                 Map<String, String> tAttributes = getMBeanValues(
                         mbs,  oi.getObjectName(), LogStoreConstants.TXN_JMX_NAMES);
                 String txnId = tAttributes.get("Id");
 
-                operation.get(OP).set(ADD);
-                transactionAddress.add(LogStoreConstants.TRANSACTIONS, txnId);
-
-                transactionOperation.get(OP_ADDR).set(transactionAddress);
-                addAttributes(transactionOperation, LogStoreConstants.MODEL_TO_JMX_TXN_NAMES, tAttributes);
-                transactionOperation.get(LogStoreConstants.JMX_ON_ATTRIBUTE).set(transactionId);
-
-                context.addStep(
-                        transactionOperation, LogStoreTransactionAddHandler.INSTANCE, OperationContext.Stage.MODEL);
+                addAttributes(model, LogStoreConstants.MODEL_TO_JMX_TXN_NAMES, tAttributes);
+                // model.get(LogStoreConstants.JMX_ON_ATTRIBUTE).set(transactionId);
 
                 String participantQuery =  transactionId + ",puid=*";
                 Set<ObjectInstance> participants = mbs.queryMBeans(new ObjectName(participantQuery), null);
 
-                addParticipants(context, operation, transactionAddress, participants, mbs);
+                addParticipants(transaction, participants, mbs);
+
+                final PathElement element = PathElement.pathElement(LogStoreConstants.TRANSACTIONS, txnId);
+                parent.registerChild(element, transaction);
             }
         }
     }
 
-    private void probeTransactions(OperationContext context, ModelNode operation, MBeanServer mbs)
+    private Resource probeTransactions(MBeanServer mbs)
             throws OperationFailedException {
         try {
             ObjectName on = new ObjectName(osMBeanName);
@@ -181,8 +161,9 @@ public class LogStoreProbeHandler implements OperationStepHandler {
 
             Set<ObjectInstance> transactions = mbs.queryMBeans(new ObjectName(osMBeanName +  ",*"), null);
 
-            removeTransactions(context);
-            addTransactions(context, operation, transactions, mbs);
+            final Resource resource = Resource.Factory.create();
+            addTransactions(resource, transactions, mbs);
+            return resource;
 
         } catch (JMException e) {
             throw new OperationFailedException("Transaction discovery error: ", e);
@@ -192,11 +173,21 @@ public class LogStoreProbeHandler implements OperationStepHandler {
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        MBeanServer mbs = TransactionExtension.getMBeanServer(context);
-
-        if (mbs != null)
-            probeTransactions(context, operation, mbs);
-
-        context.completeStep();
+        if(! context.isNormalServer()) {
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            return;
+        }
+        final MBeanServer mbs = TransactionExtension.getMBeanServer(context);
+        if (mbs != null) {
+            // Get the log-store resource
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            assert resource instanceof LogStoreResource;
+            final LogStoreResource logStore = (LogStoreResource) resource;
+            // Replace the current model with a updated one
+            final Resource storeModel = probeTransactions(mbs);
+            logStore.update(storeModel);
+        }
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
+
 }

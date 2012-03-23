@@ -19,12 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 import javax.management.MBeanServer;
@@ -36,12 +38,14 @@ public class LogStoreParticipantRecoveryHandler  implements OperationStepHandler
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         MBeanServer mbs = TransactionExtension.getMBeanServer(context);
-        ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        ModelNode onAttribute = subModel.get(LogStoreConstants.JMX_ON_ATTRIBUTE);
-        String jmxName = onAttribute.asString();
+        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        // ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+        // ModelNode onAttribute = subModel.get(LogStoreConstants.JMX_ON_ATTRIBUTE);
+        // String jmxName = onAttribute.asString();
 
         try {
-            ObjectName on = new ObjectName(jmxName);
+            // Get the internal object name
+            final ObjectName on = LogStoreResource.getObjectName(resource);
 
             //  Invoke operation
             mbs.invoke(on, "clearHeuristic", null, null);
