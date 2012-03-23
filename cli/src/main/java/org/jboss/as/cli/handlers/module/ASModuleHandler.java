@@ -77,7 +77,8 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
 
     private static final String MODULE_PATH = "module.path";
 
-    private static final String PATH_SEPARATOR = ","; // to make same command work on different systems
+    private static final String PATH_SEPARATOR = File.pathSeparator;
+    private static final String MODULE_SEPARATOR = ",";
 
     private static final String ACTION_ADD = "add";
     private static final String ACTION_REMOVE = "remove";
@@ -88,21 +89,45 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
             return Arrays.asList(new String[]{ACTION_ADD, ACTION_REMOVE});
         }}), 0, "--action");
 
-    private final ArgumentWithValue name = new ArgumentWithValue(this, "--name");
+    private final ArgumentWithValue name;
     private final ArgumentWithValue mainClass;
     private final ArgumentWithValue resources;
     private final ArgumentWithValue dependencies;
     private final ArgumentWithValue props;
     private final ArgumentWithValue moduleArg;
 
+    private File modulesDir;
+
     public ASModuleHandler(CommandContext ctx) {
         super("module", false);
 
+        final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
+        final CommandLineCompleter moduleNameCompleter = new CommandLineCompleter() {
+            @Override
+            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+                String path = buffer.replace('.', File.separatorChar);
+                String modulesPath;
+                try {
+                    modulesPath = getModulesDir().getAbsolutePath() + File.separatorChar;
+                } catch (CommandLineException e) {
+                    return -1;
+                }
+                int result = pathCompleter.complete(ctx, modulesPath + path, cursor, candidates);
+                if(result < 0) {
+                    return result;
+                }
+                for(int i = 0; i < candidates.size(); ++i) {
+                    candidates.set(i, candidates.get(i).replace(File.separatorChar, '.'));
+                }
+                return result - modulesPath.length();
+            }
+        };
+
+        name = new ArgumentWithValue(this, moduleNameCompleter, "--name");
         name.addRequiredPreceding(action);
 
         mainClass = new AddModuleArgument("--main-class");
 
-        final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
         resources = new AddModuleArgument("--resources", new CommandLineCompleter(){
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
@@ -125,7 +150,15 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
             }
         };
 
-        dependencies = new AddModuleArgument("--dependencies");
+        dependencies = new AddModuleArgument("--dependencies", new CommandLineCompleter(){
+            @Override
+            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+                final int lastSeparator = buffer.lastIndexOf(MODULE_SEPARATOR);
+                if(lastSeparator >= 0) {
+                    return lastSeparator + 1 + moduleNameCompleter.complete(ctx, buffer.substring(lastSeparator + 1), cursor, candidates);
+                }
+                return moduleNameCompleter.complete(ctx, buffer, cursor, candidates);
+            }});
         props = new AddModuleArgument("--properties");
 
         moduleArg = new AddModuleArgument("--module-xml", pathCompleter);
@@ -287,11 +320,14 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
     }
 
     protected File getModulesDir() throws CommandLineException {
+        if(modulesDir != null) {
+            return modulesDir;
+        }
         final String modulesDirStr = SecurityActions.getSystemProperty(MODULE_PATH);
         if(modulesDirStr == null) {
             throw new CommandLineException(MODULE_PATH + " system property is not available.");
         }
-        final File modulesDir = new File(modulesDirStr);
+        modulesDir = new File(modulesDirStr);
         if(!modulesDir.exists()) {
             throw new CommandLineException("Failed to locate the modules dir on the filesystem: " + modulesDir.getAbsolutePath());
         }
