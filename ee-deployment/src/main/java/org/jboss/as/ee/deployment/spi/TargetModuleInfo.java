@@ -21,18 +21,35 @@
  */
 package org.jboss.as.ee.deployment.spi;
 
+import java.io.File;
+
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.TargetModuleID;
 
 /**
- * A JBoss extension of the {@link TargetModuleID}.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 02-Aug-2011
  */
-public interface JBossTargetModuleID extends TargetModuleID {
+class TargetModuleInfo {
 
-    boolean isRunning();
+    private final String moduleID;
+    private final ModuleType moduleType;
+    private final File contentFile;
 
-    ModuleType getModuleType();
+    TargetModuleInfo(String moduleID, ModuleType moduleType, File contentFile) {
+        this.moduleID = moduleID;
+        this.moduleType = moduleType;
+        this.contentFile = contentFile;
+    }
+
+    String getModuleID() {
+        return moduleID;
+    }
+
+    ModuleType getModuleType() {
+        return moduleType;
+    }
+
+    File getContentFile() {
+        return contentFile;
+    }
 }

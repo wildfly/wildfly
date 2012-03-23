@@ -21,35 +21,6 @@
  */
 package org.jboss.as.ee.deployment.spi;
 
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
-import org.jboss.dmr.ModelNode;
-
-import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.exceptions.TargetException;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.RealmCallback;
-import javax.security.sasl.RealmChoiceCallback;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Future;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
@@ -59,6 +30,27 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
 import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
+
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
+
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.exceptions.TargetException;
+
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.dmr.ModelNode;
 
 /**
  * A Target that deploys using the {@link ServerDeploymentManager}.
@@ -97,9 +89,10 @@ final class DeploymentManagerTarget extends JBossTarget {
     @Override
     public void deploy(TargetModuleID targetModuleID) throws Exception {
         ROOT_LOGGER.beginDeploy(targetModuleID);
-        String deploymentName = targetModuleID.getModuleID();
         DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-        builder = builder.add(deploymentName, new URL(deploymentName)).andDeploy();
+        TargetModuleExt targetModule = (TargetModuleExt) targetModuleID;
+        URL contentURL = targetModule.getContentFile().toURI().toURL();
+        builder = builder.add(targetModule.getModuleID(), contentURL).andDeploy();
         DeploymentPlan plan = builder.build();
         DeploymentAction deployAction = builder.getLastAction();
         executeDeploymentPlan(plan, deployAction);
@@ -135,7 +128,6 @@ final class DeploymentManagerTarget extends JBossTarget {
     public TargetModuleID[] getAvailableModules(ModuleType filterType) throws TargetException {
         try {
             List<TargetModuleID> list = new ArrayList<TargetModuleID>();
-
             final ModelNode operation = new ModelNode();
             operation.get(OP).set(READ_CHILDREN_NAMES_OPERATION);
             operation.get(CHILD_TYPE).set(DEPLOYMENT);
@@ -162,7 +154,7 @@ final class DeploymentManagerTarget extends JBossTarget {
                     continue;
                 }
                 if (filterType == null || filterType.equals(moduleType)) {
-                    TargetModuleIDImpl targetModuleID = new TargetModuleIDImpl(this, moduleID, null, moduleType);
+                    TargetModuleIDImpl targetModuleID = new TargetModuleIDImpl(this, moduleID, null, moduleType, null);
                     Boolean state = runtimeState.get(targetModuleID);
                     targetModuleID.setRunning(state != null ? state : Boolean.TRUE);
                     list.add(targetModuleID);

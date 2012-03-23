@@ -21,15 +21,31 @@
  */
 package org.jboss.as.ee.deployment.spi;
 
-import org.dom4j.Document;
-import org.dom4j.io.SAXReader;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
-import org.jboss.as.ee.deployment.spi.configurations.WarConfiguration;
-import org.jboss.as.ee.deployment.spi.status.DeploymentStatusImpl;
-import org.jboss.as.ee.deployment.spi.status.ProgressObjectImpl;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.util.xml.JBossEntityResolver;
+import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.ActionType;
@@ -53,31 +69,15 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 
-import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
+import org.dom4j.Document;
+import org.dom4j.io.SAXReader;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.ee.deployment.spi.configurations.WarConfiguration;
+import org.jboss.as.ee.deployment.spi.status.DeploymentStatusImpl;
+import org.jboss.as.ee.deployment.spi.status.ProgressObjectImpl;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.util.xml.JBossEntityResolver;
 
 /**
  * The DeploymentManager object provides the core set of functions a J2EE platform must provide for J2EE application deployment.
@@ -96,11 +96,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
     // available deployment targets
     private Target[] targets;
 
-    // maps the DD to the archives
-    private Map<String, File> mapDeploymentPlan;
-    private DeploymentMetaData metaData;
-
-    private final List<File> tmpFiles = new ArrayList<File>();
     private final URI deployURI;
     private boolean isConnected;
     private final ModelControllerClient client;
@@ -151,11 +146,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
         if (targets == null) {
             if (deployURI.isOpaque()) {
                 throw new UnsupportedOperationException(MESSAGES.opaqueDeploymentUriNotImplemented());
-                // log.debug("Opaque URI seen, defaulting to LocalhostTarget");
-                // targets = new Target[] { new LocalhostTarget() };
             } else {
                 ROOT_LOGGER.debugf("Non-Opaque URI seen, checking query for targetType");
-
                 URIParser parser = new URIParser(deployURI);
                 String targetType = parser.getParameter("targetType");
                 if ("as7".equals(targetType)) {
@@ -185,7 +177,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         ROOT_LOGGER.debugf("getRunningModules [type=%s,targets=%s]", moduleType, Arrays.asList(targets));
 
         // get running modules
-        Set<JBossTargetModuleID> moduleSet = new HashSet<JBossTargetModuleID>();
+        Set<TargetModuleExt> moduleSet = new HashSet<TargetModuleExt>();
         TargetModuleID[] availableModules = getAvailableModules(moduleType, targets);
         if (availableModules == null) {
             ROOT_LOGGER.debugf("No modules available");
@@ -193,7 +185,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         }
 
         for (int i = 0; i < availableModules.length; i++) {
-            JBossTargetModuleID moduleID = (JBossTargetModuleID) availableModules[i];
+            TargetModuleExt moduleID = (TargetModuleExt) availableModules[i];
             if (moduleID.isRunning()) {
                 moduleSet.add(moduleID);
             }
@@ -223,7 +215,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         ROOT_LOGGER.debugf("getNonRunningModules [type=%s,targets=%s]", moduleType, Arrays.asList(targets));
 
         // get non running modules
-        Set<JBossTargetModuleID> moduleSet = new HashSet<JBossTargetModuleID>();
+        Set<TargetModuleExt> moduleSet = new HashSet<TargetModuleExt>();
         TargetModuleID[] availableModules = getAvailableModules(moduleType, targets);
         if (availableModules == null) {
             ROOT_LOGGER.debugf("No modules available");
@@ -231,7 +223,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         }
 
         for (int i = 0; i < availableModules.length; i++) {
-            JBossTargetModuleID moduleID = (JBossTargetModuleID) availableModules[i];
+            TargetModuleExt moduleID = (TargetModuleExt) availableModules[i];
             if (moduleID.isRunning() == false) {
                 moduleSet.add(moduleID);
             }
@@ -353,39 +345,33 @@ public class DeploymentManagerImpl implements DeploymentManager {
         return doDistribute(targets, type, moduleArchive, deploymentPlan);
     }
 
-    private ProgressObject doDistribute(Target[] targets, ModuleType type, InputStream moduleArchive, InputStream deploymentPlan) throws IllegalStateException {
+    private ProgressObject doDistribute(Target[] targets, ModuleType moduleType, InputStream moduleArchive, InputStream deploymentPlan) throws IllegalStateException {
         if (isConnected == false)
             throw new IllegalStateException(MESSAGES.deploymentManagerNotConnected());
 
+        DeploymentManagerState state = new DeploymentManagerState();
         TargetModuleID[] targetModuleIDs = new TargetModuleID[targets.length];
         try {
             // create for each entry in the deploymentPlan a temp file
-            mapDeploymentPlan = unpackDeploymentPlan(deploymentPlan);
-            initDeploymentMetaData();
+            state.unpackDeploymentPlan(deploymentPlan);
+            state.initDeploymentMetaData();
 
             // create the temp file that contains the deployment
-            TargetModuleInfo moduleInfo = createDeployment(moduleArchive, metaData.getDeploymentName());
-            URL deployment = moduleInfo.getModuleID();
-            if (type == null)
-                type = moduleInfo.getModuleType();
+            TargetModuleInfo moduleInfo = state.createDeployment(moduleArchive);
 
             // create the target module ids
             for (int i = 0; i < targets.length; i++) {
                 JBossTarget target = (JBossTarget) targets[i];
-                String moduleID = deployment.toExternalForm();
-                targetModuleIDs[i] = new TargetModuleIDImpl(target, moduleID, null, type);
-            }
-
-            // delete all temp files, except the deployment
-            for (int i = 0; i < tmpFiles.size(); i++) {
-                File file = tmpFiles.get(i);
-                if (file.equals(deployment) == false)
-                    file.delete();
+                String moduleID = moduleInfo.getModuleID();
+                ModuleType type = moduleType != null ? moduleType : moduleInfo.getModuleType();
+                File contentFile = moduleInfo.getContentFile();
+                targetModuleIDs[i] = new TargetModuleIDImpl(target, moduleID, null, type, contentFile);
             }
         } catch (IOException e) {
             String message = MESSAGES.deploymentValidationFailed();
             DeploymentStatus status = new DeploymentStatusImpl(StateType.FAILED, CommandType.DISTRIBUTE, ActionType.EXECUTE, message);
             ROOT_LOGGER.errorf(e, message);
+            state.cleanup();
             return new ProgressObjectImpl(status, targetModuleIDs);
         }
 
@@ -393,102 +379,10 @@ public class DeploymentManagerImpl implements DeploymentManager {
         DeploymentStatus status = new DeploymentStatusImpl(StateType.RUNNING, CommandType.DISTRIBUTE, ActionType.EXECUTE, null);
         ProgressObject progress = new ProgressObjectImpl(status, targetModuleIDs);
 
-        DeploymentWorker worker = new DeploymentWorker(progress);
+        DeploymentWorker worker = new DeploymentWorker(progress, state);
         worker.start();
 
         return progress;
-    }
-
-    /**
-     * Initialize the deployment meta data
-     */
-    private void initDeploymentMetaData() throws IOException {
-        File metaTmpFile = mapDeploymentPlan.get(DeploymentMetaData.ENTRY_NAME);
-        if (metaTmpFile == null)
-            throw new IOException(MESSAGES.deploymentPlanDoesNotContainEntry(DeploymentMetaData.ENTRY_NAME));
-
-        try {
-            SAXReader reader = new SAXReader();
-            reader.setEntityResolver(new JBossEntityResolver());
-
-            Document metaDoc = reader.read(metaTmpFile);
-            metaData = new DeploymentMetaData(metaDoc);
-            ROOT_LOGGER.debugf(DeploymentMetaData.ENTRY_NAME + "\n" + metaData.toXMLString());
-        } catch (Exception e) {
-            ROOT_LOGGER.errorf(e, MESSAGES.cannotObtainMetaData());
-        }
-    }
-
-    /**
-     * Create the JBoss deployment, by enhancing the content of the module archive with the entries in the deployment plan.
-     */
-    private TargetModuleInfo createDeployment(InputStream moduleArchive, String moduleName) throws IOException {
-        File tmpFile = File.createTempFile("jboss_deployment_", ".zip");
-        ROOT_LOGGER.debugf("temporary deployment file: %s", tmpFile);
-
-        JarInputStream jis = new JarInputStream(moduleArchive);
-
-        // make sure we don't loose the manifest when creating a new JarOutputStream
-        JarOutputStream jos;
-        FileOutputStream fos = new FileOutputStream(tmpFile);
-        Manifest manifest = jis.getManifest();
-        if (manifest != null)
-            jos = new JarOutputStream(fos, manifest);
-        else
-            jos = new JarOutputStream(fos);
-
-        // process all modules
-        TargetModuleInfo moduleInfo = new TargetModuleInfo();
-        ModuleType moduleType = null;
-        JarEntry entry = jis.getNextJarEntry();
-        while (entry != null) {
-            String entryName = entry.getName();
-
-            // only process file entries
-            if (entryName.endsWith("/") == false) {
-                moduleType = ifNotNull(determineModuleType(entryName), moduleType);
-
-                // process a sub module
-                if (entryName.endsWith(".jar") || entryName.endsWith(".war")) {
-                    File tmpSubModule = processSubModule(entryName, jis);
-                    FileInputStream fis = new FileInputStream(tmpSubModule);
-                    JarUtils.addJarEntry(jos, entryName, fis);
-                    fis.close();
-                } else {
-                    if (mapDeploymentPlan.get("!/" + entryName) == null)
-                        JarUtils.addJarEntry(jos, entryName, jis);
-                    else
-                        ROOT_LOGGER.debugf("Skip entry found in deployment plan: %s", entryName);
-                }
-            }
-            entry = jis.getNextJarEntry();
-        }
-
-        if (moduleType == null) {
-            if (moduleName.endsWith(ModuleType.EAR.getModuleExtension()))
-                moduleType = ModuleType.EAR;
-            else if (moduleName.endsWith(ModuleType.WAR.getModuleExtension()))
-                moduleType = ModuleType.WAR;
-            else if (moduleName.endsWith(ModuleType.RAR.getModuleExtension()))
-                moduleType = ModuleType.RAR;
-            else
-                throw new RuntimeException(MESSAGES.cannotObtainModuleType(moduleName));
-        }
-
-        moduleInfo.setModuleType(moduleType);
-        // there may be top level deployment plan entries, add them
-        addDeploymentPlanEntry(jos, null);
-        jos.close();
-
-        // rename the deployment
-        String deploymentName = tmpFile.getParent() + File.separator + metaData.getDeploymentName();
-        File deployment = new File(deploymentName);
-        if (deployment.exists() && deployment.delete() == false)
-            throw new IOException(MESSAGES.cannotDeleteExistingDeployment(deployment));
-
-        tmpFile.renameTo(deployment);
-        moduleInfo.setModuleID(deployment.toURI().toURL());
-        return moduleInfo;
     }
 
     /**
@@ -545,7 +439,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         DeploymentStatus status = new DeploymentStatusImpl(StateType.RUNNING, CommandType.START, ActionType.EXECUTE, null);
         ProgressObject progress = new ProgressObjectImpl(status, targetModuleIDs);
 
-        DeploymentWorker worker = new DeploymentWorker(progress);
+        DeploymentWorker worker = new DeploymentWorker(progress, null);
         worker.start();
 
         return progress;
@@ -567,7 +461,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         DeploymentStatus status = new DeploymentStatusImpl(StateType.RUNNING, CommandType.STOP, ActionType.EXECUTE, null);
         ProgressObject progress = new ProgressObjectImpl(status, targetModuleIDs);
 
-        DeploymentWorker worker = new DeploymentWorker(progress);
+        DeploymentWorker worker = new DeploymentWorker(progress, null);
         worker.start();
 
         return progress;
@@ -590,7 +484,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         DeploymentStatus status = new DeploymentStatusImpl(StateType.RUNNING, CommandType.UNDEPLOY, ActionType.EXECUTE, null);
         ProgressObject progress = new ProgressObjectImpl(status, targetModuleIDs);
 
-        DeploymentWorker worker = new DeploymentWorker(progress);
+        DeploymentWorker worker = new DeploymentWorker(progress, null);
         worker.start();
 
         return progress;
@@ -710,144 +604,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
     }
 
     /**
-     * Process a potential sub module, adding descriptors from the deployment plan
-     */
-    private File processSubModule(String entryName, JarInputStream jis) throws IOException {
-        // first copy te entry as is to a temp file
-        File tmpModule = getTempFile(entryName);
-        tmpFiles.add(tmpModule);
-        FileOutputStream fos = new FileOutputStream(tmpModule);
-        JarUtils.copyStream(fos, jis);
-        fos.close();
-
-        // now open the copy we just made and copy again entry by entry
-        JarInputStream jisModule = new JarInputStream(new FileInputStream(tmpModule));
-        File tmpJBossModule = getTempFile("jboss_" + entryName);
-        tmpFiles.add(tmpJBossModule);
-        JarOutputStream jos = null;
-        fos = new FileOutputStream(tmpJBossModule);
-        Manifest manifest = jisModule.getManifest();
-        if (manifest != null)
-            jos = new JarOutputStream(fos, manifest);
-        else
-            jos = new JarOutputStream(fos);
-
-        // now copy entry by entry
-        JarEntry entry = jisModule.getNextJarEntry();
-        while (entry != null) {
-            String subEntryName = entry.getName();
-            if (mapDeploymentPlan.get(entryName + "!/" + subEntryName) == null)
-                JarUtils.addJarEntry(jos, subEntryName, jisModule);
-            else
-                ROOT_LOGGER.debugf("Skip entry found in deployment plan: %s", subEntryName);
-
-            entry = jisModule.getNextJarEntry();
-        }
-        jisModule.close();
-
-        addDeploymentPlanEntry(jos, entryName);
-
-        jos.close();
-
-        return tmpJBossModule;
-    }
-
-    /**
-     * Add an entry from the deployment plan, if found
-     *
-     * @param moduleName entries will be added for that module, null indicates top level
-     */
-    private void addDeploymentPlanEntry(JarOutputStream jos, String moduleName) throws IOException {
-        if (moduleName == null)
-            moduleName = "";
-
-        // ignore deployment plan entries that do not start like this
-        String moduleKey = moduleName + "!/";
-
-        Iterator<String> it = mapDeploymentPlan.keySet().iterator();
-        while (it.hasNext()) {
-            String key = it.next();
-            if (key.startsWith(moduleKey)) {
-                String dpName = key.substring(moduleKey.length());
-                ROOT_LOGGER.debugf("found deployment plan entry: %s", dpName);
-
-                File dpFile = mapDeploymentPlan.get(key);
-                FileInputStream dpin = new FileInputStream(dpFile);
-                JarUtils.addJarEntry(jos, dpName, dpin);
-                dpin.close();
-            }
-        }
-    }
-
-    /**
-     * Create a temp file for every entry in the deployment plan
-     */
-    private Map<String, File> unpackDeploymentPlan(InputStream deploymentPlan) throws IOException {
-        Map<String, File> dpMap = new HashMap<String, File>();
-
-        if (deploymentPlan == null)
-            return dpMap;
-
-        // process the deployment plan
-        try {
-            JarInputStream jarDeploymentPlan = new JarInputStream(deploymentPlan);
-            JarEntry entry = jarDeploymentPlan.getNextJarEntry();
-            while (entry != null) {
-                String entryName = entry.getName();
-                ROOT_LOGGER.debugf("unpack deployment plan entry: %s", entryName);
-
-                File tempFile = getTempFile(entryName);
-                dpMap.put(entryName, tempFile);
-
-                FileOutputStream out = new FileOutputStream(tempFile);
-                JarUtils.copyStream(out, jarDeploymentPlan);
-                out.close();
-
-                entry = jarDeploymentPlan.getNextJarEntry();
-            }
-        } finally {
-            deploymentPlan.close();
-        }
-
-        return dpMap;
-    }
-
-    /**
-     * Get a temp file for an jar entry name
-     */
-    private File getTempFile(String entryName) throws IOException {
-        entryName = entryName.replace('/', '_');
-        int index = entryName.lastIndexOf(".");
-        String prefix = entryName.substring(0, index);
-        String suffix = entryName.substring(index);
-
-        File tempFile = File.createTempFile(prefix, suffix);
-        tmpFiles.add(tempFile);
-        return tempFile;
-    }
-
-    private static class TargetModuleInfo {
-        URL moduleID = null;
-        ModuleType moduleType = null;
-
-        public URL getModuleID() {
-            return moduleID;
-        }
-
-        public void setModuleID(URL url) {
-            moduleID = url;
-        }
-
-        public ModuleType getModuleType() {
-            return moduleType;
-        }
-
-        public void setModuleType(ModuleType type) {
-            moduleType = type;
-        }
-    }
-
-    /**
      * Create a new model controller client.
      *
      * @param deployURI the deploy URI
@@ -861,7 +617,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             URIParser parser = new URIParser(deployURI);
             String serverHost = parser.getParameter("serverHost");
             String serverPort = parser.getParameter("serverPort");
-            String host = serverHost != null ? serverHost : "127.0.0.1";
+            String host = serverHost != null ? serverHost : InetAddress.getLocalHost().getHostAddress();
             Integer port = serverPort != null ? Integer.parseInt(serverPort) : 9999;
             if (username != null && password != null) {
                 return ModelControllerClient.Factory.create(host, port, getCallbackHandler(username, password));
@@ -897,4 +653,227 @@ public class DeploymentManagerImpl implements DeploymentManager {
         };
     }
 
+    static class DeploymentManagerState {
+        private List<File> tmpFiles = new ArrayList<File>();
+        private Map<String, File> deploymentPlanMapping;
+        private DeploymentMetaData metaData;
+
+        DeploymentMetaData getDeploymentMetaData() {
+            return metaData;
+        }
+
+        /**
+         * Create the JBoss deployment, by enhancing the content of the module archive with the entries in the deployment plan.
+         */
+        TargetModuleInfo createDeployment(InputStream moduleArchive) throws IOException {
+            File tmpFile = File.createTempFile("jsr88_deployment_", ".zip");
+            ROOT_LOGGER.debugf("temporary deployment file: %s", tmpFile);
+            tmpFiles.add(tmpFile);
+
+            JarInputStream jis = new JarInputStream(moduleArchive);
+
+            // make sure we don't loose the manifest when creating a new JarOutputStream
+            JarOutputStream jos;
+            FileOutputStream fos = new FileOutputStream(tmpFile);
+            Manifest manifest = jis.getManifest();
+            if (manifest != null)
+                jos = new JarOutputStream(fos, manifest);
+            else
+                jos = new JarOutputStream(fos);
+
+            // process all modules
+            ModuleType moduleType = null;
+            JarEntry entry = jis.getNextJarEntry();
+            while (entry != null) {
+                String entryName = entry.getName();
+
+                // only process file entries
+                if (entryName.endsWith("/") == false) {
+                    moduleType = ifNotNull(determineModuleType(entryName), moduleType);
+
+                    // process a sub module
+                    if (entryName.endsWith(".jar") || entryName.endsWith(".war")) {
+                        File tmpSubModule = processSubModule(entryName, jis);
+                        FileInputStream fis = new FileInputStream(tmpSubModule);
+                        JarUtils.addJarEntry(jos, entryName, fis);
+                        fis.close();
+                    } else {
+                        if (getDescriptorFile("!/" + entryName) == null)
+                            JarUtils.addJarEntry(jos, entryName, jis);
+                        else
+                            ROOT_LOGGER.debugf("Skip entry found in deployment plan: %s", entryName);
+                    }
+                }
+                entry = jis.getNextJarEntry();
+            }
+
+            String moduleName = getDeploymentMetaData().getDeploymentName();
+            if (moduleType == null) {
+                if (moduleName.endsWith(ModuleType.EAR.getModuleExtension()))
+                    moduleType = ModuleType.EAR;
+                else if (moduleName.endsWith(ModuleType.WAR.getModuleExtension()))
+                    moduleType = ModuleType.WAR;
+                else if (moduleName.endsWith(ModuleType.RAR.getModuleExtension()))
+                    moduleType = ModuleType.RAR;
+                else
+                    throw new RuntimeException(MESSAGES.cannotObtainModuleType(moduleName));
+            }
+
+            String depname = getDeploymentMetaData().getDeploymentName();
+            TargetModuleInfo moduleInfo = new TargetModuleInfo(depname, moduleType, tmpFile);
+
+            // there may be top level deployment plan entries, add them
+            addDeploymentPlanEntry(jos, null);
+            jos.close();
+
+            return moduleInfo;
+        }
+
+        /**
+         * Process a potential sub module, adding descriptors from the deployment plan
+         */
+        private File processSubModule(String entryName, JarInputStream jis) throws IOException {
+            // first copy te entry as is to a temp file
+            File tmpModule = getTempFile(entryName);
+            FileOutputStream fos = new FileOutputStream(tmpModule);
+            JarUtils.copyStream(fos, jis);
+            fos.close();
+
+            // now open the copy we just made and copy again entry by entry
+            JarInputStream jisModule = new JarInputStream(new FileInputStream(tmpModule));
+            File tmpJBossModule = getTempFile("jboss_" + entryName);
+            JarOutputStream jos = null;
+            fos = new FileOutputStream(tmpJBossModule);
+            Manifest manifest = jisModule.getManifest();
+            if (manifest != null)
+                jos = new JarOutputStream(fos, manifest);
+            else
+                jos = new JarOutputStream(fos);
+
+            // now copy entry by entry
+            JarEntry entry = jisModule.getNextJarEntry();
+            while (entry != null) {
+                String subEntryName = entry.getName();
+                if (getDescriptorFile(entryName + "!/" + subEntryName) == null)
+                    JarUtils.addJarEntry(jos, subEntryName, jisModule);
+                else
+                    ROOT_LOGGER.debugf("Skip entry found in deployment plan: %s", subEntryName);
+
+                entry = jisModule.getNextJarEntry();
+            }
+            jisModule.close();
+
+            addDeploymentPlanEntry(jos, entryName);
+
+            jos.close();
+
+            return tmpJBossModule;
+        }
+
+        void cleanup() {
+            for (File tmpFile : tmpFiles) {
+                if (tmpFile.exists()) {
+                    if (!tmpFile.delete()) {
+                        ROOT_LOGGER.cannotDeleteDeploymentFile(tmpFile);
+                        tmpFile.deleteOnExit();
+                    }
+                } else {
+                    ROOT_LOGGER.deploymentDoesNotExist(tmpFile);
+                }
+            }
+        }
+
+        File getDescriptorFile(String entry) {
+            return deploymentPlanMapping.get(entry);
+        }
+
+        /**
+         * Create a temp file for every entry in the deployment plan
+         */
+        void unpackDeploymentPlan(InputStream deploymentPlan) throws IOException {
+
+            if (deploymentPlan == null)
+                return;
+
+            // process the deployment plan
+            deploymentPlanMapping = new HashMap<String, File>();
+            try {
+                JarInputStream jarDeploymentPlan = new JarInputStream(deploymentPlan);
+                JarEntry entry = jarDeploymentPlan.getNextJarEntry();
+                while (entry != null) {
+                    String entryName = entry.getName();
+                    ROOT_LOGGER.debugf("unpack deployment plan entry: %s", entryName);
+
+                    File tempFile = getTempFile(entryName);
+                    deploymentPlanMapping.put(entryName, tempFile);
+
+                    FileOutputStream out = new FileOutputStream(tempFile);
+                    JarUtils.copyStream(out, jarDeploymentPlan);
+                    out.close();
+
+                    entry = jarDeploymentPlan.getNextJarEntry();
+                }
+            } finally {
+                deploymentPlan.close();
+            }
+        }
+
+        /**
+         * Initialize the deployment meta data
+         */
+        void initDeploymentMetaData() throws IOException {
+            File metaTmpFile = deploymentPlanMapping.get(DeploymentMetaData.ENTRY_NAME);
+            if (metaTmpFile == null)
+                throw new IOException(MESSAGES.deploymentPlanDoesNotContainEntry(DeploymentMetaData.ENTRY_NAME));
+
+            try {
+                SAXReader reader = new SAXReader();
+                reader.setEntityResolver(new JBossEntityResolver());
+
+                Document metaDoc = reader.read(metaTmpFile);
+                metaData = new DeploymentMetaData(metaDoc);
+                ROOT_LOGGER.debugf(DeploymentMetaData.ENTRY_NAME + "\n" + metaData.toXMLString());
+            } catch (Exception e) {
+                ROOT_LOGGER.errorf(e, MESSAGES.cannotObtainMetaData());
+            }
+        }
+
+        /**
+         * Add an entry from the deployment plan, if found
+         *
+         * @param moduleName entries will be added for that module, null indicates top level
+         */
+        void addDeploymentPlanEntry(JarOutputStream jos, String moduleName) throws IOException {
+            if (moduleName == null)
+                moduleName = "";
+
+            // ignore deployment plan entries that do not start like this
+            String moduleKey = moduleName + "!/";
+
+            Iterator<String> it = deploymentPlanMapping.keySet().iterator();
+            while (it.hasNext()) {
+                String key = it.next();
+                if (key.startsWith(moduleKey)) {
+                    String dpName = key.substring(moduleKey.length());
+                    ROOT_LOGGER.debugf("found deployment plan entry: %s", dpName);
+
+                    File dpFile = deploymentPlanMapping.get(key);
+                    FileInputStream dpin = new FileInputStream(dpFile);
+                    JarUtils.addJarEntry(jos, dpName, dpin);
+                    dpin.close();
+                }
+            }
+        }
+
+        private File getTempFile(String entryName) throws IOException {
+            entryName = entryName.replace('/', '_');
+            int index = entryName.lastIndexOf(".");
+            String prefix = entryName.substring(0, index);
+            String suffix = entryName.substring(index);
+            File tempFile = File.createTempFile("jsr88_" + prefix, suffix);
+            tmpFiles.add(tempFile);
+            return tempFile;
+        }
+
+    }
 }

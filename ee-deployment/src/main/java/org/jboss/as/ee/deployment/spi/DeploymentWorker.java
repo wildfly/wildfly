@@ -21,18 +21,16 @@
  */
 package org.jboss.as.ee.deployment.spi;
 
-import org.jboss.as.ee.deployment.spi.status.ProgressObjectImpl;
+import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
 
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 
-import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
+import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl.DeploymentManagerState;
+import org.jboss.as.ee.deployment.spi.status.ProgressObjectImpl;
 
 /**
  * A thread that deploys the given deployment on all targets contained in the progress object. It sends events to the progress
@@ -42,10 +40,12 @@ import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
  */
 final class DeploymentWorker extends Thread {
 
-    private ProgressObjectImpl progress;
+    private final ProgressObjectImpl progress;
+    private final DeploymentManagerState managerState;
 
-    DeploymentWorker(ProgressObject progress) {
+    DeploymentWorker(ProgressObject progress, DeploymentManagerState managerState) {
         this.progress = (ProgressObjectImpl) progress;
+        this.managerState = managerState;
     }
 
     /**
@@ -53,43 +53,34 @@ final class DeploymentWorker extends Thread {
      */
     public void run() {
         ROOT_LOGGER.tracef("Begin run");
-        CommandType cmdType = progress.getDeploymentStatus().getCommand();
-        TargetModuleID[] modules = progress.getResultTargetModuleIDs();
-        for (int i = 0; i < modules.length; i++) {
-            TargetModuleID moduleid = modules[i];
-            JBossTarget target = (JBossTarget) moduleid.getTarget();
-            try {
-                progress.sendProgressEvent(StateType.RUNNING, MESSAGES.operationStarted(cmdType), moduleid);
-                if (cmdType == CommandType.DISTRIBUTE) {
-                    target.deploy(moduleid);
-                    deleteDeployment(moduleid);
-                } else if (cmdType == CommandType.START) {
-                    target.start(moduleid);
-                } else if (cmdType == CommandType.STOP) {
-                    target.stop(moduleid);
-                } else if (cmdType == CommandType.UNDEPLOY) {
-                    target.undeploy(moduleid);
-                    deleteDeployment(moduleid);
+        try {
+            CommandType cmdType = progress.getDeploymentStatus().getCommand();
+            TargetModuleID[] modules = progress.getResultTargetModuleIDs();
+            for (int i = 0; i < modules.length; i++) {
+                TargetModuleID moduleid = modules[i];
+                JBossTarget target = (JBossTarget) moduleid.getTarget();
+                try {
+                    progress.sendProgressEvent(StateType.RUNNING, MESSAGES.operationStarted(cmdType), moduleid);
+                    if (cmdType == CommandType.DISTRIBUTE) {
+                        target.deploy(moduleid);
+                    } else if (cmdType == CommandType.START) {
+                        target.start(moduleid);
+                    } else if (cmdType == CommandType.STOP) {
+                        target.stop(moduleid);
+                    } else if (cmdType == CommandType.UNDEPLOY) {
+                        target.undeploy(moduleid);
+                    }
+                    progress.sendProgressEvent(StateType.COMPLETED, MESSAGES.operationCompleted(cmdType), moduleid);
+                } catch (Exception e) {
+                    String message = MESSAGES.operationFailedOnTarget(cmdType, target);
+                    progress.sendProgressEvent(StateType.FAILED, message, moduleid);
+                    ROOT_LOGGER.errorf(e, message);
                 }
-                progress.sendProgressEvent(StateType.COMPLETED,  MESSAGES.operationCompleted(cmdType), moduleid);
-            } catch (Exception e) {
-                String message = MESSAGES.operationFailedOnTarget(cmdType, target);
-                progress.sendProgressEvent(StateType.FAILED, message, moduleid);
-                ROOT_LOGGER.errorf(e, message);
             }
+        } finally {
+            if (managerState != null)
+                managerState.cleanup();
         }
         ROOT_LOGGER.tracef("End run");
-    }
-
-    private void deleteDeployment(TargetModuleID moduleid) throws MalformedURLException {
-        File deployment = new File(new URL(moduleid.getModuleID()).getPath());
-        if (deployment.exists()) {
-            if (!deployment.delete()) {
-                ROOT_LOGGER.cannotDeleteDeploymentFile(deployment);
-                deployment.deleteOnExit();
-            }
-        } else {
-            ROOT_LOGGER.deploymentDoesNotExist(deployment);
-        }
     }
 }

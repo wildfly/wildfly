@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ee.deployment.spi;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,16 +42,17 @@ import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
  * @author Thomas.Diesler@jboss.com
  *
  */
-final class TargetModuleIDImpl implements JBossTargetModuleID {
+final class TargetModuleIDImpl implements TargetModuleExt {
 
     private final JBossTarget target;
     private final String moduleID;
     private final TargetModuleID parentModuleID;
     private final ModuleType moduleType;
+    private File contentFile;
     private List<TargetModuleID> childModuleIDs = new ArrayList<TargetModuleID>();
     private boolean isRunning;
 
-    TargetModuleIDImpl(JBossTarget target, String moduleID, TargetModuleID parentModuleID, ModuleType moduleType) {
+    TargetModuleIDImpl(JBossTarget target, String moduleID, TargetModuleID parentModuleID, ModuleType moduleType, File contentFile) {
         if (target == null)
             throw new IllegalArgumentException(MESSAGES.nullArgument("target"));
         if (moduleID == null)
@@ -61,27 +63,8 @@ final class TargetModuleIDImpl implements JBossTargetModuleID {
         this.moduleID = moduleID;
         this.parentModuleID = parentModuleID;
         this.moduleType = moduleType;
+        this.contentFile = contentFile;
     }
-
-    @Override
-    public boolean isRunning() {
-        return isRunning;
-    }
-
-    void setRunning(boolean isRunning) {
-        this.isRunning = isRunning;
-    }
-
-    @Override
-    public ModuleType getModuleType() {
-        return moduleType;
-    }
-
-    void addChildTargetModuleID(TargetModuleID childModuleID) {
-        childModuleIDs.add(childModuleID);
-    }
-
-    // TargetModuleID interface ************************************************
 
     @Override
     public Target getTarget() {
@@ -108,6 +91,29 @@ final class TargetModuleIDImpl implements JBossTargetModuleID {
         TargetModuleID[] idarr = new TargetModuleID[childModuleIDs.size()];
         childModuleIDs.toArray(idarr);
         return idarr;
+    }
+
+    void addChildTargetModuleID(TargetModuleID childModuleID) {
+        childModuleIDs.add(childModuleID);
+    }
+
+    @Override
+    public boolean isRunning() {
+        return isRunning;
+    }
+
+    void setRunning(boolean isRunning) {
+        this.isRunning = isRunning;
+    }
+
+    @Override
+    public ModuleType getModuleType() {
+        return moduleType;
+    }
+
+    @Override
+    public File getContentFile() {
+        return contentFile;
     }
 
     public int hashCode() {

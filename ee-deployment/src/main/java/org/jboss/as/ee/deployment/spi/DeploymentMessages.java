@@ -64,8 +64,8 @@ public interface DeploymentMessages {
     @Message(id = 16156, value = "Cannot obtain module type for: %s")
     String cannotObtainModuleType(String moduleName);
 
-    @Message(id = 16157, value ="Cannot delete existing deployment: %s")
-    String cannotDeleteExistingDeployment(File deployment);
+    //@Message(id = 16157, value ="Cannot delete existing deployment: %s")
+    //String cannotDeleteExistingDeployment(File deployment);
 
     @Message(id = 16158, value = "DeploymentManager not connected")
     String deploymentManagerNotConnected();

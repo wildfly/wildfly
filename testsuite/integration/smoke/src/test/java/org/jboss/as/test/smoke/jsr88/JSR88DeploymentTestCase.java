@@ -81,7 +81,7 @@ import static org.junit.Assert.fail;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-public class EnterpriseDeploymentTestCase {
+public class JSR88DeploymentTestCase {
 
     private static final long TIMEOUT = 10000;
 
@@ -437,27 +437,27 @@ public class EnterpriseDeploymentTestCase {
     private Archive<?> getWebArchive() {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "deployment-web.war");
         archive.addClasses(SampleServlet.class);
-        archive.setWebXML(EnterpriseDeploymentTestCase.class.getPackage(), "web.xml");
+        archive.setWebXML(JSR88DeploymentTestCase.class.getPackage(), "web.xml");
         return archive;
     }
 
     private Archive<?> getBadWebArchive() {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "deployment-bad-web.war");
         archive.addClasses(SampleServlet.class);
-        archive.setWebXML(EnterpriseDeploymentTestCase.class.getPackage(), "badweb.xml");
+        archive.setWebXML(JSR88DeploymentTestCase.class.getPackage(), "badweb.xml");
         return archive;
     }
 
     private Archive<?> getEjbArchive() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "deployment-ejb.jar");
         archive.addClasses(Echo.class, EchoHome.class, EchoBean.class);
-        archive.addAsManifestResource(EnterpriseDeploymentTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+        archive.addAsManifestResource(JSR88DeploymentTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         return archive;
     }
 
     private Archive<?> getEarArchive() {
         EnterpriseArchive archive = ShrinkWrap.create(EnterpriseArchive.class, "deployment-app.ear");
-        archive.setApplicationXML(EnterpriseDeploymentTestCase.class.getPackage(), "application.xml");
+        archive.setApplicationXML(JSR88DeploymentTestCase.class.getPackage(), "application.xml");
         archive.add(getWebArchive(), "/", ZipExporter.class);
         archive.add(getEjbArchive(), "/", ZipExporter.class);
         return archive;

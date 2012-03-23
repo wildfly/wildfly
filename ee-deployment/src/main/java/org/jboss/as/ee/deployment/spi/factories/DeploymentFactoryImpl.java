@@ -30,8 +30,8 @@ import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.jboss.as.ee.deployment.spi.DeploymentManagerImpl.DEPLOYER_URI;
 import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.deployment.spi.DeploymentManagerImpl.DEPLOYER_URI;
 
 /**
  * The DeploymentFactory interface is a deployment driver for a J2EE platform product.
