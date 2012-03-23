@@ -41,8 +41,8 @@ import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.jsr88.spi.DeploymentManagerImpl;
-import org.jboss.as.jsr88.spi.factories.DeploymentFactoryImpl;
+import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
+import org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 
