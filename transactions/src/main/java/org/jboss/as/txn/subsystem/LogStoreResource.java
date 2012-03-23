@@ -133,7 +133,7 @@ class LogStoreResource implements Resource {
     static class LogStoreRuntimeResource extends AbstractModelResource {
 
         private final ObjectName objectName;
-        private volatile ModelNode model;
+        private volatile ModelNode model = new ModelNode();
 
         LogStoreRuntimeResource(ObjectName objectName) {
             this.objectName = objectName;
