@@ -113,6 +113,7 @@ public class WeldContextSetup implements SetupAction {
                 CreationalContext<?> ctx = manager.createCreationalContext(sessionContextBean);
                 final BoundSessionContext sessionContext = (BoundSessionContext) manager.getReference(sessionContextBean,
                         BoundSessionContext.class, ctx);
+                sessionContext.invalidate();
                 sessionContext.deactivate();
                 sessionContext.dissociate(sessionContexts.get());
 
@@ -121,6 +122,7 @@ public class WeldContextSetup implements SetupAction {
                 ctx = manager.createCreationalContext(requestContextBean);
                 final BoundRequestContext requestContext = (BoundRequestContext) manager.getReference(requestContextBean,
                         BoundRequestContext.class, ctx);
+                requestContext.invalidate();
                 requestContext.deactivate();
                 requestContext.dissociate(requestContexts.get());
 
@@ -129,6 +131,7 @@ public class WeldContextSetup implements SetupAction {
                 ctx = manager.createCreationalContext(conversationContextBean);
                 final BoundConversationContext conversationContext = (BoundConversationContext) manager.getReference(
                         conversationContextBean, BoundConversationContext.class, ctx);
+                conversationContext.invalidate();
                 conversationContext.deactivate();
                 conversationContext.dissociate(boundRequests.get());
             }

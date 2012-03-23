@@ -90,6 +90,7 @@ public class EjbRequestScopeActivationInterceptor implements Serializable, org.j
             requestContext.activate();
             return context.proceed();
         } finally {
+            requestContext.invalidate();
             requestContext.deactivate();
             requestContext.dissociate(context.getInvocationContext());
         }
