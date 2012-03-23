@@ -298,7 +298,7 @@ public interface CommonAttributes {
             new ModelNode().set(HornetQClient.DEFAULT_MAX_RETRY_INTERVAL), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
     SimpleAttributeDefinition MAX_SIZE_BYTES_NODE_NAME = new SimpleAttributeDefinition("max-size-bytes",
-            new ModelNode().set(AddressSettings.DEFAULT_MAX_SIZE_BYTES), ModelType.INT, true);
+            new ModelNode().set(AddressSettings.DEFAULT_MAX_SIZE_BYTES), ModelType.LONG, true);
 
     SimpleAttributeDefinition MEMORY_MEASURE_INTERVAL = new SimpleAttributeDefinition("memory-measure-interval",
             new ModelNode().set(ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL), ModelType.LONG,  true,
@@ -377,7 +377,7 @@ public interface CommonAttributes {
             new ModelNode().set(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
     SimpleAttributeDefinition REDELIVERY_DELAY = new SimpleAttributeDefinition("redelivery-delay",
-            new ModelNode().set(AddressSettings.DEFAULT_REDELIVER_DELAY), ModelType.INT, true);
+            new ModelNode().set(AddressSettings.DEFAULT_REDELIVER_DELAY), ModelType.LONG, true);
 
     SimpleAttributeDefinition REDISTRIBUTION_DELAY = new SimpleAttributeDefinition("redistribution-delay",
             new ModelNode().set(AddressSettings.DEFAULT_REDISTRIBUTION_DELAY), ModelType.LONG, true);
@@ -441,8 +441,9 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE), ModelType.INT,  true, MeasurementUnit.NONE,
             AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
+    // FIXME GroupiongHanderConfiguration timeout is a int (instead of a long). Use a INT until HornetQ conf is fixed [HORNETQ-885]
     SimpleAttributeDefinition TIMEOUT =  new SimpleAttributeDefinition("timeout",
-            new ModelNode().set(GroupingHandlerConfiguration.DEFAULT_TIMEOUT), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
+            new ModelNode().set(GroupingHandlerConfiguration.DEFAULT_TIMEOUT), ModelType.INT,  true, MeasurementUnit.MILLISECONDS);
 
     SimpleAttributeDefinition TRANSACTION_ATTRIBUTE = new SimpleAttributeDefinition("transaction",
             new ModelNode().set("transaction"), ModelType.STRING,  true);
