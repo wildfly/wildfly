@@ -279,4 +279,12 @@
         </profile>
 
     </profiles>
+
+    <dependencies>
+        <dependency>
+            <groupId>jboss</groupId>
+            <artifactId>jnp-client</artifactId>
+            <version>4.2.2.GA</version>
+        </dependency>
+    </dependencies>
 </project>
