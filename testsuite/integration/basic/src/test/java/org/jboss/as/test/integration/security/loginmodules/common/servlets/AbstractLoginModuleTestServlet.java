@@ -21,25 +21,42 @@
  */
 package org.jboss.as.test.integration.security.loginmodules.common.servlets;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Writer;
 
 /**
+ * Abstract simple servlet class which implements {@link #doGet(HttpServletRequest, HttpServletResponse)} method and writes a
+ * plain-text response ({@link #RESPONSE_BODY}).
+ * 
  * @author Jan Lanik
- *         <p/>
- *         Servlet class to be used in DatabaseLoginModule test cases
+ * 
  */
 public abstract class AbstractLoginModuleTestServlet extends HttpServlet {
 
-   private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-   @Override
-   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-      Writer writer = resp.getWriter();
-      writer.write("GOOD");
-   }
+    /** The String returned in the HTTP response body. */
+    public static final String RESPONSE_BODY = "GOOD";
+
+    /**
+     * Writes simple text response.
+     * 
+     * @param req
+     * @param resp
+     * @throws ServletException
+     * @throws IOException
+     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+     */
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("text/plain");
+        final PrintWriter writer = resp.getWriter();
+        writer.write(RESPONSE_BODY);
+        writer.close();
+    }
 }
