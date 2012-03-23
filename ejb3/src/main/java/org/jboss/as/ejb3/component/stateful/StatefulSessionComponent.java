@@ -21,20 +21,6 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.ejb.AccessTimeout;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
-import javax.ejb.TimerService;
-
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
@@ -60,6 +46,19 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StopContext;
+
+import javax.ejb.AccessTimeout;
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBObject;
+import javax.ejb.TimerService;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Stateful Session Bean
@@ -295,12 +294,14 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
 
     @Override
     public void start() {
+        getShutDownInterceptorFactory().start();
         super.start();
         cache.start();
     }
 
     @Override
     public void stop(final StopContext stopContext) {
+        getShutDownInterceptorFactory().shutdown();
         super.stop(stopContext);
         cache.stop();
     }

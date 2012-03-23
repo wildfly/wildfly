@@ -28,6 +28,4 @@ package org.jboss.as.test.manualmode.ejb.shutdown;
 public interface RemoteEcho {
 
     String echo(String msg);
-
-    void testDone();
 }

@@ -53,7 +53,7 @@ public class InterceptorLifecycleSFSBTestCase {
     @Test
     public void testInterceptorPostConstructWithoutProceed() throws NamingException {
         InitialContext ctx = new InitialContext();
-        InterceptedNoProceedSFSB bean = (InterceptedNoProceedSFSB)ctx.lookup("java:module/" + InterceptedNoProceedSFSB.class.getSimpleName());
+        InterceptedNoProceedSLSB bean = (InterceptedNoProceedSLSB)ctx.lookup("java:module/" + InterceptedNoProceedSLSB.class.getSimpleName());
         bean.doStuff();
         Assert.assertTrue(LifecycleInterceptorNoProceed.postConstruct);
         Assert.assertFalse(bean.isPostConstructCalled());
@@ -62,7 +62,7 @@ public class InterceptorLifecycleSFSBTestCase {
     @Test
     public void testInterceptorPostConstructWithProceed() throws NamingException {
         InitialContext ctx = new InitialContext();
-        InterceptedWithProceedSFSB bean = (InterceptedWithProceedSFSB)ctx.lookup("java:module/" + InterceptedWithProceedSFSB.class.getSimpleName());
+        InterceptedWithProceedSLSB bean = (InterceptedWithProceedSLSB)ctx.lookup("java:module/" + InterceptedWithProceedSLSB.class.getSimpleName());
         bean.doStuff();
         Assert.assertTrue(LifecycleInterceptorNoProceed.postConstruct);
         Assert.assertTrue(bean.isPostConstructCalled());

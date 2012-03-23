@@ -22,53 +22,39 @@
 
 package org.jboss.as.test.manualmode.ejb.shutdown;
 
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PreDestroy;
-import javax.ejb.Asynchronous;
 import javax.ejb.DependsOn;
 import javax.ejb.EJB;
 import javax.ejb.Remote;
 import javax.ejb.Singleton;
+import javax.ejb.Startup;
 
 /**
  * @author Jaikiran Pai
  */
 @Singleton
+@Startup
 @Remote(RemoteEcho.class)
-@DependsOn("RealEcho")
-public class DelegatingEcho implements RemoteEcho {
-
-    //we make two echo invocations as part of the test.
-    //after this the EJB is allowed to shut down
-    private CountDownLatch shutdownLatch = new CountDownLatch(1);
-
+@DependsOn({"RealEcho", "LatchBean"})
+public class ShutdownBean {
 
     @EJB(lookup = "java:module/RealEcho")
-    private RemoteEcho echoOnServerTwo;
+    private RemoteEcho realEcho;
 
-    @Override
-    public String echo(String msg) {
-        return this.echoOnServerTwo.echo(msg);
-    }
 
-    /**
-     * This needs to be asyncrounous, as soon as the latch is triggered
-     * the container shuts down and the Endpoint is closed.
-     */
-    @Override
-    @Asynchronous
-    public void testDone() {
-        shutdownLatch.countDown();
-    }
+    @EJB(lookup = "java:module/LatchBean")
+    private RemoteLatch latch;
+
 
     /**
      * Wait for the remote call before shutting down
      */
     @PreDestroy
     private void shutdown() throws InterruptedException {
-        shutdownLatch.await(20, TimeUnit.SECONDS);
+        latch.setEchoMessage(this.realEcho.echo("hello"));
+        LatchBean.getShutDownLatch().await(20, TimeUnit.SECONDS);
     }
 
 

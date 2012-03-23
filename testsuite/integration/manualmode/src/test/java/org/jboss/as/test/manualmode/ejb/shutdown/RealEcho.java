@@ -39,8 +39,4 @@ public class RealEcho implements RemoteEcho {
         return ECHO_PREFIX + msg;
     }
 
-    @Override
-    public void testDone() {
-
-    }
 }

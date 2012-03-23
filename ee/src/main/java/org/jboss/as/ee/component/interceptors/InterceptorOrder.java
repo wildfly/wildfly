@@ -132,6 +132,7 @@ public class InterceptorOrder {
         public static final int NOT_BUSINESS_METHOD_EXCEPTION = 0x100;
         public static final int REMOTE_EXCEPTION_TRANSFORMER = 0x200;
         public static final int EJB_EXCEPTION_LOGGING_INTERCEPTOR = 0x210;
+        public static final int SHUTDOWN_INTERCEPTOR = 0x220;
         public static final int INVALID_METHOD_EXCEPTION = 0x230;
         public static final int SECURITY_CONTEXT = 0x250;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR = 0x300;

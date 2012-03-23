@@ -163,6 +163,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
             throw EJB3_LOGGER.endpointUnAvailable(this.getComponentName());
         }
 
+        getShutDownInterceptorFactory().start();
         super.start();
 
         try {
@@ -179,15 +180,17 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     @Override
     public void stop(final StopContext stopContext) {
 
-        if (this.pool != null) {
-            this.pool.stop();
-        }
-
         try {
             endpoint.deactivate(endpointFactory, activationSpec);
         } catch (ResourceException re) {
             throw EJB3_LOGGER.failureDuringEndpointDeactivation(this.getComponentName(), re);
         }
+
+        getShutDownInterceptorFactory().shutdown();
+        if (this.pool != null) {
+            this.pool.stop();
+        }
+
 
         super.stop(stopContext);
     }
