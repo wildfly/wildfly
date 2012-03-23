@@ -1174,6 +1174,9 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                 }
             }
         }
+        if (offset == null) {
+            offset = 0;
+        }
 
         // Handle elements
         requireNoContent(reader);

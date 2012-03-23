@@ -883,7 +883,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="port-offset" type="xs:int" default="0">
+        <xs:attribute name="port-offset" type="xs:int" default="0" use="optional">
             <xs:annotation>
                 <xs:documentation>
                 <![CDATA[
@@ -1431,7 +1431,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="port-offset" type="xs:int" default="0">
+        <xs:attribute name="port-offset" type="xs:int" default="0" use="optional">
             <xs:annotation>
                 <xs:documentation>
                     Increment to apply to the base port values defined in the
