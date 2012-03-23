@@ -1,0 +1,41 @@
+dn: dc=jboss,dc=org
+objectclass: top
+objectclass: dcObject
+objectclass: organization
+dc: jboss
+o: JBoss
+
+dn: ou=People,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: People
+
+dn: uid=jduke,ou=People,dc=jboss,dc=org
+objectclass: top
+objectclass: uidObject
+objectclass: person
+uid: jduke
+cn: Java Duke
+sn: Duke
+userPassword: theduke
+
+dn: uid=tester,ou=People,dc=jboss,dc=org
+objectclass: top
+objectclass: uidObject
+objectclass: person
+uid: tester
+cn: Tester Testerovic
+sn: Testerovic
+userPassword: password
+
+dn: ou=Roles,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: Roles
+
+dn: cn=JBossAdmin,ou=Roles,dc=jboss,dc=org
+objectclass: top
+objectclass: groupOfNames
+cn: JBossAdmin
+member: uid=jduke,ou=People,dc=jboss,dc=org
+description: the JBossAdmin group
