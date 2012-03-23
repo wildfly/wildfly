@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.mdb.containerstart;
 
-import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -42,7 +41,6 @@ import javax.jms.QueueConnectionFactory;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -184,15 +182,6 @@ public class SendMessagesTestCase {
 
         try {
             deployer.deploy("mdb");
-         
-            // InitialContext taken by @ContainerResource leads to exception
-            // javax.naming.NamingException: Failed to lookup [Root exception is java.io.NotSerializableException: org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy]
-            Properties env = new Properties();
-            env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-            env.put(Context.PROVIDER_URL, client.getRemoteEjbURL().toString());
-            env.put(Context.SECURITY_PRINCIPAL, "guest");
-            env.put(Context.SECURITY_CREDENTIALS, "guest");
-            Context ctx = new InitialContext(env);
             
             QueueConnectionFactory qcf = (QueueConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
             Queue queue = (Queue) ctx.lookup(QUEUE_SEND);
