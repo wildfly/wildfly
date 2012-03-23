@@ -25,6 +25,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -58,6 +59,22 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class ASModuleHandler extends CommandHandlerWithHelp {
 
+    private class AddModuleArgument extends ArgumentWithValue {
+        private AddModuleArgument(String fullName) {
+            super(ASModuleHandler.this, fullName);
+        }
+
+        private AddModuleArgument(String fullName, CommandLineCompleter completer) {
+            super(ASModuleHandler.this, completer, fullName);
+        }
+
+        @Override
+        public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+            final String actionValue = action.getValue(ctx.getParsedCommandLine());
+            return ACTION_ADD.equals(actionValue) && name.isPresent(ctx.getParsedCommandLine()) && super.canAppearNext(ctx);
+        }
+    }
+
     private static final String MODULE_PATH = "module.path";
 
     private static final String PATH_SEPARATOR = ","; // to make same command work on different systems
@@ -76,22 +93,17 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
     private final ArgumentWithValue resources;
     private final ArgumentWithValue dependencies;
     private final ArgumentWithValue props;
+    private final ArgumentWithValue moduleArg;
 
     public ASModuleHandler(CommandContext ctx) {
         super("module", false);
 
         name.addRequiredPreceding(action);
 
-        mainClass = new ArgumentWithValue(this, "--main-class") {
-            @Override
-            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                final String actionValue = action.getValue(ctx.getParsedCommandLine());
-                return ACTION_ADD.equals(actionValue) && name.isPresent(ctx.getParsedCommandLine()) && super.canAppearNext(ctx);
-            }
-        };
+        mainClass = new AddModuleArgument("--main-class");
 
         final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
-        resources = new ArgumentWithValue(this, new CommandLineCompleter(){
+        resources = new AddModuleArgument("--resources", new CommandLineCompleter(){
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
                 final int lastSeparator = buffer.lastIndexOf(PATH_SEPARATOR);
@@ -99,7 +111,7 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
                     return lastSeparator + 1 + pathCompleter.complete(ctx, buffer.substring(lastSeparator + 1), cursor, candidates);
                 }
                 return pathCompleter.complete(ctx, buffer, cursor, candidates);
-            }}, "--resources") {
+            }}) {
             @Override
             public String getValue(ParsedCommandLine args) {
                 String value = super.getValue(args);
@@ -111,27 +123,20 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
                 }
                 return value;
             }
-            @Override
-            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                final String actionValue = action.getValue(ctx.getParsedCommandLine());
-                return ACTION_ADD.equals(actionValue) && name.isPresent(ctx.getParsedCommandLine()) && super.canAppearNext(ctx);
-            }
         };
 
-        dependencies = new ArgumentWithValue(this, "--dependencies") {
-            @Override
-            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                final String actionValue = action.getValue(ctx.getParsedCommandLine());
-                return ACTION_ADD.equals(actionValue) && name.isPresent(ctx.getParsedCommandLine()) && super.canAppearNext(ctx);
-            }
-        };
-        props = new ArgumentWithValue(this, "--properties") {
-            @Override
-            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                final String actionValue = action.getValue(ctx.getParsedCommandLine());
-                return ACTION_ADD.equals(actionValue) && name.isPresent(ctx.getParsedCommandLine()) && super.canAppearNext(ctx);
-            }
-        };
+        dependencies = new AddModuleArgument("--dependencies");
+        props = new AddModuleArgument("--properties");
+
+        moduleArg = new AddModuleArgument("--module-xml", pathCompleter);
+
+        moduleArg.addCantAppearAfter(mainClass);
+        moduleArg.addCantAppearAfter(dependencies);
+        moduleArg.addCantAppearAfter(props);
+
+        mainClass.addCantAppearAfter(moduleArg);
+        dependencies.addCantAppearAfter(moduleArg);
+        props.addCantAppearAfter(moduleArg);
     }
 
     @Override
@@ -176,64 +181,74 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
             throw new CommandLineException("Failed to create directory " + moduleDir.getAbsolutePath());
         }
 
-        final ModuleConfigImpl config = new ModuleConfigImpl(moduleName);
+        final ModuleConfigImpl config;
+        final String moduleXml = moduleArg.getValue(parsedCmd);
+        if(moduleXml != null) {
+            config = null;
+            final File source = new File(moduleXml);
+            if(!source.exists()) {
+                throw new CommandLineException("Failed to locate the file on the filesystem: " + source.getAbsolutePath());
+            }
+            copy(source, new File(moduleDir, "module.xml"));
+        } else {
+            config = new ModuleConfigImpl(moduleName);
+        }
 
         for(File f : resourceFiles) {
-            final File target = new File(moduleDir, f.getName());
-            config.addResource(new ResourceRoot(target.getName()));
+            copy(f, new File(moduleDir, f.getName()));
+            if(config != null) {
+                config.addResource(new ResourceRoot(f.getName()));
+            }
+        }
+
+        if(config != null) {
+            final String dependenciesStr = dependencies.getValue(parsedCmd);
+            if(dependenciesStr != null) {
+                final String[] depsArr = dependenciesStr.split(",+");
+                for(String dep : depsArr) {
+                    // TODO validate dependencies
+                    config.addDependency(new ModuleDependency(dep));
+                }
+            }
+
+            final String propsStr = props.getValue(parsedCmd);
+            if(propsStr != null) {
+                final String[] pairs = propsStr.split(",");
+                for (String pair : pairs) {
+                    int equals = pair.indexOf('=');
+                    if (equals == -1) {
+                        throw new CommandFormatException("Property '" + pair + "' in '" + propsStr + "' is missing the equals sign.");
+                    }
+                    final String propName = pair.substring(0, equals);
+                    if (propName.isEmpty()) {
+                        throw new CommandFormatException("Property name is missing for '" + pair + "' in '" + propsStr + "'");
+                    }
+                    config.setProperty(propName, pair.substring(equals + 1));
+                }
+            }
+
+            final String mainCls = mainClass.getValue(parsedCmd);
+            if(mainCls != null) {
+                config.setMainClass(mainCls);
+            }
+
+            FileWriter moduleWriter = null;
+            final File moduleFile = new File(moduleDir, "module.xml");
             try {
-                copy(f, target);
+                moduleWriter = new FileWriter(moduleFile);
+                XMLExtendedStreamWriter xmlWriter = create(XMLOutputFactory.newFactory().createXMLStreamWriter(moduleWriter));
+                config.writeContent(xmlWriter, null);
+                xmlWriter.flush();
             } catch (IOException e) {
-                throw new CommandLineException("Failed to copy " + f.getAbsolutePath() + " to " + target.getAbsolutePath());
-            }
-        }
-
-        final String dependenciesStr = dependencies.getValue(parsedCmd);
-        if(dependenciesStr != null) {
-            final String[] depsArr = dependenciesStr.split(",+");
-            for(String dep : depsArr) {
-                // TODO validate dependencies
-                config.addDependency(new ModuleDependency(dep));
-            }
-        }
-
-        final String propsStr = props.getValue(parsedCmd);
-        if(propsStr != null) {
-            final String[] pairs = propsStr.split(",");
-            for (String pair : pairs) {
-                int equals = pair.indexOf('=');
-                if (equals == -1) {
-                    throw new CommandFormatException("Property '" + pair + "' in '" + propsStr + "' is missing the equals sign.");
+                throw new CommandLineException("Failed to create file " + moduleFile.getAbsolutePath(), e);
+            } catch (XMLStreamException e) {
+                throw new CommandLineException("Failed to write to " + moduleFile.getAbsolutePath(), e);
+            } finally {
+                if(moduleWriter != null) {
+                    try {
+                        moduleWriter.close();
+                    } catch (IOException e) {}
                 }
-                final String propName = pair.substring(0, equals);
-                if (propName.isEmpty()) {
-                    throw new CommandFormatException("Property name is missing for '" + pair + "' in '" + propsStr + "'");
-                }
-                config.setProperty(propName, pair.substring(equals + 1));
-            }
-        }
-
-        final String mainCls = mainClass.getValue(parsedCmd);
-        if(mainCls != null) {
-            config.setMainClass(mainCls);
-        }
-
-        FileWriter moduleWriter = null;
-        final File moduleFile = new File(moduleDir, "module.xml");
-        try {
-            moduleWriter = new FileWriter(moduleFile);
-            XMLExtendedStreamWriter xmlWriter = create(XMLOutputFactory.newFactory().createXMLStreamWriter(moduleWriter));
-            config.writeContent(xmlWriter, null);
-            xmlWriter.flush();
-        } catch (IOException e) {
-            throw new CommandLineException("Failed to create file " + moduleFile.getAbsolutePath(), e);
-        } catch (XMLStreamException e) {
-            throw new CommandLineException("Failed to write to " + moduleFile.getAbsolutePath(), e);
-        } finally {
-            if(moduleWriter != null) {
-                try {
-                    moduleWriter.close();
-                } catch (IOException e) {}
             }
         }
     }
@@ -296,19 +311,35 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
         }
     }
 
-    public static void copy(final File source, final File target) throws IOException {
-         final byte[] buff = new byte[8192];
-         final BufferedInputStream in = new BufferedInputStream(new FileInputStream(source));
-         final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(target));
-         int read;
-         try {
+    public static void copy(final File source, final File target) throws CommandLineException {
+        final byte[] buff = new byte[8192];
+        BufferedInputStream in = null;
+        BufferedOutputStream out = null;
+        int read;
+        try {
+            in = new BufferedInputStream(new FileInputStream(source));
+            out = new BufferedOutputStream(new FileOutputStream(target));
             while ((read = in.read(buff)) != -1) {
-               out.write(buff, 0, read);
+                out.write(buff, 0, read);
             }
-         } finally {
             out.flush();
-            in.close();
-            out.close();
-         }
-      }
+        } catch (FileNotFoundException e) {
+            throw new CommandLineException("Failed to locate the file on the filesystem copying " +
+                source.getAbsolutePath() + " to " + target.getAbsolutePath(), e);
+        } catch (IOException e) {
+            throw new CommandLineException("Failed to copy " + source.getAbsolutePath() + " to " + target.getAbsolutePath(), e);
+        } finally {
+            try {
+                if(out != null) {
+                    out.close();
+                }
+            } catch(IOException e) {}
+            try {
+                if(in != null) {
+                    in.close();
+                }
+            } catch(IOException e) {}
+        }
+    }
+
 }
