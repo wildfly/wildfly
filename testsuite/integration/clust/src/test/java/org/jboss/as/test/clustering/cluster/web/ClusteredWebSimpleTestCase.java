@@ -182,11 +182,26 @@ public class ClusteredWebSimpleTestCase {
     }
 
     /**
-     * Test that a session it is gracefully served.
+     * Test that a session is gracefully served when a clustered application is undeployed.
      */
     @Test
-    public void testGracefulServerOnShutdown(
+    public void testGracefulServeOnUndeploy(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
+            throws IllegalStateException, IOException, InterruptedException, Exception {
+        this.abstractGracefulServe(baseURL1, true);
+    }
+
+    /**
+     * Test that a session is gracefully served when clustered AS instanced is shutdown.
+     */
+    @Test
+    public void testGracefulServeOnShutdown(
+            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
+            throws IllegalStateException, IOException, InterruptedException, Exception {
+        this.abstractGracefulServe(baseURL1, false);
+    }
+
+    private void abstractGracefulServe(URL baseURL1, boolean undeployOnly)
             throws IllegalStateException, IOException, InterruptedException, Exception {
 
         final DefaultHttpClient client = new DefaultHttpClient();
@@ -205,21 +220,42 @@ public class ClusteredWebSimpleTestCase {
         // Make sure long request has started
         Thread.sleep(1000);
 
-        // Shutdown server
-        controller.stop(CONTAINER_1);
+        if (undeployOnly) {
+            // Undeploy the app only.
+            deployer.undeploy(DEPLOYMENT_1);
+        } else {
+            // Shutdown server.
+            controller.stop(CONTAINER_1);
+        }
 
         // Get result of long request
         // This request should succeed since it initiated before server shutdown
         try {
             response = future.get();
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals("Request should succeed since it initiated before undeply or shutdown.",
+                    HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             response.getEntity().getContent().close();
         } catch (ExecutionException e) {
             e.printStackTrace(System.err);
             Assert.fail(e.getCause().getMessage());
         }
 
-        // Subsequent requests get connection refused (compared to AS5 where you still get 404)
+        if (undeployOnly) {
+            // If we are only undeploying, then subsequent requests should return 404.
+            response = client.execute(new HttpGet(url1));
+            Assert.assertEquals("If we are only undeploying, then subsequent requests should return 404.",
+                    HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
+            response.getEntity().getContent().close();
+        }
+
+        // Cleanup after test.
+        if (undeployOnly) {
+            // Redeploy the app only.
+            deployer.deploy(DEPLOYMENT_1);
+        } else {
+            // Startup server.
+            controller.start(CONTAINER_1);
+        }
     }
 
     /**
