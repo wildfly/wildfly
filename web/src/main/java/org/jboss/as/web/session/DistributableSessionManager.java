@@ -154,7 +154,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         String host = context.getParent().getName();
         this.hostName = (host == null) ? "localhost" : host;
         this.contextName = context.getName();
-        this.name = String.format("//%s/%s", this.hostName, this.contextName);
+        this.name = String.format("//%s/%s", this.hostName, this.contextName.isEmpty() ? "ROOT" : this.contextName);
         this.resolver = resolver;
         this.distributedCacheManager = factory.getDistributedCacheManager(this);
     }

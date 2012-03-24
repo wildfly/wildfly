@@ -898,15 +898,14 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
 
     @Override
     @Deprecated
-    @SuppressWarnings("deprecation")
     public javax.servlet.http.HttpSessionContext getSessionContext() {
-        return (sessionContext);
+        return sessionContext;
     }
 
     @Override
     @Deprecated
     public Object getValue(String name) {
-        return (getAttribute(name));
+        return getAttribute(name);
     }
 
     @Override
@@ -915,7 +914,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
         if (!isValidInternal())
             throw MESSAGES.expiredSession();
 
-        return (keys());
+        return keys();
     }
 
     @Override
