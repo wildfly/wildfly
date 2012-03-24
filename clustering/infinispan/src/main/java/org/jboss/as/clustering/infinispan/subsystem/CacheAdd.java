@@ -488,7 +488,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         if (storeKey.equals(ModelKeys.FILE_STORE)) {
             builder.cacheLoader(new FileCacheStore());
 
-            final String path = ((resolvedValue = CommonAttributes.PATH.resolveModelAttribute(context, store)).isDefined()) ? resolvedValue.asString() : containerName ;
+            final String path = ((resolvedValue = CommonAttributes.PATH.resolveModelAttribute(context, store)).isDefined()) ? resolvedValue.asString() : InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + containerName;
 
             Injector<String> injector = new SimpleInjector<String>() {
                 @Override
