@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config default-supplement="default">
+   <extension-module>org.jboss.as.logging</extension-module>
+   <subsystem xmlns="urn:jboss:domain:logging:1.2">
+       <periodic-rotating-file-handler name="FILE" autoflush="true">
+           <formatter>
+               <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+           </formatter>
+           <file relative-to="jboss.server.log.dir" path="server.log"/>
+           <suffix value=".yyyy-MM-dd"/>
+           <append value="@@append@@"/>
+       </periodic-rotating-file-handler>
+       <?LOGGERS?>
+       <root-logger>
+           <level name="INFO"/>
+           <handlers>
+               <handler name="FILE"/>
+           </handlers>
+       </root-logger>
+   </subsystem>
+   <supplement name="default">
+      <replacement placeholder="@@append@@" attributeValue="true"/>
+      <replacement placeholder="LOGGERS">
+	      <logger category="com.arjuna">
+	          <level name="WARN"/>
+	      </logger>
+	      <logger category="org.apache.tomcat.util.modeler">
+	          <level name="WARN"/>
+	      </logger>
+	      <logger category="org.jboss.as.config">
+	          <level name="DEBUG"/>
+	      </logger>
+	      <logger category="sun.rmi">
+	          <level name="WARN"/>
+	      </logger>
+	      <logger category="jacorb">
+	          <level name="WARN"/>
+	      </logger>
+	      <logger category="jacorb.config">
+	          <level name="ERROR"/>
+	      </logger>
+      </replacement>
+   </supplement>
+   <supplement name="osgi">
+      <replacement placeholder="@@append@@" attributeValue="false"/>
+      <replacement placeholder="LOGGERS">
+	       <logger category="org.jboss.osgi">
+	           <level name="DEBUG"/>
+	       </logger>
+      </replacement>
+   </supplement>
+</config>

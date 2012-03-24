@@ -6,6 +6,7 @@
        <hornetq-server>
            <?CLUSTERED?>
            <persistence-enabled>true</persistence-enabled>
+           <journal-type>NIO</journal-type>
            <journal-file-size>102400</journal-file-size>
            <journal-min-files>2</journal-min-files>
 

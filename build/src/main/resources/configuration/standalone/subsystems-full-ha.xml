@@ -2,10 +2,10 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
    <subsystems>
-      <subsystem>configuration/subsystems/logging.xml</subsystem>
+      <subsystem>configuration/subsystems/logging-production.xml</subsystem>
       <subsystem>configuration/subsystems/cmp.xml</subsystem>
       <subsystem>configuration/subsystems/datasources.xml</subsystem>
-      <subsystem>configuration/subsystems/deployment-scanner.xml</subsystem>
+      <subsystem>configuration/subsystems/deployment-scanner-production.xml</subsystem>
       <subsystem>configuration/subsystems/ee.xml</subsystem>
       <subsystem supplement="full-ha">configuration/subsystems/ejb3.xml</subsystem>
       <subsystem supplement="ha">configuration/subsystems/infinispan.xml</subsystem>

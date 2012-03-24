@@ -46,7 +46,7 @@ rem # options that are always passed by run.bat.
 rem #
 
 rem # JVM memory allocation pool parameters - modify as appropriate.
-set "JAVA_OPTS=-Xms64M -Xmx512M -XX:MaxPermSize=256M"
+set "JAVA_OPTS=-Xms1303M -Xmx1303M -XX:MaxPermSize=256M"
 
 rem # Prefer IPv4
 set "JAVA_OPTS=%JAVA_OPTS% -Djava.net.preferIPv4Stack=true"

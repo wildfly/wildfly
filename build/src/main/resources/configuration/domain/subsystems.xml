@@ -3,7 +3,7 @@
 <config>
    <subsystems name="default">
       <!-- Each subsystem to be included relative to the src/main/resources directory -->
-      <subsystem>configuration/subsystems/logging.xml</subsystem>
+      <subsystem>configuration/subsystems/logging-production.xml</subsystem>
       <subsystem>configuration/subsystems/configadmin.xml</subsystem>
       <subsystem>configuration/subsystems/datasources.xml</subsystem>
       <subsystem>configuration/subsystems/ee.xml</subsystem>
