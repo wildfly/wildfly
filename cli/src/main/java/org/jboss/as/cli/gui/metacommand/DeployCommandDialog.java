@@ -36,6 +36,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
@@ -44,6 +45,8 @@ import org.jboss.as.cli.gui.component.HelpButton;
 import org.jboss.as.cli.gui.component.ServerGroupChooser;
 
 /**
+ * Creates a dialog that lets you build a deploy command.  This dialog
+ * behaves differently depending on standalone or domain mode.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
@@ -58,6 +61,7 @@ public class DeployCommandDialog extends JDialog implements ActionListener {
     private JCheckBox forceCheckBox = new JCheckBox("force");
     private JCheckBox disabledCheckBox = new JCheckBox("disabled");
     private ServerGroupChooser serverGroupChooser = new ServerGroupChooser();
+    private JCheckBox allServerGroups = new JCheckBox("all-server-groups");
 
     public DeployCommandDialog() {
         super(GuiMain.getMainWindow(), "deploy", Dialog.ModalityType.APPLICATION_MODAL);
@@ -66,11 +70,44 @@ public class DeployCommandDialog extends JDialog implements ActionListener {
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout(10, 10));
 
+        setAllServerGroupsListener();
+        setForceListener();
+
         contentPane.add(makeInputPanel(), BorderLayout.CENTER);
 
         contentPane.add(makeButtonPanel(), BorderLayout.SOUTH);
         pack();
         setResizable(false);
+    }
+
+    private void setAllServerGroupsListener() {
+        allServerGroups.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (allServerGroups.isSelected()) {
+                    serverGroupChooser.setEnabled(false);
+                } else {
+                    serverGroupChooser.setEnabled(true);
+                }
+            }
+        });
+    }
+
+    private void setForceListener() {
+        forceCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (forceCheckBox.isSelected()) {
+                    serverGroupChooser.setEnabled(false);
+                    allServerGroups.setEnabled(false);
+                    allServerGroups.setSelected(false);
+                    disabledCheckBox.setEnabled(false);
+                    disabledCheckBox.setSelected(false);
+                } else {
+                    serverGroupChooser.setEnabled(true);
+                    allServerGroups.setEnabled(true);
+                    disabledCheckBox.setEnabled(true);
+                }
+            }
+        });
     }
 
     private JPanel makeInputPanel() {
@@ -137,6 +174,11 @@ public class DeployCommandDialog extends JDialog implements ActionListener {
         gbConst.gridwidth = GridBagConstraints.REMAINDER;
         inputPanel.add(serverGroupChooser, gbConst);
 
+        gbConst.gridwidth = 1;
+        inputPanel.add(new JLabel(), gbConst);
+        gbConst.gridwidth = GridBagConstraints.REMAINDER;
+        inputPanel.add(allServerGroups, gbConst);
+
         return inputPanel;
     }
 
@@ -168,7 +210,12 @@ public class DeployCommandDialog extends JDialog implements ActionListener {
         StringBuilder builder = new StringBuilder("deploy");
 
         String path = pathField.getText();
-        if (!path.trim().isEmpty()) builder.append("  ").append(path);
+        if (!path.trim().isEmpty()) {
+            builder.append("  ").append(path);
+        } else {
+            JOptionPane.showMessageDialog(this, "A file must be selected.", "Empty File Path", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         String name = nameField.getText();
         if (!name.trim().isEmpty()) builder.append("  --name=").append(name);
@@ -177,20 +224,13 @@ public class DeployCommandDialog extends JDialog implements ActionListener {
         if (!runtimeName.trim().isEmpty()) builder.append("  --runtime_name=").append(runtimeName);
 
         if (forceCheckBox.isSelected()) builder.append("  --force");
-        if (disabledCheckBox.isSelected()) builder.append("  --disabled");
+        if (disabledCheckBox.isSelected() && disabledCheckBox.isEnabled()) builder.append("  --disabled");
 
         if (!serverGroupChooser.isStandalone()) {
-            if (serverGroupChooser.allServerGroupsChecked()) {
+            if (allServerGroups.isSelected() && allServerGroups.isEnabled()) {
                 builder.append("  --all-server-groups");
-            } else {
-                builder.append("  --server-groups=");
-                for (JCheckBox serverGroup : serverGroupChooser.getServerGroups()) {
-                    if (serverGroup.isSelected()) {
-                        builder.append(serverGroup.getText());
-                        builder.append(",");
-                    }
-                }
-                builder.deleteCharAt(builder.length() - 1); // remove trailing comma
+            } else if (serverGroupChooser.isEnabled()) {
+                builder.append(serverGroupChooser.getCmdLineArg());
             }
         }
 

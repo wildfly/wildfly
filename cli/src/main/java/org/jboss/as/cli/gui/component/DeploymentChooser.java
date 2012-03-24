@@ -18,61 +18,29 @@
  */
 package org.jboss.as.cli.gui.component;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import javax.swing.ButtonGroup;
-import javax.swing.ButtonModel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.border.TitledBorder;
-import org.jboss.as.cli.gui.GuiMain;
-import org.jboss.dmr.ModelNode;
+import javax.swing.JScrollPane;
 
 /**
+ * This component produces a JPanel containing a sortable table that allows choosing
+ * a deployment that exists on the server.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class DeploymentChooser extends JPanel {
 
-    private ButtonGroup deploymentsButtonGroup = new ButtonGroup();
-    private JPanel deploymentsPanel = new JPanel(new FlowLayout());
+    private StandaloneDeploymentTableModel model;
 
-    public DeploymentChooser() {
-        setLayout(new BorderLayout());
-        setBorder(new TitledBorder("Deployments"));
-        setDeployments();
-        add(deploymentsPanel, BorderLayout.CENTER);
-    }
-
-    private void setDeployments() {
-        Set<String> deploymentNames = new TreeSet<String>();
-        try {
-            ModelNode deploymentsQuery = GuiMain.getExecutor().doCommand("/:read-children-names(child-type=deployment)");
-            if (deploymentsQuery.get("outcome").asString().equals("failed")) return;
-
-            for (ModelNode node : deploymentsQuery.get("result").asList()) {
-                deploymentNames.add(node.asString());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    public DeploymentChooser(boolean isStandalone) {
+        if (isStandalone) {
+            model = new StandaloneDeploymentTableModel();
+        } else {
+            model = new DomainDeploymentTableModel();
         }
 
-        for (String name : deploymentNames) {
-            JRadioButton deploymentRadioButton = new JRadioButton(name);
-            deploymentsButtonGroup.add(deploymentRadioButton);
-
-            // set first as selected
-            if (deploymentsButtonGroup.getButtonCount() == 1) {
-                deploymentsButtonGroup.setSelected(deploymentRadioButton.getModel(), true);
-            }
-
-            deploymentsPanel.add(deploymentRadioButton);
-        }
-
+        DeploymentTable table = new DeploymentTable(model, isStandalone);
+        JScrollPane scroller = new JScrollPane(table);
+        add(scroller);
     }
 
     /**
@@ -80,15 +48,11 @@ public class DeploymentChooser extends JPanel {
      * @return The name or null if there are no deployments.
      */
     public String getSelectedDeployment() {
-        if (!hasDeployments()) return null;
-
-        ButtonModel model = deploymentsButtonGroup.getSelection();
-        Object[] selected = model.getSelectedObjects();
-        return ((JRadioButton)selected[0]).getText();
+        return model.getSelectedDeployment();
     }
 
     public boolean hasDeployments() {
-        return deploymentsButtonGroup.getButtonCount() > 0;
+        return model.hasDeployments();
     }
 
 }

@@ -31,6 +31,8 @@ import org.jboss.as.cli.gui.GuiMain;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * A Panel that reads and presents all of the server groups with checkboxes.
+ * This is also handy for finding out if we are in standalone mode.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
@@ -44,7 +46,6 @@ public class ServerGroupChooser extends JPanel {
         setBorder(new TitledBorder("Server Groups"));
         setServerGroups();
         add(serverGroupsPanel, BorderLayout.CENTER);
-        if (!isStandalone()) serverGroups.get(0).setSelected(true);  // at least one must be selected
     }
 
     private void setServerGroups() {
@@ -60,7 +61,7 @@ public class ServerGroupChooser extends JPanel {
             e.printStackTrace();
         }
 
-        // make sorted server gorup names into checkboxes
+        // make sorted server group names into checkboxes
         for (String name : serverGroupNames) {
             JCheckBox serverGroupCheckBox = new JCheckBox(name);
             serverGroups.add(serverGroupCheckBox);
@@ -69,21 +70,37 @@ public class ServerGroupChooser extends JPanel {
 
     }
 
-    // TODO: FixMe.  This is not safe because the caller can change the list
-    // and state of the checkboxes.
-    public List<JCheckBox> getServerGroups() {
-        return this.serverGroups;
+    /**
+     * Return the command line argument
+     *
+     * @return  "  --server-groups=" plus a comma-separated list
+     * of selected server groups.  Return empty String if none selected.
+     */
+    public String getCmdLineArg() {
+        StringBuilder builder = new StringBuilder("  --server-groups=");
+        boolean foundSelected = false;
+        for (JCheckBox serverGroup : serverGroups) {
+            if (serverGroup.isSelected()) {
+                foundSelected = true;
+                builder.append(serverGroup.getText());
+                builder.append(",");
+            }
+        }
+        builder.deleteCharAt(builder.length() - 1); // remove trailing comma
+
+        if (!foundSelected) return "";
+        return builder.toString();
     }
 
     public final boolean isStandalone() {
         return serverGroups.isEmpty();
     }
 
-    public boolean allServerGroupsChecked() {
+    @Override
+    public void setEnabled(boolean isEnabled) {
+        super.setEnabled(isEnabled);
         for (JCheckBox serverGroup : serverGroups) {
-            if (!serverGroup.isSelected()) return false;
+            serverGroup.setEnabled(isEnabled);
         }
-
-        return true;
     }
 }
