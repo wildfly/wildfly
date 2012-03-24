@@ -23,6 +23,7 @@ import javax.swing.AbstractAction;
 import org.jboss.as.cli.gui.GuiMain;
 
 /**
+ * Action for the deploy menu selection.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */

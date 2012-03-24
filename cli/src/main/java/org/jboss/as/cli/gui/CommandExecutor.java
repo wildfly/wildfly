@@ -18,6 +18,7 @@
  */
 package org.jboss.as.cli.gui;
 
+import java.awt.Cursor;
 import java.io.IOException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
@@ -49,13 +50,24 @@ public class CommandExecutor {
      */
     public synchronized ModelNode doCommand(String command) throws CommandFormatException, IOException {
         ModelNode request = cmdCtx.buildRequest(command);
-        return client.execute(request);
+        return execute(command, request);
     }
 
     public synchronized Response doCommandFullResponse(String command) throws CommandFormatException, IOException {
         ModelNode request = cmdCtx.buildRequest(command);
-        ModelNode response = client.execute(request);
+        ModelNode response = execute(command, request);
         return new Response(command, request, response);
+    }
+
+    private ModelNode execute(String command, ModelNode request) throws IOException {
+        try {
+            if (command.startsWith("deploy")) {
+                GuiMain.getMainWindow().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            }
+            return client.execute(request);
+        } finally {
+            GuiMain.getMainWindow().setCursor(Cursor.getDefaultCursor());
+        }
     }
 
     public static class Response {

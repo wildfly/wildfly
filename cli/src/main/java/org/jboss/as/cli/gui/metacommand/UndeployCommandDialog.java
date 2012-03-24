@@ -21,28 +21,37 @@ package org.jboss.as.cli.gui.metacommand;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dialog;
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.text.JTextComponent;
 import org.jboss.as.cli.gui.GuiMain;
 import org.jboss.as.cli.gui.component.DeploymentChooser;
 import org.jboss.as.cli.gui.component.HelpButton;
 import org.jboss.as.cli.gui.component.ServerGroupChooser;
 
 /**
+ * Dialog for creating an undeploy command.  This dialog behaves differently for
+ * standalone or domain mode.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class UndeployCommandDialog extends JDialog implements ActionListener {
 
-    private DeploymentChooser deploymentChooser = new DeploymentChooser();
     private ServerGroupChooser serverGroupChooser = new ServerGroupChooser();
+    private DeploymentChooser deploymentChooser = new DeploymentChooser(serverGroupChooser.isStandalone());
+
+    private JCheckBox keepContent = new JCheckBox("Keep Content");
+    private JCheckBox allRelevantServerGroups = new JCheckBox("All RelevantServer Groups");
 
     public UndeployCommandDialog() {
         super(GuiMain.getMainWindow(), "undeploy", Dialog.ModalityType.APPLICATION_MODAL);
@@ -52,23 +61,40 @@ public class UndeployCommandDialog extends JDialog implements ActionListener {
         contentPane.setLayout(new BorderLayout(10, 10));
 
         contentPane.add(makeInputPanel(), BorderLayout.CENTER);
+        setRelevantServerGroupsListener();
 
         contentPane.add(makeButtonPanel(), BorderLayout.SOUTH);
         pack();
         setResizable(false);
     }
 
-    private JPanel makeInputPanel() {
-        JPanel inputPanel = new JPanel(new GridLayout(4, 1));
+    private void setRelevantServerGroupsListener() {
+        allRelevantServerGroups.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                serverGroupChooser.setEnabled(!allRelevantServerGroups.isSelected());
+            }
+        });
+    }
 
-        if (deploymentChooser.hasDeployments()) {
-            inputPanel.add(deploymentChooser);
-        } else {
-            inputPanel.add(new JLabel("NO DEPLOYMENTS AVAILABLE TO UNDEPLOY"));
+    private JPanel makeInputPanel() {
+        JPanel inputPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        if (!deploymentChooser.hasDeployments()) {
+            inputPanel.add(new JLabel("NO DEPLOYMENTS AVAILABLE TO UNDEPLOY"), gbc);
+            return inputPanel;
         }
 
+        inputPanel.add(deploymentChooser, gbc);
+        inputPanel.add(keepContent, gbc);
+
         if (!serverGroupChooser.isStandalone()) {
-            inputPanel.add(serverGroupChooser);
+            inputPanel.add(Box.createVerticalStrut(30), gbc);
+            inputPanel.add(serverGroupChooser, gbc);
+            inputPanel.add(allRelevantServerGroups, gbc);
         }
 
         return inputPanel;
@@ -98,39 +124,29 @@ public class UndeployCommandDialog extends JDialog implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent e) {
-    /*    StringBuilder builder = new StringBuilder("deploy");
+        StringBuilder builder = new StringBuilder("undeploy  ");
 
-        String path = pathField.getText();
-        if (!path.trim().isEmpty()) builder.append("  ").append(path);
+        String name = deploymentChooser.getSelectedDeployment();
+        builder.append(name);
 
-        String name = nameField.getText();
-        if (!name.trim().isEmpty()) builder.append("  --name=").append(name);
-
-        String runtimeName = runtimeNameField.getText();
-        if (!runtimeName.trim().isEmpty()) builder.append("  --runtime_name=").append(runtimeName);
-
-        if (forceCheckBox.isSelected()) builder.append("  --force");
-        if (disabledCheckBox.isSelected()) builder.append("  --disabled");
+        if (keepContent.isSelected()) builder.append("  --keep-content");
 
         if (!serverGroupChooser.isStandalone()) {
-            if (serverGroupChooser.allServerGroupsChecked()) {
-                builder.append("  --all-server-groups");
-            } else {
-                builder.append("  --server-groups=");
-                for (JCheckBox serverGroup : serverGroupChooser.getServerGroups()) {
-                    if (serverGroup.isSelected()) {
-                        builder.append(serverGroup.getText());
-                        builder.append(",");
-                    }
-                }
-                builder.deleteCharAt(builder.length() - 1); // remove trailing comma
-            }
+            addDomainParams(builder);
         }
 
         JTextComponent cmdText = GuiMain.getCommandLine().getCmdText();
         cmdText.setText(builder.toString());
         dispose();
-        cmdText.requestFocus(); */
+        cmdText.requestFocus();
+    }
+
+    private void addDomainParams(StringBuilder builder) {
+        if (!allRelevantServerGroups.isSelected()) {
+            builder.append(serverGroupChooser.getCmdLineArg());
+        } else {
+            builder.append("  --all-relevant-server-groups");
+        }
     }
 
 }
