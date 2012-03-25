@@ -53,13 +53,13 @@ import org.junit.runner.RunWith;
 /**
  * Test that Hibernate statistics is working on native Hibernate and second level cache
  * 
- * @author Madhumita Sadhukhan(modified and adapted over Scott Marlow's secondlevel cache test)
+ * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
 public class Hibernate2LCacheStatsTestCase {
 
-    private static final String FACTORY_CLASS = "<property name=\"hibernate.cache.region.factory_class\">org.hibernate.cache.infinispan.JndiInfinispanRegionFactory</property>";
-    private static final String MODULE_DEPENDENCIES = "Dependencies: org.javassist export, org.hibernate.infinispan,org.infinispan export,org.hibernate.envers export,org.hibernate\n";
+    private static final String FACTORY_CLASS = "<property name=\"hibernate.cache.region.factory_class\">org.jboss.as.jpa.hibernate4.infinispan.InfinispanRegionFactory</property>";
+    private static final String MODULE_DEPENDENCIES = "Dependencies: org.javassist export, org.infinispan export,org.hibernate.envers export,org.hibernate\n";
 
     private static final String ARCHIVE_NAME = "hibernateSecondLevelStats_test";
 
@@ -67,7 +67,6 @@ public class Hibernate2LCacheStatsTestCase {
             + "<!DOCTYPE hibernate-configuration PUBLIC " + "\"//Hibernate/Hibernate Configuration DTD 3.0//EN\" "
             + "\"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd\">"
             + "<hibernate-configuration><session-factory>" + "<property name=\"show_sql\">true</property>"
-            + "<property name=\"hibernate.bytecode.use_reflection_optimizer\">false</property>"
             + "<property name=\"hibernate.cache.use_second_level_cache\">true</property>"
             + "<property name=\"hibernate.show_sql\">true</property>" + FACTORY_CLASS
             + "<property name=\"hibernate.cache.infinispan.cachemanager\">java:jboss/infinispan/container/hibernate</property>"
