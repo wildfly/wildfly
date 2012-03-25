@@ -221,7 +221,7 @@ public class DeployCommandDialog extends JDialog implements ActionListener {
         if (!name.trim().isEmpty()) builder.append("  --name=").append(name);
 
         String runtimeName = runtimeNameField.getText();
-        if (!runtimeName.trim().isEmpty()) builder.append("  --runtime_name=").append(runtimeName);
+        if (!runtimeName.trim().isEmpty()) builder.append("  --runtime-name=").append(runtimeName);
 
         if (forceCheckBox.isSelected()) builder.append("  --force");
         if (disabledCheckBox.isSelected() && disabledCheckBox.isEnabled()) builder.append("  --disabled");
