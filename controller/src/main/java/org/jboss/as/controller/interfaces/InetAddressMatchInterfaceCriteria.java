@@ -34,6 +34,13 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
     private boolean unknownHostLogged;
     private boolean anyLocalLogged;
 
+    public InetAddressMatchInterfaceCriteria(final InetAddress address) {
+        if (address == null)
+            throw MESSAGES.nullVar("address");
+        this.resolved = address;
+        this.address = new ModelNode(resolved.getHostAddress());
+    }
+
     /**
      * Creates a new InetAddressMatchInterfaceCriteria
      *

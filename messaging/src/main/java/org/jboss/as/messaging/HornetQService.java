@@ -147,8 +147,9 @@ class HornetQService implements Service<HornetQServer> {
                         if (binding == null) {
                             throw MESSAGES.failedToFindConnectorSocketBinding(tc.getName());
                         }
-                        tc.getParams().put(HOST, binding.getSocketAddress().getHostName());
-                        tc.getParams().put(PORT, "" + binding.getSocketAddress().getPort());
+                        InetSocketAddress socketAddress = binding.getSocketAddress();
+                        tc.getParams().put(HOST, socketAddress.getAddress().getHostAddress());
+                        tc.getParams().put(PORT, "" + socketAddress.getPort());
                     }
                 }
             }

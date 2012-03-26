@@ -185,23 +185,15 @@ public final class DomainServerMain {
             endpointName = RemotingServices.SUBSYSTEM_ENDPOINT;
         }
 
-        try {
-            final int port = managementSocket.getPort();
-            final String host = NetworkUtils.formatPossibleIpv6Address(InetAddress.getByName(managementSocket.getHostName()).getHostName());
-            final HostControllerServerClient client = new HostControllerServerClient(serverName, serverProcessName, host, port, authKey);
-                    serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
-                        .addDependency(endpointName, Endpoint.class, client.getEndpointInjector())
-                        .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, client.getServerControllerInjector())
-                        .addDependency(RemoteFileRepository.SERVICE_NAME, RemoteFileRepository.class, client.getRemoteFileRepositoryInjector())
-                        .setInitialMode(ServiceController.Mode.ACTIVE)
-                        .install();
-
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-
-
-
+        final int port = managementSocket.getPort();
+        final String host = NetworkUtils.formatPossibleIpv6Address(managementSocket.getAddress().getHostAddress());
+        final HostControllerServerClient client = new HostControllerServerClient(serverName, serverProcessName, host, port, authKey);
+                serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
+                    .addDependency(endpointName, Endpoint.class, client.getEndpointInjector())
+                    .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, client.getServerControllerInjector())
+                    .addDependency(RemoteFileRepository.SERVICE_NAME, RemoteFileRepository.class, client.getRemoteFileRepositoryInjector())
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install();
     }
 
     public static final class HostControllerCommunicationActivator implements ServiceActivator, Serializable {
