@@ -690,6 +690,24 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian-common-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian-container-domain-managed</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian-container-domain-remote</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-arquillian-processor-jsfunit</artifactId>
                 <version>${project.version}</version>
             </dependency>
