@@ -64,7 +64,7 @@ class ConnectionFactoryService implements Service<Void> {
                 WritableServiceBasedNamingStore.popOwner();
             }
         } catch (Exception e) {
-            throw new StartException(MESSAGES.failedToCreate("connection-factory"), e);
+            throw MESSAGES.failedToCreate(e, "connection-factory");
         }
     }
 

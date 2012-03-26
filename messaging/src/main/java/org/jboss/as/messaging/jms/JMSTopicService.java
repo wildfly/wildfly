@@ -55,7 +55,7 @@ public class JMSTopicService implements Service<Void> {
         try {
             jmsManager.createTopic(false, name, jndi);
         } catch (Exception e) {
-            throw new StartException(MESSAGES.failedToCreate("queue"), e);
+            throw MESSAGES.failedToCreate(e, "queue");
         }
     }
 

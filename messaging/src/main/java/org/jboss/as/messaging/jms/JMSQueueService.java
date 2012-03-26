@@ -59,7 +59,7 @@ public class JMSQueueService implements Service<Void> {
         try {
             jmsManager.createQueue(false, queueName, selectorString, durable, jndi);
         } catch (Exception e) {
-            throw new StartException(MESSAGES.failedToCreate("queue"), e);
+            throw MESSAGES.failedToCreate(e, "queue");
         }
     }
 
