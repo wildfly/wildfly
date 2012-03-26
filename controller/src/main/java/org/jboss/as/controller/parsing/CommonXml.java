@@ -1087,9 +1087,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void parseVault(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
-        // Some form of assertion could be added to ensure we did not reach here for 1.0 schema based XML but in reality that
-        // should not happen.
-
         final int vaultAttribCount = reader.getAttributeCount();
 
         ModelNode vault = new ModelNode();

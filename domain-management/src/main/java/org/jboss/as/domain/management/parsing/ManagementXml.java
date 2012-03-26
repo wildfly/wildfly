@@ -853,6 +853,7 @@ public class ManagementXml {
             switch (element) {
                 case PROPERTIES: {
                     parsePropertiesAuthorization(reader, realmAddress, list);
+                    authzFound = true;
                     break;
                 }
                 default: {
