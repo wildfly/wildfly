@@ -173,6 +173,11 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
     }
 
     @Override
+    public boolean isAvailable(CommandContext ctx) {
+        return !ctx.isDomainMode();
+    }
+
+    @Override
     protected void doHandle(CommandContext ctx) throws CommandLineException {
 
         final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
