@@ -341,14 +341,10 @@ public class DomainXml extends CommonXml {
                             // parse 1.0 socket binding group
                             this.parseSocketBindingGroup_1_0(reader, interfaces, address, expectedNs, list);
                             break;
-                        case DOMAIN_1_1:
-                        case DOMAIN_1_2:
+                        default:
                             // parse 1.1 socket binding group
                             this.parseSocketBindingGroup_1_1(reader, interfaces, address, expectedNs, list);
                             break;
-                        default:
-                            unexpectedElement(reader);
-
                     }
                     break;
                 }
@@ -603,8 +599,8 @@ public class DomainXml extends CommonXml {
             }
 
             final List<ModelNode> subsystems = new ArrayList<ModelNode>();
-            final Set<String> includes = new HashSet<String>();
-            final ModelNode profileIncludes = new ModelNode();
+            //final Set<String> includes = new HashSet<String>();  // See commented out section below.
+            //final ModelNode profileIncludes = new ModelNode();
 
             // Content
             // Sequence

@@ -299,7 +299,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             element = nextElement(reader, DOMAIN_1_0);
         }
         if (element == Element.SERVERS) {
-            parseServers(reader, address, DOMAIN_1_0, list);
+            parseServers_1_0(reader, address, DOMAIN_1_0, list);
             element = nextElement(reader, DOMAIN_1_0);
         }
         if (element != null) {
@@ -402,7 +402,14 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             element = nextElement(reader, namespace);
         }
         if (element == Element.SERVERS) {
-            parseServers(reader, address, namespace, list);
+            switch (namespace) {
+                case DOMAIN_1_1:
+                    parseServers_1_0(reader, address, namespace, list);
+                    break;
+                default:
+                    parseServers_1_2(reader, address, namespace, list);
+                    break;
+            }
             element = nextElement(reader, namespace);
         }
         if (element != null) {
@@ -585,7 +592,9 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                     }
                     case CONSOLE_ENABLED:{
                         if (http){
-                            org.jboss.as.server.mgmt.HttpManagementResourceDefinition.CONSOLE_ENABLED.parseAndSetParameter(value,addOp,reader);
+                            HttpManagementResourceDefinition.CONSOLE_ENABLED.parseAndSetParameter(value, addOp, reader);
+                        } else {
+                            throw unexpectedAttribute(reader, i);
                         }
                         break;
                     }
@@ -950,11 +959,26 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         }
     }
 
-    private void parseServers(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
+    private void parseServers_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
             throws XMLStreamException {
-        if (expectedNs != Namespace.DOMAIN_1_1) {
-            parseServersAttributes(reader, address, list);
+        // Handle elements
+        final Set<String> names = new HashSet<String>();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case SERVER:
+                    parseServer(reader, address, expectedNs, list, names);
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
         }
+    }
+
+    private void parseServers_1_2(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
+        parseServersAttributes(reader, address, list);
         // Handle elements
         final Set<String> names = new HashSet<String>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
