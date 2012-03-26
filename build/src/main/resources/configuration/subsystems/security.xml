@@ -14,6 +14,7 @@
                        <module-option name="rolesProperties" value="@@realm-users-roles-roles@@"/>
                        <module-option name="realm" value="ApplicationRealm"/>
                        <module-option name="password-stacking" value="useFirstPass"/>
+                       <module-option name="unauthenticatedIdentity" value="guest"/>
                    </login-module>
                </authentication>
            </security-domain>
