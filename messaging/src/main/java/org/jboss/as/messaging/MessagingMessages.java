@@ -143,14 +143,16 @@ public interface MessagingMessages {
     IllegalStateException connectorNotDefined(String connectorName);
 
     /**
-     * A message indicating the {@code name} failed to get created.
+     * Create an exception indicating that a messaging resource has failed
+     * to be created
      *
-     * @param name the name.
+     * @param cause  the cause of the error.
+     * @param name the name that failed to be created.
      *
      * @return the message.
      */
     @Message(id = 11639, value = "Failed to create %s")
-    String failedToCreate(String name);
+    StartException failedToCreate(@Cause Throwable cause, String name);
 
     /**
      * Creates an exception indicating a failure to find the SocketBinding for the broadcast binding.

@@ -180,7 +180,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             createService(serviceTarget, context.getController().getServiceContainer());
         }
         catch (Exception e) {
-            throw new StartException(MESSAGES.failedToCreate("resource adapter"), e);
+            throw MESSAGES.failedToCreate(e, "resource adapter");
         }
 
     }
