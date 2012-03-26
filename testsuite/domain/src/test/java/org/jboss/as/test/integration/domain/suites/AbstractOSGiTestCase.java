@@ -39,7 +39,7 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Before;
 
 
 /**
@@ -56,17 +56,19 @@ public abstract class AbstractOSGiTestCase {
     static DomainDeploymentManager deploymentManager;
     private static String webAppRuntimeName;
 
-    @BeforeClass
-    public static void setupDomain() throws Exception {
-        DomainTestSupport testSupport = DomainTestSuite.createSupport(AbstractOSGiTestCase.class.getSimpleName());
-        domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
-        deploymentManager = domainClient.getDeploymentManager();
+    @Before
+    public void setupDomain() throws Exception {
+        if (webAppRuntimeName == null) {
+            DomainTestSupport testSupport = DomainTestSuite.createSupport(getClass().getSimpleName());
+            domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
+            deploymentManager = domainClient.getDeploymentManager();
 
-        // Deploy the http endpoint
-        WebArchive webArchive = getWebArchive();
-        InputStream webInput = webArchive.as(ZipExporter.class).exportAsInputStream();
-        DomainDeploymentHelper domain = new DomainDeploymentHelper(deploymentManager);
-        webAppRuntimeName = domain.deploy(webArchive.getName(), webInput, null, SERVER_GROUPS);
+            // Deploy the http endpoint
+            WebArchive webArchive = getWebArchive();
+            InputStream webInput = webArchive.as(ZipExporter.class).exportAsInputStream();
+            DomainDeploymentHelper domain = new DomainDeploymentHelper(deploymentManager);
+            webAppRuntimeName = domain.deploy(webArchive.getName(), webInput, null, SERVER_GROUPS);
+        }
     }
 
     @AfterClass

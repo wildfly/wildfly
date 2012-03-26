@@ -53,7 +53,7 @@ public class OSGiBundleStartLevelTestCase extends AbstractOSGiTestCase {
 
         // Test http endpoint without attached osgi service
         String spec = "http://" + DomainTestSupport.slaveAddress + ":" + 8630 + "/test-webapp/feedback";
-        String response = HttpRequest.get(spec, 10, TimeUnit.SECONDS);
+        String response = HttpRequest.get(spec, 10, 10, TimeUnit.SECONDS);
         Assert.assertEquals("FeedbackService not available", response);
 
         // Setup the deployment metadata
@@ -61,16 +61,16 @@ public class OSGiBundleStartLevelTestCase extends AbstractOSGiTestCase {
         userdata.put(DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL, Integer.valueOf(20));
 
         // Deploy the service bundle
-        JavaArchive bundleArchive = getBundleArchive();
-        InputStream bundleInput = bundleArchive.as(ZipExporter.class).exportAsInputStream();
+        JavaArchive archive = getBundleArchive();
+        InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
         DomainDeploymentHelper domain = new DomainDeploymentHelper(deploymentManager);
-        String bundleName = domain.deploy(bundleArchive.getName(), bundleInput, userdata, SERVER_GROUPS);
+        String runtimeName = domain.deploy(archive.getName(), input, userdata, SERVER_GROUPS);
         try {
             // Verify bundle startlevel through http endpoint
             response = HttpRequest.get(spec + "?bnd=test-bundle&cmd=startlevel", 10, TimeUnit.SECONDS);
             Assert.assertEquals("test-bundle:0.0.0: startlevel => 20", response);
         } finally {
-            domain.undeploy(bundleName, SERVER_GROUPS);
+            domain.undeploy(runtimeName, SERVER_GROUPS);
         }
     }
 

@@ -22,6 +22,9 @@
 
 package org.jboss.as.test.integration.domain.suites;
 
+import static org.junit.Assert.fail;
+import static org.osgi.framework.Constants.BUNDLE_VERSION;
+
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
@@ -36,6 +39,7 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.framework.BundleActivator;
 
@@ -52,25 +56,39 @@ public class OSGiBundleLifecyleTestCase extends AbstractOSGiTestCase {
 
         // Test http endpoint without attached osgi service
         String spec = "http://" + DomainTestSupport.slaveAddress + ":" + 8630 + "/test-webapp/feedback";
-        String response = HttpRequest.get(spec, 10, TimeUnit.SECONDS);
+        String response = HttpRequest.get(spec, 10, 10, TimeUnit.SECONDS);
         Assert.assertEquals("FeedbackService not available", response);
 
         // Deploy the service bundle
-        JavaArchive bundleArchive = getBundleArchive();
-        InputStream bundleInput = bundleArchive.as(ZipExporter.class).exportAsInputStream();
+        JavaArchive archive = getGoodBundleArchive();
+        InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
         DomainDeploymentHelper domain = new DomainDeploymentHelper(deploymentManager);
-        String bundleName = domain.deploy(bundleArchive.getName(), bundleInput, SERVER_GROUPS);
+        String runtimeName = domain.deploy(archive.getName(), input, SERVER_GROUPS);
         try {
             // Verify bundle startlevel through http endpoint
-            response = HttpRequest.get(spec + "?bnd=test-bundle&cmd=hello", 10, TimeUnit.SECONDS);
-            Assert.assertEquals("test-bundle:0.0.0: hello", response);
+            response = HttpRequest.get(spec + "?bnd=good-bundle&cmd=hello", 10, TimeUnit.SECONDS);
+            Assert.assertEquals("good-bundle:0.0.0: hello", response);
         } finally {
-            domain.undeploy(bundleName, SERVER_GROUPS);
+            domain.undeploy(runtimeName, SERVER_GROUPS);
         }
     }
 
-    private JavaArchive getBundleArchive() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test-bundle");
+    @Test
+    @Ignore("[AS7-4292] Invalid bundle deployment does not fail in domain")
+    public void testInvalidBundleDeployment() throws Exception {
+        JavaArchive archive = getBadBundleArchive();
+        InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
+        DomainDeploymentHelper domain = new DomainDeploymentHelper(deploymentManager);
+        try {
+            domain.deploy(archive.getName(), input, SERVER_GROUPS);
+            fail("Deployment exception expected");
+        } catch (Exception ex) {
+            // expected
+        }
+    }
+
+    private JavaArchive getGoodBundleArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "good-bundle");
         archive.addClasses(FeedbackActivator.class);
         archive.setManifest(new Asset() {
             @Override
@@ -80,6 +98,20 @@ public class OSGiBundleLifecyleTestCase extends AbstractOSGiTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivator(FeedbackActivator.class);
                 builder.addImportPackages(BundleActivator.class, FeedbackService.class);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    private JavaArchive getBadBundleArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bad-bundle");
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleManifestVersion(2);
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addManifestHeader(BUNDLE_VERSION, "bogus");
                 return builder.openStream();
             }
         });

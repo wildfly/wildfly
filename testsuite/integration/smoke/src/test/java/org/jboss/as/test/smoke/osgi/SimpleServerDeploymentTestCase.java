@@ -19,6 +19,8 @@ package org.jboss.as.test.smoke.osgi;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.osgi.framework.Constants.BUNDLE_VERSION;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -56,7 +58,8 @@ import org.osgi.service.startlevel.StartLevel;
 @RunWith(Arquillian.class)
 public class SimpleServerDeploymentTestCase {
 
-    static final String BUNDLE_DEPLOYMENT_NAME = "test-bundle";
+    static final String GOOD_BUNDLE_NAME = "good-bundle";
+    static final String BAD_BUNDLE_NAME = "bad-bundle";
 
     @ArquillianResource
     public Deployer deployer;
@@ -89,7 +92,7 @@ public class SimpleServerDeploymentTestCase {
     }
 
     @Test
-    public void testManagementClientInjected() throws Exception {
+    public void testBundleStartLevel() throws Exception {
 
         ModelControllerClient client = getModelControllerClient();
         assertNotNull("ModelControllerClient available", client);
@@ -99,12 +102,12 @@ public class SimpleServerDeploymentTestCase {
         userdata.put(DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL, Integer.valueOf(20));
 
         // Deploy the bundle
-        InputStream input = deployer.getDeployment(BUNDLE_DEPLOYMENT_NAME);
+        InputStream input = deployer.getDeployment(GOOD_BUNDLE_NAME);
         ServerDeploymentHelper server = new ServerDeploymentHelper(client);
-        String runtimeName = server.deploy(BUNDLE_DEPLOYMENT_NAME, input, userdata);
+        String runtimeName = server.deploy(GOOD_BUNDLE_NAME, input, userdata);
 
         // Find the deployed bundle
-        Bundle bundle = OSGiTestSupport.getDeployedBundle(context, BUNDLE_DEPLOYMENT_NAME, null);
+        Bundle bundle = OSGiTestSupport.getDeployedBundle(context, GOOD_BUNDLE_NAME, null);
         assertNotNull("Bundle installed", bundle);
 
         // Verify that the bundle got installed in @ the specified start level
@@ -114,19 +117,46 @@ public class SimpleServerDeploymentTestCase {
         server.undeploy(runtimeName);
     }
 
+    @Test
+    public void testInvalidBundleDeployment() throws Exception {
+        InputStream input = deployer.getDeployment(BAD_BUNDLE_NAME);
+        ServerDeploymentHelper server = new ServerDeploymentHelper(getModelControllerClient());
+        try {
+            server.deploy(BAD_BUNDLE_NAME, input);
+            fail("Deployment exception expected");
+        } catch (Exception ex) {
+            // expected
+        }
+    }
+
     private ModelControllerClient getModelControllerClient() {
         ServiceReference sref = context.getServiceReference(ModelControllerClient.class.getName());
         return (ModelControllerClient) context.getService(sref);
     }
 
-    @Deployment(name = BUNDLE_DEPLOYMENT_NAME, managed = false, testable = false)
-    public static JavaArchive getTestArchive() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_DEPLOYMENT_NAME);
+    @Deployment(name = GOOD_BUNDLE_NAME, managed = false, testable = false)
+    public static JavaArchive getGoodBundleArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, GOOD_BUNDLE_NAME);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleManifestVersion(2);
                 builder.addBundleSymbolicName(archive.getName());
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = BAD_BUNDLE_NAME, managed = false, testable = false)
+    public static JavaArchive getBadBundleArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BAD_BUNDLE_NAME);
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleManifestVersion(2);
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addManifestHeader(BUNDLE_VERSION, "bogus");
                 return builder.openStream();
             }
         });

@@ -40,6 +40,10 @@ public class ServerDeploymentHelper {
         this.deploymentManager = deploymentManager;
     }
 
+    public String deploy(String name, InputStream input) throws ServerDeploymentException {
+        return this.deploy(name, input, null);
+    }
+
     public String deploy(String name, InputStream input, Map<String, Object> userdata) throws ServerDeploymentException {
         String runtimeName;
         ServerDeploymentActionResult actionResult;
