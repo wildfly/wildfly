@@ -77,16 +77,13 @@ public class SecurityTestCase {
     }
 
     @Test
-    public void testFailedAuthenticationBlankUserPass() throws Exception {
+    public void testSuccessfulAuthenticationBlankUserPass() throws Exception {
         final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
         ClientSession session = null;
         boolean success = false;
         try {
             session = sf.createSession();
-        } catch (Exception e) {
-            if ("Unable to validate user: null".equals(e.getMessage())) {
-                success = true;
-            }
+            success = true;
         } finally {
             if (session != null) {
                 session.close();

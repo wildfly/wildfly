@@ -29,6 +29,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.JMSException;
+import javax.jms.JMSSecurityException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.Queue;
@@ -70,7 +71,25 @@ public class JmsClientTestCase {
     private ManagementClient managementClient;
 
     @Test
-    public void testMessagingClient() throws Exception {
+    public void testMessagingClientWithoutUserCredentials() throws Exception {
+        doTestMessagingClient(null, null);
+    }
+
+    @Test
+    public void testMessagingClientWithUserCredentials() throws Exception {
+        doTestMessagingClient("guest", "guest");
+    }
+
+    @Test
+    public void testMessagingClientWithIncorrectUserCredentials() throws Exception {
+        try {
+            doTestMessagingClient("guest", "invalid_password");
+            Assert.fail("MUST throw a JMS security exception");
+        } catch (JMSSecurityException e) {
+        }
+    }
+
+    public void doTestMessagingClient(String user, String password) throws Exception {
         QueueConnection conn = null;
         QueueSession session = null;
         ModelControllerClient client = managementClient.getControllerClient();
@@ -91,7 +110,11 @@ public class JmsClientTestCase {
             QueueConnectionFactory qcf = (QueueConnectionFactory) remoteContext.lookup("jms/RemoteConnectionFactory");
             Queue queue = (Queue) remoteContext.lookup(QUEUE_NAME);
 
-            conn = qcf.createQueueConnection("guest", "guest");
+            if (user == null && password == null) {
+                conn = qcf.createQueueConnection();
+            } else {
+                conn = qcf.createQueueConnection(user, password);
+            }
             conn.start();
             session = conn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
 
