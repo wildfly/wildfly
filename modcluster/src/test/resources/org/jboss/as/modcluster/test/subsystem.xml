@@ -3,8 +3,8 @@
                         excluded-contexts="a,b,c" auto-enable-contexts="true" stop-context-timeout="10" socket-timeout="20">
         <simple-load-provider factor="15"/>
         <dynamic-load-provider decay="2" history="10">
-            <load-metric capacity="1000" type="sessions"/>
-            <load-metric capacity="512" type="send-traffic"/>
+            <load-metric capacity="1000" type="sessions" weight="2"/>
+            <load-metric capacity="512" type="send-traffic" weight="3"/>
             <load-metric capacity="1024" type="receive-traffic"/>
             <load-metric capacity="1000" type="requests"/>
             <load-metric type="mem"/>
@@ -13,7 +13,7 @@
             <load-metric type="busyness">
                 <property name="name" value="value"/>
             </load-metric>
-            <custom-load-metric class="org.jboss.modcluster.SomeFakeLoadMetricClass"/>
+            <custom-load-metric class="org.jboss.modcluster.SomeFakeLoadMetricClass" weight="5"/>
         </dynamic-load-provider>
         <ssl ca-certificate-file="/home/rhusar/client-keystore.jsk" certificate-key-file="/home/rhusar/client-keystore.jsk" password="mypassword"/>
     </mod-cluster-config>
