@@ -48,67 +48,96 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
         ModelNode result = context.getResult();
 
         PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement());
-        ModelNode subModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        ModelNode subsystemModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         // an add operation to recreate the subsystem ModelNode in its current state
-        result.add(InfinispanSubsystemAdd.createOperation(rootAddress.toModelNode(), subModel));
+        result.add(InfinispanSubsystemAdd.createOperation(rootAddress.toModelNode(), subsystemModel));
+
+        // add operations to recreate the cache container ModelNodes in their current state
+        addCacheContainerCommands(subsystemModel, rootAddress.toModelNode(), result);
+
+        context.completeStep();
+    }
+
+    /**
+     * Creates commands to recreate existing cache container elements
+     *
+     * @param subsystem  the cache container Property containing the configuration elements
+     * @param subsystemAddress the cache container address
+     * @param result  the list of operations
+     * @throws OperationFailedException
+     */
+    public static void addCacheContainerCommands(ModelNode subsystem, ModelNode subsystemAddress, ModelNode result) throws OperationFailedException {
 
         // add operations to create the cache containers
-        if (subModel.hasDefined(ModelKeys.CACHE_CONTAINER)) {
+        if (subsystem.hasDefined(ModelKeys.CACHE_CONTAINER)) {
+
             // list of (cacheContainerName, containerModel)
-            for (Property container : subModel.get(ModelKeys.CACHE_CONTAINER).asPropertyList()) {
-                ModelNode containerAddress = rootAddress.toModelNode();
+            for (Property container : subsystem.get(ModelKeys.CACHE_CONTAINER).asPropertyList()) {
+                ModelNode containerAddress = subsystemAddress.clone();
                 containerAddress.add(ModelKeys.CACHE_CONTAINER, container.getName());
                 result.add(CacheContainerAdd.createOperation(containerAddress, container.getValue()));
 
                 addCacheContainerConfigCommands(container, containerAddress, result);
 
-                // list of (cacheType, OBJECT)
-                for (Property cacheTypeList : container.getValue().asPropertyList()) {
-                    // add commands for local caches
-                    if (cacheTypeList.getName().equals(ModelKeys.LOCAL_CACHE)) {
-                        for (Property cache : cacheTypeList.getValue().asPropertyList()) {
-                            ModelNode cacheAddress = containerAddress.clone() ;
-                            cacheAddress.add(ModelKeys.LOCAL_CACHE, cache.getName()) ;
-                            result.add(LocalCacheAdd.createOperation(cacheAddress, cache.getValue()));
+                addCacheCommands(container, containerAddress, result);
+            }
+        }
+    }
 
-                            addCacheConfigCommands(cache, cacheAddress, result);
-                        }
-                    // add commands for invalidation caches
-                    } else if (cacheTypeList.getName().equals(ModelKeys.INVALIDATION_CACHE)) {
-                        for (Property cache : cacheTypeList.getValue().asPropertyList()) {
-                            ModelNode cacheAddress = containerAddress.clone() ;
-                            cacheAddress.add(ModelKeys.INVALIDATION_CACHE, cache.getName()) ;
-                            result.add(InvalidationCacheAdd.createOperation(cacheAddress, cache.getValue()));
+    /**
+     * Creates commands to recreate existing cache elements
+     *
+     * @param container  the cache container Property containing the configuration elements
+     * @param containerAddress the cache container address
+     * @param result  the list of operations
+     * @throws OperationFailedException
+     */
 
-                            addCacheConfigCommands(cache, cacheAddress, result);
-                        }
-                    // add commands for distributed caches
-                    } else if (cacheTypeList.getName().equals(ModelKeys.REPLICATED_CACHE)) {
-                        for (Property cache : cacheTypeList.getValue().asPropertyList()) {
-                            ModelNode cacheAddress = containerAddress.clone() ;
-                            cacheAddress.add(ModelKeys.REPLICATED_CACHE, cache.getName()) ;
-                            result.add(ReplicatedCacheAdd.createOperation(cacheAddress, cache.getValue()));
+    public static void addCacheCommands(Property container, ModelNode containerAddress, ModelNode result) throws OperationFailedException {
 
-                            addCacheConfigCommands(cache, cacheAddress, result);
-                            addSharedStateCacheConfigCommands(cache, cacheAddress, result);
-                        }
-                    // add commands for distributed caches
-                    } else if (cacheTypeList.getName().equals(ModelKeys.DISTRIBUTED_CACHE)) {
-                        for (Property cache : cacheTypeList.getValue().asPropertyList()) {
-                            ModelNode cacheAddress = containerAddress.clone() ;
-                            cacheAddress.add(ModelKeys.DISTRIBUTED_CACHE, cache.getName()) ;
-                            result.add(DistributedCacheAdd.createOperation(cacheAddress, cache.getValue()));
+        // list of (cacheType, OBJECT)
+        for (Property cacheTypeList : container.getValue().asPropertyList()) {
+            // add commands for local caches
+            if (cacheTypeList.getName().equals(ModelKeys.LOCAL_CACHE)) {
+                for (Property cache : cacheTypeList.getValue().asPropertyList()) {
+                    ModelNode cacheAddress = containerAddress.clone();
+                    cacheAddress.add(ModelKeys.LOCAL_CACHE, cache.getName());
+                    result.add(LocalCacheAdd.createOperation(cacheAddress, cache.getValue()));
 
-                            addCacheConfigCommands(cache, cacheAddress, result);
-                            addSharedStateCacheConfigCommands(cache, cacheAddress, result);
-                        }
-                    }
+                    addCacheConfigCommands(cache, cacheAddress, result);
+                }
+                // add commands for invalidation caches
+            } else if (cacheTypeList.getName().equals(ModelKeys.INVALIDATION_CACHE)) {
+                for (Property cache : cacheTypeList.getValue().asPropertyList()) {
+                    ModelNode cacheAddress = containerAddress.clone();
+                    cacheAddress.add(ModelKeys.INVALIDATION_CACHE, cache.getName());
+                    result.add(InvalidationCacheAdd.createOperation(cacheAddress, cache.getValue()));
+
+                    addCacheConfigCommands(cache, cacheAddress, result);
+                }
+                // add commands for distributed caches
+            } else if (cacheTypeList.getName().equals(ModelKeys.REPLICATED_CACHE)) {
+                for (Property cache : cacheTypeList.getValue().asPropertyList()) {
+                    ModelNode cacheAddress = containerAddress.clone();
+                    cacheAddress.add(ModelKeys.REPLICATED_CACHE, cache.getName());
+                    result.add(ReplicatedCacheAdd.createOperation(cacheAddress, cache.getValue()));
+
+                    addCacheConfigCommands(cache, cacheAddress, result);
+                    addSharedStateCacheConfigCommands(cache, cacheAddress, result);
+                }
+                // add commands for distributed caches
+            } else if (cacheTypeList.getName().equals(ModelKeys.DISTRIBUTED_CACHE)) {
+                for (Property cache : cacheTypeList.getValue().asPropertyList()) {
+                    ModelNode cacheAddress = containerAddress.clone();
+                    cacheAddress.add(ModelKeys.DISTRIBUTED_CACHE, cache.getName());
+                    result.add(DistributedCacheAdd.createOperation(cacheAddress, cache.getValue()));
+
+                    addCacheConfigCommands(cache, cacheAddress, result);
+                    addSharedStateCacheConfigCommands(cache, cacheAddress, result);
                 }
             }
         }
-
-        context.completeStep();
     }
 
     /**
@@ -119,7 +148,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
      * @param result  the list of operations
      * @throws OperationFailedException
      */
-    private void addCacheContainerConfigCommands(Property container, ModelNode address, ModelNode result) throws OperationFailedException {
+    private static void addCacheContainerConfigCommands(Property container, ModelNode address, ModelNode result) throws OperationFailedException {
 
         // add operation to create the transport for the container
         if (container.getValue().hasDefined(ModelKeys.TRANSPORT)) {
@@ -141,7 +170,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
      * @param result  the list of operations
      * @throws OperationFailedException
      */
-    private void addCacheConfigCommands(Property cache, ModelNode address, ModelNode result) throws OperationFailedException {
+    private static void addCacheConfigCommands(Property cache, ModelNode address, ModelNode result) throws OperationFailedException {
 
         // command to recreate the locking configuration
         if (cache.getValue().get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME).isDefined()) {
@@ -235,7 +264,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
      * @param result  the list of operations
      * @throws OperationFailedException
      */
-    private void addSharedStateCacheConfigCommands(Property cache, ModelNode address, ModelNode result) throws OperationFailedException {
+    private static void addSharedStateCacheConfigCommands(Property cache, ModelNode address, ModelNode result) throws OperationFailedException {
 
         // command to recreate the state transfer configuration
         if (cache.getValue().get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME).isDefined()) {
@@ -247,7 +276,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
         }
     }
 
-    private void addStoreWriteBehindConfigCommands(ModelNode store, ModelNode address, ModelNode result) throws OperationFailedException {
+    private static void addStoreWriteBehindConfigCommands(ModelNode store, ModelNode address, ModelNode result) throws OperationFailedException {
         // command to recreate the write-behind configuration
         if (store.get(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME).isDefined()) {
             ModelNode writeBehind = store.get(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
@@ -258,7 +287,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
         }
     }
 
-    private void addCacheStorePropertyCommands(ModelNode store, ModelNode address, ModelNode result) throws OperationFailedException {
+    private static void addCacheStorePropertyCommands(ModelNode store, ModelNode address, ModelNode result) throws OperationFailedException {
 
         if (store.hasDefined(ModelKeys.PROPERTY)) {
              for (Property property : store.get(ModelKeys.PROPERTY).asPropertyList()) {
