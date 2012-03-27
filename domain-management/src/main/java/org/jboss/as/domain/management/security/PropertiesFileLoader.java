@@ -22,8 +22,10 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -32,19 +34,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 /**
  * The base class for services depending on loading a properties file, loads the properties on
@@ -88,7 +86,7 @@ public abstract class PropertiesFileLoader {
         propertiesFile = null;
     }
 
-    protected Properties getProperties() throws IOException {
+    public Properties getProperties() throws IOException {
         /*
          * This method does attempt to minimise the effect of race conditions, however this is not overly critical as if you
          * have users attempting to authenticate at the exact point their details are added to the file there is also a chance
