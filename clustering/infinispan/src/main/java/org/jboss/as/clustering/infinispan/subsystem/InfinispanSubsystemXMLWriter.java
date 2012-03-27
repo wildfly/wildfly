@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import javax.xml.stream.XMLStreamException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.infinispan.configuration.cache.CacheMode;
@@ -83,190 +82,211 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     writer.writeEndElement();
                 }
 
-                // create a list of all caches in the model
-                List<Property> cachesPL = new ArrayList<Property>();
-                String[] cacheTypes = {ModelKeys.LOCAL_CACHE, ModelKeys.INVALIDATION_CACHE, ModelKeys.REPLICATED_CACHE, ModelKeys.DISTRIBUTED_CACHE};
-                for (String cacheType : cacheTypes) {
-                    List<Property> cachesOfAType = getCachesAsPropertyList(model, containerName, cacheType);
-                    if (cachesOfAType != null)
-                        cachesPL.addAll(cachesOfAType);
-                }
+                // write any existent cache types
+                if (container.get(ModelKeys.LOCAL_CACHE).isDefined()) {
+                    for (Property localCacheEntry : container.get(ModelKeys.LOCAL_CACHE).asPropertyList()) {
+                        String localCacheName = localCacheEntry.getName();
+                        ModelNode localCache = localCacheEntry.getValue();
 
-                List<ModelNode> caches = new ArrayList<ModelNode>();
-                for (Property cacheEntry : cachesPL) {
-                    caches.add(cacheEntry.getValue());
-                }
-
-                // for (ModelNode cache: container.get(ModelKeys.CACHE).asList()) {
-                for (ModelNode cache: caches) {
-                    CacheMode mode = CacheMode.valueOf(cache.get(ModelKeys.MODE).asString());
-                    if (mode.isClustered()) {
-                        if (mode.isDistributed()) {
-                            writer.writeStartElement(Element.DISTRIBUTED_CACHE.getLocalName());
-                            // write identifier before other attributes
-                            this.writeRequired(writer, Attribute.NAME, cache, ModelKeys.NAME);
-                            this.writeOptional(writer, Attribute.OWNERS, cache, ModelKeys.OWNERS);
-                            this.writeOptional(writer, Attribute.VIRTUAL_NODES, cache, ModelKeys.VIRTUAL_NODES);
-                            this.writeOptional(writer, Attribute.L1_LIFESPAN, cache, ModelKeys.L1_LIFESPAN);
-                        } else if (mode.isInvalidation()) {
-                            writer.writeStartElement(Element.INVALIDATION_CACHE.getLocalName());
-                            // write identifier before other attributes
-                            this.writeRequired(writer, Attribute.NAME, cache, ModelKeys.NAME);
-                        } else {
-                            writer.writeStartElement(Element.REPLICATED_CACHE.getLocalName());
-                            // write identifier before other attributes
-                            this.writeRequired(writer, Attribute.NAME, cache, ModelKeys.NAME);
-                        }
-                        this.writeOptional(writer, Attribute.ASYNC_MARSHALLING, cache, ModelKeys.ASYNC_MARSHALLING);
-                        writer.writeAttribute(Attribute.MODE.getLocalName(), Mode.forCacheMode(mode).name());
-                        this.writeOptional(writer, Attribute.QUEUE_SIZE, cache, ModelKeys.QUEUE_SIZE);
-                        this.writeOptional(writer, Attribute.QUEUE_FLUSH_INTERVAL, cache, ModelKeys.QUEUE_FLUSH_INTERVAL);
-                        this.writeOptional(writer, Attribute.REMOTE_TIMEOUT, cache, ModelKeys.REMOTE_TIMEOUT);
-                    } else {
                         writer.writeStartElement(Element.LOCAL_CACHE.getLocalName());
                         // write identifier before other attributes
-                        this.writeRequired(writer, Attribute.NAME, cache, ModelKeys.NAME);
-                    }
-                    this.writeOptional(writer, Attribute.START, cache, ModelKeys.START);
-                    this.writeOptional(writer, Attribute.BATCHING, cache, ModelKeys.BATCHING);
-                    this.writeOptional(writer, Attribute.INDEXING, cache, ModelKeys.INDEXING);
-                    this.writeOptional(writer, Attribute.JNDI_NAME, cache, ModelKeys.JNDI_NAME);
+                        writer.writeAttribute(Attribute.NAME.getLocalName(), localCacheName);
 
-                    if (cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME).isDefined()) {
-                        writer.writeStartElement(Element.LOCKING.getLocalName());
-                        ModelNode locking = cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
-                        this.writeOptional(writer, Attribute.ISOLATION, locking, ModelKeys.ISOLATION);
-                        this.writeOptional(writer, Attribute.STRIPING, locking, ModelKeys.STRIPING);
-                        this.writeOptional(writer, Attribute.ACQUIRE_TIMEOUT, locking, ModelKeys.ACQUIRE_TIMEOUT);
-                        this.writeOptional(writer, Attribute.CONCURRENCY_LEVEL, locking, ModelKeys.CONCURRENCY_LEVEL);
-                        writer.writeEndElement();
-                    }
+                        processCommonCacheAttributesElements(writer, localCache);
 
-                    if (cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME).isDefined()) {
-                        writer.writeStartElement(Element.TRANSACTION.getLocalName());
-                        ModelNode transaction = cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
-                        this.writeOptional(writer, Attribute.STOP_TIMEOUT, transaction, ModelKeys.STOP_TIMEOUT);
-                        this.writeOptional(writer, Attribute.MODE, transaction, ModelKeys.MODE);
-                        this.writeOptional(writer, Attribute.LOCKING, transaction, ModelKeys.LOCKING);
                         writer.writeEndElement();
                     }
-
-                    if (cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME).isDefined()) {
-                        writer.writeStartElement(Element.EVICTION.getLocalName());
-                        ModelNode eviction = cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
-                        this.writeOptional(writer, Attribute.STRATEGY, eviction, ModelKeys.STRATEGY);
-                        this.writeOptional(writer, Attribute.MAX_ENTRIES, eviction, ModelKeys.MAX_ENTRIES);
-                        writer.writeEndElement();
-                    }
-
-                    if (cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME).isDefined()) {
-                        writer.writeStartElement(Element.EXPIRATION.getLocalName());
-                        ModelNode expiration = cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
-                        this.writeOptional(writer, Attribute.MAX_IDLE, expiration, ModelKeys.MAX_IDLE);
-                        this.writeOptional(writer, Attribute.LIFESPAN, expiration, ModelKeys.LIFESPAN);
-                        this.writeOptional(writer, Attribute.INTERVAL, expiration, ModelKeys.INTERVAL);
-                        writer.writeEndElement();
-                    }
-
-                    if (cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME).isDefined()) {
-                        ModelNode stateTransfer = cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
-                        writer.writeStartElement(Element.STATE_TRANSFER.getLocalName());
-                        this.writeOptional(writer, Attribute.ENABLED, stateTransfer, ModelKeys.ENABLED);
-                        this.writeOptional(writer, Attribute.TIMEOUT, stateTransfer, ModelKeys.TIMEOUT);
-                        this.writeOptional(writer, Attribute.CHUNK_SIZE, stateTransfer, ModelKeys.CHUNK_SIZE);
-                        writer.writeEndElement();
-                    }
-
-                    if (cache.get(ModelKeys.STORE, ModelKeys.STORE_NAME).isDefined()) {
-                        ModelNode store = cache.get(ModelKeys.STORE, ModelKeys.STORE_NAME);
-                        writer.writeStartElement(Element.STORE.getLocalName());
-                        this.writeRequired(writer, Attribute.CLASS, store, ModelKeys.CLASS);
-                        this.writeStoreAttributes(writer, store);
-                        this.writeStoreWriteBehind(writer, store);
-                        this.writeStoreProperties(writer, store);
-                        writer.writeEndElement();
-                    }
-                    else if (cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME).isDefined()) {
-                        ModelNode store = cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
-                        writer.writeStartElement(Element.FILE_STORE.getLocalName());
-                        this.writeOptional(writer, Attribute.RELATIVE_TO, store, ModelKeys.RELATIVE_TO);
-                        this.writeOptional(writer, Attribute.PATH, store, ModelKeys.PATH);
-                        this.writeStoreAttributes(writer, store);
-                        this.writeStoreWriteBehind(writer, store);
-                        this.writeStoreProperties(writer, store);
-                        writer.writeEndElement();
-                    }
-                    else if (cache.get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME).isDefined()) {
-                        ModelNode store = cache.get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
-                        writer.writeStartElement(Element.STRING_KEYED_JDBC_STORE.getLocalName());
-                        this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
-                        this.writeStoreAttributes(writer, store);
-                        this.writeStoreWriteBehind(writer, store);
-                        this.writeStoreProperties(writer, store);
-                        this.writeJDBCStoreTable(writer, Element.STRING_KEYED_TABLE, store, ModelKeys.STRING_KEYED_TABLE);
-                        writer.writeEndElement();
-                    }
-                    else if (cache.get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME).isDefined()) {
-                        ModelNode store = cache.get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
-                        writer.writeStartElement(Element.BINARY_KEYED_JDBC_STORE.getLocalName());
-                        this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
-                        this.writeStoreAttributes(writer, store);
-                        this.writeStoreWriteBehind(writer, store);
-                        this.writeStoreProperties(writer, store);
-                        this.writeJDBCStoreTable(writer, Element.BINARY_KEYED_TABLE, store, ModelKeys.BINARY_KEYED_TABLE);
-                        writer.writeEndElement();
-                    }
-                    else if (cache.get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME).isDefined()) {
-                        ModelNode store = cache.get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
-                        writer.writeStartElement(Element.MIXED_KEYED_JDBC_STORE.getLocalName());
-                        this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
-                        this.writeStoreAttributes(writer, store);
-                        this.writeStoreWriteBehind(writer, store);
-                        this.writeStoreProperties(writer, store);
-                        this.writeJDBCStoreTable(writer, Element.STRING_KEYED_TABLE, store, ModelKeys.STRING_KEYED_TABLE);
-                        this.writeJDBCStoreTable(writer, Element.BINARY_KEYED_TABLE, store, ModelKeys.BINARY_KEYED_TABLE);
-                        writer.writeEndElement();
-                    }
-                    else if (cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME).isDefined()) {
-                        ModelNode store = cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
-                        writer.writeStartElement(Element.REMOTE_STORE.getLocalName());
-                        this.writeOptional(writer, Attribute.CACHE, store, ModelKeys.CACHE);
-                        this.writeOptional(writer, Attribute.SOCKET_TIMEOUT, store, ModelKeys.SOCKET_TIMEOUT);
-                        this.writeOptional(writer, Attribute.TCP_NO_DELAY, store, ModelKeys.TCP_NO_DELAY);
-                        this.writeStoreAttributes(writer, store);
-                        this.writeStoreWriteBehind(writer, store);
-                        this.writeStoreProperties(writer, store);
-                        for (ModelNode remoteServer: store.get(ModelKeys.REMOTE_SERVERS).asList()) {
-                            writer.writeStartElement(Element.REMOTE_SERVER.getLocalName());
-                            writer.writeAttribute(Attribute.OUTBOUND_SOCKET_BINDING.getLocalName(), remoteServer.get(ModelKeys.OUTBOUND_SOCKET_BINDING).asString());
-                            writer.writeEndElement();
-                        }
-                        writer.writeEndElement();
-                    }
-
-                    writer.writeEndElement();
                 }
 
+                if (container.get(ModelKeys.INVALIDATION_CACHE).isDefined()) {
+                    for (Property invalidationCacheEntry : container.get(ModelKeys.INVALIDATION_CACHE).asPropertyList()) {
+                        String invalidationCacheName = invalidationCacheEntry.getName();
+                        ModelNode invalidationCache = invalidationCacheEntry.getValue();
+                        CacheMode mode = CacheMode.valueOf(invalidationCache.get(ModelKeys.MODE).asString());
+
+                        writer.writeStartElement(Element.INVALIDATION_CACHE.getLocalName());
+                        // write identifier before other attributes
+                        writer.writeAttribute(Attribute.NAME.getLocalName(), invalidationCacheName);
+
+                        processCommonClusteredCacheAttributes(writer, mode, invalidationCache);
+                        processCommonCacheAttributesElements(writer, invalidationCache);
+
+                        writer.writeEndElement();
+                    }
+                }
+
+                if (container.get(ModelKeys.REPLICATED_CACHE).isDefined()) {
+                    for (Property replicatedCacheEntry : container.get(ModelKeys.REPLICATED_CACHE).asPropertyList()) {
+                        String replicatedCacheName = replicatedCacheEntry.getName();
+                        ModelNode replicatedCache = replicatedCacheEntry.getValue();
+                        CacheMode mode = CacheMode.valueOf(replicatedCache.get(ModelKeys.MODE).asString());
+
+                        writer.writeStartElement(Element.REPLICATED_CACHE.getLocalName());
+                        // write identifier before other attributes
+                        writer.writeAttribute(Attribute.NAME.getLocalName(), replicatedCacheName);
+
+                        processCommonClusteredCacheAttributes(writer, mode, replicatedCache);
+                        processCommonCacheAttributesElements(writer, replicatedCache);
+
+                        writer.writeEndElement();
+                    }
+                }
+
+                if (container.get(ModelKeys.DISTRIBUTED_CACHE).isDefined()) {
+                    for (Property distributedCacheEntry : container.get(ModelKeys.DISTRIBUTED_CACHE).asPropertyList()) {
+                        String distributedCacheName = distributedCacheEntry.getName();
+                        ModelNode distributedCache = distributedCacheEntry.getValue();
+                        CacheMode mode = CacheMode.valueOf(distributedCache.get(ModelKeys.MODE).asString());
+
+                        writer.writeStartElement(Element.DISTRIBUTED_CACHE.getLocalName());
+                        // write identifier before other attributes
+                        writer.writeAttribute(Attribute.NAME.getLocalName(), distributedCacheName);
+                        // distributed cache attributes
+                        this.writeOptional(writer, Attribute.OWNERS, distributedCache, ModelKeys.OWNERS);
+                        this.writeOptional(writer, Attribute.VIRTUAL_NODES, distributedCache, ModelKeys.VIRTUAL_NODES);
+                        this.writeOptional(writer, Attribute.L1_LIFESPAN, distributedCache, ModelKeys.L1_LIFESPAN);
+
+                        processCommonClusteredCacheAttributes(writer, mode, distributedCache);
+                        processCommonCacheAttributesElements(writer, distributedCache);
+
+                        writer.writeEndElement();
+                    }
+                }
                 writer.writeEndElement();
             }
         }
         writer.writeEndElement();
     }
 
-    /**
-     * Obtains a list of all caches in the model of a particular type, as a property list.
-     *
-     * @param model
-     * @param containerName
-     * @param cacheType  LOCAL_CACHE, INVALIDATION_CACHE, REPLICATED_CACHE, DISTRIBUTED_CACHE
-     * @return
-     */
-    public static List<Property> getCachesAsPropertyList(ModelNode model, String containerName, String cacheType) {
-        ModelNode caches = model.get(ModelKeys.CACHE_CONTAINER, containerName, cacheType);
-        if (caches.isDefined() && caches.getType() == ModelType.OBJECT) {
-            return caches.asPropertyList();
+    private void processCommonClusteredCacheAttributes(XMLExtendedStreamWriter writer, CacheMode mode, ModelNode cache)
+            throws XMLStreamException {
+
+        this.writeOptional(writer, Attribute.ASYNC_MARSHALLING, cache, ModelKeys.ASYNC_MARSHALLING);
+        writer.writeAttribute(Attribute.MODE.getLocalName(), Mode.forCacheMode(mode).name());
+        this.writeOptional(writer, Attribute.QUEUE_SIZE, cache, ModelKeys.QUEUE_SIZE);
+        this.writeOptional(writer, Attribute.QUEUE_FLUSH_INTERVAL, cache, ModelKeys.QUEUE_FLUSH_INTERVAL);
+        this.writeOptional(writer, Attribute.REMOTE_TIMEOUT, cache, ModelKeys.REMOTE_TIMEOUT);
+    }
+
+    private void processCommonCacheAttributesElements(XMLExtendedStreamWriter writer, ModelNode cache)
+            throws XMLStreamException {
+
+        this.writeOptional(writer, Attribute.START, cache, ModelKeys.START);
+        this.writeOptional(writer, Attribute.BATCHING, cache, ModelKeys.BATCHING);
+        this.writeOptional(writer, Attribute.INDEXING, cache, ModelKeys.INDEXING);
+        this.writeOptional(writer, Attribute.JNDI_NAME, cache, ModelKeys.JNDI_NAME);
+
+        if (cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME).isDefined()) {
+            writer.writeStartElement(Element.LOCKING.getLocalName());
+            ModelNode locking = cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
+            this.writeOptional(writer, Attribute.ISOLATION, locking, ModelKeys.ISOLATION);
+            this.writeOptional(writer, Attribute.STRIPING, locking, ModelKeys.STRIPING);
+            this.writeOptional(writer, Attribute.ACQUIRE_TIMEOUT, locking, ModelKeys.ACQUIRE_TIMEOUT);
+            this.writeOptional(writer, Attribute.CONCURRENCY_LEVEL, locking, ModelKeys.CONCURRENCY_LEVEL);
+            writer.writeEndElement();
         }
-        return null ;
+
+        if (cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME).isDefined()) {
+            writer.writeStartElement(Element.TRANSACTION.getLocalName());
+            ModelNode transaction = cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
+            this.writeOptional(writer, Attribute.STOP_TIMEOUT, transaction, ModelKeys.STOP_TIMEOUT);
+            this.writeOptional(writer, Attribute.MODE, transaction, ModelKeys.MODE);
+            this.writeOptional(writer, Attribute.LOCKING, transaction, ModelKeys.LOCKING);
+            writer.writeEndElement();
+        }
+
+        if (cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME).isDefined()) {
+            writer.writeStartElement(Element.EVICTION.getLocalName());
+            ModelNode eviction = cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
+            this.writeOptional(writer, Attribute.STRATEGY, eviction, ModelKeys.STRATEGY);
+            this.writeOptional(writer, Attribute.MAX_ENTRIES, eviction, ModelKeys.MAX_ENTRIES);
+            writer.writeEndElement();
+        }
+
+        if (cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME).isDefined()) {
+            writer.writeStartElement(Element.EXPIRATION.getLocalName());
+            ModelNode expiration = cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
+            this.writeOptional(writer, Attribute.MAX_IDLE, expiration, ModelKeys.MAX_IDLE);
+            this.writeOptional(writer, Attribute.LIFESPAN, expiration, ModelKeys.LIFESPAN);
+            this.writeOptional(writer, Attribute.INTERVAL, expiration, ModelKeys.INTERVAL);
+            writer.writeEndElement();
+        }
+
+        if (cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME).isDefined()) {
+            ModelNode stateTransfer = cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
+            writer.writeStartElement(Element.STATE_TRANSFER.getLocalName());
+            this.writeOptional(writer, Attribute.ENABLED, stateTransfer, ModelKeys.ENABLED);
+            this.writeOptional(writer, Attribute.TIMEOUT, stateTransfer, ModelKeys.TIMEOUT);
+            this.writeOptional(writer, Attribute.CHUNK_SIZE, stateTransfer, ModelKeys.CHUNK_SIZE);
+            writer.writeEndElement();
+        }
+
+        if (cache.get(ModelKeys.STORE, ModelKeys.STORE_NAME).isDefined()) {
+            ModelNode store = cache.get(ModelKeys.STORE, ModelKeys.STORE_NAME);
+            writer.writeStartElement(Element.STORE.getLocalName());
+            this.writeRequired(writer, Attribute.CLASS, store, ModelKeys.CLASS);
+            this.writeStoreAttributes(writer, store);
+            this.writeStoreWriteBehind(writer, store);
+            this.writeStoreProperties(writer, store);
+            writer.writeEndElement();
+        }
+        else if (cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME).isDefined()) {
+            ModelNode store = cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
+            writer.writeStartElement(Element.FILE_STORE.getLocalName());
+            this.writeOptional(writer, Attribute.RELATIVE_TO, store, ModelKeys.RELATIVE_TO);
+            this.writeOptional(writer, Attribute.PATH, store, ModelKeys.PATH);
+            this.writeStoreAttributes(writer, store);
+            this.writeStoreWriteBehind(writer, store);
+            this.writeStoreProperties(writer, store);
+            writer.writeEndElement();
+        }
+        else if (cache.get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME).isDefined()) {
+            ModelNode store = cache.get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
+            writer.writeStartElement(Element.STRING_KEYED_JDBC_STORE.getLocalName());
+            this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
+            this.writeStoreAttributes(writer, store);
+            this.writeStoreWriteBehind(writer, store);
+            this.writeStoreProperties(writer, store);
+            this.writeJDBCStoreTable(writer, Element.STRING_KEYED_TABLE, store, ModelKeys.STRING_KEYED_TABLE);
+            writer.writeEndElement();
+        }
+        else if (cache.get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME).isDefined()) {
+            ModelNode store = cache.get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
+            writer.writeStartElement(Element.BINARY_KEYED_JDBC_STORE.getLocalName());
+            this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
+            this.writeStoreAttributes(writer, store);
+            this.writeStoreWriteBehind(writer, store);
+            this.writeStoreProperties(writer, store);
+            this.writeJDBCStoreTable(writer, Element.BINARY_KEYED_TABLE, store, ModelKeys.BINARY_KEYED_TABLE);
+            writer.writeEndElement();
+        }
+        else if (cache.get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME).isDefined()) {
+            ModelNode store = cache.get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
+            writer.writeStartElement(Element.MIXED_KEYED_JDBC_STORE.getLocalName());
+            this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
+            this.writeStoreAttributes(writer, store);
+            this.writeStoreWriteBehind(writer, store);
+            this.writeStoreProperties(writer, store);
+            this.writeJDBCStoreTable(writer, Element.STRING_KEYED_TABLE, store, ModelKeys.STRING_KEYED_TABLE);
+            this.writeJDBCStoreTable(writer, Element.BINARY_KEYED_TABLE, store, ModelKeys.BINARY_KEYED_TABLE);
+            writer.writeEndElement();
+        }
+        else if (cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME).isDefined()) {
+            ModelNode store = cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
+            writer.writeStartElement(Element.REMOTE_STORE.getLocalName());
+            this.writeOptional(writer, Attribute.CACHE, store, ModelKeys.CACHE);
+            this.writeOptional(writer, Attribute.SOCKET_TIMEOUT, store, ModelKeys.SOCKET_TIMEOUT);
+            this.writeOptional(writer, Attribute.TCP_NO_DELAY, store, ModelKeys.TCP_NO_DELAY);
+            this.writeStoreAttributes(writer, store);
+            this.writeStoreWriteBehind(writer, store);
+            this.writeStoreProperties(writer, store);
+            for (ModelNode remoteServer: store.get(ModelKeys.REMOTE_SERVERS).asList()) {
+                writer.writeStartElement(Element.REMOTE_SERVER.getLocalName());
+                writer.writeAttribute(Attribute.OUTBOUND_SOCKET_BINDING.getLocalName(), remoteServer.get(ModelKeys.OUTBOUND_SOCKET_BINDING).asString());
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
     }
 
     private void writeAliases(XMLExtendedStreamWriter writer, Attribute attribute, ModelNode container, String key) throws XMLStreamException {
@@ -346,19 +366,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             }
         }
     }
-
-    /*
-    private void writeStoreProperties(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
-        if (store.hasDefined(ModelKeys.PROPERTIES)) {
-            for (Property property: store.get(ModelKeys.PROPERTIES).asPropertyList()) {
-                writer.writeStartElement(Element.PROPERTY.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                writer.writeCharacters(property.getValue().asString());
-                writer.writeEndElement();
-            }
-        }
-    }
-    */
 
     private void writeOptional(XMLExtendedStreamWriter writer, Attribute attribute, ModelNode model, String key) throws XMLStreamException {
         if (model.hasDefined(key)) {
