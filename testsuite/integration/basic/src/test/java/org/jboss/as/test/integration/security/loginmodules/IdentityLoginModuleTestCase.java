@@ -22,14 +22,22 @@
 
 package org.jboss.as.test.integration.security.loginmodules;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -47,21 +55,19 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertTrue;
-
 /**
  * Tests of login via IdentityLoginModule
- *
+ * 
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({IdentityLoginModuleTestCase.SecurityDomain1Setup.class, IdentityLoginModuleTestCase.SecurityDomain2Setup.class})
+@ServerSetup({ IdentityLoginModuleTestCase.SecurityDomain1Setup.class, IdentityLoginModuleTestCase.SecurityDomain2Setup.class })
 public class IdentityLoginModuleTestCase {
 
-   private static Logger log = Logger.getLogger(IdentityLoginModuleTestCase.class);
+    private static Logger log = Logger.getLogger(IdentityLoginModuleTestCase.class);
 
-   private static final String DEP1 = "IdentityLoginModule-defaultPrincipal";
+    private static final String DEP1 = "IdentityLoginModule-defaultPrincipal";
 
     static class SecurityDomain1Setup extends AbstractSecurityDomainSetup {
 
@@ -73,7 +79,7 @@ public class IdentityLoginModuleTestCase {
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             log.debug("adding module options");
-            Map<String,String> moduleOptionsMap = new HashMap<String,String>();
+            Map<String, String> moduleOptionsMap = new HashMap<String, String>();
             moduleOptionsMap.put("roles", "role1,role2");
 
             log.info("creating security domain: TestIdentityLoginDomain");
@@ -81,6 +87,7 @@ public class IdentityLoginModuleTestCase {
             log.info("security domain created");
         }
     }
+
     static class SecurityDomain2Setup extends AbstractSecurityDomainSetup {
 
         @Override
@@ -92,7 +99,7 @@ public class IdentityLoginModuleTestCase {
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
 
             log.debug("adding module options");
-            Map<String,String> moduleOptionsMap = new HashMap<String,String>();
+            Map<String, String> moduleOptionsMap = new HashMap<String, String>();
             moduleOptionsMap.put("roles", "role1,role2");
             moduleOptionsMap.put("principal", "SomeName");
 
@@ -103,97 +110,86 @@ public class IdentityLoginModuleTestCase {
         }
     }
 
+    /**
+     * Test deployment with <module-option name="roles" value="role1,role2"/>
+     */
+    @Deployment(name = DEP1, order = 1)
+    public static WebArchive appDeployment1() {
+        log.info("start" + DEP1 + "deployment");
 
-   /**
-    * Test deployment with
-    *  <module-option name="roles" value="role1,role2"/>
-    */
-   @Deployment(name = DEP1, order = 1)
-   public static WebArchive appDeployment1() {
-      log.info("start" + DEP1 + "deployment");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, DEP1 + ".war");
+        war.addClass(PrincipalPrintingServlet.class);
+        war.setWebXML(Utils
+                .getResource("org/jboss/as/test/integration/security/loginmodules/deployments/IdentityLoginModule/web.xml"));
+        war.addAsWebInfResource(
+                Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/IdentityLoginModule/dep1/jboss-web.xml"),
+                "jboss-web.xml");
+        log.debug(war.toString(true));
+        return war;
+    }
 
-      WebArchive war = ShrinkWrap.create(WebArchive.class, DEP1 + ".war");
-      war.addClass(PrincipalPrintingServlet.class);
-      war.setWebXML(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/IdentityLoginModule/web.xml"));
-      war.addAsWebInfResource(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/IdentityLoginModule/dep1/jboss-web.xml"),"jboss-web.xml");
-      log.debug(war.toString(true));
-      return war;
-   }
+    private static final String DEP2 = "IdentityLoginModule-customPrincipal";
 
-   private static final String DEP2 = "IdentityLoginModule-customPrincipal";
+    /**
+     * Test deployment with <module-option name="principal" value="SomeName"/> <module-option name="roles" value="role1,role2"/>
+     */
+    @Deployment(name = DEP2, order = 2)
+    public static WebArchive appDeployment2() {
+        log.info("start" + DEP2 + "deployment");
 
-   /**
-    * Test deployment with
-    *  <module-option name="prinipal" value="SomeName"/>
-    *  <module-option name="roles" value="role1,role2"/>
-    */
-   @Deployment(name = DEP2, order = 2)
-   public static WebArchive appDeployment2() {
-      log.info("start" + DEP2 + "deployment");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, DEP2 + ".war");
+        war.addClass(PrincipalPrintingServlet.class);
+        war.setWebXML(Utils
+                .getResource("org/jboss/as/test/integration/security/loginmodules/deployments/IdentityLoginModule/web.xml"));
+        war.addAsWebInfResource(
+                Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/IdentityLoginModule/dep2/jboss-web.xml"),
+                "jboss-web.xml");
+        log.debug(war.toString(true));
 
-      WebArchive war = ShrinkWrap.create(WebArchive.class, DEP2 + ".war");
-      war.addClass(PrincipalPrintingServlet.class);
-      war.setWebXML(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/IdentityLoginModule/web.xml"));
-      war.addAsWebInfResource(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/IdentityLoginModule/dep2/jboss-web.xml"), "jboss-web.xml");
-      log.debug(war.toString(true));
+        return war;
+    }
 
-      return war;
-   }
+    /**
+     * Tests assignment of default principal name to the caller
+     */
+    @OperateOnDeployment(DEP1)
+    @Test
+    public void testDefaultPrincipal(@ArquillianResource URL url) {
+        assertPrincipal(url, "guest");
+    }
 
-   @OperateOnDeployment(DEP1)
-   @ArquillianResource
-   URL URL1;
+    /**
+     * Tests assignment of custom principal name to the caller
+     */
+    @OperateOnDeployment(DEP2)
+    @Test
+    public void testCustomPrincipal(@ArquillianResource URL url) {
+        assertPrincipal(url, "SomeName");
+    }
 
-   /**
-    * Tests assignment of default principal name to the caller
-    */
-   @OperateOnDeployment(DEP1)
-   @Test
-   public void testDefaultPrincipal(){
+    /**
+     * Calls {@link PrincipalPrintingServlet} and checks if the returned principal name is the expected one.
+     * 
+     * @param url
+     * @param expectedPrincipal
+     * @return Principal name returned from {@link PrincipalPrintingServlet}
+     */
+    private String assertPrincipal(URL url, String expectedPrincipal) {
+        DefaultHttpClient httpclient = new DefaultHttpClient();
+        Credentials creds = new UsernamePasswordCredentials("anyUsername");
+        httpclient.getCredentialsProvider().setCredentials(new AuthScope(url.getHost(), url.getPort()), creds);
+        HttpGet httpget = new HttpGet(url.toExternalForm() + PrincipalPrintingServlet.SERVLET_PATH);
+        String text;
 
-      DefaultHttpClient httpclient = new DefaultHttpClient();
-      HttpResponse response;
-      HttpGet httpget = new HttpGet(URL1.toString());
-      httpget.addHeader("Authorization", "Basic Yzpj");  //I'm not sure why this have to be here, however it does not work without it
-      String text;
+        try {
+            HttpResponse response = httpclient.execute(httpget);
+            assertEquals("Unexpected status code", HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            text = EntityUtils.toString(response.getEntity());
+        } catch (IOException e) {
+            throw new RuntimeException("Servlet response IO exception", e);
+        }
 
-      try {
-         response = httpclient.execute(httpget);
-         text = Utils.getContent(response);
-      } catch (IOException e) {
-         throw new RuntimeException("Servlet response IO exception", e);
-      }
-
-      assertTrue("default principal ('guest') not assigned to the request by IdentityLoinModule: returned text = " +
-         text, text.contains("guest"));
-   }
-
-   @OperateOnDeployment(DEP2)
-   @ArquillianResource
-   URL URL2;
-
-   /**
-    * Tests assignment of custom principal name to the caller
-    */
-   @OperateOnDeployment(DEP2)
-   @Test
-   public void testCustomPrincipal(){
-
-      DefaultHttpClient httpclient = new DefaultHttpClient();
-      HttpResponse response;
-      //HttpGet httpget = new HttpGet("http://localhost:8080/" + DEP2 + "/");
-      HttpGet httpget = new HttpGet(URL2.toString());
-      httpget.addHeader("Authorization", "Basic Yzpj");//I'm not sure why this have to be here, however it does not work without it
-      String text;
-
-      try {
-         response = httpclient.execute(httpget);
-         text = Utils.getContent(response);
-      } catch (IOException e) {
-         throw new RuntimeException("Servlet response IO exception", e);
-      }
-
-      assertTrue("default principal ('guest') not assigned to the request by IdentityLoinModule: returned text = " +
-         text, text.contains("SomeName"));
-   }
+        assertEquals("Unexpected principal name assigned by IdentityLoinModule", expectedPrincipal, text);
+        return text;
+    }
 }
