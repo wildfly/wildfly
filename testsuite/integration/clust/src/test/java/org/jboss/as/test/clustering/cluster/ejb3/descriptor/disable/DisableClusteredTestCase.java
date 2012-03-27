@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.cluster.ejb3.clustdisable;
+package org.jboss.as.test.clustering.cluster.ejb3.descriptor.disable;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 
@@ -53,8 +53,9 @@ import org.junit.runner.RunWith;
 /**
  * Tests the @Clustered beans with <clustered>false</clustered> in jboss-ejb3.xml do not exhibit clustering behavior. This is
  * part of migration of tests from testsuite from prior JBoss versions to AS7 (JBQA-5855) - issue EJBTHREE-1346.
- * 
- * @author Brian Stansberry, Ondrej Chaloupka
+ *
+ * @author Ondrej Chaloupka
+ * @author Brian Stansberry
  */
 @RunWith(Arquillian.class)
 @RunAsClient

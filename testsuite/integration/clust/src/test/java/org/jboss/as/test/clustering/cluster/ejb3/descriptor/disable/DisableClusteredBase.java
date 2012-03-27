@@ -20,24 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.cluster.ejb3.clustdisable;
+package org.jboss.as.test.clustering.cluster.ejb3.descriptor.disable;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateful;
-
-import org.jboss.ejb3.annotation.Clustered;
+import org.jboss.as.test.clustering.NodeNameGetter;
+import org.jboss.logging.Logger;
 
 /**
- * Test for EJBTHREE-1346. The @Clustered is overridden via jboss-ejb3.xml
- * 
+ * @author Ondrej Chaloupka
  * @author Brian Stansberry
  */
-@Stateful(name = "DisableClusteredAnnotationStateful")
-@Clustered
-@Remote(DisableClusteredRemote.class)
-public class DisableClusteredStatefulBean extends DisableClusteredBase {
+public class DisableClusteredBase implements java.io.Serializable, DisableClusteredRemote {
     /** The serialVersionUID */
     private static final long serialVersionUID = 1L;
 
-    // Only difference from superclass is the added class-level annotations
+    private Logger log = Logger.getLogger(getClass());
+
+    public String getNodeState() {
+        String nodeName = NodeNameGetter.getNodeName();
+        log.info("getNodeState, " + nodeName);
+        return nodeName;
+    }
+
+    public void setUpFailover(String failover) {
+        // To setup the failover property
+        log.info("Setting up failover property: " + failover);
+        System.setProperty("JBossCluster-DoFail", failover);
+    }
+
 }
