@@ -75,7 +75,7 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
         }
     }
 
-    private static final String MODULE_PATH = "module.path";
+    private static final String JBOSS_HOME = "JBOSS_HOME";
 
     private static final String PATH_SEPARATOR = File.pathSeparator;
     private static final String MODULE_SEPARATOR = ",";
@@ -328,11 +328,11 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
         if(modulesDir != null) {
             return modulesDir;
         }
-        final String modulesDirStr = SecurityActions.getSystemProperty(MODULE_PATH);
+        final String modulesDirStr = SecurityActions.getEnvironmentVariable(JBOSS_HOME);
         if(modulesDirStr == null) {
-            throw new CommandLineException(MODULE_PATH + " system property is not available.");
+            throw new CommandLineException(JBOSS_HOME + " environment variable is not set.");
         }
-        modulesDir = new File(modulesDirStr);
+        modulesDir = new File(modulesDirStr, "modules");
         if(!modulesDir.exists()) {
             throw new CommandLineException("Failed to locate the modules dir on the filesystem: " + modulesDir.getAbsolutePath());
         }
