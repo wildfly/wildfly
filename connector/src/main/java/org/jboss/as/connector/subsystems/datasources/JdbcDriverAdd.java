@@ -31,6 +31,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MIN
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.lang.reflect.Constructor;
@@ -107,10 +108,15 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
 
         final ModuleIdentifier moduleId;
         final Module module;
-        String slot = null;
+        String slot = operation.hasDefined(MODULE_SLOT) ? operation.get(MODULE_SLOT).asString() : null;
         if (moduleName.contains(":")) {
             slot = moduleName.substring(moduleName.indexOf(":") + 1);
             moduleName = moduleName.substring(0, moduleName.indexOf(":"));
+        } else {
+            if (slot != null) {
+                model.get(DRIVER_MODULE_NAME.getName()).set(moduleName + ":" + slot);
+
+            }
         }
 
         try {
