@@ -106,6 +106,7 @@ import org.jboss.as.cli.handlers.batch.BatchListHandler;
 import org.jboss.as.cli.handlers.batch.BatchMoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRemoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRunHandler;
+import org.jboss.as.cli.handlers.jca.JDBCDriverNameProvider;
 import org.jboss.as.cli.handlers.jca.XADataSourceAddCompositeHandler;
 import org.jboss.as.cli.handlers.jms.CreateJmsResourceHandler;
 import org.jboss.as.cli.handlers.jms.DeleteJmsResourceHandler;
@@ -293,10 +294,16 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new BatchEditLineHandler(), "edit-batch-line");
 
         // data-source
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/data-source", null), "data-source");
+        GenericTypeOperationHandler dsHandler = new GenericTypeOperationHandler(this, "/subsystem=datasources/data-source", null);
+        final DefaultCompleter driverNameCompleter = new DefaultCompleter(JDBCDriverNameProvider.INSTANCE);
+        dsHandler.addValueCompleter(Util.DRIVER_NAME, driverNameCompleter);
+        cmdRegistry.registerHandler(dsHandler, "data-source");
         GenericTypeOperationHandler xaDsHandler = new GenericTypeOperationHandler(this, "/subsystem=datasources/xa-data-source", null);
+        xaDsHandler.addValueCompleter(Util.DRIVER_NAME, driverNameCompleter);
         // override the add operation with the handler that accepts xa props
-        xaDsHandler.addHandler("add", new XADataSourceAddCompositeHandler(this, "/subsystem=datasources/xa-data-source"));
+        final XADataSourceAddCompositeHandler xaDsAddHandler = new XADataSourceAddCompositeHandler(this, "/subsystem=datasources/xa-data-source");
+        xaDsAddHandler.addValueCompleter(Util.DRIVER_NAME, driverNameCompleter);
+        xaDsHandler.addHandler("add", xaDsAddHandler);
         cmdRegistry.registerHandler(xaDsHandler, "xa-data-source");
 
         // JMS
