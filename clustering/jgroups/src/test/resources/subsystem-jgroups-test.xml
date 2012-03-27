@@ -1,0 +1,25 @@
+<subsystem xmlns="urn:jboss:domain:jgroups:1.1" default-stack="maximal">
+    <stack name="maximal">
+        <transport type="TCP" socket-binding="jgroups-tcp" diagnostics-socket-binding="jgroups-diagnostics" default-executor="jgroups" oob-executor="jgroups-oob" timer-executor="jgroups-timer" shared="false" thread-factory="jgroups-thread-factory"
+        machine="machine1" rack="rack1" site="site1" >
+            <property name="enable_bundling">true</property>
+        </transport>
+        <protocol type="MPING" socket-binding="jgroups-mping">
+            <property name="name">value</property>
+        </protocol>
+        <protocol type="MERGE2"/>
+        <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
+        <protocol type="FD"/>
+        <protocol type="VERIFY_SUSPECT"/>
+        <protocol type="BARRIER"/>
+        <protocol type="pbcast.NAKACK"/>
+        <protocol type="UNICAST2"/>
+        <protocol type="pbcast.STABLE"/>
+        <protocol type="pbcast.GMS"/>
+        <protocol type="UFC"/>
+        <protocol type="MFC"/>
+        <protocol type="FRAG2"/>
+        <protocol type="pbcast.STATE_TRANSFER" socket-binding="jgroups-state-xfr"/>
+        <protocol type="pbcast.FLUSH"/>
+    </stack>
+</subsystem>
