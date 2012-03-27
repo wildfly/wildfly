@@ -43,7 +43,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.JarFile;
 
 /**
@@ -152,13 +155,21 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
     protected synchronized List<ResourceLoaderSpec> getCapedwarfResources() throws DeploymentUnitProcessingException {
         try {
             if (capedwarfResources == null) {
-                // hardcoded location of CapeDwarf resources ...
-                final File capedwarfModules = new File(System.getProperty("jboss.home.dir"), "modules/org/jboss/capedwarf/main");
-                if (capedwarfModules.exists() == false)
-                    throw new DeploymentUnitProcessingException("No such CapeDwarf modules directory: " + capedwarfModules);
+                final List<File> mps;
+                final String modulePaths = System.getProperty("module.path");
+                if (modulePaths == null) {
+                    mps = Collections.singletonList(new File(System.getProperty("jboss.home.dir"), "modules"));
+                } else {
+                    mps = new ArrayList<File>();
+                    for (String s : modulePaths.split(":"))
+                        mps.add(new File(s));
+                }
+                final List<File> capedwarfJars = findCapedwarfJars(mps);
+                if (capedwarfJars.isEmpty())
+                    throw new DeploymentUnitProcessingException("No CapeDwarf jars found!");
 
                 final List<ResourceLoaderSpec> resources = new ArrayList<ResourceLoaderSpec>();
-                for (File jar : capedwarfModules.listFiles(JARS_SDK)) {
+                for (File jar : capedwarfJars) {
                     final JarFile jarFile = new JarFile(jar);
                     final ResourceLoader rl = ResourceLoaders.createJarResourceLoader(jar.getName(), jarFile);
                     resources.add(ResourceLoaderSpec.createResourceLoaderSpec(rl));
@@ -170,6 +181,26 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
             throw e;
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException(e);
+        }
+    }
+
+    protected List<File> findCapedwarfJars(List<File> mps) {
+        final List<File> results = new ArrayList<File>();
+        final Set<String> existing = new HashSet<String>();
+        for (File mp : mps) {
+            findCapedwarfJars(mp, results, existing);
+        }
+        return results;
+    }
+
+    protected void findCapedwarfJars(File mp, List<File> results, Set<String> existing) {
+        final File cdModules = new File(mp, "org/jboss/capedwarf/main");
+        if (cdModules.exists()) {
+            for (File jar : cdModules.listFiles(JARS_SDK)) {
+                if (existing.add(jar.getName())) {
+                    results.add(jar);
+                }
+            }
         }
     }
 }
