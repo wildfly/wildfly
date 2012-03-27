@@ -38,7 +38,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.framework.BundleActivator;
@@ -51,25 +53,40 @@ import org.osgi.framework.BundleActivator;
  */
 public class OSGiBundleLifecyleTestCase extends AbstractOSGiTestCase {
 
+    private static DomainTestSupport testSupport;
+    private static String webAppRuntimeName;
+
+    @BeforeClass
+    public static void setupDomain() throws Exception {
+        testSupport = DomainTestSuite.createSupport(OSGiBundleLifecyleTestCase.class.getSimpleName());
+        webAppRuntimeName = deployHttpEndpoint(testSupport);
+    }
+
+    @AfterClass
+    public static void teardownDomain() throws Exception {
+        undeployHttpEndpoint(testSupport, webAppRuntimeName);
+        DomainTestSuite.stopSupport();
+        testSupport = null;
+    }
+
     @Test
     public void testBundleActive() throws Exception {
 
         // Test http endpoint without attached osgi service
-        String spec = "http://" + DomainTestSupport.slaveAddress + ":" + 8630 + "/test-webapp/feedback";
-        String response = HttpRequest.get(spec, 10, 10, TimeUnit.SECONDS);
+        String response = HttpRequest.get(getHttpEndpointURL(), 10, 10, TimeUnit.SECONDS);
         Assert.assertEquals("FeedbackService not available", response);
 
         // Deploy the service bundle
         JavaArchive archive = getGoodBundleArchive();
         InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
-        DomainDeploymentHelper domain = new DomainDeploymentHelper(deploymentManager);
-        String runtimeName = domain.deploy(archive.getName(), input, SERVER_GROUPS);
+        DomainDeploymentHelper domainDeployer = getDomainDeployer(testSupport);
+        String runtimeName = domainDeployer.deploy(archive.getName(), input, SERVER_GROUPS);
         try {
             // Verify bundle startlevel through http endpoint
-            response = HttpRequest.get(spec + "?bnd=good-bundle&cmd=hello", 10, TimeUnit.SECONDS);
+            response = HttpRequest.get(getHttpEndpointURL() + "?bnd=good-bundle&cmd=hello", 10, TimeUnit.SECONDS);
             Assert.assertEquals("good-bundle:0.0.0: hello", response);
         } finally {
-            domain.undeploy(runtimeName, SERVER_GROUPS);
+            domainDeployer.undeploy(runtimeName, SERVER_GROUPS);
         }
     }
 
@@ -78,9 +95,9 @@ public class OSGiBundleLifecyleTestCase extends AbstractOSGiTestCase {
     public void testInvalidBundleDeployment() throws Exception {
         JavaArchive archive = getBadBundleArchive();
         InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
-        DomainDeploymentHelper domain = new DomainDeploymentHelper(deploymentManager);
         try {
-            domain.deploy(archive.getName(), input, SERVER_GROUPS);
+            DomainDeploymentHelper domainDeployer = getDomainDeployer(testSupport);
+            domainDeployer.deploy(archive.getName(), input, SERVER_GROUPS);
             fail("Deployment exception expected");
         } catch (Exception ex) {
             // expected

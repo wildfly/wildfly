@@ -30,6 +30,8 @@ import java.util.jar.JarFile;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.DomainDeploymentHelper;
 import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
+import org.jboss.as.controller.client.helpers.domain.DomainDeploymentHelper.DomainDeploymentException;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.domain.osgi.webapp.FeedbackService;
 import org.jboss.as.test.integration.domain.osgi.webapp.FeedbackServlet;
@@ -38,8 +40,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Before;
 
 
 /**
@@ -52,32 +52,30 @@ public abstract class AbstractOSGiTestCase {
 
     static List<String> SERVER_GROUPS = Collections.singletonList("other-server-group");
 
-    static DomainClient domainClient;
-    static DomainDeploymentManager deploymentManager;
-    private static String webAppRuntimeName;
-
-    @Before
-    public void setupDomain() throws Exception {
-        if (webAppRuntimeName == null) {
-            DomainTestSupport testSupport = DomainTestSuite.createSupport(getClass().getSimpleName());
-            domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
-            deploymentManager = domainClient.getDeploymentManager();
-
-            // Deploy the http endpoint
-            WebArchive webArchive = getWebArchive();
-            InputStream webInput = webArchive.as(ZipExporter.class).exportAsInputStream();
-            DomainDeploymentHelper domain = new DomainDeploymentHelper(deploymentManager);
-            webAppRuntimeName = domain.deploy(webArchive.getName(), webInput, null, SERVER_GROUPS);
-        }
+    static DomainDeploymentHelper getDomainDeployer(DomainTestSupport testSupport) {
+        DomainClient domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
+        DomainDeploymentManager deploymentManager = domainClient.getDeploymentManager();
+        return new DomainDeploymentHelper(deploymentManager);
     }
 
-    @AfterClass
-    public static void teardownDomain() throws Exception {
-        DomainDeploymentHelper domain = new DomainDeploymentHelper(deploymentManager);
-        domain.undeploy(webAppRuntimeName, SERVER_GROUPS);
+    static String deployHttpEndpoint(DomainTestSupport testSupport) throws DomainDeploymentException {
+        WebArchive webArchive = getWebArchive();
+        InputStream webInput = webArchive.as(ZipExporter.class).exportAsInputStream();
+        DomainDeploymentHelper domainDeployer = getDomainDeployer(testSupport);
+        return domainDeployer.deploy(webArchive.getName(), webInput, null, SERVER_GROUPS);
     }
 
-    static WebArchive getWebArchive() {
+    static void undeployHttpEndpoint(DomainTestSupport testSupport, String webAppRuntimeName) throws DomainDeploymentException {
+        DomainDeploymentHelper domainDeployer = getDomainDeployer(testSupport);
+        domainDeployer.undeploy(webAppRuntimeName, SERVER_GROUPS);
+    }
+
+    protected String getHttpEndpointURL() {
+        String host = NetworkUtils.formatPossibleIpv6Address(DomainTestSupport.slaveAddress);
+        return "http://" +  host + ":" + 8630 + "/test-webapp/feedback";
+    }
+
+    private static WebArchive getWebArchive() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, "test-webapp.war");
         archive.addClasses(FeedbackServlet.class, FeedbackService.class);
         // [SHRINKWRAP-278] WebArchive.setManifest() results in WEB-INF/classes/META-INF/MANIFEST.MF
