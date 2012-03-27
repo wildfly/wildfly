@@ -20,22 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.cluster.ejb3.clustdisable;
+package org.jboss.as.test.clustering.cluster.ejb3.descriptor.disable;
 
 import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import javax.ejb.Stateful;
 
 import org.jboss.ejb3.annotation.Clustered;
 
 /**
  * Test for EJBTHREE-1346. The @Clustered is overridden via jboss-ejb3.xml
  * 
+ * @author Ondrej Chaloupka
  * @author Brian Stansberry
  */
-@Stateless(name = "DisableClusteredAnnotationStateless")
+@Stateful(name = "DisableClusteredAnnotationStateful")
 @Clustered
 @Remote(DisableClusteredRemote.class)
-public class DisableClusteredStatelessBean extends DisableClusteredBase {
+public class DisableClusteredStatefulBean extends DisableClusteredBase {
     /** The serialVersionUID */
     private static final long serialVersionUID = 1L;
 

@@ -20,9 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.cluster.ejb3.clustdisable;
+package org.jboss.as.test.clustering.cluster.ejb3.descriptor.disable;
 
 /**
+ * @author Ondrej Chaloupka
  * @author Brian Stansberry
  */
 public interface DisableClusteredRemote {
