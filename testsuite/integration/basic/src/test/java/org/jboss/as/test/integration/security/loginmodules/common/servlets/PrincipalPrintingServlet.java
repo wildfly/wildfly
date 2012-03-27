@@ -21,35 +21,38 @@
  */
 package org.jboss.as.test.integration.security.loginmodules.common.servlets;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.security.Principal;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Writer;
-import java.security.Principal;
 
 /**
- * A servlet which reports the name of the callers principal
- *
+ * A servlet which reports the name of the callers principal.
+ * 
  * @author JanLanik
  */
-@WebServlet(name = "PrincipalPrintingServlet", urlPatterns = { "/" }, loadOnStartup = 1)
+@WebServlet(name = "PrincipalPrintingServlet", urlPatterns = { PrincipalPrintingServlet.SERVLET_PATH })
 public class PrincipalPrintingServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
+    public static final String SERVLET_PATH = "/printPrincipal";
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-       Writer writer = resp.getWriter();
-       Principal principal = req.getUserPrincipal();
-       if (null == principal){
-          writer.write("principal = NULL");
-       } else {
-          writer.write("principal = " + req.getUserPrincipal().getName());
-       }
-
-
+        resp.setContentType("text/plain");
+        final PrintWriter writer = resp.getWriter();
+        final Principal principal = req.getUserPrincipal();
+        if (null == principal) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Principal name is printed only for the authenticated users.");
+        } else {
+            writer.write(req.getUserPrincipal().getName());
+        }
+        writer.close();
     }
 }
