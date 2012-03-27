@@ -92,7 +92,8 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String defaultVirtualServer = WebDefinition.DEFAULT_VIRTUAL_SERVER.resolveModelAttribute(context, fullModel).asString();
 
         final boolean useNative = WebDefinition.NATIVE.resolveModelAttribute(context, fullModel).asBoolean();
-        final String instanceId = WebDefinition.INSTANCE_ID.resolveModelAttribute(context, fullModel).asString();
+        final ModelNode instanceIdModel = WebDefinition.INSTANCE_ID.resolveModelAttribute(context, fullModel);
+        final String instanceId = instanceIdModel.isDefined() ? instanceIdModel.asString() : null;
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
