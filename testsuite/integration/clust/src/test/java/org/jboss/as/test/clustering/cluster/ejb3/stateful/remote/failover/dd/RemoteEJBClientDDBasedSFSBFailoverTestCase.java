@@ -28,6 +28,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
+import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover.CounterResult;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover.RemoteCounter;
@@ -79,7 +80,7 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase {
     private static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(DDBasedClusteredSFSB.class.getPackage());
-        ejbJar.addClasses(RemoteCounter.class, CounterResult.class);
+        ejbJar.addClasses(RemoteCounter.class, CounterResult.class, NodeNameGetter.class);
         ejbJar.addAsManifestResource("cluster/ejb3/stateful/failover/dd/jboss-ejb3.xml", "jboss-ejb3.xml");
         logger.info(ejbJar.toString(true));
         return ejbJar;

@@ -25,8 +25,10 @@ package org.jboss.as.test.clustering.cluster.ejb3.stateless.bean;
 import javax.ejb.Remote;
 import javax.ejb.TransactionAttributeType;
 
+
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.ejb3.annotation.Clustered;
+import org.jboss.logging.Logger;
 
 /**
  * @author Paul Ferraro
@@ -36,6 +38,7 @@ import org.jboss.ejb3.annotation.Clustered;
 @Clustered
 @Remote(Stateless.class)
 public class StatelessBean implements Stateless {
+    private static final Logger log = Logger.getLogger(StatelessBean.class);
 
     /**
      * {@inheritDoc}
@@ -44,6 +47,8 @@ public class StatelessBean implements Stateless {
     @javax.ejb.TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public String getNodeName() {
-        return NodeNameGetter.getNodeName();
+        String nodeName = NodeNameGetter.getNodeName();
+        log.info("StatelessBean.getNodeName() was called on node: " + nodeName);
+        return nodeName;
     }
 }

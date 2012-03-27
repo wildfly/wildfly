@@ -28,6 +28,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
+import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
@@ -82,6 +83,7 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
     private static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(CounterBean.class.getPackage());
+        ejbJar.addClass(NodeNameGetter.class);
         ejbJar.addAsManifestResource(new StringAsset("<beans>" +
                 "<decorators><class>" + CDIDecorator.class.getName() + "</class></decorators>" +
                 "</beans>"), "beans.xml");

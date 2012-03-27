@@ -29,6 +29,7 @@ import javax.ejb.Remove;
 import javax.ejb.Stateful;
 import javax.inject.Inject;
 
+import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.ejb3.annotation.Clustered;
 
 /**
@@ -82,7 +83,7 @@ public class CounterBean implements RemoteCounter {
     }
 
     private String getNodeName() {
-        return System.getProperty("jboss.node.name");
+        return NodeNameGetter.getNodeName();
     }
 
     @PreDestroy
