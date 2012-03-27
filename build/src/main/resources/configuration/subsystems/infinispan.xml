@@ -76,7 +76,8 @@
             </cache-container>
            <cache-container name="capedwarf" default-cache="default">
                <transport lock-timeout="60000"/>
-               <distributed-cache name="default" owners="2" mode="ASYNC" indexing="LOCAL">
+               <!-- distributed-cache name="default" owners="2" mode="ASYNC" indexing="LOCAL" -->
+               <distributed-cache name="default" mode="ASYNC" indexing="LOCAL">
                    <transaction mode="NON_XA"/>
                    <eviction strategy="NONE"/>
                    <!-- indexing-properties>
@@ -109,6 +110,11 @@
                <distributed-cache name="dist" mode="ASYNC">
                    <transaction mode="NON_XA" locking="PESSIMISTIC"/>
                    <eviction strategy="NONE"/>
+                   <file-store/>
+               </distributed-cache>
+               <distributed-cache name="tasks" mode="ASYNC" indexing="LOCAL">
+                   <transaction mode="NON_XA"/>
+                   <eviction strategy="LIRS" max-entries="10000"/>
                    <file-store/>
                </distributed-cache>
            </cache-container>
