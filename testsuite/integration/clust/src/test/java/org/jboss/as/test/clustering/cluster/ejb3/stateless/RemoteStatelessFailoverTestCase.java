@@ -260,8 +260,8 @@ public class RemoteStatelessFailoverTestCase {
             maxNumOfProcessedCalls = count > maxNumOfProcessedCalls ? count : maxNumOfProcessedCalls;
             minNumOfProcessedCalls = count < minNumOfProcessedCalls ? count : minNumOfProcessedCalls;
         }
-        log.info("All " + expectedServers + " servers processed at least " + minNumOfProcessedCalls + " calls");
         Assert.assertTrue(minPercentage * numCalls <= minNumOfProcessedCalls);
+        log.info("All " + expectedServers + " servers processed at least " + minNumOfProcessedCalls + " of calls");
     }
 
     private void deploy(int index) {

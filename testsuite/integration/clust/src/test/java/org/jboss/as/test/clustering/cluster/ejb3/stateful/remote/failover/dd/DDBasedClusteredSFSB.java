@@ -25,6 +25,7 @@ package org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover.dd;
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
 
+import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover.CounterResult;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover.RemoteCounter;
 
@@ -60,6 +61,6 @@ public class DDBasedClusteredSFSB implements RemoteCounter {
     }
 
     private String getNodeName() {
-        return System.getProperty("jboss.node.name");
+        return NodeNameGetter.getNodeName();
     }
 }
