@@ -1,30 +1,5 @@
 package org.jboss.as.ejb3;
 
-import java.io.File;
-import java.lang.reflect.Method;
-import java.rmi.RemoteException;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.EJBAccessException;
-import javax.ejb.EJBException;
-import javax.ejb.IllegalLoopbackException;
-import javax.ejb.LockType;
-import javax.ejb.NoMoreTimeoutsException;
-import javax.ejb.NoSuchEJBException;
-import javax.ejb.NoSuchEntityException;
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.ObjectNotFoundException;
-import javax.ejb.RemoveException;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.TimerHandle;
-import javax.interceptor.InvocationContext;
-import javax.naming.Context;
-import javax.xml.stream.Location;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentCreateServiceFactory;
@@ -51,6 +26,30 @@ import org.jboss.logging.Messages;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartException;
+
+import javax.ejb.ConcurrentAccessTimeoutException;
+import javax.ejb.EJBAccessException;
+import javax.ejb.EJBException;
+import javax.ejb.IllegalLoopbackException;
+import javax.ejb.LockType;
+import javax.ejb.NoMoreTimeoutsException;
+import javax.ejb.NoSuchEJBException;
+import javax.ejb.NoSuchEntityException;
+import javax.ejb.NoSuchObjectLocalException;
+import javax.ejb.ObjectNotFoundException;
+import javax.ejb.RemoveException;
+import javax.ejb.ScheduleExpression;
+import javax.ejb.TimerHandle;
+import javax.interceptor.InvocationContext;
+import javax.naming.Context;
+import javax.xml.stream.Location;
+import java.io.File;
+import java.lang.reflect.Method;
+import java.rmi.RemoteException;
+import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * This module is using message IDs in the range 14100-14599. This file is using the subset 14300-14599 for
@@ -2029,6 +2028,8 @@ public interface EjbMessages {
     @Message(id = 14558, value = "No EjbContext available as no EJB invocation is active")
     IllegalStateException noEjbContextAvailable();
 
+    @Message(id = 14559, value = "Invocation cannot proceed as component is shutting down")
+    EJBException componentIsShuttingDown();
 
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is

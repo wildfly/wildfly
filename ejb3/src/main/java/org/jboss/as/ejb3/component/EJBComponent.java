@@ -21,10 +21,28 @@
  */
 package org.jboss.as.ejb3.component;
 
-import java.lang.reflect.Method;
-import java.security.Principal;
-import java.util.Collections;
-import java.util.Map;
+import org.jboss.as.controller.security.ServerSecurityManager;
+import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
+import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
+import org.jboss.as.ejb3.component.invocationmetrics.InvocationMetrics;
+import org.jboss.as.ejb3.context.CurrentInvocationContext;
+import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
+import org.jboss.as.ejb3.security.EJBSecurityMetaData;
+import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.EJBHomeLocator;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StopContext;
 
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
@@ -39,28 +57,10 @@ import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
-
-import org.jboss.as.controller.security.ServerSecurityManager;
-import org.jboss.as.ee.component.BasicComponent;
-import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
-import org.jboss.as.ejb3.component.invocationmetrics.InvocationMetrics;
-import org.jboss.as.ejb3.context.CurrentInvocationContext;
-import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
-import org.jboss.as.ejb3.security.EJBSecurityMetaData;
-import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.context.NamespaceContextSelector;
-import org.jboss.as.security.service.SimpleSecurityManager;
-import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.EJBHomeLocator;
-import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
+import java.lang.reflect.Method;
+import java.security.Principal;
+import java.util.Collections;
+import java.util.Map;
 
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
@@ -96,6 +96,7 @@ public abstract class EJBComponent extends BasicComponent {
     private final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository;
 
     private final InvocationMetrics invocationMetrics = new InvocationMetrics();
+    private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
     /**
      * Construct a new instance.
@@ -140,6 +141,7 @@ public abstract class EJBComponent extends BasicComponent {
 
         this.ejbRemoteTransactionsRepository = ejbComponentCreateService.getEJBRemoteTransactionsRepository();
         this.timeoutInterceptors = Collections.unmodifiableMap(ejbComponentCreateService.getTimeoutInterceptors());
+        this.shutDownInterceptorFactory = ejbComponentCreateService.getShutDownInterceptorFactory();
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -164,6 +166,18 @@ public abstract class EJBComponent extends BasicComponent {
             throw new RuntimeException(e);
         }
         return viewInterface.cast(instance.getInstance());
+    }
+
+    @Override
+    public void start() {
+        getShutDownInterceptorFactory().start();
+        super.start();
+    }
+
+    @Override
+    public void stop(StopContext stopContext) {
+        getShutDownInterceptorFactory().shutdown();
+        super.stop(stopContext);
     }
 
     public ApplicationExceptionDetails getApplicationException(Class<?> exceptionClass, Method invokedMethod) {
@@ -466,5 +480,9 @@ public abstract class EJBComponent extends BasicComponent {
 
     public InvocationMetrics getInvocationMetrics() {
         return invocationMetrics;
+    }
+
+    protected ShutDownInterceptorFactory getShutDownInterceptorFactory() {
+        return shutDownInterceptorFactory;
     }
 }

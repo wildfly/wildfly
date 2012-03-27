@@ -22,13 +22,6 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.ejb.LockType;
-
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
@@ -44,6 +37,12 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StopContext;
+
+import javax.ejb.LockType;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
@@ -122,6 +121,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     @Override
     public void start() {
+        getShutDownInterceptorFactory().start();
         super.start();
         if (this.initOnStartup) {
             // Do not call createInstance() because we can't ever assume that the singleton instance
@@ -133,6 +133,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     @Override
     public void stop(final StopContext stopContext) {
+        getShutDownInterceptorFactory().shutdown();
         this.destroySingletonInstance();
         super.stop(stopContext);
     }
