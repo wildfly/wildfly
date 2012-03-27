@@ -54,7 +54,7 @@
     <properties>
         <version.byteman>2.0.1</version.byteman>
     </properties>
-
+    
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -90,12 +90,39 @@
             <scope>test</scope>
             <version>${version.byteman}</version>
         </dependency>
-        <dependency>
-            <groupId>com.sun</groupId>
-            <artifactId>tools</artifactId>
-            <scope>system</scope>
-            <version>1.6</version>
-            <systemPath>${java.home}/../lib/tools.jar</systemPath>
-        </dependency>
     </dependencies>
+    
+    <profiles>
+        <profile>
+            <id>linux-windows</id>
+            <activation>
+                <file><exists>${java.home}/../lib/tools.jar</exists></file>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>system</groupId>
+                    <artifactId>jdk-tools</artifactId>
+                    <version>jdk</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <!-- I'm not 100% sure this is the tools.jar replacement on OS X but at least the tests seem to work -->
+            <id>os-x</id>
+            <activation>
+                <file><exists>${java.home}/bundle/Classes/classes.jar</exists></file>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>system</groupId>
+                    <artifactId>jdk-tools</artifactId>
+                    <version>jdk</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/bundle/Classes/classes.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
