@@ -20,48 +20,45 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.security;
+package org.jboss.as.domain.management.security;
 
 import java.security.Permission;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.security.auth.Subject;
+import org.jboss.as.domain.management.SecurityRealm;
 
 /**
- * A simple SecurityContext to manage associating the Subject of the current request with the current thread.
+ * A registry to store references to currently available realms.
  *
  * PLEASE NOTE - This is an internal API so is subject to change in future releases.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class SecurityContext {
+public class SecurityRealmRegistry {
 
-    private static final RuntimePermission GET_SUBJECT_PERMISSION = new RuntimePermission("org.jboss.as.controller.security.GET_SUBJECT");
-    private static final RuntimePermission SET_SUBJECT_PERMISSION = new RuntimePermission("org.jboss.as.controller.security.SET_SUBJECT");
-    private static final RuntimePermission CLEAR_SUBJECT_PERMISSION = new RuntimePermission("org.jboss.as.controller.security.CLEAR_SUBJECT");
+    private static final RuntimePermission LOOKUP_REALM_PERMISSION = new RuntimePermission("org.jboss.as.domain.management.security.LOOKUP_REALM");
 
-    private static final ThreadLocal<Subject> subject = new ThreadLocal<Subject>();
+    private static Map<String, SecurityRealm> realms = new HashMap<String, SecurityRealm>();
 
-    /**
-     *
-     *
-     * @return The Subject associated with this SecurityContext.
-     */
-    public static Subject getSubject() {
-        checkPermission(GET_SUBJECT_PERMISSION);
+    public static SecurityRealm lookup(final String name) {
+        checkPermission(LOOKUP_REALM_PERMISSION);
 
-        return subject.get();
+        return realms.get(name);
     }
 
-    public static void setSubject(final Subject subject) {
-        checkPermission(SET_SUBJECT_PERMISSION);
+    static void register(final String name, final SecurityRealm realm) {
+        // No permission check as we are only called from this package, if visibility
+        // is increased a permission should be added.
 
-        SecurityContext.subject.set(subject);
+        realms.put(name, realm);
     }
 
-    public static void clearSubject() {
-        checkPermission(CLEAR_SUBJECT_PERMISSION);
+    static void remove(final String name) {
+        // No permission check as we are only called from this package, if visibility
+        // is increased a permission should be added.
 
-        subject.set(null);
+        realms.remove(name);
     }
 
     private static void checkPermission(final Permission permission) {
