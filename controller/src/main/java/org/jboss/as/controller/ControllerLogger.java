@@ -283,4 +283,36 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.WARN)
     @Message(id = 14617, value = "A subystem '%s' was registered without calling ExtensionContext.createTracker(). The subsystems are registered normally but won't be cleaned up when the extension is removed.")
     void registerSubsystemNoWraper(String name);
+
+    /**
+     * Logs a warning message indicating graceful shutdown of native management request handling
+     * communication did not complete within the given timeout period.
+     *
+     * @param timeout the timeout, in ms.
+     */
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 14618, value = "Graceful shutdown of the handler used for native management requests did not complete within [%d] ms but shutdown of the underlying communication channel is proceeding")
+    void gracefulManagementChannelHandlerShutdownTimedOut(int timeout);
+
+    /**
+     * Logs a warning message indicating graceful shutdown of native management request handling
+     * communication failed.
+     *
+     * @param cause the timeout, in ms.
+     */
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 14619, value = "Graceful shutdown of the handler used for native management requests failed but shutdown of the underlying communication channel is proceeding")
+    void gracefulManagementChannelHandlerShutdownFailed(@Cause Throwable cause);
+
+    /**
+     * Logs a warning message indicating graceful shutdown of management request handling of slave HC to master HC
+     * communication failed.
+     *
+     * @param cause the the cause of the failure
+     * @param propertyName the name of the system property
+     * @param propValue the value provided
+     */
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 14620, value = "Invalid value '%s' for system property '%s' -- value must be convertible into an int")
+    void invalidChannelCloseTimeout(@Cause NumberFormatException cause, String propertyName, String propValue);
 }
