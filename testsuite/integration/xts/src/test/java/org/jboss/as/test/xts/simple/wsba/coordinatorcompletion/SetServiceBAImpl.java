@@ -24,6 +24,7 @@ import com.arjuna.ats.arjuna.common.Uid;
 import com.arjuna.mw.wst11.BusinessActivityManager;
 import com.arjuna.mw.wst11.BusinessActivityManagerFactory;
 import com.arjuna.wst.SystemException;
+import com.arjuna.wst11.BAParticipantManager;
 import org.jboss.as.test.xts.simple.wsba.AlreadyInSetException;
 import org.jboss.as.test.xts.simple.wsba.MockSetManager;
 import org.jboss.as.test.xts.simple.wsba.SetServiceException;
@@ -56,7 +57,7 @@ public class SetServiceBAImpl implements SetServiceBA {
      * @throws SetServiceException if an error occurred when attempting to add the item to the set.
      */
     @WebMethod
-    public void addValueToSet(String value) throws AlreadyInSetException, SetServiceException {
+    public void addValueToSet(String value, boolean complete) throws AlreadyInSetException, SetServiceException {
 
         log.info("[SERVICE] invoked addValueToSet('" + value + "')");
 
@@ -84,8 +85,14 @@ public class SetServiceBAImpl implements SetServiceBA {
                 SetParticipantBA.recordParticipant(transactionId, participant);
 
                 log.info("[SERVICE] Enlisting a participant into the BA");
-                activityManager.enlistForBusinessAgreementWithCoordinatorCompletion(participant, "SetServiceBAImpl:"
+                BAParticipantManager baParticipantManager =  activityManager.enlistForBusinessAgreementWithCoordinatorCompletion(participant, "SetServiceBAImpl:"
                         + new Uid().toString());
+
+                if (!complete) {
+                    baParticipantManager.cannotComplete();
+                    return;
+                }
+
             } catch (Exception e) {
                 log.error("Participant enlistment failed");
                 throw new SetServiceException("Error enlisting participant", e);

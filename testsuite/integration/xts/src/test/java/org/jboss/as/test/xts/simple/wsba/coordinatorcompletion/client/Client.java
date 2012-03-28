@@ -78,8 +78,8 @@ public class Client implements SetServiceBA {
      * @throws AlreadyInSetException if the item is already in the set.
      * @throws SetServiceException if an error occurred during the adding of the item to the set.
      */
-    public void addValueToSet(String value) throws AlreadyInSetException, SetServiceException {
-        set.addValueToSet(value);
+    public void addValueToSet(String value, boolean complete) throws AlreadyInSetException, SetServiceException {
+        set.addValueToSet(value, complete);
     }
 
     /**
