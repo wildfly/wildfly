@@ -24,6 +24,7 @@ import javax.inject.Inject;
 
 import com.arjuna.mw.wst11.UserBusinessActivity;
 import com.arjuna.mw.wst11.UserBusinessActivityFactory;
+import com.arjuna.wst.TransactionRolledBackException;
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -82,9 +83,9 @@ public class WSBACoordinatorCompletionTestCase {
             uba.begin();
 
             log.info("[CLIENT] invoking addValueToSet(1) on WS");
-            client.addValueToSet(value1);
+            client.addValueToSet(value1, true);
             log.info("[CLIENT] invoking addValueToSet(2) on WS");
-            client.addValueToSet(value2);
+            client.addValueToSet(value2, true);
 
             log.info("[CLIENT] Closing Business Activity (This will cause the BA to complete successfully)");
             uba.close();
@@ -116,9 +117,9 @@ public class WSBACoordinatorCompletionTestCase {
             uba.begin();
 
             log.info("[CLIENT] invoking addValueToSet(1) on WS");
-            client.addValueToSet(value1);
+            client.addValueToSet(value1, true);
             log.info("[CLIENT] invoking addValueToSet(2) on WS");
-            client.addValueToSet(value2);
+            client.addValueToSet(value2, true);
 
             Assert.assertTrue("Expected value to be in the set, but it wasn't", client.isInSet(value1));
             Assert.assertTrue("Expected value to be in the set, but it wasn't", client.isInSet(value2));
@@ -129,6 +130,19 @@ public class WSBACoordinatorCompletionTestCase {
             Assert.assertTrue("Expected value to not be in the set, but it was", !client.isInSet(value1));
             Assert.assertTrue("Expected value to not be in the set, but it was", !client.isInSet(value2));
 
+        } finally {
+            cancelIfActive(uba);
+        }
+    }
+
+    @Test(expected = TransactionRolledBackException.class)
+    public void testCannotComplete() throws Exception {
+
+        UserBusinessActivity uba = UserBusinessActivityFactory.userBusinessActivity();
+        try {
+            uba.begin();
+            client.addValueToSet("1", false);
+            uba.close();
         } finally {
             cancelIfActive(uba);
         }

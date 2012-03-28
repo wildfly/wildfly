@@ -46,7 +46,7 @@ public interface SetServiceBA {
      * @throws SetServiceException if an error occurred during the adding of the item to the set.
      */
     @WebMethod
-    public void addValueToSet(String value) throws AlreadyInSetException, SetServiceException;
+    public void addValueToSet(String value, boolean complete) throws AlreadyInSetException, SetServiceException;
 
     /**
      * Query the set to see if it contains a particular value.
