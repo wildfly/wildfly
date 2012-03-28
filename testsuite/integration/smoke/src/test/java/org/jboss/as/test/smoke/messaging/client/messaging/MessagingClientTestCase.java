@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.smoke.messaging.client.messaging;
 
+import static junit.framework.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,6 +42,7 @@ import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
@@ -91,7 +94,7 @@ public class MessagingClientTestCase {
 
         ClientSession session = null;
         try {
-            session = sf.createSession("guest", "guest", false, false, false, false, 1);
+            session = sf.createSession("guest", "guest", false, true, true, false, 1);
             ClientProducer producer = session.createProducer(queueName);
             ClientMessage message = session.createMessage(false);
 
@@ -104,6 +107,7 @@ public class MessagingClientTestCase {
             session.start();
 
             ClientMessage messageReceived = messageConsumer.receive(1000);
+            assertNotNull("a message MUST have been received", messageReceived);
         } finally {
             if (session != null) {
                 session.close();
@@ -118,10 +122,9 @@ public class MessagingClientTestCase {
         applyUpdate(op, client);
 
         // Check that the queue does not exists
-//  FIXME - JBAS-9360
-//            if(queueExists(queueName, sf)) {
-//                throw new IllegalStateException();
-//            }
+        if(queueExists(queueName, sf)) {
+            throw new IllegalStateException();
+        }
     }
 
     static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
@@ -149,8 +152,8 @@ public class MessagingClientTestCase {
 
     static ClientSessionFactory createClientSessionFactory(String host, int port) throws Exception {
         final Map<String, Object> properties = new HashMap<String, Object>();
-        properties.put("host", host);
-        properties.put("port", port);
+        properties.put(TransportConstants.HOST_PROP_NAME, host);
+        properties.put(TransportConstants.PORT_PROP_NAME, port);
         final TransportConfiguration configuration = new TransportConfiguration(NettyConnectorFactory.class.getName(), properties);
         return HornetQClient.createServerLocatorWithoutHA(configuration).createSessionFactory();
     }
