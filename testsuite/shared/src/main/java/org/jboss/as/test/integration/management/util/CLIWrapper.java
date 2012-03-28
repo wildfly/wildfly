@@ -417,7 +417,11 @@ public class CLIWrapper implements Runnable {
 
     }
 
-    private static String getCliCommand() throws Exception {
+    protected Process getCliProcess() {
+        return cliProcess;
+    }
+
+    protected String getCliCommand() throws Exception {
         if (cliCommand != null) {
             return cliCommand;
         }
