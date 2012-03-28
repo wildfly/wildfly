@@ -25,6 +25,7 @@ import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsDeployment;
 import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
+import static org.jboss.as.webservices.util.DotNames.DECLARE_ROLES_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.ROLES_ALLOWED_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_CONTEXT_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
@@ -140,9 +141,21 @@ public final class WSIntegrationProcessorJAXWS_EJB implements DeploymentUnitProc
 
         // process @RolesAllowed annotation
         if (webServiceClassInfo.annotations().containsKey(ROLES_ALLOWED_ANNOTATION)) {
-        final AnnotationInstance allowedRoles = webServiceClassInfo.annotations().get(ROLES_ALLOWED_ANNOTATION).get(0);
-            for (final String roleName : allowedRoles.value().asStringArray()) {
-                securityRoles.add(roleName);
+            final List<AnnotationInstance> allowedRoles = webServiceClassInfo.annotations().get(ROLES_ALLOWED_ANNOTATION);
+            for (final AnnotationInstance allowedRole : allowedRoles) {
+               for (final String roleName : allowedRole.value().asStringArray()) {
+                  securityRoles.add(roleName);
+               }
+            }
+        }
+
+        // process @DeclareRoles annotation
+        if (webServiceClassInfo.annotations().containsKey(DECLARE_ROLES_ANNOTATION)) {
+            final List<AnnotationInstance> declareRoles = webServiceClassInfo.annotations().get(DECLARE_ROLES_ANNOTATION);
+            for (final AnnotationInstance declareRole : declareRoles) {
+               for (final String roleName : declareRole.value().asStringArray()) {
+                  securityRoles.add(roleName);
+               }
             }
         }
 
