@@ -20,6 +20,7 @@ package org.jboss.as.cli.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -55,6 +56,8 @@ import org.jboss.as.cli.gui.metacommand.UndeployAction;
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class GuiMain {
+    private static Image jbossIcon;
+
     private static JFrame frame;
 
     private static CommandExecutor executor;
@@ -73,10 +76,15 @@ public class GuiMain {
     private GuiMain() {} // don't allow an instance
 
     public static synchronized void start(CommandContext cmdCtx) {
-        if (executor != null) throw new RuntimeException("Gui is already initialized.");
-        executor = new CommandExecutor(cmdCtx);
-        ToolTipManager.sharedInstance().setDismissDelay(15000);
+        initExecutor(cmdCtx);
+        initMainPanel();
         initJFrame();
+    }
+
+    public static synchronized JPanel startEmbedded(CommandContext cmdCtx) {
+        initExecutor(cmdCtx);
+        initMainPanel();
+        return mainPanel;
     }
 
     /**
@@ -103,11 +111,38 @@ public class GuiMain {
         return executor;
     }
 
+    private static synchronized void initExecutor(CommandContext cmdCtx) {
+        if (executor != null) throw new RuntimeException("Gui is already initialized.");
+        executor = new CommandExecutor(cmdCtx);
+    }
+
+    private static synchronized void initMainPanel() {
+        URL iconURL = GuiMain.class.getResource("/icon/as7_logo.png");
+        jbossIcon = Toolkit.getDefaultToolkit().getImage(iconURL);
+
+        ToolTipManager.sharedInstance().setDismissDelay(15000);
+        mainPanel.setBorder(BorderFactory.createEtchedBorder());
+        mainPanel.setLayout(new BorderLayout(5,5));
+        tabs = makeTabbedPane();
+
+        opListener = new DoOperationActionListener(output, tabs);
+        cmdLine = new CommandLine(opListener);
+
+        output.addMouseListener(new SelectPreviousOpMouseAdapter(output, opListener));
+
+        mainPanel.add(cmdLine, BorderLayout.NORTH);
+        mainPanel.add(tabs, BorderLayout.CENTER);
+    }
+
+    public static Image getJBossIcon() {
+        return jbossIcon;
+    }
+
     private static synchronized void initJFrame() {
         setUpLookAndFeel();
         frame = new JFrame("CLI GUI");
-        URL iconURL = GuiMain.class.getResource("/icon/as7_logo.png");
-        frame.setIconImage(Toolkit.getDefaultToolkit().getImage(iconURL));
+
+        frame.setIconImage(getJBossIcon());
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -119,29 +154,22 @@ public class GuiMain {
         frame.setSize(800, 600);
 
         contentPane = frame.getContentPane();
-        mainPanel.setBorder(BorderFactory.createEtchedBorder());
+
         contentPane.add(mainPanel, BorderLayout.CENTER);
-
-        mainPanel.setLayout(new BorderLayout(5,5));
-        tabs = makeTabbedPane();
-
-        opListener = new DoOperationActionListener(output, tabs);
-        cmdLine = new CommandLine(opListener);
-
-        output.addMouseListener(new SelectPreviousOpMouseAdapter(output, opListener));
-
-        mainPanel.add(cmdLine, BorderLayout.NORTH);
-        mainPanel.add(tabs, BorderLayout.CENTER);
 
         frame.setVisible(true);
     }
 
-    private static JMenuBar makeMenuBar() {
+    public static JMenuBar makeMenuBar() {
         JMenuBar menuBar = new JMenuBar();
+        menuBar.add(makeMetaCmdMenu());
+        return menuBar;
+    }
 
+    private static JMenu makeMetaCmdMenu() {
         JMenu metaCmdMenu = new JMenu("Meta Commands");
         metaCmdMenu.setMnemonic(KeyEvent.VK_M);
-        menuBar.add(metaCmdMenu);
+
 
         JMenuItem deploy = new JMenuItem(new DeployAction());
         deploy.setMnemonic(KeyEvent.VK_D);

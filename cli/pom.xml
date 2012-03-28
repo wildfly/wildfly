@@ -92,6 +92,19 @@
             <artifactId>jboss-sasl</artifactId>
         </dependency>
 
+        <dependency>
+           <groupId>org.jboss.remotingjmx</groupId>
+           <artifactId>remoting-jmx</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>sun.jdk</groupId>
+          <artifactId>jconsole</artifactId>
+          <version>1.6.0</version>
+          <scope>system</scope>
+          <systemPath>${java.home}/../lib/jconsole.jar</systemPath>
+        </dependency>
+
         <!-- Test Dependencies -->
         <dependency>
             <groupId>junit</groupId>

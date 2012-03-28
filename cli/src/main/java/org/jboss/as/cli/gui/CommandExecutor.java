@@ -66,7 +66,9 @@ public class CommandExecutor {
             }
             return client.execute(request);
         } finally {
-            GuiMain.getMainWindow().setCursor(Cursor.getDefaultCursor());
+            if (command.startsWith("deploy")) {
+                GuiMain.getMainWindow().setCursor(Cursor.getDefaultCursor());
+            }
         }
     }
 
