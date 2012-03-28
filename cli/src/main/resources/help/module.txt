@@ -2,13 +2,13 @@ SYNOPSIS
 
   To add a module
 
-    module add --name=module_name --resources=list_of_jars
+    module add --name=module_name [--slot=slot_name] --resources=list_of_jars
                (--module-xml=file_path |
                [--dependencies=list_of_module_names] [--properties=list_of_properties] [--main-class=fully_qualified_class_name]])
 
   To remove a module
 
-    module remove --name=module_name
+    module remove --name=module_name [--slot=slot_name]
     
 
 DESCRIPTION
@@ -16,7 +16,7 @@ DESCRIPTION
     The command is used to add and remove modules.
     
     When a module is added, the corresponding to the module name directory structure
-    will be created in the AS7 module repository. The JAR files specified as the resources
+    will be created in the AS7 module repository. The JAR files specified as resources
     will be copied to the module's directory. Unless module.xml file was specified
     as an argument, it will be automatically generated.
 
@@ -34,7 +34,11 @@ DESCRIPTION
 
 ARGUMENTS
 
- --name          - (required) the name of the module to be added or removed
+ --name          - (required) the name of the module to be added or removed.
+                   NOTE: slot is not a part of the module name.
+ 
+ --slot          - (optional) specifies a slot which should be created or removed.
+                   If this argument is not specified, "main" slot is assumed.
  
  --resources     - (used with add, required) a list of filesystem paths (usually jar files)
                    separated by a filesystem-specific path separator, i.e. java.io.File.pathSeparatorChar.
