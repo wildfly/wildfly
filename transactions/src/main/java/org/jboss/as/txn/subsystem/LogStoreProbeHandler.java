@@ -48,10 +48,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 /**
  * Handler for exposing transaction logs
  *
@@ -184,7 +180,9 @@ public class LogStoreProbeHandler implements OperationStepHandler {
             assert resource instanceof LogStoreResource;
             final LogStoreResource logStore = (LogStoreResource) resource;
             // Replace the current model with a updated one
+            context.acquireControllerLock();
             final Resource storeModel = probeTransactions(mbs);
+
             logStore.update(storeModel);
         }
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);

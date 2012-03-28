@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * TODO class javadoc.
  *
  * @author @author <a href="stefano.maestri@redhat.com">Stefano Maestri</a> 2011 Red Hat Inc.
  */
@@ -115,7 +114,7 @@ class LogStoreConstants {
             .setMeasurementUnit(MeasurementUnit.NONE)
             .build();
 
-    static SimpleAttributeDefinition PARTECIPANT_STATUS = (new SimpleAttributeDefinitionBuilder("status", ModelType.STRING))
+    static SimpleAttributeDefinition PARTICIPANT_STATUS = (new SimpleAttributeDefinitionBuilder("status", ModelType.STRING))
             .setAllowExpression(false)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode())
@@ -123,7 +122,7 @@ class LogStoreConstants {
             .setValidator(new EnumValidator(ParticipantStatus.class, false, false))
             .build();
 
-    static SimpleAttributeDefinition PARTECIPANT_JNDI_NAME = (new SimpleAttributeDefinitionBuilder(JNDI_ATTRIBUTE, ModelType.STRING))
+    static SimpleAttributeDefinition PARTICIPANT_JNDI_NAME = (new SimpleAttributeDefinitionBuilder(JNDI_ATTRIBUTE, ModelType.STRING))
             .setAllowExpression(false)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode())

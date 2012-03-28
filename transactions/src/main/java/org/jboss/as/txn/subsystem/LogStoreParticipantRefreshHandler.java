@@ -40,6 +40,7 @@ public class LogStoreParticipantRefreshHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         MBeanServer mbs = TransactionExtension.getMBeanServer(context);
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+
         try {
             final ObjectName on = LogStoreResource.getObjectName(resource);
             final ModelNode model = resource.getModel().clone();
@@ -51,9 +52,10 @@ public class LogStoreParticipantRefreshHandler implements OperationStepHandler {
 
                 if (modelName != null) {
                     ModelNode aNode = model.get(modelName);
+                    Object value = attribute.getValue();
 
                     if (aNode != null)
-                        aNode.set(attribute.getValue().toString());
+                        aNode.set(value == null ? "" : value.toString());
                 }
             }
             // Replace the model

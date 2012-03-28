@@ -52,6 +52,7 @@ import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  * @author Scott Stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
+ * @author Mike Musgrove (mmusgrov@redhat.com) (C) 2012 Red Hat Inc.
  */
 public class TransactionExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "transactions";
@@ -76,7 +77,7 @@ public class TransactionExtension implements Extension {
     /** {@inheritDoc} */
     public void initialize(ExtensionContext context) {
         ROOT_LOGGER.debug("Initializing Transactions Extension");
-
+        final LogStoreResource resource = new LogStoreResource();
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
 
@@ -85,13 +86,14 @@ public class TransactionExtension implements Extension {
 
         PathElement logStorePath = PathElement.pathElement(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE);
         ManagementResourceRegistration logStoreChild = registration.registerSubModel(logStorePath, LogStoreProviders.LOG_STORE_MODEL_CHILD);
-        logStoreChild.registerOperationHandler(ModelDescriptionConstants.ADD, LogStoreAddHandler.INSTANCE, LogStoreProviders.ADD_LOG_STORE_MODEL_CHILD);
+        logStoreChild.registerOperationHandler(ModelDescriptionConstants.ADD, new LogStoreAddHandler(resource), LogStoreProviders.ADD_LOG_STORE_MODEL_CHILD);
+
         logStoreChild.registerOperationHandler(ModelDescriptionConstants.REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, LogStoreProviders.REMOVE_LOG_STORE_MODEL_CHILD);
         logStoreChild.registerOperationHandler(LogStoreConstants.PROBE, LogStoreProbeHandler.INSTANCE, LogStoreProviders.PROBE_OPERATION);
 
         PathElement transactionPath = PathElement.pathElement(LogStoreConstants.TRANSACTIONS);
         ManagementResourceRegistration transactionChild = logStoreChild.registerSubModel(transactionPath, LogStoreProviders.TRANSACTION_CHILD);
-        transactionChild.registerOperationHandler(LogStoreConstants.DELETE, LogStoreTransactionDeleteHandler.INSTANCE, LogStoreProviders.DELETE_OPERATION);
+        transactionChild.registerOperationHandler(LogStoreConstants.DELETE, new LogStoreTransactionDeleteHandler(resource), LogStoreProviders.DELETE_OPERATION);
 
         PathElement partecipantPath = PathElement.pathElement(LogStoreConstants.PARTICIPANTS);
         ManagementResourceRegistration partecipantChild = transactionChild.registerSubModel(partecipantPath, LogStoreProviders.PARTECIPANT_CHILD);
@@ -100,8 +102,10 @@ public class TransactionExtension implements Extension {
             partecipantChild.registerReadWriteAttribute(attribute, null, new ParticipantWriteAttributeHandler(attribute));
         }
 
-        partecipantChild.registerOperationHandler(LogStoreConstants.RECOVER, LogStoreParticipantRecoveryHandler.INSTANCE, LogStoreProviders.RECOVER_OPERATION);
-        partecipantChild.registerOperationHandler(LogStoreConstants.REFRESH, LogStoreParticipantRefreshHandler.INSTANCE, LogStoreProviders.REFRESH_OPERATION);
+        final LogStoreParticipantRefreshHandler refreshHandler = LogStoreParticipantRefreshHandler.INSTANCE;
+
+        partecipantChild.registerOperationHandler(LogStoreConstants.REFRESH, refreshHandler, LogStoreProviders.REFRESH_OPERATION);
+        partecipantChild.registerOperationHandler(LogStoreConstants.RECOVER, new LogStoreParticipantRecoveryHandler(refreshHandler), LogStoreProviders.RECOVER_OPERATION);
 
         subsystem.registerXMLElementWriter(TransactionSubsystem12Parser.INSTANCE);
     }
