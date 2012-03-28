@@ -58,12 +58,21 @@ public class ModelControllerClientOperationHandlerFactoryService extends Abstrac
             @Override
             public void handleClose(Channel closed, IOException exception) {
                 handler.shutdown();
+                boolean interrupted = false;
                 try {
-                    handler.awaitCompletion(100, TimeUnit.MILLISECONDS);
+                    if (!handler.awaitCompletion(CHANNEL_SHUTDOWN_TIMEOUT, TimeUnit.MILLISECONDS)) {
+                        ControllerLogger.ROOT_LOGGER.gracefulManagementChannelHandlerShutdownTimedOut(CHANNEL_SHUTDOWN_TIMEOUT);
+                    }
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                    ControllerLogger.ROOT_LOGGER.gracefulManagementChannelHandlerShutdownFailed(e);
                 } catch (Exception e) {
-                    ControllerLogger.ROOT_LOGGER.warnf(e , "service shutdown did not complete");
+                    ControllerLogger.ROOT_LOGGER.gracefulManagementChannelHandlerShutdownFailed(e);
                 } finally {
                     handler.shutdownNow();
+                    if (interrupted) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
             }
         });

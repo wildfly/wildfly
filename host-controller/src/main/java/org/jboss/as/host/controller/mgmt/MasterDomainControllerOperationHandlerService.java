@@ -66,12 +66,21 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
             @Override
             public void handleClose(Channel closed, IOException exception) {
                 handler.shutdown();
+                boolean interrupted = false;
                 try {
-                    handler.awaitCompletion(100, TimeUnit.MILLISECONDS);
+                    if (!handler.awaitCompletion(CHANNEL_SHUTDOWN_TIMEOUT, TimeUnit.MILLISECONDS)) {
+                        ROOT_LOGGER.gracefulManagementChannelHandlerShutdownTimedOut(CHANNEL_SHUTDOWN_TIMEOUT);
+                    }
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                    ROOT_LOGGER.serviceShutdownIncomplete(e);
                 } catch (Exception e) {
                     ROOT_LOGGER.serviceShutdownIncomplete(e);
                 } finally {
                     handler.shutdownNow();
+                    if (interrupted) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
             }
         });

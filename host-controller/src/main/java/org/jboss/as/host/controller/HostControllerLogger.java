@@ -275,12 +275,13 @@ public interface HostControllerLogger extends BasicLogger {
     void serverRegistered(String name, Channel channel);
 
     /**
-     * Logs a warning message indicating the service shutdown did not complete.
+     * Logs a warning message indicating graceful shutdown of management request handling of slave HC to master HC
+     * communication did not complete.
      *
      * @param cause the cause of the error.
      */
     @LogMessage(level = Level.WARN)
-    @Message(id = 10921, value = "Service shutdown did not complete")
+    @Message(id = 10921, value = "Graceful shutdown of the handler used for messages from other Host Controllers did not cleanly complete but shutdown of the underlying communication channel is proceeding")
     void serviceShutdownIncomplete(@Cause Throwable cause);
 
     /**
@@ -368,4 +369,14 @@ public interface HostControllerLogger extends BasicLogger {
     @LogMessage(level = Level.ERROR)
     @Message(id = 10934, value = "Installation of the domain-wide configuration has failed. Because the running mode of this Host Controller is ADMIN_ONLY boot has been allowed to proceed. If ADMIN_ONLY mode were not in effect the process would be terminated due to a critical boot failure.")
     void reportAdminOnlyDomainXmlFailure();
+
+    /**
+     * Logs a warning message indicating graceful shutdown of management request handling of slave HC to master HC
+     * communication did not complete within the given timeout period.
+     *
+     * @param timeout the timeout, in ms.
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id = 10935, value = "Graceful shutdown of the handler used for messages from other Host Controllers did not complete within [%d] ms but shutdown of the underlying communication channel is proceeding")
+    void gracefulManagementChannelHandlerShutdownTimedOut(int timeout);
 }
