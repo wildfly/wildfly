@@ -25,7 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import javax.xml.stream.XMLStreamException;
 import java.util.List;
 
-import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -102,13 +101,12 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     for (Property invalidationCacheEntry : container.get(ModelKeys.INVALIDATION_CACHE).asPropertyList()) {
                         String invalidationCacheName = invalidationCacheEntry.getName();
                         ModelNode invalidationCache = invalidationCacheEntry.getValue();
-                        CacheMode mode = CacheMode.valueOf(invalidationCache.get(ModelKeys.MODE).asString());
 
                         writer.writeStartElement(Element.INVALIDATION_CACHE.getLocalName());
                         // write identifier before other attributes
                         writer.writeAttribute(Attribute.NAME.getLocalName(), invalidationCacheName);
 
-                        processCommonClusteredCacheAttributes(writer, mode, invalidationCache);
+                        processCommonClusteredCacheAttributes(writer, invalidationCache);
                         processCommonCacheAttributesElements(writer, invalidationCache);
 
                         writer.writeEndElement();
@@ -119,13 +117,12 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     for (Property replicatedCacheEntry : container.get(ModelKeys.REPLICATED_CACHE).asPropertyList()) {
                         String replicatedCacheName = replicatedCacheEntry.getName();
                         ModelNode replicatedCache = replicatedCacheEntry.getValue();
-                        CacheMode mode = CacheMode.valueOf(replicatedCache.get(ModelKeys.MODE).asString());
 
                         writer.writeStartElement(Element.REPLICATED_CACHE.getLocalName());
                         // write identifier before other attributes
                         writer.writeAttribute(Attribute.NAME.getLocalName(), replicatedCacheName);
 
-                        processCommonClusteredCacheAttributes(writer, mode, replicatedCache);
+                        processCommonClusteredCacheAttributes(writer, replicatedCache);
                         processCommonCacheAttributesElements(writer, replicatedCache);
 
                         writer.writeEndElement();
@@ -136,7 +133,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     for (Property distributedCacheEntry : container.get(ModelKeys.DISTRIBUTED_CACHE).asPropertyList()) {
                         String distributedCacheName = distributedCacheEntry.getName();
                         ModelNode distributedCache = distributedCacheEntry.getValue();
-                        CacheMode mode = CacheMode.valueOf(distributedCache.get(ModelKeys.MODE).asString());
 
                         writer.writeStartElement(Element.DISTRIBUTED_CACHE.getLocalName());
                         // write identifier before other attributes
@@ -146,7 +142,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         this.writeOptional(writer, Attribute.VIRTUAL_NODES, distributedCache, ModelKeys.VIRTUAL_NODES);
                         this.writeOptional(writer, Attribute.L1_LIFESPAN, distributedCache, ModelKeys.L1_LIFESPAN);
 
-                        processCommonClusteredCacheAttributes(writer, mode, distributedCache);
+                        processCommonClusteredCacheAttributes(writer, distributedCache);
                         processCommonCacheAttributesElements(writer, distributedCache);
 
                         writer.writeEndElement();
@@ -158,11 +154,11 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writer.writeEndElement();
     }
 
-    private void processCommonClusteredCacheAttributes(XMLExtendedStreamWriter writer, CacheMode mode, ModelNode cache)
+    private void processCommonClusteredCacheAttributes(XMLExtendedStreamWriter writer, ModelNode cache)
             throws XMLStreamException {
 
         this.writeOptional(writer, Attribute.ASYNC_MARSHALLING, cache, ModelKeys.ASYNC_MARSHALLING);
-        writer.writeAttribute(Attribute.MODE.getLocalName(), Mode.forCacheMode(mode).name());
+        this.writeRequired(writer, Attribute.MODE, cache, ModelKeys.MODE);
         this.writeOptional(writer, Attribute.QUEUE_SIZE, cache, ModelKeys.QUEUE_SIZE);
         this.writeOptional(writer, Attribute.QUEUE_FLUSH_INTERVAL, cache, ModelKeys.QUEUE_FLUSH_INTERVAL);
         this.writeOptional(writer, Attribute.REMOTE_TIMEOUT, cache, ModelKeys.REMOTE_TIMEOUT);
