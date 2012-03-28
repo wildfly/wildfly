@@ -60,7 +60,6 @@ public class QueueAdd extends AbstractAddStepHandler implements DescriptionProvi
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-
         ServiceRegistry registry = context.getServiceRegistry(true);
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> hqService = registry.getService(hqServiceName);
@@ -69,7 +68,8 @@ public class QueueAdd extends AbstractAddStepHandler implements DescriptionProvi
             final String queueName = address.getLastElement().getValue();
             final CoreQueueConfiguration queueConfiguration = createCoreQueueConfiguration(context, queueName, model);
             final QueueService service = new QueueService(queueConfiguration, false);
-            newControllers.add(context.getServiceTarget().addService(hqServiceName.append(MessagingServices.getQueueBaseServiceName(hqServiceName)).append(queueName), service)
+            final ServiceName queueServiceName = MessagingServices.getQueueBaseServiceName(hqServiceName).append(queueName);
+            newControllers.add(context.getServiceTarget().addService(queueServiceName, service)
                     .addDependency(hqServiceName, HornetQServer.class, service.getHornetQService())
                     .addListener(verificationHandler)
                     .setInitialMode(Mode.ACTIVE)
