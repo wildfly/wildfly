@@ -22,6 +22,7 @@
 
 package org.jboss.as.webservices.util;
 
+import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Singleton;
 import javax.ejb.Stateless;
@@ -51,6 +52,7 @@ public final class DotNames {
     public static final DotName JAXWS_SERVICE_CLASS = DotName.createSimple(Service.class.getName());
     public static final DotName OBJECT_CLASS = DotName.createSimple(Object.class.getName());
     public static final DotName ROLES_ALLOWED_ANNOTATION = DotName.createSimple(RolesAllowed.class.getName());
+    public static final DotName DECLARE_ROLES_ANNOTATION = DotName.createSimple(DeclareRoles.class.getName());
     public static final DotName SERVLET_CLASS = DotName.createSimple(Servlet.class.getName());
     public static final DotName SINGLETON_ANNOTATION = DotName.createSimple(Singleton.class.getName());
     public static final DotName STATELESS_ANNOTATION = DotName.createSimple(Stateless.class.getName());
