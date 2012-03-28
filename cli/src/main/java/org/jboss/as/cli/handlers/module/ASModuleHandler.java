@@ -95,6 +95,7 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
     private final ArgumentWithValue dependencies;
     private final ArgumentWithValue props;
     private final ArgumentWithValue moduleArg;
+    private final ArgumentWithValue slot;
 
     private File modulesDir;
 
@@ -163,6 +164,27 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
 
         moduleArg = new AddModuleArgument("--module-xml", pathCompleter);
 
+        slot = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider() {
+            @Override
+            public Collection<String> getAllCandidates(CommandContext ctx) {
+                final String moduleName = name.getValue(ctx.getParsedCommandLine());
+                if(moduleName == null) {
+                    return java.util.Collections.emptyList();
+                }
+
+                final File moduleDir;
+                try {
+                    moduleDir = new File(getModulesDir(), moduleName.replace('.', File.separatorChar));
+                } catch (CommandLineException e) {
+                    return java.util.Collections.emptyList();
+                }
+                if(!moduleDir.exists()) {
+                    return java.util.Collections.emptyList();
+                }
+                return Arrays.asList(moduleDir.list());
+            }})
+        , "--slot");
+
         moduleArg.addCantAppearAfter(mainClass);
         moduleArg.addCantAppearAfter(dependencies);
         moduleArg.addCantAppearAfter(props);
@@ -210,7 +232,7 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
             resourceFiles[i] = f;
         }
 
-        final File moduleDir = getModulePath(getModulesDir(), moduleName);
+        final File moduleDir = getModulePath(getModulesDir(), moduleName, slot.getValue(parsedCmd));
         if(moduleDir.exists()) {
             throw new CommandLineException("Module " + moduleName + " already exists at " + moduleDir.getAbsolutePath());
         }
@@ -295,7 +317,7 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
 
         final String moduleName = name.getValue(parsedCmd, true);
         final File modulesDir = getModulesDir();
-        File modulePath = getModulePath(modulesDir, moduleName);
+        File modulePath = getModulePath(modulesDir, moduleName, slot.getValue(parsedCmd));
         if(!modulePath.exists()) {
             throw new CommandLineException("Failed to locate module " + moduleName + " at " + modulePath.getAbsolutePath());
         }
@@ -320,8 +342,8 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
         }
     }
 
-    protected File getModulePath(File modulesDir, final String moduleName) throws CommandLineException {
-        return new File(modulesDir, moduleName.replace('.', File.separatorChar));
+    protected File getModulePath(File modulesDir, final String moduleName, String slot) throws CommandLineException {
+        return new File(modulesDir, moduleName.replace('.', File.separatorChar) + File.separatorChar + (slot == null ? "main" : slot));
     }
 
     protected File getModulesDir() throws CommandLineException {
