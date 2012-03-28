@@ -3,7 +3,7 @@ rem -------------------------------------------------------------------------
 rem jconsole script for Windows
 rem -------------------------------------------------------------------------
 rem
-rem A script for running jconsole with the remoting-jmx libraries on the classpath. 
+rem A script for running jconsole with the remoting-jmx libraries on the classpath.
 
 rem $Id$
 
@@ -21,7 +21,7 @@ set "RESOLVED_JBOSS_HOME=%CD%"
 popd
 
 if "x%JBOSS_HOME%" == "x" (
-  set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%" 
+  set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%"
 )
 
 pushd "%JBOSS_HOME%"
@@ -41,7 +41,7 @@ if "%OS%" == "Windows_NT" (
 )
 
 rem Setup JBoss specific properties
-if "x%JAVA_HOME%" == "x" (  
+if "x%JAVA_HOME%" == "x" (
   echo JAVA_HOME is not set. Unable to locate the jars needed to run jconsole.
   goto END
 )
@@ -73,10 +73,16 @@ call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\xnio\nio\main
 call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\sasl\main
 call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\marshalling\main
 call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\marshalling\river\main
-  
+call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\as\cli\main
+call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\staxmapper\main
+call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\as\protocol\main
+call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\dmr\main
+call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\as\controller-client\main
+call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\threads\main
+
 echo %CLASSPATH%
 
-"%JAVA_HOME%\bin\jconsole.exe" -J"-Djava.class.path=%CLASSPATH%" 
+"%JAVA_HOME%\bin\jconsole.exe" -J"-Djava.class.path=%CLASSPATH%"
 
 :END
 goto :EOF
