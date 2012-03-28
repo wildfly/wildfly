@@ -45,7 +45,7 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class SecurityRealmService implements Service<SecurityRealmService>, SecurityRealm {
+public class SecurityRealmService implements Service<SecurityRealm>, SecurityRealm {
 
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "security_realm");
 
@@ -62,10 +62,12 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
 
     public void start(StartContext context) throws StartException {
         ROOT_LOGGER.debugf("Starting '%s' Security Realm Service", name);
+        SecurityRealmRegistry.register(name, getValue());
     }
 
     public void stop(StopContext context) {
         ROOT_LOGGER.debugf("Stopping '%s' Security Realm Service", name);
+        SecurityRealmRegistry.remove(name);
     }
 
     public SecurityRealmService getValue() throws IllegalStateException, IllegalArgumentException {
