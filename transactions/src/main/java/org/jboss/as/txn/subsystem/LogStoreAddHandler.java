@@ -35,22 +35,23 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 class LogStoreAddHandler implements OperationStepHandler {
-    public static final LogStoreAddHandler INSTANCE = new LogStoreAddHandler();
+    private LogStoreResource resource = null;
 
-    private LogStoreAddHandler() {
+    LogStoreAddHandler(LogStoreResource resource) {
+        this.resource = resource;
     }
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         // Add the log store resource
-        final Resource resource = new LogStoreResource();
         final ModelNode model = resource.getModel();
+
         for (final SimpleAttributeDefinition attribute : LogStoreProviders.LOG_STORE_ATTRIBUTE) {
-                if (operation.get(attribute.getName()).isDefined())  {
-                    attribute.validateAndSet(operation, model);
-                } else {
-                    model.get(attribute.getName()).set(attribute.getDefaultValue());
-                }
+            if (operation.get(attribute.getName()).isDefined())  {
+                attribute.validateAndSet(operation, model);
+            } else {
+                model.get(attribute.getName()).set(attribute.getDefaultValue());
+            }
         }
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
         context.completeStep();

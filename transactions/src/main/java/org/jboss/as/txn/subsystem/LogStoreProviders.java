@@ -55,8 +55,8 @@ class LogStoreProviders {
     static final SimpleAttributeDefinition[] PARTECIPANT_RW_ATTRIBUTE = new SimpleAttributeDefinition[] {
             };
     static final SimpleAttributeDefinition[] PARTECIPANT_ATTRIBUTE = new SimpleAttributeDefinition[] {
-            LogStoreConstants.JMX_NAME, LogStoreConstants.PARTECIPANT_JNDI_NAME,
-            LogStoreConstants.PARTECIPANT_STATUS, LogStoreConstants.RECORD_TYPE,
+            LogStoreConstants.JMX_NAME, LogStoreConstants.PARTICIPANT_JNDI_NAME,
+            LogStoreConstants.PARTICIPANT_STATUS, LogStoreConstants.RECORD_TYPE,
             LogStoreConstants.EIS_NAME, LogStoreConstants.EIS_VERSION };
 
     public static DescriptionProvider LOG_STORE_MODEL_CHILD = new DescriptionProvider() {

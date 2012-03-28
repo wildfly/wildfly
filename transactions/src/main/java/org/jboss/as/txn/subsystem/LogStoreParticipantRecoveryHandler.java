@@ -34,25 +34,29 @@ import javax.management.ObjectName;
 
 public class LogStoreParticipantRecoveryHandler  implements OperationStepHandler {
 
-    static final LogStoreParticipantRecoveryHandler INSTANCE = new LogStoreParticipantRecoveryHandler();
+    private  LogStoreParticipantRefreshHandler refreshHandler = null;
+
+    public LogStoreParticipantRecoveryHandler(LogStoreParticipantRefreshHandler refreshHandler) {
+        this.refreshHandler = refreshHandler;
+    }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         MBeanServer mbs = TransactionExtension.getMBeanServer(context);
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-        // ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        // ModelNode onAttribute = subModel.get(LogStoreConstants.JMX_ON_ATTRIBUTE);
-        // String jmxName = onAttribute.asString();
 
         try {
             // Get the internal object name
             final ObjectName on = LogStoreResource.getObjectName(resource);
 
-            //  Invoke operation
+            //  Invoke the MBean operation
             mbs.invoke(on, "clearHeuristic", null, null);
 
         } catch (Exception e) {
             throw new OperationFailedException("JMX error: ", e);
         }
+
+        // refresh the attributes of this participant (the status attribute should have changed to PREPARED
+        context.addStep(refreshHandler, OperationContext.Stage.IMMEDIATE);
 
         context.completeStep();
     }
