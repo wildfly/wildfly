@@ -33,20 +33,11 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
         super(mode);
     }
 
-    // used in createOperation only
-    void populateMode(ModelNode fromModel, ModelNode toModel) {
-        toModel.get(ModelKeys.MODE).set(Mode.forCacheMode(CacheMode.valueOf(fromModel.get(ModelKeys.MODE).asString())).name());
-    }
-
-    @Override
-    void populateCacheMode(ModelNode fromModel, ModelNode toModel) throws OperationFailedException {
-        toModel.get(ModelKeys.MODE).set(Mode.valueOf(fromModel.require(ModelKeys.MODE).asString()).apply(this.mode).name());
-    }
-
     @Override
     void populate(ModelNode fromModel, ModelNode toModel) throws OperationFailedException {
         super.populate(fromModel, toModel);
 
+        MODE.validateAndSet(fromModel, toModel);
         CommonAttributes.ASYNC_MARSHALLING.validateAndSet(fromModel, toModel);
         CommonAttributes.QUEUE_SIZE.validateAndSet(fromModel, toModel);
         CommonAttributes.QUEUE_FLUSH_INTERVAL.validateAndSet(fromModel, toModel);
@@ -69,15 +60,23 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
         // process cache attributes and elements
         super.processModelNode(context, containerName, cache, builder, dependencies);
 
+        // required attribute MODE (ASYNC/SYNC)
+        final Mode mode = Mode.valueOf(ClusteredCacheAdd.MODE.resolveModelAttribute(context, cache).asString()) ;
+
         final long remoteTimeout = CommonAttributes.REMOTE_TIMEOUT.resolveModelAttribute(context, cache).asLong();
         final int queueSize = CommonAttributes.QUEUE_SIZE.resolveModelAttribute(context, cache).asInt();
         final long queueFlushInterval = CommonAttributes.QUEUE_FLUSH_INTERVAL.resolveModelAttribute(context, cache).asLong();
         final boolean asyncMarshalling = CommonAttributes.ASYNC_MARSHALLING.resolveModelAttribute(context, cache).asBoolean();
 
+        // adjust the cache mode used based on the value of clustered attribute MODE
+        CacheMode cacheMode = mode.apply(this.mode);
+        builder.clustering().cacheMode(cacheMode);
+
         // process clustered cache attributes and elements
-        if (CacheMode.valueOf(cache.get(ModelKeys.MODE).asString()).isSynchronous()) {
+        if (cacheMode.isSynchronous()) {
             builder.clustering().sync().replTimeout(remoteTimeout);
         } else {
+            builder.clustering().async().useReplQueue(queueSize > 0);
             builder.clustering().async().replQueueMaxElements(queueSize);
             builder.clustering().async().replQueueInterval(queueFlushInterval);
             if(asyncMarshalling)

@@ -66,31 +66,13 @@ public class CacheWriteAttributeHandler implements OperationStepHandler, SelfReg
         final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
 
         AttributeDefinition attributeDefinition = null;
-
-        // special processing for MODE
-        if (attributeName.equals(ModelKeys.MODE)) {
-            // 1. Validate the inputs if possible
-            // 2. Get the current cache mode
-            // 3. set the model value
-
-            attributeDefinition = getAttributeDefinition(attributeName);
-            if (attributeDefinition != null) {
-                final ModelNode syntheticOp = new ModelNode();
-                syntheticOp.get(attributeName).set(newValue);
-                attributeDefinition.validateOperation(syntheticOp);
-            }
-            CacheMode mode = getCacheMode(operation) ;
-            submodel.get(ModelKeys.MODE).set(Mode.valueOf(newValue.asString()).apply(mode).name());
-        }
-        else {
-            attributeDefinition = getAttributeDefinition(attributeName);
-            if (attributeDefinition != null) {
-                final ModelNode syntheticOp = new ModelNode();
-                syntheticOp.get(attributeName).set(newValue);
-                attributeDefinition.validateAndSet(syntheticOp, submodel);
-            } else {
-                submodel.get(attributeName).set(newValue);
-            }
+        attributeDefinition = getAttributeDefinition(attributeName);
+        if (attributeDefinition != null) {
+            final ModelNode syntheticOp = new ModelNode();
+            syntheticOp.get(attributeName).set(newValue);
+            attributeDefinition.validateAndSet(syntheticOp, submodel);
+        } else {
+            submodel.get(attributeName).set(newValue);
         }
 
         // since we modified the model, set reload required

@@ -135,12 +135,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        // the name attribute is required, and can always be found from the operation address
-        PathAddress cacheAddress = getCacheAddressFromOperation(operation);
-        String cacheName = cacheAddress.getLastElement().getValue();
-        model.get(ModelKeys.NAME).set(cacheName);
 
-        this.populateCacheMode(operation, model);
         this.populate(operation, model);
     }
 
@@ -339,8 +334,6 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         }
     }
 
-    abstract void populateCacheMode(ModelNode fromModel, ModelNode toModel) throws OperationFailedException;
-
     /**
      * Transfer elements common to both operations and models
      *
@@ -367,34 +360,15 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             throws OperationFailedException {
 
         final Indexing indexing = Indexing.valueOf(CommonAttributes.INDEXING.resolveModelAttribute(context, cache).asString());
-        final int queueSize = CommonAttributes.QUEUE_SIZE.resolveModelAttribute(context, cache).asInt();
-        final long queueFlushInterval = CommonAttributes.QUEUE_FLUSH_INTERVAL.resolveModelAttribute(context, cache).asLong();
-        final long remoteTimeout = CommonAttributes.REMOTE_TIMEOUT.resolveModelAttribute(context, cache).asLong();
         final boolean batching = CommonAttributes.BATCHING.resolveModelAttribute(context, cache).asBoolean();
-        final boolean asyncMarshalling = CommonAttributes.ASYNC_MARSHALLING.resolveModelAttribute(context, cache).asBoolean();
 
-        // set the cache mode
-        CacheMode cacheMode = CacheMode.valueOf(cache.require(ModelKeys.MODE).asString());
-        builder.clustering().cacheMode(cacheMode);
+        // set the cache mode (may be modified when setting up clustering attributes)
+        builder.clustering().cacheMode(this.mode);
 
         builder.indexing()
                 .enabled(indexing.isEnabled())
                 .indexLocalOnly(indexing.isLocalOnly())
         ;
-        if (cacheMode.isSynchronous()) {
-            builder.clustering().sync().replTimeout(remoteTimeout);
-        } else {
-            builder.clustering().async()
-                    .replQueueMaxElements(queueSize)
-                    .useReplQueue(queueSize > 0)
-                    .replQueueInterval(queueFlushInterval)
-            ;
-            if (asyncMarshalling) {
-                builder.clustering().async().asyncMarshalling();
-            } else {
-                builder.clustering().async().syncMarshalling();
-            }
-        }
 
         // locking is a child resource
         if (cache.hasDefined(ModelKeys.LOCKING) && cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME).isDefined()) {

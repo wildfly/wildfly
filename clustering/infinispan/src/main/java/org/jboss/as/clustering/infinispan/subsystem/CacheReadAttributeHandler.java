@@ -2,7 +2,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
-import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -40,15 +39,8 @@ public class CacheReadAttributeHandler implements OperationStepHandler {
         final ModelNode submodel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
         final ModelNode currentValue = submodel.get(attributeName).clone();
 
-        // special processing for cache mode value store in MODE
-        if (attributeName.equals(ModelKeys.MODE)) {
-            // 1. Get the current cache and translate to Mode values of SYNC / ASYNC
-            // 2. set the return value
-            context.getResult().set(Mode.forCacheMode(CacheMode.valueOf(currentValue.asString())).name());
-        }
-        else {
-            context.getResult().set(currentValue);
-        }
+        context.getResult().set(currentValue);
+
         // since we are not updating the model, there is no need for a RUNTIME step
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }

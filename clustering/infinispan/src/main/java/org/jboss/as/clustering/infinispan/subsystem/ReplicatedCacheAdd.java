@@ -17,7 +17,6 @@ public class ReplicatedCacheAdd extends SharedStateCacheAdd {
     // used to create subsystem description
     static ModelNode createOperation(ModelNode address, ModelNode model) throws OperationFailedException {
         ModelNode operation = Util.getEmptyOperation(ADD, address);
-        INSTANCE.populateMode(model, operation);
         INSTANCE.populate(model, operation);
         return operation;
     }

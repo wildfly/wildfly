@@ -27,8 +27,4 @@ public class LocalCacheAdd extends CacheAdd {
         return operation;
     }
 
-    @Override
-    void populateCacheMode(ModelNode fromModel, ModelNode toModel) throws OperationFailedException {
-        toModel.get(ModelKeys.MODE).set(CacheMode.LOCAL.name());
-    }
 }
