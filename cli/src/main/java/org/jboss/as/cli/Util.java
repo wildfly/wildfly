@@ -79,8 +79,10 @@ public class Util {
     public static final String OPERATION = "operation";
     public static final String OPERATION_HEADERS = "operation-headers";
     public static final String OUTCOME = "outcome";
-    public static final String PROFILE = "profile";
     public static final String PERSISTENT = "persistent";
+    public static final String PRODUCT_NAME = "product-name";
+    public static final String PRODUCT_VERSION = "product-version";
+    public static final String PROFILE = "profile";
     public static final String READ_ATTRIBUTE = "read-attribute";
     public static final String READ_CHILDREN_NAMES = "read-children-names";
     public static final String READ_CHILDREN_TYPES = "read-children-types";
@@ -90,6 +92,8 @@ public class Util {
     public static final String READ_WRITE = "read-write";
     public static final String READ_RESOURCE = "read-resource";
     public static final String READ_RESOURCE_DESCRIPTION = "read-resource-description";
+    public static final String RELEASE_CODENAME = "release-codename";
+    public static final String RELEASE_VERSION = "release-version";
     public static final String REPLY_PROPERTIES = "reply-properties";
     public static final String REQUEST_PROPERTIES = "request-properties";
     public static final String REQUIRED = "required";

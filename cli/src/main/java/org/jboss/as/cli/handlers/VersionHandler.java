@@ -81,16 +81,23 @@ public class VersionHandler implements CommandHandler {
                     if(response.hasDefined(Util.RESULT)) {
                         final ModelNode result = response.get(Util.RESULT);
                         byte flag = 0;
-                        if(result.hasDefined("release-version")) {
-                            buf.append(result.get("release-version").asString());
+                        if(result.hasDefined(Util.RELEASE_VERSION)) {
+                            buf.append(result.get(Util.RELEASE_VERSION).asString());
                             ++flag;
                         }
-                        if(result.hasDefined("release-codename")) {
-                            buf.append(" \"").append(result.get("release-codename").asString()).append('\"');
+                        if(result.hasDefined(Util.RELEASE_CODENAME)) {
+                            buf.append(" \"").append(result.get(Util.RELEASE_CODENAME).asString()).append('\"');
                             ++flag;
                         }
                         if(flag == 0) {
                             buf.append("release info was not provided by the controller");
+                        }
+
+                        if(result.hasDefined(Util.PRODUCT_NAME)) {
+                            buf.append("\nJBoss AS product: ").append(result.get(Util.PRODUCT_NAME).asString());
+                            if(result.hasDefined(Util.PRODUCT_VERSION)) {
+                                buf.append(' ').append(result.get(Util.PRODUCT_VERSION).asString());
+                            }
                         }
                     } else {
                         buf.append("result was not available.");
