@@ -23,6 +23,7 @@
 package org.jboss.as.messaging.jms;
 
 import org.hornetq.jms.server.JMSServerManager;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -32,6 +33,8 @@ import org.jboss.msc.value.InjectedValue;
 import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
+import java.util.concurrent.Executor;
+
 /**
  * Service responsible for creating and destroying a {@code javax.jms.Queue}.
  *
@@ -40,6 +43,8 @@ import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 public class JMSQueueService implements Service<Void> {
 
     private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
+    private final InjectedValue<Executor> executorInjector = new InjectedValue<Executor>();
+
 
     private final String queueName;
     private final String selectorString;
@@ -54,23 +59,41 @@ public class JMSQueueService implements Service<Void> {
     }
 
     /** {@inheritDoc} */
-    public synchronized void start(StartContext context) throws StartException {
+    public synchronized void start(final StartContext context) throws StartException {
+        context.asynchronous();
+
         final JMSServerManager jmsManager = jmsServer.getValue();
-        try {
-            jmsManager.createQueue(false, queueName, selectorString, durable, jndi);
-        } catch (Exception e) {
-            throw MESSAGES.failedToCreate(e, "queue");
-        }
+        executorInjector.getValue().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    jmsManager.createQueue(false, queueName, selectorString, durable, jndi);
+                    context.complete();
+                } catch (Throwable e) {
+                    context.failed(MESSAGES.failedToCreate(e, "queue"));
+                }
+            }
+        });
     }
 
     /** {@inheritDoc} */
-    public synchronized void stop(StopContext context) {
+    public synchronized void stop(final StopContext context) {
+        // JMS Server Manager uses locking which waits on service completion, use async to prevent starvation
+        context.asynchronous();
+
         final JMSServerManager jmsManager = jmsServer.getValue();
-        try {
-            jmsManager.removeQueueFromJNDI(queueName);
-        } catch (Exception e) {
-            MESSAGING_LOGGER.failedToDestroy(e, "queue", queueName);
-        }
+        executorInjector.getValue().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    jmsManager.removeQueueFromJNDI(queueName);
+                } catch (Throwable e) {
+                    MESSAGING_LOGGER.failedToDestroy(e, "queue", queueName);
+                }
+                context.complete();
+            }
+        });
+
     }
 
     /** {@inheritDoc} */
@@ -80,6 +103,10 @@ public class JMSQueueService implements Service<Void> {
 
     public InjectedValue<JMSServerManager> getJmsServer() {
         return jmsServer;
+    }
+
+    public Injector<Executor> getExecutorInjector() {
+        return executorInjector;
     }
 
 }

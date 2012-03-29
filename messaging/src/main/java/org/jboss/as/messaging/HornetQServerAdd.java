@@ -285,6 +285,7 @@ class HornetQServerAdd implements OperationStepHandler {
 
                 newControllers.add(hqServerServiceController);
                 newControllers.add(JMSService.addService(serviceTarget, hqServiceName, verificationHandler));
+                newControllers.add(HornetQStartupPoolService.addService(serviceTarget, hqServiceName, verificationHandler));
 
                 context.completeStep();
             }

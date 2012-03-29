@@ -24,6 +24,7 @@ package org.jboss.as.messaging.jms;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Executor;
 
 import org.hornetq.jms.server.JMSServerManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -98,6 +99,7 @@ public class JMSTopicAdd extends AbstractAddStepHandler implements DescriptionPr
 
         final ServiceController<Void> controller = serviceBuilder
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName), JMSServerManager.class, service.getJmsServer())
+                .addDependency(MessagingServices.getHornetQStartupPoolServiceName(hqServiceName), Executor.class, service.getExecutorInjector())
                 .setInitialMode(Mode.ACTIVE)
                 .install();
         if(newControllers != null) {

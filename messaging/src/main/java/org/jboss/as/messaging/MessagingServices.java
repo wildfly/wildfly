@@ -36,6 +36,7 @@ public class MessagingServices {
 
     /** The core queue name base. */
     private static final String CORE_QUEUE_BASE = "queue";
+    private static final String STARTUP_POOL = "startup-pool";
 
     public static enum TransportConfigType {
         Remote, InVM, Generic
@@ -62,6 +63,10 @@ public class MessagingServices {
 
    public static ServiceName getHornetQServiceName(String serverName) {
       return JBOSS_MESSAGING.append(serverName);
+   }
+
+    public static ServiceName getHornetQStartupPoolServiceName(ServiceName hqServiceName) {
+      return hqServiceName.append(STARTUP_POOL);
    }
 
    public static ServiceName getQueueBaseServiceName(ServiceName hornetqServiceName) {

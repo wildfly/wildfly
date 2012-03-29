@@ -25,6 +25,7 @@ package org.jboss.as.messaging.jms;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -110,6 +111,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         final ServiceName serviceName = JMSServices.getConnectionFactoryBaseServiceName(hqServiceName).append(name);
         newControllers.add(context.getServiceTarget().addService(serviceName, service)
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName), JMSServerManager.class, service.getJmsServer())
+                .addDependency(MessagingServices.getHornetQStartupPoolServiceName(hqServiceName), Executor.class, service.getExecutorInjector())
                 .addListener(verificationHandler)
                 .setInitialMode(Mode.ACTIVE)
                 .install());

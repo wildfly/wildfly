@@ -34,6 +34,8 @@ import org.jboss.msc.value.InjectedValue;
 import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
+import java.util.concurrent.Executor;
+
 /**
  * {@code Service} responsible for creating and destroying a {@link javax.jms.ConnectionFactory}.
  *
@@ -44,6 +46,7 @@ class ConnectionFactoryService implements Service<Void> {
     private final String name;
     private final ConnectionFactoryConfiguration configuration;
     private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
+    private final InjectedValue<Executor> executorInjector = new InjectedValue<Executor>();
 
     public ConnectionFactoryService(final ConnectionFactoryConfiguration configuration) {
         name = configuration.getName();
@@ -54,28 +57,40 @@ class ConnectionFactoryService implements Service<Void> {
     }
 
     /** {@inheritDoc} */
-    public synchronized void start(StartContext context) throws StartException {
+    public synchronized void start(final StartContext context) throws StartException {
+        context.asynchronous();
         final JMSServerManager jmsManager = jmsServer.getValue();
-        try {
-            WritableServiceBasedNamingStore.pushOwner(context.getChildTarget());
-            try {
-                jmsManager.createConnectionFactory(false, configuration, configuration.getBindings());
-            } finally {
-                WritableServiceBasedNamingStore.popOwner();
+
+        executorInjector.getValue().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    jmsManager.createConnectionFactory(false, configuration, configuration.getBindings());
+                    context.complete();
+                } catch (Throwable e) {
+                    context.failed(MESSAGES.failedToCreate(e, "connection-factory"));
+                }
             }
-        } catch (Exception e) {
-            throw MESSAGES.failedToCreate(e, "connection-factory");
-        }
+        });
     }
 
     /** {@inheritDoc} */
-    public synchronized void stop(StopContext context) {
+    public synchronized void stop(final StopContext context) {
+        // JMS Server Manager uses locking which waits on service completion, use async to prevent starvation
+        context.asynchronous();
         final JMSServerManager jmsManager = jmsServer.getValue();
-        try {
-            jmsManager.destroyConnectionFactory(name);
-        } catch (Exception e) {
-            MESSAGING_LOGGER.failedToDestroy("connection-factory", name);
-        }
+
+        executorInjector.getValue().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    jmsManager.destroyConnectionFactory(name);
+                } catch (Throwable e) {
+                    MESSAGING_LOGGER.failedToDestroy("connection-factory", name);
+                }
+                context.complete();
+            }
+        });
     }
 
     /** {@inheritDoc} */
@@ -87,4 +102,7 @@ class ConnectionFactoryService implements Service<Void> {
         return jmsServer;
     }
 
+    public InjectedValue<Executor> getExecutorInjector() {
+        return executorInjector;
+    }
 }

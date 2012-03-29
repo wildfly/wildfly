@@ -32,6 +32,8 @@ import org.jboss.msc.value.InjectedValue;
 import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
+import java.util.concurrent.Executor;
+
 /**
  * Service responsible for creating and destroying a {@code javax.jms.Topic}.
  *
@@ -40,6 +42,8 @@ import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 public class JMSTopicService implements Service<Void> {
 
     private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
+    private final InjectedValue<Executor> executorInjector = new InjectedValue<Executor>();
+
 
     private final String name;
     private final String[] jndi;
@@ -50,23 +54,40 @@ public class JMSTopicService implements Service<Void> {
     }
 
     /** {@inheritDoc} */
-    public synchronized void start(StartContext context) throws StartException {
+    public synchronized void start(final StartContext context) throws StartException {
         final JMSServerManager jmsManager = jmsServer.getValue();
-        try {
-            jmsManager.createTopic(false, name, jndi);
-        } catch (Exception e) {
-            throw MESSAGES.failedToCreate(e, "queue");
-        }
+
+        context.asynchronous();
+        executorInjector.getValue().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    jmsManager.createTopic(false, name, jndi);
+                    context.complete();
+                } catch (Throwable e) {
+                    context.failed(MESSAGES.failedToCreate(e, "queue"));
+                }
+            }
+        });
     }
 
     /** {@inheritDoc} */
-    public synchronized void stop(StopContext context) {
+    public synchronized void stop(final StopContext context) {
         final JMSServerManager jmsManager = jmsServer.getValue();
-        try {
-            jmsManager.removeTopicFromJNDI(name);
-        } catch (Exception e) {
-            MESSAGING_LOGGER.failedToDestroy(e, "jms topic", name);
-        }
+
+        // JMS Server Manager uses locking which waits on service completion, use async to prevent starvation
+        context.asynchronous();
+        executorInjector.getValue().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    jmsManager.removeTopicFromJNDI(name);
+                } catch (Throwable e) {
+                    MESSAGING_LOGGER.failedToDestroy(e, "jms topic", name);
+                }
+                context.complete();
+            }
+        });
     }
 
     /** {@inheritDoc} */
@@ -78,4 +99,7 @@ public class JMSTopicService implements Service<Void> {
         return jmsServer;
     }
 
+    public InjectedValue<Executor> getExecutorInjector() {
+        return executorInjector;
+    }
 }
