@@ -42,11 +42,11 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    //BasicOpsTestCase.class,
-    //DeployAllServerGroupsTestCase.class,
-    //DeploySingleServerGroupTestCase.class,
-    //JmsTestCase.class,
-    //DataSourceTestCase.class,
+    BasicOpsTestCase.class,
+    DeployAllServerGroupsTestCase.class,
+    DeploySingleServerGroupTestCase.class,
+    JmsTestCase.class,
+    DataSourceTestCase.class,
     RolloutPlanTestCase.class
 })
 public class CLITestSuite {
