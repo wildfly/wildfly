@@ -28,6 +28,7 @@ import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -45,6 +46,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.sasl.callback.DigestHashCallback;
+import org.jboss.sasl.callback.VerifyPasswordCallback;
+import org.jboss.sasl.util.UsernamePasswordHashUtil;
 
 /**
  * A CallbackHandler obtaining the users and their passwords from a properties file.
@@ -59,11 +62,12 @@ public class PropertiesCallbackHandler extends PropertiesFileLoader implements S
     // Technically this CallbackHandler could also support the VerifyCallback callback, however at the moment
     // this is only likely to be used with the Digest mechanism so no need to add that support.
     private static final Class[] PLAIN_CALLBACKS = { AuthorizeCallback.class, RealmCallback.class, NameCallback.class,
-            PasswordCallback.class };
+            PasswordCallback.class, VerifyPasswordCallback.class };
     private static final Class[] DIGEST_CALLBACKS = { AuthorizeCallback.class, RealmCallback.class, NameCallback.class,
-            DigestHashCallback.class };
+            DigestHashCallback.class, VerifyPasswordCallback.class };
 
     private static final String DOLLAR_LOCAL = "$local";
+    private static UsernamePasswordHashUtil hashUtil = null;
 
     private final Class[] supportedCallbacks;
 
@@ -149,6 +153,8 @@ public class PropertiesCallbackHandler extends PropertiesFileLoader implements S
                 toRespondTo.add(current);
             } else if (current instanceof DigestHashCallback && plainText == false) {
                 toRespondTo.add(current);
+            } else if (current instanceof VerifyPasswordCallback) {
+                toRespondTo.add(current);
             } else if (current instanceof RealmCallback) {
                 String realm = ((RealmCallback) current).getDefaultText();
                 if (this.realm.equals(realm) == false) {
@@ -178,9 +184,37 @@ public class PropertiesCallbackHandler extends PropertiesFileLoader implements S
                 }
                 String hash = users.get(userName).toString();
                 ((DigestHashCallback) current).setHexHash(hash);
+            } else if (current instanceof VerifyPasswordCallback) {
+                if (userFound == false) {
+                    throw new UserNotFoundException(userName);
+                }
+                VerifyPasswordCallback vpc = (VerifyPasswordCallback) current;
+                if (plainText) {
+                    String password = users.get(userName).toString();
+                    vpc.setVerified(password.equals(vpc.getPassword()));
+                } else {
+                    UsernamePasswordHashUtil hashUtil = getHashUtil();
+                    String hash;
+                    synchronized (hashUtil) {
+                        hash = hashUtil.generateHashedHexURP(userName, realm, vpc.getPassword().toCharArray());
+                    }
+                    String expected = users.get(userName).toString();
+                    vpc.setVerified(expected.equals(hash));
+                }
             }
         }
 
+    }
+
+    private static UsernamePasswordHashUtil getHashUtil() {
+        if (hashUtil == null) {
+            try {
+                hashUtil = new UsernamePasswordHashUtil();
+            } catch (NoSuchAlgorithmException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+        return hashUtil;
     }
 
 }
