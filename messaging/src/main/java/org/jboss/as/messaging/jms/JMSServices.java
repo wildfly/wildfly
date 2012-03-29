@@ -47,8 +47,10 @@ import static org.jboss.as.messaging.CommonAttributes.GROUP_ID;
 import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.JNDI_PARAMS;
 import static org.jboss.as.messaging.CommonAttributes.LOAD_BALANCING_CLASS_NAME;
+import static org.jboss.as.messaging.CommonAttributes.MAX_POOL_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.MAX_RETRY_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.MIN_LARGE_MESSAGE_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.MIN_POOL_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.PCF_PASSWORD;
 import static org.jboss.as.messaging.CommonAttributes.PCF_USER;
 import static org.jboss.as.messaging.CommonAttributes.PRE_ACK;
@@ -262,7 +264,9 @@ public class JMSServices {
         USE_LOCAL_TX,
         SETUP_ATTEMPTS,
         SETUP_INTERVAL,
-        TRANSACTION_ATTRIBUTE
+        TRANSACTION_ATTRIBUTE,
+        MIN_POOL_SIZE,
+        MAX_POOL_SIZE
     };
 
     static PooledCFAttribute[] POOLED_CONNECTION_FACTORY_METHOD_ATTRS = new PooledCFAttribute[] {
