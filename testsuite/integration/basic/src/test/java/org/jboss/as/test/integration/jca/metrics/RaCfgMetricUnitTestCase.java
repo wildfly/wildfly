@@ -23,16 +23,18 @@
 package org.jboss.as.test.integration.jca.metrics;
 
 
+import static junit.framework.Assert.*;
+
 import java.util.List;
-
-
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.dmr.ModelNode;
-import org.junit.Ignore;
+import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

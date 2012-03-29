@@ -42,7 +42,7 @@ import javax.inject.Inject;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-1181")
+//@Ignore("AS7-1181")
 public class InterceptorPackagingTestCase {
 
     @Deployment
