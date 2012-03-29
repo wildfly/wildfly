@@ -22,6 +22,11 @@
 
 package org.jboss.as.ejb3.component.messagedriven;
 
+import java.util.Properties;
+
+import javax.resource.spi.ActivationSpec;
+import javax.resource.spi.ResourceAdapter;
+
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.EjbLogger;
@@ -36,10 +41,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.ResourceAdapter;
-import java.util.Properties;
-
 /**
  * @author Stuart Douglas
  */
@@ -52,7 +53,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<PoolConfig>();
     private final InjectedValue<DefaultResourceAdapterService> defaultResourceAdapterServiceInjectedValue = new InjectedValue<DefaultResourceAdapterService>();
     private final InjectedValue<EJBUtilities> ejbUtilitiesInjectedValue = new InjectedValue<EJBUtilities>();
-
+    private final ClassLoader moduleClassLoader;
     /**
      * Construct a new instance.
      *
@@ -67,6 +68,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
         this.messageListenerInterface = componentConfiguration.getViews().get(0).getViewClass();
 
         this.activationProps = componentDescription.getActivationProps();
+        this.moduleClassLoader = componentConfiguration.getModuleClassLoader();
     }
 
     @Override
@@ -123,6 +125,10 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
     public Injector<EJBUtilities> getEJBUtilitiesInjector() {
         return this.ejbUtilitiesInjectedValue;
+    }
+
+    public ClassLoader getModuleClassLoader() {
+        return moduleClassLoader;
     }
 
     private String stripDotRarSuffix(final String raName) {
