@@ -89,6 +89,8 @@ import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
 import static org.jboss.as.messaging.CommonAttributes.LIVE_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
+import static org.jboss.as.messaging.CommonAttributes.MAX_POOL_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.MIN_POOL_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.PARAMS;
 import static org.jboss.as.messaging.CommonAttributes.PATH;
@@ -1926,6 +1928,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 if (factory.isDefined()) {
                    writer.writeStartElement(Element.POOLED_CONNECTION_FACTORY.getLocalName());
                    writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+                   MIN_POOL_SIZE.marshallAsElement(factory, writer);
+                   MAX_POOL_SIZE.marshallAsElement(factory, writer);
+
                    writeConnectionFactory(writer, name, factory);
                 }
             }
@@ -2271,6 +2276,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case LOAD_BALANCING_CLASS_NAME:
                 case USE_GLOBAL_POOLS:
                 case GROUP_ID:
+                case MAX_POOL_SIZE:
+                case MIN_POOL_SIZE:
                     handleElementText(reader, element, connectionFactory);
                     break;
                 case RETRY_INTERVAL:

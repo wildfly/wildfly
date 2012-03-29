@@ -29,6 +29,8 @@ import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
+import static org.jboss.as.messaging.CommonAttributes.MAX_POOL_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.MIN_POOL_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.NONE;
 import static org.jboss.as.messaging.CommonAttributes.NO_TX;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
@@ -105,6 +107,9 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         // TODO we only use a single jndi name here but the xsd indicates support for many
         final String jndiName = model.get(CommonAttributes.ENTRIES.getName()).asList().get(0).asString();
 
+        final int minPoolSize = model.hasDefined(MIN_POOL_SIZE.getName()) ? model.get(MIN_POOL_SIZE.getName()).asInt() : MIN_POOL_SIZE.getDefaultValue().asInt();
+        final int maxPoolSize = model.hasDefined(MAX_POOL_SIZE.getName()) ? model.get(MAX_POOL_SIZE.getName()).asInt() : MAX_POOL_SIZE.getDefaultValue().asInt();
+
         final String txSupport;
         if(model.hasDefined(TRANSACTION)) {
             String txType = model.get(TRANSACTION).asString();
@@ -129,7 +134,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(opAddr));
         ServiceName hornetQResourceAdapterService = JMSServices.getPooledConnectionFactoryBaseServiceName(hqServiceName).append(name);
-        PooledConnectionFactoryService resourceAdapterService = new PooledConnectionFactoryService(name, connectors, discoveryGroupName, adapterParams, jndiName, txSupport);
+        PooledConnectionFactoryService resourceAdapterService = new PooledConnectionFactoryService(name, connectors, discoveryGroupName, adapterParams, jndiName, txSupport, minPoolSize, maxPoolSize);
         ServiceBuilder serviceBuilder = serviceTarget
                 .addService(hornetQResourceAdapterService, resourceAdapterService)
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, resourceAdapterService.getTransactionManager())

@@ -158,14 +158,18 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private InjectedValue<HornetQServer> hornetQService = new InjectedValue<HornetQServer>();
     private String jndiName;
     private String txSupport;
+    private int minPoolSize;
+    private int maxPoolSize;
 
-   public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, List<PooledConnectionFactoryConfigProperties> adapterParams, String jndiName, String txSupport) {
+   public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, List<PooledConnectionFactoryConfigProperties> adapterParams, String jndiName, String txSupport, int minPoolSize, int maxPoolSize) {
         this.name = name;
         this.connectors = connectors;
         this.discoveryGroupName = discoveryGroupName;
         this.adapterParams = adapterParams;
         this.jndiName = jndiName;
         this.txSupport = txSupport;
+        this.minPoolSize = minPoolSize;
+        this.maxPoolSize = maxPoolSize;
     }
 
 
@@ -251,7 +255,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             ResourceAdapter1516 ra = createResourceAdapter15(properties, outbound, inbound);
             Connector15 cmd = createConnector15(ra);
 
-            CommonConnDef common = createConnDef(jndiName);
+            CommonConnDef common = createConnDef(jndiName, minPoolSize, maxPoolSize);
             IronJacamar ijmd = createIron(common, txSupport);
 
             ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, ijmd,
@@ -301,8 +305,10 @@ public class PooledConnectionFactoryService implements Service<Void> {
         return new IronJacamarImpl(transactionSupport, Collections.<String, String>emptyMap(), Collections.<CommonAdminObject>emptyList(), definitions, Collections.<String>emptyList(), null);
     }
 
-    private static CommonConnDef createConnDef(String jndiName) throws ValidateException {
-        CommonPoolImpl pool = new CommonPoolImpl(null, null, false, false, FlushStrategy.FAILING_CONNECTION_ONLY);
+    private static CommonConnDef createConnDef(String jndiName, int minPoolSize, int maxPoolSize) throws ValidateException {
+        Integer minSize = (minPoolSize == -1) ? null : minPoolSize;
+        Integer maxSize = (maxPoolSize == -1) ? null : maxPoolSize;
+        CommonPoolImpl pool = new CommonPoolImpl(minSize, maxSize, false, false, FlushStrategy.FAILING_CONNECTION_ONLY);
         CommonTimeOutImpl timeOut = new CommonTimeOutImpl(null, null, null, null, null);
         CommonSecurityImpl security = null;
         Recovery recovery = new Recovery(new CredentialImpl(null, null, null), null, Boolean.FALSE);
