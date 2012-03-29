@@ -50,6 +50,14 @@ public class ConnectHandler extends CommandHandlerWithHelp {
     }
 
     @Override
+    protected void recognizeArguments(CommandContext ctx) throws CommandFormatException {
+        final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
+        if(parsedCmd.getOtherProperties().size() > 1) {
+            throw new CommandFormatException("The command accepts only one argument but received: " + parsedCmd.getOtherProperties());
+        }
+    }
+
+    @Override
     protected void doHandle(CommandContext ctx) throws CommandLineException {
 
         int port = -1;

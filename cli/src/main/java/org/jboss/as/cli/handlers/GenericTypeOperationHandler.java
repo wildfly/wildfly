@@ -415,6 +415,10 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     public void addArgument(CommandArgument arg) {
     }
 
+    // TODO
+    protected void recognizeArguments(CommandContext ctx) throws CommandFormatException {
+    }
+
     @Override
     public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
         final String operation = this.operation.getValue(ctx.getParsedCommandLine());

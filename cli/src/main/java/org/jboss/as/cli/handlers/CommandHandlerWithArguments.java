@@ -21,15 +21,16 @@
  */
 package org.jboss.as.cli.handlers;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
 
 
@@ -39,15 +40,14 @@ import org.jboss.as.cli.CommandHandler;
  */
 public abstract class CommandHandlerWithArguments implements CommandHandler {
 
-    //private Set<String> argumentNames = Collections.emptySet();
-    //private int maxArgumentIndex = -1;
+    private int maxArgumentIndex = -1;
     private Map<String, CommandArgument> args = Collections.emptyMap();
 
     public void addArgument(CommandArgument arg) {
-/*        if(arg.getIndex() > -1) {
+        if(arg.getIndex() > -1) {
             maxArgumentIndex = arg.getIndex() > maxArgumentIndex ? arg.getIndex() : maxArgumentIndex;
         }
-*/
+
         if(arg.getFullName() == null) {
             throw new IllegalArgumentException("Full name can't be null");
         }
@@ -76,5 +76,18 @@ public abstract class CommandHandlerWithArguments implements CommandHandler {
     @Override
     public Collection<CommandArgument> getArguments(CommandContext ctx) {
         return this.args.values();
+    }
+
+    protected void recognizeArguments(CommandContext ctx) throws CommandFormatException {
+        final Set<String> specifiedNames = ctx.getParsedCommandLine().getPropertyNames();
+        if(!args.keySet().containsAll(specifiedNames)) {
+            Collection<String> unrecognized = new HashSet<String>(specifiedNames);
+            unrecognized.removeAll(args.keySet());
+            throw new CommandFormatException("Unrecognized arguments: " + unrecognized);
+        }
+        if(ctx.getParsedCommandLine().getOtherProperties().size() -1 > this.maxArgumentIndex) {
+            throw new CommandFormatException("The command accepts " + (this.maxArgumentIndex + 1) + " unnamed argument(s) but received: "
+                    + ctx.getParsedCommandLine().getOtherProperties());
+        }
     }
 }
