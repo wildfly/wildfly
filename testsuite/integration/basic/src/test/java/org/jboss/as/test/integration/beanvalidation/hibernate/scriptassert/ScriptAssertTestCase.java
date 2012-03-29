@@ -48,7 +48,7 @@ import java.util.Set;
  *
  * @author Stuart Douglas
  */
-//@Ignore("AS7-2166 - Fails on OpenJDK due to missing JavaScript engine")
+@Ignore("AS7-2166 - Fails on OpenJDK due to missing JavaScript engine")
 @RunWith(Arquillian.class)
 public class ScriptAssertTestCase {
 
