@@ -675,7 +675,7 @@ public class SimpleCMPUnitTestCase extends AbstractCmpTest {
         assertEquals(objectValue, simple.getObjectValue());
     }
 
-    @Ignore
+    //@Ignore
     public void testDuplicateKey() throws Exception {
         try {
             SimpleHome simpleHome = getSimpleHome();

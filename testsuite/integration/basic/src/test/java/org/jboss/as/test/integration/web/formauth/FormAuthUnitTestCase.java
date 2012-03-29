@@ -337,7 +337,7 @@ public class FormAuthUnitTestCase {
      */
     // lbarerreiro: SKIPPED !!! No JMX connection on AS7
     // TODO: Other ways of getting this values !?!?
-    @Ignore
+    //@Ignore
     @Test
     public void testFlushOnSessionInvalidation() throws Exception {
         log.info("+++ testFlushOnSessionInvalidation");
