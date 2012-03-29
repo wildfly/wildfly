@@ -322,6 +322,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
      * Tests rollout plan with RollbackAcrossGroups set to true.
      */
     @Test    
+    @Ignore("AS7-4214")
     public void testRollbackAcrossGroupsRolloutPlan() throws Exception {
         // deploy helper servlets
         cli.sendLine("deploy " + warFile.getAbsolutePath() + " --all-server-groups");
