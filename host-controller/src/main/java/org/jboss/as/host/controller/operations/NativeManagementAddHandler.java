@@ -79,7 +79,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
         populateHostControllerInfo(hostControllerInfo, context, model);
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        ManagementChannelRegistryService.addService(serviceTarget);
+        ManagementChannelRegistryService.addService(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT);
         ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
                 hostControllerInfo.getLocalHostName(), EndpointService.EndpointType.MANAGEMENT, null, null);
 

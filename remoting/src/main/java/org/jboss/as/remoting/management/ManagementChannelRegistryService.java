@@ -46,10 +46,10 @@ public class ManagementChannelRegistryService implements Service<ManagementChann
     public static final ServiceName SERVICE_NAME = RemotingServices.REMOTING_BASE.append("management", "channel", "registry");
     private final ArrayList<Registration> registrations = new ArrayList<Registration>();
 
-    public static void addService(final ServiceTarget serviceTarget) {
+    public static void addService(final ServiceTarget serviceTarget, final ServiceName endpointName) {
         serviceTarget.addService(SERVICE_NAME, new ManagementChannelRegistryService())
                 // Make sure the endpoint service does not close all connections
-                .addDependency(ManagementRemotingServices.MANAGEMENT_ENDPOINT)
+                .addDependency(endpointName)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }

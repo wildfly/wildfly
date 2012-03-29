@@ -89,7 +89,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
         ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT, hostName, EndpointService.EndpointType.MANAGEMENT, verificationHandler, newControllers);
         installNativeManagementConnector(context, model, endpointName, serviceTarget, verificationHandler, newControllers);
 
-        ManagementChannelRegistryService.addService(serviceTarget);
+        ManagementChannelRegistryService.addService(serviceTarget, endpointName);
         ManagementRemotingServices.installManagementChannelServices(serviceTarget,
                 endpointName,
                 new ModelControllerClientOperationHandlerFactoryService(),

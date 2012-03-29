@@ -30,6 +30,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.remoting.RemotingServices;
+import org.jboss.as.remoting.management.ManagementChannelRegistryService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
@@ -65,6 +66,7 @@ public class NativeRemotingManagementAddHandler extends AbstractAddStepHandler {
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final ServiceName endpointName = RemotingServices.SUBSYSTEM_ENDPOINT;
 
+        ManagementChannelRegistryService.addService(serviceTarget, endpointName);
         ManagementRemotingServices.installManagementChannelServices(serviceTarget,
                 endpointName,
                 new ModelControllerClientOperationHandlerFactoryService(),
