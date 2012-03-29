@@ -637,22 +637,31 @@ class CommandContextImpl implements CommandContext {
                         break;
                 }
 
-                if (newClient != null) {
-                    if (this.client != null) {
-                        disconnectController();
-                    }
-
-                    client = newClient;
-                    this.controllerHost = host;
-                    this.controllerPort = port;
-
-                    List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
-                    domainMode = nodeTypes.contains(Util.SERVER_GROUP);
-                }
+                initNewClient(newClient, host, port);
             } catch (UnknownHostException e) {
                 throw new CommandLineException("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
             }
         } while (retry);
+    }
+
+    @Override
+    public void bindClient(ModelControllerClient newClient) {
+        initNewClient(newClient, null, -1);
+    }
+
+    private void initNewClient(ModelControllerClient newClient, String host, int port) {
+        if (newClient != null) {
+            if (this.client != null) {
+                disconnectController();
+            }
+
+            client = newClient;
+            this.controllerHost = host;
+            this.controllerPort = port;
+
+            List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
+            domainMode = nodeTypes.contains(Util.SERVER_GROUP);
+        }
     }
 
     @Override
