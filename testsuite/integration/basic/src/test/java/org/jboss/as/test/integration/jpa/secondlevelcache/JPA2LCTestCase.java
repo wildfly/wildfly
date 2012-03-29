@@ -170,7 +170,6 @@ public class JPA2LCTestCase {
 
  	// Check if evicting entity second level cache is working as expected
 	@Test
-	@Ignore  //FIXME AS7-3541, fixed in Hibernate 4.1.0
  	public void testEvictEntityCache() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
@@ -230,7 +229,6 @@ public class JPA2LCTestCase {
  	
  	// Check if evicting query cache is working as expected
  	@Test
-	@Ignore  //FIXME HHH-7127, fixed in Hibernate 4.1.1
  	public void testEvictQueryCache() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
