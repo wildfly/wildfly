@@ -594,6 +594,7 @@
                                         <goals>
                                             <goal>jjtree</goal>
                                             <goal>javacc</goal>
+                                            <goal>jjtree-javacc</goal>
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
