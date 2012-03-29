@@ -26,6 +26,7 @@ import static org.jboss.as.process.ProcessMessages.MESSAGES;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.AccessController;
 import java.util.ArrayList;
@@ -181,7 +182,9 @@ public final class Main {
         }
 
         final ProtocolServer.Configuration configuration = new ProtocolServer.Configuration();
-        configuration.setBindAddress(new InetSocketAddress(pcSocketConfig.getBindAddress(), pcSocketConfig.getBindPort()));
+        InetAddress pcInetAddress = InetAddress.getByName(pcSocketConfig.getBindAddress());
+        InetSocketAddress pcInetSocketAddress = new InetSocketAddress(pcInetAddress, pcSocketConfig.getBindPort());
+        configuration.setBindAddress(pcInetSocketAddress);
         configuration.setSocketFactory(ServerSocketFactory.getDefault());
         final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("ProcessController-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
         configuration.setThreadFactory(threadFactory);
@@ -204,7 +207,7 @@ public final class Main {
         initialCommand.add("-mp");  // Repeat the module path so HostController's Main sees it
         initialCommand.add(modulePath);
         initialCommand.add(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR);
-        initialCommand.add(boundAddress.getHostName());
+        initialCommand.add(boundAddress.getAddress().getHostAddress());
         initialCommand.add(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT);
         initialCommand.add(Integer.toString(boundAddress.getPort()));
         initialCommand.addAll(smOptions);

@@ -28,6 +28,9 @@ import junit.framework.Assert;
 
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.dmr.ModelNode;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -51,7 +54,7 @@ public class ParsedInterfaceCriteriaTestCase {
         ModelNode op = new ModelNode();
         op.get(Element.LOOPBACK.getLocalName()).set(true);
         op.get(Element.NOT.getLocalName(), Element.LOOPBACK.getLocalName()).set(true);
-        ParsedInterfaceCriteria criteria = ParsedInterfaceCriteria.parse(op);
+        ParsedInterfaceCriteria criteria = ParsedInterfaceCriteria.parse(op, true);
         Assert.assertNotNull(criteria.getFailureMessage());
     }
 
@@ -60,7 +63,7 @@ public class ParsedInterfaceCriteriaTestCase {
         ModelNode op = new ModelNode();
         op.get(Element.LOOPBACK.getLocalName()).set(true);
         op.get(Element.NOT.getLocalName(), Element.INET_ADDRESS.getLocalName()).set("127.0.0.1");
-        ParsedInterfaceCriteria criteria = ParsedInterfaceCriteria.parse(op);
+        ParsedInterfaceCriteria criteria = ParsedInterfaceCriteria.parse(op, true);
         Assert.assertNull(criteria.getFailureMessage());
     }
 

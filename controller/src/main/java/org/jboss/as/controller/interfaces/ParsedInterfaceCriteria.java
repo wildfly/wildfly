@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.interfaces;
 
+
 import static org.jboss.as.controller.ControllerLogger.SERVER_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_ADDRESS;
@@ -36,6 +37,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -51,7 +54,6 @@ import org.jboss.dmr.Property;
  */
 public final class ParsedInterfaceCriteria {
 
-    private static final ParsedInterfaceCriteria EMPTY = new ParsedInterfaceCriteria();
     private static final ParsedInterfaceCriteria ANY = new ParsedInterfaceCriteria(false, false, true);
     private static final ParsedInterfaceCriteria V4 = new ParsedInterfaceCriteria(true, false, false);
     private static final ParsedInterfaceCriteria V6 = new ParsedInterfaceCriteria(false, true, false);
@@ -61,11 +63,6 @@ public final class ParsedInterfaceCriteria {
     private final boolean anyLocalV6;
     private final boolean anyLocal;
     private final Set<InterfaceCriteria> criteria = new HashSet<InterfaceCriteria>();
-
-    private ParsedInterfaceCriteria() {
-        this.failureMessage = null;
-        this.anyLocal = anyLocalV4 = anyLocalV6 = false;
-    }
 
     private ParsedInterfaceCriteria(final String failureMessage) {
         this.failureMessage = failureMessage;
@@ -106,10 +103,14 @@ public final class ParsedInterfaceCriteria {
     }
 
     public static ParsedInterfaceCriteria parse(final ModelNode criteria) {
-        return parse(criteria, true);
+        return parse(criteria, true, null);
     }
 
-    public static ParsedInterfaceCriteria parse(final ModelNode model, boolean specified) {
+    public static ParsedInterfaceCriteria parse(final ModelNode criteria, final boolean specified) {
+        return parse(criteria, specified, null);
+    }
+
+    public static ParsedInterfaceCriteria parse(final ModelNode model, final boolean specified, final OperationContext context) {
         if (model.getType() != ModelType.OBJECT) {
             return new ParsedInterfaceCriteria(MESSAGES.illegalInterfaceCriteria(model.getType(), ModelType.OBJECT));
         }
@@ -130,11 +131,8 @@ public final class ParsedInterfaceCriteria {
                 final List<Property> nodes = subModel.asPropertyList();
                 final Set<InterfaceCriteria> criteriaSet = new HashSet<InterfaceCriteria>();
                 for (final Property property : nodes) {
-                    final InterfaceCriteria criterion = parseCriteria(property, false);
-                    if(criterion == null) {
-                        // Ignore empty criteria
-                        continue;
-                    } else if (criterion instanceof WildcardInetAddressInterfaceCriteria) {
+                    final InterfaceCriteria criterion = parseCriteria(property, false, context);
+                    if (criterion instanceof WildcardInetAddressInterfaceCriteria) {
                         // AS7-1668: stop processing and just return the any binding.
                         if (nodes.size() > 1) {
                             SERVER_LOGGER.wildcardAddressDetected();
@@ -146,7 +144,7 @@ public final class ParsedInterfaceCriteria {
                             default: return ParsedInterfaceCriteria.ANY;
                         }
                     }
-                    else {
+                    else if (criterion != null) {
                         criteriaSet.add(criterion);
                     }
                 }
@@ -154,6 +152,8 @@ public final class ParsedInterfaceCriteria {
                 parsed = validation == null ? new ParsedInterfaceCriteria(criteriaSet) : new ParsedInterfaceCriteria(validation);
             } catch (ParsingException p) {
                 return new ParsedInterfaceCriteria(p.msg);
+            } catch (OperationFailedException e) {
+                return new ParsedInterfaceCriteria(e.getMessage());
             }
         }
         if (specified && parsed.getFailureMessage() == null && ! parsed.isAnyLocal() && ! parsed.isAnyLocalV4()
@@ -163,7 +163,7 @@ public final class ParsedInterfaceCriteria {
         return parsed;
     }
 
-    private static InterfaceCriteria parseCriteria(final Property property, final boolean nested) {
+    private static InterfaceCriteria parseCriteria(final Property property, final boolean nested, final OperationContext context) throws OperationFailedException {
         final Element element = Element.forName(property.getName());
         switch (element) {
             case LINK_LOCAL_ADDRESS:
@@ -183,16 +183,14 @@ public final class ParsedInterfaceCriteria {
             case VIRTUAL:
                 return VirtualInterfaceCriteria.INSTANCE;
             case INET_ADDRESS: {
-                ModelNode value = property.getValue();
-                value = parsePossibleExpression(value);
+                ModelNode value = parsePossibleExpression(property.getValue());
                 checkStringType(value, element.getLocalName(), true);
-                return createInetAddressCriteria(value);
+                return createInetAddressCriteria(value, context);
             }
             case LOOPBACK_ADDRESS: {
-                ModelNode value = property.getValue();
-                value = parsePossibleExpression(value);
+                ModelNode value = parsePossibleExpression(property.getValue());
                 checkStringType(value, element.getLocalName(), true);
-                return new LoopbackAddressInterfaceCriteria(value);
+                return new LoopbackAddressInterfaceCriteria(parseInetAddress(value, context));
             }
             case NIC: {
                 checkStringType(property.getValue(), element.getLocalName());
@@ -210,13 +208,13 @@ public final class ParsedInterfaceCriteria {
                 if(nested) {
                     throw new ParsingException(MESSAGES.nestedElementNotAllowed(element));
                 }
-                return parseNested(property.getValue(), element == Element.ANY);
+                return parseNested(property.getValue(), element == Element.ANY, context);
             default:
                 throw new ParsingException(MESSAGES.unknownCriteriaInterfaceType(property.getName()));
         }
     }
 
-    private static InterfaceCriteria parseNested(final ModelNode subModel, final boolean any) {
+    private static InterfaceCriteria parseNested(final ModelNode subModel, final boolean any, final OperationContext context) throws OperationFailedException {
         if(!subModel.isDefined() || subModel.asInt() == 0) {
             return null;
         }
@@ -231,7 +229,7 @@ public final class ParsedInterfaceCriteria {
                     if (nestedProperty.getValue().getType() == ModelType.LIST) {
                         for (ModelNode item : nestedProperty.getValue().asList()) {
                             Property prop = new Property(nestedProperty.getName(), item);
-                            InterfaceCriteria itemCriteria = parseCriteria(prop, true);
+                            InterfaceCriteria itemCriteria = parseCriteria(prop, true, context);
                             if(itemCriteria != null) {
                                 criteriaSet.add(itemCriteria);
                             }
@@ -240,7 +238,7 @@ public final class ParsedInterfaceCriteria {
                     } // else drop down into default: block
                 }
                 default: {
-                    final InterfaceCriteria criteria = parseCriteria(nestedProperty, true);
+                    final InterfaceCriteria criteria = parseCriteria(nestedProperty, true, context);
                     if(criteria != null) {
                         criteriaSet.add(criteria);
                     }
@@ -253,19 +251,13 @@ public final class ParsedInterfaceCriteria {
         return any ? new AnyInterfaceCriteria(criteriaSet) : new NotInterfaceCriteria(criteriaSet);
     }
 
-    private static InterfaceCriteria createInetAddressCriteria(final ModelNode model) throws ParsingException {
-        try {
-            String rawAddress = model.resolve().asString();
-            InetAddress address = InetAddress.getByName(rawAddress);
-            if (address.isAnyLocalAddress()) {
-                // they've entered a wildcard address
-                return new WildcardInetAddressInterfaceCriteria(address);
-            } else {
-                return new InetAddressMatchInterfaceCriteria(model);
-            }
-        } catch (UnknownHostException e) {
-            throw new ParsingException(MESSAGES.invalidAddress(model.asString(),
-                    e.getLocalizedMessage()));
+    private static InterfaceCriteria createInetAddressCriteria(final ModelNode model, final OperationContext context) throws ParsingException, OperationFailedException {
+        InetAddress address = parseInetAddress(model, context);
+        if (address.isAnyLocalAddress()) {
+            // they've entered a wildcard address
+            return new WildcardInetAddressInterfaceCriteria(address);
+        } else {
+            return new InetAddressMatchInterfaceCriteria(address);
         }
     }
 
@@ -294,12 +286,20 @@ public final class ParsedInterfaceCriteria {
             final byte[] net = addr.getAddress();
             final int mask = Integer.parseInt(split[1]);
             return new SubnetMatchInterfaceCriteria(net, mask);
-        } catch (final ParsingException e) {
-            throw e;
         } catch (final NumberFormatException e) {
             throw new ParsingException(MESSAGES.invalidAddressMask(split[1], e.getLocalizedMessage()));
         } catch (final UnknownHostException e) {
             throw new ParsingException(MESSAGES.invalidAddressValue(split[0], e.getLocalizedMessage()));
+        }
+    }
+
+    private static InetAddress parseInetAddress(final ModelNode model, final OperationContext context) throws OperationFailedException {
+        final String rawAddress = context == null ? model.resolve().asString() : context.resolveExpressions(model).asString();
+        try {
+            return InetAddress.getByName(rawAddress);
+        } catch (UnknownHostException e) {
+            throw new ParsingException(MESSAGES.invalidAddress(model.asString(),
+                    e.getLocalizedMessage()));
         }
     }
 

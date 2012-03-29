@@ -66,7 +66,7 @@ public class SpecifiedInterfaceResolveHandler implements OperationStepHandler, D
             validateAndSet(definition, operation, config);
         }
 
-        ParsedInterfaceCriteria parsed = ParsedInterfaceCriteria.parse(config, true);
+        ParsedInterfaceCriteria parsed = ParsedInterfaceCriteria.parse(config, true, context);
         if (parsed.getFailureMessage() != null) {
             throw new OperationFailedException(new ModelNode().set(parsed.getFailureMessage()));
         }

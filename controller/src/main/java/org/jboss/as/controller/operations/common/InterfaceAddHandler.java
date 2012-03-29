@@ -103,7 +103,7 @@ public class InterfaceAddHandler extends AbstractAddStepHandler implements Descr
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         String name = getInterfaceName(operation);
-        ParsedInterfaceCriteria parsed = getCriteria(operation);
+        ParsedInterfaceCriteria parsed = getCriteria(context, operation);
         if (parsed.getFailureMessage() != null) {
             throw new OperationFailedException(new ModelNode().set(parsed.getFailureMessage()));
         }
@@ -115,8 +115,8 @@ public class InterfaceAddHandler extends AbstractAddStepHandler implements Descr
         return PathAddress.pathAddress(opAddr).getLastElement().getValue();
     }
 
-    protected ParsedInterfaceCriteria getCriteria(ModelNode operation) {
-        return ParsedInterfaceCriteria.parse(operation, specified);
+    protected ParsedInterfaceCriteria getCriteria(OperationContext context, ModelNode operation) {
+        return ParsedInterfaceCriteria.parse(operation, specified, context);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, String name, ParsedInterfaceCriteria criteria) {

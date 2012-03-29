@@ -86,14 +86,14 @@ public class CorbaORBService implements Service<ORB> {
             // set the JacORB IIOP and IIOP/SSL ports from the respective socket bindings.
             if (this.jacORBSocketBindingInjector.getValue() != null) {
                 InetSocketAddress address = this.jacORBSocketBindingInjector.getValue().getSocketAddress();
-                properties.setProperty(JacORBSubsystemConstants.ORB_ADDRESS, address.getHostName());
+                properties.setProperty(JacORBSubsystemConstants.ORB_ADDRESS, address.getAddress().getHostAddress());
                 properties.setProperty(JacORBSubsystemConstants.ORB_PORT, String.valueOf(address.getPort()));
             }
             if (this.jacORBSSLSocketBindingInjector.getValue() != null) {
                 InetSocketAddress address = this.jacORBSSLSocketBindingInjector.getValue().getSocketAddress();
                 properties.setProperty(JacORBSubsystemConstants.ORB_SSL_PORT, String.valueOf(address.getPort()));
                 if (!properties.containsKey(JacORBSubsystemConstants.ORB_ADDRESS)) {
-                    properties.setProperty(JacORBSubsystemConstants.ORB_ADDRESS, address.getHostName());
+                    properties.setProperty(JacORBSubsystemConstants.ORB_ADDRESS, address.getAddress().getHostAddress());
                 }
             }
 

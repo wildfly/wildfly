@@ -41,7 +41,21 @@ public class LoopbackAddressInterfaceCriteria implements InterfaceCriteria {
     private ModelNode address;
     private InetAddress resolved;
     private boolean unknownHostLogged;
-    private boolean anyLocalLogged;
+
+    /**
+     * Creates a new LoopbackAddressInterfaceCriteria
+     *
+     * @param address a valid value to pass to {@link InetAddress#getByName(String)}
+     *                Cannot be {@code null}
+     *
+     * @throws IllegalArgumentException if <code>network</code> is <code>null</code>
+     */
+    public LoopbackAddressInterfaceCriteria(final InetAddress address) {
+        if (address == null)
+            throw MESSAGES.nullVar("address");
+        this.resolved = address;
+        this.address = new ModelNode(resolved.getHostAddress());
+    }
 
     /**
      * Creates a new LoopbackAddressInterfaceCriteria

@@ -2428,4 +2428,5 @@ public interface ControllerMessages {
 
     @Message(id = 14844, value = "Can't have same criteria for both not and inclusion %s")
     String cantHaveSameCriteriaForBothNotAndInclusion(InterfaceCriteria interfaceCriteria);
+
 }
