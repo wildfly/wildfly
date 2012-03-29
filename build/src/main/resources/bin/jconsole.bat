@@ -79,10 +79,11 @@ call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\as\protocol\main
 call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\dmr\main
 call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\as\controller-client\main
 call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\threads\main
+call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\as\controller\main
 
 echo %CLASSPATH%
-
-"%JAVA_HOME%\bin\jconsole.exe" -J"-Djava.class.path=%CLASSPATH%"
+echo on
+"%JAVA_HOME%\bin\jconsole.exe" -J"-Djava.class.path=%CLASSPATH%" %*
 
 :END
 goto :EOF

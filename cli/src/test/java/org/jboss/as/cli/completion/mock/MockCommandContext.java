@@ -189,6 +189,12 @@ public class MockCommandContext implements CommandContext {
     }
 
     @Override
+    public void bindClient(ModelControllerClient newClient) {
+        throw new UnsupportedOperationException();
+    }
+
+
+    @Override
     public void disconnectController() {
         throw new UnsupportedOperationException();
     }
