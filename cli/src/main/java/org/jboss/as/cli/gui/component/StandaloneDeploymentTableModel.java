@@ -24,7 +24,7 @@ import java.util.List;
 import javax.swing.ButtonGroup;
 import javax.swing.JRadioButton;
 import javax.swing.table.AbstractTableModel;
-import org.jboss.as.cli.gui.GuiMain;
+import org.jboss.as.cli.gui.CliGuiContext;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -39,7 +39,7 @@ public class StandaloneDeploymentTableModel extends AbstractTableModel {
     protected String[] colNames = new String[] {"Name", "Runtime Name", "Enabled"};
     protected List<Object[]> data = new ArrayList<Object[]>();
 
-    public StandaloneDeploymentTableModel() {
+    public StandaloneDeploymentTableModel(CliGuiContext cliGuiCtx) {
         // for testing the table with lots of deployments
   /*    for (int i=0; i < 100; i++) {
           Object[] obj = new Object[3];
@@ -51,15 +51,15 @@ public class StandaloneDeploymentTableModel extends AbstractTableModel {
           data.add(obj);
       } */
 
-      setDeployments();
+      setDeployments(cliGuiCtx);
     }
 
-    private void setDeployments() {
+    private void setDeployments(CliGuiContext cliGuiCtx) {
         ModelNode deploymentsQuery = null;
         String queryString = "/deployment=*/:read-resource";
 
         try {
-            deploymentsQuery = GuiMain.getExecutor().doCommand(queryString);
+            deploymentsQuery = cliGuiCtx.getExecutor().doCommand(queryString);
             if (deploymentsQuery.get("outcome").asString().equals("failed")) return;
         } catch (Exception e) {
             e.printStackTrace();

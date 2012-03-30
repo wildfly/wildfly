@@ -55,12 +55,14 @@ import org.jboss.dmr.Property;
  */
 public class OperationDialog extends JDialog {
 
+    private CliGuiContext cliGuiCtx;
     private ManagementModelNode node;
     private String opName;
     private SortedSet<RequestProp> props;
 
-    public OperationDialog(ManagementModelNode node, String opName, String strDescription, ModelNode requestProperties) {
-        super(GuiMain.getMainWindow(), opName, Dialog.ModalityType.APPLICATION_MODAL);
+    public OperationDialog(CliGuiContext cliGuiCtx, ManagementModelNode node, String opName, String strDescription, ModelNode requestProperties) {
+        super(cliGuiCtx.getMainWindow(), opName, Dialog.ModalityType.APPLICATION_MODAL);
+        this.cliGuiCtx = cliGuiCtx;
         this.node = node;
         this.opName = opName;
 
@@ -117,7 +119,7 @@ public class OperationDialog extends JDialog {
             nameNodeValue.set(usrObj.getName());
             props.add(new RequestProp("name", requestProperties.get("name"), nameNodeValue));
 
-            ModelNode rscDesc = GuiMain.getExecutor().doCommand(node.addressPath() + ":read-resource-description");
+            ModelNode rscDesc = cliGuiCtx.getExecutor().doCommand(node.addressPath() + ":read-resource-description");
             ModelNode valueNode = rscDesc.get("result", "attributes", usrObj.getName());
             valueNode.get("required").set(false); // value is never required for write-attribute
             ModelNode valueNodeValue = usrObj.getBackingNode().get(usrObj.getName());
@@ -199,7 +201,7 @@ public class OperationDialog extends JDialog {
             command.append(OperationDialog.this.opName);
             addRequestProps(command, OperationDialog.this.props);
 
-            JTextComponent cmdText = GuiMain.getCommandLine().getCmdText();
+            JTextComponent cmdText = cliGuiCtx.getCommandLine().getCmdText();
             cmdText.setText(command.toString());
             OperationDialog.this.dispose();
             cmdText.requestFocus();

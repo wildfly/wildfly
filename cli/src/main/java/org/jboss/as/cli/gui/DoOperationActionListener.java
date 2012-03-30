@@ -40,24 +40,24 @@ import javax.swing.text.StyleConstants;
  */
 public class DoOperationActionListener extends AbstractAction {
 
-    private CommandExecutor executor;
+    private CliGuiContext cliGuiCtx;
 
     private JTextComponent output;
     private JTabbedPane tabs;
 
     private LinkedList<String> cmdHistory = new LinkedList<String>();
 
-    public DoOperationActionListener(JTextComponent output, JTabbedPane tabs) {
-        this.executor = GuiMain.getExecutor();
+    public DoOperationActionListener(CliGuiContext cliGuiCtx, JTextComponent output, JTabbedPane tabs) {
+        this.cliGuiCtx = cliGuiCtx;
         this.output = output;
         this.tabs = tabs;
     }
 
     public void actionPerformed(ActionEvent ae) {
-        String command = GuiMain.getCommandLine().getCmdText().getText();
+        String command = cliGuiCtx.getCommandLine().getCmdText().getText();
         try {
             cmdHistory.push(command);
-            CommandExecutor.Response response = executor.doCommandFullResponse(command);
+            CommandExecutor.Response response = cliGuiCtx.getExecutor().doCommandFullResponse(command);
             postOutput(response);
         } catch (Exception e) {
             try {
@@ -75,7 +75,7 @@ public class DoOperationActionListener extends AbstractAction {
     }
 
     private void postOutput(CommandExecutor.Response response) throws BadLocationException {
-        boolean verbose = GuiMain.getCommandLine().isVerbose();
+        boolean verbose = cliGuiCtx.getCommandLine().isVerbose();
         if (verbose) {
             postVerboseOutput(response);
         } else {
