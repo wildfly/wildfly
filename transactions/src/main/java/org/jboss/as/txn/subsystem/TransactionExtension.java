@@ -91,22 +91,23 @@ public class TransactionExtension implements Extension {
         logStoreChild.registerOperationHandler(ModelDescriptionConstants.REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, LogStoreProviders.REMOVE_LOG_STORE_MODEL_CHILD);
         logStoreChild.registerOperationHandler(LogStoreConstants.PROBE, LogStoreProbeHandler.INSTANCE, LogStoreProviders.PROBE_OPERATION);
 
-        PathElement transactionPath = PathElement.pathElement(LogStoreConstants.TRANSACTIONS);
-        ManagementResourceRegistration transactionChild = logStoreChild.registerSubModel(transactionPath, LogStoreProviders.TRANSACTION_CHILD);
-        transactionChild.registerOperationHandler(LogStoreConstants.DELETE, new LogStoreTransactionDeleteHandler(resource), LogStoreProviders.DELETE_OPERATION);
+        if (context.isRuntimeOnlyRegistrationValid()) {
+            PathElement transactionPath = PathElement.pathElement(LogStoreConstants.TRANSACTIONS);
+            ManagementResourceRegistration transactionChild = logStoreChild.registerSubModel(transactionPath, LogStoreProviders.TRANSACTION_CHILD);
+            transactionChild.registerOperationHandler(LogStoreConstants.DELETE, new LogStoreTransactionDeleteHandler(resource), LogStoreProviders.DELETE_OPERATION);
 
-        PathElement partecipantPath = PathElement.pathElement(LogStoreConstants.PARTICIPANTS);
-        ManagementResourceRegistration partecipantChild = transactionChild.registerSubModel(partecipantPath, LogStoreProviders.PARTECIPANT_CHILD);
+            PathElement partecipantPath = PathElement.pathElement(LogStoreConstants.PARTICIPANTS);
+            ManagementResourceRegistration partecipantChild = transactionChild.registerSubModel(partecipantPath, LogStoreProviders.PARTECIPANT_CHILD);
 
-        for (final SimpleAttributeDefinition attribute : LogStoreProviders.PARTECIPANT_RW_ATTRIBUTE) {
-            partecipantChild.registerReadWriteAttribute(attribute, null, new ParticipantWriteAttributeHandler(attribute));
+            for (final SimpleAttributeDefinition attribute : LogStoreProviders.PARTECIPANT_RW_ATTRIBUTE) {
+                partecipantChild.registerReadWriteAttribute(attribute, null, new ParticipantWriteAttributeHandler(attribute));
+            }
+
+            final LogStoreParticipantRefreshHandler refreshHandler = LogStoreParticipantRefreshHandler.INSTANCE;
+
+            partecipantChild.registerOperationHandler(LogStoreConstants.REFRESH, refreshHandler, LogStoreProviders.REFRESH_OPERATION);
+            partecipantChild.registerOperationHandler(LogStoreConstants.RECOVER, new LogStoreParticipantRecoveryHandler(refreshHandler), LogStoreProviders.RECOVER_OPERATION);
         }
-
-        final LogStoreParticipantRefreshHandler refreshHandler = LogStoreParticipantRefreshHandler.INSTANCE;
-
-        partecipantChild.registerOperationHandler(LogStoreConstants.REFRESH, refreshHandler, LogStoreProviders.REFRESH_OPERATION);
-        partecipantChild.registerOperationHandler(LogStoreConstants.RECOVER, new LogStoreParticipantRecoveryHandler(refreshHandler), LogStoreProviders.RECOVER_OPERATION);
-
         subsystem.registerXMLElementWriter(TransactionSubsystem12Parser.INSTANCE);
     }
 
