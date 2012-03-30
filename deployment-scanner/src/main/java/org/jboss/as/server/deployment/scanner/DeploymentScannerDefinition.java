@@ -79,7 +79,7 @@ public class DeploymentScannerDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(CommonAttributes.DEPLOYMENT_TIMEOUT, ModelType.LONG, true)
                     .setXmlName(Attribute.DEPLOYMENT_TIMEOUT.getLocalName())
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode().set(60))
+                    .setDefaultValue(new ModelNode().set(600))
                     .build();
     protected static final SimpleAttributeDefinition[] ALL_ATTRIBUTES = {PATH,RELATIVE_TO,SCAN_ENABLED,SCAN_INTERVAL,AUTO_DEPLOY_EXPLODED,AUTO_DEPLOY_XML,AUTO_DEPLOY_ZIPPED,DEPLOYMENT_TIMEOUT};
 
