@@ -37,6 +37,7 @@ import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -63,7 +64,6 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
     }
 
     interface Dependencies {
-        ClassLoader getClassLoader();
         ModuleLoader getModuleLoader();
         TransportConfiguration getTransportConfiguration();
         MBeanServer getMBeanServer();
@@ -105,12 +105,12 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
 
     @Override
     public void start(StartContext context) throws StartException {
-
-        GlobalConfigurationBuilder builder = new GlobalConfigurationBuilder();
-        ClassLoader loader = this.dependencies.getClassLoader();
-        if (loader == null) {
-            loader = EmbeddedCacheManagerConfiguration.class.getClassLoader();
+        ClassLoader loader = EmbeddedCacheManagerConfiguration.class.getClassLoader();
+        ServiceController<?> classLoaderService = context.getController().getServiceContainer().getService(getClassLoaderServiceName(this.name));
+        if (classLoaderService != null) {
+            loader = (ClassLoader) classLoaderService.getValue();
         }
+        GlobalConfigurationBuilder builder = new GlobalConfigurationBuilder();
         builder.classLoader(loader);
         builder.serialization().classResolver(ModularClassResolver.getInstance(this.dependencies.getModuleLoader()));
         builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);

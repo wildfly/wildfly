@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.infinispan.config.FluentGlobalConfiguration;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
@@ -41,7 +40,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jmx.MBeanServerService;
@@ -57,7 +55,6 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -239,14 +236,12 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
                                                                             ServiceVerificationHandler verificationHandler) {
 
         ServiceName configServiceName = EmbeddedCacheManagerConfigurationService.getServiceName(containerName);
-        ServiceName classLoaderServiceName = EmbeddedCacheManagerConfigurationService.getClassLoaderServiceName(containerName);
 
         EmbeddedCacheManagerDependencies dependencies = new EmbeddedCacheManagerDependencies(transportConfig);
 
         ServiceBuilder<EmbeddedCacheManagerConfiguration> configBuilder = target.addService(configServiceName, new EmbeddedCacheManagerConfigurationService(containerName, defaultCache, dependencies))
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, dependencies.getModuleLoaderInjector())
                 .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, dependencies.getMBeanServerInjector())
-                .addDependency(DependencyType.OPTIONAL, classLoaderServiceName, ClassLoader.class, dependencies.getClassLoaderInjector())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
 
@@ -294,7 +289,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
 
         BinderService binder = new BinderService(bindInfo.getBindName());
-        @SuppressWarnings("rawtypes")
         ServiceBuilder<ManagedReferenceFactory> binderBuilder = target.addService(bindInfo.getBinderServiceName(), binder)
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
                 .addDependency(containerServiceName, CacheContainer.class, new ManagedReferenceInjector<CacheContainer>(binder.getManagedObjectInjector()))
@@ -321,7 +315,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         private final InjectedValue<Executor> listenerExecutor = new InjectedValue<Executor>();
         private final InjectedValue<ScheduledExecutorService> evictionExecutor = new InjectedValue<ScheduledExecutorService>();
         private final InjectedValue<ScheduledExecutorService> replicationQueueExecutor = new InjectedValue<ScheduledExecutorService>();
-        private final InjectedValue<ClassLoader> loader = new InjectedValue<ClassLoader>();
         private final EmbeddedCacheManagerConfigurationService.TransportConfiguration transport;
         private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
 
@@ -343,10 +336,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         Injector<ScheduledExecutorService> getReplicationQueueExecutorInjector() {
             return this.replicationQueueExecutor;
-        }
-
-        Injector<ClassLoader> getClassLoaderInjector() {
-            return this.loader;
         }
 
         Injector<ModuleLoader> getModuleLoaderInjector() {
@@ -376,11 +365,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         @Override
         public ScheduledExecutorService getReplicationQueueExecutor() {
             return this.replicationQueueExecutor.getOptionalValue();
-        }
-
-        @Override
-        public ClassLoader getClassLoader() {
-            return this.loader.getOptionalValue();
         }
 
         @Override

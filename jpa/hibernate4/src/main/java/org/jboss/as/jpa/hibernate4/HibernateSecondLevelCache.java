@@ -22,21 +22,20 @@
 
 package org.jboss.as.jpa.hibernate4;
 
+import java.util.Properties;
+
 import org.hibernate.cfg.AvailableSettings;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerConfigurationService;
 import org.jboss.as.jpa.hibernate4.infinispan.InfinispanRegionFactory;
 import org.jboss.as.jpa.hibernate4.infinispan.SharedInfinispanRegionFactory;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
-
-import java.util.Properties;
 
 /**
  * Second level cache setup.
@@ -69,7 +68,13 @@ public class HibernateSecondLevelCache {
             ServiceName classLoaderServiceName = EmbeddedCacheManagerConfigurationService.getClassLoaderServiceName(container);
             synchronized (HibernateSecondLevelCache.class) {
                 if (registry.getService(classLoaderServiceName) == null) {
-                    target.addService(classLoaderServiceName, new ValueService<ClassLoader>(new ImmediateValue<ClassLoader>(SharedInfinispanRegionFactory.class.getClassLoader()))).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+                    Service<ClassLoader> classLoaderService = new AbstractService<ClassLoader>() {
+                        @Override
+                        public ClassLoader getValue() throws IllegalStateException {
+                            return SharedInfinispanRegionFactory.class.getClassLoader();
+                        }
+                    };
+                    target.addService(classLoaderServiceName, classLoaderService).install();
                 }
             }
             String entity = properties.getProperty(InfinispanRegionFactory.ENTITY_CACHE_RESOURCE_PROP, InfinispanRegionFactory.DEF_ENTITY_RESOURCE);
