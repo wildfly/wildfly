@@ -26,6 +26,9 @@ package org.jboss.as.domain.management.security.state;
 import org.jboss.as.domain.management.security.AddPropertiesUser;
 import org.jboss.as.domain.management.security.AssertConsoleBuilder;
 import org.junit.Test;
+
+import java.io.IOException;
+
 import static org.junit.Assert.assertTrue;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
@@ -37,7 +40,7 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 public class DuplicateUserCheckStateTestCase extends PropertyTestHelper {
     
     @Test
-    public void newUser() {
+    public void newUser() throws IOException {
         values.setExistingUser(false);
         values.setRoles(ROLES);
         DuplicateUserCheckState userCheckState = new DuplicateUserCheckState(consoleMock, values);
@@ -48,9 +51,9 @@ public class DuplicateUserCheckStateTestCase extends PropertyTestHelper {
                 expectedDisplayText(MESSAGES.isCorrectPrompt()).
                 expectedDisplayText(" ").
                 expectedInput("yes").
-                expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getPropertiesFiles().get(0).getAbsolutePath())).
+                expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getPropertiesFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddPropertiesUser.NEW_LINE).
-                expectedDisplayText(MESSAGES.addedRoles(values.getUserName(), values.getRoles(),values.getRoleFiles().get(0).getAbsolutePath())).
+                expectedDisplayText(MESSAGES.addedRoles(values.getUserName(), values.getRoles(),values.getRoleFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddPropertiesUser.NEW_LINE);
         consoleMock.setResponses(consoleBuilder);
 
@@ -63,15 +66,15 @@ public class DuplicateUserCheckStateTestCase extends PropertyTestHelper {
     }
 
     @Test
-    public void existingUSer() {
+    public void existingUSer() throws IOException {
         values.setExistingUser(true);
         values.setRoles(ROLES);
         DuplicateUserCheckState userCheckState = new DuplicateUserCheckState(consoleMock, values);
 
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
-                expectedDisplayText(MESSAGES.updateUser(values.getUserName(), values.getPropertiesFiles().get(0).getAbsolutePath())).
+                expectedDisplayText(MESSAGES.updateUser(values.getUserName(), values.getPropertiesFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddPropertiesUser.NEW_LINE).
-                expectedDisplayText(MESSAGES.updatedRoles(values.getUserName(), values.getRoles(), values.getRoleFiles().get(0).getAbsolutePath())).
+                expectedDisplayText(MESSAGES.updatedRoles(values.getUserName(), values.getRoles(), values.getRoleFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddPropertiesUser.NEW_LINE);
         consoleMock.setResponses(consoleBuilder);
 
