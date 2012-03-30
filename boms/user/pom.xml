@@ -34,7 +34,7 @@
         <version.org.jboss.arquillian>1.0.0.CR7</version.org.jboss.arquillian>
         <version.org.jboss.arquillian.extension.drone>1.0.0.CR3</version.org.jboss.arquillian.extension.drone>
         <version.org.jboss.arquillian.ajocado>1.0.0.CR2</version.org.jboss.arquillian.ajocado>
-        <version.org.jboss.as.arquillian.container>7.1.0.Final</version.org.jboss.as.arquillian.container>
+        <version.org.jboss.as.arquillian.container>7.1.1.Final</version.org.jboss.as.arquillian.container>
         <version.org.jboss.jbossts.jbossjts>4.16.1.Final</version.org.jboss.jbossts.jbossjts>
         <version.org.jboss.errai>2.0.Beta3</version.org.jboss.errai>
 
