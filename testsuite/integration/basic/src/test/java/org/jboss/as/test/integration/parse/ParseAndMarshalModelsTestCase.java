@@ -481,7 +481,7 @@ public class ParseAndMarshalModelsTestCase {
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
         final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), null, extensionRegistry);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
-        for (Namespace namespace : Namespace.values()) {
+        for (Namespace namespace : Namespace.domainValues()) {
             if (namespace != Namespace.CURRENT) {
                 persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "server"), parser);
             }
@@ -512,7 +512,7 @@ public class ParseAndMarshalModelsTestCase {
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "host");
         final HostXml parser = new HostXml("host-controller");
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
-        for (Namespace namespace : Namespace.values()) {
+        for (Namespace namespace : Namespace.domainValues()) {
             if (namespace != Namespace.CURRENT) {
                 persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "host"), parser);
             }
@@ -633,7 +633,7 @@ public class ParseAndMarshalModelsTestCase {
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "domain");
         final DomainXml parser = new DomainXml(Module.getBootModuleLoader(), null, extensionRegistry);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
-        for (Namespace namespace : Namespace.values()) {
+        for (Namespace namespace : Namespace.domainValues()) {
             if (namespace != Namespace.CURRENT) {
                 persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "domain"), parser);
             }

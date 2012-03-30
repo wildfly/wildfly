@@ -166,7 +166,7 @@ public interface Bootstrap {
                             QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
                             StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
                             BackupXmlConfigurationPersister persister = new BackupXmlConfigurationPersister(serverEnvironment.getServerConfigurationFile(), rootElement, parser, parser);
-                            for (Namespace namespace : Namespace.values()) {
+                            for (Namespace namespace : Namespace.domainValues()) {
                                 if (!namespace.equals(Namespace.CURRENT)) {
                                     persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "server"), parser);
                                 }

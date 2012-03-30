@@ -123,7 +123,8 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                 break;
             }
             case DOMAIN_1_1:
-            case DOMAIN_1_2: {
+            case DOMAIN_1_2:
+            case DOMAIN_1_3:{
                 readServerElement_1_1(readerNS, reader, address, operationList);
                 break;
             }

@@ -60,7 +60,7 @@ public class ConfigurationPersisterFactory {
     public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final ConfigurationFile file, String defaultHostControllerName) {
         HostXml hostXml = new HostXml(defaultHostControllerName);
         BackupXmlConfigurationPersister persister =  new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
-        for (Namespace namespace : Namespace.values()) {
+        for (Namespace namespace : Namespace.domainValues()) {
             if (!namespace.equals(Namespace.CURRENT)) {
                 persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "host"), hostXml);
             }
@@ -72,7 +72,7 @@ public class ConfigurationPersisterFactory {
     public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final ConfigurationFile file, ExecutorService executorService, ExtensionRegistry extensionRegistry) {
         DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
         BackupXmlConfigurationPersister persister = new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
-        for (Namespace namespace : Namespace.values()) {
+        for (Namespace namespace : Namespace.domainValues()) {
             if (!namespace.equals(Namespace.CURRENT)) {
                 persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "domain"), domainXml);
             }
@@ -86,7 +86,7 @@ public class ConfigurationPersisterFactory {
         DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
         File file = new File(configDir, CACHED_DOMAIN_XML);
         BackupRemoteDomainXmlPersister persister = new BackupRemoteDomainXmlPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
-        for (Namespace namespace : Namespace.values()) {
+        for (Namespace namespace : Namespace.domainValues()) {
             if (!namespace.equals(Namespace.CURRENT)) {
                 persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "domain"), domainXml);
             }
@@ -100,7 +100,7 @@ public class ConfigurationPersisterFactory {
         DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
         File file = new File(configDir, CACHED_DOMAIN_XML);
         CachedRemoteDomainXmlPersister persister = new CachedRemoteDomainXmlPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
-        for (Namespace namespace : Namespace.values()) {
+        for (Namespace namespace : Namespace.domainValues()) {
             if (!namespace.equals(Namespace.CURRENT)) {
                 persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "domain"), domainXml);
             }

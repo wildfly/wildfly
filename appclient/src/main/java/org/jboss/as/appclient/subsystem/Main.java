@@ -131,7 +131,7 @@ public final class Main {
                     public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
                         ApplicationClientConfigurationPersister persister = new ApplicationClientConfigurationPersister(earPath, deploymentName, options.hostUrl,options.propertiesFile, params,
                                 serverEnvironment.getServerConfigurationFile().getBootFile(), rootElement, parser);
-                        for (Namespace namespace : Namespace.values()) {
+                        for (Namespace namespace : Namespace.domainValues()) {
                             if (!namespace.equals(Namespace.CURRENT)) {
                                 persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "server"), parser);
                             }

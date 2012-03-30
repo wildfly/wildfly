@@ -155,7 +155,7 @@ public class EmbeddedStandAloneServerFactory {
                             final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
                             final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
                             TransientConfigurationPersister persister = new TransientConfigurationPersister(serverEnvironment.getServerConfigurationFile(), rootElement, parser, parser);
-                            for (Namespace namespace : Namespace.values()) {
+                            for (Namespace namespace : Namespace.domainValues()) {
                                 if (!namespace.equals(Namespace.CURRENT)) {
                                     persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "server"), parser);
                                 }

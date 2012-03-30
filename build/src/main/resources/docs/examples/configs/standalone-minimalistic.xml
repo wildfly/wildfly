@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<server xmlns="urn:jboss:domain:1.2">
+<server xmlns="urn:jboss:domain:1.3">
     <management>
         <security-realms>
             <security-realm name="ManagementRealm">

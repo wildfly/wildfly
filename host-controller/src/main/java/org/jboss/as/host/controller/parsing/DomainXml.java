@@ -118,7 +118,8 @@ public class DomainXml extends CommonXml {
                 break;
             }
             case DOMAIN_1_1:
-            case DOMAIN_1_2: {
+            case DOMAIN_1_2:
+            case DOMAIN_1_3:{
                 readDomainElement1_1(reader, new ModelNode(), readerNS, nodes);
                 break;
             }
@@ -622,7 +623,8 @@ public class DomainXml extends CommonXml {
                     }
                     case DOMAIN_1_0:
                     case DOMAIN_1_1:
-                    case DOMAIN_1_2: {
+                    case DOMAIN_1_2:
+                    case DOMAIN_1_3:{
                         requireNamespace(reader, expectedNs);
                         // include should come first
                         if (configuredSubsystemTypes.size() > 0) {
