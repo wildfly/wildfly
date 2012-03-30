@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>All resources</web-resource-name>
+            <url-pattern>/*</url-pattern>
+            <url-pattern>/*</url-pattern>
+            <http-method>POST</http-method>  <!-- GET is used to receive POJOAuthService?wsdl -->
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>Role1</role-name>
+            <role-name>Role2</role-name>
+        </auth-constraint>
+    </security-constraint>
+ 
+    <security-role>
+        <role-name>Role1</role-name>
+    </security-role>
+    <security-role>
+        <role-name>Role2</role-name>
+    </security-role>
+    <security-role>
+        <role-name>Role3</role-name>
+    </security-role>
+
+    <login-config>
+        <auth-method>BASIC</auth-method>
+        <realm-name>Pojo Auth Test Realm</realm-name>
+    </login-config>
+  
+</web-app>
+
