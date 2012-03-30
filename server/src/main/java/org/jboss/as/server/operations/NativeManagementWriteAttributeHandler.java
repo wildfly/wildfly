@@ -22,13 +22,11 @@
 
 package org.jboss.as.server.operations;
 
-import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.remoting.management.ManagementRemotingServices;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
@@ -37,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public class NativeManagementWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
+public class NativeManagementWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
 
     public static OperationStepHandler INSTANCE = new NativeManagementWriteAttributeHandler();
 
@@ -67,42 +65,5 @@ public class NativeManagementWriteAttributeHandler extends AbstractWriteAttribut
 
         super.execute(context, operation);
     }
-
-    @Override
-    protected boolean requiresRuntime(OperationContext context) {
-        return !context.isBooting();
-    }
-
-    @Override
-    protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
-                                           final String attributeName, final ModelNode resolvedValue,
-                                           final ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
-
-        final ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-        context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
-        installNativeManagementService(context, subModel, verificationHandler);
-        return false;
-    }
-
-
-    @Override
-    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
-        final ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
-        subModel.get(attributeName).set(valueToRestore);
-        installNativeManagementService(context, subModel, null);
-    }
-
-    private void installNativeManagementService(final OperationContext context, final ModelNode subModel, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-
-        // Remove the old connector
-        final ModelNode socketBinding = NativeManagementResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, subModel);
-        if(socketBinding == null || !socketBinding.isDefined()) {
-            final ModelNode portNode = NativeManagementResourceDefinition.NATIVE_PORT.resolveModelAttribute(context, subModel);
-        }
-        ManagementRemotingServices.removeConnectorServices(context, ManagementRemotingServices.MANAGEMENT_CONNECTOR);
-        NativeManagementAddHandler.installNativeManagementConnector(context, subModel, ManagementRemotingServices.MANAGEMENT_ENDPOINT, context.getServiceTarget(), verificationHandler, null);
-    }
-
 
 }
