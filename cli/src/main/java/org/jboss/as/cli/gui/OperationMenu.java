@@ -40,11 +40,13 @@ public class OperationMenu extends JPopupMenu {
     private static final String[] leafOps = {"write-attribute", "undefine-attribute"};
     private static final List<String> leafOpList = Arrays.asList(leafOps);
 
+    private CliGuiContext cliGuiCtx;
     private CommandExecutor executor;
     private JTree invoker;
 
-    public OperationMenu(CommandExecutor executor, JTree invoker) {
-        this.executor = executor;
+    public OperationMenu(CliGuiContext cliGuiCtx, JTree invoker) {
+        this.cliGuiCtx = cliGuiCtx;
+        this.executor = cliGuiCtx.getExecutor();
         this.invoker = invoker;
         setLightWeightPopupEnabled(true);
         setOpaque(true);
@@ -115,7 +117,7 @@ public class OperationMenu extends JPopupMenu {
         }
 
         public void actionPerformed(ActionEvent ae) {
-            JTextComponent cmdText = GuiMain.getCommandLine().getCmdText();
+            JTextComponent cmdText = cliGuiCtx.getCommandLine().getCmdText();
             ModelNode requestProperties = opDescription.get("result", "request-properties");
             if ((requestProperties == null) || (!requestProperties.isDefined()) || requestProperties.asList().isEmpty()) {
                 cmdText.setText(addressPath + ":" + opName);
@@ -130,8 +132,8 @@ public class OperationMenu extends JPopupMenu {
                 return;
             }
 
-            OperationDialog dialog = new OperationDialog(node, opName, strDescription, requestProperties);
-            dialog.setLocationRelativeTo(GuiMain.getMainWindow());
+            OperationDialog dialog = new OperationDialog(cliGuiCtx, node, opName, strDescription, requestProperties);
+            dialog.setLocationRelativeTo(cliGuiCtx.getMainWindow());
             dialog.setVisible(true);
         }
 

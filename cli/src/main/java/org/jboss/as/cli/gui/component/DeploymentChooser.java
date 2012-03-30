@@ -20,6 +20,7 @@ package org.jboss.as.cli.gui.component;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import org.jboss.as.cli.gui.CliGuiContext;
 
 /**
  * This component produces a JPanel containing a sortable table that allows choosing
@@ -31,11 +32,11 @@ public class DeploymentChooser extends JPanel {
 
     private StandaloneDeploymentTableModel model;
 
-    public DeploymentChooser(boolean isStandalone) {
+    public DeploymentChooser(CliGuiContext cliGuiCtx, boolean isStandalone) {
         if (isStandalone) {
-            model = new StandaloneDeploymentTableModel();
+            model = new StandaloneDeploymentTableModel(cliGuiCtx);
         } else {
-            model = new DomainDeploymentTableModel();
+            model = new DomainDeploymentTableModel(cliGuiCtx);
         }
 
         DeploymentTable table = new DeploymentTable(model, isStandalone);

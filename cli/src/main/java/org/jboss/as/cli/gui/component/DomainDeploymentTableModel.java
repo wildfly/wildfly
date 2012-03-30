@@ -21,7 +21,7 @@ package org.jboss.as.cli.gui.component;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JRadioButton;
-import org.jboss.as.cli.gui.GuiMain;
+import org.jboss.as.cli.gui.CliGuiContext;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -31,8 +31,11 @@ import org.jboss.dmr.ModelNode;
  */
 public class DomainDeploymentTableModel extends StandaloneDeploymentTableModel {
 
-    public DomainDeploymentTableModel() {
-        super();
+    private CliGuiContext cliGuiCtx;
+
+    public DomainDeploymentTableModel(CliGuiContext cliGuiCtx) {
+        super(cliGuiCtx);
+        this.cliGuiCtx = cliGuiCtx;
         colNames = new String[] {"Name", "Runtime Name", "Assigned Server Groups"};
         initializeServerGroups();
         setServerGroups();
@@ -49,7 +52,7 @@ public class DomainDeploymentTableModel extends StandaloneDeploymentTableModel {
         String queryString = "/server-group=*/deployment=*/:read-resource";
 
         try {
-            deploymentsQuery = GuiMain.getExecutor().doCommand(queryString);
+            deploymentsQuery = cliGuiCtx.getExecutor().doCommand(queryString);
             if (deploymentsQuery.get("outcome").asString().equals("failed")) return;
         } catch (Exception e) {
             e.printStackTrace();

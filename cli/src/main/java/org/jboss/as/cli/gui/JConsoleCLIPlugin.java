@@ -23,7 +23,6 @@ import com.sun.tools.jconsole.JConsolePlugin;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,6 +61,7 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
     // Global count of created pools
     private static final AtomicInteger executorCount = new AtomicInteger();
 
+    CliGuiContext cliGuiCtx;
     private JPanel jconsolePanel;
     private boolean initComplete = false;
     private boolean isConnected = false;
@@ -79,10 +79,11 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
             throw new RuntimeException("Error connecting to JBoss AS.", e);
         }
 
-        JPanel cliGuiPanel = GuiMain.startEmbedded(cmdCtx);
+        cliGuiCtx = GuiMain.startEmbedded(cmdCtx);
+        JPanel cliGuiPanel = cliGuiCtx.getMainPanel();
 
         jconsolePanel = new JPanel(new BorderLayout());
-        jconsolePanel.add(GuiMain.makeMenuBar(), BorderLayout.NORTH);
+        jconsolePanel.add(GuiMain.makeMenuBar(cliGuiCtx), BorderLayout.NORTH);
         jconsolePanel.add(cliGuiPanel, BorderLayout.CENTER);
 
         panelMap.put(getJBossServerName(), jconsolePanel);
@@ -104,7 +105,7 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
                 message += "of the form service:jmx:remoting-jmx://{host_name}:{port}  where \n";
                 message += "{host_name} and {port} are the address of the native management \n";
                 message += "interface of the AS7 installation being monitored.";
-                JOptionPane.showMessageDialog(GuiMain.getMainWindow(), message);
+                JOptionPane.showMessageDialog(cliGuiCtx.getMainWindow(), message);
                 return false;
             }
         }
@@ -156,7 +157,7 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
 
     private String getJBossServerName() {
         try {
-            ModelNode result = GuiMain.getExecutor().doCommand("/:read-attribute(name=name,include-defaults=true)");
+            ModelNode result = cliGuiCtx.getExecutor().doCommand("/:read-attribute(name=name,include-defaults=true)");
             String outcome = result.get("outcome").asString();
             if (outcome.equals("success")) {
                 return "JBossAS / " + result.get("result").asString();

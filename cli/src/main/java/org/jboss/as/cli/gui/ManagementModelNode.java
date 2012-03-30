@@ -31,6 +31,7 @@ import org.jboss.dmr.Property;
  */
 public class ManagementModelNode extends DefaultMutableTreeNode {
 
+    private CliGuiContext cliGuiCtx;
     private CommandExecutor executor;
     private boolean isLeaf = false;
     private boolean isGeneric = false;
@@ -38,14 +39,16 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
     /**
      * Constructor for root node only.
      */
-    public ManagementModelNode() {
-        this.executor = GuiMain.getExecutor();
+    public ManagementModelNode(CliGuiContext cliGuiCtx) {
+        this.cliGuiCtx = cliGuiCtx;
+        this.executor = cliGuiCtx.getExecutor();
         this.isLeaf = false;
         setUserObject(new UserObject());
     }
 
-    private ManagementModelNode(UserObject userObject) {
-        this.executor = GuiMain.getExecutor();
+    private ManagementModelNode(CliGuiContext cliGuiCtx, UserObject userObject) {
+        this.cliGuiCtx = cliGuiCtx;
+        this.executor = cliGuiCtx.getExecutor();
         this.isLeaf = userObject.isLeaf;
         this.isGeneric = userObject.isGeneric;
         if (isGeneric) setAllowsChildren(false);
@@ -71,17 +74,17 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
                 Property prop = node.asProperty();
                 if (childrenTypes.contains(prop.getName())) { // resource node
                     if (hasGenericOperations(addressPath, prop.getName())) {
-                        add(new ManagementModelNode(new UserObject(node, prop.getName())));
+                        add(new ManagementModelNode(cliGuiCtx, new UserObject(node, prop.getName())));
                     }
                     if (prop.getValue().isDefined()) {
                         for (ModelNode innerNode : prop.getValue().asList()) {
                             UserObject usrObj = new UserObject(innerNode, prop.getName(), innerNode.asProperty().getName(), false);
-                            add(new ManagementModelNode(usrObj));
+                            add(new ManagementModelNode(cliGuiCtx, usrObj));
                         }
                     }
                 } else { // attribute node
                     UserObject usrObj = new UserObject(node, prop.getName(), prop.getValue().asString(), true);
-                    add(new ManagementModelNode(usrObj));
+                    add(new ManagementModelNode(cliGuiCtx, usrObj));
                 }
             }
         } catch (Exception e) {

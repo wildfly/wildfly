@@ -23,7 +23,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -41,19 +40,19 @@ import javax.swing.tree.TreeSelectionModel;
  */
 public class ManagementModel extends JPanel {
 
-    private CommandExecutor executor;
+    private CliGuiContext cliGuiCtx;
 
-    public ManagementModel() {
-        this.executor = GuiMain.getExecutor();
+    public ManagementModel(CliGuiContext cliGuiCtx) {
+        this.cliGuiCtx = cliGuiCtx;
         setLayout(new BorderLayout(10,10));
         add(new JLabel("Right-click a node to choose an operation.  Close/Open a folder to refresh.  Hover for help."), BorderLayout.NORTH);
         add(makeTree(), BorderLayout.CENTER);
     }
 
     private JTree makeTree() {
-        ManagementModelNode root = new ManagementModelNode();
+        ManagementModelNode root = new ManagementModelNode(cliGuiCtx);
         root.explore();
-        JTree tree = new CommandBuilderTree(new DefaultTreeModel(root));
+        JTree tree = new CommandBuilderTree(cliGuiCtx, new DefaultTreeModel(root));
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         tree.addTreeExpansionListener(new ManagementTreeExpansionListener((DefaultTreeModel) tree.getModel()));
         tree.addTreeSelectionListener(new ManagementTreeSelectionListener());
@@ -89,7 +88,7 @@ public class ManagementModel extends JPanel {
 
         public void valueChanged(TreeSelectionEvent tse) {
             ManagementModelNode selected = (ManagementModelNode) tse.getPath().getLastPathComponent();
-            GuiMain.getCommandLine().getCmdText().setText(selected.addressPath());
+            cliGuiCtx.getCommandLine().getCmdText().setText(selected.addressPath());
         }
     }
 
@@ -103,7 +102,7 @@ public class ManagementModel extends JPanel {
 
         public ManagementTreeMouseListener(JTree tree) {
             this.tree = tree;
-            this.popup = new OperationMenu(executor, tree);
+            this.popup = new OperationMenu(cliGuiCtx, tree);
         }
 
         @Override
