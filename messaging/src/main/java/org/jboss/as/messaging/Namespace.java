@@ -37,7 +37,8 @@ public enum Namespace {
    UNKNOWN(null),
 
    MESSAGING_1_0("urn:jboss:domain:messaging:1.0"),
-   MESSAGING_1_1("urn:jboss:domain:messaging:1.1");
+   MESSAGING_1_1("urn:jboss:domain:messaging:1.1"),
+   MESSAGING_1_2("urn:jboss:domain:messaging:1.2");
 
    /**
     * The current namespace version.

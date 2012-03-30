@@ -27,45 +27,23 @@ import java.io.IOException;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.junit.Test;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class SubsystemParsingUnitTestCase extends AbstractSubsystemBaseTest {
+public class Subsystem12ParsingUnitTestCase extends AbstractSubsystemBaseTest {
 
-    public SubsystemParsingUnitTestCase() {
+    public Subsystem12ParsingUnitTestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
-    @Test
-    public void testXsd10() throws Exception {
-        standardSubsystemTest("xsd10.xml");
-    }
-
-
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem.xml");
+        return readResource("subsystem_1_2.xml");
     }
-
-    @Override
-    protected String getSubsystemXml(String configId) throws IOException {
-        return readResource(configId);
-    }
-
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.MANAGEMENT;
-    }
-
-    @Override
-    protected void compareXml(String configId, String original, String marshalled) throws Exception {
-        if (configId != null && configId.equals("xsd10.xml")) {
-            return;
-        }
-
-        super.compareXml(configId, original, marshalled, true);
     }
 }
