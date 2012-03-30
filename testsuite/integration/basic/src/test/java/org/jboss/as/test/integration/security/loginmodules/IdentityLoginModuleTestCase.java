@@ -114,8 +114,8 @@ public class IdentityLoginModuleTestCase {
 
       WebArchive war = ShrinkWrap.create(WebArchive.class, DEP1 + ".war");
       war.addClass(PrincipalPrintingServlet.class);
-      war.setWebXML(Utils.getResource("loginmodules/deployments/IdentityLoginModule/web.xml"));
-      war.addAsWebInfResource(Utils.getResource("loginmodules/deployments/IdentityLoginModule/dep1/jboss-web.xml"),"jboss-web.xml");
+      war.setWebXML(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/IdentityLoginModule/web.xml"));
+      war.addAsWebInfResource(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/IdentityLoginModule/dep1/jboss-web.xml"),"jboss-web.xml");
       log.debug(war.toString(true));
       return war;
    }
@@ -133,8 +133,8 @@ public class IdentityLoginModuleTestCase {
 
       WebArchive war = ShrinkWrap.create(WebArchive.class, DEP2 + ".war");
       war.addClass(PrincipalPrintingServlet.class);
-      war.setWebXML(Utils.getResource("loginmodules/deployments/IdentityLoginModule/web.xml"));
-      war.addAsWebInfResource(Utils.getResource("loginmodules/deployments/IdentityLoginModule/dep2/jboss-web.xml"), "jboss-web.xml");
+      war.setWebXML(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/IdentityLoginModule/web.xml"));
+      war.addAsWebInfResource(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/IdentityLoginModule/dep2/jboss-web.xml"), "jboss-web.xml");
       log.debug(war.toString(true));
 
       return war;

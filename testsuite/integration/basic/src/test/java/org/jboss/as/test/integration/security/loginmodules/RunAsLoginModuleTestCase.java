@@ -33,7 +33,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.loginmodules.common.CustomEjbAccessingLoginModule;
@@ -52,11 +51,8 @@ import org.jboss.security.auth.spi.RunAsLoginModule;
 
 import java.io.IOException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
@@ -129,8 +125,8 @@ public class RunAsLoginModuleTestCase {
 
       WebArchive war = ShrinkWrap.create(WebArchive.class, DEP1 + ".war");
       war.addClass(PrincipalPrintingServlet.class);
-      war.setWebXML(Utils.getResource("loginmodules/deployments/RunAsLoginModule/web.xml"));
-      war.addAsWebInfResource(Utils.getResource("loginmodules/deployments/RunAsLoginModule/jboss-web.xml"),"jboss-web.xml");
+      war.setWebXML(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/RunAsLoginModule/web.xml"));
+      war.addAsWebInfResource(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/RunAsLoginModule/jboss-web.xml"),"jboss-web.xml");
 
       war.addClasses(SimpleSecuredEJB.class, SimpleSecuredEJBImpl.class, CustomEjbAccessingLoginModule.class);
 
