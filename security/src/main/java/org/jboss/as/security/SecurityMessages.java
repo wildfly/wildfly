@@ -252,4 +252,26 @@ public interface SecurityMessages {
      */
     @Message(id = 13324, value = "Security Management not injected")
     SecurityException securityManagementNotInjected();
+
+    /**
+     * Create a {@link SecurityException} to indicate that the specified realm has not been found.
+     * @return {@link SecurityException}
+     */
+    @Message(id = 13325, value = "Security realm '%s' not found.")
+    SecurityException realmNotFound(final String name);
+
+    /**
+     * Create a {@link SecurityException} to indicate that no password validation mechanism has been identified.
+     * @return {@link SecurityException}
+     */
+    @Message(id = 13326, value = "No suitable password validation mechanism identified for realm '%s'")
+    SecurityException noPasswordValidationAvailable(final String realmName);
+
+    /**
+     * Create a {@link LoginException} to indicate a failure calling the security realm.
+     * @return {@link LoginException}
+     */
+    @Message(id = 13327, value = "Failure calling CallbackHandler '%s'")
+    LoginException failureCallingSecurityRealm(String cause);
+
 }
