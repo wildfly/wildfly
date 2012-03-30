@@ -9,10 +9,7 @@
                    <login-module code="Remoting" flag="optional">
                        <module-option name="password-stacking" value="useFirstPass"/>
                    </login-module>
-                   <login-module code="RealmUsersRoles" flag="required">
-                       <module-option name="usersProperties" value="@@realm-users-roles-users@@"/>
-                       <module-option name="rolesProperties" value="@@realm-users-roles-roles@@"/>
-                       <module-option name="realm" value="ApplicationRealm"/>
+                   <login-module code="RealmDirect" flag="required">
                        <module-option name="password-stacking" value="useFirstPass"/>
                    </login-module>
                </authentication>
