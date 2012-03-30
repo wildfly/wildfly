@@ -1,5 +1,5 @@
 
-    <subsystem xmlns="urn:jboss:domain:messaging:1.1">
+    <subsystem xmlns="urn:jboss:domain:messaging:1.2">
         <hornetq-server>
             <!-- disable messaging persistence -->
             <persistence-enabled>false</persistence-enabled>
