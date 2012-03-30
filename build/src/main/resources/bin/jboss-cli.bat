@@ -19,7 +19,7 @@ set "RESOLVED_JBOSS_HOME=%CD%"
 popd
 
 if "x%JBOSS_HOME%" == "x" (
-  set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%" 
+  set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%"
 )
 
 pushd "%JBOSS_HOME%"
@@ -57,6 +57,9 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
   echo Please check that you are in the bin directory when running this script.
   goto END
 )
+
+rem Add base package for L&F
+set JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=com.sun.java.swing
 
 "%JAVA%" %JAVA_OPTS% ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^

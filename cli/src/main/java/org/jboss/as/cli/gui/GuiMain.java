@@ -22,21 +22,29 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.net.URL;
+import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.UnsupportedLookAndFeelException;
+
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.gui.metacommand.DeployAction;
 import org.jboss.as.cli.gui.metacommand.UndeployAction;
@@ -58,6 +66,9 @@ public class GuiMain {
     private static JTextPane output = new JTextPane();
     private static JTabbedPane tabs;
     private static DoOperationActionListener opListener;
+
+    private static final Preferences PREFERENCES = Preferences.userNodeForPackage(GuiMain.class);
+    private static String LOOK_AND_FEEL_KEY = "cli-gui-laf";
 
     private GuiMain() {} // don't allow an instance
 
@@ -93,6 +104,7 @@ public class GuiMain {
     }
 
     private static synchronized void initJFrame() {
+        setUpLookAndFeel();
         frame = new JFrame("CLI GUI");
         URL iconURL = GuiMain.class.getResource("/icon/as7_logo.png");
         frame.setIconImage(Toolkit.getDefaultToolkit().getImage(iconURL));
@@ -139,6 +151,38 @@ public class GuiMain {
         deploy.setMnemonic(KeyEvent.VK_U);
         metaCmdMenu.add(unDeploy);
 
+        // Add look & feel options
+        final LookAndFeelInfo[] all = UIManager.getInstalledLookAndFeels();
+        if (all != null) {
+            final String errorTitle = "Look & Feel Not Set";
+            final JMenu lfMenu = new JMenu("Look & Feel");
+            lfMenu.setMnemonic(KeyEvent.VK_L);
+            menuBar.add(lfMenu);
+
+            for (final LookAndFeelInfo lookAndFeelInfo : all) {
+                JMenuItem item = new JMenuItem(new AbstractAction(lookAndFeelInfo.getName()) {
+                    @Override
+                    public void actionPerformed(final ActionEvent e) {
+                        try {
+                            UIManager.setLookAndFeel(lookAndFeelInfo.getClassName());
+                            SwingUtilities.updateComponentTreeUI(frame);
+                            PREFERENCES.put(LOOK_AND_FEEL_KEY, lookAndFeelInfo.getClassName());
+                        } catch (ClassNotFoundException e1) {
+                            showErrorDialog(errorTitle, e1);
+                        } catch (InstantiationException e1) {
+                            showErrorDialog(errorTitle, e1);
+                        } catch (IllegalAccessException e1) {
+                            showErrorDialog(errorTitle, e1);
+                        } catch (UnsupportedLookAndFeelException e1) {
+                            showErrorDialog(errorTitle, e1);
+                        }
+                    }
+                });
+                lfMenu.add(item);
+            }
+        }
+
+
         return menuBar;
     }
 
@@ -156,5 +200,18 @@ public class GuiMain {
         output.setEditable(false);
         outputDisplay.add(new JScrollPane(output), BorderLayout.CENTER);
         return outputDisplay;
+    }
+
+    private static void setUpLookAndFeel() {
+        try {
+            final String laf = PREFERENCES.get(LOOK_AND_FEEL_KEY, UIManager.getSystemLookAndFeelClassName());
+            UIManager.setLookAndFeel(laf);
+        } catch (Throwable e) {
+            // Just ignore if the L&F has any errors
+        }
+    }
+
+    private static void showErrorDialog(final String title, final Throwable t) {
+        JOptionPane.showMessageDialog(frame, t.getLocalizedMessage(), title, JOptionPane.ERROR_MESSAGE);
     }
 }

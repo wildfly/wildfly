@@ -62,6 +62,9 @@ fi
 if $darwin ; then
     # Add the apple gui packages for the gui client
     JAVA_OPTS="$JAVA_OPTS -Djboss.modules.system.pkgs=com.apple.laf,com.apple.laf.resources"
+else
+    # Add base package for L&F
+    JAVA_OPTS="$JAVA_OPTS -Djboss.modules.system.pkgs=com.sun.java.swing"
 fi
 
 # Sample JPDA settings for remote socket debugging
