@@ -58,7 +58,7 @@ markdown_to_html()
 
 release()
 {
-    mvn clean deploy -DaltDeploymentRepository=${RELEASE_REPO_ID}::default::${RELEASE_REPO_URL} nexus:staging-close nexus:staging-release -DnexusURL=https://repository.jboss.org/nexus/index.html -DnexusAuthId=jboss-releases-repository -Prelease -Dautomatic=true 
+    mvn clean deploy -DaltDeploymentRepository=${RELEASE_REPO_ID}::default::${RELEASE_REPO_URL} nexus:staging-close nexus:staging-release -DnexusURL=https://repository.jboss.org/nexus/index.html -DnexusAuthId=jboss-releases-repository -Prelease -Dautomatic=true -DtargetRepositoryId=releases 
 }
 
 OLDVERSION="1.0.0-SNAPSHOT"
