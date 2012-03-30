@@ -36,7 +36,6 @@ import java.security.Principal;
  * @author JanLanik
  */
 @WebServlet(name = "PrincipalPrintingServlet", urlPatterns = { "/" }, loadOnStartup = 1)
-//@ServletSecurity(@HttpConstraint(rolesAllowed = { "role1" }))
 public class PrincipalPrintingServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
