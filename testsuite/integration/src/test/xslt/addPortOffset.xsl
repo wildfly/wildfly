@@ -1,6 +1,6 @@
 <xsl:stylesheet version="2.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:d="urn:jboss:domain:1.2">
+                xmlns:d="urn:jboss:domain:1.3">
 
     <!--
         An XSLT style sheet which will add a port offset to a standalone-ha.xml config.
