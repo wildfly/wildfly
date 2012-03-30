@@ -134,7 +134,7 @@
         <subsystem xmlns="urn:jboss:domain:jaxr:1.1">
             <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:transactions:1.0">
+        <subsystem xmlns="urn:jboss:domain:transactions:1.2">
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <core-environment>
                 <process-id>

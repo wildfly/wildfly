@@ -22,13 +22,13 @@
 
 package org.jboss.as.txn.subsystem;
 
-import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
-import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
-
 import java.util.List;
 
 import javax.transaction.TransactionSynchronizationRegistry;
 
+import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
+import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+import com.arjuna.ats.jts.common.jtsPropertyManager;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -69,9 +69,9 @@ import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
 
-import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
-import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
-import com.arjuna.ats.jts.common.jtsPropertyManager;
+import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
+import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
+import static org.jboss.as.txn.subsystem.CommonAttributes.USEHORNETQSTORE;
 
 
 /**
@@ -87,7 +87,6 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final ServiceName INTERNAL_CORE_ENV_VAR_PATH = TxnServices.JBOSS_TXN_PATHS.append("core-var-dir");
     private static final ServiceName INTERNAL_OBJECTSTORE_PATH = TxnServices.JBOSS_TXN_PATHS.append("object-store");
-
 
     private TransactionSubsystemAdd() {
         //
@@ -105,6 +104,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         populateModelWithObjectStoreConfig(operation, model);
 
         TransactionSubsystemRootResourceDefinition.JTS.validateAndSet(operation, model);
+
+        TransactionSubsystemRootResourceDefinition.USEHORNETQSTORE.validateAndSet(operation, model);
     }
 
     private void populateModelWithObjectStoreConfig(ModelNode operation, ModelNode objectStoreModel) throws OperationFailedException {
@@ -165,6 +166,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                                    List<ServiceController<?>> controllers) throws OperationFailedException {
 
         boolean jts = model.hasDefined(JTS) && model.get(JTS).asBoolean();
+        boolean useHornetqJournalStore = model.hasDefined(USEHORNETQSTORE) && model.get(USEHORNETQSTORE).asBoolean();
 
         //recovery environment
         performRecoveryEnvBoottime(context, operation, model, verificationHandler, controllers, jts);
@@ -176,7 +178,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         performCoordinatorEnvBoottime(context, operation, model, verificationHandler, controllers, jts);
 
         //object store
-        performObjectStoreBoottime(context, operation, model, verificationHandler, controllers);
+        performObjectStoreBoottime(context, operation, model, verificationHandler, controllers, useHornetqJournalStore);
 
 
         //always propagate the transaction context
@@ -268,7 +270,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private void performObjectStoreBoottime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
                                             ServiceVerificationHandler verificationHandler,
-                                            List<ServiceController<?>> controllers) throws OperationFailedException {
+                                            List<ServiceController<?>> controllers, boolean useHornetqJournalStore) throws OperationFailedException {
 
         final String objectStorePathRef =TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.resolveModelAttribute(context, recoveryEnvModel).asString();
         final String objectStorePath = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.resolveModelAttribute(context, recoveryEnvModel).asString();
@@ -279,8 +281,6 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         ServiceTarget target = context.getServiceTarget();
         // Configure the ObjectStoreEnvironmentBeans
         RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, true, objectStorePathRef, target, controllers, verificationHandler);
-
-        final boolean useHornetqJournalStore = "true".equals(System.getProperty("usehornetqstore")); // TODO wire to domain model instead.
 
         final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useHornetqJournalStore);
         controllers.add(target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService)
