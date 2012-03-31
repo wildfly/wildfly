@@ -51,10 +51,13 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.Services;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -166,6 +169,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         final String jndiName = ((resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, cacheModel)).isDefined()) ? resolvedValue.asString() : null;
         final ServiceController.Mode initialMode = StartMode.valueOf(CommonAttributes.START.resolveModelAttribute(context, cacheModel).asString()).getMode();
 
+        final ModuleIdentifier moduleId = (resolvedValue = CommonAttributes.CACHE_MODULE.resolveModelAttribute(context, cacheModel)).isDefined() ? ModuleIdentifier.fromString(resolvedValue.asString()) : null;
+
         // create a list for dependencies which may need to be added during processing
         List<Dependency<?>> dependencies = new LinkedList<Dependency<?>>();
         // Infinispan Configuration to hold the operation data
@@ -183,7 +188,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
         // install the cache configuration service (configures a cache)
         ServiceController<Configuration> ccsController =
-                installCacheConfigurationService(target, containerName, cacheName, defaultCache,
+                installCacheConfigurationService(target, containerName, cacheName, defaultCache, moduleId,
                         builder, containerInjection, dependencies, verificationHandler);
         if (newControllers != null) {
             newControllers.add(ccsController);
@@ -241,16 +246,18 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     }
 
     protected ServiceController<Configuration> installCacheConfigurationService(ServiceTarget target,
-                                                                                String containerName, String cacheName, String defaultCache, ConfigurationBuilder builder, InjectedValue<EmbeddedCacheManager> containerInjection,
-                                                                                List<Dependency<?>> dependencies, ServiceVerificationHandler verificationHandler) {
+            String containerName, String cacheName, String defaultCache, ModuleIdentifier moduleId,
+            ConfigurationBuilder builder, InjectedValue<EmbeddedCacheManager> containerInjection,
+            List<Dependency<?>> dependencies, ServiceVerificationHandler verificationHandler) {
 
         CacheConfigurationDependencies cacheConfigurationDependencies = new CacheConfigurationDependencies(containerInjection);
-        CacheConfigurationService cacheConfigurationService = new CacheConfigurationService(cacheName, builder, cacheConfigurationDependencies);
+        CacheConfigurationService cacheConfigurationService = new CacheConfigurationService(cacheName, builder, moduleId, cacheConfigurationDependencies);
         ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
         ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
 
         ServiceBuilder<Configuration> configBuilder = target.addService(cacheConfigurationServiceName, cacheConfigurationService)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, containerInjection)
+                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, cacheConfigurationDependencies.getModuleLoaderInjector())
                 .setInitialMode(ServiceController.Mode.PASSIVE);
 
         Configuration config = builder.build();
@@ -275,9 +282,9 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     }
 
     protected ServiceController<Cache<Object, Object>> installCacheService(ServiceTarget target,
-                                                                           String containerName, String cacheName, String defaultCache, ServiceController.Mode initialMode,
-                                                                           ConfigurationBuilder builder, InjectedValue<EmbeddedCacheManager> containerInjection,
-                                                                           ServiceVerificationHandler verificationHandler) {
+            String containerName, String cacheName, String defaultCache, ServiceController.Mode initialMode,
+            ConfigurationBuilder builder, InjectedValue<EmbeddedCacheManager> containerInjection,
+            ServiceVerificationHandler verificationHandler) {
 
         CacheDependencies cacheDependencies = new CacheDependencies(containerInjection);
         CacheService<Object, Object> cacheService = new CacheService<Object, Object>(cacheName, cacheDependencies);
@@ -346,6 +353,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         CommonAttributes.BATCHING.validateAndSet(fromModel, toModel);
         CommonAttributes.INDEXING.validateAndSet(fromModel, toModel);
         CommonAttributes.JNDI_NAME.validateAndSet(fromModel, toModel);
+        CommonAttributes.CACHE_MODULE.validateAndSet(fromModel, toModel);
     }
 
     /**
@@ -721,6 +729,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         private final Value<EmbeddedCacheManager> container;
         private final InjectedValue<TransactionManager> tm = new InjectedValue<TransactionManager>();
         private final InjectedValue<TransactionSynchronizationRegistry> tsr = new InjectedValue<TransactionSynchronizationRegistry>();
+        private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
 
         CacheConfigurationDependencies(Value<EmbeddedCacheManager> container) {
             this.container = container;
@@ -732,6 +741,10 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
         Injector<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistryInjector() {
             return this.tsr;
+        }
+
+        Injector<ModuleLoader> getModuleLoaderInjector() {
+            return this.moduleLoader;
         }
 
         @Override
@@ -747,6 +760,11 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         @Override
         public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
             return this.tsr.getOptionalValue();
+        }
+
+        @Override
+        public ModuleLoader getModuleLoader() {
+            return this.moduleLoader.getValue();
         }
     }
 }

@@ -22,15 +22,26 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.BATCHING;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.DEFAULT_CACHE_CONTAINER;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.INDEXING;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.JNDI_NAME;
 import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.NAME;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.START;
 import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.STATE_TRANSFER_OBJECT;
 import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -59,8 +70,6 @@ public class InfinispanDescriptions {
         subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
         subsystem.get(NAMESPACE).set(Namespace.CURRENT.getUri());
 
-        DEFAULT_CACHE_CONTAINER.addResourceAttributeDescription(resources, "infinispan", subsystem);
-
         subsystem.get(CHILDREN, ModelKeys.CACHE_CONTAINER, DESCRIPTION).set(resources.getString("infinispan.container"));
         subsystem.get(CHILDREN, ModelKeys.CACHE_CONTAINER, MIN_OCCURS).set(1);
         subsystem.get(CHILDREN, ModelKeys.CACHE_CONTAINER, MAX_OCCURS).set(Integer.MAX_VALUE);
@@ -70,9 +79,7 @@ public class InfinispanDescriptions {
 
     static ModelNode getSubsystemAddDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
-        final ModelNode op = createOperationDescription(ADD, resources, "infinispan.add");
-        DEFAULT_CACHE_CONTAINER.addOperationParameterDescription(resources, "infinispan", op);
-        return op;
+        return createOperationDescription(ADD, resources, "infinispan.add");
     }
 
     static ModelNode getSubsystemDescribeDescription(Locale locale) {
@@ -807,11 +814,9 @@ public class InfinispanDescriptions {
      * @param resources the resource bundle containing keys and their strings
      */
     private static void addCommonCacheAddRequestProperties(String keyPrefix, ModelNode operation, ResourceBundle resources) {
-
-        START.addOperationParameterDescription(resources, keyPrefix, operation);
-        BATCHING.addOperationParameterDescription(resources, keyPrefix, operation);
-        INDEXING.addOperationParameterDescription(resources, keyPrefix, operation);
-        JNDI_NAME.addOperationParameterDescription(resources, keyPrefix, operation);
+        for (AttributeDefinition attribute: CommonAttributes.CACHE_ATTRIBUTES) {
+            attribute.addOperationParameterDescription(resources, keyPrefix, operation);
+        }
     }
 
     /**

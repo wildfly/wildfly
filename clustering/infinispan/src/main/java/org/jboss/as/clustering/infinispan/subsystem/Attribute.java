@@ -49,8 +49,8 @@ public enum Attribute {
     CONCURRENCY_LEVEL(ModelKeys.CONCURRENCY_LEVEL),
     DATASOURCE(ModelKeys.DATASOURCE),
     DEFAULT_CACHE(ModelKeys.DEFAULT_CACHE),
-    DEFAULT_CACHE_CONTAINER(ModelKeys.DEFAULT_CACHE_CONTAINER),
-    EAGER_LOCKING(ModelKeys.EAGER_LOCKING), /* deprecated */
+    @Deprecated DEFAULT_CACHE_CONTAINER("default-cache-container"),
+    @Deprecated EAGER_LOCKING("eager-locking"),
     ENABLED(ModelKeys.ENABLED),
     EVICTION_EXECUTOR(ModelKeys.EVICTION_EXECUTOR),
     EXECUTOR(ModelKeys.EXECUTOR),
@@ -72,6 +72,7 @@ public enum Attribute {
     MAX_IDLE(ModelKeys.MAX_IDLE),
     MODE(ModelKeys.MODE),
     MODIFICATION_QUEUE_SIZE(ModelKeys.MODIFICATION_QUEUE_SIZE),
+    MODULE(ModelKeys.MODULE),
     NAME(ModelKeys.NAME),
     NAMESPACE(XMLConstants.XMLNS_ATTRIBUTE),
     OUTBOUND_SOCKET_BINDING(ModelKeys.OUTBOUND_SOCKET_BINDING),

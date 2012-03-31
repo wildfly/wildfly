@@ -30,6 +30,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
      * {@inheritDoc}
      * @see org.jboss.staxmapper.XMLElementReader#readElement(org.jboss.staxmapper.XMLExtendedStreamReader, java.lang.Object)
      */
+    @SuppressWarnings("deprecation")
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
 
@@ -41,21 +42,16 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             ParseUtils.requireNoNamespaceAttribute(reader, i);
-            String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DEFAULT_CACHE_CONTAINER: {
-                    CommonAttributes.DEFAULT_CACHE_CONTAINER.parseAndSetParameter(value, subsystem, reader);
+                    // Ignore
                     break;
                 }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
-        }
-
-        if (!subsystem.hasDefined(ModelKeys.DEFAULT_CACHE_CONTAINER)) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.DEFAULT_CACHE_CONTAINER));
         }
 
         // command to add the subsystem
@@ -115,12 +111,12 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             }
         }
 
-        /*
-        AS7-3488 make default-cache a non-required attribute
         if ((name == null) || !container.hasDefined(ModelKeys.DEFAULT_CACHE)) {
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME, Attribute.DEFAULT_CACHE));
         }
-        */
+
+        // Backwards compatible default module
+        CommonAttributes.CACHE_CONTAINER_MODULE.parseAndSetParameter("org.jboss.as.jpa.hibernate:4", container, reader);
 
         ModelNode containerAddress = subsystemAddress.clone() ;
         containerAddress.add(ModelKeys.CACHE_CONTAINER, name);
@@ -454,6 +450,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
     }
 
 
+    @SuppressWarnings("deprecation")
     private void parseCacheElement(XMLExtendedStreamReader reader, Element element, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
         switch (element) {
             case LOCKING: {
@@ -593,6 +590,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
         operations.add(locking);
     }
 
+    @SuppressWarnings("deprecation")
     private void parseTransaction(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
 
         // ModelNode for the transaction add operation
@@ -818,6 +816,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
         ParseUtils.requireNoContent(reader);
     }
 
+    @SuppressWarnings("deprecation")
     private void parseJDBCStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
         // ModelNode for the store add operation
         ModelNode storeAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;

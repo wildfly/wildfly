@@ -22,6 +22,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.jboss.modules.ModuleIdentifier;
 
 /**
  * @author Paul Ferraro
@@ -32,4 +33,6 @@ public interface EmbeddedCacheManagerConfiguration {
     String getName();
 
     String getDefaultCache();
+
+    ModuleIdentifier getModuleIdentifier();
 }

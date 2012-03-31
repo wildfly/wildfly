@@ -35,6 +35,8 @@ import org.jboss.as.clustering.infinispan.ChannelProvider;
 import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.marshalling.ModularClassResolver;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -52,10 +54,6 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
         return EmbeddedCacheManagerService.getServiceName(name).append("config");
     }
 
-    public static ServiceName getClassLoaderServiceName(String name) {
-        return getServiceName(name).append("loader");
-    }
-
     interface TransportConfiguration {
         Long getLockTimeout();
         Channel getChannel();
@@ -63,7 +61,6 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
     }
 
     interface Dependencies {
-        ClassLoader getClassLoader();
         ModuleLoader getModuleLoader();
         TransportConfiguration getTransportConfiguration();
         MBeanServer getMBeanServer();
@@ -75,11 +72,13 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
     private final String name;
     private final String defaultCache;
     private final Dependencies dependencies;
+    private final ModuleIdentifier moduleId;
     private volatile GlobalConfiguration config;
 
-    public EmbeddedCacheManagerConfigurationService(String name, String defaultCache, Dependencies dependencies) {
+    public EmbeddedCacheManagerConfigurationService(String name, String defaultCache, ModuleIdentifier moduleIdentifier, Dependencies dependencies) {
         this.name = name;
         this.defaultCache = defaultCache;
+        this.moduleId = moduleIdentifier;
         this.dependencies = dependencies;
     }
 
@@ -99,6 +98,11 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
     }
 
     @Override
+    public ModuleIdentifier getModuleIdentifier() {
+        return this.moduleId;
+    }
+
+    @Override
     public EmbeddedCacheManagerConfiguration getValue() {
         return this;
     }
@@ -107,12 +111,13 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
     public void start(StartContext context) throws StartException {
 
         GlobalConfigurationBuilder builder = new GlobalConfigurationBuilder();
-        ClassLoader loader = this.dependencies.getClassLoader();
-        if (loader == null) {
-            loader = EmbeddedCacheManagerConfiguration.class.getClassLoader();
+        ModuleLoader moduleLoader = this.dependencies.getModuleLoader();
+        try {
+            builder.classLoader((this.moduleId != null) ? moduleLoader.loadModule(this.moduleId).getClassLoader() : EmbeddedCacheManagerConfiguration.class.getClassLoader());
+        } catch (ModuleLoadException e) {
+            throw new StartException(e);
         }
-        builder.classLoader(loader);
-        builder.serialization().classResolver(ModularClassResolver.getInstance(this.dependencies.getModuleLoader()));
+        builder.serialization().classResolver(ModularClassResolver.getInstance(moduleLoader));
         builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
 
         TransportConfiguration transport = this.dependencies.getTransportConfiguration();
@@ -185,6 +190,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
             jmxBuilder.disable();
         }
         this.config = builder.build();
+        System.out.println(this.name + " cache container will use " + this.config.classLoader());
     }
 
     @Override

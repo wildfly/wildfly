@@ -46,9 +46,7 @@ public class ModelKeys {
     static final String DATA_COLUMN = "data-column";
     static final String DATASOURCE = "datasource";
     static final String DEFAULT_CACHE = "default-cache";
-    static final String DEFAULT_CACHE_CONTAINER = "default-cache-container";
     static final String DISTRIBUTED_CACHE = "distributed-cache";
-    static final String EAGER_LOCKING = "eager-locking";
     static final String ENABLED = "enabled";
     static final String ENTRY_TABLE = "entry-table";
     static final String EVICTION = "eviction";
@@ -90,6 +88,7 @@ public class ModelKeys {
     static final String MAX_IDLE = "max-idle";
     static final String MODE = "mode";
     static final String MODIFICATION_QUEUE_SIZE = "modification-queue-size";
+    static final String MODULE = "module";
     static final String NAME = "name";
     static final String OUTBOUND_SOCKET_BINDING = "outbound-socket-binding";
     static final String OWNERS = "owners";

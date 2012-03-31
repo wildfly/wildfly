@@ -22,9 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -37,17 +35,17 @@ public enum Namespace {
     // must be first
     UNKNOWN(0, 0, null),
 
-
     INFINISPAN_1_0(1, 0, new InfinispanSubsystemXMLReader_1_0()),
     INFINISPAN_1_1(1, 1, new InfinispanSubsystemXMLReader_1_1()),
-    INFINISPAN_1_2(1, 2, new InfinispanSubsystemXMLReader_1_2()); // IMPORTANT: Management API version != XSD version!
-
-    private static final String BASE_URN = "urn:jboss:domain:infinispan:";
+    INFINISPAN_1_2(1, 2, new InfinispanSubsystemXMLReader_1_2()), // IMPORTANT: Management API version != XSD version!
+    INFINISPAN_1_3(1, 3, new InfinispanSubsystemXMLReader_1_3()), // IMPORTANT: Management API version != XSD version!
+    ;
+    private static final String URN_PATTERN = "urn:jboss:domain:%s:%d.%d";
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = INFINISPAN_1_2;
+    public static final Namespace CURRENT = INFINISPAN_1_3;
 
     private final int major;
     private final int minor;
@@ -59,45 +57,16 @@ public enum Namespace {
         this.reader = reader;
     }
 
-    public int getMajorVersion() {
-        return this.major;
-    }
-
-    public int getMinorVersion() {
-        return this.minor;
-    }
-
     /**
      * Get the URI of this namespace.
      *
      * @return the URI
      */
     public String getUri() {
-        return BASE_URN + major + "." + minor;
+        return String.format(URN_PATTERN, InfinispanExtension.SUBSYSTEM_NAME, this.major, this.minor);
     }
 
     public XMLElementReader<List<ModelNode>> getXMLReader() {
         return this.reader;
-    }
-
-    private static final Map<String, Namespace> namespaces;
-
-    static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
-        for (Namespace namespace : values()) {
-            final String name = namespace.getUri();
-            if (name != null) map.put(name, namespace);
-        }
-        namespaces = map;
-    }
-
-    /**
-     * Converts the specified uri to a {@link Namespace}.
-     * @param uri a namespace uri
-     * @return the matching namespace enum.
-     */
-    public static Namespace forUri(String uri) {
-        final Namespace element = namespaces.get(uri);
-        return element == null ? UNKNOWN : element;
     }
 }

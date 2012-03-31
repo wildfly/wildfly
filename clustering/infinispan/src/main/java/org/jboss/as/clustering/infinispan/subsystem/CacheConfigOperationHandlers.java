@@ -1,7 +1,19 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.*;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.BINARY_KEYED_JDBC_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.COMMON_JDBC_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.COMMON_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.EVICTION_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.EXPIRATION_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.FILE_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.LOCKING_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.MIXED_KEYED_JDBC_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.REMOTE_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.STATE_TRANSFER_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.STRING_KEYED_JDBC_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.TRANSACTION_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.WRITE_BEHIND_ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -488,12 +500,12 @@ public class CacheConfigOperationHandlers {
         ModelNode cache = Resource.Tools.readModel(context.readResourceFromRoot(cacheAddress));
         return cache ;
     }
-
+/*
     private static Resource getCacheResource(OperationContext context, PathAddress cacheAddress) {
         Resource rootResource = context.readResourceFromRoot(cacheAddress, true);
         return rootResource ;
     }
-
+*/
     private static boolean isCacheStoreDefined(OperationContext context, ModelNode operation) {
          ModelNode cache = getCache(context, getCacheAddress(operation)) ;
 

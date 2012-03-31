@@ -33,6 +33,9 @@ import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProvider;
 import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -48,6 +51,7 @@ public class CacheConfigurationService implements Service<Configuration> {
     private final String name;
     private final ConfigurationBuilder builder;
     private final Dependencies dependencies;
+    private final ModuleIdentifier moduleId;
     private volatile Configuration config;
 
     private static final Logger log = Logger.getLogger(CacheConfigurationService.class.getPackage().getName());
@@ -57,14 +61,16 @@ public class CacheConfigurationService implements Service<Configuration> {
     }
 
     interface Dependencies {
+        ModuleLoader getModuleLoader();
         EmbeddedCacheManager getCacheContainer();
         TransactionManager getTransactionManager();
         TransactionSynchronizationRegistry getTransactionSynchronizationRegistry();
     }
 
-    public CacheConfigurationService(String name, ConfigurationBuilder builder, Dependencies dependencies) {
+    public CacheConfigurationService(String name, ConfigurationBuilder builder, ModuleIdentifier moduleId, Dependencies dependencies) {
         this.name = name;
         this.builder = builder;
+        this.moduleId = moduleId;
         this.dependencies = dependencies;
     }
 
@@ -84,6 +90,13 @@ public class CacheConfigurationService implements Service<Configuration> {
     @Override
     public void start(StartContext context) throws StartException {
         EmbeddedCacheManager container = this.dependencies.getCacheContainer();
+        if (this.moduleId != null) {
+            try {
+                this.builder.classLoader(this.dependencies.getModuleLoader().loadModule(this.moduleId).getClassLoader());
+            } catch (ModuleLoadException e) {
+                throw new StartException(e);
+            }
+        }
         this.builder.jmxStatistics().enabled(container.getCacheManagerConfiguration().globalJmxStatistics().enabled());
         TransactionManager tm = this.dependencies.getTransactionManager();
         if (tm != null) {
