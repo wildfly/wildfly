@@ -8,14 +8,12 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class CacheRemove extends AbstractRemoveStepHandler {
 
-    private static final Logger log = Logger.getLogger(CacheRemove.class.getPackage().getName());
     static final CacheRemove INSTANCE = new CacheRemove();
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -58,7 +56,7 @@ public class CacheRemove extends AbstractRemoveStepHandler {
     private String getCacheType(ModelNode operation) {
 
         PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-        String cacheName = cacheAddress.getLastElement().getValue();
+//        String cacheName = cacheAddress.getLastElement().getValue();
         String cacheType = cacheAddress.getLastElement().getKey();
 
         return cacheType ;

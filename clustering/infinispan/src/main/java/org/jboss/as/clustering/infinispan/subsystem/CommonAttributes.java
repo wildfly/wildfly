@@ -69,6 +69,21 @@ public interface CommonAttributes {
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
+    SimpleAttributeDefinition CACHE_CONTAINER_MODULE =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)
+                    .setXmlName(Attribute.MODULE.getLocalName())
+                    .setAllowExpression(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setValidator(new ModuleIdentifierValidator(true))
+                    .setDefaultValue(new ModelNode().set("org.jboss.as.clustering.infinispan"))
+                    .build();
+    SimpleAttributeDefinition CACHE_MODULE =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)
+                    .setXmlName(Attribute.MODULE.getLocalName())
+                    .setAllowExpression(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setValidator(new ModuleIdentifierValidator(true))
+                    .build();
     SimpleAttributeDefinition CHUNK_SIZE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.CHUNK_SIZE, ModelType.INT, true)
                     .setXmlName(Attribute.CHUNK_SIZE.getLocalName())
@@ -107,20 +122,6 @@ public interface CommonAttributes {
                     .setXmlName(Attribute.DEFAULT_CACHE.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
-    SimpleAttributeDefinition DEFAULT_CACHE_CONTAINER =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_CACHE_CONTAINER, ModelType.STRING, false)
-                    .setXmlName(Attribute.DEFAULT_CACHE_CONTAINER.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
-    // this was removed?
-    SimpleAttributeDefinition EAGER_LOCKING =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.EAGER_LOCKING, ModelType.BOOLEAN, true)
-                    .setXmlName(Attribute.EAGER_LOCKING.getLocalName())
-                    .setAllowExpression(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(false))
                     .build();
     // enabled (used in state transfer, rehashing)
     SimpleAttributeDefinition ENABLED =
@@ -252,7 +253,7 @@ public interface CommonAttributes {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(-1))
                     .build();
-    // cache mode requited, txn mode not
+    // cache mode required, txn mode not
     SimpleAttributeDefinition MODE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.MODE, ModelType.STRING, true)
                     .setXmlName(Attribute.MODE.getLocalName())
@@ -480,10 +481,10 @@ public interface CommonAttributes {
                     .setDefaultValue(new ModelNode().set(1))
                     .build();
 
-    AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = {DEFAULT_CACHE, ALIASES, JNDI_NAME, START, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR};
+    AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = {DEFAULT_CACHE, ALIASES, JNDI_NAME, START, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR, CACHE_CONTAINER_MODULE};
     AttributeDefinition[] TRANSPORT_ATTRIBUTES = {STACK, CLUSTER, EXECUTOR, LOCK_TIMEOUT, SITE, RACK, MACHINE};
 
-    AttributeDefinition[] CACHE_ATTRIBUTES = { START, BATCHING, INDEXING, JNDI_NAME};
+    AttributeDefinition[] CACHE_ATTRIBUTES = { START, BATCHING, INDEXING, JNDI_NAME, CACHE_MODULE};
     AttributeDefinition[] CLUSTERED_CACHE_ATTRIBUTES = { ASYNC_MARSHALLING, ClusteredCacheAdd.MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT};
     AttributeDefinition[] DISTRIBUTED_CACHE_ATTRIBUTES = {OWNERS, VIRTUAL_NODES, L1_LIFESPAN};
 

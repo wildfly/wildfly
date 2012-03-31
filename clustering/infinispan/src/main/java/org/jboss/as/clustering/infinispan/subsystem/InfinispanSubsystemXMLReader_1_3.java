@@ -21,13 +21,12 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Tristan Tarrant
  */
-public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<ModelNode>> {
+public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<ModelNode>> {
 
     /**
      * {@inheritDoc}
      * @see org.jboss.staxmapper.XMLElementReader#readElement(org.jboss.staxmapper.XMLExtendedStreamReader, Object)
      */
-    @SuppressWarnings("deprecation")
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
 
@@ -36,20 +35,6 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
         subsystemAddress.protect();
 
         ModelNode subsystem = Util.getEmptyOperation(ModelDescriptionConstants.ADD, subsystemAddress);
-
-        for (int i = 0; i < reader.getAttributeCount(); i++) {
-            ParseUtils.requireNoNamespaceAttribute(reader, i);
-            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-                case DEFAULT_CACHE_CONTAINER: {
-                    // Ignore
-                    break;
-                }
-                default: {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
 
         // command to add the subsystem
         operations.add(subsystem);
@@ -112,6 +97,10 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
                     CommonAttributes.REPLICATION_QUEUE_EXECUTOR.parseAndSetParameter(value, container, reader);
                     break;
                 }
+                case MODULE: {
+                    CommonAttributes.CACHE_CONTAINER_MODULE.parseAndSetParameter(value, container, reader);
+                    break;
+                }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
@@ -121,9 +110,6 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
         if ((name == null) || !container.hasDefined(ModelKeys.DEFAULT_CACHE)) {
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME, Attribute.DEFAULT_CACHE));
         }
-
-        // Backwards compatible default module
-        CommonAttributes.CACHE_CONTAINER_MODULE.parseAndSetParameter("org.jboss.as.jpa.hibernate:4", container, reader);
 
         ModelNode containerAddress = subsystemAddress.clone() ;
         containerAddress.add(ModelKeys.CACHE_CONTAINER, name);
@@ -224,6 +210,10 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             }
             case INDEXING: {
                 CommonAttributes.INDEXING.parseAndSetParameter(value, cache, reader);
+                break;
+            }
+            case MODULE: {
+                CommonAttributes.CACHE_MODULE.parseAndSetParameter(value, cache, reader);
                 break;
             }
             default: {

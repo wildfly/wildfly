@@ -26,7 +26,6 @@ import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 
 import java.util.List;
 
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -35,9 +34,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Paul Ferraro
@@ -53,7 +49,6 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler {
     }
 
     private static void populate(ModelNode source, ModelNode target) throws OperationFailedException {
-        CommonAttributes.DEFAULT_CACHE_CONTAINER.validateAndSet(source, target);
         target.get(ModelKeys.CACHE_CONTAINER).setEmptyObject();
     }
 
@@ -61,21 +56,8 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler {
         populate(operation, model);
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,
-                                  List<ServiceController<?>> newControllers) throws OperationFailedException{
-
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ROOT_LOGGER.activatingSubsystem();
-        ServiceTarget target = context.getServiceTarget();
-
-        String defaultContainer = CommonAttributes.DEFAULT_CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
-        InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
-        ValueService<EmbeddedCacheManager> service = new ValueService<EmbeddedCacheManager>(container);
-        ServiceController<EmbeddedCacheManager> controller = target.addService(EmbeddedCacheManagerService.getServiceName(null), service)
-                .addDependency(EmbeddedCacheManagerService.getServiceName(defaultContainer), EmbeddedCacheManager.class, container)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
-        ;
-        newControllers.add(controller);
     }
 
     protected boolean requiresRuntimeVerification() {

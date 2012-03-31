@@ -1,14 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config default-supplement="default">
-   <extension-module>org.jboss.as.clustering.infinispan</extension-module>
-   <subsystem xmlns="urn:jboss:domain:infinispan:1.2" default-cache-container="@@default-cache-container@@">
-       <?CACHE-CONTAINERS?>
-   </subsystem>
-   <supplement name="default">
-       <replacement placeholder="@@default-cache-container@@" attributeValue="hibernate"/>
-	    <replacement placeholder="CACHE-CONTAINERS">
-            <cache-container name="hibernate" default-cache="local-query">
+    <extension-module>org.jboss.as.clustering.infinispan</extension-module>
+    <subsystem xmlns="urn:jboss:domain:infinispan:1.3">
+        <?CACHE-CONTAINERS?>
+    </subsystem>
+    <supplement name="default">
+        <replacement placeholder="CACHE-CONTAINERS">
+            <cache-container name="hibernate" default-cache="local-query" module="org.jboss.as.jpa.hibernate:4">
                 <local-cache name="entity">
                     <transaction mode="NON_XA"/>
                     <eviction strategy="LRU" max-entries="10000"/>
@@ -24,11 +23,10 @@
                     <eviction strategy="NONE"/>
                 </local-cache>
             </cache-container>
-  	    </replacement>
-   </supplement>
-   <supplement name="ha">
-       <replacement placeholder="@@default-cache-container@@" attributeValue="cluster"/>
-       <replacement placeholder="CACHE-CONTAINERS">
+        </replacement>
+    </supplement>
+    <supplement name="ha">
+        <replacement placeholder="CACHE-CONTAINERS">
             <cache-container name="cluster" aliases="ha-partition" default-cache="default">
                 <transport lock-timeout="60000"/>
                 <replicated-cache name="default" mode="SYNC" batching="true">
@@ -59,7 +57,7 @@
                     <file-store/>
                 </distributed-cache>
             </cache-container>
-            <cache-container name="hibernate" default-cache="local-query">
+            <cache-container name="hibernate" default-cache="local-query" module="org.jboss.as.jpa.hibernate:4">
                 <transport lock-timeout="60000"/>
                 <local-cache name="local-query">
                     <transaction mode="NONE"/>
@@ -76,6 +74,6 @@
                     <eviction strategy="NONE"/>
                 </replicated-cache>
             </cache-container>
-       </replacement>
-   </supplement>
+        </replacement>
+    </supplement>
 </config>
