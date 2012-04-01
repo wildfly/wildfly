@@ -375,7 +375,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             ModelNode locking = cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
 
             final IsolationLevel isolationLevel = IsolationLevel.valueOf(CommonAttributes.ISOLATION.resolveModelAttribute(context, locking).asString());
-            final boolean striping = CommonAttributes.SHARED.resolveModelAttribute(context, locking).asBoolean();
+            final boolean striping = CommonAttributes.STRIPING.resolveModelAttribute(context, locking).asBoolean();
             final long acquireTimeout = CommonAttributes.ACQUIRE_TIMEOUT.resolveModelAttribute(context, locking).asLong();
             final int concurrencyLevel = CommonAttributes.CONCURRENCY_LEVEL.resolveModelAttribute(context, locking).asInt();
 
