@@ -41,7 +41,7 @@
                     <file-store/>
                 </replicated-cache>
                 <replicated-cache name="sso" mode="SYNC" batching="true"/>
-                <distributed-cache name="dist" mode="ASYNC" batching="true">
+                <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
                     <file-store/>
                 </distributed-cache>
             </cache-container>
@@ -54,7 +54,7 @@
                 <!-- Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
                 the socketbinding referenced by the EJB remoting connector -->
                 <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
-                <distributed-cache name="dist" mode="ASYNC" batching="true">
+                <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
                     <eviction strategy="LRU" max-entries="10000"/>
                     <file-store/>
                 </distributed-cache>
