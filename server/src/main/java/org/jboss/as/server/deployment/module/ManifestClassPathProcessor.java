@@ -144,7 +144,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
 
             final String[] items = getClassPathEntries(resourceRoot);
             for (final String item : items) {
-                if(item.isEmpty()) {
+                if (item.isEmpty()) {
                     continue;
                 }
                 //first try and resolve relative to the manifest resource root
@@ -157,11 +157,36 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
                     ServerLogger.DEPLOYMENT_LOGGER.debugf("Resource %s added as external jar %s", classPathFile, resourceRoot.getRoot());
                 } else {
                     if (classPathFile.exists()) {
-                        handlingExistingClassPathEntry(deploymentUnit, resourceRoots, topLevelDeployment, topLevelRoot, subDeployments, additionalModules, existingAccessibleRoots, resourceRoot, target, classPathFile);
+                        //we need to check that this class path item actually lies within the deployment
+                        boolean found = false;
+                        VirtualFile file = classPathFile.getParent();
+                        while (file != null) {
+                            if (file.equals(topLevelRoot)) {
+                                found = true;
+                            }
+                            file = file.getParent();
+                        }
+                        if (!found) {
+                            ServerLogger.DEPLOYMENT_LOGGER.classPathEntryNotValid(item, resourceRoot.getRoot().getPathName());
+                        } else {
+                            handlingExistingClassPathEntry(deploymentUnit, resourceRoots, topLevelDeployment, topLevelRoot, subDeployments, additionalModules, existingAccessibleRoots, resourceRoot, target, classPathFile);
+                        }
                     } else if (topLevelClassPathFile.exists()) {
-                        handlingExistingClassPathEntry(deploymentUnit, resourceRoots, topLevelDeployment, topLevelRoot, subDeployments, additionalModules, existingAccessibleRoots, resourceRoot, target, topLevelClassPathFile);
+                        boolean found = false;
+                        VirtualFile file = topLevelClassPathFile.getParent();
+                        while (file != null) {
+                            if (file.equals(topLevelRoot)) {
+                                found = true;
+                            }
+                            file = file.getParent();
+                        }
+                        if (!found) {
+                            ServerLogger.DEPLOYMENT_LOGGER.classPathEntryNotValid(item, resourceRoot.getRoot().getPathName());
+                        } else {
+                            handlingExistingClassPathEntry(deploymentUnit, resourceRoots, topLevelDeployment, topLevelRoot, subDeployments, additionalModules, existingAccessibleRoots, resourceRoot, target, topLevelClassPathFile);
+                        }
                     } else {
-                        ServerLogger.DEPLOYMENT_LOGGER.warn("Class Path entry " + item + " in " + resourceRoot.getRoot() + "  does not point to a valid jar for a Class-Path reference.");
+                        ServerLogger.DEPLOYMENT_LOGGER.classPathEntryNotValid(item, resourceRoot.getRoot().getPathName());
                     }
                 }
             }

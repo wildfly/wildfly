@@ -357,5 +357,8 @@ public interface ServerLogger extends BasicLogger {
     @Message(id = 15959, value = "Additional resource root %s added via jboss-deployment-structure.xml does not exist")
     void additionalResourceRootDoesNotExist(String resourceRoot);
 
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 15960, value = "Class Path entry %s in %s  does not point to a valid jar for a Class-Path reference.")
+    void classPathEntryNotValid(String classPathEntry, String resourceRoot);
     // NOTE
 }
