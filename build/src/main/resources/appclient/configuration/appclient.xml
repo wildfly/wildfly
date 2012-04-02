@@ -111,6 +111,24 @@
         <subsystem xmlns="urn:jboss:domain:jpa:1.0">
             <jpa default-datasource=""/>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:jca:1.1">
+            <archive-validation enabled="false" />
+            <bean-validation enabled="true" />
+            <default-workmanager>
+                <short-running-threads>
+                    <core-threads count="50"/>
+                    <queue-length count="50"/>
+                    <max-threads count="50"/>
+                    <keepalive-time time="10" unit="seconds"/>
+                </short-running-threads>
+                <long-running-threads>
+                    <core-threads count="50"/>
+                    <queue-length count="50"/>
+                    <max-threads count="50"/>
+                    <keepalive-time time="10" unit="seconds"/>
+                </long-running-threads>
+            </default-workmanager>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
         <subsystem xmlns="urn:jboss:domain:security:1.0">
             <security-domains>
