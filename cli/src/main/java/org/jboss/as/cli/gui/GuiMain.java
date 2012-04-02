@@ -57,7 +57,7 @@ import org.jboss.as.cli.gui.metacommand.UndeployAction;
 public class GuiMain {
     private static Image jbossIcon;
     static {
-        URL iconURL = GuiMain.class.getResource("/icon/as7_logo.png");
+        URL iconURL = GuiMain.class.getResource("/icon/as7_logo_32x32x32.png");
         jbossIcon = Toolkit.getDefaultToolkit().getImage(iconURL);
         ToolTipManager.sharedInstance().setDismissDelay(15000);
     }
