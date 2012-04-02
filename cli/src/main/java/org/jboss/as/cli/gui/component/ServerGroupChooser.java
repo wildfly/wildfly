@@ -92,10 +92,6 @@ public class ServerGroupChooser extends JPanel {
         return builder.toString();
     }
 
-    public final boolean isStandalone() {
-        return serverGroups.isEmpty();
-    }
-
     @Override
     public void setEnabled(boolean isEnabled) {
         super.setEnabled(isEnabled);

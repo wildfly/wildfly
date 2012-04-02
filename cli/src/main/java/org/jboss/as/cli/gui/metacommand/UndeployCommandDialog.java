@@ -58,7 +58,7 @@ public class UndeployCommandDialog extends JDialog implements ActionListener {
         super(cliGuiCtx.getMainWindow(), "undeploy", Dialog.ModalityType.APPLICATION_MODAL);
         this.cliGuiCtx = cliGuiCtx;
         this.serverGroupChooser = new ServerGroupChooser(cliGuiCtx);
-        this.deploymentChooser = new DeploymentChooser(cliGuiCtx, serverGroupChooser.isStandalone());
+        this.deploymentChooser = new DeploymentChooser(cliGuiCtx, cliGuiCtx.isStandalone());
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         Container contentPane = getContentPane();
@@ -95,7 +95,7 @@ public class UndeployCommandDialog extends JDialog implements ActionListener {
         inputPanel.add(deploymentChooser, gbc);
         inputPanel.add(keepContent, gbc);
 
-        if (!serverGroupChooser.isStandalone()) {
+        if (!cliGuiCtx.isStandalone()) {
             inputPanel.add(Box.createVerticalStrut(30), gbc);
             inputPanel.add(serverGroupChooser, gbc);
             inputPanel.add(allRelevantServerGroups, gbc);
@@ -135,7 +135,7 @@ public class UndeployCommandDialog extends JDialog implements ActionListener {
 
         if (keepContent.isSelected()) builder.append("  --keep-content");
 
-        if (!serverGroupChooser.isStandalone()) {
+        if (!cliGuiCtx.isStandalone()) {
             addDomainParams(builder);
         }
 

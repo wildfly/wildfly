@@ -156,17 +156,25 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
     }
 
     private String getJBossServerName() {
+        String serverNamePrefix = "JBoss CLI / ";
+        String serverNameCommand = "/:read-attribute(name=name,include-defaults=true)";
+        if (!cliGuiCtx.isStandalone()) {
+            serverNameCommand = "/host=*" + serverNameCommand;
+        }
+
         try {
-            ModelNode result = cliGuiCtx.getExecutor().doCommand("/:read-attribute(name=name,include-defaults=true)");
+            ModelNode result = cliGuiCtx.getExecutor().doCommand(serverNameCommand);
             String outcome = result.get("outcome").asString();
-            if (outcome.equals("success")) {
-                return "JBossAS / " + result.get("result").asString();
+            if (outcome.equals("success") && cliGuiCtx.isStandalone()) {
+                return serverNamePrefix + result.get("result").asString();
+            } else if (outcome.equals("success")) {
+                return serverNamePrefix + result.get("result").asList().get(0).get("result").asString();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return "<unknown>";
+        return serverNamePrefix + "<unknown>";
     }
 
 }

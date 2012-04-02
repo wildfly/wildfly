@@ -21,6 +21,7 @@ package org.jboss.as.cli.gui;
 import java.awt.Window;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -31,12 +32,19 @@ public class CliGuiContext {
     private CommandExecutor executor;
     private JPanel mainPanel;
     private CommandLine cmdLine;
+    private boolean isStandalone;
 
     CliGuiContext() {
     }
 
     void setExecutor(CommandExecutor executor) {
         this.executor = executor;
+        try {
+            ModelNode result = executor.doCommand("/:read-attribute(name=process-type)");
+            this.isStandalone = result.get("result").asString().equals("Server");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     void setMainPanel(JPanel mainPanel) {
@@ -45,6 +53,15 @@ public class CliGuiContext {
 
     void setCommandLine(CommandLine cmdLine) {
         this.cmdLine = cmdLine;
+    }
+
+    /**
+     * Find if we are connected to a standalone AS instances
+     * or a domain controller.
+     * @return true if standalone, false otherwise.
+     */
+    public boolean isStandalone() {
+        return this.isStandalone;
     }
 
     /**
