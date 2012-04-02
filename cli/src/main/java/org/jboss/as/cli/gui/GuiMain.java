@@ -40,10 +40,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.gui.metacommand.DeployAction;
@@ -110,7 +110,6 @@ public class GuiMain {
     }
 
     private static synchronized void initJFrame(CliGuiContext cliGuiCtx) {
-        setUpLookAndFeel();
         JFrame frame = new JFrame("CLI GUI");
 
         frame.setIconImage(getJBossIcon());
@@ -128,13 +127,56 @@ public class GuiMain {
 
         contentPane.add(cliGuiCtx.getMainPanel(), BorderLayout.CENTER);
 
+        setUpLookAndFeel(cliGuiCtx.getMainWindow());
         frame.setVisible(true);
     }
 
     public static JMenuBar makeMenuBar(CliGuiContext cliGuiCtx) {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(makeMetaCmdMenu(cliGuiCtx));
+        JMenu lfMenu = makeLookAndFeelMenu(cliGuiCtx);
+        if (lfMenu != null) menuBar.add(lfMenu);
         return menuBar;
+    }
+
+    private static JMenu makeLookAndFeelMenu(CliGuiContext cliGuiCtx) {
+        final LookAndFeelInfo[] all = UIManager.getInstalledLookAndFeels();
+        if (all == null) return null;
+
+
+        final JMenu lfMenu = new JMenu("Look & Feel");
+        lfMenu.setMnemonic(KeyEvent.VK_L);
+
+        for (final LookAndFeelInfo lookAndFeelInfo : all) {
+            JMenuItem item = new JMenuItem(new ChangeLookAndFeelAction(cliGuiCtx, lookAndFeelInfo));
+            lfMenu.add(item);
+        }
+
+        return lfMenu;
+    }
+
+    private static class ChangeLookAndFeelAction extends AbstractAction {
+        private static final String errorTitle = "Look & Feel Not Set";
+        private CliGuiContext cliGuiCtx;
+        private LookAndFeelInfo lookAndFeelInfo;
+
+        ChangeLookAndFeelAction(CliGuiContext cliGuiCtx, LookAndFeelInfo lookAndFeelInfo) {
+            super(lookAndFeelInfo.getName());
+            this.cliGuiCtx = cliGuiCtx;
+            this.lookAndFeelInfo = lookAndFeelInfo;
+        }
+
+        @Override
+        public void actionPerformed(final ActionEvent e) {
+            Window mainWindow = cliGuiCtx.getMainWindow();
+            try {
+                UIManager.setLookAndFeel(lookAndFeelInfo.getClassName());
+                SwingUtilities.updateComponentTreeUI(mainWindow);
+                PREFERENCES.put(LOOK_AND_FEEL_KEY, lookAndFeelInfo.getClassName());
+            } catch (Exception ex) {
+                showErrorDialog(mainWindow, errorTitle, ex);
+            }
+        }
     }
 
     private static JMenu makeMetaCmdMenu(CliGuiContext cliGuiCtx) {
@@ -150,39 +192,7 @@ public class GuiMain {
         deploy.setMnemonic(KeyEvent.VK_U);
         metaCmdMenu.add(unDeploy);
 
-        // Add look & feel options
-        final LookAndFeelInfo[] all = UIManager.getInstalledLookAndFeels();
-        if (all != null) {
-            final String errorTitle = "Look & Feel Not Set";
-            final JMenu lfMenu = new JMenu("Look & Feel");
-            lfMenu.setMnemonic(KeyEvent.VK_L);
-            menuBar.add(lfMenu);
-
-            for (final LookAndFeelInfo lookAndFeelInfo : all) {
-                JMenuItem item = new JMenuItem(new AbstractAction(lookAndFeelInfo.getName()) {
-                    @Override
-                    public void actionPerformed(final ActionEvent e) {
-                        try {
-                            UIManager.setLookAndFeel(lookAndFeelInfo.getClassName());
-                            SwingUtilities.updateComponentTreeUI(frame);
-                            PREFERENCES.put(LOOK_AND_FEEL_KEY, lookAndFeelInfo.getClassName());
-                        } catch (ClassNotFoundException e1) {
-                            showErrorDialog(errorTitle, e1);
-                        } catch (InstantiationException e1) {
-                            showErrorDialog(errorTitle, e1);
-                        } catch (IllegalAccessException e1) {
-                            showErrorDialog(errorTitle, e1);
-                        } catch (UnsupportedLookAndFeelException e1) {
-                            showErrorDialog(errorTitle, e1);
-                        }
-                    }
-                });
-                lfMenu.add(item);
-            }
-        }
-
-
-        return menuBar;
+        return metaCmdMenu;
     }
 
     private static JTabbedPane makeTabbedPane(CliGuiContext cliGuiCtx, JPanel output) {
@@ -201,16 +211,17 @@ public class GuiMain {
         return outputDisplay;
     }
 
-    private static void setUpLookAndFeel() {
+    public static void setUpLookAndFeel(Window mainWindow) {
         try {
             final String laf = PREFERENCES.get(LOOK_AND_FEEL_KEY, UIManager.getSystemLookAndFeelClassName());
             UIManager.setLookAndFeel(laf);
+            SwingUtilities.updateComponentTreeUI(mainWindow);
         } catch (Throwable e) {
             // Just ignore if the L&F has any errors
         }
     }
 
-    private static void showErrorDialog(final String title, final Throwable t) {
-        JOptionPane.showMessageDialog(frame, t.getLocalizedMessage(), title, JOptionPane.ERROR_MESSAGE);
+    private static void showErrorDialog(Window window, final String title, final Throwable t) {
+        JOptionPane.showMessageDialog(window, t.getLocalizedMessage(), title, JOptionPane.ERROR_MESSAGE);
     }
 }
