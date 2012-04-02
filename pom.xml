@@ -26,7 +26,7 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>8</version>
+      <version>9</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
@@ -312,27 +312,9 @@
                  <includes>**/*.i18n.properties,**/LocalDescriptions.properties</includes>
               </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>buildnumber-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>create</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <doCheck>false</doCheck>
-                    <doUpdate>false</doUpdate>
-                    <revisionOnScmFailure>UNKNOWN</revisionOnScmFailure>
-                </configuration>
             </plugin>
         </plugins>
         <pluginManagement>
@@ -343,32 +325,11 @@
                     <version>${version.jar.plugin}</version>
                     <configuration>
                         <archive>
-                            <manifest>
-                                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            </manifest>
                             <manifestEntries>
-                                <Implementation-URL>${project.url}</Implementation-URL>
+                                <Scm-Url>${jboss.as.scm.url}</Scm-Url>
                                 <JBossAS-Release-Version>${jboss.as.release.version}</JBossAS-Release-Version>
                                 <JBossAS-Release-Codename>${jboss.as.release.codename}</JBossAS-Release-Codename>
                             </manifestEntries>
-                            <manifestSections>
-                                <manifestSection>
-                                    <name>Build-Information</name>
-                                    <manifestEntries>
-                                        <Maven-Version>${maven.version}</Maven-Version>
-                                        <Java-Version>${java.version}</Java-Version>
-                                        <Java-Vendor>${java.vendor}</Java-Vendor>
-                                        <Os-Name>${os.name}</Os-Name>
-                                        <Os-Arch>${os.arch}</Os-Arch>
-                                        <Os-Version>${os.version}</Os-Version>
-                                        <Scm-Url>${jboss.as.scm.url}</Scm-Url>
-                                        <Scm-Connection>${jboss.as.scm.connection}</Scm-Connection>
-                                        <Build-Time>${build.timestamp}</Build-Time>
-                                        <Scm-Version>${buildNumber}</Scm-Version>
-                                    </manifestEntries>
-                                </manifestSection>
-                            </manifestSections>
                         </archive>
                     </configuration>
                 </plugin>
