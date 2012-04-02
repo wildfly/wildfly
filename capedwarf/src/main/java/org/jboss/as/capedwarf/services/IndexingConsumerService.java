@@ -33,7 +33,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class IndexingConsumerService extends AbstractConsumerService<Void> {
+public class IndexingConsumerService extends AbstractConsumerService<String> {
 
     public static final ServiceName NAME = ServiceName.JBOSS.append("capedwarf").append("indexing");
 
@@ -43,7 +43,7 @@ public class IndexingConsumerService extends AbstractConsumerService<Void> {
         return new IndexingConsumer(manager.getValue());
     }
 
-    public Void getValue() throws IllegalStateException, IllegalArgumentException {
+    public String getValue() throws IllegalStateException, IllegalArgumentException {
         return null;
     }
 

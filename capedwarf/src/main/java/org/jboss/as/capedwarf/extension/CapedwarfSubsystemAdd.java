@@ -44,6 +44,8 @@ import org.jboss.as.capedwarf.deployment.CapedwarfWeldProcessor;
 import org.jboss.as.capedwarf.services.IndexingConsumerService;
 import org.jboss.as.capedwarf.services.ServletExecutorConsumerService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
+import org.jboss.as.clustering.singleton.SingletonService;
+import org.jboss.as.clustering.singleton.election.SimpleSingletonElectionPolicy;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -55,6 +57,7 @@ import org.jboss.as.logging.util.LogServices;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Phase;
@@ -63,6 +66,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -146,9 +150,12 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     protected void addIndexingConsumer(ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
-        // TODO -- wrap in singleton
         final IndexingConsumerService consumerService = new IndexingConsumerService();
-        final ServiceBuilder<Void> builder = serviceTarget.addService(IndexingConsumerService.NAME, consumerService);
+        final SingletonService<String> singleton = new SingletonService<String>(consumerService, IndexingConsumerService.NAME);
+        singleton.setElectionPolicy(new SimpleSingletonElectionPolicy());
+
+        final ServiceContainer container = (serviceTarget instanceof ServiceContainer) ? ServiceContainer.class.cast(serviceTarget) : CurrentServiceContainer.getServiceContainer();
+        final ServiceBuilder<String> builder = singleton.build(container, CAPEDWARF);
         builder.addDependency(ContextNames.bindInfoFor("java:/ConnectionFactory").getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getFactory());
         builder.addDependency(ContextNames.bindInfoFor("java:/queue/indexing").getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getQueue());
         ServiceName cacheContainerServiceName = EmbeddedCacheManagerService.getServiceName("capedwarf");
