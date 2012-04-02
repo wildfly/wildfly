@@ -102,6 +102,9 @@ public class WebDeploymentDefinition extends SimpleResourceDefinition {
                     case SESSION_MAX_ALIVE_TIME:
                         result.set(sm.getSessionMaxAliveTime());
                         break;
+                    case REJECTED_SESSIONS:
+                        result.set(sm.getRejectedSessions());
+                        break;
                     default:
                         throw new IllegalStateException(WebMessages.MESSAGES.unknownMetric(stat));
                 }
@@ -120,6 +123,7 @@ public class WebDeploymentDefinition extends SimpleResourceDefinition {
         DUPLICATED_SESSION_IDS(new SimpleAttributeDefinition("duplicated-session-ids", ModelType.INT, false)),
         SESSION_AVG_ALIVE_TIME(new SimpleAttributeDefinition("session-avg-alive-time", ModelType.INT, false)),
         SESSION_MAX_ALIVE_TIME(new SimpleAttributeDefinition("session-max-alive-time", ModelType.INT, false)),
+        REJECTED_SESSIONS(new SimpleAttributeDefinition("rejected-sessions", ModelType.INT, false)),
         MAX_ACTIVE_SESSIONS(new SimpleAttributeDefinition("max-active-sessions", ModelType.INT, false));
 
         private static final Map<String, SessionStat> MAP = new HashMap<String, SessionStat>();
