@@ -66,7 +66,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -154,8 +153,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final SingletonService<String> singleton = new SingletonService<String>(consumerService, IndexingConsumerService.NAME);
         singleton.setElectionPolicy(new SimpleSingletonElectionPolicy());
 
-        final ServiceContainer container = (serviceTarget instanceof ServiceContainer) ? ServiceContainer.class.cast(serviceTarget) : CurrentServiceContainer.getServiceContainer();
-        final ServiceBuilder<String> builder = singleton.build(container, CAPEDWARF);
+        final ServiceBuilder<String> builder = singleton.build(CurrentServiceContainer.getServiceContainer());
         builder.addDependency(ContextNames.bindInfoFor("java:/ConnectionFactory").getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getFactory());
         builder.addDependency(ContextNames.bindInfoFor("java:/queue/indexing").getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getQueue());
         ServiceName cacheContainerServiceName = EmbeddedCacheManagerService.getServiceName("capedwarf");

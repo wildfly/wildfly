@@ -22,7 +22,8 @@
 
 package org.jboss.as.capedwarf.api;
 
-import javax.annotation.Resource;
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -37,16 +38,14 @@ import org.infinispan.manager.EmbeddedCacheManager;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfListener implements ServletContextListener {
-
-    @Resource(mappedName = "java:jboss/infinispan/container/capedwarf")
-    private EmbeddedCacheManager manager;
+    private static final String JNDI_NAME = "java:jboss/infinispan/container/capedwarf";
 
     public void contextInitialized(ServletContextEvent sce) {
         final ServletContext context = sce.getServletContext();
         final String appId = (String) context.getAttribute("org.jboss.capedwarf.appId");
 
         CapedwarfApiProxy.initialize(appId, context);
-        CapedwarfApiProxy.initialize(appId, manager);
+        // CapedwarfApiProxy.initialize(appId, manager); // enable once we actually do something in that code
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
@@ -54,6 +53,19 @@ public class CapedwarfListener implements ServletContextListener {
         final String appId = (String) context.getAttribute("org.jboss.capedwarf.appId");
 
         CapedwarfApiProxy.destroy(appId, context);
-        CapedwarfApiProxy.destroy(appId, manager);
+        CapedwarfApiProxy.destroy(appId, getManager());
+    }
+
+    protected EmbeddedCacheManager getManager() {
+        try {
+            final Context context = new InitialContext();
+            try {
+                return (EmbeddedCacheManager) context.lookup(JNDI_NAME);
+            } finally {
+                context.close();
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("No such cache container: " + JNDI_NAME, e);
+        }
     }
 }

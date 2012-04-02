@@ -24,7 +24,7 @@
 
 <module xmlns="urn:jboss:module:1.0" name="com.google.appengine">
     <resources>
-        <resource-root path="appengine-api-1.0-sdk-1.6.3.jar">
+        <resource-root path="appengine-api-1.0-sdk-1.6.4.jar">
            <filter>
                <include path="com/google/**"/>
                <exclude path="**"/>
