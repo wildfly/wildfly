@@ -46,6 +46,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.resolver</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-ee</artifactId>
         </dependency>
@@ -79,8 +83,16 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>org.jboss.osgi.deployment</groupId>
+            <artifactId>jbosgi-deployment</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.osgi.framework</groupId>
             <artifactId>jbosgi-framework-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.osgi.metadata</groupId>
+            <artifactId>jbosgi-metadata</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.osgi.resolver</groupId>
@@ -88,7 +100,15 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.osgi.repository</groupId>
+            <artifactId>jbosgi-repository-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.osgi.repository</groupId>
             <artifactId>jbosgi-repository-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.osgi.spi</groupId>
+            <artifactId>jbosgi-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
