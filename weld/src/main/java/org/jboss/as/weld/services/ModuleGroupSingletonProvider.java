@@ -24,7 +24,7 @@ package org.jboss.as.weld.services;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,7 +67,7 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
 
     private static class TCCLSingleton<T> implements Singleton<T> {
 
-        private final Map<ClassLoader, T> store = Collections.synchronizedMap(new HashMap<ClassLoader, T>());
+        private volatile Map<ClassLoader, T> store = Collections.emptyMap();
 
         public T get() {
             T instance = store.get(findParentModuleCl(getClassLoader()));
@@ -77,7 +77,8 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
             return instance;
         }
 
-        public void set(T object) {
+        public synchronized void set(T object) {
+            final Map<ClassLoader, T> store = new IdentityHashMap<ClassLoader, T>(this.store);
             ClassLoader classLoader = getClassLoader();
             store.put(classLoader, object);
             if (deploymentClassLoaders.containsKey(classLoader)) {
@@ -85,16 +86,19 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
                     store.put(cl, object);
                 }
             }
+            this.store = store;
         }
 
-        public void clear() {
+        public synchronized void clear() {
             ClassLoader classLoader = getClassLoader();
+            final Map<ClassLoader, T> store = new IdentityHashMap<ClassLoader, T>(this.store);
             store.remove(classLoader);
             if (deploymentClassLoaders.containsKey(classLoader)) {
                 for (ClassLoader cl : deploymentClassLoaders.get(classLoader)) {
                     store.remove(cl);
                 }
             }
+            this.store = store;
         }
 
         public boolean isSet() {
