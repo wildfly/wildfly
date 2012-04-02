@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import junit.framework.Assert;
@@ -41,8 +40,10 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
+import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeInfoServlet;
 import org.jboss.as.test.clustering.NodeNameGetter;
+import org.jboss.as.test.clustering.RemoteEJBDirectory;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.dmr.ModelNode;
@@ -58,11 +59,13 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 
 /**
  * Clustering ejb passivation simple test.
+ * Part of migration of tests from prior AS testsuites [JBQA-5855].
  * 
  * @author Ondrej Chaloupka
  */
@@ -76,6 +79,13 @@ public class ClusterPassivationTestCase {
     private static final String IDLE_TIMEOUT_ATTR = "idle-timeout";
     private static final String PASSIVATE_EVENTS_ON_REPLICATE_ATTR = "passivate-events-on-replicate";
     private static final String HELPER_DEPLOYMENT = "helper-";
+    
+    private static EJBDirectory context;
+    
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        context = new RemoteEJBDirectory(ARCHIVE_NAME);
+    }
 
     @ArquillianResource
     private ContainerController controller;
@@ -173,8 +183,8 @@ public class ClusterPassivationTestCase {
         ModelNode operation = new ModelNode();
         operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         operation.get(OP_ADDR).set(address);
-        operation.get("name").set(PASSIVATE_EVENTS_ON_REPLICATE_ATTR);
-        operation.get("value").set(value);
+        operation.get(NAME).set(PASSIVATE_EVENTS_ON_REPLICATE_ATTR);
+        operation.get(VALUE).set(value);
         // ModelNode result = client.execute(operation);
         ModelNode result = ManagementOperations.executeOperationRaw(client, operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
@@ -190,9 +200,9 @@ public class ClusterPassivationTestCase {
         ModelNode operation = new ModelNode();
         operation.get(OP).set(UNDEFINE_ATTRIBUTE_OPERATION);
         operation.get(OP_ADDR).set(address);
-        operation.get("name").set(attrName);
+        operation.get(NAME).set(attrName);
         ModelNode result = client.execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("ModelNode operation execute was not successful", SUCCESS, result.get(OUTCOME).asString());
         log.info("unset modelnode operation " + UNDEFINE_ATTRIBUTE_OPERATION + " on " + attrName + ": " + result);
     }
 
@@ -273,7 +283,9 @@ public class ClusterPassivationTestCase {
         container2node.put(CONTAINER_1, nodeName1);
         node2client.put(nodeName1, client1);
         log.info("URL1 nodename: " + nodeName1);
+
         String nodeName2 = HttpRequest.get(baseURL2.toString() + NodeInfoServlet.URL, HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
+
         node2deployment.put(nodeName2, DEPLOYMENT_2);
         node2container.put(nodeName2, CONTAINER_2);
         container2node.put(CONTAINER_2, nodeName2);
@@ -284,12 +296,10 @@ public class ClusterPassivationTestCase {
     /**
      * Testing passivation over nodes - switching a node on and off. Testing prepassivate annotated bean function.
      */
-    private void runPassivation(InitialContext ctx, boolean isPassivation) throws Exception {
+    private void runPassivation(boolean isPassivation) throws Exception {
         // Loading context from file to get ejb:// remote context
         setupEJBClientContextSelector(); // setting context from .properties file
-        final String jndiName = "ejb:" + "" + "/" + ARCHIVE_NAME + "//" + StatefulBean.class.getSimpleName() + "!"
-                + StatefulBeanRemote.class.getName() + "?stateful";
-        final StatefulBeanRemote statefulBeanRemote = (StatefulBeanRemote) ctx.lookup(jndiName);
+        final StatefulBeanRemote statefulBeanRemote = context.lookupStateful(StatefulBean.class, StatefulBeanRemote.class);
         log.info("oochoaloup: Passivated (" + (isPassivation ? "TRUE" : "FALSE") + ") by on start: " + statefulBeanRemote.getPassivatedBy());
 
         // Calling on server one
@@ -374,7 +384,7 @@ public class ClusterPassivationTestCase {
     @Test
     @InSequence(1)
     @Ignore("AS7-4266")
-    public void testPassivationOverNodesPassivated(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) InitialContext ctx,
+    public void testPassivationOverNodesPassivated(
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
         boolean isPassivated = true;
@@ -382,7 +392,7 @@ public class ClusterPassivationTestCase {
         setPassivationOnReplicate(client1.getControllerClient(), isPassivated);
         setPassivationIdleTimeout(client2.getControllerClient());
         setPassivationOnReplicate(client2.getControllerClient(), isPassivated);
-        runPassivation(ctx, isPassivated);
+        runPassivation(isPassivated);
         startServers(client1, client2);
     }
 
@@ -390,7 +400,6 @@ public class ClusterPassivationTestCase {
     @InSequence(2)
     @Ignore("AS7-4246")
     public void testPassivationOverNodesNotPassivated(
-            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) InitialContext ctx,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
         boolean isPassivated = false;
@@ -398,18 +407,79 @@ public class ClusterPassivationTestCase {
         setPassivationOnReplicate(client1.getControllerClient(), isPassivated);
         setPassivationIdleTimeout(client2.getControllerClient());
         setPassivationOnReplicate(client2.getControllerClient(), isPassivated);
-        runPassivation(ctx, isPassivated);
+        runPassivation(isPassivated);
         startServers(client1, client2);
+    }
+    
+  
+    @Test
+    @InSequence(3)
+    /**
+     * Testing behaviour of passivation of bean inherited from another one with more complex data structure.
+     */
+    public void testMoreDataPassivation(
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2)
+            throws Exception {
+        // Set passivation timeout once again
+        boolean isPassivated = true;
+        setPassivationIdleTimeout(client1.getControllerClient());
+        setPassivationOnReplicate(client1.getControllerClient(), isPassivated);
+        setPassivationIdleTimeout(client2.getControllerClient());
+        setPassivationOnReplicate(client2.getControllerClient(), isPassivated);
+        
+        log.info("Setting context selector...");
+        setupEJBClientContextSelector();
+        
+        final StatefulBeanChildRemote sb = context.lookupStateful(StatefulBeanChild.class, StatefulBeanChildRemote.class);
+        
+        String stringData = "42";
+        int intData = 42;
+        String calledNodeName = sb.getNodeName();
+
+        // redefine node2client maps
+        node2client.put(container2node.get(CONTAINER_1), client1);
+        node2client.put(container2node.get(CONTAINER_2), client2);
+        
+        // 1. integer defined in sfsb bean
+        sb.setInt(intData);
+        // 2. DTO defined in sfsb
+        sb.setDTOStringData(stringData);
+        sb.setDTONumberData(intData);
+        // 3. DTO defined in sfsb as transient
+        sb.setTransientDTOStringData(stringData);
+        sb.setTransientDTONumberData(intData);
+        // 4. DTO defined in parent of sfsb
+        sb.setParentDTOStringData(stringData);
+        sb.setParentDTOTransientStringData(stringData);
+                
+        // waiting for passivation
+        Thread.sleep(WAIT_FOR_PASSIVATION_MS);
+                
+        // Stopping called node
+        unsetPassivationAttributes(node2client.get(calledNodeName).getControllerClient());
+        deployer.undeploy(node2deployment.get(calledNodeName));
+        controller.stop(node2container.get(calledNodeName));
+        log.info("Node " + calledNodeName + " was stopped.");
+        
+        // checking data
+        Assert.assertEquals("Int sfsb data wasn't passivated correctly", intData, sb.getInt());
+        Assert.assertEquals("String data of dto defined in sfsb wasn't passivated correctly", stringData, sb.getDTOStringData());
+        Assert.assertEquals("Int data of dto defined in sfsb wasn't passivated correctly", intData, sb.getDTONumberData());
+        Assert.assertNull("String data of transient dto defined in sfsb has to be null after passivation", sb.getTransientDTOStringData());
+        Assert.assertEquals("Int data of transient dto has to be 0 after passivation", 0,sb.getTransientDTONumberData());
+        Assert.assertEquals("String data of dto defined in parent of sfsb wasn't passivated correctly", stringData, sb.getParentDTOStringData());
+        Assert.assertNull("Transient string data of dto defined in parent of sfsb has to be null after passivation", sb.getParentDTOTransientStringData());
     }
 
     @Test
     @InSequence(100)
-    public void stopAndClean(@OperateOnDeployment(DEPLOYMENT_1) @ArquillianResource ManagementClient client1,
+    public void stopAndClean(
+            @OperateOnDeployment(DEPLOYMENT_1) @ArquillianResource ManagementClient client1,
             @OperateOnDeployment(DEPLOYMENT_2) @ArquillianResource ManagementClient client2) throws Exception {
-        log.info("Cleaning...");
-
-        // we need to have the both servers started to be able to unset cache attributes
-        startServers(client1, client2);
+        log.info("Stop&Clean...");
 
         // returning to the previous context selector, @see {RemoteEJBClientDDBasedSFSBFailoverTestCase}
         if (previousSelector != null) {
@@ -417,11 +487,15 @@ public class ClusterPassivationTestCase {
         }
 
         // unset & undeploy & stop
-        unsetPassivationAttributes(client1.getControllerClient());
-        deployer.undeploy(DEPLOYMENT_1);
-        controller.stop(CONTAINER_1);
-        unsetPassivationAttributes(client2.getControllerClient());
-        deployer.undeploy(DEPLOYMENT_2);
-        controller.stop(CONTAINER_2);
+        if(client1.isServerInRunningState()) {
+            unsetPassivationAttributes(client1.getControllerClient());
+            deployer.undeploy(DEPLOYMENT_1);
+            controller.stop(CONTAINER_1);
+        }
+        if(client2.isServerInRunningState()) {
+            unsetPassivationAttributes(client2.getControllerClient());
+            deployer.undeploy(DEPLOYMENT_2);
+            controller.stop(CONTAINER_2);
+        }
     }
 }
