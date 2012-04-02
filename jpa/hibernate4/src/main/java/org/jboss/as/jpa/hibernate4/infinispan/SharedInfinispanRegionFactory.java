@@ -54,10 +54,15 @@ public class SharedInfinispanRegionFactory extends InfinispanRegionFactory {
         return (EmbeddedCacheManager) registry.getRequiredService(serviceName).getValue();
     }
 
+    /**
+     * Do not attempt to stop our cache manager because it wasn't created by this region factory.
+     * Base class stop() will call the base stopCacheRegions()
+     */
     @Override
-    public void stop() {
-        // Do not attempt to stop our cache manager because it wasn't created by this region factory.
+    protected void stopCacheManager() {
+
     }
+
 
     @SuppressWarnings("rawtypes")
     @Override
