@@ -334,4 +334,14 @@ public interface WebMessages {
     @Message(id = 18097, value = "TLD file %s not contained in root %s")
     String tldFileNotContainedInRoot(String tldPath, String rootPath);
 
+    /**
+     * A message indicating the metric is unknown.
+     *
+     * @param metric the unknown metric.
+     *
+     * @return the message.
+     */
+    @Message(id = 18098, value = "Unknown metric %s")
+    String unknownMetric(Object metric);
+
 }
