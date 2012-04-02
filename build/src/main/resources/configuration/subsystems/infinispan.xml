@@ -80,20 +80,13 @@
                <distributed-cache name="default" mode="ASYNC" indexing="LOCAL">
                    <transaction mode="NON_XA"/>
                    <eviction strategy="NONE"/>
-                   <!-- indexing-properties>
-                       <property name="hibernate.search.default.directory_provider">
-                           infinispan
-                       </property>
-                       <property name="hibernate.search.default.worker.backend">
-                           ${infinispan.jgroups.node.type:jgroupsMaster}
-                       </property>
-                       <property name="hibernate.search.default.worker.backend.jgroups.clusterName">
-                           capedwarf
-                       </property>
-                       <property name="hibernate.search.default.infinispan.cachemanager_jndiname">
-                           java:jboss/infinispan/container/HibernateSearch
-                       </property>
-                   </indexing-properties -->
+                   <indexing-properties>
+                       <property name="hibernate.search.default.directory_provider">infinispan</property>
+                       <property name="hibernate.search.default.infinispan.cachemanager_jndiname">java:jboss/infinispan/container/HibernateSearch</property>
+                       <property name="hibernate.search.default.worker.backend">jms</property>
+                       <property name="hibernate.search.default.worker.jms.connection_factory">/JmsXA</property>
+                       <property name="hibernate.search.default.worker.jms.queue">queue/indexing</property>
+                   </indexing-properties>
                </distributed-cache>
                <replicated-cache name="data" mode="ASYNC">
                    <transaction mode="NON_XA"/>
@@ -115,7 +108,13 @@
                <distributed-cache name="tasks" mode="ASYNC" indexing="LOCAL">
                    <transaction mode="NON_XA"/>
                    <eviction strategy="LIRS" max-entries="10000"/>
-                   <file-store/>
+                   <indexing-properties>
+                       <property name="hibernate.search.default.directory_provider">infinispan</property>
+                       <property name="hibernate.search.default.infinispan.cachemanager_jndiname">java:jboss/infinispan/container/HibernateSearch</property>
+                       <property name="hibernate.search.default.worker.backend">jms</property>
+                       <property name="hibernate.search.default.worker.jms.connection_factory">/JmsXA</property>
+                       <property name="hibernate.search.default.worker.jms.queue">queue/indexing</property>
+                   </indexing-properties>
                </distributed-cache>
            </cache-container>
            <cache-container name="HibernateSearch">
