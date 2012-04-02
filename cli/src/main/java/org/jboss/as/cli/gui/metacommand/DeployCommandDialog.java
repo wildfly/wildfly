@@ -169,7 +169,7 @@ public class DeployCommandDialog extends JDialog implements ActionListener {
         gbConst.gridwidth = GridBagConstraints.REMAINDER;
         inputPanel.add(disabledCheckBox, gbConst);
 
-        if (serverGroupChooser.isStandalone()) return inputPanel;
+        if (cliGuiCtx.isStandalone()) return inputPanel;
 
         JLabel serverGroupLabel = new JLabel();
         gbConst.gridwidth = 1;
@@ -229,7 +229,7 @@ public class DeployCommandDialog extends JDialog implements ActionListener {
         if (forceCheckBox.isSelected()) builder.append("  --force");
         if (disabledCheckBox.isSelected() && disabledCheckBox.isEnabled()) builder.append("  --disabled");
 
-        if (!serverGroupChooser.isStandalone()) {
+        if (!cliGuiCtx.isStandalone()) {
             if (allServerGroups.isSelected() && allServerGroups.isEnabled()) {
                 builder.append("  --all-server-groups");
             } else if (serverGroupChooser.isEnabled()) {
