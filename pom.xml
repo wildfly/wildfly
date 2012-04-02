@@ -77,6 +77,7 @@
         <version.antlr>2.7.7</version.antlr>
         <version.asm>3.3.1</version.asm>
         <version.ch.qos.cal10n>0.7.3</version.ch.qos.cal10n>
+        <version.com.sun.faces>2.1.7-jbossorg-2</version.com.sun.faces>
         <version.commons-beanutils>1.8.3</version.commons-beanutils>
         <version.commons-cli>1.2</version.commons-cli>
         <version.commons-codec>1.4</version.commons-codec>
@@ -91,9 +92,7 @@
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.0-SP4</version.javax.enterprise>
-        <version.javax.faces.jsf-api.1.2>1.2_15-jbossorg-2</version.javax.faces.jsf-api.1.2>
-        <version.javax.faces.jsf-impl>2.1.7-jbossorg-2</version.javax.faces.jsf-impl>
-        <version.javax.faces.jsf-impl.1.2>1.2_15-jbossorg-2</version.javax.faces.jsf-impl.1.2>
+        <version.javax.faces>1.2_15-jbossorg-2</version.javax.faces>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail>1.4.4</version.javax.mail>
@@ -128,7 +127,6 @@
         <version.org.apache.ws.xmlschema>2.0</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-1</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1-jbossas-1</version.org.apache.xerces>
-        <version.org.apache.xml-resolver>1.2</version.org.apache.xml-resolver>
         <version.org.codehaus.jackson>1.9.2</version.org.codehaus.jackson>
         <version.org.codehaus.jettison>1.3.1</version.org.codehaus.jettison>
         <version.org.codehaus.plexus>2.0.4</version.org.codehaus.plexus>
@@ -138,6 +136,8 @@
         <version.org.hibernate.commons.annotations>4.0.1.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.2.0.Final</version.org.hibernate.validator>
+        <version.org.hibernate3>3.6.6.Final</version.org.hibernate3>
+        <version.org.hibernate3.commons.annotations>3.2.0.Final</version.org.hibernate3.commons.annotations>
         <version.org.hornetq>2.2.13.Final</version.org.hornetq>
         <version.org.infinispan>5.1.3.FINAL</version.org.infinispan>
         <version.org.jacorb>2.3.1.jbossorg-1</version.org.jacorb>
@@ -229,7 +229,7 @@
         <version.org.jboss.ws.api>1.0.0.GA</version.org.jboss.ws.api>
         <version.org.jboss.ws.common>2.0.2.GA</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>1.0.0.GA</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.jbossws-cxf>4.0.2.GA</version.org.jboss.ws.jbossws-cxf>
+        <version.org.jboss.ws.cxf>4.0.2.GA</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jbossws-native>4.0.2.GA</version.org.jboss.ws.jbossws-native>
         <version.org.jboss.ws.spi>2.0.3.GA</version.org.jboss.ws.spi>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.1.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
@@ -256,13 +256,14 @@
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.wsdl4j>1.6.2</version.wsdl4j>
-        <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
+        <version.xml-resolver>1.2</version.xml-resolver> <!-- Apache xml-resolver -->
         <version.xom>1.2.5</version.xom>
 
         <!-- Non-default plugin versions and configuration -->
         <version.org.zanata.plugin>1.5.0</version.org.zanata.plugin>
         <version.shade.plugin>1.5</version.shade.plugin>
         <version.jacoco.plugin>0.5.6.201201232323</version.jacoco.plugin> <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
+        <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
 
 
         <!-- Surefire args -->
@@ -1216,7 +1217,7 @@
             <dependency>
                 <groupId>com.sun.faces</groupId>
                 <artifactId>jsf-impl</artifactId>
-                <version>${version.javax.faces.jsf-impl}</version>
+                <version>${version.com.sun.faces}</version>
             </dependency>
 
             <dependency>
@@ -1376,13 +1377,13 @@
             <dependency>
                 <groupId>javax.faces</groupId>
                 <artifactId>jsf-api</artifactId>
-                <version>${version.javax.faces.jsf-api.1.2}</version>
+                <version>${version.javax.faces}</version>
             </dependency>
 
             <dependency>
                 <groupId>javax.faces</groupId>
                 <artifactId>jsf-impl</artifactId>
-                <version>${version.javax.faces.jsf-impl.1.2}</version>
+                <version>${version.javax.faces}</version>
             </dependency>
 
             <dependency>
@@ -1893,10 +1894,6 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
-                    </exclusion>
-                    <exclusion>
-                         <groupId>xml-resolver</groupId>
-                         <artifactId>xml-resolver</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2621,10 +2618,6 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
-                    </exclusion>
-                    <exclusion>
-                         <groupId>xml-resolver</groupId>
-                         <artifactId>xml-resolver</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4912,13 +4905,8 @@
                 <groupId>org.jboss.spec.javax.servlet.jstl</groupId>
                 <artifactId>jboss-jstl-api_1.2_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
+
             <dependency>
                 <groupId>org.jboss.spec.javax.transaction</groupId>
                 <artifactId>jboss-transaction-api_1.1_spec</artifactId>
@@ -5291,7 +5279,7 @@
             <dependency>
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-client</artifactId>
-                <version>${version.org.jboss.ws.jbossws-cxf}</version>
+                <version>${version.org.jboss.ws.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>asm</groupId>
@@ -5423,13 +5411,13 @@
             <dependency>
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-factories</artifactId>
-                <version>${version.org.jboss.ws.jbossws-cxf}</version>
+                <version>${version.org.jboss.ws.cxf}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-transports-httpserver</artifactId>
-                <version>${version.org.jboss.ws.jbossws-cxf}</version>
+                <version>${version.org.jboss.ws.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -5442,13 +5430,13 @@
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-resources</artifactId>
                 <classifier>jboss711</classifier>
-                <version>${version.org.jboss.ws.jbossws-cxf}</version>
+                <version>${version.org.jboss.ws.cxf}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-server</artifactId>
-                <version>${version.org.jboss.ws.jbossws-cxf}</version>
+                <version>${version.org.jboss.ws.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>asm</groupId>
@@ -6002,7 +5990,7 @@
             <dependency>
                 <groupId>xml-resolver</groupId>
                 <artifactId>xml-resolver</artifactId>
-                <version>${version.org.apache.xml-resolver}</version>
+                <version>${version.xml-resolver}</version>
             </dependency>
 
             <dependency>

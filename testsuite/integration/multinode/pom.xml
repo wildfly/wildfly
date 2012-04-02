@@ -17,7 +17,7 @@
     <artifactId>jboss-as-ts-integ-multinode</artifactId>
     <version>7.1.2.Final-SNAPSHOT</version>
 
-    <name>JBoss AS Test Suite: Integration - Multinode Tests</name>
+    <name>JBoss Application Server Test Suite: Integration - Multinode Tests</name>
 
     <properties>
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
