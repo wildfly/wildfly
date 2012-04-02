@@ -22,43 +22,32 @@
 
 package org.jboss.as.capedwarf.services;
 
-import javax.jms.Connection;
 import javax.jms.MessageListener;
 
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleLoader;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Servlet executor consumer service
+ * Indexing consumer service
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class ServletExecutorConsumerService extends AbstractConsumerService<Connection> {
+public class IndexingConsumerService extends AbstractConsumerService<Void> {
 
-    public static final ServiceName NAME = ServiceName.JBOSS.append("capedwarf").append("consumer");
+    public static final ServiceName NAME = ServiceName.JBOSS.append("capedwarf").append("indexing");
 
-    private InjectedValue<ModuleLoader> loader = new InjectedValue<ModuleLoader>();
-
-    private ServletExecutorConsumer sec;
+    private InjectedValue<EmbeddedCacheManager> manager = new InjectedValue<EmbeddedCacheManager>();
 
     protected MessageListener createMessageListener() {
-        sec = new ServletExecutorConsumer(loader.getValue());
-        return sec;
+        return new IndexingConsumer(manager.getValue());
     }
 
-    public void removeModule(Module module) {
-        if (sec != null) {
-            sec.removeClassLoader(module.getClassLoader());
-        }
+    public Void getValue() throws IllegalStateException, IllegalArgumentException {
+        return null;
     }
 
-    public Connection getValue() throws IllegalStateException, IllegalArgumentException {
-        return connection;
-    }
-
-    public InjectedValue<ModuleLoader> getLoader() {
-        return loader;
+    public InjectedValue<EmbeddedCacheManager> getCacheManager() {
+        return manager;
     }
 }

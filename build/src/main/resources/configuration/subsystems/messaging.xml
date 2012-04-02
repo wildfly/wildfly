@@ -90,6 +90,10 @@
                    <entry name="queue/capedwarf"/>
                    <entry name="java:jboss/exported/jms/queue/capedwarf"/>
                </jms-queue>
+               <jms-queue name="indexingQueue">
+                   <entry name="queue/indexing"/>
+                   <entry name="java:jboss/exported/jms/queue/indexing"/>
+               </jms-queue>
                <jms-topic name="testTopic">
                    <entry name="topic/test"/>
                    <entry name="java:jboss/exported/jms/topic/test"/>

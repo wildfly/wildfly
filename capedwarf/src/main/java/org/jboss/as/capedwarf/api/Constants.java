@@ -22,34 +22,12 @@
 
 package org.jboss.as.capedwarf.api;
 
-import java.lang.reflect.Method;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
-
 /**
- * Log into DatastoreService
+ * Constants.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class Logger extends Handler {
-
-    public void publish(final LogRecord record) {
-        final ClassLoader appCl = SecurityActions.getAppClassLoader();
-
-        if (CapedwarfApiProxy.isCapedwarfApp(appCl) == false)
-            return;
-
-        try {
-            final Class<?> clazz = appCl.loadClass("org.jboss.capedwarf.log.Logger");
-            final Method method = clazz.getDeclaredMethod("publish", LogRecord.class);
-            method.invoke(null, record);
-        } catch (Exception ignored) {
-        }
-    }
-
-    public void flush() {
-    }
-
-    public void close() throws SecurityException {
-    }
+public final class Constants {
+    // CapeDwarf cache names
+    public static final String[] CACHES = {"default", "data", "metadata", "memcache", "dist", "tasks"};
 }

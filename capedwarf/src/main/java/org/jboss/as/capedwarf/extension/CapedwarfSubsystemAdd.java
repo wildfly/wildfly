@@ -22,6 +22,13 @@
 
 package org.jboss.as.capedwarf.extension;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Handler;
+
+import javax.jms.Connection;
+
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.capedwarf.api.Logger;
 import org.jboss.as.capedwarf.deployment.CapedwarfCDIExtensionProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfCleanupProcessor;
@@ -34,7 +41,9 @@ import org.jboss.as.capedwarf.deployment.CapedwarfWebCleanupProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWebComponentsDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWeldParseProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWeldProcessor;
+import org.jboss.as.capedwarf.services.IndexingConsumerService;
 import org.jboss.as.capedwarf.services.ServletExecutorConsumerService;
+import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -63,16 +72,12 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.TempDir;
 import org.jboss.vfs.VFSUtils;
 
-import javax.jms.Connection;
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Handler;
-
 /**
  * Handler responsible for adding the subsystem resource to the model
  *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mlazar@redhat.com">Matej Lazar</a>
  */
 class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
@@ -106,6 +111,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 final ServiceTarget serviceTarget = context.getServiceTarget();
 
                 final ServletExecutorConsumerService consumerService = addQueueConsumer(serviceTarget, newControllers);
+                addIndexingConsumer(serviceTarget, newControllers);
 
                 final TempDir tempDir = createTempDir(serviceTarget, newControllers);
 
@@ -137,6 +143,18 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
         builder.addDependency(ServiceName.JBOSS.append("messaging").append("default")); // depending on messaging sub-system impl details ...
         newControllers.add(builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install());
         return consumerService;
+    }
+
+    protected void addIndexingConsumer(ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
+        // TODO -- wrap in singleton
+        final IndexingConsumerService consumerService = new IndexingConsumerService();
+        final ServiceBuilder<Void> builder = serviceTarget.addService(IndexingConsumerService.NAME, consumerService);
+        builder.addDependency(ContextNames.bindInfoFor("java:/ConnectionFactory").getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getFactory());
+        builder.addDependency(ContextNames.bindInfoFor("java:/queue/indexing").getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getQueue());
+        ServiceName cacheContainerServiceName = EmbeddedCacheManagerService.getServiceName("capedwarf");
+        builder.addDependency(cacheContainerServiceName, EmbeddedCacheManager.class, consumerService.getCacheManager());
+        builder.addDependency(ServiceName.JBOSS.append("messaging").append("default")); // depending on messaging sub-system impl details ...
+        newControllers.add(builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install());
     }
 
     protected static TempDir createTempDir(final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers) {

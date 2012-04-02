@@ -22,13 +22,12 @@
 
 package org.jboss.as.capedwarf.api;
 
-import org.jboss.as.capedwarf.services.ServletExecutor;
-
+import javax.annotation.Resource;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
+
+import org.infinispan.manager.EmbeddedCacheManager;
 
 /**
  * Capedwarf listener.
@@ -39,30 +38,22 @@ import java.util.concurrent.CopyOnWriteArraySet;
  */
 public class CapedwarfListener implements ServletContextListener {
 
-    private static Set<ClassLoader> classLoaders = new CopyOnWriteArraySet<ClassLoader>();
-
-    static boolean isCapedwarfApp(ClassLoader classLoader) {
-        return classLoaders.contains(classLoader);
-    }
-
-    static boolean isCapedwarfApp() {
-        return isCapedwarfApp(SecurityActions.getAppClassLoader());
-    }
+    @Resource(mappedName = "java:jboss/infinispan/container/capedwarf")
+    private EmbeddedCacheManager manager;
 
     public void contextInitialized(ServletContextEvent sce) {
         final ServletContext context = sce.getServletContext();
         final String appId = (String) context.getAttribute("org.jboss.capedwarf.appId");
-        ServletExecutor.registerContext(appId, context);
-        classLoaders.add(SecurityActions.getAppClassLoader());
+
+        CapedwarfApiProxy.initialize(appId, context);
+        CapedwarfApiProxy.initialize(appId, manager);
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
-        try {
-            final ServletContext context = sce.getServletContext();
-            final String appId = (String) context.getAttribute("org.jboss.capedwarf.appId");
-            ServletExecutor.unregisterContext(appId);
-        } finally {
-            classLoaders.remove(SecurityActions.getAppClassLoader());
-        }
+        final ServletContext context = sce.getServletContext();
+        final String appId = (String) context.getAttribute("org.jboss.capedwarf.appId");
+
+        CapedwarfApiProxy.destroy(appId, context);
+        CapedwarfApiProxy.destroy(appId, manager);
     }
 }

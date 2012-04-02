@@ -22,6 +22,8 @@
 
 package org.jboss.as.capedwarf.deployment;
 
+import org.jboss.as.capedwarf.api.Constants;
+import org.jboss.as.capedwarf.services.IndexingConsumerService;
 import org.jboss.as.capedwarf.services.ServletExecutorConsumerService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.logging.util.LogServices;
@@ -37,12 +39,23 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class CapedwarfDependenciesProcessor extends CapedwarfDeploymentUnitProcessor {
 
-    private final ServiceName DEFAULT_CACHE_CONFIG = CacheConfigurationService.getServiceName(CAPEDWARF, "default");
+    private static final ServiceName[] CACHE_CONFIGS;
+
+    static {
+        CACHE_CONFIGS = new ServiceName[Constants.CACHES.length];
+        for (int i = 0; i < CACHE_CONFIGS.length; i++) {
+            CACHE_CONFIGS[i] = CacheConfigurationService.getServiceName(CAPEDWARF, Constants.CACHES[i]);
+        }
+    }
 
     protected void doDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        serviceTarget.addDependency(DEFAULT_CACHE_CONFIG); // make sure the default cache config is registerd into container before we get the cache
+        // make sure the cache configs are registerd into container before we get the cache
+        for (ServiceName cc : CACHE_CONFIGS) {
+            serviceTarget.addDependency(cc);
+        }
         serviceTarget.addDependency(ServletExecutorConsumerService.NAME); // we need queue -- as default gae queue is there by default
+        serviceTarget.addDependency(IndexingConsumerService.NAME); // we need indexing
         serviceTarget.addDependency(LogServices.loggerHandlerName("ROOT", CAPEDWARF.toUpperCase())); // we need logger
     }
 

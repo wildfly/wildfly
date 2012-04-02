@@ -32,6 +32,6 @@ import java.util.logging.LogRecord;
  */
 public class LoggerFilter implements Filter {
     public boolean isLoggable(LogRecord record) {
-        return CapedwarfListener.isCapedwarfApp();
+        return CapedwarfApiProxy.isCapedwarfApp();
     }
 }
