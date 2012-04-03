@@ -56,6 +56,9 @@ public class NamingExtension implements Extension {
     public static final String NAMESPACE_1_1 = "urn:jboss:domain:naming:1.1";
     public static final String NAMESPACE_1_2 = "urn:jboss:domain:naming:1.2";
 
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+
     public static final String RESOURCE_NAME = NamingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
@@ -67,7 +70,7 @@ public class NamingExtension implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(NamingSubsystemRootResourceDefinition.INSTANCE);
 
