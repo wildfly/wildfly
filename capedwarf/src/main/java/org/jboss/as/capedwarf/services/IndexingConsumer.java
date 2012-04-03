@@ -37,6 +37,9 @@ import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.query.Search;
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleIdentifier;
 
 /**
  * JMS consumer for indexing.
@@ -49,9 +52,26 @@ class IndexingConsumer implements MessageListener {
     private static final Logger log = Logger.getLogger(IndexingConsumer.class);
 
     private EmbeddedCacheManager manager;
+    private volatile Module capedwarfModule;
 
     IndexingConsumer(EmbeddedCacheManager manager) {
         this.manager = manager;
+    }
+
+    protected Module getCapedwarfModule() {
+        if (capedwarfModule == null) {
+            synchronized (this) {
+                if (capedwarfModule == null) {
+                    try {
+                        final ModuleIdentifier mi = ModuleIdentifier.create("org.jboss.capedwarf");
+                        capedwarfModule = Module.getBootModuleLoader().loadModule(mi);
+                    } catch (Throwable t) {
+                        throw new RuntimeException(t);
+                    }
+                }
+            }
+        }
+        return capedwarfModule;
     }
 
     public void onMessage(Message message) {
@@ -75,8 +95,14 @@ class IndexingConsumer implements MessageListener {
                 log.warnf("Message received for undefined index: %s.", indexName);
                 return;
             }
-            final List<LuceneWork> queue = indexManager.getSerializer().toLuceneWorks((byte[]) objectMessage.getObject());
-            indexManager.performOperations(queue, null);
+            final ModuleClassLoader cl = getCapedwarfModule().getClassLoader(); // TODO -- per app?
+            final ClassLoader previous = SecurityActions.setTCCL(cl);
+            try {
+                final List<LuceneWork> queue = indexManager.getSerializer().toLuceneWorks((byte[]) objectMessage.getObject());
+                indexManager.performOperations(queue, null);
+            } finally {
+                SecurityActions.setTCCL(previous);
+            }
         } catch (JMSException e) {
             log.errorf("Unable to retrieve object from message: %s.", message.getClass(), e);
         } catch (ClassCastException e) {
