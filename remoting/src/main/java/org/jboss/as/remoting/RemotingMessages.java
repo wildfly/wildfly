@@ -59,7 +59,7 @@ public interface RemotingMessages {
     IllegalStateException channelShuttingDown();
 
     @Message(id = 17112, value = "%s")
-    StartException couldNotBindToSocket(String message, @Cause BindException e);
+    StartException couldNotBindToSocket(String message);
 
     @Message(id = 17113, value = "Failed to start service")
     StartException couldNotStart(@Cause Exception e);

@@ -106,7 +106,9 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
             ROOT_LOGGER.listeningOnSocket(getSocketAddress());
 
         } catch (BindException e) {
-            throw MESSAGES.couldNotBindToSocket(e.getMessage() + " " + getSocketAddress(), e);
+            final StartException se = MESSAGES.couldNotBindToSocket(e.getMessage() + " " + getSocketAddress());
+            se.setStackTrace(new StackTraceElement[]{});
+            throw se;
         } catch (Exception e) {
             throw MESSAGES.couldNotStart(e);
 

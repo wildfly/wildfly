@@ -602,4 +602,7 @@ public interface ServerMessages {
 
     @Message(id = 18769, value = "Validation for %s is not implemented")
     UnsupportedOperationException attributeValidationUnimplemented(String attribute);
+
+    @Message(id = 18770, value = "Failed to start the http-interface service: %s")
+    StartException failedToBindHttpManagementService(String msg);
 }

@@ -32,6 +32,9 @@
        <logger category="jacorb.config">
            <level name="ERROR"/>
        </logger>
+       <logger category="org.apache.coyote">
+           <level name="FATAL"/>
+       </logger>
        <root-logger>
            <level name="INFO"/>
            <handlers>
