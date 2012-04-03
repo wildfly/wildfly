@@ -615,7 +615,7 @@
       <xs:attribute name="name" type="xs:string" />
    </xs:complexType>
 
-      <xs:complexType name="pooled-connection-factoryType">
+   <xs:complexType name="pooled-connection-factoryType">
       <xs:all>
          <xs:element name="inbound-config" maxOccurs="1" minOccurs="0">
             <xs:complexType>
