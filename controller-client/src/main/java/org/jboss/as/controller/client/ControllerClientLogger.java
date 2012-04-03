@@ -55,4 +55,12 @@ public interface ControllerClientLogger extends BasicLogger {
     @Message(id = 10600, value = "Closing leaked controller client")
     void leakedControllerClient(@Cause Throwable allocationStackTrace);
 
+    /**
+     * A message indicating the a deployment with the {@code name} is already present in the domain.
+     *
+     * @param name the name of the deployment.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 10601, value = "Invalid metadata type for key: %s")
+    void invalidMetadataType(String key);
 }

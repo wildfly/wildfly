@@ -53,9 +53,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.Services;
-import org.jboss.osgi.resolver.XEnvironment;
-import org.jboss.osgi.resolver.XResource;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -73,19 +70,16 @@ public class ArquillianService implements Service<ArquillianService> {
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
-    private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
     private final Set<ArquillianConfig> deployedTests = new HashSet<ArquillianConfig>();
     private ServiceContainer serviceContainer;
     private ServiceTarget serviceTarget;
     private JMXTestRunner jmxTestRunner;
-    private XResource resource;
     AbstractServiceListener<Object> listener;
 
     public static void addService(final ServiceTarget serviceTarget) {
         ArquillianService service = new ArquillianService();
         ServiceBuilder<?> builder = serviceTarget.addService(ArquillianService.SERVICE_NAME, service);
         builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
-        builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, service.injectedEnvironment);
         builder.install();
     }
 
@@ -137,10 +131,6 @@ public class ArquillianService implements Service<ArquillianService> {
 
     public synchronized void stop(StopContext context) {
         log.debugf("Stopping Arquillian Test Runner");
-        if (resource != null) {
-            XEnvironment env = injectedEnvironment.getValue();
-            env.uninstallResources(resource);
-        }
         try {
             if (jmxTestRunner != null) {
                 jmxTestRunner.unregisterMBean(injectedMBeanServer.getValue());

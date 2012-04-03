@@ -43,6 +43,8 @@ import org.junit.runners.Suite;
         ServerRestartRequiredTestCase.class,
         ManagementAccessTestCase.class,
         ManagementClientContentTestCase.class,
+        OSGiBundleLifecyleTestCase.class,
+        OSGiBundleStartLevelTestCase.class,
         ValidateOperationOperationTestCase.class
 })
 public class DomainTestSuite {

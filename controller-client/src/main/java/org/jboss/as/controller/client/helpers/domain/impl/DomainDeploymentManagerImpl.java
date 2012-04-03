@@ -33,6 +33,7 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_REMOVE_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_REPLACE_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_UNDEPLOY_OPERATION;
+import static org.jboss.as.controller.client.helpers.ClientConstants.METADATA;
 import static org.jboss.as.controller.client.helpers.ClientConstants.NAME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OPERATION_HEADERS;
@@ -161,6 +162,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
             case DEPLOY: {
                 for (String group : serverGroups) {
                     ModelNode groupStep = configureDeploymentOperation(DEPLOYMENT_DEPLOY_OPERATION, uniqueName, group);
+                    groupStep.get(METADATA).set(plan.getMetadata().getModelNode());
                     actionSteps.add(groupStep);
                 }
                 break;

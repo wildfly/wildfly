@@ -24,6 +24,8 @@ package org.jboss.as.osgi.deployment;
 
 import java.util.List;
 
+import org.jboss.as.controller.client.DeploymentMetadata;
+import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -77,6 +79,13 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
             deployment.setAutoStart(true);
+
+            // Optionally set the start level specified by the client of the deployment API
+            DeploymentMetadata metadata = depUnit.getAttachment(Attachments.DEPLOYMENT_METADATA);
+            Integer startLevel = (Integer) metadata.getValue(ClientConstants.DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL);
+            if (startLevel != null) {
+                deployment.setStartLevel(startLevel);
+            }
         }
 
         // Create the {@link BundleInstallService}
