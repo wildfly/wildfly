@@ -27,9 +27,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.junit.Assert.*;
 
 /**
  *  Assert builder for the console. Use this together with the ConsoleMock object
@@ -55,13 +54,24 @@ import static org.junit.Assert.fail;
 * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
 */
 public class AssertConsoleBuilder {
+    private static String NEW_LINE = "\n";
+    
     private enum Type {
         DISPLAY, INPUT
     }
     
     private class AssertConsole {
+        
         private String text;
         private Type type;
+        
+        private AssertConsole() {    
+        }
+        
+        private AssertConsole(String text, Type type) {
+            this.text = text;
+            this.type = type;
+        }
     }
 
     private Queue<AssertConsole> queue = new LinkedList<AssertConsole>();
@@ -89,6 +99,41 @@ public class AssertConsoleBuilder {
         assertConsole.text = text;
         assertConsole.type = Type.INPUT;
         queue.add(assertConsole);
+        return this;
+    }
+
+    /**
+     * Expected error message
+     * @param text
+     * @return this
+     */
+    public AssertConsoleBuilder expectedErrorMessage(String text) {
+        queue.add(new AssertConsole(NEW_LINE,Type.DISPLAY));
+        queue.add(new AssertConsole(" * ",Type.DISPLAY));
+        queue.add(new AssertConsole(MESSAGES.errorHeader(),Type.DISPLAY));
+        queue.add(new AssertConsole(" * ",Type.DISPLAY));
+        queue.add(new AssertConsole(NEW_LINE,Type.DISPLAY));
+        queue.add(new AssertConsole(text,Type.DISPLAY));
+        queue.add(new AssertConsole(NEW_LINE,Type.DISPLAY));
+        queue.add(new AssertConsole(NEW_LINE,Type.DISPLAY));
+        return this;
+    }
+
+    /**
+     * Expected confirm message and answer
+     * @param messages - expected display text, if none pass in null
+     * @param prompt - expected text for the console prompt
+     * @param answer - expected answer
+     * @return this
+     */
+    public AssertConsoleBuilder expectedConfirmMessage(String messages, String prompt, String answer) {
+        if (messages!=null) {
+            queue.add(new AssertConsole(messages,Type.DISPLAY));
+            queue.add(new AssertConsole(NEW_LINE,Type.DISPLAY));
+        }
+        queue.add(new AssertConsole(prompt,Type.DISPLAY));
+        queue.add(new AssertConsole(" ",Type.DISPLAY));
+        queue.add(new AssertConsole(answer,Type.INPUT));
         return this;
     }
 

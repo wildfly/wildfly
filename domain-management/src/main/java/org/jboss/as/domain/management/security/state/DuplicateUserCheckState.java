@@ -37,6 +37,9 @@ public class DuplicateUserCheckState implements State {
     public DuplicateUserCheckState(final ConsoleWrapper theConsole,final StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
+        if (theConsole.getConsole() == null) {
+            throw MESSAGES.noConsoleAvailable();
+        }
     }
 
     @Override

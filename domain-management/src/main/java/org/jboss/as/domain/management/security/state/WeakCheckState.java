@@ -43,6 +43,9 @@ public class WeakCheckState implements State {
     public WeakCheckState(ConsoleWrapper theConsole,StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
+        if (theConsole.getConsole() == null) {
+            throw MESSAGES.noConsoleAvailable();
+        }
     }
 
     private boolean isValidPunctuation(char currentChar) {
@@ -55,12 +58,12 @@ public class WeakCheckState implements State {
         State retryState = stateValues.isSilentOrNonInteractive() ? null : new PromptNewUserState(theConsole, stateValues);
 
         if (Arrays.equals(stateValues.getUserName().toCharArray(), stateValues.getPassword())) {
-            return new ErrorState(null, MESSAGES.usernamePasswordMatch(), retryState);
+            return new ErrorState(theConsole, MESSAGES.usernamePasswordMatch(), retryState);
         }
 
         for (char currentChar : stateValues.getUserName().toCharArray()) {
             if ((!isValidPunctuation(currentChar)) && (Character.isLetter(currentChar) || Character.isDigit(currentChar)) == false) {
-                return new ErrorState(null, MESSAGES.usernameNotAlphaNumeric(), retryState);
+                return new ErrorState(theConsole, MESSAGES.usernameNotAlphaNumeric(), retryState);
             }
         }
 

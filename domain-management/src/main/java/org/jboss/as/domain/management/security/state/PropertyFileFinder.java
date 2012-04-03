@@ -66,6 +66,9 @@ public class PropertyFileFinder implements State {
     public PropertyFileFinder(ConsoleWrapper theConsole,final StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
+        if (theConsole.getConsole() == null) {
+            throw MESSAGES.noConsoleAvailable();
+        }
     }
 
     @Override

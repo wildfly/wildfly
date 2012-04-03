@@ -43,6 +43,9 @@ public class PromptPasswordState implements State {
     public PromptPasswordState(ConsoleWrapper theConsole, StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
+        if (theConsole.getConsole() == null) {
+            throw MESSAGES.noConsoleAvailable();
+        }
     }
 
     @Override
@@ -65,7 +68,7 @@ public class PromptPasswordState implements State {
             }
 
             if (Arrays.equals(tempChar, secondTempChar) == false) {
-                return new ErrorState(null, MESSAGES.passwordMisMatch(), this);
+                return new ErrorState(theConsole, MESSAGES.passwordMisMatch(), this);
             }
             stateValues.setPassword(tempChar);
 
