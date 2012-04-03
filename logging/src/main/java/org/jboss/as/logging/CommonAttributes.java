@@ -58,7 +58,7 @@ public interface CommonAttributes {
             setDefaultValue(new ModelNode().set(true)).
             build();
 
-    SimpleAttributeDefinition CATEGORY = SimpleAttributeDefinitionBuilder.create("category", ModelType.STRING).build();
+    SimpleAttributeDefinition CATEGORY = SimpleAttributeDefinitionBuilder.create("category", ModelType.STRING, true).build();
 
     SimpleAttributeDefinition CHANGE_LEVEL = SimpleAttributeDefinitionBuilder.create("change-level", ModelType.STRING, true).
             setCorrector(CaseParameterCorrector.TO_UPPER).

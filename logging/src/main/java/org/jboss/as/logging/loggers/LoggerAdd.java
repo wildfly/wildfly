@@ -23,6 +23,7 @@
 package org.jboss.as.logging.loggers;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.CATEGORY;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
@@ -51,10 +52,14 @@ public class LoggerAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        CATEGORY.validateAndSet(operation, model);
         LEVEL.validateAndSet(operation, model);
         HANDLERS.validateAndSet(operation, model);
         USE_PARENT_HANDLERS.validateAndSet(operation, model);
         FILTER.validateAndSet(operation, model);
+        if (!operation.hasDefined(CATEGORY.getName())) {
+            model.get(CATEGORY.getName()).set(PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue());
+        }
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
@@ -63,11 +68,13 @@ public class LoggerAdd extends AbstractAddStepHandler {
         final ModelNode level = LEVEL.resolveModelAttribute(context, model);
         final ModelNode useParentHandlers = USE_PARENT_HANDLERS.resolveModelAttribute(context, model);
         final ModelNode filter = FILTER.resolveModelAttribute(context, model);
+        final ModelNode category = CATEGORY.resolveModelAttribute(context, model);
+        final String loggerName = category.isDefined() ? category.asString() : name;
 
         final ServiceTarget target = context.getServiceTarget();
         try {
             // Install logger service
-            final LoggerService service = new LoggerService(name);
+            final LoggerService service = new LoggerService(loggerName);
             if (level.isDefined()) service.setLevel(ModelParser.parseLevel(level));
             if (useParentHandlers.isDefined()) service.setUseParentHandlers(useParentHandlers.asBoolean());
             if (filter.isDefined()) service.setFilter(ModelParser.parseFilter(context, filter));

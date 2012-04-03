@@ -114,6 +114,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
     static final LoggingSubsystemParser INSTANCE = new LoggingSubsystemParser();
 
+    static final String PATH_PATTERN = "\\*|[*\\p{Space}\\p{Cntrl}]+";
+    static final String REPLACEMENT_CHAR = "_";
+
     private LoggingSubsystemParser() {
         //
     }
@@ -231,7 +234,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
         // Setup the operation
         node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).add(LOGGER, name);
+        node.get(OP_ADDR).set(address).add(LOGGER, name.replaceAll(PATH_PATTERN, REPLACEMENT_CHAR));
 
         // Element
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -1113,7 +1116,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         }
         if (node.hasDefined(LOGGER)) {
             for (String name : node.get(LOGGER).keys()) {
-                writeLogger(writer, name, node.get(LOGGER, name));
+                writeLogger(writer, node.get(LOGGER, name));
             }
         }
         if (node.hasDefined(ROOT_LOGGER)) {
@@ -1241,9 +1244,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         writer.writeEndElement();
     }
 
-    private void writeLogger(final XMLExtendedStreamWriter writer, String name, final ModelNode node) throws XMLStreamException {
+    private void writeLogger(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
         writer.writeStartElement(Element.LOGGER.getLocalName());
-        writer.writeAttribute(CATEGORY.getXmlName(), name);
+        CATEGORY.marshallAsAttribute(node, writer);
         USE_PARENT_HANDLERS.marshallAsAttribute(node, writer);
         writeLevel(writer, node);
         writeFilter(writer, node);
