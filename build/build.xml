@@ -973,7 +973,6 @@
         <module-def name="org.jboss.osgi.resolver">
             <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-api"/>
             <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-felix"/>
-            <maven-resource group="org.apache.felix" artifact="org.apache.felix.resolver"/>
         </module-def>
 
         <module-def name="org.jboss.osgi.metadata">

@@ -33,14 +33,15 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.osgi.framework.resource.Capability;
-import org.osgi.framework.resource.Requirement;
-import org.osgi.framework.resource.Resource;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
 import javax.inject.Inject;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -82,7 +83,7 @@ public class SimpleRepositoryTestCase {
         Requirement req = XRequirementBuilder.createArtifactRequirement(coordinates);
         assertNotNull("Requirement not null", req);
 
-        Collection<Capability> caps = repo.findProviders(req);
+        Collection<Capability> caps = repo.findProviders(Collections.singleton(req)).get(req);
         assertEquals("Capability not null", 1, caps.size());
 
         XIdentityCapability xcap = (XIdentityCapability) caps.iterator().next();

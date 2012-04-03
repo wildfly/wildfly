@@ -528,11 +528,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>org.apache.felix.resolver</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>httpclient</artifactId>
                 </dependency>

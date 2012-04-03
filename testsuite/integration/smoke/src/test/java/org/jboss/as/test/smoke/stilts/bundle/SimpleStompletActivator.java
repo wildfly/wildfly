@@ -27,13 +27,14 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.framework.resource.Capability;
-import org.osgi.framework.resource.Requirement;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.repository.Repository;
 import org.projectodd.stilts.stomplet.Stomplet;
 
 import java.net.URL;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
@@ -82,7 +83,7 @@ public class SimpleStompletActivator implements BundleActivator {
     private Bundle installSupportBundle(BundleContext context, ModuleIdentifier moduleid) throws BundleException {
         Repository repository = getRepository(context);
         Requirement req = XRequirementBuilder.createArtifactRequirement(moduleid);
-        Capability cap = repository.findProviders(req).iterator().next();
+        Capability cap = repository.findProviders(Collections.singleton(req)).get(req).iterator().next();
         URL location = (URL) cap.getAttributes().get(XResourceConstants.CONTENT_URL);
         return context.installBundle(location.toExternalForm());
     }
