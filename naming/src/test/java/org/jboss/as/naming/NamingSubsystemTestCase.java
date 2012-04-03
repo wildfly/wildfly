@@ -39,12 +39,13 @@ public class NamingSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         return
-                "<subsystem xmlns=\"urn:jboss:domain:naming:1.1\" >" +
+                "<subsystem xmlns=\"urn:jboss:domain:naming:1.2\" >" +
                         "<bindings>" +
                             "<simple name=\"java:global/a\" value=\"100\" type=\"int\" />" +
                             "<object-factory name=\"java:global/b\" module=\"org.jboss.as.naming\" class=\"org.jboss.as.naming.ManagedReferenceObjectFactory\" />" +
                             "<lookup name=\"java:global/c\" lookup=\"java:global/b\" />" +
                         "</bindings>" +
+                        "<remote-naming/>" +
                 "</subsystem>";
     }
 

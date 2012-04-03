@@ -34,6 +34,11 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 /**
 * @author Stuart Douglas
 */
@@ -57,5 +62,12 @@ class NamingSubsystem10Parser implements XMLStreamConstants, XMLElementReader<Li
         ParseUtils.requireNoContent(reader);
 
         list.add(NamingExtension.createAddOperation());
+
+        final ModelNode remoteNamingAdd = new ModelNode();
+        remoteNamingAdd.get(OP).set(ADD);
+        remoteNamingAdd.get(OP_ADDR).add(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
+        remoteNamingAdd.get(OP_ADDR).add(NamingSubsystemModel.SERVICE, NamingSubsystemModel.REMOTE_NAMING);
+
+        list.add(remoteNamingAdd);
     }
 }
