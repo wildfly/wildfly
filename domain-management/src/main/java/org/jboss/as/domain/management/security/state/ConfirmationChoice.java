@@ -52,6 +52,9 @@ public class ConfirmationChoice implements State {
         this.prompt = prompt;
         this.yesState = yesState;
         this.noState = noState;
+        if (theConsole.getConsole() == null) {
+            throw MESSAGES.noConsoleAvailable();
+        }
     }
 
     @Override
@@ -70,7 +73,7 @@ public class ConfirmationChoice implements State {
             case NO:
                 return noState;
             default:
-                return new ErrorState(null, MESSAGES.invalidConfirmationResponse(), this);
+                return new ErrorState(theConsole, MESSAGES.invalidConfirmationResponse(), this);
         }
     }
 

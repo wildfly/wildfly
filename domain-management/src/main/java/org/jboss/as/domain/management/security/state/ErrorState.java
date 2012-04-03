@@ -50,6 +50,9 @@ public class ErrorState implements State {
         this.nextState = nextState;
         this.stateValues = stateValues;
         this.theConsole = theConsole;
+        if (theConsole.getConsole() == null) {
+            throw MESSAGES.noConsoleAvailable();
+        }
     }
 
     @Override

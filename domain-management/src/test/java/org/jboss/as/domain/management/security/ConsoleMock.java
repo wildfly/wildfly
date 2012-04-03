@@ -65,6 +65,6 @@ public class ConsoleMock implements ConsoleWrapper {
 
     @Override
     public Object getConsole() {
-        return null;
+        return this;
     }
 }

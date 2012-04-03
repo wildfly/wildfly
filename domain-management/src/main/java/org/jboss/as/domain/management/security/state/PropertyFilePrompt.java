@@ -43,6 +43,9 @@ public class PropertyFilePrompt implements State {
 
     public PropertyFilePrompt(ConsoleWrapper theConsole) {
         this.theConsole = theConsole;
+        if (theConsole.getConsole() == null) {
+            throw MESSAGES.noConsoleAvailable();
+        }
     }
 
     @Override
@@ -75,7 +78,7 @@ public class PropertyFilePrompt implements State {
                         stateValues.setRealm(DEFAULT_APPLICATION_REALM);
                         return new PropertyFileFinder(theConsole, stateValues);
                     default:
-                        return new ErrorState(null, MESSAGES.invalidChoiceResponse(), this);
+                        return new ErrorState(theConsole, MESSAGES.invalidChoiceResponse(), this);
                 }
             } else {
                 stateValues.setManagement(true);
