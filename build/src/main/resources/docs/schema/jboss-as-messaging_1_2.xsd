@@ -21,11 +21,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="urn:jboss:domain:messaging:1.1"
-           targetNamespace="urn:jboss:domain:messaging:1.1"
+           xmlns="urn:jboss:domain:messaging:1.2"
+           targetNamespace="urn:jboss:domain:messaging:1.2"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="1.1">
+           version="1.2">
 
     <!-- The messaging subsystem root element -->
     <xs:element name="subsystem">
@@ -731,6 +731,8 @@
          <xs:element name="group-id" type="xs:string" maxOccurs="1" minOccurs="0" />
          <xs:element name="user" type="xs:string" maxOccurs="1" minOccurs="0" />
          <xs:element name="password" type="xs:string" maxOccurs="1" minOccurs="0" />
+         <xs:element name="min-pool-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="max-pool-size" type="xs:int" maxOccurs="1" minOccurs="0" />
       </xs:all>
       <xs:attribute name="name" type="xs:string" />
    </xs:complexType>

@@ -65,6 +65,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE;
+import static org.jboss.as.messaging.Namespace.MESSAGING_1_0;
+import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
+import static org.jboss.as.messaging.Namespace.MESSAGING_1_2;
 
 /**
  * Domain extension that integrates HornetQ.
@@ -110,8 +113,7 @@ public class MessagingExtension implements Extension {
 
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
-        subsystem.registerXMLElementWriter(MessagingSubsystemParser.getInstance());
-
+        subsystem.registerXMLElementWriter(Messaging12SubsystemParser.getInstance());
         boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
         // Root resource
@@ -337,12 +339,9 @@ public class MessagingExtension implements Extension {
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
-        for (Namespace namespace : Namespace.values()) {
-            if (namespace == Namespace.UNKNOWN) {
-                continue;
-            }
-            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUriString(), MessagingSubsystemParser.getInstance());
-        }
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_0.getUriString(), MessagingSubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_1.getUriString(), MessagingSubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_2.getUriString(), Messaging12SubsystemParser.getInstance());
     }
 
     static void createParamRegistration(final ManagementResourceRegistration parent) {
