@@ -62,8 +62,8 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
-import org.osgi.framework.resource.Capability;
-import org.osgi.framework.resource.Requirement;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.repository.Repository;
 import org.osgi.service.startlevel.StartLevel;
@@ -75,6 +75,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -241,7 +242,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
             Repository repository = injectedRepository.getValue();
             MavenCoordinates mavenId = MavenCoordinates.parse(identifier);
             Requirement req = XRequirementBuilder.createArtifactRequirement(mavenId);
-            Collection<Capability> caps = repository.findProviders(req);
+            Collection<Capability> caps = repository.findProviders(Collections.singleton(req)).get(req);
             if (caps.isEmpty() == false) {
                 XIdentityCapability icap = (XIdentityCapability) caps.iterator().next();
                 URL bundleURL = (URL) icap.getAttribute(XResourceConstants.CONTENT_URL);

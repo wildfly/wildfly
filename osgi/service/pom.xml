@@ -39,16 +39,10 @@
         <version>7.1.2.Final-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-osgi-service</artifactId>
-
     <name>JBoss Application Server: OSGi Subsystem</name>
 
     <dependencies>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.resolver</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-ee</artifactId>

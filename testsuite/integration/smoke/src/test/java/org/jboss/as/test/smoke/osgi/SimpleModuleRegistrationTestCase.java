@@ -17,10 +17,9 @@
 package org.jboss.as.test.smoke.osgi;
 
 import static org.junit.Assert.assertEquals;
-import static org.osgi.framework.resource.ResourceConstants.IDENTITY_NAMESPACE;
-import static org.osgi.framework.resource.ResourceConstants.IDENTITY_TYPE_UNKNOWN;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +39,7 @@ import org.jboss.osgi.resolver.XPackageRequirement;
 import org.jboss.osgi.resolver.XResource;
 import org.jboss.osgi.resolver.XResourceBuilder;
 import org.jboss.osgi.resolver.XResourceBuilderFactory;
+import org.jboss.osgi.resolver.spi.AbstractResolveContext;
 import org.jboss.osgi.spi.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -47,10 +47,11 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Version;
-import org.osgi.framework.resource.Capability;
-import org.osgi.framework.resource.Resource;
-import org.osgi.framework.resource.ResourceConstants;
-import org.osgi.framework.resource.Wire;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Resource;
+import org.osgi.resource.Wire;
+import org.osgi.service.resolver.ResolveContext;
 import org.osgi.service.resolver.Resolver;
 
 /**
@@ -83,7 +84,7 @@ public class SimpleModuleRegistrationTestCase {
 
         // Build a package requirement
         XResourceBuilder builder = XResourceBuilderFactory.create();
-        builder.addIdentityCapability("somename", null, IDENTITY_TYPE_UNKNOWN, null, null);
+        builder.addIdentityCapability("somename", null, IdentityNamespace.TYPE_UNKNOWN, null, null);
         XPackageRequirement req = builder.addPackageRequirement(SimpleService.class.getPackage().getName(), null, null);
 
         // Find the providers for the requirement
@@ -103,13 +104,19 @@ public class SimpleModuleRegistrationTestCase {
 
         // Build a resource with a package requirement
         XResourceBuilder builder = XResourceBuilderFactory.create();
-        builder.addIdentityCapability("somename", null, IDENTITY_TYPE_UNKNOWN, null, null);
+        builder.addIdentityCapability("somename", null, IdentityNamespace.TYPE_UNKNOWN, null, null);
         builder.addPackageRequirement(SimpleService.class.getPackage().getName(), null, null);
-        XResource resource = builder.getResource();
+        final Resource resource = builder.getResource();
+
+        // Setup the resolve context
+        ResolveContext context = new AbstractResolveContext(getEnvironment()) {
+            public Collection<Resource> getMandatoryResources() {
+                return Collections.singleton(resource);
+            }
+        };
 
         // Find the providers
-        XEnvironment env = getEnvironment();
-        Map<Resource, List<Wire>> wiremap = getResolver().resolve(env, Collections.singleton(resource), null);
+        Map<Resource, List<Wire>> wiremap = getResolver().resolve(context);
         assertEquals(2, wiremap.size());
 
         // Verify the wires
