@@ -876,6 +876,9 @@
         <server-group name="main-server-group" profile="default">
             <jvm name="default">
                <heap size="64m" max-size="512m"/>
+                <environment-variables>
+                    <variable name="DOMAIN_TEST_MAIN_GROUP" value="main_group"/>
+                </environment-variables>               
             </jvm>
             <socket-binding-group ref="standard-sockets"/>
         </server-group>
