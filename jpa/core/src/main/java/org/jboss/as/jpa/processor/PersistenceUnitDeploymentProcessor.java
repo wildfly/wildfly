@@ -198,26 +198,37 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
     private void handleEarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isEarDeployment(deploymentUnit) && JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
-            // handle META-INF/persistence.xml
-            final List<ResourceRoot> deploymentRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
-            for (final ResourceRoot root : deploymentRoots) {
-                if (!SubDeploymentMarker.isSubDeployment(root)) {
-                    PersistenceUnitMetadataHolder holder;
-                    ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<PersistenceUnitMetadataHolder>(1);
 
-                    if (root != null &&
-                        (holder = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
-                        holder.getPersistenceUnits().size() > 0) {
-                        // assemble and install the PU service
-                        puList.add(holder);
+            final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+            if (!SubDeploymentMarker.isSubDeployment(deploymentRoot)) {
+                PersistenceUnitMetadataHolder holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
+                        if(holder!=null && holder.getPersistenceUnits().size()>0){
+                            JPA_LOGGER.warnOnWrongPerisistnceXMLRoot(deploymentRoot.getRoot().toString());
+                        }
+            }
+
+            // handle META-INF/persistence.xml in subdeployments if they exist.
+            final AttachmentList<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+            if(resourceRoots!=null){
+                for (final ResourceRoot root : resourceRoots) {
+
+                    if (!SubDeploymentMarker.isSubDeployment(root)) {
+                        PersistenceUnitMetadataHolder holder;
+                        ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<PersistenceUnitMetadataHolder>(1);
+
+                        if (root != null &&
+                            (holder = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
+                            holder.getPersistenceUnits().size() > 0) {
+                             // assemble and install the PU service
+                                puList.add(holder);
+                        }
+                        JPA_LOGGER.tracef("install persistence unit definitions for ear %s", root.getRootName());
+                        addPuService(phaseContext, puList);
                     }
-
-                    JPA_LOGGER.tracef("install persistence unit definitions for ear %s", root.getRootName());
-                    addPuService(phaseContext, puList);
                 }
             }
         }
-    }
+}
 
     /**
      * Add one PU service per top level deployment that represents
