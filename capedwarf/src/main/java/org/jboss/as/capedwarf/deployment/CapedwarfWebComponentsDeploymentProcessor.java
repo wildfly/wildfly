@@ -43,6 +43,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
     private final ServletMappingMetaData GAE_SERVLET_MAPPING;
     private final ServletMappingMetaData ADMIN_SERVLET_MAPPING;
     private final ResourceReferenceMetaData INFINISPAN_REF;
+    private final ResourceReferenceMetaData HS_REF;
 
     public CapedwarfWebComponentsDeploymentProcessor() {
         GAE_LISTENER = createGaeListener();
@@ -55,6 +56,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         ADMIN_SERVLET = createAdminServlet();
         ADMIN_SERVLET_MAPPING = createAdminServletMapping();
         INFINISPAN_REF = createInfinispanRef();
+        HS_REF = createHibernateSearchRef();
     }
 
     @Override
@@ -238,6 +240,14 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         return ref;
     }
 
+    private ResourceReferenceMetaData createHibernateSearchRef() {
+        ResourceReferenceMetaData ref = new ResourceReferenceMetaData();
+        ref.setResourceRefName("infinispan/container/HibernateSearch");
+        ref.setJndiName("java:jboss/infinispan/container/HibernateSearch");
+        ref.setType("org.infinispan.manager.EmbeddedCacheManager");
+        return ref;
+    }
+
     private void addResourceReference(WebMetaData webMetaData) {
         ResourceReferencesMetaData references = webMetaData.getResourceReferences();
         if (references == null) {
@@ -250,5 +260,6 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
             env.setResourceReferences(references);
         }
         references.add(INFINISPAN_REF);
+        references.add(HS_REF);
     }
 }
