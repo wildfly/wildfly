@@ -104,8 +104,6 @@
         <version.junit>4.10</version.junit>
         <version.log4j>1.2.16</version.log4j>
         <version.net.jcip>1.0</version.net.jcip>
-        <version.net.sourceforge.htmlunit>2.8</version.net.sourceforge.htmlunit>
-        <version.net.sourceforge.nekohtml>1.9.14</version.net.sourceforge.nekohtml>
         <version.org.apache.ant>1.8.2</version.org.apache.ant>
         <version.org.apache.cxf>2.4.6</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.4.0</version.org.apache.cxf.xjcplugins>
@@ -1479,50 +1477,6 @@
                 <groupId>net.jcip</groupId>
                 <artifactId>jcip-annotations</artifactId>
                 <version>${version.net.jcip}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>net.sourceforge.htmlunit</groupId>
-                <artifactId>htmlunit</artifactId>
-                <version>${version.net.sourceforge.htmlunit}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xerces</groupId>
-                        <artifactId>xercesImpl</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>net.sourceforge.htmlunit</groupId>
-                <artifactId>htmlunit-core-js</artifactId>
-                <version>${version.net.sourceforge.htmlunit}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xerces</groupId>
-                        <artifactId>xercesImpl</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>net.sourceforge.nekohtml</groupId>
-                <artifactId>nekohtml</artifactId>
-                <version>${version.net.sourceforge.nekohtml}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xerces</groupId>
-                        <artifactId>xercesImpl</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
