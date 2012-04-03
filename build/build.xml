@@ -470,10 +470,6 @@
             <maven-resource group="net.jcip" artifact="jcip-annotations"/>
         </module-def>
 
-        <module-def name="net.sourceforge.nekohtml">
-            <maven-resource group="net.sourceforge.nekohtml" artifact="nekohtml"/>
-        </module-def>
-
         <module-def name="org.apache.commons.beanutils">
             <maven-resource group="commons-beanutils" artifact="commons-beanutils"/>
         </module-def>
