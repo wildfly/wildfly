@@ -216,7 +216,7 @@ public class JvmXml {
                         throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
                     updates.add(Util.getWriteAttributeOperation(address, JVMHandlers.JVM_ENV_VARIABLES,
-                            CommonXml.parseProperties(reader, expectedNs)));
+                            CommonXml.parseEnvironmentVariables(reader, expectedNs)));
                     hasEnvironmentVariables = true;
                     break;
                 }

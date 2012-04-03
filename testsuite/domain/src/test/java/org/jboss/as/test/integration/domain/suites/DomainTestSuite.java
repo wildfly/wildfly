@@ -43,7 +43,8 @@ import org.junit.runners.Suite;
         ServerRestartRequiredTestCase.class,
         ManagementAccessTestCase.class,
         ManagementClientContentTestCase.class,
-        ValidateOperationOperationTestCase.class
+        ValidateOperationOperationTestCase.class,
+        ReadEnvironmentVariablesTestCase.class
 })
 public class DomainTestSuite {
 

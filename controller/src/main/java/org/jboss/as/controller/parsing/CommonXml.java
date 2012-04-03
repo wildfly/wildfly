@@ -419,11 +419,18 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     public static ModelNode parseProperties(final XMLExtendedStreamReader reader, final Namespace expectedNs) throws XMLStreamException {
+        return parseProperties(reader, expectedNs, Element.PROPERTY);
+    }
 
+    public static ModelNode parseEnvironmentVariables(final XMLExtendedStreamReader reader, final Namespace expectedNs) throws XMLStreamException {
+        return parseProperties(reader, expectedNs, Element.VARIABLE);
+    }
+
+    private static ModelNode parseProperties(final XMLExtendedStreamReader reader, final Namespace expectedNs, final Element element) throws XMLStreamException {
         final ModelNode properties = new ModelNode();
         while (reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
-            if (Element.forName(reader.getLocalName()) != Element.PROPERTY) {
+            if (Element.forName(reader.getLocalName()) != element) {
                 throw unexpectedElement(reader);
             }
             final String[] array = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.VALUE.getLocalName());
