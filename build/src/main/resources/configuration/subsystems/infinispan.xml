@@ -84,7 +84,7 @@
                        <property name="hibernate.search.default.directory_provider">infinispan</property>
                        <property name="hibernate.search.default.infinispan.cachemanager_jndiname">java:jboss/infinispan/container/HibernateSearch</property>
                        <property name="hibernate.search.default.worker.backend">jms</property>
-                       <property name="hibernate.search.default.worker.jms.connection_factory">/JmsXA</property>
+                       <property name="hibernate.search.default.worker.jms.connection_factory">/ConnectionFactory</property>
                        <property name="hibernate.search.default.worker.jms.queue">queue/indexing</property>
                    </indexing-properties>
                </distributed-cache>
@@ -112,7 +112,7 @@
                        <property name="hibernate.search.default.directory_provider">infinispan</property>
                        <property name="hibernate.search.infinispan.cachemanager_jndiname">java:jboss/infinispan/container/HibernateSearch</property>
                        <property name="hibernate.search.default.worker.backend">jms</property>
-                       <property name="hibernate.search.default.worker.jms.connection_factory">/JmsXA</property>
+                       <property name="hibernate.search.default.worker.jms.connection_factory">/ConnectionFactory</property>
                        <property name="hibernate.search.default.worker.jms.queue">queue/indexing</property>
                    </indexing-properties>
                </distributed-cache>

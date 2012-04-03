@@ -53,6 +53,7 @@
         <module name="org.jboss.weld.api" />
         <module name="org.jboss.weld.core" />
         <module name="org.infinispan" />
+        <module name="org.infinispan.query" />
         <module name="org.hibernate.search" />
     </dependencies>
 </module>
