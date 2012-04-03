@@ -22,7 +22,15 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import java.io.IOException;
+import com.arjuna.ats.arjuna.coordinator.TwoPhaseOutcome;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
+import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
+import org.jboss.ejb.client.XidTransactionID;
+import org.jboss.logging.Logger;
+import org.jboss.marshalling.MarshallerFactory;
+import org.xnio.IoUtils;
 
 import javax.transaction.HeuristicCommitException;
 import javax.transaction.HeuristicMixedException;
@@ -32,17 +40,7 @@ import javax.transaction.Transaction;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import com.arjuna.ats.arjuna.coordinator.TwoPhaseOutcome;
-import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
-import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
-import org.jboss.as.ejb3.EjbLogger;
-import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
-import org.jboss.ejb.client.XidTransactionID;
-import org.jboss.logging.Logger;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.remoting3.Channel;
-import org.xnio.IoUtils;
+import java.io.IOException;
 
 /**
  * @author Jaikiran Pai
@@ -53,9 +51,9 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
 
     XidTransactionPrepareTask(final TransactionRequestHandler txRequestHandler, final EJBRemoteTransactionsRepository transactionsRepository,
                               final MarshallerFactory marshallerFactory, final XidTransactionID xidTransactionID,
-                              final Channel channel, final short invocationId) {
+                              final ChannelAssociation channelAssociation, final short invocationId) {
 
-        super(txRequestHandler, transactionsRepository, marshallerFactory, xidTransactionID, channel, invocationId);
+        super(txRequestHandler, transactionsRepository, marshallerFactory, xidTransactionID, channelAssociation, invocationId);
     }
 
     @Override
@@ -66,11 +64,11 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
             try {
                 // write out a failure message to the channel to let the client know that
                 // the transaction operation failed
-                transactionRequestHandler.writeException(this.channel, this.marshallerFactory, this.invocationId, t, null);
+                transactionRequestHandler.writeException(this.channelAssociation, this.marshallerFactory, this.invocationId, t, null);
             } catch (IOException e) {
                 logger.error("Could not write out message to channel due to", e);
                 // close the channel
-                IoUtils.safeClose(this.channel);
+                IoUtils.safeClose(this.channelAssociation.getChannel());
             }
             return;
         }
@@ -82,11 +80,11 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
         final int prepareResult = this.prepareTransaction();
         // write out the "prepare" result
         try {
-            transactionRequestHandler.writeTxPrepareResponseMessage(this.channel, this.invocationId, prepareResult);
+            transactionRequestHandler.writeTxPrepareResponseMessage(this.channelAssociation, this.invocationId, prepareResult);
         } catch (IOException e) {
             logger.error("Could not write out invocation success message to channel due to", e);
             // close the channel
-            IoUtils.safeClose(this.channel);
+            IoUtils.safeClose(this.channelAssociation.getChannel());
         }
     }
 

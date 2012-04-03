@@ -27,7 +27,6 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManag
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.remoting3.Channel;
 
 import javax.transaction.Transaction;
 import javax.transaction.xa.Xid;
@@ -39,8 +38,8 @@ class XidTransactionBeforeCompletionTask extends XidTransactionManagementTask {
 
     XidTransactionBeforeCompletionTask(final TransactionRequestHandler txRequestHandler, final EJBRemoteTransactionsRepository transactionsRepository,
                                        final MarshallerFactory marshallerFactory, final XidTransactionID xidTransactionID,
-                                       final Channel channel, final short invocationId) {
-        super(txRequestHandler, transactionsRepository, marshallerFactory, xidTransactionID, channel, invocationId);
+                                       final ChannelAssociation channelAssociation, final short invocationId) {
+        super(txRequestHandler, transactionsRepository, marshallerFactory, xidTransactionID, channelAssociation, invocationId);
     }
 
     @Override

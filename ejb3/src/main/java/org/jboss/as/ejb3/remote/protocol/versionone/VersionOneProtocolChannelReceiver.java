@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.clustering.registry.RegistryCollector;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
@@ -35,6 +36,7 @@ import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageInputStream;
+import org.jboss.remoting3.MessageOutputStream;
 import org.xnio.IoUtils;
 
 import java.io.DataOutputStream;
@@ -66,7 +68,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     private static final byte HEADER_TX_FORGET_REQUEST = 0x12;
     private static final byte HEADER_TX_BEFORE_COMPLETION_REQUEST = 0x13;
 
-    private final Channel channel;
+    private final ChannelAssociation channelAssociation;
     private final DeploymentRepository deploymentRepository;
     private final EJBRemoteTransactionsRepository transactionsRepository;
     private final MarshallerFactory marshallerFactory;
@@ -74,11 +76,11 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     private final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector;
     private final Set<ClusterTopologyUpdateListener> clusterTopologyUpdateListeners = new HashSet<ClusterTopologyUpdateListener>();
 
-    public VersionOneProtocolChannelReceiver(final Channel channel, final DeploymentRepository deploymentRepository,
+    public VersionOneProtocolChannelReceiver(final ChannelAssociation channelAssociation, final DeploymentRepository deploymentRepository,
                                              final EJBRemoteTransactionsRepository transactionsRepository, final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector,
                                              final MarshallerFactory marshallerFactory, final ExecutorService executorService) {
         this.marshallerFactory = marshallerFactory;
-        this.channel = channel;
+        this.channelAssociation = channelAssociation;
         this.executorService = executorService;
         this.deploymentRepository = deploymentRepository;
         this.transactionsRepository = transactionsRepository;
@@ -86,9 +88,10 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     }
 
     public void startReceiving() {
-        this.channel.addCloseHandler(new ChannelCloseHandler());
+        final Channel channel = this.channelAssociation.getChannel();
+        channel.addCloseHandler(new ChannelCloseHandler());
 
-        this.channel.receiveMessage(this);
+        channel.receiveMessage(this);
         // listen to module availability/unavailability events
         this.deploymentRepository.addListener(this);
         // listen to new clusters (a.k.a groups) being started/stopped
@@ -172,7 +175,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
                     return;
             }
             // process the message
-            messageHandler.processMessage(channel, messageInputStream);
+            messageHandler.processMessage(channelAssociation, messageInputStream);
             // enroll for next message (whenever it's available)
             channel.receiveMessage(this);
 
@@ -192,10 +195,10 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         final Map<DeploymentModuleIdentifier, ModuleDeployment> availableModules = this.deploymentRepository.getModules();
         if (availableModules != null && !availableModules.isEmpty()) {
             try {
-                logger.debug("Sending initial module availability message, containing " + availableModules.size() + " module(s) to channel " + this.channel);
+                logger.debug("Sending initial module availability message, containing " + availableModules.size() + " module(s) to channel " + this.channelAssociation.getChannel());
                 this.sendModuleAvailability(availableModules.keySet().toArray(new DeploymentModuleIdentifier[availableModules.size()]));
             } catch (IOException e) {
-                logger.warn("Could not send initial module availability report to channel " + this.channel, e);
+                logger.warn("Could not send initial module availability report to channel " + this.channelAssociation.getChannel(), e);
             }
         }
     }
@@ -205,7 +208,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             this.sendModuleAvailability(new DeploymentModuleIdentifier[]{deploymentModuleIdentifier});
         } catch (IOException e) {
-            logger.warn("Could not send module availability notification of module " + deploymentModuleIdentifier + " to channel " + this.channel, e);
+            logger.warn("Could not send module availability notification of module " + deploymentModuleIdentifier + " to channel " + this.channelAssociation.getChannel(), e);
         }
     }
 
@@ -214,26 +217,42 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             this.sendModuleUnAvailability(new DeploymentModuleIdentifier[]{deploymentModuleIdentifier});
         } catch (IOException e) {
-            logger.warn("Could not send module un-availability notification of module " + deploymentModuleIdentifier + " to channel " + this.channel, e);
+            logger.warn("Could not send module un-availability notification of module " + deploymentModuleIdentifier + " to channel " + this.channelAssociation.getChannel(), e);
         }
     }
 
     private void sendModuleAvailability(DeploymentModuleIdentifier[] availableModules) throws IOException {
-        final DataOutputStream outputStream = new DataOutputStream(this.channel.writeMessage());
+        final DataOutputStream outputStream;
+        final MessageOutputStream messageOutputStream;
+        try {
+            messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
+        } catch (Exception e) {
+            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+        }
+        outputStream = new DataOutputStream(messageOutputStream);
         final ModuleAvailabilityWriter moduleAvailabilityWriter = new ModuleAvailabilityWriter();
         try {
             moduleAvailabilityWriter.writeModuleAvailability(outputStream, availableModules);
         } finally {
+            channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
             outputStream.close();
         }
     }
 
     private void sendModuleUnAvailability(DeploymentModuleIdentifier[] availableModules) throws IOException {
-        final DataOutputStream outputStream = new DataOutputStream(this.channel.writeMessage());
+        final DataOutputStream outputStream;
+        final MessageOutputStream messageOutputStream;
+        try {
+            messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
+        } catch (Exception e) {
+            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+        }
+        outputStream = new DataOutputStream(messageOutputStream);
         final ModuleAvailabilityWriter moduleAvailabilityWriter = new ModuleAvailabilityWriter();
         try {
             moduleAvailabilityWriter.writeModuleUnAvailability(outputStream, availableModules);
         } finally {
+            channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
             outputStream.close();
         }
     }
@@ -245,7 +264,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             this.sendNewClusterFormedMessage(Collections.singleton(registry));
         } catch (IOException ioe) {
             logger.warn("Could not send a cluster formation message for cluster: " + registry.getName()
-                    + " to the client on channel " + channel, ioe);
+                    + " to the client on channel " + this.channelAssociation.getChannel(), ioe);
         }
     }
 
@@ -271,12 +290,20 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
      * @throws IOException If any exception occurs while sending the message over the channel
      */
     private void sendNewClusterFormedMessage(final Collection<Registry<String, List<ClientMapping>>> clientMappingRegistries) throws IOException {
-        final DataOutputStream outputStream = new DataOutputStream(this.channel.writeMessage());
+        final DataOutputStream outputStream;
+        final MessageOutputStream messageOutputStream;
+        try {
+            messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
+        } catch (Exception e) {
+            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+        }
+        outputStream = new DataOutputStream(messageOutputStream);
         final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
         try {
-            logger.debug("Writing out cluster formation message for " + clientMappingRegistries.size() + " clusters, to channel " + this.channel);
+            logger.debug("Writing out cluster formation message for " + clientMappingRegistries.size() + " clusters, to channel " + this.channelAssociation.getChannel());
             clusterTopologyWriter.writeCompleteClusterTopology(outputStream, clientMappingRegistries);
         } finally {
+            channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
             outputStream.close();
         }
     }
@@ -288,12 +315,20 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
      * @throws IOException If any exception occurs while sending the message over the channel
      */
     private void sendClusterRemovedMessage(final Registry<String, List<ClientMapping>> registry) throws IOException {
-        final DataOutputStream outputStream = new DataOutputStream(this.channel.writeMessage());
+        final DataOutputStream outputStream;
+        final MessageOutputStream messageOutputStream;
+        try {
+            messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
+        } catch (Exception e) {
+            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+        }
+        outputStream = new DataOutputStream(messageOutputStream);
         final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
         try {
-            logger.debug("Cluster " + registry.getName() + " removed, writing cluster removal message to channel " + this.channel);
+            logger.debug("Cluster " + registry.getName() + " removed, writing cluster removal message to channel " + this.channelAssociation.getChannel());
             clusterTopologyWriter.writeClusterRemoved(outputStream, Collections.singleton(registry));
         } finally {
+            channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
             outputStream.close();
         }
     }
@@ -339,7 +374,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             try {
                 this.sendClusterNodesAdded(added);
             } catch (IOException ioe) {
-                logger.warn("Could not write a new cluster node addition message to channel " + this.channelReceiver.channel, ioe);
+                logger.warn("Could not write a new cluster node addition message to channel " + this.channelReceiver.channelAssociation.getChannel(), ioe);
             }
         }
 
@@ -353,7 +388,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             try {
                 this.sendClusterNodesRemoved(removed);
             } catch (IOException ioe) {
-                logger.warn("Could not write a cluster node removal message to channel " + this.channelReceiver.channel, ioe);
+                logger.warn("Could not write a cluster node removal message to channel " + this.channelReceiver.channelAssociation.getChannel(), ioe);
             }
         }
 
@@ -362,23 +397,39 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         }
 
         private void sendClusterNodesRemoved(final Set<String> removedNodes) throws IOException {
-            final DataOutputStream outputStream = new DataOutputStream(this.channelReceiver.channel.writeMessage());
+            final DataOutputStream outputStream;
+            final MessageOutputStream messageOutputStream;
+            try {
+                messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
+            } catch (Exception e) {
+                throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+            }
+            outputStream = new DataOutputStream(messageOutputStream);
             final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
             try {
-                logger.debug(removedNodes.size() + " nodes removed from cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channel);
+                logger.debug(removedNodes.size() + " nodes removed from cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channelAssociation.getChannel());
                 clusterTopologyWriter.writeNodesRemoved(outputStream, clusterName, removedNodes);
             } finally {
+                channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
                 outputStream.close();
             }
         }
 
         private void sendClusterNodesAdded(final Map<String, List<ClientMapping>> addedNodes) throws IOException {
-            final DataOutputStream outputStream = new DataOutputStream(this.channelReceiver.channel.writeMessage());
+            final DataOutputStream outputStream;
+            final MessageOutputStream messageOutputStream;
+            try {
+                messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
+            } catch (Exception e) {
+                throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+            }
+            outputStream = new DataOutputStream(messageOutputStream);
             final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
             try {
-                logger.debug(addedNodes.size() + " nodes added to cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channel);
+                logger.debug(addedNodes.size() + " nodes added to cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channelAssociation.getChannel());
                 clusterTopologyWriter.writeNewNodesAdded(outputStream, clusterName, addedNodes);
             } finally {
+                channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
                 outputStream.close();
             }
         }

@@ -32,6 +32,6 @@ import java.io.IOException;
  */
 interface MessageHandler {
 
-    void processMessage(final Channel channel, final MessageInputStream messageInputStream) throws IOException;
+    void processMessage(final ChannelAssociation channelAssociation, final MessageInputStream messageInputStream) throws IOException;
 
 }
