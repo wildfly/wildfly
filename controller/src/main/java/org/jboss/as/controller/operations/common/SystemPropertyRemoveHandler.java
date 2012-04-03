@@ -32,6 +32,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -64,7 +65,8 @@ public class SystemPropertyRemoveHandler implements OperationStepHandler, Descri
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        final ModelNode model = context.removeResource(PathAddress.EMPTY_ADDRESS).getModel();
+        final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        context.removeResource(PathAddress.EMPTY_ADDRESS);
 
         final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
         final String oldValue = model.hasDefined(VALUE) ? model.get(VALUE).asString() : null;
