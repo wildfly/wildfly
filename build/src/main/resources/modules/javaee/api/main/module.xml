@@ -54,18 +54,6 @@
         <module name="javax.xml.registry.api" export="true"/>
         <module name="javax.xml.soap.api" export="true"/>
         <module name="javax.xml.ws.api" export="true"/>
-        <module name="org.apache.santuario.xmlsec" export="true">
-            <exports>
-                <include-set>
-                    <path name="javax/xml/crypto"/>
-                    <path name="javax/xml/crypto/dom"/>
-                    <path name="javax/xml/crypto/dsig"/>
-                    <path name="javax/xml/crypto/dsig/dom"/>
-                    <path name="javax/xml/crypto/dsig/keyinfo"/>
-                    <path name="javax/xml/crypto/dsig/spec"/>
-                </include-set>
-            </exports>
-        </module>
 
         <!-- This one always goes last. -->
         <module name="javax.api" export="true"/>
