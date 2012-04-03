@@ -22,13 +22,12 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import javax.transaction.Transaction;
-
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.remoting3.Channel;
+
+import javax.transaction.Transaction;
 
 /**
  * @author Jaikiran Pai
@@ -37,8 +36,8 @@ class UserTransactionRollbackTask extends UserTransactionManagementTask {
 
     UserTransactionRollbackTask(final TransactionRequestHandler transactionRequestHandler, final EJBRemoteTransactionsRepository transactionsRepository,
                                 final MarshallerFactory marshallerFactory, final UserTransactionID userTransactionID,
-                                final Channel channel, final short invocationId) {
-        super(transactionRequestHandler, transactionsRepository, marshallerFactory, userTransactionID, channel, invocationId);
+                                final ChannelAssociation channelAssociation, final short invocationId) {
+        super(transactionRequestHandler, transactionsRepository, marshallerFactory, userTransactionID, channelAssociation, invocationId);
     }
 
     @Override

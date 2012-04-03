@@ -22,16 +22,15 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import java.io.IOException;
-
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.remoting3.Channel;
 import org.xnio.IoUtils;
+
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import java.io.IOException;
 
 
 /**
@@ -42,7 +41,7 @@ abstract class XidTransactionManagementTask implements Runnable {
     private static final Logger logger = Logger.getLogger(XidTransactionManagementTask.class);
 
     protected final short invocationId;
-    protected final Channel channel;
+    protected final ChannelAssociation channelAssociation;
     protected final EJBRemoteTransactionsRepository transactionsRepository;
     protected final XidTransactionID xidTransactionID;
     protected final MarshallerFactory marshallerFactory;
@@ -50,10 +49,10 @@ abstract class XidTransactionManagementTask implements Runnable {
 
     XidTransactionManagementTask(final TransactionRequestHandler txRequestHandler, final EJBRemoteTransactionsRepository transactionsRepository,
                                  final MarshallerFactory marshallerFactory, final XidTransactionID xidTransactionID,
-                                 final Channel channel, final short invocationId) {
+                                 final ChannelAssociation channelAssociation, final short invocationId) {
 
         this.transactionRequestHandler = txRequestHandler;
-        this.channel = channel;
+        this.channelAssociation = channelAssociation;
         this.marshallerFactory = marshallerFactory;
         this.invocationId = invocationId;
         this.transactionsRepository = transactionsRepository;
@@ -69,22 +68,22 @@ abstract class XidTransactionManagementTask implements Runnable {
                 logger.error("Error during transaction management of transaction id " + this.xidTransactionID, t);
                 // write out a failure message to the channel to let the client know that
                 // the transaction operation failed
-                transactionRequestHandler.writeException(this.channel, this.marshallerFactory, this.invocationId, t, null);
+                transactionRequestHandler.writeException(this.channelAssociation, this.marshallerFactory, this.invocationId, t, null);
             } catch (IOException e) {
                 logger.error("Could not write out message to channel due to", e);
                 // close the channel
-                IoUtils.safeClose(this.channel);
+                IoUtils.safeClose(this.channelAssociation.getChannel());
             }
             return;
         }
 
         try {
             // write out invocation success message to the channel
-            transactionRequestHandler.writeTxInvocationResponseMessage(this.channel, this.invocationId);
+            transactionRequestHandler.writeTxInvocationResponseMessage(this.channelAssociation, this.invocationId);
         } catch (IOException e) {
             logger.error("Could not write out invocation success message to channel due to", e);
             // close the channel
-            IoUtils.safeClose(this.channel);
+            IoUtils.safeClose(this.channelAssociation.getChannel());
         }
     }
 
