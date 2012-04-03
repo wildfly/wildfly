@@ -99,6 +99,12 @@
                 <path name="javax/swing/undo"/>
                 <path name="javax/tools"/>
                 <path name="javax/xml"/>
+                <path name="javax/xml/crypto"/>
+                <path name="javax/xml/crypto/dom"/>
+                <path name="javax/xml/crypto/dsig"/>
+                <path name="javax/xml/crypto/dsig/dom"/>
+                <path name="javax/xml/crypto/dsig/keyinfo"/>
+                <path name="javax/xml/crypto/dsig/spec"/>
                 <path name="javax/xml/datatype"/>
                 <path name="javax/xml/namespace"/>
                 <path name="javax/xml/parsers"/>
