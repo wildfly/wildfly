@@ -119,7 +119,8 @@ public class ProtocolChannelClient implements Closeable {
     }
 
     public Connection connectSync(CallbackHandler handler, Map<String, String> saslOptions, SSLContext sslContext) throws IOException {
-        WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(handler);
+        CallbackHandler actualHandler = handler != null ? handler : new AnonymousCallbackHandler();
+        WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(actualHandler);
         final IoFuture<Connection> future = connect(wrapperHandler, saslOptions, sslContext);
         long timeoutMillis = configuration.getConnectionTimeout();
         IoFuture.Status status = future.await(timeoutMillis, TimeUnit.MILLISECONDS);
