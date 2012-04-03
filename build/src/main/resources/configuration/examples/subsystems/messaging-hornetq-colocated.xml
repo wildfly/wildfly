@@ -90,7 +90,6 @@
                        <connector-ref connector-name="netty"/>
                    </connectors>
                    <entries>
-                       <entry name="RemoteConnectionFactory"/>
                        <entry name="java:jboss/exported/jms/RemoteConnectionFactory"/>
                    </entries>
                </connection-factory>
@@ -164,7 +163,7 @@
                </cluster-connection>
            </cluster-connections>
        </hornetq-server>
-   </subsystem>   
+   </subsystem>
    <socket-binding name="messaging" port="5445"/>
    <socket-binding name="messaging-backup" port="5545"/>
    <socket-binding name="messaging-throughput" port="5455"/>
