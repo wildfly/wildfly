@@ -37,7 +37,7 @@
 
     <name>JBoss Application Server: Build</name>
     <packaging>pom</packaging>
-    
+
     <properties>
         <!-- generated configs root dirs -->
         <generated.configs>${basedir}/target/generated-configs</generated.configs>
@@ -101,7 +101,7 @@
                         <version>${version.rhino.js}</version>
                     </dependency>
                 </dependencies>
-            </plugin>    
+            </plugin>
         </plugins>
     </build>
 
@@ -365,11 +365,6 @@
                 <dependency>
                     <groupId>net.jcip</groupId>
                     <artifactId>jcip-annotations</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>net.sourceforge.cssparser</groupId>
-                    <artifactId>cssparser</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1697,11 +1692,6 @@
                 <dependency>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-ext</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.w3c.css</groupId>
-                    <artifactId>sac</artifactId>
                 </dependency>
 
                 <dependency>
