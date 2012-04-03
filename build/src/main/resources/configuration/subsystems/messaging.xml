@@ -28,7 +28,7 @@
 
            <?BROADCAST-GROUPS?>
            <?DISCOVERY-GROUPS?>
-           <?CLUSTER-CONNECTIONS?> 
+           <?CLUSTER-CONNECTIONS?>
 
            <security-settings>
                <security-setting match="#">
@@ -45,9 +45,9 @@
                    <dead-letter-address>jms.queue.DLQ</dead-letter-address>
                    <expiry-address>jms.queue.ExpiryQueue</expiry-address>
                    <redelivery-delay>0</redelivery-delay>
-                   
+
                    <?REDISTRIBUTION-DELAY?>
-                   
+
                    <max-size-bytes>10485760</max-size-bytes>
                    <address-full-policy>BLOCK</address-full-policy>
                    <message-counter-history-day-limit>10</message-counter-history-day-limit>
@@ -68,7 +68,6 @@
                        <connector-ref connector-name="netty"/>
                    </connectors>
                    <entries>
-                       <entry name="RemoteConnectionFactory"/>
                        <entry name="java:jboss/exported/jms/RemoteConnectionFactory"/>
                    </entries>
                </connection-factory>
@@ -118,7 +117,7 @@
            <redistribution-delay>1000</redistribution-delay>
        </replacement>
    </supplement>
-   
+
    <socket-binding name="messaging" port="5445"/>
    <socket-binding name="messaging-throughput" port="5455"/>
    <socket-binding name="messaging-group" multicast-address="${jboss.messaging.group.address:231.7.7.7}" multicast-port="${jboss.messaging.group.port:9876}"/>
