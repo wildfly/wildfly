@@ -76,7 +76,7 @@ source_if_exists() {
 find_maven() {
     search="$*"
     for d in $search; do
-        MAVEN_HOME="`pwd`/$d"
+        MAVEN_HOME="${DIRNAME}/$d"
         MVN="$MAVEN_HOME/bin/mvn"
         if [ -x "$MVN" ]; then
             #  Found.
