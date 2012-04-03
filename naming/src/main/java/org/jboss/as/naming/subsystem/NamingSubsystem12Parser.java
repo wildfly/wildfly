@@ -52,6 +52,8 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CLASS;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.LOOKUP;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.REMOTE_NAMING;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SERVICE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
@@ -59,11 +61,11 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
 /**
  * @author Stuart Douglas
  */
-public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+public class NamingSubsystem12Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-    public static final NamingSubsystem11Parser INSTANCE = new NamingSubsystem11Parser();
+    public static final NamingSubsystem12Parser INSTANCE = new NamingSubsystem12Parser();
 
-    private NamingSubsystem11Parser() {
+    private NamingSubsystem12Parser() {
     }
 
     /**
@@ -72,7 +74,7 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(NamingExtension.NAMESPACE_1_1, false);
+        context.startSubsystemElement(NamingExtension.NAMESPACE_1_2, false);
 
         ModelNode model = context.getModelNode();
 
@@ -85,6 +87,12 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
             writer.writeEndElement();
         }
 
+        if(model.hasDefined(SERVICE)) {
+            final ModelNode service = model.get(SERVICE);
+            if(service.has(REMOTE_NAMING)) {
+                writer.writeEmptyElement(REMOTE_NAMING);
+            }
+        }
         // write the subsystem end element
         writer.writeEndElement();
     }
@@ -140,24 +148,17 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
 
 
-        final ModelNode namingSubsystemAdd = new ModelNode();
-        namingSubsystemAdd.get(OP).set(ADD);
-        namingSubsystemAdd.get(OP_ADDR).add(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
+        final ModelNode ejb3SubsystemAddOperation = new ModelNode();
+        ejb3SubsystemAddOperation.get(OP).set(ADD);
+        ejb3SubsystemAddOperation.get(OP_ADDR).add(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
 
-        operations.add(namingSubsystemAdd);
-
-        final ModelNode remoteNamingAdd = new ModelNode();
-        remoteNamingAdd.get(OP).set(ADD);
-        remoteNamingAdd.get(OP_ADDR).add(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
-        remoteNamingAdd.get(OP_ADDR).add(NamingSubsystemModel.SERVICE, NamingSubsystemModel.REMOTE_NAMING);
-
-        operations.add(remoteNamingAdd);
+        operations.add(ejb3SubsystemAddOperation);
 
         // elements
         final EnumSet<NamingSubsystemXMLElement> encountered = EnumSet.noneOf(NamingSubsystemXMLElement.class);
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (NamingSubsystemNamespace.forUri(reader.getNamespaceURI())) {
-                case NAMING_1_1: {
+                case NAMING_1_2: {
                     final NamingSubsystemXMLElement element = NamingSubsystemXMLElement.forName(reader.getLocalName());
                     if (!encountered.add(element)) {
                         throw unexpectedElement(reader);
@@ -165,6 +166,9 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
                     switch (element) {
                         case BINDINGS: {
                             parseBindings(reader, operations);
+                            break;
+                        } case REMOTE_NAMING: {
+                            parseRemoteNaming(reader, operations);
                             break;
                         }
                         default: {
@@ -178,6 +182,18 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
                 }
             }
         }
+    }
+
+    private void parseRemoteNaming(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
+        requireNoAttributes(reader);
+        requireNoContent(reader);
+
+        final ModelNode remoteNamingAdd = new ModelNode();
+        remoteNamingAdd.get(OP).set(ADD);
+        remoteNamingAdd.get(OP_ADDR).add(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
+        remoteNamingAdd.get(OP_ADDR).add(NamingSubsystemModel.SERVICE, NamingSubsystemModel.REMOTE_NAMING);
+
+        operations.add(remoteNamingAdd);
     }
 
 

@@ -35,7 +35,9 @@ public enum NamingSubsystemXMLElement {
     UNKNOWN(null),
 
     BINDINGS("bindings"),
+    REMOTE_NAMING("remote-naming"),
     SIMPLE("simple"),
+
 
     LOOKUP("lookup"),
 

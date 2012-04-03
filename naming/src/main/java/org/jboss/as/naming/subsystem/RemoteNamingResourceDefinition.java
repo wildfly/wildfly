@@ -22,35 +22,24 @@
 
 package org.jboss.as.naming.subsystem;
 
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
- * User: jpai
+ * A {@link org.jboss.as.controller.ResourceDefinition} for JNDI bindings
+ *
  */
-public interface NamingSubsystemModel {
+public class RemoteNamingResourceDefinition extends SimpleResourceDefinition {
 
-    String BINDING = "binding";
-    String BINDING_TYPE = "binding-type";
+    public static final RemoteNamingResourceDefinition INSTANCE = new RemoteNamingResourceDefinition();
 
-    String CLASS = "class";
+    private RemoteNamingResourceDefinition() {
+        super(NamingSubsystemModel.REMOTE_NAMING_PATH,
+                NamingExtension.getResourceDescriptionResolver(NamingSubsystemModel.REMOTE_NAMING),
+                RemoteNamingAdd.INSTANCE, RemoteNamingRemove.INSTANCE);
+    }
 
-    String LOOKUP = "lookup";
-
-    String OBJECT_FACTORY = "object-factory";
-
-    String MODULE = "module";
-
-    String REMOTE_NAMING = "remote-naming";
-
-    String SIMPLE = "simple";
-    String SERVICE = "service";
-
-    String TYPE = "type";
-
-    String VALUE = "value";
-
-    PathElement BINDING_PATH = PathElement.pathElement(BINDING);
-    PathElement REMOTE_NAMING_PATH = PathElement.pathElement(SERVICE, REMOTE_NAMING);
-
-
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+    }
 }
