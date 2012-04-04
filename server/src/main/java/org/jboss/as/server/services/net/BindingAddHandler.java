@@ -113,7 +113,7 @@ public class BindingAddHandler extends SocketBindingAddHandler {
 
         final ModelNode intfNode = AbstractSocketBindingResourceDefinition.INTERFACE.resolveModelAttribute(context, config);
         final String intf = intfNode.isDefined() ? intfNode.asString() : null;
-        final int port = AbstractSocketBindingResourceDefinition.PORT.resolveModelAttribute(context, config).asInt(0);
+        final int port = AbstractSocketBindingResourceDefinition.PORT.resolveModelAttribute(context, config).asInt();
         final boolean fixedPort = AbstractSocketBindingResourceDefinition.FIXED_PORT.resolveModelAttribute(context, config).asBoolean();
         final ModelNode mcastNode = AbstractSocketBindingResourceDefinition.MULTICAST_ADDRESS.resolveModelAttribute(context, config);
         final String mcastAddr = mcastNode.isDefined() ? mcastNode.asString() : null;

@@ -1,0 +1,64 @@
+{
+    "model-description" => {
+        "description" => "The OSGi subsystem configuration.",
+        "head-comment-allowed" => true,
+        "tail-comment-allowed" => true,
+        "namespace" => "urn:jboss:domain:osgi:1.2",
+        "attributes" => {
+            "activation" => {
+                "description" => "Activation flag for the OSGi subsystem. Possible values: lazy, eager.",
+                "type" => STRING,
+                "default" => "LAZY",
+                "access-type" => "read-write",
+                "restart-required" => "RESTART_JVM"
+            },
+            "startlevel" => {
+                "description" => "The current Start Level of the OSGi Framework. Changing this value will change the Start Level of the Framework accordingly.",
+                "type" => INT,
+                "access-type" => "read-write",
+                "restart-required" => "RESTART_NONE",
+                "storage" => "STORAGE_RUNTIME"
+            }
+        },
+        "children" => {
+            "property" => {"description" => "A framework property. The identity of the resource defines the property name."},
+            "capability" => {"description" => "A framework capability. A capability maps to a JBoss Module in the modules directory or an OSGi bundle in the bundles directory. The identity maps to the resource identifier of the module or bundle."},
+            "bundle" => {"description" => "Runtime bundle information. The resource can be identified by bundle id or bundle location."}
+        }
+    },
+    "address" => [("subsystem" => "osgi")],
+    "children" => [
+        {
+            "model-description" => {
+                "description" => "A framework capability. A capability maps to a JBoss Module in the modules directory or an OSGi bundle in the bundles directory. The identity maps to the resource identifier of the module or bundle.",
+                "attributes" => {"startlevel" => {
+                    "description" => "The startlevel for the capability. Can only be specified for OSGi bundles.",
+                    "type" => INT,
+                    "required" => false,
+                    "access-type" => "read-only",
+                    "restart-required" => "all-services"
+                }}
+            },
+            "address" => [
+                ("subsystem" => "osgi"),
+                ("capability" => "*")
+            ]
+        },
+        {
+            "model-description" => {
+                "description" => "A framework property. The identity of the resource defines the property name.",
+                "attributes" => {"value" => {
+                    "description" => "The framework property value.",
+                    "type" => STRING,
+                    "required" => true,
+                    "access-type" => "read-write",
+                    "restart-required" => "all-services"
+                }}
+            },
+            "address" => [
+                ("subsystem" => "osgi"),
+                ("property" => "*")
+            ]
+        }
+    ]
+}

@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Set;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
@@ -49,6 +50,29 @@ public class SimpleAttributeDefinitionBuilder {
     public static SimpleAttributeDefinitionBuilder create(final SimpleAttributeDefinition basis) {
         return new SimpleAttributeDefinitionBuilder(basis);
     }
+
+      /*
+     "code" => {
+         "type" => STRING,
+         "description" => "Fully Qualified Name of the Security Vault Implementation.",
+         "expressions-allowed" => false,
+         "nillable" => true,
+         "min-length" => 1L,
+         "max-length" => 2147483647L,
+         "access-type" => "read-write",
+         "storage" => "configuration",
+         "restart-required" => "no-services"
+     },
+     */
+      public static SimpleAttributeDefinitionBuilder create(final String name, final ModelNode node) {
+          ModelType type = node.get(ModelDescriptionConstants.TYPE).asType();
+          boolean nillable = node.get(ModelDescriptionConstants.NILLABLE).asBoolean(true);
+          boolean expressionAllowed = node.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).asBoolean(false);
+          ModelNode defaultValue = node.get(ModelDescriptionConstants.DEFAULT);
+          return SimpleAttributeDefinitionBuilder.create(name, type, nillable)
+                  .setDefaultValue(defaultValue)
+                  .setAllowExpression(expressionAllowed);
+      }
 
     private final String name;
     private final ModelType type;

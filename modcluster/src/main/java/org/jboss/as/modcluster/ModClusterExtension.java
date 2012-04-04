@@ -48,7 +48,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     public static final String SUBSYSTEM_NAME = "modcluster";
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME);
     static final PathElement CONFIGURATION_PATH = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
@@ -86,6 +86,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         dynamicLoadProvider.registerSubModel(CustomLoadMetricDefinition.INSTANCE);
 
         subsystem.registerXMLElementWriter(new ModClusterSubsystemXMLWriter());
+        subsystem.registerSubsystemTransformer(new ModClusterModelTransformer11());
     }
 
     @Override

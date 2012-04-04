@@ -133,12 +133,16 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             }
 
             final Resource resource = getResource(resourceAddress, rootResource, context);
-            if (resourceAddress.size() == 1 && resourceAddress.getElement(0).getKey().equals(EXTENSION)) {
-                final String module = resourceAddress.getElement(0).getValue();
-                if (!appliedExtensions.contains(module)) {
-                    appliedExtensions.add(module);
-                    initializeExtension(module);
+            try {
+                if (resourceAddress.size() == 1 && resourceAddress.getElement(0).getKey().equals(EXTENSION)) {
+                    final String module = resourceAddress.getElement(0).getValue();
+                    if (!appliedExtensions.contains(module)) {
+                        appliedExtensions.add(module);
+                        initializeExtension(module);
+                    }
                 }
+            } catch (Exception e) {
+                throw new OperationFailedException("Could not find resource for address '"+resourceAddress+"'");
             }
             resource.writeModel(resourceDescription.get("domain-resource-model"));
 

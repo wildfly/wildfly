@@ -21,20 +21,15 @@
 */
 package org.jboss.as.modcluster.test;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Set;
-
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.modcluster.ModClusterExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
+import java.io.IOException;
+
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Jean-Frederic Clere.
  */
@@ -45,35 +40,42 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-     public void testXsd10() throws Exception {
-         standardSubsystemTest("subsystem_1_0.xml");
-     }
+    public void testXsd10() throws Exception {
+        standardSubsystemTest("subsystem_1_0.xml");
+    }
 
 
-     @Override
-     protected String getSubsystemXml() throws IOException {
-         return readResource("subsystem.xml");
-     }
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return readResource("subsystem.xml");
+    }
 
-     @Override
-     protected String getSubsystemXml(String configId) throws IOException {
-         return readResource(configId);
-     }
+    @Override
+    protected String getSubsystemXml(String configId) throws IOException {
+        return readResource(configId);
+    }
 
 
-     @Override
-     protected AdditionalInitialization createAdditionalInitialization() {
-         return AdditionalInitialization.MANAGEMENT;
-     }
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.MANAGEMENT;
+    }
 
-     @Override
-     protected void compareXml(String configId, String original, String marshalled) throws Exception {
-         if (configId != null && configId.equals("subsystem_1_0.xml")) {
-             return;
-         }
+    @Override
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
+        if (configId != null && configId.equals("subsystem_1_0.xml")) {
+            return;
+        }
 
-         super.compareXml(configId, original, marshalled, true);
-     }
+        super.compareXml(configId, original, marshalled, true);
+    }
+
+    @Test
+    public void testConverter() throws Exception {
+        String dmr = readResource("modcluster-1.1.dmr");
+        ModelNode expected = ModelNode.fromString(dmr);
+        testConverter(expected, 1, 1);
+    }
 
 
 }

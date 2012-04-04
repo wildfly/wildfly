@@ -23,6 +23,7 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_MODEL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -35,6 +36,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.extension.SubsystemInformation;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
@@ -43,7 +46,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.security.AccessController;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -113,6 +118,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         APPLY_DOMAIN_MODEL.protect();
     }
 
+    private final ExtensionRegistry extensionRegistry;
     private final ModelController controller;
     private final ProductConfig productConfig;
     private final LocalHostControllerInfo localHostInfo;
@@ -131,18 +137,19 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private RemoteDomainConnection connection;
     private ManagementChannelHandler handler;
 
-    private RemoteDomainConnectionService(final ModelController controller, final LocalHostControllerInfo localHostControllerInfo, final ProductConfig productConfig, final RemoteFileRepository remoteFileRepository){
+    private RemoteDomainConnectionService(final ModelController controller, final ExtensionRegistry extensionRegistry, final LocalHostControllerInfo localHostControllerInfo, final ProductConfig productConfig, final RemoteFileRepository remoteFileRepository){
         this.controller = controller;
+        this.extensionRegistry = extensionRegistry;
         this.productConfig = productConfig;
         this.localHostInfo = localHostControllerInfo;
         this.remoteFileRepository = remoteFileRepository;
         remoteFileRepository.setRemoteFileRepositoryExecutor(remoteFileRepositoryExecutor);
     }
 
-    public static Future<MasterDomainControllerClient> install(final ServiceTarget serviceTarget, final ModelController controller,
+    public static Future<MasterDomainControllerClient> install(final ServiceTarget serviceTarget, final ModelController controller, final ExtensionRegistry extensionRegistry,
                                                                final LocalHostControllerInfo localHostControllerInfo, final ProductConfig productConfig,
                                                                final String securityRealm, final RemoteFileRepository remoteFileRepository) {
-        RemoteDomainConnectionService service = new RemoteDomainConnectionService(controller, localHostControllerInfo, productConfig, remoteFileRepository);
+        RemoteDomainConnectionService service = new RemoteDomainConnectionService(controller, extensionRegistry, localHostControllerInfo, productConfig, remoteFileRepository);
         ServiceBuilder builder = serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
                 .addDependency(ManagementRemotingServices.MANAGEMENT_ENDPOINT, Endpoint.class, service.endpointInjector)
                 .setInitialMode(ServiceController.Mode.ACTIVE);
@@ -273,7 +280,13 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             connection = new RemoteDomainConnection(localHostInfo.getLocalHostName(), hostInfo, configuration, realm,
                     localHostInfo.getRemoteDomainControllerUsername(), executor,
                     new RemoteDomainConnection.HostRegistrationCallback() {
+
                 @Override
+                public ModelNode resolveSubsystemVersions(ModelNode extensions) {
+                    return resolveSubsystems(extensions.asList());
+                }
+
+                        @Override
                 public boolean applyDomainModel(final List<ModelNode> bootOperations) {
                     // Apply the model..
                     return applyRemoteDomainModel(bootOperations);
@@ -293,6 +306,49 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         }
         this.connection = connection;
         this.handler = handler;
+    }
+
+    /**
+     * Resolve the subsystem versions.
+     *
+     * @param extensions the extensions to install
+     * @return the subsystem versions
+     */
+    private ModelNode resolveSubsystems(final List<ModelNode> extensions) {
+//        final ModelNode composite = new ModelNode();
+//        composite.get(OP).set(COMPOSITE);
+//        composite.get(OP_ADDR).setEmptyList();
+//        composite.get(STEPS).setEmptyList();
+//        for(final ModelNode extension : extensions) {
+//            final ModelNode operation = new ModelNode();
+//            operation.get(OP).set(ADD);
+//            operation.get(OP_ADDR).add(EXTENSION, extension.asString());
+//            composite.get(STEPS).add(operation);
+//        }
+//        final ModelNode result = controller.execute(composite, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT, OperationAttachments.EMPTY);
+
+        final List<ModelNode> bootOperations = new ArrayList<ModelNode>();
+        for(final ModelNode extension : extensions) {
+            final ModelNode e = new ModelNode();
+            e.get("domain-resource-address").add(EXTENSION, extension.asString());
+            bootOperations.add(e);
+        }
+        final ModelNode operation = APPLY_DOMAIN_MODEL.clone();
+        operation.get(DOMAIN_MODEL).set(bootOperations);
+        final ModelNode result = controller.execute(operation, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT, OperationAttachments.EMPTY);
+        if(! SUCCESS.equals(result.get(OUTCOME).asString())) {
+            throw new IllegalStateException();
+        }
+        final ModelNode subsystems = new ModelNode();
+        for(final ModelNode extension : extensions) {
+            final Map<String, SubsystemInformation> subsystemsInfo = extensionRegistry.getAvailableSubsystems(extension.asString());
+            if(subsystemsInfo != null && ! subsystemsInfo.isEmpty()) {
+                for(final Map.Entry<String, SubsystemInformation> entry : subsystemsInfo.entrySet()) {
+                    subsystems.add(entry.getKey(), entry.getValue().getManagementInterfaceMajorVersion() +"."+ entry.getValue().getManagementInterfaceMinorVersion());
+                }
+            }
+        }
+        return subsystems;
     }
 
     /**

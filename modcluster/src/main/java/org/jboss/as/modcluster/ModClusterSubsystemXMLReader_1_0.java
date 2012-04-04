@@ -284,7 +284,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     throw unexpectedAttribute(reader, i);
             }
         }
-        PathElement pe = PathElement.pathElement(ModClusterExtension.CUSTOM_LOAD_METRIC.getKey(), customMetric.get(CommonAttributes.TYPE).asString());
+        PathElement pe = PathElement.pathElement(ModClusterExtension.CUSTOM_LOAD_METRIC.getKey(), customMetric.get(CommonAttributes.CLASS).asString());
         customMetric.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         customMetric.get(ModelDescriptionConstants.OP_ADDR).set(address.append(pe).toModelNode());
         readProperties(reader, customMetric);

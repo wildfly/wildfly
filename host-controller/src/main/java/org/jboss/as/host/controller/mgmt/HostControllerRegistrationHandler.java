@@ -23,6 +23,9 @@
 package org.jboss.as.host.controller.mgmt;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
@@ -30,11 +33,21 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.remote.RemoteProxyController;
+import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.TransformationTargetImpl;
+import org.jboss.as.controller.transform.TransformerRegistry;
+import org.jboss.as.controller.transform.Transformers;
+import org.jboss.as.controller.transform.TransformersImpl;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerMessages;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
@@ -59,6 +72,7 @@ import org.jboss.remoting3.CloseHandler;
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -78,12 +92,12 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
     }
 
     private final ManagementChannelHandler handler;
-    private final ModelController controller;
+    private final OperationExecutor operationExecutor;
     private final DomainController domainController;
 
-    public HostControllerRegistrationHandler(ManagementChannelHandler handler, ModelController controller, DomainController domainController) {
+    public HostControllerRegistrationHandler(ManagementChannelHandler handler, DomainController domainController, OperationExecutor operationExecutor) {
         this.handler = handler;
-        this.controller = controller;
+        this.operationExecutor = operationExecutor;
         this.domainController = domainController;
     }
 
@@ -95,7 +109,10 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 // Start the registration process
                 final RegistrationContext context = new RegistrationContext();
                 context.activeOperation = handlers.registerActiveOperation(header.getBatchId(), context);
-                return new RegistrationRequestHandler();
+                return new InitiateRegistrationHandler();
+            case DomainControllerProtocol.REQUEST_SUBSYSTEM_VERSIONS:
+                // register the subsystem versions
+                return new RegisterSubsystemVersionsHandler();
             case DomainControllerProtocol.COMPLETE_HOST_CONTROLLER_REGISTRATION:
                 // Complete the registration process
                 return new CompleteRegistrationHandler();
@@ -104,9 +121,26 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
     }
 
     /**
-     * The handler for the request request. This will read the domain model and send it back to the host-controller.
+     * wrapper to the DomainController and the underlying {@code ModelController} to execute
+     * a {@code OperationStepHandler} implementation directly, bypassing normal domain coordination layer.
      */
-    class RegistrationRequestHandler implements ManagementRequestHandler<Void, RegistrationContext> {
+    public interface OperationExecutor {
+
+        /**
+         * Execute the operation.
+         *
+         * @param operation operation
+         * @param handler the message handler
+         * @param control the transaction control
+         * @param attachments the operation attachments
+         * @param step the step to be executed
+         * @return the result
+         */
+        ModelNode execute(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler step);
+
+    }
+
+    class InitiateRegistrationHandler implements ManagementRequestHandler<Void, RegistrationContext> {
 
         @Override
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<RegistrationContext> context) throws IOException {
@@ -120,6 +154,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             if(domainController.isHostRegistered(hostName)) {
                 registration.failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(hostName));
             }
+
             // Read the domain model async, this will block until the registration process is complete
             context.executeAsync(new ManagementRequestContext.AsyncTask<RegistrationContext>() {
                 @Override
@@ -128,7 +163,10 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                     final ModelNode result;
                     try {
                         // The domain model is going to be sent as part of the prepared notification
-                        result = controller.execute(READ_DOMAIN_MODEL, OperationMessageHandler.logging, registration, OperationAttachments.EMPTY);
+                        final OperationStepHandler handler = new HostRegistrationStepHandler(registration);
+                        operationExecutor.execute(READ_DOMAIN_MODEL, OperationMessageHandler.logging, registration, OperationAttachments.EMPTY, handler);
+
+                        //result = controller.execute(READ_DOMAIN_MODEL, OperationMessageHandler.logging, registration, OperationAttachments.EMPTY);
                     } catch (Exception e) {
                         registration.failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
                         return;
@@ -147,7 +185,27 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                     });
                 }
             });
+
         }
+
+    }
+
+    class RegisterSubsystemVersionsHandler implements ManagementRequestHandler<Void, RegistrationContext> {
+
+        @Override
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<RegistrationContext> context) throws IOException {
+            final byte status = input.readByte();
+            final ModelNode subsystems = new ModelNode();
+            subsystems.readExternal(input);
+
+            final RegistrationContext registration = context.getAttachment();
+            if(status == DomainControllerProtocol.PARAM_OK) {
+                registration.setSubsystems(subsystems, context);
+            } else {
+                registration.setSubsystems(null, context);
+            }
+        }
+
     }
 
     /**
@@ -166,6 +224,45 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
 
     }
 
+    class HostRegistrationStepHandler implements OperationStepHandler {
+
+        private RegistrationContext registrationContext;
+        protected HostRegistrationStepHandler(final RegistrationContext registrationContext) {
+            this.registrationContext = registrationContext;
+        }
+
+        @Override
+        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+            // First lock the domain controller
+            context.acquireControllerLock();
+            // Read the domain root model
+            final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
+            // Check the mgmt version
+            final ModelNode hostInfo = registrationContext.hostInfo;
+            boolean as711 = hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt() == 1 && hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt() == 1;
+            final ModelNode subsystems;
+            if(as711) {
+                throw new OperationFailedException("Host controller version too old, Only 7.1.2 or higer are supported!");
+            } else {
+                // Build the extensions list
+                final ModelNode extensions = new ModelNode();
+                final Collection<Resource.ResourceEntry> resources = root.getChildren(EXTENSION);
+                for(final Resource.ResourceEntry entry : resources) {
+                    extensions.add(entry.getName());
+                }
+                // Remotely resolve the subsystem versions
+                subsystems = registrationContext.resolveSubsystemVersions(extensions);
+            }
+            // Now run the read-domain model operation
+            final ReadMasterDomainModelHandler handler = new ReadMasterDomainModelHandler(registrationContext.transformers);
+            final ModelNode op = READ_DOMAIN_MODEL.clone();
+            op.get(SUBSYSTEM).set(subsystems);
+            context.addStep(op, handler, OperationContext.Stage.MODEL);
+            // Complete
+            context.completeStep();
+        }
+    }
+
     class RegistrationContext implements ModelController.OperationTransactionControl {
 
         private ManagementRequestContext<RegistrationContext> responseChannel;
@@ -177,10 +274,69 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         private final AtomicBoolean completed = new AtomicBoolean();
         private final CountDownLatch completedLatch = new CountDownLatch(1);
 
+        private final CountDownLatch subsystemsLatch = new CountDownLatch(1);
+        private ModelNode subsystems;
+        private Transformers transformers;
+
         protected synchronized void initialize(final String hostName, final ModelNode hostInfo, final ManagementRequestContext<RegistrationContext> responseChannel) {
             this.hostName = hostName;
             this.hostInfo = hostInfo;
             this.responseChannel = responseChannel;
+        }
+
+        protected ModelNode resolveSubsystemVersions(final ModelNode extensions) {
+            synchronized (this) {
+                // Check again with the controller lock held
+                if(domainController.isHostRegistered(hostName)) {
+                    failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(hostName));
+                    throw new IllegalStateException();
+                }
+                try {
+                    // Send the versions
+                    sendResponse(responseChannel, DomainControllerProtocol.PARAM_OK, extensions);
+                } catch (IOException e) {
+                    ProtocolLogger.ROOT_LOGGER.debugf(e, "failed to process message");
+                    failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
+                    throw new IllegalStateException(e);
+                }
+            }
+
+            try {
+                subsystemsLatch.await();
+            } catch (InterruptedException e) {
+                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
+                throw new IllegalStateException(e);
+            }
+            if(failed) {
+                throw new IllegalStateException();
+            }
+            final ModelNode subsystems;
+            synchronized (this) {
+                subsystems = this.subsystems;
+            }
+            if(subsystems == null) {
+                throw new IllegalStateException();
+            }
+            return subsystems;
+        }
+
+        protected void setSubsystems(final ModelNode resolved, final ManagementRequestContext<RegistrationContext> responseChannel) {
+            synchronized (this) {
+                if(failed) {
+                    throw new IllegalStateException();
+                }
+                this.responseChannel = responseChannel;
+                setSubsystemVersions(resolved);
+                subsystemsLatch.countDown();
+            }
+        }
+
+        protected void setSubsystemVersions(final ModelNode subsystems) {
+            this.subsystems = subsystems;
+            int major = hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt();
+            int minor = hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt();
+            TransformationTarget target = TransformationTargetImpl.create(major, minor, subsystems);
+            transformers = Transformers.Factory.create(target);
         }
 
         @Override
@@ -238,9 +394,10 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 // Create the proxy controller
                 final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostName));
                 final RemoteProxyController proxy = RemoteProxyController.create(handler, addr, ProxyOperationAddressTranslator.HOST);
-                // Register proxy controller
+                final TransformingProxyController transforming = TransformingProxyController.Factory.create(proxy, transformers);
                 try {
-                    domainController.registerRemoteHost(proxy);
+                    // Register proxy controller
+                    domainController.registerRemoteHost(transforming);
                 } catch (SlaveRegistrationException e) {
                     failed(e.getErrorCode(), e.getErrorMessage());
                     return;
@@ -255,20 +412,19 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                     transaction.rollback();
                     return;
                 }
-
-                final String productName;
-                if(hostInfo.hasDefined(PRODUCT_NAME)) {
-                    final String name = hostInfo.get(PRODUCT_NAME).asString();
-                    final String version1 = hostInfo.get(PRODUCT_VERSION).asString();
-                    final String version2 = hostInfo.get(RELEASE_VERSION).asString();
-                    productName = ProductConfig.getPrettyVersionString(name, version1, version2);
-                } else {
-                    String version1 = hostInfo.get(RELEASE_VERSION).asString();
-                    String version2 = hostInfo.get(RELEASE_CODENAME).asString();
-                    productName = ProductConfig.getPrettyVersionString(null, version1, version2);
-                }
-                DOMAIN_LOGGER.registeredRemoteSlaveHost(hostName, productName);
             }
+            final String productName;
+            if(hostInfo.hasDefined(PRODUCT_NAME)) {
+                final String name = hostInfo.get(PRODUCT_NAME).asString();
+                final String version1 = hostInfo.get(PRODUCT_VERSION).asString();
+                final String version2 = hostInfo.get(RELEASE_VERSION).asString();
+                productName = ProductConfig.getPrettyVersionString(name, version1, version2);
+            } else {
+                String version1 = hostInfo.get(RELEASE_VERSION).asString();
+                String version2 = hostInfo.get(RELEASE_CODENAME).asString();
+                productName = ProductConfig.getPrettyVersionString(null, version1, version2);
+            }
+            DOMAIN_LOGGER.registeredRemoteSlaveHost(hostName, productName);
         }
 
         void completeRegistration(final ManagementRequestContext<RegistrationContext> responseChannel, boolean commit) {

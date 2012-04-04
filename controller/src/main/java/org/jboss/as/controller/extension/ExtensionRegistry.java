@@ -22,23 +22,6 @@
 
 package org.jboss.as.controller.extension;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import javax.xml.namespace.QName;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.Extension;
@@ -64,16 +47,34 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.transform.SubsystemTransformer;
+import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
 
+import javax.xml.namespace.QName;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 /**
-* A registry for information about {@link Extension}s to the core application server.
-*
-* @author Brian Stansberry (c) 2011 Red Hat Inc.
-*/
+ * A registry for information about {@link Extension}s to the core application server.
+ *
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ */
 public class ExtensionRegistry {
 
     private final ProcessType processType;
@@ -89,6 +90,10 @@ public class ExtensionRegistry {
     private final RunningModeControl runningModeControl;
     // protected by extensions
     private boolean unnamedMerged;
+    private final ConcurrentHashMap<String, SubsystemInformation> subsystemsInfo = new ConcurrentHashMap<String, SubsystemInformation>();
+    /*private ModelTransformer modelTransformer = new SimpleModelTransformer();
+    private Map<String,SubsystemModelTransformer> subsystemTransformers = new HashMap<String, SubsystemModelTransformer>();*/
+    private final TransformerRegistry transformerRegistry = TransformerRegistry.Factory.create(this);
 
     public ExtensionRegistry(ProcessType processType, RunningModeControl runningModeControl) {
         this.processType = processType;
@@ -107,7 +112,7 @@ public class ExtensionRegistry {
     /**
      * Sets the {@link SubsystemXmlWriterRegistry} to use for storing subsystem marshallers.
      *
-     * @param writerRegistry  the writer registry
+     * @param writerRegistry the writer registry
      */
     public void setWriterRegistry(final SubsystemXmlWriterRegistry writerRegistry) {
         this.writerRegistry = writerRegistry;
@@ -128,9 +133,10 @@ public class ExtensionRegistry {
      * should be registered.
      *
      * @param profileResourceRegistration the {@link ManagementResourceRegistration} for the resource under which
-     *           subsystem child resources should be registered. Cannot be {@code null}
-     * @param deploymentsResourceRegistration the {@link ManagementResourceRegistration} for the deployments resource.
-     *                                        May be {@code null} if deployment resources are not supported
+     *                                    subsystem child resources should be registered. Cannot be {@code null}
+     * @param deploymentsResourceRegistration
+     *                                    the {@link ManagementResourceRegistration} for the deployments resource.
+     *                                    May be {@code null} if deployment resources are not supported
      */
     public void setSubsystemParentResourceRegistrations(ManagementResourceRegistration profileResourceRegistration,
                                                         ManagementResourceRegistration deploymentsResourceRegistration) {
@@ -143,9 +149,17 @@ public class ExtensionRegistry {
             PathAddress subdepAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBDEPLOYMENT));
             final ManagementResourceRegistration subdeployments = deploymentsResourceRegistration.getSubModel(subdepAddress);
             this.deploymentsRegistration = subdeployments == null ? deploymentsResourceRegistration
-                        : new DeploymentManagementResourceRegistration(deploymentsResourceRegistration, subdeployments);
+                    : new DeploymentManagementResourceRegistration(deploymentsResourceRegistration, subdeployments);
 
         }
+    }
+
+    public ManagementResourceRegistration getProfileRegistration() {
+        return profileRegistration;
+    }
+
+    public SubsystemInformation getSubsystemInfo(final String name) {
+        return subsystemsInfo.get(name);
     }
 
     /**
@@ -159,8 +173,8 @@ public class ExtensionRegistry {
 
     /**
      * Gets information about the subsystems provided by a given {@link Extension}.
-     * @param moduleName  the name of the extension's module. Cannot be {@code null}
      *
+     * @param moduleName the name of the extension's module. Cannot be {@code null}
      * @return map of subsystem names to information about the subsystem.
      */
     public Map<String, SubsystemInformation> getAvailableSubsystems(String moduleName) {
@@ -180,10 +194,9 @@ public class ExtensionRegistry {
      * {@link Extension#initializeParsers(ExtensionParsingContext) initializing the extension's parsers}.
      *
      * @param moduleName the name of the extension's module. Cannot be {@code null}
-     * @param xmlMapper the {@link XMLMapper} handling the extension parsing. Can be {@code null} if there won't
-     *                  be any actual parsing (e.g. in a slave Host Controller or in a server in a managed domain)
-     *
-     * @return  the {@link ExtensionParsingContext}.  Will not return {@code null}
+     * @param xmlMapper  the {@link XMLMapper} handling the extension parsing. Can be {@code null} if there won't
+     *                   be any actual parsing (e.g. in a slave Host Controller or in a server in a managed domain)
+     * @return the {@link ExtensionParsingContext}.  Will not return {@code null}
      */
     public ExtensionParsingContext getExtensionParsingContext(final String moduleName, final XMLMapper xmlMapper) {
         return new ExtensionParsingContextImpl(moduleName, xmlMapper);
@@ -197,6 +210,8 @@ public class ExtensionRegistry {
      *
      * @return  the {@link ExtensionContext}.  Will not return {@code null}
      *
+     * @param moduleName the name of the extension's module. Cannot be {@code null}
+     * @return the {@link ExtensionContext}.  Will not return {@code null}
      * @throws IllegalStateException if no {@link #setSubsystemParentResourceRegistrations(ManagementResourceRegistration, ManagementResourceRegistration)} profile resource registration has been set}
      */
     public ExtensionContext getExtensionContext(final String moduleName) {
@@ -211,7 +226,7 @@ public class ExtensionRegistry {
      * subsystem and will not appear as part of the result of this method.
      *
      * @param moduleName the name of the extension's module. Cannot be {@code null}
-     * @return  the namespace URIs, or an empty set if there are none. Will not return {@code null}
+     * @return the namespace URIs, or an empty set if there are none. Will not return {@code null}
      */
     public Set<String> getUnnamedNamespaces(final String moduleName) {
         mergeUnnamedParsers();
@@ -232,7 +247,7 @@ public class ExtensionRegistry {
      * Cleans up a module's subsystems from the resource registration model.
      *
      * @param rootResource the model root resource
-     * @param moduleName the name of the extension's module. Cannot be {@code null}
+     * @param moduleName   the name of the extension's module. Cannot be {@code null}
      * @throws IllegalStateException if the extension still has subsystems present in {@code rootResource} or its children
      */
     public void removeExtension(Resource rootResource, String moduleName) throws IllegalStateException {
@@ -332,28 +347,9 @@ public class ExtensionRegistry {
         }
     }
 
-    public static interface SubsystemInformation {
-
-        /**
-         * Gets the URIs of the XML namespaces the subsystem can parse.
-         *
-         * @return list of XML namespace URIs. Will not return {@code null}
-         */
-        List<String> getXMLNamespaces();
-
-        /**
-         * Gets the major version of the subsystem's management interface, if available.
-         * @return the major interface version, or {@code null} if the subsystem does not have a versioned interface
-         */
-        Integer getManagementInterfaceMajorVersion();
-
-        /**
-         * Gets the minor version of the subsystem's management interface, if available.
-         * @return the minor interface version, or {@code null} if the subsystem does not have a versioned interface
-         */
-        Integer getManagementInterfaceMinorVersion();
+    public TransformerRegistry getTransformerRegistry() {
+        return transformerRegistry;
     }
-
 
     private class ExtensionParsingContextImpl implements ExtensionParsingContext {
 
@@ -406,10 +402,11 @@ public class ExtensionRegistry {
         }
     }
 
-    private class ExtensionContextImpl implements ExtensionContext {
+    public class ExtensionContextImpl implements ExtensionContext {
 
         private final ExtensionInfo extension;
         private final PathManager pathManager;
+        private String subsystemName;
 
         private ExtensionContextImpl(String extensionName, PathManager pathManager) {
             assert pathManager != null || !processType.isServer() : "pathManager is null";
@@ -419,21 +416,14 @@ public class ExtensionRegistry {
 
 
         @Override
-        public SubsystemRegistration registerSubsystem(String name) throws IllegalArgumentException, IllegalStateException {
-            assert name != null : "name is null";
-            checkNewSubystem(extension.extensionModuleName, name);
-            extension.getSubsystemInfo(name); // establishes the SubsystemInfo
-            return new SubsystemRegistrationImpl(name);
-        }
-
-
-        @Override
         public SubsystemRegistration registerSubsystem(String name, int majorVersion, int minorVersion) throws IllegalArgumentException, IllegalStateException {
             assert name != null : "name is null";
+            this.subsystemName = name;
             checkNewSubystem(extension.extensionModuleName, name);
             SubsystemInformationImpl info = extension.getSubsystemInfo(name);
             info.setMajorVersion(majorVersion);
             info.setMinorVersion(minorVersion);
+            subsystemsInfo.put(name, info);
             return new SubsystemRegistrationImpl(name);
         }
 
@@ -495,7 +485,7 @@ public class ExtensionRegistry {
         }
     }
 
-    private class SubsystemRegistrationImpl implements SubsystemRegistration {
+    public class SubsystemRegistrationImpl implements SubsystemRegistration {
         private final String name;
 
         private SubsystemRegistrationImpl(String name) {
@@ -535,8 +525,8 @@ public class ExtensionRegistry {
             assert resourceDefinition != null : "resourceDefinition is null";
             final ManagementResourceRegistration deploymentsReg = deploymentsRegistration;
             ManagementResourceRegistration base = deploymentsReg != null
-                ? deploymentsReg
-                : getDummyRegistration();
+                    ? deploymentsReg
+                    : getDummyRegistration();
             return base.registerSubModel(resourceDefinition);
         }
 
@@ -545,18 +535,24 @@ public class ExtensionRegistry {
             writerRegistry.registerSubsystemWriter(name, writer);
         }
 
+        @Override
+        public void registerSubsystemTransformer(SubsystemTransformer subsystemTransformer) {
+            transformerRegistry.registerSubsystemTransformer(name, subsystemTransformer);
+
+        }
+
         private ManagementResourceRegistration getDummyRegistration() {
-             return ManagementResourceRegistration.Factory.create(new DescriptionProvider() {
-                    @Override
-                    public ModelNode getModelDescription(Locale locale) {
-                        return  new ModelNode();
-                    }
-                });
+            return ManagementResourceRegistration.Factory.create(new DescriptionProvider() {
+                @Override
+                public ModelNode getModelDescription(Locale locale) {
+                    return new ModelNode();
+                }
+            });
         }
 
     }
 
-    private class ExtensionInfo {
+    public class ExtensionInfo {
         private final Map<String, SubsystemInformation> subsystems = new HashMap<String, SubsystemInformation>();
         private final Set<String> unnamedParsers = new HashSet<String>();
         private final String extensionModuleName;
@@ -598,7 +594,7 @@ public class ExtensionRegistry {
         }
 
         @Override
-        public void setRuntimeOnly(final boolean runtimeOnly){
+        public void setRuntimeOnly(final boolean runtimeOnly) {
             deployments.setRuntimeOnly(runtimeOnly);
             subdeployments.setRuntimeOnly(runtimeOnly);
         }

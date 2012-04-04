@@ -22,8 +22,8 @@
 
 package org.jboss.as.controller;
 
+
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.services.path.PathManagerService;
 
 /**
  * The context for registering a new extension.
@@ -33,27 +33,6 @@ import org.jboss.as.controller.services.path.PathManagerService;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public interface ExtensionContext {
-
-    /**
-     * Register a new subsystem type.  The returned registration object should be used
-     * to configure XML parsers, operation handlers, and other subsystem-specific constructs
-     * for the new subsystem.  If the subsystem registration is deemed invalid by the time the
-     * extension registration is complete, the subsystem registration will be ignored, and an
-     * error message will be logged.
-     * <p>
-     * The new subsystem registration <em>must</em> register a handler and description for the
-     * {@code add} operation at its root address.  The new subsystem registration <em>must</em> register a
-     * {@code remove} operation at its root address.
-     *
-     * @param name the name of the subsystem
-     *
-     * @return the {@link SubsystemRegistration}
-     * @throws IllegalStateException if the subsystem name has already been registered
-     *
-     * @deprecated use {@link #registerSubsystem(String, int, int)}
-     */
-    @Deprecated
-    SubsystemRegistration registerSubsystem(String name);
 
     /**
      * Register a new subsystem type.  The returned registration object should be used

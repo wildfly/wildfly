@@ -22,6 +22,9 @@
 
 package org.jboss.as.host.controller;
 
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -78,6 +81,7 @@ import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
 import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepository;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
+import org.jboss.as.host.controller.mgmt.HostControllerRegistrationHandler;
 import org.jboss.as.host.controller.mgmt.MasterDomainControllerOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
@@ -338,7 +342,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
                     if (hostControllerInfo.getRemoteDomainControllerHost() != null) {
                         Future<MasterDomainControllerClient> clientFuture = RemoteDomainConnectionService.install(serviceTarget,
-                                getValue(),
+                                getValue(), extensionRegistry,
                                 hostControllerInfo,
                                 environment.getProductConfig(),
                                 hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
@@ -387,7 +391,14 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
                     if (ok) {
                         ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                                new MasterDomainControllerOperationHandlerService(this),
+                                new MasterDomainControllerOperationHandlerService(this, new HostControllerRegistrationHandler.OperationExecutor() {
+
+                                    @Override
+                                    public ModelNode execute(final ModelNode operation, final OperationMessageHandler handler, final ModelController.OperationTransactionControl control, final OperationAttachments attachments, final OperationStepHandler step) {
+                                        return internalExecute(operation, handler, control, attachments, step);
+                                    }
+
+                                }),
                                 DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL, null, null);
                         serverInventory = getFuture(inventoryFuture);
                     }

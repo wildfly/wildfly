@@ -94,6 +94,7 @@ import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.domain.controller.descriptions.DomainAttributes;
+import org.jboss.as.controller.transform.SubsystemDescriptionDump;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
 import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
@@ -326,8 +327,10 @@ public class DomainModelUtil {
                     contentRepo, hostControllerInfo, ignoredDomainResourceRegistry);
             root.registerOperationHandler(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME, armdmh, armdmh, false, OperationEntry.EntryType.PRIVATE);
         } else {
-            final ReadMasterDomainModelHandler rmdmh = ReadMasterDomainModelHandler.INSTANCE;
-            root.registerOperationHandler(ReadMasterDomainModelHandler.OPERATION_NAME, rmdmh, rmdmh, false, OperationEntry.EntryType.PRIVATE, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+//            final ReadMasterDomainModelHandler rmdmh = new ReadMasterDomainModelHandler(extensionRegistry);
+//            root.registerOperationHandler(ReadMasterDomainModelHandler.OPERATION_NAME, rmdmh, rmdmh, false, OperationEntry.EntryType.PRIVATE, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+            final SubsystemDescriptionDump dumper = new SubsystemDescriptionDump(extensionRegistry);
+            root.registerOperationHandler(SubsystemDescriptionDump.OPERATION_NAME, dumper, SubsystemDescriptionDump.DESCRIPTION, false, OperationEntry.EntryType.PRIVATE, EnumSet.of(OperationEntry.Flag.READ_ONLY));
         }
     }
 

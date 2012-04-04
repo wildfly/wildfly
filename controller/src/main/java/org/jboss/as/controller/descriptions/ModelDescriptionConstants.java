@@ -197,6 +197,7 @@ public class ModelDescriptionConstants {
     public static final String READ_RESOURCE_DESCRIPTION_OPERATION = "read-resource-description";
     public static final String READ_RESOURCE_METRICS = "read-resource-metrics";
     public static final String READ_RESOURCE_OPERATION = "read-resource";
+    public static final String READ_TRANSFORMED_RESOURCE_OPERATION = "read-transformed-resource";
     public static final String RECURSIVE = "recursive";
     public static final String RECURSIVE_DEPTH = "recursive-depth";
     public static final String REDEPLOY = "redeploy";

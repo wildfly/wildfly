@@ -212,6 +212,7 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
             }
             ok = true;
             reconnectionCount = 0;
+            registered();
             return result;
         } finally {
             if(!ok) {
@@ -293,6 +294,16 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
     }
 
     /**
+     * Resolve the subsystem versions.
+     *
+     * @param extensions the extensions
+     * @return the resolved subsystem versions
+     */
+    ModelNode resolveSubsystemVersions(ModelNode extensions) {
+        return callback.resolveSubsystemVersions(extensions);
+    }
+
+    /**
      * Apply the remote read domain model result.
      *
      * @param result the domain model result
@@ -345,6 +356,14 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
     static interface HostRegistrationCallback {
 
         /**
+         * Get the versions for all registered subsystems.
+         *
+         * @param extensions the extension list
+         * @return the subsystem versions
+         */
+        ModelNode resolveSubsystemVersions(ModelNode extensions);
+
+        /**
          * Apply the remote domain model.
          *
          * @param result the read-domain-model operation result
@@ -376,6 +395,47 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
             output.write(DomainControllerProtocol.PARAM_HOST_ID);
             output.writeUTF(localHostName);
             localHostInfo.writeExternal(output);
+        }
+
+        @Override
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<RegistrationResult> resultHandler, final ManagementRequestContext<Void> context) throws IOException {
+            byte param = input.readByte();
+            // If it failed
+            if(param != DomainControllerProtocol.PARAM_OK) {
+                final byte errorCode = input.readByte();
+                final String message =  input.readUTF();
+                resultHandler.done(new RegistrationResult(errorCode, message));
+                return;
+            }
+            final ModelNode extensions = new ModelNode();
+            extensions.readExternal(input);
+            context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
+                @Override
+                public void execute(ManagementRequestContext<Void> voidManagementRequestContext) throws Exception {
+                    //
+                    final ModelNode subsystems = resolveSubsystemVersions(extensions);
+                    channelHandler.executeRequest(context.getOperationId(), new RegisterSubsystemsRequest(subsystems));
+                }
+            });
+        }
+    }
+
+    private class RegisterSubsystemsRequest extends AbstractManagementRequest<RegistrationResult, Void> {
+
+        private final ModelNode subsystems;
+        private RegisterSubsystemsRequest(ModelNode subsystems) {
+            this.subsystems = subsystems;
+        }
+
+        @Override
+        public byte getOperationType() {
+            return DomainControllerProtocol.REQUEST_SUBSYSTEM_VERSIONS;
+        }
+
+        @Override
+        protected void sendRequest(ActiveOperation.ResultHandler<RegistrationResult> registrationResultResultHandler, ManagementRequestContext<Void> voidManagementRequestContext, FlushableDataOutput output) throws IOException {
+            output.writeByte(DomainControllerProtocol.PARAM_OK);
+            subsystems.writeExternal(output);
         }
 
         @Override

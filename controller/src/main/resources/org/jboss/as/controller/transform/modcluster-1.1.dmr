@@ -1,0 +1,239 @@
+{
+    "model-description" => {
+        "description" => "The configuration of the modcluster subsystem.",
+        "head-comment-allowed" => true,
+        "tail-comment-allowed" => true,
+        "namespace" => "urn:jboss:domain:modcluster:1.0",
+        "children" => {"mod-cluster-config" => {
+            "description" => "The common modcluster configuration.",
+            "model-description" => {}
+        }},
+        "attributes" => undefined
+    },
+    "address" => [("subsystem" => "modcluster")],
+    "children" => [{
+        "model-description" => {
+            "head-comment-allowed" => true,
+            "tail-comment-allowed" => true,
+            "description" => "The common modcluster configuration.",
+            "attributes" => {
+                "advertise-socket" => {
+                    "type" => STRING,
+                    "description" => "Name of Socket binding to use for the Advertise socket.",
+                    "required" => false
+                },
+                "proxy-list" => {
+                    "type" => STRING,
+                    "description" => "List of proxies, Format (hostname:port) separated with comas.",
+                    "required" => false,
+                    "expressions-allowed" => true,
+                    "default" => ""
+                },
+                "proxy-url" => {
+                    "type" => STRING,
+                    "description" => "Base URL for MCMP requests.",
+                    "required" => false,
+                    "expressions-allowed" => true,
+                    "default" => "/"
+                },
+                "advertise" => {
+                    "type" => BOOLEAN,
+                    "description" => "Use Advertise logic or not.",
+                    "required" => false,
+                    "default" => true
+                },
+                "advertise-security-key" => {
+                    "type" => STRING,
+                    "description" => "String containing the security key for the Advertise logic.",
+                    "required" => false,
+                    "expressions-allowed" => true
+                },
+                "excluded-contexts" => {
+                    "type" => STRING,
+                    "description" => "List of contexts mod_cluster should ignore, Format String separated with comas.",
+                    "required" => false,
+                    "expressions-allowed" => true,
+                    "default" => "ROOT,invoker,jbossws,juddi,console"
+                },
+                "auto-enable-contexts" => {
+                    "type" => BOOLEAN,
+                    "description" => "Enable contexts even if disabled in mod_cluster_manger (httpd).",
+                    "required" => false,
+                    "default" => true
+                },
+                "stop-context-timeout" => {
+                    "type" => INT,
+                    "description" => "Max time to wait for context to process pending requests.",
+                    "required" => false,
+                    "default" => 10,
+                    "unit" => "SECONDS"
+                },
+                "socket-timeout" => {
+                    "type" => INT,
+                    "description" => "Timeout to wait for httpd to answer a MCMP message.",
+                    "required" => false,
+                    "default" => 20,
+                    "unit" => "SECONDS"
+                },
+                "sticky-session" => {
+                    "type" => BOOLEAN,
+                    "description" => "Use sticky sessions for requests.",
+                    "required" => false,
+                    "default" => true
+                },
+                "sticky-session-remove" => {
+                    "type" => BOOLEAN,
+                    "description" => "Remove session information on failover.",
+                    "required" => false,
+                    "default" => false
+                },
+                "sticky-session-force" => {
+                    "type" => BOOLEAN,
+                    "description" => "Don't failover a request with session information.",
+                    "required" => false,
+                    "default" => false
+                },
+                "worker-timeout" => {
+                    "type" => INT,
+                    "description" => "Timeout to wait in httpd for an available worker to process the requests.",
+                    "required" => false,
+                    "default" => -1,
+                    "unit" => "SECONDS"
+                },
+                "max-attempts" => {
+                    "type" => INT,
+                    "description" => "Max attempts to process an idempotent request.",
+                    "required" => false,
+                    "default" => 1
+                },
+                "flush-packets" => {
+                    "type" => BOOLEAN,
+                    "description" => "Enables/disables packet flushing in httpd.",
+                    "required" => false,
+                    "default" => false
+                },
+                "flush-wait" => {
+                    "type" => INT,
+                    "description" => "Time to wait before flushing packets in httpd.",
+                    "required" => false,
+                    "default" => -1,
+                    "unit" => "MILLISECONDS"
+                },
+                "ping" => {
+                    "type" => INT,
+                    "description" => "Time (in seconds) in which to wait for a pong answer to a ping.",
+                    "required" => false,
+                    "default" => 10,
+                    "unit" => "SECONDS"
+                },
+                "smax" => {
+                    "type" => INT,
+                    "description" => "Soft maximum idle connection count in httpd",
+                    "required" => false,
+                    "default" => -1
+                },
+                "ttl" => {
+                    "type" => INT,
+                    "description" => "Time to live (in seconds) for idle connections above smax",
+                    "required" => false,
+                    "default" => -1,
+                    "unit" => "SECONDS"
+                },
+                "node-timeout" => {
+                    "type" => INT,
+                    "description" => "Timeout (in seconds) for proxy connections to a node.",
+                    "required" => false,
+                    "default" => -1,
+                    "unit" => "SECONDS"
+                },
+                "balancer" => {
+                    "type" => STRING,
+                    "description" => "The balancer name.",
+                    "required" => false,
+                    "expressions-allowed" => true
+                },
+                "domain" => {
+                    "type" => STRING,
+                    "description" => "loadBalancingGroup name.",
+                    "required" => false,
+                    "expressions-allowed" => true
+                },
+                "simple-load-provider" => {
+                    "type" => OBJECT,
+                    "description" => "Simple load provider",
+                    "required" => false,
+                    "value-type" => INT
+                },
+                "dynamic-load-provider" => {
+                    "type" => OBJECT,
+                    "description" => "Dynamic load provider",
+                    "required" => false,
+                    "value-type" => OBJECT
+                }
+            },
+            "children" => {"ssl" => {
+                "description" => "The SSL configuration to client MCMP logic.",
+                "model-description" => {}
+            }}
+        },
+        "address" => [
+            ("subsystem" => "modcluster"),
+            ("mod-cluster-config" => "configuration")
+        ],
+        "children" => [{
+            "model-description" => {
+                "head-comment-allowed" => true,
+                "tail-comment-allowed" => true,
+                "description" => "The SSL configuration to client MCMP logic.",
+                "attributes" => {
+                    "key-alias" => {
+                        "type" => STRING,
+                        "description" => "The key alias.",
+                        "required" => false
+                    },
+                    "password" => {
+                        "type" => STRING,
+                        "description" => "Password.",
+                        "required" => false,
+                        "default" => "changeit",
+                        "expressions-allowed" => true
+                    },
+                    "certificate-key-file" => {
+                        "type" => STRING,
+                        "description" => "Key file for the certificate.",
+                        "required" => false,
+                        "default" => "${user.home}/.keystore",
+                        "expressions-allowed" => true
+                    },
+                    "cipher-suite" => {
+                        "type" => STRING,
+                        "description" => "The allowed cipher suite.",
+                        "required" => false
+                    },
+                    "protocol" => {
+                        "type" => STRING,
+                        "description" => "The SSL protocols that are enabled.",
+                        "required" => false,
+                        "default" => "TLS"
+                    },
+                    "ca-certificate-file" => {
+                        "type" => STRING,
+                        "description" => "Certificate authority.",
+                        "required" => false,
+                        "expressions-allowed" => true
+                    },
+                    "ca-revocation-url" => {
+                        "type" => STRING,
+                        "description" => "Certificate authority revocation list.",
+                        "required" => false
+                    }
+                }
+            },
+            "address" => [
+                ("subsystem" => "modcluster"),
+                ("mod-cluster-config" => "configuration"),
+                ("ssl" => "configuration")
+            ]
+        }]
+    }]
+}

@@ -1,0 +1,83 @@
+{
+"mod-cluster-config" => {"configuration" => {
+        "advertise" => true,
+        "advertise-security-key" => "mysecuritykey",
+        "auto-enable-contexts" => true,
+        "domain" => "mydomain",
+        "dynamic-load-provider" => {
+            "decay" => 2,
+            "history" => 10,
+            "load-metric" => [
+                {
+                    "capacity" => "512",
+                    "type" => "send-traffic",
+                    "weight" => "3"
+                },
+                {
+                    "capacity" => "1.0",
+                    "type" => "mem",
+                    "weight" => "1"
+                },
+                {
+                    "capacity" => "1.0",
+                    "type" => "cpu",
+                    "weight" => "1"
+                },
+                {
+                    "capacity" => "1000",
+                    "type" => "sessions",
+                    "weight" => "2"
+                },
+                {
+                    "capacity" => "1.0",
+                    "property" => [("name" => "value")],
+                    "type" => "busyness",
+                    "weight" => "1"
+                },
+                {
+                    "capacity" => "1024",
+                    "type" => "receive-traffic",
+                    "weight" => "1"
+                },
+                {
+                    "capacity" => "1.0",
+                    "type" => "heap",
+                    "weight" => "1"
+                },
+                {
+                    "capacity" => "1000",
+                    "type" => "requests",
+                    "weight" => "1"
+                }
+            ],
+            "custom-load-metric" => [{
+                "capacity" => "1.0",
+                "class" => "org.jboss.modcluster.SomeFakeLoadMetricClass",
+                "weight" => "5"
+            }]
+        },
+        "excluded-contexts" => "a,b,c",
+        "flush-packets" => false,
+        "flush-wait" => -1,
+        "max-attempts" => 1,
+        "node-timeout" => -1,
+        "ping" => 10,
+        "proxy-list" => "example.com:6666",
+        "proxy-url" => "/",
+        "simple-load-provider" => {"factor" => "15"},
+        "smax" => -1,
+        "socket-timeout" => 20,
+        "sticky-session" => true,
+        "sticky-session-force" => false,
+        "sticky-session-remove" => false,
+        "stop-context-timeout" => 10,
+        "ttl" => -1,
+        "worker-timeout" => -1,
+        "ssl" => {"configuration" => {
+            "ca-certificate-file" => "/home/rhusar/client-keystore.jsk",
+            "certificate-key-file" => "/home/rhusar/client-keystore.jsk",
+            "password" => "mypassword",
+            "protocol" => "TLS"
+        }}
+    }}
+}

@@ -1,23 +1,24 @@
-
 package org.jboss.as.subsystem.test;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import junit.framework.AssertionFailedError;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ModelController.OperationTransactionControl;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.OperationValidator;
+import org.jboss.as.subsystem.test.AbstractSubsystemTest.StringConfigurationPersister;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceContainer;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.AssertionFailedError;
-
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.ModelController.OperationTransactionControl;
-import org.jboss.as.controller.operations.validation.OperationValidator;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.subsystem.test.AbstractSubsystemTest.StringConfigurationPersister;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceContainer;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_TRANSFORMED_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 
 /**
@@ -31,16 +32,19 @@ public class KernelServices {
     private final ModelController controller;
     private final StringConfigurationPersister persister;
     private final OperationValidator operationValidator;
+    private final String mainSubsystemName;
 
-    KernelServices(ServiceContainer container, ModelController controller, StringConfigurationPersister persister, OperationValidator operationValidator) {
+    KernelServices(ServiceContainer container, ModelController controller, StringConfigurationPersister persister, OperationValidator operationValidator, String mainSubsystemName) {
         this.container = container;
         this.controller = controller;
         this.persister = persister;
         this.operationValidator = operationValidator;
+        this.mainSubsystemName = mainSubsystemName;
     }
 
     /**
      * Gets the service container
+     *
      * @return the service container
      */
     public ServiceContainer getContainer() {
@@ -49,6 +53,7 @@ public class KernelServices {
 
     /**
      * Execute an operation in the model controller
+     *
      * @param operation the operation to execute
      * @return the result of the operation
      */
@@ -58,6 +63,7 @@ public class KernelServices {
 
     /**
      * Reads the persisted subsystem xml
+     *
      * @return the xml
      */
     public String getPersistedSubsystemXml() {
@@ -66,6 +72,7 @@ public class KernelServices {
 
     /**
      * Reads the whole model from the model controller
+     *
      * @return the whole model
      */
     public ModelNode readWholeModel() {
@@ -77,8 +84,21 @@ public class KernelServices {
         return AbstractSubsystemTest.checkResultAndGetContents(result);
     }
 
+    public ModelNode readTransformedModel(int major,int minor) {
+        ModelNode op = new ModelNode();
+        op.get(OP).set(READ_TRANSFORMED_RESOURCE_OPERATION);
+        op.get(OP_ADDR).set(PathAddress.EMPTY_ADDRESS.toModelNode());
+        op.get(RECURSIVE).set(true);
+        op.get(SUBSYSTEM).set(mainSubsystemName);
+        op.get(ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION).set(major);
+        op.get(ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION).set(minor);
+        ModelNode result = executeOperation(op);
+        return AbstractSubsystemTest.checkResultAndGetContents(result);
+    }
+
     /**
      * Validates the operations against the description providers in the model controller
+     *
      * @param operations the operations to validate
      * @throws AssertionFailedError if the operations are not valid
      */
@@ -88,6 +108,7 @@ public class KernelServices {
 
     /**
      * Validates the operation against the description providers in the model controller
+     *
      * @param operation the operation to validate
      * @throws AssertionFailedError if the operation is not valid
      */

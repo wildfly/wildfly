@@ -22,18 +22,25 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.Transformers;
+import org.jboss.as.host.controller.mgmt.TransformingProxyController;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Step handler responsible for collecting a complete description of the domain model,
@@ -44,11 +51,22 @@ import org.jboss.dmr.ModelNode;
 public class ReadMasterDomainModelHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "read-master-domain-model";
-    public static final ReadMasterDomainModelHandler INSTANCE = new ReadMasterDomainModelHandler();
+
+    private final Transformers transformers;
+    public ReadMasterDomainModelHandler(final Transformers transformers) {
+        this.transformers = transformers;
+    }
+
+    private Resource transformResource(final OperationContext context, Resource root) {
+        return transformers.transformResource(Transformers.Factory.getTransformationContext(context), root);
+    }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        // Lock the model here
-        final Resource root = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        // Acquire the lock
+        context.acquireControllerLock();
+        // Transform the model
+        final Resource untransformedRoot = context.readResource(PathAddress.EMPTY_ADDRESS,true);
+        final Resource root = transformResource(context, untransformedRoot);
         // Get the list of all resources registered in this model
         context.getResult().set(describeAsNodeList(root));
         // The HC registration process will hijack the operationPrepared call and push
@@ -65,14 +83,14 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler, Descr
      * @param resource the root resource
      * @return the list of resources
      */
-    static List<ModelNode> describeAsNodeList(final Resource resource) {
+    List<ModelNode> describeAsNodeList(final Resource resource) {
         final List<ModelNode> list = new ArrayList<ModelNode>();
         describe(PathAddress.EMPTY_ADDRESS, resource, list);
         return list;
     }
 
-    static void describe(final PathAddress base, final Resource resource, List<ModelNode> nodes) {
-        if(resource.isProxy() || resource.isRuntime()) {
+    void describe(final PathAddress base, final Resource resource, List<ModelNode> nodes) {
+        if (resource.isProxy() || resource.isRuntime()) {
             return; // ignore runtime and proxies
         } else if (base.size() >= 1 && base.getElement(0).getKey().equals(ModelDescriptionConstants.HOST)) {
             return; // ignore hosts
@@ -81,8 +99,8 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler, Descr
         description.get("domain-resource-address").set(base.toModelNode());
         description.get("domain-resource-model").set(resource.getModel());
         nodes.add(description);
-        for(final String childType : resource.getChildTypes()) {
-            for(final Resource.ResourceEntry entry : resource.getChildren(childType)) {
+        for (final String childType : resource.getChildTypes()) {
+            for (final Resource.ResourceEntry entry : resource.getChildren(childType)) {
                 describe(base.append(entry.getPathElement()), entry, nodes);
             }
         }

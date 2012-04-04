@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -188,6 +189,10 @@ public abstract class AbstractControllerService implements Service<ModelControll
 
     protected boolean boot(List<ModelNode> bootOperations, boolean rollbackOnRuntimeFailure) throws ConfigurationPersistenceException {
         return controller.boot(bootOperations, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT, rollbackOnRuntimeFailure);
+    }
+
+    protected ModelNode internalExecute(final ModelNode operation, final OperationMessageHandler handler, final ModelController.OperationTransactionControl control, final OperationAttachments attachments, final OperationStepHandler prepareStep) {
+        return controller.internalExecute(operation, handler, control, attachments, prepareStep);
     }
 
     protected void finishBoot() throws ConfigurationPersistenceException {

@@ -1,0 +1,27 @@
+{
+    "model-description" => {
+        "description" => "The ConfigAdmin subsystem configuration.",
+        "head-comment-allowed" => true,
+        "tail-comment-allowed" => true,
+        "namespace" => "urn:jboss:domain:configadmin:1.0",
+        "children" => {"configuration" => {"description" => "A Configuration Admin Service entry. The identity of the resource defines the Configuration Admin PID (Persistent Identifier) that entries are associated with."}}
+    },
+    "address" => [("subsystem" => "configadmin")],
+    "children" => [{
+        "model-description" => {
+            "description" => "A Configuration Admin Service entry. The identity of the resource defines the Configuration Admin PID (Persistent Identifier) that entries are associated with.",
+            "attributes" => {"entries" => {
+                "description" => "The list of configuration entries.",
+                "required" => true,
+                "type" => LIST,
+                "value-type" => PROPERTY,
+                "access-type" => "read-write",
+                "restart-required" => "RESTART_NONE"
+            }}
+        },
+        "address" => [
+            ("subsystem" => "configadmin"),
+            ("configuration" => "*")
+        ]
+    }]
+}

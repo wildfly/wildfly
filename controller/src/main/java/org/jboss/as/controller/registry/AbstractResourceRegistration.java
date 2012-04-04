@@ -358,7 +358,7 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
 
     abstract AbstractResourceRegistration getResourceRegistration(ListIterator<PathElement> iterator);
 
-    final String getValueString() {
+    public final String getValueString() {
         return valueString;
     }
 

@@ -46,9 +46,11 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
     public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append(ModelControllerClientOperationHandlerFactoryService.OPERATION_HANDLER_NAME_SUFFIX);
 
     private final DomainController domainController;
+    private final HostControllerRegistrationHandler.OperationExecutor operationExecutor;
 
-    public MasterDomainControllerOperationHandlerService(final DomainController domainController) {
+    public MasterDomainControllerOperationHandlerService(final DomainController domainController, final HostControllerRegistrationHandler.OperationExecutor operationExecutor) {
         this.domainController = domainController;
+        this.operationExecutor = operationExecutor;
     }
 
     protected String getThreadGroupName() {
@@ -59,7 +61,7 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
     public Channel.Key startReceiving(final Channel channel) {
         final ManagementChannelHandler handler = new ManagementChannelHandler(ManagementClientChannelStrategy.create(channel), getExecutor());
         // Assemble the request handlers for the domain channel
-        handler.addHandlerFactory(new HostControllerRegistrationHandler(handler, getController(), domainController));
+        handler.addHandlerFactory(new HostControllerRegistrationHandler(handler, domainController, operationExecutor));
         handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler));
         handler.addHandlerFactory(new MasterDomainControllerOperationHandlerImpl(domainController));
         final Channel.Key key = channel.addCloseHandler(new CloseHandler<Channel>() {

@@ -94,8 +94,8 @@ public class ExtensionResource implements Resource.ResourceEntry {
     public Resource getChild(PathElement element) {
         Resource result = null;
         if (SUBSYSTEM.equals(element.getKey())) {
-            Map<String, ExtensionRegistry.SubsystemInformation> entry = extensionRegistry.getAvailableSubsystems(moduleName);
-            ExtensionRegistry.SubsystemInformation info = entry != null ? entry.get(element.getValue()) : null;
+            Map<String, SubsystemInformation> entry = extensionRegistry.getAvailableSubsystems(moduleName);
+            SubsystemInformation info = entry != null ? entry.get(element.getValue()) : null;
             if (info != null) {
                 return new SubsystemResource(element.getValue(), info);
             }
@@ -141,7 +141,7 @@ public class ExtensionResource implements Resource.ResourceEntry {
     public Set<String> getChildrenNames(String childType) {
         Set<String> result = null;
         if (SUBSYSTEM.equals(childType)) {
-            Map<String, ExtensionRegistry.SubsystemInformation> info = extensionRegistry.getAvailableSubsystems(moduleName);
+            Map<String, SubsystemInformation> info = extensionRegistry.getAvailableSubsystems(moduleName);
             result = info != null ? new HashSet<String>(info.keySet()) : null;
         }
         return result != null ? result : Collections.<String>emptySet();
@@ -152,9 +152,9 @@ public class ExtensionResource implements Resource.ResourceEntry {
         Set<ResourceEntry> result = null;
         if (SUBSYSTEM.equals(childType)) {
             result = new HashSet<ResourceEntry>();
-            Map<String, ExtensionRegistry.SubsystemInformation> entry = extensionRegistry.getAvailableSubsystems(moduleName);
+            Map<String, SubsystemInformation> entry = extensionRegistry.getAvailableSubsystems(moduleName);
             if (entry != null) {
-                for (Map.Entry<String, ExtensionRegistry.SubsystemInformation> subsys : entry.entrySet()) {
+                for (Map.Entry<String, SubsystemInformation> subsys : entry.entrySet()) {
                     result.add(new SubsystemResource(subsys.getKey(), subsys.getValue()));
                 }
             }
@@ -189,9 +189,9 @@ public class ExtensionResource implements Resource.ResourceEntry {
 
     private static class SubsystemResource extends PlaceholderResource.PlaceholderResourceEntry {
 
-        private final ExtensionRegistry.SubsystemInformation subsystemInformation;
+        private final SubsystemInformation subsystemInformation;
 
-        public SubsystemResource(final String name, ExtensionRegistry.SubsystemInformation subsystemInformation) {
+        public SubsystemResource(final String name, SubsystemInformation subsystemInformation) {
             super(SUBSYSTEM, name);
             this.subsystemInformation = subsystemInformation;
         }

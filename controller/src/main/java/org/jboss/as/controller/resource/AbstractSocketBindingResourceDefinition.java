@@ -60,7 +60,9 @@ public abstract class AbstractSocketBindingResourceDefinition extends SimpleReso
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
     public static final SimpleAttributeDefinition PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PORT, ModelType.INT, true)
-            .setAllowExpression(true).setValidator(new IntRangeValidator(0, 65535, true, true))
+            .setAllowExpression(true)
+            .setValidator(new IntRangeValidator(0, 65535, true, true))
+            .setDefaultValue(new ModelNode(0))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
     public static final SimpleAttributeDefinition FIXED_PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.FIXED_PORT, ModelType.BOOLEAN, true)

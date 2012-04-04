@@ -361,7 +361,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      */
     void unregisterProxyController(PathElement address);
 
-
+    //String getValueString();
 
     /**
      * A factory for creating a new, root model node registration.
@@ -421,7 +421,11 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
             if (resourceDefinition == null) {
                 throw MESSAGES.nullVar("rootModelDescriptionProviderFactory");
             }
-            return new ConcreteResourceRegistration(null, null, resourceDefinition, false);
+            ConcreteResourceRegistration resourceRegistration = new ConcreteResourceRegistration(null, null, resourceDefinition, false);
+            resourceDefinition.registerAttributes(resourceRegistration);
+            resourceDefinition.registerOperations(resourceRegistration);
+            resourceDefinition.registerChildren(resourceRegistration);
+            return resourceRegistration;
         }
     }
 }

@@ -16,6 +16,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_TRANSFORMED_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
@@ -77,6 +78,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.extension.SubsystemInformation;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.parsing.Element;
@@ -96,6 +98,7 @@ import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
+import org.jboss.as.controller.transform.ReadTransformedResourceOperation;
 import org.jboss.as.server.DeployerChainAddHandler;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
@@ -147,6 +150,7 @@ public abstract class AbstractSubsystemTest {
      * instantiations in the same test without having to re-initialize the parsers.
      */
     private ExtensionRegistry extensionParsingRegistry;
+    protected ExtensionRegistry controllerExtensionRegistry;
     private TestParser testParser;
     private boolean addedExtraParsers;
     private XMLMapper xmlMapper;
@@ -338,7 +342,7 @@ public abstract class AbstractSubsystemTest {
         }
         allOps.addAll(bootOperations);
         StringConfigurationPersister persister = new StringConfigurationPersister(allOps, testParser);
-        final ExtensionRegistry controllerExtensionRegistry = cloneExtensionRegistry();
+        controllerExtensionRegistry = cloneExtensionRegistry();
         controllerExtensionRegistry.setWriterRegistry(persister);
         controllerExtensionRegistry.setPathManager(pathManager);
         ModelControllerService svc = new ModelControllerService(mainExtension, controllerInitializer, additionalInit, controllerExtensionRegistry,
@@ -354,7 +358,7 @@ public abstract class AbstractSubsystemTest {
         ModelController controller = svc.getValue();
         processState.setRunning();
 
-        KernelServices kernelServices = new KernelServices(container, controller, persister, new OperationValidator(svc.rootRegistration));
+        KernelServices kernelServices = new KernelServices(container, controller, persister, new OperationValidator(svc.rootRegistration),mainSubsystemName);
         this.kernelServices.add(kernelServices);
         if (svc.error != null) {
             throw svc.error;
@@ -584,7 +588,7 @@ public abstract class AbstractSubsystemTest {
         final ExtensionRegistry clone = new ExtensionRegistry(extensionParsingRegistry.getProcessType(), new RunningModeControl(RunningMode.NORMAL));
         for (String extension : extensionParsingRegistry.getExtensionModuleNames()) {
             ExtensionParsingContext epc = clone.getExtensionParsingContext(extension, null);
-            for (Map.Entry<String, ExtensionRegistry.SubsystemInformation> entry : extensionParsingRegistry.getAvailableSubsystems(extension).entrySet()) {
+            for (Map.Entry<String, SubsystemInformation> entry : extensionParsingRegistry.getAvailableSubsystems(extension).entrySet()) {
                 for (String namespace : entry.getValue().getXMLNamespaces()) {
                     epc.setSubsystemXmlMapping(entry.getKey(), namespace, null);
                 }
@@ -783,6 +787,7 @@ public abstract class AbstractSubsystemTest {
             this.rootRegistration = rootRegistration;
             rootResource.getModel().get(SUBSYSTEM);
             rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
+            rootRegistration.registerOperationHandler(READ_TRANSFORMED_RESOURCE_OPERATION, new ReadTransformedResourceOperation(), ReadTransformedResourceOperation.DESCRIPTION, true);
             rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);

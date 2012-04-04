@@ -32,6 +32,7 @@ import junit.framework.Assert;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.transform.SubsystemTransformer;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -174,5 +175,13 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
      */
     protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
         return Collections.<PathAddress>emptySet();
+    }
+    protected void testConverter(final ModelNode expected, int major, int minor) throws Exception {
+        KernelServices service = super.installInController(AdditionalInitialization.MANAGEMENT, getSubsystemXml());
+        ModelNode transformed = service.readTransformedModel(major,minor).get(ModelDescriptionConstants.SUBSYSTEM, mainSubsystemName);
+        /*SubsystemTransformer transformer = controllerExtensionRegistry.getTransformerRegistry().getSubsystemTransformer(super.mainSubsystemName, major, minor);
+        ModelNode original = service.readWholeModel().get(ModelDescriptionConstants.SUBSYSTEM, mainSubsystemName);
+        ModelNode transformed = transformer.transformModel(null, original);*/
+        compare(expected, transformed);
     }
 }

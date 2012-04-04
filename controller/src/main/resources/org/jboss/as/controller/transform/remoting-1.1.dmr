@@ -1,0 +1,433 @@
+{
+    "model-description" => {
+        "description" => "The configuration of the Remoting subsystem.",
+        "attributes" => {
+            "worker-read-threads" => {
+                "type" => INT,
+                "description" => "The number of read threads to create for the remoting worker.",
+                "expressions-allowed" => false,
+                "nillable" => true,
+                "default" => 1,
+                "min" => 1L,
+                "max" => 2147483647L
+            },
+            "worker-task-max-threads" => {
+                "type" => INT,
+                "description" => "The maximum number of threads for the remoting worker task thread pool.",
+                "expressions-allowed" => false,
+                "nillable" => true,
+                "default" => 16,
+                "min" => 1L,
+                "max" => 2147483647L
+            },
+            "worker-task-limit" => {
+                "type" => INT,
+                "description" => "The maximum number of remoting worker tasks to allow before rejecting.",
+                "expressions-allowed" => false,
+                "nillable" => true,
+                "default" => 16384,
+                "min" => 1L,
+                "max" => 2147483647L
+            },
+            "worker-task-core-threads" => {
+                "type" => INT,
+                "description" => "The number of core threads for the remoting worker task thread pool.",
+                "expressions-allowed" => false,
+                "nillable" => true,
+                "default" => 4,
+                "min" => 1L,
+                "max" => 2147483647L
+            },
+            "worker-write-threads" => {
+                "type" => INT,
+                "description" => "The number of write threads to create for the remoting worker.",
+                "expressions-allowed" => false,
+                "nillable" => true,
+                "default" => 1,
+                "min" => 1L,
+                "max" => 2147483647L
+            },
+            "worker-task-keepalive" => {
+                "type" => INT,
+                "description" => "The number of milliseconds to keep non-core remoting worker task threads alive.",
+                "expressions-allowed" => false,
+                "nillable" => true,
+                "default" => 60,
+                "min" => 1L,
+                "max" => 2147483647L
+            }
+        },
+        "operations" => undefined,
+        "children" => {
+            "outbound-connection" => {
+                "description" => "Remoting outbound connections.",
+                "model-description" => undefined
+            },
+            "remote-outbound-connection" => {
+                "description" => "Remoting outbound connections for remote:// URI scheme.",
+                "model-description" => undefined
+            },
+            "connector" => {
+                "description" => "The remoting connectors.",
+                "model-description" => undefined
+            },
+            "local-outbound-connection" => {
+                "description" => "Remoting outbound connections for local:// URI scheme.",
+                "model-description" => undefined
+            }
+        }
+    },
+    "address" => [("subsystem" => "remoting")],
+    "children" => [
+        {
+            "model-description" => {
+                "description" => "Remoting outbound connection.",
+                "attributes" => {"uri" => {
+                    "type" => STRING,
+                    "description" => "The connection URI for the outbound connection.",
+                    "expressions-allowed" => true,
+                    "nillable" => false,
+                    "min-length" => 1L,
+                    "max-length" => 2147483647L
+                }},
+                "operations" => undefined,
+                "children" => {"property" => {
+                    "description" => "The XNIO Options that will be used during the connection creation.",
+                    "model-description" => undefined
+                }}
+            },
+            "address" => [
+                ("subsystem" => "remoting"),
+                ("outbound-connection" => "*")
+            ],
+            "children" => [{
+                "model-description" => {
+                    "description" => "Properties supported by the underlying provider. The property name is inferred from the last element of the properties address.",
+                    "attributes" => {"value" => {
+                        "type" => STRING,
+                        "description" => "The property value.",
+                        "expressions-allowed" => false,
+                        "nillable" => true,
+                        "min-length" => 1L,
+                        "max-length" => 2147483647L
+                    }},
+                    "operations" => undefined,
+                    "children" => {}
+                },
+                "address" => [
+                    ("subsystem" => "remoting"),
+                    ("outbound-connection" => "*"),
+                    ("property" => "*")
+                ]
+            }]
+        },
+        {
+            "model-description" => {
+                "description" => "Remoting outbound connection with a implicit remote:// URI scheme.",
+                "attributes" => {
+                    "outbound-socket-binding-ref" => {
+                        "type" => STRING,
+                        "description" => "Name of the outbound-socket-binding which will be used to determine the destination address and port for the connection.",
+                        "expressions-allowed" => true,
+                        "nillable" => false,
+                        "min-length" => 1L,
+                        "max-length" => 2147483647L
+                    },
+                    "username" => {
+                        "type" => STRING,
+                        "description" => "The user name to use when authenticating against the remote server.",
+                        "expressions-allowed" => false,
+                        "nillable" => true,
+                        "min-length" => 1L,
+                        "max-length" => 2147483647L
+                    },
+                    "security-realm" => {
+                        "type" => STRING,
+                        "description" => "Reference to the security realm to use to obtain the password and SSL configuration.",
+                        "expressions-allowed" => false,
+                        "nillable" => true,
+                        "min-length" => 1L,
+                        "max-length" => 2147483647L
+                    }
+                },
+                "operations" => undefined,
+                "children" => {"property" => {
+                    "description" => "The XNIO Options that will be used during the connection creation.",
+                    "model-description" => undefined
+                }}
+            },
+            "address" => [
+                ("subsystem" => "remoting"),
+                ("remote-outbound-connection" => "*")
+            ],
+            "children" => [{
+                "model-description" => {
+                    "description" => "Properties supported by the underlying provider. The property name is inferred from the last element of the properties address.",
+                    "attributes" => {"value" => {
+                        "type" => STRING,
+                        "description" => "The property value.",
+                        "expressions-allowed" => false,
+                        "nillable" => true,
+                        "min-length" => 1L,
+                        "max-length" => 2147483647L
+                    }},
+                    "operations" => undefined,
+                    "children" => {}
+                },
+                "address" => [
+                    ("subsystem" => "remoting"),
+                    ("remote-outbound-connection" => "*"),
+                    ("property" => "*")
+                ]
+            }]
+        },
+        {
+            "model-description" => {
+                "description" => "The configuration of a Remoting connector.",
+                "attributes" => {
+                    "authentication-provider" => {
+                        "type" => STRING,
+                        "description" => "The \"authentication-provider\" element contains the name of the authentication provider to use for incoming connections.",
+                        "expressions-allowed" => false,
+                        "nillable" => true,
+                        "min-length" => 1L,
+                        "max-length" => 2147483647L
+                    },
+                    "socket-binding" => {
+                        "type" => STRING,
+                        "description" => "The name (or names) of the socket binding(s) to attach to.",
+                        "expressions-allowed" => false,
+                        "nillable" => false,
+                        "min-length" => 1L,
+                        "max-length" => 2147483647L
+                    },
+                    "security-realm" => {
+                        "type" => STRING,
+                        "description" => "The associated security realm to use for authentication for this connector.",
+                        "expressions-allowed" => false,
+                        "nillable" => true,
+                        "min-length" => 1L,
+                        "max-length" => 2147483647L
+                    }
+                },
+                "operations" => undefined,
+                "children" => {
+                    "security" => {
+                        "description" => "Configuration of security for this connector.",
+                        "model-description" => undefined
+                    },
+                    "property" => {
+                        "description" => "Properties to further configure the connector.",
+                        "model-description" => undefined
+                    }
+                }
+            },
+            "address" => [
+                ("subsystem" => "remoting"),
+                ("connector" => "*")
+            ],
+            "children" => [
+                {
+                    "model-description" => {
+                        "description" => "The \"sasl\" element contains the SASL authentication configuration for this connector.",
+                        "attributes" => {
+                            "qop" => {
+                                "type" => LIST,
+                                "description" => "The optional nested \"qop\" element contains a list of quality-of-protection values, in decreasing order of preference.",
+                                "expressions-allowed" => false,
+                                "nillable" => true,
+                                "value-type" => STRING
+                            },
+                            "include-mechanisms" => {
+                                "type" => LIST,
+                                "description" => "The optional nested \"include-mechanisms\" element contains a whitelist of allowed SASL mechanism names. No mechanisms will be allowed which are not present in this list.",
+                                "expressions-allowed" => false,
+                                "nillable" => true,
+                                "value-type" => STRING
+                            },
+                            "strength" => {
+                                "type" => LIST,
+                                "description" => "The optional nested \"strength\" element contains a list of cipher strength values, in decreasing order of preference.",
+                                "expressions-allowed" => false,
+                                "nillable" => true,
+                                "value-type" => STRING
+                            },
+                            "server-auth" => {
+                                "type" => BOOLEAN,
+                                "description" => "The optional nested \"server-auth\" boolean element specifies whether the server should authenticate to the client.  Not all mechanisms may support this setting.",
+                                "expressions-allowed" => false,
+                                "nillable" => true,
+                                "default" => false
+                            },
+                            "reuse-session" => {
+                                "type" => BOOLEAN,
+                                "description" => "The optional nested \"reuse-session\" boolean element specifies whether or not the server should attempt to reuse previously authenticated session information.  The mechanism may or may not support such reuse, and other factors may also prevent it.",
+                                "expressions-allowed" => false,
+                                "nillable" => true,
+                                "default" => false
+                            }
+                        },
+                        "operations" => undefined,
+                        "children" => {
+                            "sasl-policy" => {
+                                "description" => "Specifies an optional policy to use to narrow down the available set of mechanisms.",
+                                "model-description" => undefined
+                            },
+                            "property" => {
+                                "description" => "Properties to further configure sasl. ",
+                                "model-description" => undefined
+                            }
+                        }
+                    },
+                    "address" => [
+                        ("subsystem" => "remoting"),
+                        ("connector" => "*"),
+                        ("security" => "sasl")
+                    ],
+                    "children" => [
+                        {
+                            "model-description" => {
+                                "description" => "The policy configuration.",
+                                "attributes" => {
+                                    "forward-secrecy" => {
+                                        "type" => BOOLEAN,
+                                        "description" => "The optional nested \"forward-secrecy\" element contains a boolean value which specifies whether mechanisms that implement forward secrecy between sessions are required. Forward secrecy means that breaking into one session will not automatically provide information for breaking into future sessions.",
+                                        "expressions-allowed" => false,
+                                        "nillable" => true,
+                                        "default" => true
+                                    },
+                                    "no-plain-text" => {
+                                        "type" => BOOLEAN,
+                                        "description" => "The optional nested \"no-plain-text\" element contains a boolean value which specifies whether mechanisms susceptible to simple plain passive attacks (e.g., \"PLAIN\") are not permitted.    \"false\" to permit, \"true\" to deny.",
+                                        "expressions-allowed" => false,
+                                        "nillable" => true,
+                                        "default" => true
+                                    },
+                                    "no-active" => {
+                                        "type" => BOOLEAN,
+                                        "description" => "The optional nested \"no-active\" element contains a boolean value which specifies whether mechanisms susceptible to active (non-dictionary) attacks are not permitted. \"false\" to permit, \"true\" to deny.",
+                                        "expressions-allowed" => false,
+                                        "nillable" => true,
+                                        "default" => true
+                                    },
+                                    "pass-credentials" => {
+                                        "type" => BOOLEAN,
+                                        "description" => "The optional nested \"pass-credentials\" element contains a boolean value which specifies whether mechanisms that pass client credentials are required.",
+                                        "expressions-allowed" => false,
+                                        "nillable" => true,
+                                        "default" => true
+                                    },
+                                    "no-dictionary" => {
+                                        "type" => BOOLEAN,
+                                        "description" => "The optional nested \"no-dictionary\" element contains a boolean value which specifies whether mechanisms susceptible to passive dictionary attacks are permitted.  \"false\" to permit, \"true\" to deny.",
+                                        "expressions-allowed" => false,
+                                        "nillable" => true,
+                                        "default" => true
+                                    },
+                                    "no-anonymous" => {
+                                        "type" => BOOLEAN,
+                                        "description" => "The optional nested \"no-anonymous\" element contains a boolean value which specifies whether mechanisms that accept anonymous login are permitted.  \"false\" to permit, \"true\" to deny.",
+                                        "expressions-allowed" => false,
+                                        "nillable" => true,
+                                        "default" => true
+                                    }
+                                },
+                                "operations" => undefined,
+                                "children" => {}
+                            },
+                            "address" => [
+                                ("subsystem" => "remoting"),
+                                ("connector" => "*"),
+                                ("security" => "sasl"),
+                                ("sasl-policy" => "policy")
+                            ]
+                        },
+                        {
+                            "model-description" => {
+                                "description" => "Properties supported by the underlying provider. The property name is inferred from the last element of the properties address.",
+                                "attributes" => {"value" => {
+                                    "type" => STRING,
+                                    "description" => "The property value.",
+                                    "expressions-allowed" => false,
+                                    "nillable" => true,
+                                    "min-length" => 1L,
+                                    "max-length" => 2147483647L
+                                }},
+                                "operations" => undefined,
+                                "children" => {}
+                            },
+                            "address" => [
+                                ("subsystem" => "remoting"),
+                                ("connector" => "*"),
+                                ("security" => "sasl"),
+                                ("property" => "*")
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "model-description" => {
+                        "description" => "Properties supported by the underlying provider. The property name is inferred from the last element of the properties address.",
+                        "attributes" => {"value" => {
+                            "type" => STRING,
+                            "description" => "The property value.",
+                            "expressions-allowed" => false,
+                            "nillable" => true,
+                            "min-length" => 1L,
+                            "max-length" => 2147483647L
+                        }},
+                        "operations" => undefined,
+                        "children" => {}
+                    },
+                    "address" => [
+                        ("subsystem" => "remoting"),
+                        ("connector" => "*"),
+                        ("property" => "*")
+                    ]
+                }
+            ]
+        },
+        {
+            "model-description" => {
+                "description" => "Remoting outbound connection with a implicit local:// URI scheme.",
+                "attributes" => {"outbound-socket-binding-ref" => {
+                    "type" => STRING,
+                    "description" => "Name of the outbound-socket-binding which will be used to determine the destination address and port for the connection.",
+                    "expressions-allowed" => true,
+                    "nillable" => false,
+                    "min-length" => 1L,
+                    "max-length" => 2147483647L
+                }},
+                "operations" => undefined,
+                "children" => {"property" => {
+                    "description" => "The XNIO Options that will be used during the connection creation.",
+                    "model-description" => undefined
+                }}
+            },
+            "address" => [
+                ("subsystem" => "remoting"),
+                ("local-outbound-connection" => "*")
+            ],
+            "children" => [{
+                "model-description" => {
+                    "description" => "Properties supported by the underlying provider. The property name is inferred from the last element of the properties address.",
+                    "attributes" => {"value" => {
+                        "type" => STRING,
+                        "description" => "The property value.",
+                        "expressions-allowed" => false,
+                        "nillable" => true,
+                        "min-length" => 1L,
+                        "max-length" => 2147483647L
+                    }},
+                    "operations" => undefined,
+                    "children" => {}
+                },
+                "address" => [
+                    ("subsystem" => "remoting"),
+                    ("local-outbound-connection" => "*"),
+                    ("property" => "*")
+                ]
+            }]
+        }
+    ]
+}
