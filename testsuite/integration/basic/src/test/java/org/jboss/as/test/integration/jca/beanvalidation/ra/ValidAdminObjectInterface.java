@@ -19,71 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
-package org.jboss.as.test.integration.beanvalidation.jca.ra;
+import java.io.Serializable;
 
-import java.lang.reflect.Method;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.resource.spi.endpoint.MessageEndpoint;
-
+import javax.resource.Referenceable;
 
 /**
- * A simple message endpoint
  * 
- * @author <a href="mailto:vrastsel@redhat.com>Vladimir Rastseluev</a>
- * 
+ * @version $Revision: $
  */
-public class ValidMessageEndpoint implements MessageEndpoint, MessageListener
-{
+public interface ValidAdminObjectInterface extends Referenceable, Serializable {
+    /**
+     * Set property
+     * 
+     * @param property The value
+     */
+    public void setAoProperty(String property);
 
-   
-   private Message message;
-
-   /**
-    * Constructor
-    *
-    */
-   public ValidMessageEndpoint()
-   {
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void onMessage(Message message)
-   {
-      this.message = message;
-      
-   }
-
-   /**
-    * Get the message
-    * @return The value
-    */
-   public Message getMessage()
-   {
-      return message;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void afterDelivery()
-   {
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void beforeDelivery(Method method)
-   {
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void release()
-   {
-   }
+    /**
+     * Get property
+     * 
+     * @return The value
+     */
+    public String getAoProperty();
 }

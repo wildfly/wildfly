@@ -43,6 +43,15 @@ public  class JcaMgmtBase extends  ContainerResourceMgmtTestBase {
         return executeOperation(op);
     }
     
+    public ModelNode writeAttribute(ModelNode address, String attributeName, String attributeValue) throws Exception{
+        ModelNode op= new ModelNode();
+        op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        op.get(NAME).set(attributeName);
+        op.get(VALUE).set(attributeValue);
+        op.get(OP_ADDR).set(address);
+        return executeOperation(op);
+    }
+    
     public void setArchiveValidation(boolean enabled,boolean failOnErr,boolean failOnWarn) throws Exception{
         
         remove(archiveValidationAddress);

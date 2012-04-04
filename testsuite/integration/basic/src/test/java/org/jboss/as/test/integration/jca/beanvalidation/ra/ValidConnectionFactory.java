@@ -19,28 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.beanvalidation.jca.ra;
+package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 import java.io.Serializable;
 
 import javax.resource.Referenceable;
+import javax.resource.ResourceException;
 
 /**
  * 
  * @version $Revision: $
  */
-public interface ValidAdminObjectInterface extends Referenceable, Serializable {
+public interface ValidConnectionFactory extends Serializable, Referenceable {
     /**
-     * Set property
+     * Get connection from factory
      * 
-     * @param property The value
+     * @return  Connection instance
+     * @exception javax.resource.ResourceException Thrown if a connection can't be obtained
      */
-    public void setAoProperty(String property);
-
-    /**
-     * Get property
-     * 
-     * @return The value
-     */
-    public String getAoProperty();
+    public ValidConnection getConnection() throws ResourceException;
 }

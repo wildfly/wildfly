@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.deployment.classloading.transientdependencies;
 
-import org.jboss.as.test.integration.beanvalidation.jca.ra.ValidConnectionFactory;
+import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory;
 
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -69,7 +69,7 @@ public class RarTransientDependenciesTestCase {
                         "</deployment>" +
                         "</jboss-deployment-structure>"),
                 "jboss-deployment-structure.xml");
-        rar.addAsManifestResource("jca/beanvalidation/ra.xml", "ra.xml");
+        rar.addAsManifestResource(RarTransientDependenciesTestCase.class.getPackage(),"ra.xml", "ra.xml");
         return rar;
     }
 

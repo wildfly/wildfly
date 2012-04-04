@@ -19,23 +19,53 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.beanvalidation.jca.ra;
-
-import java.io.Serializable;
-
-import javax.resource.Referenceable;
-import javax.resource.ResourceException;
+package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 /**
  * 
+ * 
  * @version $Revision: $
  */
-public interface ValidConnectionFactory extends Serializable, Referenceable {
+public class ValidConnectionImpl implements ValidConnection {
+    /** ManagedConnection */
+    private ValidManagedConnection mc;
+
+    /** ManagedConnectionFactory */
+    private ValidManagedConnectionFactory mcf;
+
     /**
-     * Get connection from factory
+     * Default constructor
      * 
-     * @return  Connection instance
-     * @exception javax.resource.ResourceException Thrown if a connection can't be obtained
+     * @param mc  ManagedConnection
+     * @param mcf  ManagedConnectionFactory
      */
-    public ValidConnection getConnection() throws ResourceException;
+    public ValidConnectionImpl(ValidManagedConnection mc, ValidManagedConnectionFactory mcf) {
+        this.mc = mc;
+        this.mcf = mcf;
+    }
+
+    /**
+     * Call getResourceAdapterProperty
+     * 
+     * @return String
+     */
+    public int getResourceAdapterProperty() {
+        return ((ValidResourceAdapter) mcf.getResourceAdapter()).getRaProperty();
+    }
+
+    /**
+     * Call getManagedConnectionFactoryProperty
+     * 
+     * @return String
+     */
+    public String getManagedConnectionFactoryProperty() {
+        return mcf.getCfProperty();
+    }
+
+    /**
+     * Close
+     */
+    public void close() {
+        mc.closeHandle(this);
+    }
 }

@@ -23,7 +23,7 @@ package org.jboss.as.test.integration.deployment.classloading.rar;
 
 import junit.framework.Assert;
 
-import org.jboss.as.test.integration.beanvalidation.jca.ra.ValidConnectionFactory;
+import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -55,7 +55,7 @@ public class RarClassLoadingTestCase {
         JavaArchive jar2 = ShrinkWrap.create(JavaArchive.class, "support.jar");
         jar2.addClasses(RarSupportClass.class);
         rar.add(jar2, "some/random/directory", ZipExporter.class);
-        rar.addAsManifestResource("jca/beanvalidation/ra.xml", "ra.xml");
+        rar.addAsManifestResource(RarClassLoadingTestCase.class.getPackage(),"ra.xml", "ra.xml");
 
         return rar;
     }

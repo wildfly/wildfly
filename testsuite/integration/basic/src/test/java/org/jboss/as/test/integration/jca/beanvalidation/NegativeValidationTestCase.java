@@ -19,9 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.beanvalidation.jca;
+package org.jboss.as.test.integration.jca.beanvalidation;
 
-import org.jboss.as.test.integration.beanvalidation.jca.ra.ValidConnectionFactory;
+import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -54,8 +54,9 @@ public class NegativeValidationTestCase {
         ja.addPackage(ValidConnectionFactory.class.getPackage()).addClasses(NegativeValidationTestCase.class);
         raa.addAsLibrary(ja);
 
-        raa.addAsManifestResource("jca/beanvalidation/ra.xml", "ra.xml").addAsManifestResource(
-                "jca/beanvalidation/ij/ironjacamar" + (ij != null ? "-" + ij : "") + ".xml", "ironjacamar.xml");
+        raa.addAsManifestResource(NegativeValidationTestCase.class.getPackage(),"ra.xml", "ra.xml")
+            .addAsManifestResource(
+                NegativeValidationTestCase.class.getPackage(),"ironjacamar" + (ij != null ? "-" + ij : "") + ".xml", "ironjacamar.xml");
 
         return raa;
     }
