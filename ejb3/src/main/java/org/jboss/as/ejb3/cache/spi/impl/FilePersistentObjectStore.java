@@ -208,10 +208,11 @@ public class FilePersistentObjectStore<K extends Serializable, V extends Cacheab
 
     private void establishDirectory(File dir) {
         if (!dir.exists()) {
-            if (!MkdirsFileAction.mkdirs(dir)) {
+            if (MkdirsFileAction.mkdirs(dir)) {
+                dir.deleteOnExit();
+            } else if (!dir.exists()) { // this method can be called concurrently, so another thread may have created the dir
                 throw EjbMessages.MESSAGES.passivationDirectoryCreationFailed(dir.getPath());
             }
-            dir.deleteOnExit();
         }
 
         if (!dir.isDirectory()) {
