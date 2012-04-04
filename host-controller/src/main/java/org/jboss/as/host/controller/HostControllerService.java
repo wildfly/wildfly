@@ -37,7 +37,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.FutureServiceContainer;
 import org.jboss.as.threads.ThreadFactoryService;
@@ -140,14 +139,10 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
                 .install();
 
         // Install required path services. (Only install those identified as required)
-        AbsolutePathService.addService(HostControllerEnvironment.HOME_DIR, environment.getHomeDir().getAbsolutePath(), serviceTarget);
-        AbsolutePathService.addService(HostControllerEnvironment.DOMAIN_CONFIG_DIR, environment.getDomainConfigurationDir().getAbsolutePath(), serviceTarget);
-        AbsolutePathService.addService(HostControllerEnvironment.DOMAIN_DATA_DIR, environment.getDomainDataDir().getAbsolutePath(), serviceTarget);
-        AbsolutePathService.addService(HostControllerEnvironment.DOMAIN_LOG_DIR, environment.getDomainLogDir().getAbsolutePath(), serviceTarget);
-        AbsolutePathService.addService(HostControllerEnvironment.DOMAIN_TEMP_DIR, environment.getDomainTempDir().getAbsolutePath(), serviceTarget);
-        AbsolutePathService.addService(HostControllerEnvironment.CONTROLLER_TEMP_DIR, environment.getDomainTempDir().getAbsolutePath(), serviceTarget);
+        HostPathManagerService hostPathManagerService = new HostPathManagerService();
+        HostPathManagerService.addService(serviceTarget, hostPathManagerService, environment);
 
-        DomainModelControllerService.addService(serviceTarget, environment, runningModeControl, processState, bootstrapListener);
+        DomainModelControllerService.addService(serviceTarget, environment, runningModeControl, processState, bootstrapListener, hostPathManagerService);
     }
 
     @Override

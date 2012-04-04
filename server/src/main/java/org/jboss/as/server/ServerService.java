@@ -46,9 +46,10 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
-import org.jboss.as.process.ExitCodes;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.deployment.Attachments;
@@ -113,6 +114,7 @@ public final class ServerService extends AbstractControllerService {
     private final InjectedValue<ServiceModuleLoader> injectedModuleLoader = new InjectedValue<ServiceModuleLoader>();
 
     private final InjectedValue<ExternalModuleService> injectedExternalModuleService = new InjectedValue<ExternalModuleService>();
+    private final InjectedValue<PathManager> injectedPathManagerService = new InjectedValue<PathManager>();
     private final Bootstrap.Configuration configuration;
     private final BootstrapListener bootstrapListener;
     private final ControlledProcessState processState;
@@ -174,6 +176,7 @@ public final class ServerService extends AbstractControllerService {
         serviceBuilder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.injectedModuleLoader);
         serviceBuilder.addDependency(Services.JBOSS_EXTERNAL_MODULE_SERVICE, ExternalModuleService.class,
                 service.injectedExternalModuleService);
+        serviceBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.injectedPathManagerService);
         serviceBuilder.install();
     }
 
@@ -260,7 +263,6 @@ public final class ServerService extends AbstractControllerService {
 
             DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_SEAM, new Seam2Processor(serviceTarget));
 
-
             try {
                 // Boot but don't rollback on runtime failures
                 ok = boot(extensibleConfigurationPersister.load(), false);
@@ -319,12 +321,14 @@ public final class ServerService extends AbstractControllerService {
         ServerControllerModelUtil.updateCoreModel(rootResource.getModel(), configuration.getServerEnvironment());
         ServerControllerModelUtil.initOperations(rootRegistration, injectedContentRepository.getValue(),
                 extensibleConfigurationPersister, configuration.getServerEnvironment(), processState,
-                runningModeControl, vaultReader, configuration.getExtensionRegistry(), queuelessExecutor != null, remoteFileRepository);
+                runningModeControl, vaultReader, configuration.getExtensionRegistry(), queuelessExecutor != null, remoteFileRepository,
+                (PathManagerService)injectedPathManagerService.getValue());
 
         // TODO maybe make creating of empty nodes part of the MNR description
         rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), Resource.Factory.create());
         rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());
         rootResource.registerChild(ServerEnvironmentResourceDescription.RESOURCE_PATH, Resource.Factory.create());
+        ((PathManagerService)injectedPathManagerService.getValue()).addPathManagerResources(rootResource);
 
         // Platform MBeans
         rootResource.registerChild(PlatformMBeanConstants.ROOT_PATH, new RootPlatformMBeanResource());

@@ -32,6 +32,8 @@ import java.util.logging.Handler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.services.path.AbstractPathService;
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -55,12 +57,9 @@ class FileHandlers {
 
             // Retrieve the current service
             final ServiceTarget serviceTarget = context.getServiceTarget();
-            final HandlerFileService fileService = new HandlerFileService(path.asString());
+            final HandlerFileService fileService = new HandlerFileService(path.asString(), relativeTo.isDefined() ? relativeTo.asString() : null);
             final ServiceBuilder<?> fileBuilder = serviceTarget.addService(serviceName, fileService);
-            // Add the relative path dependency
-            if (relativeTo.isDefined()) {
-                fileBuilder.addDependency(AbstractPathService.pathNameOf(relativeTo.asString()), String.class, fileService.getRelativeToInjector());
-            }
+            fileBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, fileService.getPathManagerInjector());
             fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
             serviceBuilder.addDependency(LogServices.handlerFileName(name), String.class, service.getFileNameInjector());
         }

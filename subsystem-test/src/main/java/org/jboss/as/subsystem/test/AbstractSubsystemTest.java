@@ -74,7 +74,6 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.parsing.Element;
@@ -93,6 +92,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.server.DeployerChainAddHandler;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
@@ -311,6 +311,11 @@ public abstract class AbstractSubsystemTest {
             additionalInit = new AdditionalInitialization();
         }
         ControllerInitializer controllerInitializer = additionalInit.createControllerInitializer();
+
+        PathManagerService pathManager = new PathManagerService() {
+        };
+        controllerInitializer.setPathManger(pathManager);
+
         additionalInit.setupController(controllerInitializer);
 
         //Initialize the controller
@@ -330,6 +335,7 @@ public abstract class AbstractSubsystemTest {
                 processState, persister, additionalInit.isValidateOperations());
         ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
         builder.install();
+        target.addService(PathManagerService.SERVICE_NAME, pathManager).install();
 
         additionalInit.addExtraServices(target);
 

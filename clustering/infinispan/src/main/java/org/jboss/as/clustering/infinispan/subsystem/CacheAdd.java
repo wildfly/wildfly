@@ -2,8 +2,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +12,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
@@ -43,7 +44,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.services.path.AbstractPathService;
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -543,19 +545,24 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             builder.cacheLoader(new FileCacheStore());
 
             final String path = ((resolvedValue = CommonAttributes.PATH.resolveModelAttribute(context, store)).isDefined()) ? resolvedValue.asString() : InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + containerName;
-
-            Injector<String> injector = new SimpleInjector<String>() {
+            final String relativeTo = ((resolvedValue = CommonAttributes.RELATIVE_TO.resolveModelAttribute(context, store)).isDefined()) ? resolvedValue.asString() : ServerEnvironment.SERVER_DATA_DIR;
+            Injector<PathManager> injector = new SimpleInjector<PathManager>() {
+                volatile PathManager.Callback.Handle callbackHandle;
                 @Override
-                public void inject(String value) {
-                    StringBuilder location = new StringBuilder(value);
-                    if (path != null) {
-                        location.append(File.separatorChar).append(path);
+                public void inject(PathManager value) {
+                    callbackHandle = value.registerCallback(relativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
+                    properties.setProperty("location", value.resolveRelativePathEntry(path, relativeTo));
+                }
+
+                @Override
+                public void uninject() {
+                    super.uninject();
+                    if (callbackHandle != null) {
+                        callbackHandle.remove();
                     }
-                    properties.setProperty("location", location.toString());
                 }
             };
-            final String relativeTo = ((resolvedValue = CommonAttributes.RELATIVE_TO.resolveModelAttribute(context, store)).isDefined()) ? resolvedValue.asString() : ServerEnvironment.SERVER_DATA_DIR;
-            dependencies.add(new Dependency<String>(AbstractPathService.pathNameOf(relativeTo), String.class, injector));
+            dependencies.add(new Dependency<PathManager>(PathManagerService.SERVICE_NAME, PathManager.class, injector));
             properties.setProperty("fsyncMode", "perWrite");
         } else if (storeKey.equals(ModelKeys.STRING_KEYED_JDBC_STORE) || storeKey.equals(ModelKeys.BINARY_KEYED_JDBC_STORE) || storeKey.equals(ModelKeys.MIXED_KEYED_JDBC_STORE)) {
             builder.cacheLoader(this.createJDBCStore(properties, context, store));

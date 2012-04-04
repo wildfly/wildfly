@@ -40,16 +40,6 @@ public final class CommonProviders {
     }
 
     /**
-     * Provider for a sub-model that names a "path" but doesn't require the actual path to be specified.
-     */
-    public static final DescriptionProvider NAMED_PATH_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return PathDescription.getNamedPathDescription(locale);
-        }
-    };
-
-    /**
      * Provider for a sub-model that defines the management configuration.
      */
     public static final DescriptionProvider MANAGEMENT_WITH_INTERFACES_PROVIDER = new DescriptionProvider() {
@@ -59,15 +49,6 @@ public final class CommonProviders {
         }
     };
 
-    /**
-     * Provider for a sub-model that names a "path" and specifies the actual path.
-     */
-    public static final DescriptionProvider SPECIFIED_PATH_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return PathDescription.getSpecifiedPathDescription(locale);
-        }
-    };
 
     /**
      * Provider for a sub-model that names an interface but doesn't require the address selection criteria.

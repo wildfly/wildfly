@@ -2429,4 +2429,30 @@ public interface ControllerMessages {
     @Message(id = 14844, value = "Can't have same criteria for both not and inclusion %s")
     String cantHaveSameCriteriaForBothNotAndInclusion(InterfaceCriteria interfaceCriteria);
 
+    @Message(id = 14845, value = "%s is empty")
+    IllegalArgumentException emptyVar(String name);
+
+    @Message(id = 14846, value = "Could not find a path called '%s'")
+    IllegalArgumentException pathEntryNotFound(String pathName);
+
+    @Message(id = 14847, value="Path entry is read-only: '%s'")
+    IllegalArgumentException pathEntryIsReadOnly(String pathName);
+
+    @Message(id = 14848, value="There is already a path entry called: '%s'")
+    IllegalArgumentException pathEntryAlreadyExists(String pathName);
+
+    @Message(id = 14849, value="Could not find relativeTo path '%s' for relative path '%s'")
+    IllegalStateException pathEntryNotFoundForRelativePath(String relativePath, String pathName);
+
+    @Message(id = 14850, value="Invalid relativePath value '%s'")
+    IllegalArgumentException invalidRelativePathValue(String relativePath);
+
+    @Message(id = 14851, value="'%s' is a Windows absolute path")
+    IllegalArgumentException pathIsAWindowsAbsolutePath(String path);
+
+    @Message(id = 14852, value="Path '%s' is read-only; it cannot be removed")
+    OperationFailedException cannotRemoveReadOnlyPath(String pathName);
+
+    @Message(id = 14853, value="Path '%s' is read-only; it cannot be modified")
+    OperationFailedException cannotModifyReadOnlyPath(String pathName);
 }

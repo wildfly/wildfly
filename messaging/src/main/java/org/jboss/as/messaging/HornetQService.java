@@ -21,6 +21,7 @@ import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.impl.HornetQServerImpl;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -54,15 +55,20 @@ class HornetQService implements Service<HornetQServer> {
     private Configuration configuration;
 
     private HornetQServer server;
-    private Map<String, String> paths = new HashMap<String, String>();
     private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
     private Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<String, OutboundSocketBinding>();
     private Map<String, SocketBinding> groupBindings = new HashMap<String, SocketBinding>();
+    private final InjectedValue<PathManager> pathManager = new InjectedValue<PathManager>();
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
+    private final PathConfig pathConfig;
 
-    Injector<String> getPathInjector(String name) {
-        return new MapInjector<String, String>(paths, name);
+    public HornetQService(PathConfig pathConfig) {
+        this.pathConfig = pathConfig;
+    }
+
+    Injector<PathManager> getPathManagerInjector(){
+        return pathManager;
     }
 
     Injector<SocketBinding> getSocketBindingInjector(String name) {
@@ -99,10 +105,11 @@ class HornetQService implements Service<HornetQServer> {
         // Setup Logging
         configuration.setLogDelegateFactoryClassName(LOGGING_FACTORY);
         // Setup paths
-        configuration.setBindingsDirectory(paths.get("bindings"));
-        configuration.setLargeMessagesDirectory(paths.get("largemessages"));
-        configuration.setJournalDirectory(paths.get("journal"));
-        configuration.setPagingDirectory(paths.get("paging"));
+        PathManager pathManager = this.pathManager.getValue();
+        configuration.setBindingsDirectory(pathConfig.resolveBindingsPath(pathManager));
+        configuration.setLargeMessagesDirectory(pathConfig.resolveLargeMessagePath(pathManager));
+        configuration.setJournalDirectory(pathConfig.resolveJournalPath(pathManager));
+        configuration.setPagingDirectory(pathConfig.resolvePagingPath(pathManager));
 
         try {
             // Update the acceptor/connector port/host values from the
@@ -207,6 +214,7 @@ class HornetQService implements Service<HornetQServer> {
                 // FIXME stopped by the JMSService
                 // server.stop();
             }
+            pathConfig.closeCallbacks(pathManager.getValue());
         } catch (Exception e) {
             throw MESSAGES.failedToShutdownServer(e, "HornetQ");
         }
@@ -230,5 +238,71 @@ class HornetQService implements Service<HornetQServer> {
 
     public Injector<SecurityDomainContext> getSecurityDomainContextInjector() {
         return securityDomainContextValue;
+    }
+
+    static class PathConfig {
+        private final String bindingsPath;
+        private final String bindingsRelativeToPath;
+        private final String journalPath;
+        private final String journalRelativeToPath;
+        private final String largeMessagePath;
+        private final String largeMessageRelativeToPath;
+        private final String pagingPath;
+        private final String pagingRelativeToPath;
+        private final List<PathManager.Callback.Handle> callbackHandles = new ArrayList<PathManager.Callback.Handle>();
+
+        public PathConfig(String bindingsPath, String bindingsRelativeToPath, String journalPath, String journalRelativeToPath,
+                String largeMessagePath, String largeMessageRelativeToPath, String pagingPath, String pagingRelativeToPath) {
+            this.bindingsPath = bindingsPath;
+            this.bindingsRelativeToPath = bindingsRelativeToPath;
+            this.journalPath = journalPath;
+            this.journalRelativeToPath = journalRelativeToPath;
+            this.largeMessagePath = largeMessagePath;
+            this.largeMessageRelativeToPath = largeMessageRelativeToPath;
+            this.pagingPath = pagingPath;
+            this.pagingRelativeToPath = pagingRelativeToPath;
+        }
+
+        String resolveBindingsPath(PathManager pathManager) {
+            return resolve(pathManager, bindingsPath, bindingsRelativeToPath);
+        }
+
+        String resolveJournalPath(PathManager pathManager) {
+            return resolve(pathManager, journalPath, journalRelativeToPath);
+        }
+
+        String resolveLargeMessagePath(PathManager pathManager) {
+            return resolve(pathManager, largeMessagePath, largeMessageRelativeToPath);
+        }
+
+        String resolvePagingPath(PathManager pathManager) {
+            return resolve(pathManager, pagingPath, pagingRelativeToPath);
+        }
+
+        String resolve(PathManager pathManager, String path, String relativeToPath) {
+            return pathManager.resolveRelativePathEntry(path, relativeToPath);
+        }
+
+        synchronized void registerCallbacks(PathManager pathManager) {
+            if (bindingsRelativeToPath != null) {
+                callbackHandles.add(pathManager.registerCallback(bindingsRelativeToPath, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED));
+            }
+            if (journalRelativeToPath != null) {
+                callbackHandles.add(pathManager.registerCallback(journalRelativeToPath, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED));
+            }
+            if (largeMessageRelativeToPath != null) {
+                callbackHandles.add(pathManager.registerCallback(largeMessageRelativeToPath, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED));
+            }
+            if (pagingRelativeToPath != null) {
+                callbackHandles.add(pathManager.registerCallback(pagingRelativeToPath, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED));
+            }
+        }
+
+        synchronized void closeCallbacks(PathManager pathManager) {
+            for (PathManager.Callback.Handle callbackHandle : callbackHandles) {
+                callbackHandle.remove();
+            }
+            callbackHandles.clear();
+        }
     }
 }

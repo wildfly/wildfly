@@ -25,7 +25,6 @@ import java.util.Locale;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.descriptions.common.PathDescription;
 import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.dmr.ModelNode;
 
@@ -64,13 +63,6 @@ public final class DomainDescriptionProviders {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return ProfileDescription.getProfileWithIncludesDescription(locale);
-        }
-    };
-
-    public static final DescriptionProvider PATH_DESCRIPTION = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return PathDescription.getNamedPathDescription(locale);
         }
     };
 

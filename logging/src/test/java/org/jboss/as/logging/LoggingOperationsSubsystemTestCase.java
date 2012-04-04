@@ -34,6 +34,8 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -73,7 +75,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
     @Test
     public void testChangeRootLogLevel() throws Exception {
 
-        KernelServices kernelServices = installInController(readResource("/operations.xml"));
+        KernelServices kernelServices = installInController(new LoggingAdditionalInitialization(), readResource("/operations.xml"));
 
         // add new file loger so we can track logged messages
         File logFile = new File(logDir, "test-fh.log");
@@ -138,7 +140,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
     @Ignore("AS7-2385")
     public void testSetRootLogger() throws Exception {
 
-        KernelServices kernelServices = installInController(readResource("/operations.xml"));
+        KernelServices kernelServices = installInController(new LoggingAdditionalInitialization(), readResource("/operations.xml"));
 
         // add new file loger so we can test root logger change
         File logFile = new File(logDir, "test-fh.log");
@@ -182,7 +184,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testAddRemoveFileHandler() throws Exception {
-        KernelServices kernelServices = installInController(readResource("/operations.xml"));
+        KernelServices kernelServices = installInController(new LoggingAdditionalInitialization(), readResource("/operations.xml"));
 
         File logFile = new File(logDir, "test-fh.log");
         if (logFile.exists()) assertTrue(logFile.delete());
@@ -293,6 +295,19 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
         List<String> ret = new LinkedList<String>();
         for (ModelNode n : node.asList()) ret.add(n.asString());
         return ret;
+    }
+
+    private static class LoggingAdditionalInitialization extends AdditionalInitialization {
+
+        @Override
+        protected ControllerInitializer createControllerInitializer() {
+            return new ControllerInitializer() {
+                {
+                    addPath("jboss.server.log.dir", new File("target/logs").getAbsolutePath(), null);
+                }
+            };
+        }
+
     }
 
 }

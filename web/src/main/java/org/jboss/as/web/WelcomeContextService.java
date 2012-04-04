@@ -23,7 +23,6 @@ package org.jboss.as.web;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.naming.NamingException;
@@ -36,6 +35,7 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.web.deployment.WebCtxLoader;
 import org.jboss.msc.inject.Injector;
@@ -54,12 +54,15 @@ import org.jboss.msc.value.InjectedValue;
 class WelcomeContextService implements Service<Context> {
 
     private final StandardContext context;
-    private final InjectedValue<String> pathInjector = new InjectedValue<String>();
+    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
     private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<VirtualHost>();
     private final InjectedValue<HttpManagement> httpManagementInjector = new InjectedValue<HttpManagement>();
+    private final String homeDirPathName;
+    private PathManager.Callback.Handle callbackHandle;
 
-    public WelcomeContextService() {
+    public WelcomeContextService(final String homeDirPathName) {
         this.context = new StandardContext();
+        this.homeDirPathName = homeDirPathName;
     }
 
     /** {@inheritDoc} */
@@ -68,7 +71,8 @@ class WelcomeContextService implements Service<Context> {
             try {
                 context.setPath("");
                 context.addLifecycleListener(new ContextConfig());
-                context.setDocBase(pathInjector.getValue() + File.separatorChar + "welcome-content");
+                context.setDocBase(pathManagerInjector.getValue().resolveRelativePathEntry( "welcome-content", homeDirPathName));
+                callbackHandle = pathManagerInjector.getValue().registerCallback(homeDirPathName, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
 
                 final Loader loader = new WebCtxLoader(this.getClass().getClassLoader());
                 Host host = hostInjector.getValue().getHost();
@@ -116,6 +120,9 @@ class WelcomeContextService implements Service<Context> {
 
     /** {@inheritDoc} */
     public synchronized void stop(StopContext stopContext) {
+        if (callbackHandle != null) {
+            callbackHandle.remove();
+        }
         try {
             hostInjector.getValue().getHost().removeChild(context);
             context.stop();
@@ -138,8 +145,8 @@ class WelcomeContextService implements Service<Context> {
         return context;
     }
 
-    public InjectedValue<String> getPathInjector() {
-        return pathInjector;
+    public InjectedValue<PathManager> getPathManagerInjector() {
+        return pathManagerInjector;
     }
 
     public InjectedValue<VirtualHost> getHostInjector() {

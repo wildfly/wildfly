@@ -24,7 +24,8 @@ package org.jboss.as.ejb3.cache.impl.factory;
 import java.io.File;
 import java.io.Serializable;
 
-import org.jboss.as.controller.services.path.AbstractPathService;
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.impl.backing.SimpleBackingCacheEntryStore;
@@ -62,12 +63,13 @@ public class NonClusteredBackingCacheEntryStoreSource<K extends Serializable, V 
     public static final String DEFAULT_RELATIVE_TO = ServerEnvironment.SERVER_DATA_DIR;
     public static final int DEFAULT_SUBDIRECTORY_COUNT = 100;
 
-    private final InjectedValue<String> relativeTo = new InjectedValue<String>();
+    private final InjectedValue<PathManager> pathManager = new InjectedValue<PathManager>();
     private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
     private String sessionDirectoryName = DEFAULT_SESSION_DIRECTORY_NAME;
     private String groupDirectoryName = DEFAULT_GROUP_DIRECTORY_NAME;
     private String relativeToRef = DEFAULT_RELATIVE_TO;
     private int subdirectoryCount = DEFAULT_SUBDIRECTORY_COUNT;
+    private volatile PathManager.Callback.Handle callbackHandle;
 
     @Override
     public <E extends SerializationGroup<K, V, G>> BackingCacheEntryStore<G, Cacheable<G>, E> createGroupIntegratedObjectStore(PassivationManager<G, E> passivationManager, StatefulTimeoutInfo timeout) {
@@ -89,16 +91,12 @@ public class NonClusteredBackingCacheEntryStoreSource<K extends Serializable, V 
 
     @Override
     public void addDependencies(ServiceTarget target, ServiceBuilder<?> builder) {
-        builder.addDependency(AbstractPathService.pathNameOf(this.relativeToRef), String.class, this.relativeTo);
+        builder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, this.pathManager);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment);
     }
 
     private String getStoragePath(String beanName, String subDirectory) {
-        String relativeTo = this.relativeTo.getOptionalValue();
-        File path = (relativeTo != null) ? new File(new File(relativeTo), subDirectory) : new File(subDirectory);
-        if (beanName != null) {
-            path = new File(path, beanName);
-        }
+        File path = new File(pathManager.getValue().resolveRelativePathEntry(subDirectory, relativeToRef));
         return path.getAbsolutePath();
     }
 
@@ -156,6 +154,23 @@ public class NonClusteredBackingCacheEntryStoreSource<K extends Serializable, V 
     }
 
     public void setRelativeTo(String relativeTo) {
+        //TODO - should this cause any bounce of the service
         this.relativeToRef = relativeTo;
     }
+
+    @Override
+    public void started() {
+        if (relativeToRef != null) {
+            callbackHandle = pathManager.getValue().registerCallback(relativeToRef, PathManager.ReloadServerCallback.create(), PathManager.Event.REMOVED, PathManager.Event.UPDATED);
+        }
+    }
+
+    @Override
+    public void stopped() {
+        if (callbackHandle != null) {
+            callbackHandle.remove();
+            callbackHandle = null;
+        }
+    }
+
 }

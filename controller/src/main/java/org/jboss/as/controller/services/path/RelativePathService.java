@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.services.path;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 
@@ -108,36 +109,43 @@ public class RelativePathService extends AbstractPathService {
         addService(name, relativePath, false, relativeTo, serviceTarget, null);
     }
 
-    public RelativePathService(final String relativePath) {
+    static String convertPath(String relativePath) {
         if (relativePath == null) {
-            throw new IllegalArgumentException("relativePath is null");
+            throw MESSAGES.nullVar("relativePath");
         }
         if (relativePath.length() == 0) {
-            throw new IllegalArgumentException("relativePath is empty");
+            throw MESSAGES.emptyVar("relativePath");
         }
         if (relativePath.charAt(0) == '/') {
             if (relativePath.length() == 1) {
-                throw new IllegalArgumentException("Invalid relativePath value '/'");
+                throw MESSAGES.invalidRelativePathValue(relativePath);
             }
-            this.relativePath = relativePath.substring(1);
+            return relativePath.substring(1);
         }
         else if (relativePath.indexOf(":\\") == 1) {
-            throw new IllegalArgumentException(relativePath + " is a Windows absolute path");
+            throw MESSAGES.pathIsAWindowsAbsolutePath(relativePath);
         }
         else {
             if(isWindows()) {
-                this.relativePath = relativePath.replace("/", File.separator);
+                return relativePath.replace("/", File.separator);
             } else {
-                this.relativePath = relativePath.replace("\\", File.separator);
+                return relativePath.replace("\\", File.separator);
             }
         }
     }
 
-    @Override
-    protected String resolvePath() {
-        String base = injectedPath.getValue();
+    static String doResolve(String base, String relativePath) {
         base = base.endsWith(File.separator) ? base.substring(0, base.length() -1) : base;
         return base + File.separatorChar + relativePath;
+    }
+
+    public RelativePathService(final String relativePath) {
+        this.relativePath = convertPath(relativePath);
+    }
+
+    @Override
+    protected String resolvePath() {
+        return doResolve(injectedPath.getValue(), relativePath);
     }
 
     private static boolean isWindows(){

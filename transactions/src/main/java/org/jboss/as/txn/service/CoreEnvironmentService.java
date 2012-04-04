@@ -18,6 +18,7 @@
  */
 package org.jboss.as.txn.service;
 
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -39,13 +40,18 @@ import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 public class CoreEnvironmentService implements Service<CoreEnvironmentBean> {
 
     /** A path for the var directory */
-    private final InjectedValue<String> pathInjector = new InjectedValue<String>();
+    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
     /** A dependency on a socket binding for the socket process id */
     private final InjectedValue<SocketBinding> socketProcessBindingInjector = new InjectedValue<SocketBinding>();
     private final String nodeIdentifier;
+    private final String path;
+    private final String pathRef;
+    private volatile PathManager.Callback.Handle callbackHandle;
 
-    public CoreEnvironmentService(String nodeIdentifier) {
+    public CoreEnvironmentService(String nodeIdentifier, String path, String pathRef) {
         this.nodeIdentifier = nodeIdentifier;
+        this.path = path;
+        this.pathRef = pathRef;
     }
 
     @Override
@@ -70,19 +76,18 @@ public class CoreEnvironmentService implements Service<CoreEnvironmentBean> {
             int port = binding.getPort();
             coreEnvironmentBean.setSocketProcessIdPort(port);
         }
-        // Set the var dir if specified
-        String varDir = pathInjector.getOptionalValue();
-        if(varDir != null && varDir.length() > 0) {
-            coreEnvironmentBean.setVarDir(varDir);
-        }
+
+        callbackHandle = pathManagerInjector.getValue().registerCallback(pathRef, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
+        coreEnvironmentBean.setVarDir(pathManagerInjector.getValue().resolveRelativePathEntry(path, pathRef));
     }
 
     @Override
     public void stop(StopContext context) {
+        callbackHandle.remove();
     }
 
-    public InjectedValue<String> getPathInjector() {
-        return pathInjector;
+    public InjectedValue<PathManager> getPathManagerInjector() {
+        return pathManagerInjector;
     }
     public Injector<SocketBinding> getSocketProcessBindingInjector() {
         return socketProcessBindingInjector;
