@@ -34,6 +34,7 @@ import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFacto
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.host.controller.DomainModelControllerService;
+import org.jboss.as.host.controller.jmx.RemotingConnectorService;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.as.remoting.EndpointService;
@@ -120,6 +121,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
                 new ModelControllerClientOperationHandlerFactoryService(),
                 DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.MANAGEMENT_CHANNEL, verificationHandler, newControllers);
 
+        RemotingConnectorService.addService(serviceTarget, verificationHandler);
     }
 
 }
