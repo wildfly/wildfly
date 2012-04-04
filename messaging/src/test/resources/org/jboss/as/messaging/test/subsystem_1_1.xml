@@ -209,13 +209,14 @@
                  </entries>
               </connection-factory>
               <connection-factory name="RemoteConnectionFactory">
+                 <factory-type>XA_QUEUE</factory-type>
                  <connectors>
                     <connector-ref connector-name="netty" backup-connector-name="netty-throughput"/>
                  </connectors>
                  <entries>
                     <entry name="RemoteConnectionFactory"/>
                  </entries>
-                 <client-id>testClient</client-id>
+                 <client-id>testClient2</client-id>
               </connection-factory>
               <pooled-connection-factory name="hornetq-ra">
                  <transaction mode="xa"/>

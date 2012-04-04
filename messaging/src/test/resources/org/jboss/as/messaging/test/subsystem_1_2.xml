@@ -209,6 +209,7 @@
                  </entries>
               </connection-factory>
               <connection-factory name="RemoteConnectionFactory">
+                 <factory-type>XA_QUEUE</factory-type>
                  <connectors>
                     <connector-ref connector-name="netty" backup-connector-name="netty-throughput"/>
                  </connectors>

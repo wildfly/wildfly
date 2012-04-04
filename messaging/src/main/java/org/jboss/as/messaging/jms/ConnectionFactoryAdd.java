@@ -60,6 +60,7 @@ import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.COMPRESS_LARGE_MESSAGES;
 import static org.jboss.as.messaging.CommonAttributes.CONFIRMATION_WINDOW_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL;
@@ -82,7 +83,7 @@ import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_BATCH_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.USE_GLOBAL_POOLS;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_TYPE;
+import static org.jboss.as.messaging.jms.JMSServices.CONNECTION_FACTORY_ATTRS;
 
 /**
  * Update adding a connection factory to the subsystem. The
@@ -99,6 +100,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         for (final AttributeDefinition attribute : JMSServices.CONNECTION_FACTORY_ATTRS) {
             attribute.validateAndSet(operation, model);
         }
+        CommonAttributes.CONNECTION_FACTORY_TYPE.validateAndSet(operation, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
@@ -194,7 +196,10 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         operation.get(OP).set(ADD);
         operation.get(OP_ADDR).set(address);
 
-        for (final AttributeDefinition attribute : JMSServices.CONNECTION_FACTORY_ATTRS) {
+        AttributeDefinition[] attributes = new AttributeDefinition[CONNECTION_FACTORY_ATTRS.length + 1];
+        System.arraycopy(CONNECTION_FACTORY_ATTRS, 0, attributes, 0, CONNECTION_FACTORY_ATTRS.length);
+        attributes[attributes.length - 1] = CONNECTION_FACTORY_TYPE;
+        for (final AttributeDefinition attribute : attributes) {
             final String attrName = attribute.getName();
             if (subModel.hasDefined(attrName)) {
                 operation.get(attrName).set(subModel.get(attrName));

@@ -1941,6 +1941,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
     protected void writeConnectionFactory(XMLExtendedStreamWriter writer, String name, ModelNode factory) throws XMLStreamException
     {
+        CommonAttributes.CONNECTION_FACTORY_TYPE.marshallAsElement(factory, writer);
+
         if(factory.hasDefined(INBOUND_CONFIG)) {
             final ModelNode inboundConfigs = factory.get(INBOUND_CONFIG);
             if (inboundConfigs.getType() == ModelType.LIST) {
