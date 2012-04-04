@@ -870,7 +870,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
 
 
         void reset(int count) {
-            latch = new CountDownLatch(1);
+            latch = new CountDownLatch(count);
             services.clear();
         }
 
