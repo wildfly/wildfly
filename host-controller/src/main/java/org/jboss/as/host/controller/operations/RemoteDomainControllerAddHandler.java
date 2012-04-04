@@ -23,6 +23,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.Locale;
 
@@ -64,6 +65,11 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
     public static final SimpleAttributeDefinition HOST = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HOST, ModelType.STRING, false)
             .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true)).setFlags(AttributeAccess.Flag.RESTART_JVM).build();
 
+    public static final SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinitionBuilder(
+            ModelDescriptionConstants.USERNAME, STRING, true).setAllowExpression(true)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+            .setFlags(AttributeAccess.Flag.RESTART_JVM).build();
+
     private final ManagementResourceRegistration rootRegistration;
     private final HostControllerConfigurationPersister overallConfigPersister;
     private final ContentRepository contentRepository;
@@ -100,6 +106,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
 
         PORT.validateAndSet(operation, remoteDC);
         HOST.validateAndSet(operation, remoteDC);
+        USERNAME.validateAndSet(operation, remoteDC);
         if (operation.has(SECURITY_REALM)) {
             ModelNode securityRealm = operation.require(SECURITY_REALM);
             dc.get(REMOTE, SECURITY_REALM).set(securityRealm);
@@ -119,6 +126,10 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
         hostControllerInfo.setMasterDomainController(false);
         hostControllerInfo.setRemoteDomainControllerHost(HOST.resolveModelAttribute(context, remoteDC).asString());
         hostControllerInfo.setRemoteDomainControllerPort(PORT.resolveModelAttribute(context, remoteDC).asInt());
+        ModelNode usernameNode = USERNAME.resolveModelAttribute(context, remoteDC);
+        if (usernameNode.isDefined()) {
+            hostControllerInfo.setRemoteDomainControllerUsername(usernameNode.asString());
+        }
 
         overallConfigPersister.initializeDomainConfigurationPersister(true);
 

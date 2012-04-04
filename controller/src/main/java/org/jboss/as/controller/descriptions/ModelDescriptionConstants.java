@@ -285,6 +285,7 @@ public class ModelDescriptionConstants {
     public static final String URL = "url";
     public static final String USER = "user";
     public static final String USER_DN = "user-dn";
+    public static final String USERNAME = "username";
     public static final String USERNAME_ATTRIBUTE = "username-attribute";
     public static final String USERS = "users";
     public static final String VALIDATE_OPERATION = "validate-operation";
