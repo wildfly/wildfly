@@ -19,11 +19,9 @@ package org.jboss.as.test.smoke.osgi;
 import static org.junit.Assert.assertEquals;
 
 import java.io.InputStream;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 
 import javax.inject.Inject;
 
@@ -36,10 +34,10 @@ import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XIdentityCapability;
 import org.jboss.osgi.resolver.XPackageRequirement;
+import org.jboss.osgi.resolver.XResolver;
 import org.jboss.osgi.resolver.XResource;
 import org.jboss.osgi.resolver.XResourceBuilder;
 import org.jboss.osgi.resolver.XResourceBuilderFactory;
-import org.jboss.osgi.resolver.spi.AbstractResolveContext;
 import org.jboss.osgi.spi.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -52,7 +50,6 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 import org.osgi.service.resolver.ResolveContext;
-import org.osgi.service.resolver.Resolver;
 
 /**
  * Test the registration of a non-OSGi deployment.
@@ -88,11 +85,11 @@ public class SimpleModuleRegistrationTestCase {
         XPackageRequirement req = builder.addPackageRequirement(SimpleService.class.getPackage().getName(), null, null);
 
         // Find the providers for the requirement
-        SortedSet<Capability> caps = getEnvironment().findProviders(req);
+        List<Capability> caps = getEnvironment().findProviders(req);
         assertEquals(1, caps.size());
 
         // Verify resource identity
-        XResource xres = (XResource) caps.first().getResource();
+        XResource xres = (XResource) caps.get(0).getResource();
         XIdentityCapability icap = xres.getIdentityCapability();
         assertEquals("deployment.example-module-reg", icap.getSymbolicName());
         assertEquals(Version.emptyVersion, icap.getVersion());
@@ -106,17 +103,15 @@ public class SimpleModuleRegistrationTestCase {
         XResourceBuilder builder = XResourceBuilderFactory.create();
         builder.addIdentityCapability("somename", null, IdentityNamespace.TYPE_UNKNOWN, null, null);
         builder.addPackageRequirement(SimpleService.class.getPackage().getName(), null, null);
-        final Resource resource = builder.getResource();
+        Resource resource = builder.getResource();
 
         // Setup the resolve context
-        ResolveContext context = new AbstractResolveContext(getEnvironment()) {
-            public Collection<Resource> getMandatoryResources() {
-                return Collections.singleton(resource);
-            }
-        };
+        XResolver resolver = getResolver();
+        XEnvironment env = getEnvironment();
+        ResolveContext context = resolver.createResolverContext(env, Collections.singleton(resource), null);
 
         // Find the providers
-        Map<Resource, List<Wire>> wiremap = getResolver().resolve(context);
+        Map<Resource, List<Wire>> wiremap = resolver.resolve(context);
         assertEquals(2, wiremap.size());
 
         // Verify the wires
@@ -133,8 +128,8 @@ public class SimpleModuleRegistrationTestCase {
         return (XEnvironment) container.getService(Services.ENVIRONMENT).getValue();
     }
 
-    private Resolver getResolver() {
+    private XResolver getResolver() {
         ServiceName serviceName = ServiceName.JBOSS.append("osgi", "as", "resolver");
-        return (Resolver) container.getService(serviceName).getValue();
+        return (XResolver) container.getService(serviceName).getValue();
     }
 }
