@@ -23,7 +23,6 @@
 package org.jboss.as.capedwarf.deployment;
 
 import org.jboss.as.capedwarf.api.Constants;
-import org.jboss.as.capedwarf.services.IndexingConsumerService;
 import org.jboss.as.capedwarf.services.ServletExecutorConsumerService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.logging.util.LogServices;
@@ -55,7 +54,9 @@ public class CapedwarfDependenciesProcessor extends CapedwarfDeploymentUnitProce
             serviceTarget.addDependency(cc);
         }
         serviceTarget.addDependency(ServletExecutorConsumerService.NAME); // we need queue -- as default gae queue is there by default
-        serviceTarget.addDependency(IndexingConsumerService.NAME); // we need indexing
+        // serviceTarget.addDependency(IndexingConsumerService.NAME); // we need indexing
+        serviceTarget.addDependency(Constants.CHANNEL_BIND_INFO.getBinderServiceName()); // we need indexing
+        serviceTarget.addDependency(Constants.MASTER_BIND_INFO.getBinderServiceName()); // check for master
         serviceTarget.addDependency(LogServices.loggerHandlerName("ROOT", CAPEDWARF.toUpperCase())); // we need logger
     }
 

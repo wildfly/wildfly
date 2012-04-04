@@ -22,12 +22,22 @@
 
 package org.jboss.as.capedwarf.api;
 
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.deployment.JndiName;
+
 /**
  * Constants.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public final class Constants {
+    public static final String CAPEDWARF = "capedwarf";
     // CapeDwarf cache names
     public static final String[] CACHES = {"default", "data", "metadata", "memcache", "dist", "tasks"};
+    // JNDI names
+    public static final String CHANNEL_JNDI = JndiName.of("java:jboss").append(CAPEDWARF).append("indexing").append("channel").getAbsoluteName();
+    public static final String MASTER_JNDI = JndiName.of("java:jboss").append(CAPEDWARF).append("indexing").append("master").getAbsoluteName();
+    // Bind info
+    public static final ContextNames.BindInfo CHANNEL_BIND_INFO = ContextNames.bindInfoFor(CHANNEL_JNDI);
+    public static final ContextNames.BindInfo MASTER_BIND_INFO = ContextNames.bindInfoFor(MASTER_JNDI);
 }

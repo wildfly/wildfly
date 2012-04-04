@@ -28,7 +28,7 @@ import java.util.logging.Handler;
 
 import javax.jms.Connection;
 
-import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.capedwarf.api.Constants;
 import org.jboss.as.capedwarf.api.Logger;
 import org.jboss.as.capedwarf.deployment.CapedwarfCDIExtensionProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfCleanupProcessor;
@@ -41,9 +41,11 @@ import org.jboss.as.capedwarf.deployment.CapedwarfWebCleanupProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWebComponentsDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWeldParseProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWeldProcessor;
-import org.jboss.as.capedwarf.services.IndexingConsumerService;
+import org.jboss.as.capedwarf.services.MasterInfoService;
 import org.jboss.as.capedwarf.services.ServletExecutorConsumerService;
-import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
+import org.jboss.as.clustering.jgroups.ChannelFactory;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.clustering.singleton.SingletonService;
 import org.jboss.as.clustering.singleton.election.SimpleSingletonElectionPolicy;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -55,7 +57,10 @@ import org.jboss.as.logging.handlers.custom.CustomHandlerService;
 import org.jboss.as.logging.loggers.LoggerHandlerService;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.ManagedReferenceInjector;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -72,8 +77,11 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.TempDir;
 import org.jboss.vfs.VFSUtils;
+import org.jgroups.Address;
+import org.jgroups.Channel;
 
 /**
  * Handler responsible for adding the subsystem resource to the model
@@ -85,7 +93,6 @@ import org.jboss.vfs.VFSUtils;
 class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final CapedwarfSubsystemAdd INSTANCE = new CapedwarfSubsystemAdd();
-    static final String CAPEDWARF = "capedwarf";
 
     private CapedwarfSubsystemAdd() {
     }
@@ -114,7 +121,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 final ServiceTarget serviceTarget = context.getServiceTarget();
 
                 final ServletExecutorConsumerService consumerService = addQueueConsumer(serviceTarget, newControllers);
-                addIndexingConsumer(serviceTarget, newControllers);
+                addIndexingChannel(serviceTarget, newControllers);
 
                 final TempDir tempDir = createTempDir(serviceTarget, newControllers);
 
@@ -141,36 +148,56 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ServletExecutorConsumerService consumerService = new ServletExecutorConsumerService();
         final ServiceBuilder<Connection> builder = serviceTarget.addService(ServletExecutorConsumerService.NAME, consumerService);
         builder.addDependency(ContextNames.bindInfoFor("java:/ConnectionFactory").getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getFactory());
-        builder.addDependency(ContextNames.bindInfoFor("java:/queue/" + CAPEDWARF).getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getQueue());
+        builder.addDependency(ContextNames.bindInfoFor("java:/queue/" + Constants.CAPEDWARF).getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getQueue());
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, consumerService.getLoader());
         builder.addDependency(ServiceName.JBOSS.append("messaging").append("default")); // depending on messaging sub-system impl details ...
         newControllers.add(builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install());
         return consumerService;
     }
 
-    protected void addIndexingConsumer(ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
-        final IndexingConsumerService consumerService = new IndexingConsumerService();
-        final SingletonService<String> singleton = new SingletonService<String>(consumerService, IndexingConsumerService.NAME);
+    protected void addIndexingChannel(ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
+        final String stack = "tcp"; // TODO -- from config!
+        final String clusterId = "Hibernate Search Cluster";
+        final ServiceName serviceName = ChannelService.getServiceName("indexing");
+        final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
+        final ServiceBuilder<Channel> channelBuilder = serviceTarget.addService(serviceName, new ChannelService(clusterId, channelFactory))
+                .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+        newControllers.add(channelBuilder.install());
+
+        final String jndiName = Constants.CHANNEL_JNDI;
+        final ContextNames.BindInfo bindInfo = Constants.CHANNEL_BIND_INFO;
+        final BinderService binder = new BinderService(bindInfo.getBindName());
+        final ServiceBuilder<ManagedReferenceFactory> binderBuilder = serviceTarget.addService(bindInfo.getBinderServiceName(), binder)
+                .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
+                .addDependency(serviceName, Channel.class, new ManagedReferenceInjector<Channel>(binder.getManagedObjectInjector()))
+                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+        newControllers.add(binderBuilder.install());
+
+        final MasterInfoService masterInfoService = new MasterInfoService();
+        final SingletonService<Address> singleton = new SingletonService<Address>(masterInfoService, MasterInfoService.NAME);
         singleton.setElectionPolicy(new SimpleSingletonElectionPolicy());
 
-        final ServiceBuilder<String> builder = singleton.build(CurrentServiceContainer.getServiceContainer());
-        builder.addDependency(ContextNames.bindInfoFor("java:/ConnectionFactory").getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getFactory());
-        builder.addDependency(ContextNames.bindInfoFor("java:/queue/indexing").getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getQueue());
-        ServiceName cacheContainerServiceName = EmbeddedCacheManagerService.getServiceName("capedwarf");
-        builder.addDependency(cacheContainerServiceName, EmbeddedCacheManager.class, consumerService.getCacheManager());
-        builder.addDependency(ServiceName.JBOSS.append("messaging").append("default")); // depending on messaging sub-system impl details ...
-        newControllers.add(builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install());
+        final String masterJndiName = Constants.MASTER_JNDI;
+        final ContextNames.BindInfo masterBindInfo = Constants.MASTER_BIND_INFO;
+        final ServiceBuilder<Address> masterBinder = singleton.build(CurrentServiceContainer.getServiceContainer())
+                .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(masterJndiName))
+                .addDependency(serviceName, Channel.class, masterInfoService.getChannel())
+                .addDependency(masterBindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, masterInfoService.getNamingStoreInjector())
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+        newControllers.add(masterBinder.install());
     }
 
     protected static TempDir createTempDir(final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers) {
         final TempDir tempDir;
         try {
-            tempDir = TempFileProviderService.provider().createTempDir(CAPEDWARF);
+            tempDir = TempFileProviderService.provider().createTempDir(Constants.CAPEDWARF);
         } catch (IOException e) {
             throw new IllegalArgumentException("Cannot create temp dir for CapeDwarf sub-system!", e);
         }
 
-        final ServiceBuilder<TempDir> builder = serviceTarget.addService(ServiceName.JBOSS.append(CAPEDWARF).append("tempDir"), new Service<TempDir>() {
+        final ServiceBuilder<TempDir> builder = serviceTarget.addService(ServiceName.JBOSS.append(Constants.CAPEDWARF).append("tempDir"), new Service<TempDir>() {
             public void start(StartContext context) throws StartException {
             }
 
@@ -192,7 +219,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
             public void apply(Handler handler) {
             }
         });
-        final String capedwarfLogger = CAPEDWARF.toUpperCase();
+        final String capedwarfLogger = Constants.CAPEDWARF.toUpperCase();
         final ServiceName chsName = LogServices.handlerName(capedwarfLogger);
         final ServiceBuilder<Handler> chsBuilder = serviceTarget.addService(chsName, chs);
         newControllers.add(chsBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND).install());

@@ -41,6 +41,7 @@
         <module name="org.jboss.modules"/>
         <module name="org.jivesoftware.smack"/>
         <module name="org.javassist"/>
+        <module name="org.jgroups" />
         <module name="org.infinispan"/>
         <module name="org.infinispan.query"/>
         <module name="org.hibernate.search"/>
