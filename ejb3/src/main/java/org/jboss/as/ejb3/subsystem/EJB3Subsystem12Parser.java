@@ -100,9 +100,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
     protected EJB3Subsystem12Parser() {
     }
 
-    protected void writeAttributes(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -111,9 +108,14 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
 
         context.startSubsystemElement(getExpectedNamespace().getUriString(), false);
 
-        ModelNode model = context.getModelNode();
+        writeElements(writer,  context);
 
-        writeAttributes(writer, context);
+        // write the subsystem end element
+        writer.writeEndElement();
+    }
+
+    protected void writeElements(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
+        ModelNode model = context.getModelNode();
 
         // write the session-bean element
         if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL) || model.hasDefined(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)
@@ -258,9 +260,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             writer.writeAttribute(EJB3SubsystemXMLAttribute.PASS_BY_VALUE.getLocalName(), model.get(EJB3SubsystemModel.IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE).asString());
             writer.writeEndElement();
         }
-
-        // write the subsystem end element
-        writer.writeEndElement();
     }
 
     private void writeIIOP(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
@@ -310,63 +309,67 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             if (!encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
-            switch (element) {
-                case CACHES: {
-                    this.parseCaches(reader, operations);
-                    break;
-                }
-                case PASSIVATION_STORES: {
-                    this.parsePassivationStores(reader, operations);
-                    break;
-                }
-                case MDB: {
-                    // read <mdb>
-                    this.parseMDB(reader, operations, ejb3SubsystemAddOperation);
-                    break;
-                }
-                case ENTITY_BEAN: {
-                    // read <entity-bean>
-                    this.parseEntityBean(reader, operations, ejb3SubsystemAddOperation);
-                    break;
-                }
-                case POOLS: {
-                    // read <pools>
-                    this.parsePools(reader, operations);
-                    break;
-                }
-                case REMOTE: {
-                    // read <remote>
-                    parseRemote(reader, operations);
-                    break;
-                }
-                case ASYNC: {
-                    // read <remote>
-                    parseAsync(reader, operations);
-                    break;
-                }
-                case SESSION_BEAN: {
-                    // read <session-bean>
-                    this.parseSessionBean(reader, operations, ejb3SubsystemAddOperation);
-                    break;
-                }
-                case TIMER_SERVICE: {
-                    parseTimerService(reader, operations);
-                    break;
-                }
-                case THREAD_POOLS: {
-                    parseThreadPools(reader, operations);
-                    break;
-                }
-                case IIOP: {
-                    parseIIOP(reader, operations);
-                    break;
-                }
-                case IN_VM_REMOTE_INTERFACE_INVOCATION:
-                    parseInVMRemoteInterfaceInvocation(reader, ejb3SubsystemAddOperation);
-                    break;
-                default: {
-                    throw unexpectedElement(reader);
-                }
+            readElement(reader, element, operations, ejb3SubsystemAddOperation);
+        }
+    }
+
+    protected void readElement(final XMLExtendedStreamReader reader, final EJB3SubsystemXMLElement element, final List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
+        switch (element) {
+            case CACHES: {
+                this.parseCaches(reader, operations);
+                break;
+            }
+            case PASSIVATION_STORES: {
+                this.parsePassivationStores(reader, operations);
+                break;
+            }
+            case MDB: {
+                // read <mdb>
+                this.parseMDB(reader, operations, ejb3SubsystemAddOperation);
+                break;
+            }
+            case ENTITY_BEAN: {
+                // read <entity-bean>
+                this.parseEntityBean(reader, operations, ejb3SubsystemAddOperation);
+                break;
+            }
+            case POOLS: {
+                // read <pools>
+                this.parsePools(reader, operations);
+                break;
+            }
+            case REMOTE: {
+                // read <remote>
+                parseRemote(reader, operations);
+                break;
+            }
+            case ASYNC: {
+                // read <remote>
+                parseAsync(reader, operations);
+                break;
+            }
+            case SESSION_BEAN: {
+                // read <session-bean>
+                this.parseSessionBean(reader, operations, ejb3SubsystemAddOperation);
+                break;
+            }
+            case TIMER_SERVICE: {
+                parseTimerService(reader, operations);
+                break;
+            }
+            case THREAD_POOLS: {
+                parseThreadPools(reader, operations);
+                break;
+            }
+            case IIOP: {
+                parseIIOP(reader, operations);
+                break;
+            }
+            case IN_VM_REMOTE_INTERFACE_INVOCATION:
+                parseInVMRemoteInterfaceInvocation(reader, ejb3SubsystemAddOperation);
+                break;
+            default: {
+                throw unexpectedElement(reader);
             }
         }
     }

@@ -45,7 +45,6 @@ public enum EJB3SubsystemXMLAttribute {
 
     ENABLED("enabled"),
     ENABLE_BY_DEFAULT("enable-by-default"),
-    ENABLE_STATISTICS("enable-statistics"),
 
     GROUPS_PATH("groups-path"),
 
@@ -77,6 +76,8 @@ public enum EJB3SubsystemXMLAttribute {
     THREAD_POOL_NAME("thread-pool-name"),
 
     USE_QUALIFIED_NAME("use-qualified-name"),
+
+    VALUE("value"),
     ;
 
     private final String name;
