@@ -140,6 +140,7 @@ class DomainApiHandler implements ManagementHttpHandler {
         final String requestMethod = http.getRequestMethod();
         if (OPTIONS.equals(requestMethod)) {
             drain(http);
+            ROOT_LOGGER.debug("Request rejected due to 'OPTIONS' method which is not supported.");
             http.sendResponseHeaders(METHOD_NOT_ALLOWED, -1);
 
             return;
@@ -162,6 +163,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             // This will reject multi-origin Origin headers due to the exact match.
             if (origin.equals(allowedOrigin) == false) {
                 drain(http);
+                ROOT_LOGGER.debug("Request rejected due to HOST/ORIGIN mis-match.");
                 http.sendResponseHeaders(FORBIDDEN, -1);
 
                 return;
@@ -190,6 +192,7 @@ class DomainApiHandler implements ManagementHttpHandler {
                 // If the content-coding of an entity in a request message is not
                 // acceptable to the origin server, the server SHOULD respond with a
                 // status code of 415 (Unsupported Media Type).
+                ROOT_LOGGER.debug("Request rejected due to unsupported media type - should be one of (application/json,application/dmr-encoded).");
                 sendResponse(http, UNSUPPORTED_MEDIA_TYPE, contentType + "\n");
 
                 return;
@@ -269,6 +272,7 @@ class DomainApiHandler implements ManagementHttpHandler {
 
         boolean isGet = GET.equals(requestMethod);
         if (!isGet && !POST.equals(requestMethod)) {
+            ROOT_LOGGER.debug("Request rejected as method not one of (GET,POST).");
             http.sendResponseHeaders(METHOD_NOT_ALLOWED, -1);
 
             return;
@@ -370,7 +374,6 @@ class DomainApiHandler implements ManagementHttpHandler {
 
     private static final class SeekResult {
         BoundaryDelimitedInputStream stream;
-        String fileName;
     }
 
     /**
@@ -411,7 +414,6 @@ class DomainApiHandler implements ManagementHttpHandler {
                 matcher = DISPOSITION_FILE.matcher(disposition);
                 if (matcher.matches()) {
                     SeekResult seek = new SeekResult();
-                    seek.fileName = matcher.group(1);
                     seek.stream = stream;
 
                     return seek;
