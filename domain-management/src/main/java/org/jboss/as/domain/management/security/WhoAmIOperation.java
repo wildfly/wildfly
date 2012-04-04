@@ -86,12 +86,14 @@ public class WhoAmIOperation implements OperationStepHandler, DescriptionProvide
             throw new OperationFailedException(new ModelNode().set(MESSAGES.unexpectedNumberOfRealmUsers(realmUsers.size())));
         }
 
-
         RealmUser user = realmUsers.iterator().next();
         ModelNode result = context.getResult();
         ModelNode identity = result.get(IDENTITY);
         identity.get(USERNAME).set(user.getName());
-        identity.get(REALM).set(user.getRealm());
+        String realm = user.getRealm();
+        if (realm != null) {
+            identity.get(REALM).set(realm);
+        }
 
         if (operation.hasDefined(VERBOSE) && operation.require(VERBOSE).asBoolean()) {
             ModelNode roles = result.get(ROLES);
