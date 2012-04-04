@@ -37,6 +37,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
+import org.osgi.service.repository.RepositoryContent;
 
 import javax.inject.Inject;
 import java.io.InputStream;
@@ -88,7 +89,7 @@ public class SimpleRepositoryTestCase {
 
         XIdentityCapability xcap = (XIdentityCapability) caps.iterator().next();
         assertEquals("org.apache.felix.eventadmin", xcap.getSymbolicName());
-        InputStream content = ((XResource)xcap.getResource()).getContent();
+        InputStream content = ((RepositoryContent)xcap.getResource()).getContent();
         try {
             Bundle bundle = context.installBundle(xcap.getSymbolicName(), content);
             try {

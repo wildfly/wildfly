@@ -36,7 +36,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.resolver.XEnvironment;
-import org.jboss.osgi.resolver.felix.FelixResolver;
+import org.jboss.osgi.resolver.XResolver;
+import org.jboss.osgi.resolver.felix.StatelessResolver;
 import org.osgi.service.resolver.Resolver;
 
 /**
@@ -50,7 +51,7 @@ class ResolverService extends AbstractService<Resolver> {
     static final ServiceName RESOLVER_NAME = SERVICE_BASE_NAME.append("resolver");
 
     private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
-    private FelixResolver resolver;
+    private XResolver resolver;
 
     static ServiceController<?> addService(final ServiceTarget target) {
         ResolverService service = new ResolverService();
@@ -66,7 +67,7 @@ class ResolverService extends AbstractService<Resolver> {
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> serviceController = context.getController();
         ROOT_LOGGER.debugf("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
-        resolver = new FelixResolver();
+        resolver = new StatelessResolver();
     }
 
     @Override

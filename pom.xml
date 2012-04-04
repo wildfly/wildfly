@@ -171,12 +171,12 @@
         <version.org.jboss.msc.jboss-msc>1.0.2.GA</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.netty>3.2.6.Final</version.org.jboss.netty>
         <version.org.jboss.osgi.deployment>1.0.12.Final</version.org.jboss.osgi.deployment>
-        <version.org.jboss.osgi.framework>1.2.0.CR1</version.org.jboss.osgi.framework>
+        <version.org.jboss.osgi.framework>1.2.0.CR2</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.javax.servlet.api>2.5.Final</version.org.jboss.osgi.javax.servlet.api>
         <version.org.jboss.osgi.logging>1.0.0.Final</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.metadata>2.0.3.Final</version.org.jboss.osgi.metadata>
-        <version.org.jboss.osgi.resolver>2.0.0.CR1</version.org.jboss.osgi.resolver>
-        <version.org.jboss.osgi.repository>1.1.0.CR1</version.org.jboss.osgi.repository>
+        <version.org.jboss.osgi.resolver>2.0.0.CR2</version.org.jboss.osgi.resolver>
+        <version.org.jboss.osgi.repository>1.1.0.CR2</version.org.jboss.osgi.repository>
         <version.org.jboss.osgi.spi>3.0.1.Final</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>1.0.7.Final</version.org.jboss.osgi.vfs>
         <version.org.jboss.remote-naming>1.0.2.Final</version.org.jboss.remote-naming>
