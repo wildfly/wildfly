@@ -2429,4 +2429,7 @@ public interface ControllerMessages {
     @Message(id = 14844, value = "Can't have same criteria for both not and inclusion %s")
     String cantHaveSameCriteriaForBothNotAndInclusion(InterfaceCriteria interfaceCriteria);
 
+    @Message(id = 14845, value = "Invalid value '%s' for attribute '%s' -- no interface configuration with that name exists")
+    OperationFailedException nonexistentInterface(String attributeValue, String attributeName);
+
 }

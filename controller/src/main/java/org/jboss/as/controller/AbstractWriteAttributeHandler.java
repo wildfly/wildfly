@@ -35,6 +35,7 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -90,7 +91,8 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
         // Don't require VALUE. Let the validator decide if it's bothered by an undefined value
         final ModelNode newValue = operation.hasDefined(VALUE) ? operation.get(VALUE) : new ModelNode();
         validateUnresolvedValue(attributeName, newValue);
-        final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
+        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        final ModelNode submodel = resource.getModel();
         final ModelNode currentValue = submodel.get(attributeName).clone();
 
         final AttributeDefinition attributeDefinition = getAttributeDefinition(attributeName);
@@ -101,6 +103,8 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
         } else {
             submodel.get(attributeName).set(newValue);
         }
+
+        validateUpdatedModel(context, resource);
 
         if (requiresRuntime(context)) {
             context.addStep(new OperationStepHandler() {
@@ -133,7 +137,6 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
 
         context.completeStep();
     }
-
 
 
     /**
@@ -195,6 +198,18 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
         if (resolvedValueValidator != null) {
             resolvedValueValidator.validateResolvedParameter(VALUE, resolvedValue);
         }
+    }
+
+    /**
+     * Hook to allow subclasses to validate the model following the application of the new attribute value.
+     * This default implementation does nothing.
+     *
+     * @param context the
+     * @param model the updated model resource
+     * @throws OperationFailedException
+     */
+    protected void validateUpdatedModel(final OperationContext context, final Resource model) throws OperationFailedException {
+        // default impl does nothing
     }
 
 
