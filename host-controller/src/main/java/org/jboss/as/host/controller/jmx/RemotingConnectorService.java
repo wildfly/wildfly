@@ -19,14 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.jmx;
+package org.jboss.as.host.controller.jmx;
 
 import java.io.IOException;
-
-import javax.management.MBeanServer;
+import java.lang.management.ManagementFactory;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -43,6 +41,8 @@ import org.jboss.remotingjmx.RemotingConnectorServer;
 /**
  * The remote connector services
  *
+ * Copied from the JMX subsystem to avoid bringing in a new dependency.
+ *
  * @author Stuart Douglas
  */
 public class RemotingConnectorService implements Service<RemotingConnectorServer> {
@@ -51,13 +51,11 @@ public class RemotingConnectorService implements Service<RemotingConnectorServer
 
     private RemotingConnectorServer server;
 
-    private final InjectedValue<MBeanServer> mBeanServer = new InjectedValue<MBeanServer>();
-
     private final InjectedValue<Endpoint> endpoint = new InjectedValue<Endpoint>();
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
-        server = new RemotingConnectorServer(mBeanServer.getValue(), endpoint.getValue());
+        server = new RemotingConnectorServer(ManagementFactory.getPlatformMBeanServer(), endpoint.getValue());
         try {
             server.start();
         } catch (IOException e) {
@@ -79,21 +77,17 @@ public class RemotingConnectorService implements Service<RemotingConnectorServer
         return server;
     }
 
-    public static ServiceController<?> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler, final boolean useManagementEndpoint) {
-
+    public static ServiceController<?> addService(final ServiceTarget target,
+            final ServiceVerificationHandler verificationHandler) {
         final RemotingConnectorService service = new RemotingConnectorService();
         final ServiceBuilder<RemotingConnectorServer> builder = target.addService(SERVICE_NAME, service);
-        builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.mBeanServer);
-        if(useManagementEndpoint) {
-            builder.addDependency(ManagementRemotingServices.MANAGEMENT_ENDPOINT, Endpoint.class, service.endpoint);
-        } else {
-            builder.addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, service.endpoint);
-        }
+
+        builder.addDependency(ManagementRemotingServices.MANAGEMENT_ENDPOINT, Endpoint.class, service.endpoint);
+
         if (verificationHandler != null) {
             builder.addListener(verificationHandler);
         }
         return builder.install();
     }
-
 
 }
