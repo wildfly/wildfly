@@ -39,7 +39,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
 
 import static org.jboss.as.ee.EeMessages.MESSAGES;
@@ -226,11 +225,9 @@ public class BasicComponent implements Component {
     /**
      * {@inheritDoc}
      *
-     * @param stopContext
      */
-    public void stop(final StopContext stopContext) {
+    public void stop() {
         if (stopping.compareAndSet(false, true)) {
-            stopContext.asynchronous();
             synchronized (this) {
                 gate = false;
                 //this.stopContext = stopContext;
@@ -238,7 +235,6 @@ public class BasicComponent implements Component {
             //TODO: only run this if there is no instances
             //TODO: trigger destruction of all component instances
             //TODO: this has lots of potential for race conditions unless we are careful
-            stopContext.complete();
         }
     }
 

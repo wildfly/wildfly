@@ -167,6 +167,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
+        newControllers.add(EEComponentStartupPoolService.addService(context.getServiceTarget(), verificationHandler));
     }
 
     protected boolean requiresRuntimeVerification() {

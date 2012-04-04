@@ -36,7 +36,6 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StopContext;
 
 import javax.ejb.LockType;
 import java.lang.reflect.Method;
@@ -132,10 +131,10 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     }
 
     @Override
-    public void stop(final StopContext stopContext) {
+    public void stop() {
         getShutDownInterceptorFactory().shutdown();
         this.destroySingletonInstance();
-        super.stop(stopContext);
+        super.stop();
     }
 
     @Override

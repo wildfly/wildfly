@@ -45,7 +45,6 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.jca.core.spi.rar.Endpoint;
-import org.jboss.msc.service.StopContext;
 
 import static java.util.Collections.emptyMap;
 import static javax.ejb.TransactionAttributeType.REQUIRED;
@@ -186,7 +185,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     }
 
     @Override
-    public void stop(final StopContext stopContext) {
+    public void stop() {
 
         ClassLoader oldTccl = SecurityActions.getContextClassLoader();
         try {
@@ -204,7 +203,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         }
 
 
-        super.stop(stopContext);
+        super.stop();
     }
 
     @Override

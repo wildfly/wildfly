@@ -25,6 +25,7 @@ package org.jboss.as.ee.component.deployers;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BasicComponent;
@@ -44,6 +45,7 @@ import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ee.subsystem.EEComponentStartupPoolService;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -138,7 +140,8 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         }
 
         // START depends on CREATE
-        startBuilder.addDependency(createServiceName, BasicComponent.class, startService.getComponentInjector());
+        startBuilder.addDependency(createServiceName, BasicComponent.class, startService.getComponentInjector())
+        .addDependency(EEComponentStartupPoolService.SERVICE_NAME, ExecutorService.class, startService.getExecutor());
 
         //don't start components until all bindings are up
         startBuilder.addDependency(bindingDependencyService);
