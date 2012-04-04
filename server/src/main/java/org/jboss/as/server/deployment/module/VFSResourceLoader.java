@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.jar.Manifest;
 
+import org.jboss.as.server.ServerMessages;
 import org.jboss.modules.AbstractResourceLoader;
 import org.jboss.modules.ClassSpec;
 import org.jboss.modules.PackageSpec;
@@ -109,7 +110,7 @@ public class VFSResourceLoader extends AbstractResourceLoader {
                 spec.setCodeSource(new CodeSource(rootUrl, file.getCodeSigners()));
                 return spec;
             } else {
-                throw new IOException("Resource is too large to be a valid class file");
+                throw ServerMessages.MESSAGES.resourceTooLarge();
             }
         } finally {
             VFSUtils.safeClose(is);

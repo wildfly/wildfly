@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.deployment.module;
 
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -56,7 +57,7 @@ public class ClassFileTransformerProcessor implements DeploymentUnitProcessor {
                 transformer.setActive(true);
             }
         } catch (Exception e) {
-            throw new DeploymentUnitProcessingException("Failed to instantiate a ClassFileTransformer: ", e);
+            throw ServerMessages.MESSAGES.failedToInstantiateClassFileTransformer(ClassFileTransformer.class.getSimpleName(), e);
         }
     }
 

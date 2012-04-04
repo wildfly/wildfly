@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.dmr.ModelNode;
 
@@ -68,7 +69,7 @@ public final class DeploymentUtils {
      */
     public static DeploymentUnit getTopDeploymentUnit(DeploymentUnit unit) {
         if (unit == null)
-            throw new IllegalArgumentException("Null initial unit");
+            throw ServerMessages.MESSAGES.nullInitialDeploymentUnit();
 
         DeploymentUnit parent = unit.getParent();
         while (parent != null) {

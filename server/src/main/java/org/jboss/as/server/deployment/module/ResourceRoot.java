@@ -25,6 +25,7 @@ package org.jboss.as.server.deployment.module;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.SimpleAttachable;
 import org.jboss.vfs.VirtualFile;
 
@@ -92,7 +93,7 @@ public final class ResourceRoot extends SimpleAttachable {
      */
     public void merge(final ResourceRoot additionalResourceRoot) {
         if(!additionalResourceRoot.getRoot().equals(root)) {
-            throw new IllegalArgumentException("Cannot merge resource root for a different file. This: " + root + " mergee: " + additionalResourceRoot.getRoot());
+            throw ServerMessages.MESSAGES.cannotMergeResourceRoot(root, additionalResourceRoot.getRoot());
         }
         usePhysicalCodeSource = additionalResourceRoot.usePhysicalCodeSource;
         this.exportFilters.addAll(additionalResourceRoot.getExportFilters());

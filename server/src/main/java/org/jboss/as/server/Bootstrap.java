@@ -89,17 +89,6 @@ public interface Bootstrap {
         }
 
         /**
-         * Set the port offset.
-         *
-         * @param portOffset the port offset
-         */
-        public void setPortOffset(final int portOffset) {
-            if (portOffset < 0) {
-                throw new IllegalArgumentException("portOffset may not be less than 0");
-            }
-        }
-
-        /**
          * Get the server environment.
          *
          * @return the server environment. Will not be {@code null}
@@ -110,7 +99,7 @@ public interface Bootstrap {
 
         /**
          * Get the server's running mode control.
-         * @return
+         * @return the running mode control. Will not be {@code null}
          */
         RunningModeControl getRunningModeControl() {
             return runningModeControl;
@@ -140,6 +129,7 @@ public interface Bootstrap {
          * @param moduleLoader the module loader
          */
         public void setModuleLoader(final ModuleLoader moduleLoader) {
+            assert moduleLoader != null : "moduleLoader is null";
             this.moduleLoader = moduleLoader;
         }
 
@@ -197,15 +187,6 @@ public interface Bootstrap {
          */
         public long getStartTime() {
             return startTime;
-        }
-
-        /**
-         * Set the server start time to report in the logs.
-         *
-         * @param startTime the server start time
-         */
-        public void setStartTime(final long startTime) {
-            this.startTime = startTime;
         }
     }
 

@@ -115,9 +115,6 @@ public class DeployerChainAddHandler implements OperationStepHandler, Descriptio
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-            if (deployerMap == null) {
-                throw new IllegalStateException("No deployers set");
-            }
             final EnumMap<Phase, List<DeploymentUnitProcessor>> finalDeployers = new EnumMap<Phase, List<DeploymentUnitProcessor>>(Phase.class);
             final List<DeploymentUnitProcessor> processorList = new ArrayList<DeploymentUnitProcessor>(256);
             for (Phase phase : Phase.values()) {

@@ -24,6 +24,8 @@ package org.jboss.as.server.parsing;
 
 import java.io.File;
 
+import org.jboss.as.server.ServerMessages;
+
 /**
  * Parses a string and replaces any references to system properties or environment variables in the string
  *
@@ -124,7 +126,7 @@ public class PropertiesValueResolver {
                                 state = DEFAULT;
                                 continue;
                             } else {
-                                throw new IllegalStateException("Failed to resolve expression: " + value.substring(start - 2, i + 1));
+                                throw ServerMessages.MESSAGES.failedToResolveExpression(value.substring(start - 2, i + 1));
                             }
                         }
                         default: {
@@ -147,7 +149,7 @@ public class PropertiesValueResolver {
                     continue;
                 }
                 default:
-                    throw new IllegalStateException("Unexpected char seen: " + ch);
+                    throw ServerMessages.MESSAGES.unexpectedChar("" + ch);
             }
         }
         switch (state) {
@@ -162,7 +164,7 @@ public class PropertiesValueResolver {
             case GOT_OPEN_BRACE: {
                 // We had a reference that was not resolved, throw ISE
                 if (resolvedValue == null)
-                    throw new IllegalStateException("Incomplete expression: " + builder.toString());
+                    throw ServerMessages.MESSAGES.incompleteExpression(builder.toString());
                 break;
             }
         }

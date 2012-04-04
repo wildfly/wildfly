@@ -25,6 +25,7 @@ package org.jboss.as.server.deployment.module;
 import java.util.List;
 import java.util.jar.Manifest;
 
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -77,7 +78,7 @@ public final class ManifestDependencyProcessor implements DeploymentUnitProcesso
             for (final String dependencyDef : dependencyDefs) {
                 final String[] dependencyParts = dependencyDef.trim().split(" ");
                 if (dependencyParts.length == 0) {
-                    throw new RuntimeException("Invalid dependency: " + dependencyString);
+                    throw ServerMessages.MESSAGES.invalidDependency(dependencyString);
                 }
 
                 final ModuleIdentifier dependencyId = ModuleIdentifier.fromString(dependencyParts[0]);

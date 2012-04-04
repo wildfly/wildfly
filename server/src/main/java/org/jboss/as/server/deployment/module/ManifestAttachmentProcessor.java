@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.jar.Manifest;
 
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -70,7 +71,7 @@ public class ManifestAttachmentProcessor implements DeploymentUnitProcessor {
                 if (manifest != null)
                     resourceRoot.putAttachment(Attachments.MANIFEST, manifest);
             } catch (IOException e) {
-                throw new DeploymentUnitProcessingException("Failed to get manifest for deployment " + deploymentRoot, e);
+                throw ServerMessages.MESSAGES.failedToGetManifest(deploymentRoot, e);
             }
         }
     }

@@ -96,16 +96,16 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         if (CONFIG_LOGGER.isDebugEnabled()) {
             final Properties properties = System.getProperties();
             final StringBuilder b = new StringBuilder(8192);
-            b.append("Configured system properties:");
+            b.append(ServerMessages.MESSAGES.configuredSystemPropertiesLabel());
             for (String property : new TreeSet<String>(properties.stringPropertyNames())) {
                 b.append("\n\t").append(property).append(" = ").append(properties.getProperty(property, "<undefined>"));
             }
             CONFIG_LOGGER.debug(b);
-            CONFIG_LOGGER.debugf("VM Arguments: %s", getVMArguments());
+            CONFIG_LOGGER.debugf(ServerMessages.MESSAGES.vmArgumentsLabel(getVMArguments()));
             if (CONFIG_LOGGER.isTraceEnabled()) {
                 b.setLength(0);
                 final Map<String,String> env = System.getenv();
-                b.append("Configured system environment:");
+                b.append(ServerMessages.MESSAGES.configuredSystemEnvironmentLabel());
                 for (String key : new TreeSet<String>(env.keySet())) {
                     b.append("\n\t").append(key).append(" = ").append(env.get(key));
                 }

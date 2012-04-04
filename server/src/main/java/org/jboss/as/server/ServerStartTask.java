@@ -71,12 +71,9 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
     public ServerStartTask(final String hostControllerName, final String serverName, final int portOffset,
                            final List<ServiceActivator> startServices, final List<ModelNode> updates, final Map<String, String> launchProperties) {
-        if (serverName == null || serverName.length() == 0) {
-            throw new IllegalArgumentException("Server name \"" + serverName + "\" is invalid; cannot be null or blank");
-        }
-        if (hostControllerName == null || hostControllerName.length() == 0) {
-            throw new IllegalArgumentException("Host Controller name \"" + hostControllerName + "\" is invalid; cannot be null or blank");
-        }
+        assert serverName != null && serverName.length() > 0  : "Server name \"" + serverName + "\" is invalid; cannot be null or blank";
+        assert hostControllerName != null && hostControllerName.length() > 0 : "Host Controller name \"" + hostControllerName + "\" is invalid; cannot be null or blank";
+
         this.serverName = serverName;
         this.portOffset = portOffset;
         this.startServices = startServices;
@@ -155,19 +152,19 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     @Override
     public void validateObject() throws InvalidObjectException {
         if (serverName == null) {
-            throw new InvalidObjectException("serverName is null");
+            throw ServerMessages.MESSAGES.invalidObject("serverName");
         }
         if(hostControllerName == null) {
-            throw new InvalidObjectException("hostControllerName is null");
+            throw ServerMessages.MESSAGES.invalidObject("hostControllerName");
         }
         if (portOffset < 0) {
-            throw new InvalidObjectException("portOffset is out of range");
+            throw ServerMessages.MESSAGES.invalidPortOffset();
         }
         if (updates == null) {
-            throw new InvalidObjectException("updates is null");
+            throw ServerMessages.MESSAGES.invalidObject("updates");
         }
         if (startServices == null) {
-            throw new InvalidObjectException("startServices is null");
+            throw ServerMessages.MESSAGES.invalidObject("startServices");
         }
     }
 

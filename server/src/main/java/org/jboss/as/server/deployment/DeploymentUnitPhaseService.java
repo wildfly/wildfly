@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -116,7 +117,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
                     final DeploymentUnitProcessor prev = iterator.previous();
                     safeUndeploy(deploymentUnit, phase, prev);
                 }
-                throw new StartException(String.format("Failed to process phase %s of %s", phase, deploymentUnit), e);
+                throw ServerMessages.MESSAGES.deploymentPhaseFailed(phase, deploymentUnit, e);
             }
         }
         if (nextPhase != null) {

@@ -32,6 +32,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -61,7 +62,7 @@ public class VaultWriteAttributeHandler extends ReloadRequiredWriteAttributeHand
             VaultAddHandler.optionsValidator.validateParameter(VALUE, value);
         } else {
             // Bug! Someone added the attribute to the set but did not implement
-            throw new UnsupportedOperationException(String.format("Validation for %s is not implemented", name));
+            throw ServerMessages.MESSAGES.attributeValidationUnimplemented(name);
         }
 
     }

@@ -25,6 +25,7 @@ package org.jboss.as.server.deployment.module;
 import java.io.Closeable;
 import java.io.IOException;
 
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentMountProvider;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -51,7 +52,7 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
         }
         final DeploymentMountProvider deploymentMountProvider = deploymentUnit.getAttachment(Attachments.SERVER_DEPLOYMENT_REPOSITORY);
         if(deploymentMountProvider == null) {
-            throw new DeploymentUnitProcessingException("No deployment repository available.");
+            throw ServerMessages.MESSAGES.noDeploymentRepositoryAvailable();
         }
 
         final String deploymentName = deploymentUnit.getName();
@@ -88,7 +89,7 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
                 mountHandle = new MountHandle(handle);
             } catch (IOException e) {
                 failed = true;
-                throw new DeploymentUnitProcessingException("Failed to mount deployment content", e);
+                throw ServerMessages.MESSAGES.deploymentMountFailed(e);
             } finally {
                 if(failed) {
                     VFSUtils.safeClose(handle);
