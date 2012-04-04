@@ -20,55 +20,70 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.beanvalidation.jca.ra;
+package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 import java.lang.reflect.Method;
-
+import javax.jms.Message;
+import javax.jms.MessageListener;
 import javax.resource.spi.endpoint.MessageEndpoint;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.transaction.xa.XAResource;
+
 
 /**
- * A simple message endpoint factory
+ * A simple message endpoint
  * 
  * @author <a href="mailto:vrastsel@redhat.com>Vladimir Rastseluev</a>
  * 
  */
-public class ValidMessageEndpointFactory implements MessageEndpointFactory
+public class ValidMessageEndpoint implements MessageEndpoint, MessageListener
 {
 
-   private MessageEndpoint me;
+   
+   private Message message;
 
    /**
     * Constructor
-    * @param me The message endpoint that should be used
+    *
     */
-   public ValidMessageEndpointFactory(MessageEndpoint me)
+   public ValidMessageEndpoint()
    {
-      this.me = me;
    }
 
    /**
     * {@inheritDoc}
     */
-   public MessageEndpoint createEndpoint(XAResource xaResource)
+   public void onMessage(Message message)
    {
-      return me;
+      this.message = message;
+      
+   }
+
+   /**
+    * Get the message
+    * @return The value
+    */
+   public Message getMessage()
+   {
+      return message;
    }
 
    /**
     * {@inheritDoc}
     */
-   public MessageEndpoint createEndpoint(XAResource xaResource, long timeout)
+   public void afterDelivery()
    {
-      return me;
    }
 
    /**
     * {@inheritDoc}
     */
-   public boolean isDeliveryTransacted(Method method)
+   public void beforeDelivery(Method method)
    {
-      return false;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void release()
+   {
    }
 }

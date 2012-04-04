@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.beanvalidation.jca.ra;
+package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;

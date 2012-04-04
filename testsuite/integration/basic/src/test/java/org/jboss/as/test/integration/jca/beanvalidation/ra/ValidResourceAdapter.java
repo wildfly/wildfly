@@ -19,8 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.beanvalidation.jca.ra;
+package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,7 +38,11 @@ import javax.validation.constraints.*;
  * 
  * @version $Revision: $
  */
-public class ValidResourceAdapter implements ResourceAdapter {
+public class ValidResourceAdapter implements ResourceAdapter,Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     /** property */
     @NotNull
     @Min(3)

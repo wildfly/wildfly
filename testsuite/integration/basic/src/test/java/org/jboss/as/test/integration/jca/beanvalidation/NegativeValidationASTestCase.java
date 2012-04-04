@@ -19,22 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.beanvalidation.jca;
+package org.jboss.as.test.integration.jca.beanvalidation;
 
 import static org.junit.Assert.*;
-
 import java.util.List;
 import java.util.Set;
-
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.test.integration.beanvalidation.jca.ra.ValidActivationSpec;
-import org.jboss.as.test.integration.beanvalidation.jca.ra.ValidAdminObjectInterface;
-import org.jboss.as.test.integration.beanvalidation.jca.ra.ValidConnection;
-import org.jboss.as.test.integration.beanvalidation.jca.ra.ValidConnectionFactory;
-import org.jboss.as.test.integration.beanvalidation.jca.ra.ValidMessageEndpoint;
-import org.jboss.as.test.integration.beanvalidation.jca.ra.ValidMessageEndpointFactory;
+import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidActivationSpec;
+import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory;
+import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidMessageEndpoint;
+import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidMessageEndpointFactory;
 
-import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.resource.spi.ActivationSpec;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -53,17 +48,17 @@ import org.junit.runner.RunWith;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 
 /**
- * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a> JBQA-5904
+ * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a> JBQA-5906
  */
 @RunWith(Arquillian.class)
-public class PositiveValidationTestCase {
+public class NegativeValidationASTestCase {
 
     @Inject
     public ServiceContainer serviceContainer;
 
     /**
      * Define the deployment
-     * 
+     *
      * @return The deployment archive
      */
     @Deployment
@@ -72,37 +67,20 @@ public class PositiveValidationTestCase {
 
         ResourceAdapterArchive raa = ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "valid.jar");
-        ja.addPackage(ValidConnectionFactory.class.getPackage()).addClasses(PositiveValidationTestCase.class);
+        ja.addPackage(ValidConnectionFactory.class.getPackage()).addClasses(NegativeValidationASTestCase.class);
         raa.addAsLibrary(ja);
 
-        raa.addAsManifestResource("jca/beanvalidation/ra.xml", "ra.xml")
-                .addAsManifestResource("jca/beanvalidation/ij/ironjacamar.xml", "ironjacamar.xml")
-                .addAsManifestResource(new StringAsset("Dependencies: javax.inject.api,org.jboss.as.connector\n"),"MANIFEST.MF");
+        raa.addAsManifestResource(NegativeValidationASTestCase.class.getPackage(),"ra-wrong-as-property.xml", "ra.xml")
+                .addAsManifestResource(NegativeValidationASTestCase.class.getPackage(),"ironjacamar.xml", "ironjacamar.xml")
+                .addAsManifestResource( 
+                        new StringAsset("Dependencies: javax.inject.api,org.jboss.as.connector \n"),"MANIFEST.MF");
 
         return raa;
     }
 
-    @Resource(mappedName = "java:jboss/VCF")
-    private ValidConnectionFactory connectionFactory;
-    @Resource(mappedName = "java:jboss/VAO")
-    ValidAdminObjectInterface adminObject;
 
-    /**
-     * Test configuration
-     * 
-     * @throws Throwable Thrown if case of an error
-     */
-    @Test
-    public void testConfiguration() throws Throwable {
-        assertNotNull("CF not found", connectionFactory);
-        assertNotNull("AO not found", adminObject);
-        ValidConnection con = connectionFactory.getConnection();
-        assertEquals("admin", adminObject.getAoProperty());
-        assertEquals(4, con.getResourceAdapterProperty());
-        assertEquals("prop", con.getManagedConnectionFactoryProperty());
-    }
 
-    @Test
+    @Test(expected=Exception.class)
     public void testRegistryConfiguration() throws Throwable {
         ServiceController<?> controller = serviceContainer.getService(ConnectorServices.RA_REPOSITORY_SERVICE);
         assertNotNull(controller);
@@ -111,7 +89,7 @@ public class PositiveValidationTestCase {
         Set<String> ids = repository.getResourceAdapters(javax.jms.MessageListener.class);
 
         assertNotNull(ids);
-        assertEquals(1, ids.size());
+        //assertEquals(1, ids.size());
 
         String piId = ids.iterator().next();
         assertNotNull(piId);
@@ -128,7 +106,7 @@ public class PositiveValidationTestCase {
         ActivationSpec as = listener.getActivation().createInstance();
         assertNotNull(as);
         assertNotNull(as.getResourceAdapter());
-        
+
         ValidActivationSpec vas=(ValidActivationSpec)as;
 
         ValidMessageEndpoint me = new ValidMessageEndpoint();
@@ -147,7 +125,7 @@ public class PositiveValidationTestCase {
         Set<String> ids = repository.getResourceAdapters();
 
         assertNotNull(ids);
-        assertEquals(1, ids.size());
+        //assertEquals(1, ids.size());
 
         String piId = ids.iterator().next();
         assertNotNull(piId);

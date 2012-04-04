@@ -24,7 +24,7 @@
 	<eis-type>Test RA</eis-type>
 	<resourceadapter-version>0.1</resourceadapter-version>
 	<resourceadapter>
-		<resourceadapter-class>org.jboss.as.test.integration.beanvalidation.jca.ra.ValidResourceAdapter</resourceadapter-class>
+		<resourceadapter-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidResourceAdapter</resourceadapter-class>
 		<config-property>
 			<config-property-name>raProperty</config-property-name>
 			<config-property-type>java.lang.Integer</config-property-type>
@@ -33,17 +33,17 @@
 
 		<outbound-resourceadapter>
 			<connection-definition>
-				<managedconnectionfactory-class>org.jboss.as.test.integration.beanvalidation.jca.ra.ValidManagedConnectionFactory</managedconnectionfactory-class>
+				<managedconnectionfactory-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidManagedConnectionFactory</managedconnectionfactory-class>
 				<config-property>
 					<config-property-name>cfProperty</config-property-name>
 					<config-property-type>java.lang.String</config-property-type>
 					<config-property-value>property</config-property-value>
 				</config-property>
 
-				<connectionfactory-interface>org.jboss.as.test.integration.beanvalidation.jca.ra.ValidConnectionFactory</connectionfactory-interface>
-				<connectionfactory-impl-class>org.jboss.as.test.integration.beanvalidation.jca.ra.ValidConnectionFactoryImpl</connectionfactory-impl-class>
-				<connection-interface>org.jboss.as.test.integration.beanvalidation.jca.ra.ValidConnection</connection-interface>
-				<connection-impl-class>org.jboss.as.test.integration.beanvalidation.jca.ra.ValidConnectionImpl</connection-impl-class>
+				<connectionfactory-interface>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory</connectionfactory-interface>
+				<connectionfactory-impl-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactoryImpl</connectionfactory-impl-class>
+				<connection-interface>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnection</connection-interface>
+				<connection-impl-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionImpl</connection-impl-class>
 			</connection-definition>
 			<transaction-support>NoTransaction</transaction-support>
 			<reauthentication-support>false</reauthentication-support>
@@ -54,7 +54,7 @@
 				<messagelistener>
 					<messagelistener-type>javax.jms.MessageListener</messagelistener-type>
 					<activationspec>
-						<activationspec-class>org.jboss.as.test.integration.beanvalidation.jca.ra.ValidActivationSpec</activationspec-class>
+						<activationspec-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidActivationSpec</activationspec-class>
 						<config-property>
 							<config-property-name>myBooleanProperty</config-property-name>
 							<config-property-type>java.lang.Boolean</config-property-type>
@@ -63,7 +63,7 @@
 						<config-property>
 							<config-property-name>myStringProperty</config-property-name>
 							<config-property-type>java.lang.String</config-property-type>
-							<config-property-value>s</config-property-value>
+							<config-property-value>property</config-property-value>
 						</config-property>
 					</activationspec>
 				</messagelistener>
@@ -71,8 +71,8 @@
 		</inbound-resourceadapter>
 		
 		<adminobject>
-			<adminobject-interface>org.jboss.as.test.integration.beanvalidation.jca.ra.ValidAdminObjectInterface</adminobject-interface>
-			<adminobject-class>org.jboss.as.test.integration.beanvalidation.jca.ra.ValidAdminObjectImpl</adminobject-class>
+			<adminobject-interface>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidAdminObjectInterface</adminobject-interface>
+			<adminobject-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidAdminObjectImpl</adminobject-class>
 			<config-property>
 				<config-property-name>aoProperty</config-property-name>
 				<config-property-type>java.lang.String</config-property-type>
