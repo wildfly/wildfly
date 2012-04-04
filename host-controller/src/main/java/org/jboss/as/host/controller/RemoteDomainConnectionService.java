@@ -142,8 +142,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     public static Future<MasterDomainControllerClient> install(final ServiceTarget serviceTarget, final ModelController controller,
                                                                final LocalHostControllerInfo localHostControllerInfo, final ProductConfig productConfig,
                                                                final String securityRealm, final RemoteFileRepository remoteFileRepository) {
-        RemoteDomainConnectionService service;
-        service = new RemoteDomainConnectionService(controller, localHostControllerInfo, productConfig, remoteFileRepository);
+        RemoteDomainConnectionService service = new RemoteDomainConnectionService(controller, localHostControllerInfo, productConfig, remoteFileRepository);
         ServiceBuilder builder = serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
                 .addDependency(ManagementRemotingServices.MANAGEMENT_ENDPOINT, Endpoint.class, service.endpointInjector)
                 .setInitialMode(ServiceController.Mode.ACTIVE);
@@ -272,7 +271,8 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             final SecurityRealm realm = securityRealmInjector.getOptionalValue();
             // Create the remote domain channel strategy
             connection = new RemoteDomainConnection(localHostInfo.getLocalHostName(), hostInfo, configuration, realm,
-                                                    executor, new RemoteDomainConnection.HostRegistrationCallback() {
+                    localHostInfo.getRemoteDomainControllerUsername(), executor,
+                    new RemoteDomainConnection.HostRegistrationCallback() {
                 @Override
                 public boolean applyDomainModel(final List<ModelNode> bootOperations) {
                     // Apply the model..

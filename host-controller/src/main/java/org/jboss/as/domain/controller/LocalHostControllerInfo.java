@@ -108,6 +108,13 @@ public interface LocalHostControllerInfo {
     int getRemoteDomainControllerPort();
 
     /**
+     * Gets the username to use when authenticating against the
+     * remote domain controller.
+     * @return the user name.
+     */
+    String getRemoteDomainControllerUsername();
+
+    /**
      * Gets the current state of the host controller process.
      * @return the state
      */

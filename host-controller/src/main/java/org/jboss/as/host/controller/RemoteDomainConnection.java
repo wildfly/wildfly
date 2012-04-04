@@ -66,6 +66,7 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
 
     private final String localHostName;
     private final ModelNode localHostInfo;
+    private final String username;
     private final SecurityRealm realm;
     private final ProtocolChannelClient.Configuration configuration;
     private final ManagementChannelHandler channelHandler;
@@ -82,11 +83,12 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
 
     RemoteDomainConnection(final String localHostName, final ModelNode localHostInfo,
                            final ProtocolChannelClient.Configuration configuration, final SecurityRealm realm,
-                           final ExecutorService executorService, final HostRegistrationCallback callback) {
+                           final String username, final ExecutorService executorService, final HostRegistrationCallback callback) {
         this.callback = callback;
         this.localHostName = localHostName;
         this.localHostInfo = localHostInfo;
         this.configuration = configuration;
+        this.username = username;
         this.realm = realm;
         this.executorService = executorService;
         this.channelHandler = new ManagementChannelHandler(this, executorService);
@@ -165,7 +167,8 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
                     sslContext = realm.getSSLContext();
                     CallbackHandlerFactory handlerFactory = realm.getSecretCallbackHandlerFactory();
                     if (handlerFactory != null) {
-                        callbackHandler = handlerFactory.getCallbackHandler(localHostName);
+                        String username = this.username != null ? this.username : localHostName;
+                        callbackHandler = handlerFactory.getCallbackHandler(username);
                     }
                 }
                 // Connect

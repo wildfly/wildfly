@@ -127,6 +127,10 @@ public abstract class AbstractOperationTestCase {
             return 0;
         }
 
+        public String getRemoteDomainControllerUsername() {
+            return null;
+        }
+
         public NetworkInterfaceBinding getNetworkInterfaceBinding(String name) throws SocketException, UnknownHostException {
             return null;
         }
