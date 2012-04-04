@@ -22,6 +22,16 @@
 
 package org.jboss.as.messaging;
 
+import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL;
+import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_MEMORY_WARNING_THRESHOLD;
+import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
+import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
+import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
+import static org.jboss.as.controller.client.helpers.MeasurementUnit.PERCENTAGE;
+import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
+import static org.jboss.dmr.ModelType.INT;
+import static org.jboss.dmr.ModelType.LONG;
+
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
@@ -130,11 +140,17 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CONNECTION_FACTORY_RECONNECT_ATTEMPTS = new SimpleAttributeDefinition("reconnect-attempts",
             new ModelNode().set(HornetQClient.DEFAULT_RECONNECT_ATTEMPTS), ModelType.INT, true, MeasurementUnit.NONE);
 
-    SimpleAttributeDefinition CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinition("scheduled-thread-pool-max-size",
-            new ModelNode().set(HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE), ModelType.INT,  true, MeasurementUnit.NONE);
+    SimpleAttributeDefinition CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinitionBuilder("scheduled-thread-pool-max-size", INT)
+            .setDefaultValue(new ModelNode().set(DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
 
-    SimpleAttributeDefinition CONNECTION_THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinition("thread-pool-max-size",
-            new ModelNode().set(HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE), ModelType.INT,  true, MeasurementUnit.NONE);
+    SimpleAttributeDefinition CONNECTION_THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinitionBuilder("thread-pool-max-size", INT)
+            .setDefaultValue(new ModelNode().set(DEFAULT_THREAD_POOL_MAX_SIZE))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
 
     SimpleAttributeDefinition CONNECTION_TTL = new SimpleAttributeDefinition("connection-ttl",
             new ModelNode().set(HornetQClient.DEFAULT_CONNECTION_TTL), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
@@ -295,9 +311,10 @@ public interface CommonAttributes {
     SimpleAttributeDefinition MAX_DELIVERY_ATTEMPTS = new SimpleAttributeDefinition("max-delivery-attempts",
             new ModelNode().set(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS), ModelType.INT, true);
 
-    SimpleAttributeDefinition MAX_POOL_SIZE = new SimpleAttributeDefinitionBuilder("max-pool-size", ModelType.INT)
+    SimpleAttributeDefinition MAX_POOL_SIZE = new SimpleAttributeDefinitionBuilder("max-pool-size", INT)
             .setDefaultValue(new ModelNode().set(-1))
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition MAX_RETRY_INTERVAL = new SimpleAttributeDefinition("max-retry-interval",
@@ -306,13 +323,21 @@ public interface CommonAttributes {
     SimpleAttributeDefinition MAX_SIZE_BYTES_NODE_NAME = new SimpleAttributeDefinition("max-size-bytes",
             new ModelNode().set(AddressSettings.DEFAULT_MAX_SIZE_BYTES), ModelType.LONG, true);
 
-    SimpleAttributeDefinition MEMORY_MEASURE_INTERVAL = new SimpleAttributeDefinition("memory-measure-interval",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL), ModelType.LONG,  true,
-            MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition MEMORY_MEASURE_INTERVAL = new SimpleAttributeDefinitionBuilder("memory-measure-interval", LONG)
+            .setDefaultValue(new ModelNode().set(DEFAULT_MEMORY_MEASURE_INTERVAL))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
-    SimpleAttributeDefinition MEMORY_WARNING_THRESHOLD = new SimpleAttributeDefinition("memory-warning-threshold",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_MEMORY_WARNING_THRESHOLD), ModelType.INT,  true,
-            MeasurementUnit.PERCENTAGE, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition MEMORY_WARNING_THRESHOLD = new SimpleAttributeDefinitionBuilder("memory-warning-threshold", INT)
+            .setDefaultValue(new ModelNode().set(DEFAULT_MEMORY_WARNING_THRESHOLD))
+            .setMeasurementUnit(PERCENTAGE)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition MESSAGE_COUNTER_ENABLED = new SimpleAttributeDefinition("message-counter-enabled",
             new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_ENABLED), ModelType.BOOLEAN,  true);
@@ -337,9 +362,10 @@ public interface CommonAttributes {
     SimpleAttributeDefinition MIN_LARGE_MESSAGE_SIZE = new SimpleAttributeDefinition("min-large-message-size",
             new ModelNode().set(HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE), ModelType.INT,  true, MeasurementUnit.BYTES);
 
-    SimpleAttributeDefinition MIN_POOL_SIZE = new SimpleAttributeDefinitionBuilder("min-pool-size", ModelType.INT)
+    SimpleAttributeDefinition MIN_POOL_SIZE = new SimpleAttributeDefinitionBuilder("min-pool-size", INT)
             .setDefaultValue(new ModelNode().set(-1))
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinition("password", "password",
@@ -409,9 +435,12 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_RUN_SYNC_SPEED_TEST), ModelType.BOOLEAN,  true,
             AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    SimpleAttributeDefinition SCHEDULED_THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinition("scheduled-thread-pool-max-size",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE), ModelType.INT,  true, MeasurementUnit.NONE,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition SCHEDULED_THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinitionBuilder("scheduled-thread-pool-max-size", INT)
+            .setDefaultValue(new ModelNode().set(DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinition("security-domain",
             new ModelNode().set("other"), ModelType.STRING,  true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
@@ -448,9 +477,12 @@ public interface CommonAttributes {
     SimpleAttributeDefinition SOCKET_BINDING_ALTERNATIVE = new SimpleAttributeDefinition("socket-binding", null, ModelType.STRING, false,
             new String[] {"group-address", "group-port", "local-bind-address", "local-bind-port"});
 
-    SimpleAttributeDefinition THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinition("thread-pool-max-size",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE), ModelType.INT,  true, MeasurementUnit.NONE,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinitionBuilder("thread-pool-max-size", INT)
+            .setDefaultValue(new ModelNode().set(DEFAULT_THREAD_POOL_MAX_SIZE))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     // FIXME GroupiongHanderConfiguration timeout is a int (instead of a long). Use a INT until HornetQ conf is fixed [HORNETQ-885]
     SimpleAttributeDefinition TIMEOUT =  new SimpleAttributeDefinition("timeout",
