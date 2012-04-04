@@ -32,11 +32,13 @@ import org.jboss.dmr.ModelNode;
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class CommandBuilderTree extends JTree {
+    private CliGuiContext cliGuiCtx;
     private ManagementModelNode currentNode = null;
     private String currentDescription = null;
 
-    public CommandBuilderTree(TreeModel model) {
+    public CommandBuilderTree(CliGuiContext cliGuiCtx, TreeModel model) {
         super(model);
+        this.cliGuiCtx = cliGuiCtx;
         setToolTipText(""); // enables toolTip system for this tree
     }
 
@@ -58,7 +60,7 @@ public class CommandBuilderTree extends JTree {
         currentDescription = null;
 
         try {
-            ModelNode readResource = GuiMain.getExecutor().doCommand(node.addressPath() + ":read-resource-description");
+            ModelNode readResource = cliGuiCtx.getExecutor().doCommand(node.addressPath() + ":read-resource-description");
             UserObject usrObj = (UserObject)node.getUserObject();
             if (node.isGeneric()) {
                 currentDescription = "Used for generic operations on " + usrObj.getName() + ", such as 'add'";

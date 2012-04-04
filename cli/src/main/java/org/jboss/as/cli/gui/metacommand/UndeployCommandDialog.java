@@ -34,7 +34,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.text.JTextComponent;
-import org.jboss.as.cli.gui.GuiMain;
+import org.jboss.as.cli.gui.CliGuiContext;
 import org.jboss.as.cli.gui.component.DeploymentChooser;
 import org.jboss.as.cli.gui.component.HelpButton;
 import org.jboss.as.cli.gui.component.ServerGroupChooser;
@@ -47,14 +47,18 @@ import org.jboss.as.cli.gui.component.ServerGroupChooser;
  */
 public class UndeployCommandDialog extends JDialog implements ActionListener {
 
-    private ServerGroupChooser serverGroupChooser = new ServerGroupChooser();
-    private DeploymentChooser deploymentChooser = new DeploymentChooser(serverGroupChooser.isStandalone());
+    private CliGuiContext cliGuiCtx;
+    private ServerGroupChooser serverGroupChooser;
+    private DeploymentChooser deploymentChooser;
 
     private JCheckBox keepContent = new JCheckBox("Keep Content");
     private JCheckBox allRelevantServerGroups = new JCheckBox("All RelevantServer Groups");
 
-    public UndeployCommandDialog() {
-        super(GuiMain.getMainWindow(), "undeploy", Dialog.ModalityType.APPLICATION_MODAL);
+    public UndeployCommandDialog(CliGuiContext cliGuiCtx) {
+        super(cliGuiCtx.getMainWindow(), "undeploy", Dialog.ModalityType.APPLICATION_MODAL);
+        this.cliGuiCtx = cliGuiCtx;
+        this.serverGroupChooser = new ServerGroupChooser(cliGuiCtx);
+        this.deploymentChooser = new DeploymentChooser(cliGuiCtx, cliGuiCtx.isStandalone());
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         Container contentPane = getContentPane();
@@ -91,7 +95,7 @@ public class UndeployCommandDialog extends JDialog implements ActionListener {
         inputPanel.add(deploymentChooser, gbc);
         inputPanel.add(keepContent, gbc);
 
-        if (!serverGroupChooser.isStandalone()) {
+        if (!cliGuiCtx.isStandalone()) {
             inputPanel.add(Box.createVerticalStrut(30), gbc);
             inputPanel.add(serverGroupChooser, gbc);
             inputPanel.add(allRelevantServerGroups, gbc);
@@ -131,11 +135,11 @@ public class UndeployCommandDialog extends JDialog implements ActionListener {
 
         if (keepContent.isSelected()) builder.append("  --keep-content");
 
-        if (!serverGroupChooser.isStandalone()) {
+        if (!cliGuiCtx.isStandalone()) {
             addDomainParams(builder);
         }
 
-        JTextComponent cmdText = GuiMain.getCommandLine().getCmdText();
+        JTextComponent cmdText = cliGuiCtx.getCommandLine().getCmdText();
         cmdText.setText(builder.toString());
         dispose();
         cmdText.requestFocus();

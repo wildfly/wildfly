@@ -18,6 +18,7 @@
  */
 package org.jboss.as.cli.gui;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -29,6 +30,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.border.LineBorder;
 import javax.swing.text.JTextComponent;
 
 /**
@@ -50,6 +52,8 @@ public class CommandLine extends JPanel {
         gbc.fill = GridBagConstraints.NONE;
         gbc.insets = new Insets(0,0,0,5);
         add(new JLabel("cmd>"), gbc);
+
+        cmdText.setBorder(new LineBorder(Color.BLACK));
         cmdText.setText("/");
         cmdText.setLineWrap(true);
         cmdText.setRows(1);

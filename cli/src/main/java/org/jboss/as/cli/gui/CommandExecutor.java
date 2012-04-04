@@ -32,10 +32,12 @@ import org.jboss.dmr.ModelNode;
  */
 public class CommandExecutor {
 
+    private CliGuiContext cliGuiCtx;
     private ModelControllerClient client;
     private CommandContext cmdCtx;
 
-    public CommandExecutor(CommandContext cmdCtx) {
+    public CommandExecutor(CliGuiContext cliGuiCtx, CommandContext cmdCtx) {
+        this.cliGuiCtx = cliGuiCtx;
         this.cmdCtx = cmdCtx;
         this.client = cmdCtx.getModelControllerClient();
     }
@@ -62,11 +64,13 @@ public class CommandExecutor {
     private ModelNode execute(String command, ModelNode request) throws IOException {
         try {
             if (command.startsWith("deploy")) {
-                GuiMain.getMainWindow().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                cliGuiCtx.getMainWindow().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             }
             return client.execute(request);
         } finally {
-            GuiMain.getMainWindow().setCursor(Cursor.getDefaultCursor());
+            if (command.startsWith("deploy")) {
+                cliGuiCtx.getMainWindow().setCursor(Cursor.getDefaultCursor());
+            }
         }
     }
 

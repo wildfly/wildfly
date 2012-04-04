@@ -20,7 +20,7 @@ package org.jboss.as.cli.gui.metacommand;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import org.jboss.as.cli.gui.GuiMain;
+import org.jboss.as.cli.gui.CliGuiContext;
 
 /**
  * Action for the deploy menu selection.
@@ -29,13 +29,16 @@ import org.jboss.as.cli.gui.GuiMain;
  */
 public class DeployAction extends AbstractAction {
 
-    public DeployAction() {
+    private CliGuiContext cliGuiCtx;
+
+    public DeployAction(CliGuiContext cliGuiCtx) {
         super("Deploy");
+        this.cliGuiCtx = cliGuiCtx;
     }
 
     public void actionPerformed(ActionEvent e) {
-        DeployCommandDialog dialog = new DeployCommandDialog();
-        dialog.setLocationRelativeTo(GuiMain.getMainWindow());
+        DeployCommandDialog dialog = new DeployCommandDialog(cliGuiCtx);
+        dialog.setLocationRelativeTo(cliGuiCtx.getMainWindow());
         dialog.setVisible(true);
     }
 

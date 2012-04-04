@@ -123,6 +123,11 @@ public interface CommandContext {
     void connectController(String host, int port) throws CommandLineException;
 
     /**
+     * Bind the controller to an existing, connected client.
+     */
+    void bindClient(ModelControllerClient newClient);
+
+    /**
      * Connects the controller client using the default host and the port.
      * It simply calls connectController(null, -1).
      *

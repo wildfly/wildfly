@@ -40,7 +40,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
-import org.jboss.as.cli.gui.GuiMain;
+import org.jboss.as.cli.gui.CliGuiContext;
 import org.jboss.as.cli.gui.component.HelpButton;
 import org.jboss.as.cli.gui.component.ServerGroupChooser;
 
@@ -54,17 +54,20 @@ public class DeployCommandDialog extends JDialog implements ActionListener {
     // make this static so that it always retains the last directory chosen
     private static JFileChooser fileChooser = new JFileChooser(new File("."));
 
+    private CliGuiContext cliGuiCtx;
     private JPanel inputPanel = new JPanel(new GridBagLayout());
     private JTextField pathField = new JTextField(40);
     private JTextField nameField = new JTextField(40);
     private JTextField runtimeNameField = new JTextField(40);
     private JCheckBox forceCheckBox = new JCheckBox("force");
     private JCheckBox disabledCheckBox = new JCheckBox("disabled");
-    private ServerGroupChooser serverGroupChooser = new ServerGroupChooser();
+    private ServerGroupChooser serverGroupChooser;
     private JCheckBox allServerGroups = new JCheckBox("all-server-groups");
 
-    public DeployCommandDialog() {
-        super(GuiMain.getMainWindow(), "deploy", Dialog.ModalityType.APPLICATION_MODAL);
+    public DeployCommandDialog(CliGuiContext cliGuiCtx) {
+        super(cliGuiCtx.getMainWindow(), "deploy", Dialog.ModalityType.APPLICATION_MODAL);
+        this.cliGuiCtx = cliGuiCtx;
+        serverGroupChooser = new ServerGroupChooser(cliGuiCtx);
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         Container contentPane = getContentPane();
@@ -166,7 +169,7 @@ public class DeployCommandDialog extends JDialog implements ActionListener {
         gbConst.gridwidth = GridBagConstraints.REMAINDER;
         inputPanel.add(disabledCheckBox, gbConst);
 
-        if (serverGroupChooser.isStandalone()) return inputPanel;
+        if (cliGuiCtx.isStandalone()) return inputPanel;
 
         JLabel serverGroupLabel = new JLabel();
         gbConst.gridwidth = 1;
@@ -226,7 +229,7 @@ public class DeployCommandDialog extends JDialog implements ActionListener {
         if (forceCheckBox.isSelected()) builder.append("  --force");
         if (disabledCheckBox.isSelected() && disabledCheckBox.isEnabled()) builder.append("  --disabled");
 
-        if (!serverGroupChooser.isStandalone()) {
+        if (!cliGuiCtx.isStandalone()) {
             if (allServerGroups.isSelected() && allServerGroups.isEnabled()) {
                 builder.append("  --all-server-groups");
             } else if (serverGroupChooser.isEnabled()) {
@@ -234,7 +237,7 @@ public class DeployCommandDialog extends JDialog implements ActionListener {
             }
         }
 
-        JTextComponent cmdText = GuiMain.getCommandLine().getCmdText();
+        JTextComponent cmdText = cliGuiCtx.getCommandLine().getCmdText();
         cmdText.setText(builder.toString());
         dispose();
         cmdText.requestFocus();

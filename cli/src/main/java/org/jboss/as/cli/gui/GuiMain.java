@@ -20,6 +20,7 @@ package org.jboss.as.cli.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -43,7 +44,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.gui.metacommand.DeployAction;
@@ -55,59 +55,64 @@ import org.jboss.as.cli.gui.metacommand.UndeployAction;
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class GuiMain {
-    private static JFrame frame;
-
-    private static CommandExecutor executor;
-
-    private static Container contentPane;
-    private static JPanel mainPanel = new JPanel();
-
-    private static CommandLine cmdLine;
-    private static JTextPane output = new JTextPane();
-    private static JTabbedPane tabs;
-    private static DoOperationActionListener opListener;
+    private static Image jbossIcon;
+    static {
+        URL iconURL = GuiMain.class.getResource("/icon/as7_logo_32x32x32.png");
+        jbossIcon = Toolkit.getDefaultToolkit().getImage(iconURL);
+        ToolTipManager.sharedInstance().setDismissDelay(15000);
+    }
 
     private static final Preferences PREFERENCES = Preferences.userNodeForPackage(GuiMain.class);
     private static String LOOK_AND_FEEL_KEY = "cli-gui-laf";
 
     private GuiMain() {} // don't allow an instance
 
-    public static synchronized void start(CommandContext cmdCtx) {
-        if (executor != null) throw new RuntimeException("Gui is already initialized.");
-        executor = new CommandExecutor(cmdCtx);
-        ToolTipManager.sharedInstance().setDismissDelay(15000);
-        initJFrame();
+    public static void start(CommandContext cmdCtx) {
+        initJFrame(makeGuiContext(cmdCtx));
     }
 
-    /**
-     * Get the singleton JFrame instance for the GUI
-     * @return The JFrame
-     */
-    public static Window getMainWindow() {
-        return SwingUtilities.getWindowAncestor(mainPanel);
+    public static CliGuiContext startEmbedded(CommandContext cmdCtx) {
+        return makeGuiContext(cmdCtx);
     }
 
-    /**
-     * Get the main command line.
-     * @return The main command text field.
-     */
-    public static CommandLine getCommandLine() {
-        return cmdLine;
+    private static CliGuiContext makeGuiContext(CommandContext cmdCtx) {
+        CliGuiContext cliGuiCtx = new CliGuiContext();
+        CommandExecutor executor = new CommandExecutor(cliGuiCtx, cmdCtx);
+        cliGuiCtx.setExecutor(executor);
+
+        JTextPane output = new JTextPane();
+        JPanel outputDisplay = makeOutputDisplay(output);
+        JTabbedPane tabs = makeTabbedPane(cliGuiCtx, outputDisplay);
+
+        DoOperationActionListener opListener = new DoOperationActionListener(cliGuiCtx, output, tabs);
+        CommandLine cmdLine = new CommandLine(opListener);
+        cliGuiCtx.setCommandLine(cmdLine);
+
+        output.addMouseListener(new SelectPreviousOpMouseAdapter(cliGuiCtx, output, opListener));
+
+        JPanel mainPanel = makeMainPanel(tabs, cmdLine);
+        cliGuiCtx.setMainPanel(mainPanel);
+
+        return cliGuiCtx;
     }
 
-    /**
-     * Get the command executor.
-     * @return The command executor.
-     */
-    public static CommandExecutor getExecutor() {
-        return executor;
+    private static JPanel makeMainPanel(JTabbedPane tabs, CommandLine cmdLine) {
+        JPanel mainPanel = new JPanel();
+        mainPanel.setBorder(BorderFactory.createEtchedBorder());
+        mainPanel.setLayout(new BorderLayout(5,5));
+        mainPanel.add(cmdLine, BorderLayout.NORTH);
+        mainPanel.add(tabs, BorderLayout.CENTER);
+        return mainPanel;
     }
 
-    private static synchronized void initJFrame() {
-        setUpLookAndFeel();
-        frame = new JFrame("CLI GUI");
-        URL iconURL = GuiMain.class.getResource("/icon/as7_logo.png");
-        frame.setIconImage(Toolkit.getDefaultToolkit().getImage(iconURL));
+    public static Image getJBossIcon() {
+        return jbossIcon;
+    }
+
+    private static synchronized void initJFrame(CliGuiContext cliGuiCtx) {
+        JFrame frame = new JFrame("CLI GUI");
+
+        frame.setIconImage(getJBossIcon());
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -115,85 +120,89 @@ public class GuiMain {
                 System.exit(0);
             }
         });
-        frame.setJMenuBar(makeMenuBar());
+        frame.setJMenuBar(makeMenuBar(cliGuiCtx));
         frame.setSize(800, 600);
 
-        contentPane = frame.getContentPane();
-        mainPanel.setBorder(BorderFactory.createEtchedBorder());
-        contentPane.add(mainPanel, BorderLayout.CENTER);
+        Container contentPane = frame.getContentPane();
 
-        mainPanel.setLayout(new BorderLayout(5,5));
-        tabs = makeTabbedPane();
+        contentPane.add(cliGuiCtx.getMainPanel(), BorderLayout.CENTER);
 
-        opListener = new DoOperationActionListener(output, tabs);
-        cmdLine = new CommandLine(opListener);
-
-        output.addMouseListener(new SelectPreviousOpMouseAdapter(output, opListener));
-
-        mainPanel.add(cmdLine, BorderLayout.NORTH);
-        mainPanel.add(tabs, BorderLayout.CENTER);
-
+        setUpLookAndFeel(cliGuiCtx.getMainWindow());
         frame.setVisible(true);
     }
 
-    private static JMenuBar makeMenuBar() {
+    public static JMenuBar makeMenuBar(CliGuiContext cliGuiCtx) {
         JMenuBar menuBar = new JMenuBar();
-
-        JMenu metaCmdMenu = new JMenu("Meta Commands");
-        metaCmdMenu.setMnemonic(KeyEvent.VK_M);
-        menuBar.add(metaCmdMenu);
-
-        JMenuItem deploy = new JMenuItem(new DeployAction());
-        deploy.setMnemonic(KeyEvent.VK_D);
-        metaCmdMenu.add(deploy);
-
-        JMenuItem unDeploy = new JMenuItem(new UndeployAction());
-        deploy.setMnemonic(KeyEvent.VK_U);
-        metaCmdMenu.add(unDeploy);
-
-        // Add look & feel options
-        final LookAndFeelInfo[] all = UIManager.getInstalledLookAndFeels();
-        if (all != null) {
-            final String errorTitle = "Look & Feel Not Set";
-            final JMenu lfMenu = new JMenu("Look & Feel");
-            lfMenu.setMnemonic(KeyEvent.VK_L);
-            menuBar.add(lfMenu);
-
-            for (final LookAndFeelInfo lookAndFeelInfo : all) {
-                JMenuItem item = new JMenuItem(new AbstractAction(lookAndFeelInfo.getName()) {
-                    @Override
-                    public void actionPerformed(final ActionEvent e) {
-                        try {
-                            UIManager.setLookAndFeel(lookAndFeelInfo.getClassName());
-                            SwingUtilities.updateComponentTreeUI(frame);
-                            PREFERENCES.put(LOOK_AND_FEEL_KEY, lookAndFeelInfo.getClassName());
-                        } catch (ClassNotFoundException e1) {
-                            showErrorDialog(errorTitle, e1);
-                        } catch (InstantiationException e1) {
-                            showErrorDialog(errorTitle, e1);
-                        } catch (IllegalAccessException e1) {
-                            showErrorDialog(errorTitle, e1);
-                        } catch (UnsupportedLookAndFeelException e1) {
-                            showErrorDialog(errorTitle, e1);
-                        }
-                    }
-                });
-                lfMenu.add(item);
-            }
-        }
-
-
+        menuBar.add(makeMetaCmdMenu(cliGuiCtx));
+        JMenu lfMenu = makeLookAndFeelMenu(cliGuiCtx);
+        if (lfMenu != null) menuBar.add(lfMenu);
         return menuBar;
     }
 
-    private static JTabbedPane makeTabbedPane() {
+    private static JMenu makeLookAndFeelMenu(CliGuiContext cliGuiCtx) {
+        final LookAndFeelInfo[] all = UIManager.getInstalledLookAndFeels();
+        if (all == null) return null;
+
+
+        final JMenu lfMenu = new JMenu("Look & Feel");
+        lfMenu.setMnemonic(KeyEvent.VK_L);
+
+        for (final LookAndFeelInfo lookAndFeelInfo : all) {
+            JMenuItem item = new JMenuItem(new ChangeLookAndFeelAction(cliGuiCtx, lookAndFeelInfo));
+            lfMenu.add(item);
+        }
+
+        return lfMenu;
+    }
+
+    private static class ChangeLookAndFeelAction extends AbstractAction {
+        private static final String errorTitle = "Look & Feel Not Set";
+        private CliGuiContext cliGuiCtx;
+        private LookAndFeelInfo lookAndFeelInfo;
+
+        ChangeLookAndFeelAction(CliGuiContext cliGuiCtx, LookAndFeelInfo lookAndFeelInfo) {
+            super(lookAndFeelInfo.getName());
+            this.cliGuiCtx = cliGuiCtx;
+            this.lookAndFeelInfo = lookAndFeelInfo;
+        }
+
+        @Override
+        public void actionPerformed(final ActionEvent e) {
+            Window mainWindow = cliGuiCtx.getMainWindow();
+            try {
+                UIManager.setLookAndFeel(lookAndFeelInfo.getClassName());
+                SwingUtilities.updateComponentTreeUI(mainWindow);
+                PREFERENCES.put(LOOK_AND_FEEL_KEY, lookAndFeelInfo.getClassName());
+            } catch (Exception ex) {
+                showErrorDialog(mainWindow, errorTitle, ex);
+            }
+        }
+    }
+
+    private static JMenu makeMetaCmdMenu(CliGuiContext cliGuiCtx) {
+        JMenu metaCmdMenu = new JMenu("Meta Commands");
+        metaCmdMenu.setMnemonic(KeyEvent.VK_M);
+
+
+        JMenuItem deploy = new JMenuItem(new DeployAction(cliGuiCtx));
+        deploy.setMnemonic(KeyEvent.VK_D);
+        metaCmdMenu.add(deploy);
+
+        JMenuItem unDeploy = new JMenuItem(new UndeployAction(cliGuiCtx));
+        deploy.setMnemonic(KeyEvent.VK_U);
+        metaCmdMenu.add(unDeploy);
+
+        return metaCmdMenu;
+    }
+
+    private static JTabbedPane makeTabbedPane(CliGuiContext cliGuiCtx, JPanel output) {
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Command Builder", new JScrollPane(new ManagementModel()));
-        tabs.addTab("Output", makeOutputDisplay());
+        tabs.addTab("Command Builder", new JScrollPane(new ManagementModel(cliGuiCtx)));
+        tabs.addTab("Output", output);
         return tabs;
     }
 
-    private static JPanel makeOutputDisplay() {
+    private static JPanel makeOutputDisplay(JTextPane output) {
         JPanel outputDisplay = new JPanel();
         outputDisplay.setSize(400, 5000);
         outputDisplay.setLayout(new BorderLayout(5,5));
@@ -202,16 +211,17 @@ public class GuiMain {
         return outputDisplay;
     }
 
-    private static void setUpLookAndFeel() {
+    public static void setUpLookAndFeel(Window mainWindow) {
         try {
             final String laf = PREFERENCES.get(LOOK_AND_FEEL_KEY, UIManager.getSystemLookAndFeelClassName());
             UIManager.setLookAndFeel(laf);
+            SwingUtilities.updateComponentTreeUI(mainWindow);
         } catch (Throwable e) {
             // Just ignore if the L&F has any errors
         }
     }
 
-    private static void showErrorDialog(final String title, final Throwable t) {
-        JOptionPane.showMessageDialog(frame, t.getLocalizedMessage(), title, JOptionPane.ERROR_MESSAGE);
+    private static void showErrorDialog(Window window, final String title, final Throwable t) {
+        JOptionPane.showMessageDialog(window, t.getLocalizedMessage(), title, JOptionPane.ERROR_MESSAGE);
     }
 }
