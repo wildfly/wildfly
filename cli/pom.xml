@@ -107,14 +107,6 @@
            <artifactId>remoting-jmx</artifactId>
         </dependency>
 
-        <dependency>
-          <groupId>sun.jdk</groupId>
-          <artifactId>jconsole</artifactId>
-          <version>1.6.0</version>
-          <scope>system</scope>
-          <systemPath>${java.home}/../lib/jconsole.jar</systemPath>
-        </dependency>
-
         <!-- Test Dependencies -->
         <dependency>
             <groupId>junit</groupId>
@@ -122,4 +114,37 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    
+    <profiles>
+        <profile>
+            <id>linux-windows</id>
+            <activation>
+                <file><exists>${java.home}/../lib/tools.jar</exists></file>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>sun.jdk</groupId>
+                    <artifactId>jconsole</artifactId>
+                    <version>jdk</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../lib/jconsole.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>os-x</id>
+            <activation>
+                <file><exists>${java.home}/bundle/Classes/classes.jar</exists></file>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>sun.jdk</groupId>
+                    <artifactId>jconsole</artifactId>
+                    <version>jdk</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/bundle/Classes/jconsole.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>    
 </project>
