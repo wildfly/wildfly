@@ -43,9 +43,8 @@ public interface Component {
     /**
      * Stop operation called when the Component is no longer available.
      *
-     * @param stopContext the stop context for the component service
      */
-    void stop(final StopContext stopContext);
+    void stop();
 
     /**
      * Get the component's actual implementation class.

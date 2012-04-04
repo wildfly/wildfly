@@ -42,7 +42,6 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StopContext;
 
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
@@ -175,9 +174,9 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     @Override
-    public void stop(StopContext stopContext) {
+    public void stop() {
         getShutDownInterceptorFactory().shutdown();
-        super.stop(stopContext);
+        super.stop();
     }
 
     public ApplicationExceptionDetails getApplicationException(Class<?> exceptionClass, Method invokedMethod) {

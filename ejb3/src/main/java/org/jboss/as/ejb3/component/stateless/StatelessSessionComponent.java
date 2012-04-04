@@ -32,7 +32,6 @@ import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.msc.service.StopContext;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -122,12 +121,12 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
 
 
     @Override
-    public void stop(StopContext stopContext) {
+    public void stop() {
         getShutDownInterceptorFactory().shutdown();
         if(this.pool!=null){
             this.pool.stop();
         }
-        super.stop(stopContext);
+        super.stop();
     }
 
     @Override
