@@ -205,6 +205,7 @@ public enum Phase {
 
     // PARSE
     public static final int PARSE_EE_MODULE_NAME                        = 0x0100;
+    public static final int PARSE_EJB_DEFAULT_DISTINCT_NAME             = 0x0110;
     public static final int PARSE_EAR_SUBDEPLOYMENTS_ISOLATION_DEFAULT  = 0x0200;
     public static final int PARSE_DEPENDENCIES_MANIFEST                 = 0x0300;
     public static final int PARSE_COMPOSITE_ANNOTATION_INDEX            = 0x0301;

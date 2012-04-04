@@ -65,6 +65,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_REF;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
@@ -375,6 +376,31 @@ public class EJBManagementUtil {
 
             // execute the operations
             execute(modelControllerClient, passByValueWriteAttributeOperation);
+
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
+    }
+
+    public static void setDefaultDistinctName(ManagementClient managementClient, final String distinctName) {
+        final ModelControllerClient modelControllerClient = managementClient.getControllerClient();
+        try {
+            final ModelNode op = new ModelNode();
+            if(distinctName != null) {
+                op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+                op.get(VALUE).set(distinctName);
+            } else {
+                op.get(OP).set(UNDEFINE_ATTRIBUTE_OPERATION);
+            }
+            // set the address
+            final PathAddress ejb3SubsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));
+            op.get(OP_ADDR).set(ejb3SubsystemAddress.toModelNode());
+
+            // setup the parameters for the write attribute operation
+            op.get(NAME).set(EJB3SubsystemModel.DEFAULT_DISTINCT_NAME);
+
+            // execute the operations
+            execute(modelControllerClient, op);
 
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
