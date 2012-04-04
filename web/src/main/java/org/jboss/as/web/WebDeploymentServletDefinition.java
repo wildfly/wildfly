@@ -85,18 +85,16 @@ public class WebDeploymentServletDefinition extends SimpleResourceDefinition {
             final String host = subModel.require("virtual-host").asString();
             final String path = subModel.require("context-root").asString();
 
-            final ModelNode node = web.requireChild(address.getLastElement()).getModel();
-
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                     final ServiceController<?> controller = context.getServiceRegistry(false).getService(WebSubsystemServices.deploymentServiceName(host, path));
                     if (controller != null) {
-                        final String name = node.get("servlet-name").asString();
+                        final String name = address.getLastElement().getValue();
                         final Context webContext = Context.class.cast(controller.getValue());
                         final Wrapper wrapper = Wrapper.class.cast(webContext.findChild(name));
                         final ModelNode response = new ModelNode();
-                        handle(response, address.getLastElement().getValue(), (StandardWrapper) wrapper);
+                        handle(response, name, (StandardWrapper) wrapper);
                         context.getResult().set(response);
                     }
                     context.completeStep();
