@@ -774,8 +774,8 @@
         </xs:sequence>
         <xs:attribute name="host" type="xs:string" use="required" />
         <xs:attribute name="port" type="xs:integer" use="required" />
-        <xs:attribute name="username" type="xs:string" use="optional" />        
         <xs:attribute name="security-realm" type="xs:string" use="optional" />
+        <xs:attribute name="username" type="xs:string" use="optional" />
     </xs:complexType>
 
     <xs:complexType name="ignored-resourcesType">
