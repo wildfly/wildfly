@@ -172,7 +172,6 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
             ServiceBuilder<Void> builder = serviceTarget.addService(Services.AUTOINSTALL_PROVIDER_COMPLETE, new AbstractService<Void>() {
                 public void start(StartContext context) throws StartException {
                     // Resolve all bundles up until and including the Framework beginning start level
-                    // [AS7-2434] Incremental bundle resolution approach may lead to unresolvable user bundles
                     Set<Bundle> resolvableBundles = new LinkedHashSet<Bundle>();
                     for (ServiceName serviceName : resolvableServices) {
                         ServiceController<?> requiredService = serviceContainer.getRequiredService(serviceName);
