@@ -21,6 +21,7 @@
  */
 package org.jboss.as.server.moduleservice;
 
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.Services;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -68,7 +69,7 @@ public class ExternalModuleService implements Service<ExternalModuleService> {
     @Override
     public void start(StartContext context) throws StartException {
         if (serviceContainer != null) {
-            throw new IllegalStateException("External Module Service already started");
+            throw ServerMessages.MESSAGES.externalModuleServiceAlreadyStarted();
         }
         serviceContainer = context.getController().getServiceContainer();
     }

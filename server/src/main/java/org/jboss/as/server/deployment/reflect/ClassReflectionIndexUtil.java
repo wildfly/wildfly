@@ -25,6 +25,7 @@ package org.jboss.as.server.deployment.reflect;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.proxy.MethodIdentifier;
 
@@ -75,8 +76,7 @@ public class ClassReflectionIndexUtil {
     public static Method findRequiredMethod(final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> clazz, final MethodIdentifier methodIdentifier) throws DeploymentUnitProcessingException {
         Method method = findMethod(deploymentReflectionIndex, clazz, methodIdentifier);
         if (method == null) {
-            throw new DeploymentUnitProcessingException("No method found with id: " + methodIdentifier + " on class (or its super class) "
-                    + clazz);
+            throw ServerMessages.MESSAGES.noMethodFound(methodIdentifier, clazz);
         }
         return method;
     }
@@ -97,7 +97,7 @@ public class ClassReflectionIndexUtil {
      */
     public static Method findRequiredMethod(final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> clazz, final Method method) throws DeploymentUnitProcessingException {
         if (method == null) {
-            throw new IllegalArgumentException("Method cannot be null");
+            throw ServerMessages.MESSAGES.nullMethod();
         }
         final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
         return findRequiredMethod(deploymentReflectionIndex, clazz, methodIdentifier);
@@ -116,7 +116,7 @@ public class ClassReflectionIndexUtil {
      */
     public static Method findMethod(final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> clazz, final Method method) {
         if (method == null) {
-            throw new IllegalArgumentException("Method cannot be null");
+            throw ServerMessages.MESSAGES.nullMethod();
         }
         MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
         return findMethod(deploymentReflectionIndex, clazz, methodIdentifier);

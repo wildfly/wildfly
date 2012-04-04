@@ -78,9 +78,7 @@ public class ServerEnvironmentService implements Service<ServerEnvironment> {
      * @param serverEnvironment the {@code ServerEnvironment}. Cannot be {@code null}
      */
     ServerEnvironmentService(ServerEnvironment serverEnvironment) {
-        if (serverEnvironment == null) {
-            throw new IllegalArgumentException("serverEnvironment is null");
-        }
+        assert serverEnvironment != null : "serverEnvironment is null";
         this.serverEnvironment = serverEnvironment;
     }
 

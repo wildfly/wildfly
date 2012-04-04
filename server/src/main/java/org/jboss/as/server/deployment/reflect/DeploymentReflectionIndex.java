@@ -26,6 +26,8 @@ import java.security.Permission;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.server.ServerMessages;
+
 /**
  * A reflection index for a deployment.
  *
@@ -67,7 +69,7 @@ public final class DeploymentReflectionIndex {
             }
             return index;
         } catch (Throwable e) {
-            throw new RuntimeException("Error getting reflective information for " + clazz + " with ClassLoader " + clazz.getClassLoader(), e);
+            throw ServerMessages.MESSAGES.errorGettingReflectiveInformation(clazz, clazz.getClassLoader(), e);
         }
     }
 }

@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.server.ServerMessages;
+
 /**
  * A simple implementation of {@link Attachable} which may be used as a base class or on a standalone basis.
  * <p>
@@ -68,7 +70,7 @@ public class SimpleAttachable implements Attachable {
     /** {@inheritDoc} */
     public synchronized <T> T putAttachment(final AttachmentKey<T> key, final T value) {
         if (key == null) {
-            throw new IllegalArgumentException("key is null");
+            throw ServerMessages.MESSAGES.nullAttachmentKey();
         }
         return key.cast(attachments.put(key, key.cast(value)));
     }

@@ -1,5 +1,6 @@
 package org.jboss.as.server.deployment.module.descriptor;
 
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.FilterSpecification;
@@ -253,7 +254,7 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
             throw missingAttributes(reader.getLocation(), required);
         }
         if (result.getSubDeploymentSpecifications().containsKey(name)) {
-            throw new XMLStreamException("Sub deployment " + name + " is listed twice in jboss-structure.xml");
+            throw ServerMessages.MESSAGES.duplicateSubdeploymentListing(name);
         }
         final ModuleStructureSpec moduleSpecification = new ModuleStructureSpec();
         result.getSubDeploymentSpecifications().put(name, moduleSpecification);
@@ -284,8 +285,7 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
         }
         // FIXME: change this
         if (!name.startsWith("deployment.")) {
-            throw new XMLStreamException("Additional module name " + name
-                    + " is not valid. Names must start with 'deployment.'");
+            throw ServerMessages.MESSAGES.invalidModuleName(name);
         }
         final ModuleStructureSpec moduleSpecification = new ModuleStructureSpec();
         moduleSpecification.setModuleIdentifier(ModuleIdentifier.create(name, slot));
@@ -1088,25 +1088,20 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
                 kind = "unknown";
                 break;
         }
-        final StringBuilder b = new StringBuilder("Unexpected content of type '").append(kind).append('\'');
-        if (reader.hasName()) {
-            b.append(" named '").append(reader.getName()).append('\'');
-        }
-        if (reader.hasText()) {
-            b.append(", text is: '").append(reader.getText()).append('\'');
-        }
-        return new XMLStreamException(b.toString(), reader.getLocation());
+
+        return ServerMessages.MESSAGES.unexpectedContent(kind, (reader.hasName() ? reader.getName() : null),
+                (reader.hasText() ? reader.getText() : null), reader.getLocation());
     }
 
     private static XMLStreamException endOfDocument(final Location location) {
-        return new XMLStreamException("Unexpected end of document", location);
+        return ServerMessages.MESSAGES.unexpectedEndOfDocument(location);
     }
 
     private static XMLStreamException missingAttributes(final Location location, final Set<Attribute> required) {
-        final StringBuilder b = new StringBuilder("Missing one or more required attributes:");
+        final StringBuilder b = new StringBuilder();
         for (Attribute attribute : required) {
             b.append(' ').append(attribute);
         }
-        return new XMLStreamException(b.toString(), location);
+        return ServerMessages.MESSAGES.missingRequiredAttributes(b.toString(), location);
     }
 }

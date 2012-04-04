@@ -26,6 +26,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.InetAddressValidator;
 import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -45,10 +46,11 @@ public class BindingMulticastAddressHandler extends AbstractBindingWriteHandler 
     void handleRuntimeChange(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) throws OperationFailedException {
         final InetAddress address;
         if(attributeValue.isDefined()) {
+            String addrString = attributeValue.asString();
             try {
-                address = InetAddress.getByName(attributeValue.asString());
+                address = InetAddress.getByName(addrString);
             } catch (UnknownHostException e) {
-                throw new OperationFailedException(new ModelNode().set("failed to get multi-cast address for " + attributeValue));
+                throw ServerMessages.MESSAGES.failedToResolveMulticastAddress(e, addrString);
             }
         } else {
             address = null;
@@ -60,10 +62,11 @@ public class BindingMulticastAddressHandler extends AbstractBindingWriteHandler 
     void handleRuntimeRollback(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) {
         final InetAddress address;
         if(attributeValue.isDefined()) {
+            String addrString = attributeValue.asString();
             try {
-                address = InetAddress.getByName(attributeValue.asString());
+                address = InetAddress.getByName(addrString);
             } catch (UnknownHostException e) {
-                throw new RuntimeException("Failed to get multi-cast address for " + attributeValue.asString());
+                throw ServerMessages.MESSAGES.failedToResolveMulticastAddressForRollback(e, addrString);
             }
         } else {
             address = null;

@@ -24,6 +24,7 @@ package org.jboss.as.server.moduleservice;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.modules.Module;
@@ -88,7 +89,7 @@ public class ModuleLoadService implements Service<Module> {
             }
             this.module = module;
         } catch (ModuleLoadException e) {
-            throw new StartException("Failed to load module: " + moduleSpec.getValue().getModuleIdentifier(), e);
+            throw ServerMessages.MESSAGES.failedToLoadModule(moduleSpec.getValue().getModuleIdentifier(), e);
         }
     }
 

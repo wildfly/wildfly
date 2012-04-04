@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.deployment.module;
 
+import org.jboss.as.server.ServerMessages;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -47,7 +48,7 @@ public class TempFileProviderService implements Service<TempFileProvider> {
           PROVIDER = TempFileProvider.create("deployment", Executors.newScheduledThreadPool(2));
        }
        catch (final IOException ioe) {
-          throw new RuntimeException("Failed to create temp file provider");
+          throw ServerMessages.MESSAGES.failedToCreateTempFileProvider(ioe);
        }
     }
 

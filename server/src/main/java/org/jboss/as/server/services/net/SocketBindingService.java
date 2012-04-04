@@ -55,9 +55,7 @@ public class SocketBindingService implements Service<SocketBinding> {
     public SocketBindingService(final String name, int port, boolean isFixedPort,
                                 InetAddress multicastAddress, int multicastPort,
                                 List<ClientMapping> clientMappings) {
-        if (name == null) {
-            throw new IllegalArgumentException("name is null");
-        }
+        assert name != null : "name is null";
         this.name = name;
         this.port = port;
         this.isFixedPort = isFixedPort;

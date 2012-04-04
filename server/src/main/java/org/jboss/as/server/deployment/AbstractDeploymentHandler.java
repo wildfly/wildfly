@@ -39,6 +39,7 @@ import java.util.List;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -52,20 +53,12 @@ abstract class AbstractDeploymentHandler {
         return node.has(name) ? node.require(name).asString() : null;
     }
 
-    protected static OperationFailedException createFailureException(String format, Object... params) {
-        return createFailureException(String.format(format, params));
-    }
-
-    protected static OperationFailedException createFailureException(Throwable cause, String format, Object... params) {
-        return createFailureException(cause, String.format(format, params));
-    }
-
     protected static OperationFailedException createFailureException(String msg) {
-        return new OperationFailedException(new ModelNode().set(msg));
+        return new OperationFailedException(new ModelNode(msg));
     }
 
     protected static OperationFailedException createFailureException(Throwable cause, String msg) {
-        return new OperationFailedException(cause, new ModelNode().set(msg));
+        return new OperationFailedException(cause, new ModelNode(msg));
     }
 
     protected static DeploymentHandlerUtil.ContentItem[] getContents(ModelNode contentNode) {
@@ -84,27 +77,32 @@ abstract class AbstractDeploymentHandler {
 
     protected static InputStream getInputStream(OperationContext context, ModelNode operation) throws OperationFailedException {
         InputStream in = null;
-        String message = "";
         if (operation.hasDefined(INPUT_STREAM_INDEX)) {
             int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
-            message = "Null stream at index " + streamIndex;
+            int maxIndex = context.getAttachmentStreamCount();
+            if (streamIndex > maxIndex) {
+                throw ServerMessages.MESSAGES.invalidStreamIndex(INPUT_STREAM_INDEX, streamIndex, maxIndex);
+            }
             in = context.getAttachmentStream(streamIndex);
         } else if (operation.hasDefined(BYTES)) {
-            message = "Invalid byte stream.";
-            in = new ByteArrayInputStream(operation.get(BYTES).asBytes());
+            try {
+                in = new ByteArrayInputStream(operation.get(BYTES).asBytes());
+            } catch (IllegalArgumentException iae) {
+                throw ServerMessages.MESSAGES.invalidStreamBytes(BYTES);
+            }
         } else if (operation.hasDefined(URL)) {
             final String urlSpec = operation.get(URL).asString();
             try {
-                message = "Invalid url stream.";
                 in = new URL(urlSpec).openStream();
             } catch (MalformedURLException e) {
-                throw createFailureException(message);
+                throw ServerMessages.MESSAGES.invalidStreamURL(e, urlSpec);
             } catch (IOException e) {
-                throw createFailureException(message);
+                throw ServerMessages.MESSAGES.invalidStreamURL(e, urlSpec);
             }
         }
         if (in == null) {
-            throw createFailureException(message);
+            // Won't happen, as we call hasValidContentAdditionParameterDefined first
+            throw new IllegalStateException();
         }
         return in;
     }
@@ -128,6 +126,6 @@ abstract class AbstractDeploymentHandler {
     protected static void validateOnePieceOfContent(final ModelNode content) throws OperationFailedException {
         // TODO: implement overlays
         if (content.asList().size() != 1)
-            throw createFailureException("Only 1 piece of content is current supported (JBAS-9020)");
+            throw ServerMessages.MESSAGES.multipleContentItemsNotSupported();
     }
 }

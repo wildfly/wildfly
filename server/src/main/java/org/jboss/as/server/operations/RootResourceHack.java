@@ -33,6 +33,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -65,7 +66,7 @@ public class RootResourceHack implements OperationStepHandler, DescriptionProvid
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         ResourceAndRegistration threadResource = resource.get();
         if (threadResource == null || threadResource != ResourceAndRegistration.NULL) {
-            throw new OperationFailedException(new ModelNode().set("This operation is internal use only"));
+            throw ServerMessages.MESSAGES.internalUseOnly();
         }
         resource.set(new ResourceAndRegistration(context.getRootResource(), context.getResourceRegistration()));
         context.completeStep();
@@ -80,7 +81,7 @@ public class RootResourceHack implements OperationStepHandler, DescriptionProvid
             reg = resource.get();
             resource.remove();
             if (ResourceAndRegistration.NULL == reg) {
-                throw new RuntimeException("Was not able to get root resource");
+                throw ServerMessages.MESSAGES.cannotGetRootResource();
             }
         }
         return reg;

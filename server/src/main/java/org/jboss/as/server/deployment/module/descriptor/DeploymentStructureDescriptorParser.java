@@ -40,6 +40,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -234,14 +235,16 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
 
     private DeploymentUnitProcessingException subDeploymentNotFound(final String path, final Collection<String> subDeployments) {
         final StringBuilder builder = new StringBuilder();
-        builder.append("Sub deployment ");
-        builder.append(path);
-        builder.append(" in jboss-structure.xml was not found. Available sub deployments: ");
+        boolean first = true;
         for (final String dep : subDeployments) {
+            if (!first) {
+                builder.append(", ");
+            } else {
+                first = false;
+            }
             builder.append(dep);
-            builder.append(", ");
         }
-        return new DeploymentUnitProcessingException(builder.toString());
+        return ServerMessages.MESSAGES.subdeploymentNotFound(path, builder);
     }
 
     @Override
@@ -254,7 +257,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         try {
             fis = new FileInputStream(file);
         } catch (FileNotFoundException e) {
-            throw new DeploymentUnitProcessingException("No jboss-deployment-structure.xml file found at " + file);
+            throw ServerMessages.MESSAGES.deploymentStructureFileNotFound(file);
         }
         try {
             return parse(fis, file, deploymentUnit, moduleLoader);
@@ -285,7 +288,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 safeClose(streamReader);
             }
         } catch (XMLStreamException e) {
-            throw new DeploymentUnitProcessingException("Error loading jboss-structure.xml from " + file.getPath(), e);
+            throw ServerMessages.MESSAGES.errorLoadingDeploymentStructureFile(file.getPath(), e);
         }
     }
 

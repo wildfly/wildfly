@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
@@ -54,10 +55,8 @@ public class NativeManagementWriteAttributeHandler extends ReloadRequiredWriteAt
                 final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
                 if (model.hasDefined(NativeManagementResourceDefinition.INTERFACE.getName())
                         && (model.hasDefined(NativeManagementResourceDefinition.SOCKET_BINDING.getName()))) {
-                    final ModelNode failure = new ModelNode().set(String.format("%s cannot be defined when %s is also defined",
-                            NativeManagementResourceDefinition.INTERFACE.getName(),
-                            NativeManagementResourceDefinition.SOCKET_BINDING.getName()));
-                    throw new OperationFailedException(failure);
+                    throw ServerMessages.MESSAGES.conflictingConfigs(NativeManagementResourceDefinition.INTERFACE.getName(),
+                            NativeManagementResourceDefinition.SOCKET_BINDING.getName());
                 }
                 context.completeStep();
             }

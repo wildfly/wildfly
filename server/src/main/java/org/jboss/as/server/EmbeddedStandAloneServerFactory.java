@@ -129,7 +129,10 @@ public class EmbeddedStandAloneServerFactory {
 
             @Override
             public Context getContext() {
-                return ifSet(context, "Server has not been started");
+                if (context == null) {
+                    throw ServerMessages.MESSAGES.namingContextHasNotBeenSet();
+                }
+                return context;
             }
 
             @Override
@@ -172,6 +175,7 @@ public class EmbeddedStandAloneServerFactory {
 
                     serviceContainer = future.get();
 
+                    @SuppressWarnings("unchecked")
                     final Value<ModelController> controllerService = (Value<ModelController>) serviceContainer.getRequiredService(Services.JBOSS_SERVER_CONTROLLER);
                     final ModelController controller = controllerService.getValue();
                     serverDeploymentManager = new ModelControllerServerDeploymentManager(controller);
@@ -221,12 +225,6 @@ public class EmbeddedStandAloneServerFactory {
         return standaloneServer;
     }
 
-    private static <T> T ifSet(T value, String message) {
-        if (value == null)
-            throw new IllegalStateException(message);
-        return value;
-    }
-
     public static void setupCleanDirectories(Properties props) {
         File jbossHomeDir = new File(props.getProperty(ServerEnvironment.HOME_DIR));
         setupCleanDirectories(jbossHomeDir, props);
@@ -265,9 +263,9 @@ public class EmbeddedStandAloneServerFactory {
         if (prop == null) {
             prop = props.getProperty(ServerEnvironment.SERVER_BASE_DIR, null);
             if (prop == null) {
-                File dir = new File(jbossHomeDir, "standalone/" + relativeLocation);
+                File dir = new File(jbossHomeDir, "standalone" + File.separator + relativeLocation);
                 if (mustExist && (!dir.exists() || !dir.isDirectory())) {
-                    throw new IllegalArgumentException("No directory called 'standalone/' " + relativeLocation + " under " + jbossHomeDir.getAbsolutePath());
+                    throw ServerMessages.MESSAGES.embeddedServerDirectoryNotFound("standalone" + File.separator + relativeLocation, jbossHomeDir.getAbsolutePath());
                 }
                 return dir;
             } else {
@@ -305,10 +303,10 @@ public class EmbeddedStandAloneServerFactory {
 
     private static void validateDirectory(String property, File file) {
         if (!file.exists()) {
-            throw new IllegalArgumentException("-D" + property + "=" + file.getAbsolutePath() + " does not exist");
+            throw ServerMessages.MESSAGES.propertySpecifiedFileDoesNotExist(property, file.getAbsolutePath());
         }
         if (!file.isDirectory()) {
-            throw new IllegalArgumentException("-D" + property + "=" + file.getAbsolutePath() + " is not a directory");
+            throw ServerMessages.MESSAGES.propertySpecifiedFileIsNotADirectory(property, file.getAbsolutePath());
         }
     }
 
@@ -331,7 +329,7 @@ public class EmbeddedStandAloneServerFactory {
                             out.write(i);
                         }
                     } catch (IOException e) {
-                        throw new RuntimeException("Error copying " + srcFile.getAbsolutePath() + " to " + destFile.getAbsolutePath(), e);
+                        throw ServerMessages.MESSAGES.errorCopyingFile(srcFile.getAbsolutePath(), destFile.getAbsolutePath(), e);
                     } finally {
                         StreamUtils.safeClose(in);
                         StreamUtils.safeClose(out);

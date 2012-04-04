@@ -130,7 +130,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
             try {
                 log.tracef("waiting for: %s", identifier);
                 if (latch.await(2000, TimeUnit.MILLISECONDS) == false)
-                    throw new ModuleLoadException("Timeout waiting for module service: " + identifier);
+                    throw ServerMessages.MESSAGES.timeoutWaitingForModuleService(identifier);
             } catch (InterruptedException e) {
                 // ignore
             }

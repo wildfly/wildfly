@@ -25,22 +25,36 @@ package org.jboss.as.server;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InvalidObjectException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.List;
 
+import javax.xml.namespace.QName;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.MountType;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.services.security.VaultReaderException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.logging.Param;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
 
@@ -417,6 +431,175 @@ public interface ServerMessages {
     @Message(id = 18716, value = "Could not create server base directory: %s")
     IllegalStateException couldNotCreateServerBaseDirectory(File file);
 
-    @Message(id = 18717, value = "No deployment content with hash %s is available in the deployment content repository for deployment '%s'. This is a fatal boot error. To correct the problem, either restart with the --admin-only switch set and use the CLI to install the missing content or remove it from the configuration, or remove the deployment from the xml configuraiton file and restart..")
+    @Message(id = 18717, value = "No deployment content with hash %s is available in the deployment content repository for deployment '%s'. This is a fatal boot error. To correct the problem, either restart with the --admin-only switch set and use the CLI to install the missing content or remove it from the configuration, or remove the deployment from the xml configuraiton file and restart.")
     OperationFailedException noSuchDeploymentContentAtBoot(String contentHash, String deploymentName);
+
+    /** Label for DEBUG log listing of the server's system properties */
+    @Message(id = Message.NONE, value = "Configured system properties:")
+    String configuredSystemPropertiesLabel();
+
+    /** Label for DEBUG log listing of the server's VM arguments */
+    @Message(id = Message.NONE, value = "VM Arguments: %s")
+    String vmArgumentsLabel(String arguments);
+
+    /** Label for DEBUG log listing of the server's system environme
+     * nt properties */
+    @Message(id = Message.NONE, value = "Configured system environment:")
+    String configuredSystemEnvironmentLabel();
+
+    @Message(id = 18718, value = "VFS is not available from the configured module loader")
+    IllegalStateException vfsNotAvailable();
+
+    @Message(id = 18719, value = "Server controller service was removed")
+    ServiceNotFoundException serverControllerServiceRemoved();
+
+    @Message(id = 18720, value = "Root service was removed")
+    IllegalStateException rootServiceRemoved();
+
+    @Message(id = 18721, value = "Cannot start server")
+    IllegalStateException cannotStartServer(@Cause Exception e);
+
+    @Message(id = 18722, value = "Naming context has not been set")
+    IllegalStateException namingContextHasNotBeenSet();
+
+    @Message(id = 18723, value = "No directory called '%s' exists under '%s'")
+    IllegalArgumentException embeddedServerDirectoryNotFound(String relativePath, String homePath);
+
+    @Message(id = 18724, value = "-D%s=%s does not exist")
+    IllegalArgumentException propertySpecifiedFileDoesNotExist(String property, String path);
+
+    @Message(id = 18725, value = "-D%s=%s is not a directory")
+    IllegalArgumentException propertySpecifiedFileIsNotADirectory(String property, String path);
+
+    @Message(id = 18726, value = "Error copying '%s' to '%s'")
+    RuntimeException errorCopyingFile(String src, String dest, @Cause IOException e);
+
+    @Message(id = 18727, value = "%s is null")
+    InvalidObjectException invalidObject(String field);
+
+    @Message(id = 18728, value = "portOffset is out of range")
+    InvalidObjectException invalidPortOffset();
+
+    @Message(id = 18729, value = "Invalid '%s' value: %d, the maximum index is %d")
+    OperationFailedException invalidStreamIndex(String name, int value, int maxIndex);
+
+    @Message(id = 18730, value = "Cannot create input stream from URL '%s'")
+    OperationFailedException invalidStreamURL(@Cause Exception cause, String url);
+
+    @Message(id = 18731, value = "No bytes available at param %s")
+    OperationFailedException invalidStreamBytes(String param);
+
+    @Message(id = 18732, value = "Only 1 piece of content is current supported (AS7-431)")
+    OperationFailedException multipleContentItemsNotSupported();
+
+    @Message(id = 18733, value = "Failed to process phase %s of %s")
+    StartException deploymentPhaseFailed(Phase phase, DeploymentUnit deploymentUnit, @Cause Throwable cause);
+
+    @Message(id = 18734, value = "Null initial deployment unit")
+    IllegalArgumentException nullInitialDeploymentUnit();
+
+    @Message(id = 18735, value = "Attachment key is null")
+    IllegalArgumentException nullAttachmentKey();
+
+    @Message(id = 18736, value = "Failed to index deployment root for annotations")
+    DeploymentUnitProcessingException deploymentIndexingFailed(@Cause Throwable cause);
+
+    @Message(id = 18737, value = "No Seam Integration jar present: %s")
+    DeploymentUnitProcessingException noSeamIntegrationJarPresent(Module module);
+
+    @Message(id = 18738, value = "Failed to instantiate a %s")
+    DeploymentUnitProcessingException failedToInstantiateClassFileTransformer(String clazz, @Cause Exception cause);
+
+    @Message(id = 18739, value = "No deployment repository available.")
+    DeploymentUnitProcessingException noDeploymentRepositoryAvailable();
+
+    @Message(id = 18740, value = "Failed to mount deployment content")
+    DeploymentUnitProcessingException deploymentMountFailed(@Cause IOException cause);
+
+    @Message(id = 18741, value = "Failed to get manifest for deployment %s")
+    DeploymentUnitProcessingException failedToGetManifest(VirtualFile file, @Cause IOException cause);
+
+    @Message(id = 18742, value = "Invalid dependency: %s")
+    RuntimeException invalidDependency(String dependency);
+
+    @Message(id = 18743, value = "Cannot merge resource root for a different file. This: %s mergee: %s")
+    IllegalArgumentException cannotMergeResourceRoot(VirtualFile file, VirtualFile mergee);
+
+    @Message(id = 18744, value = "Failed to create temp file provider")
+    RuntimeException failedToCreateTempFileProvider(@Cause IOException cause);
+
+    @Message(id = 18745, value = "Resource is too large to be a valid class file")
+    IOException resourceTooLarge();
+
+    @Message(id = 18746, value = "Sub deployment %s in jboss-structure.xml was not found. Available sub deployments: %s")
+    DeploymentUnitProcessingException subdeploymentNotFound(String path, StringBuilder subdeployments);
+
+    @Message(id = 18747, value = "No jboss-deployment-structure.xml file found at %s")
+    DeploymentUnitProcessingException deploymentStructureFileNotFound(File file);
+
+    @Message(id = 18748, value = "Error loading jboss-structure.xml from %s")
+    DeploymentUnitProcessingException errorLoadingDeploymentStructureFile(String path, @Cause XMLStreamException cause);
+
+    @Message(id = 18749, value = "Sub deployment '%s' is listed twice in jboss-structure.xml")
+    XMLStreamException duplicateSubdeploymentListing(String name);
+
+    @Message(id = 18750, value = "Additional module name '%s' is not valid. Names must start with 'deployment.'")
+    XMLStreamException invalidModuleName(String name);
+
+    @Message(id = 18751, value = "External resource roots not supported, resource roots may not start with a '/' : %s")
+    XMLStreamException externalResourceRootsNotSupported(String path);
+
+    @Message(id = 18752, value = "Unexpected end of document")
+    XMLStreamException unexpectedEndOfDocument(@Param Location location);
+
+    @Message(id = 18753, value = "Missing one or more required attributes:%s")
+    XMLStreamException missingRequiredAttributes(String missing, @Param Location location);
+
+    @Message(id = 18754, value = "Unexpected content of type '%s', name is '%s', text is: '%s'")
+    XMLStreamException unexpectedContent(String kind, QName name, String text, @Param Location location);
+
+    @Message(id = 18755, value = "No method found with id: %s on class (or its super class) %s")
+    DeploymentUnitProcessingException noMethodFound(MethodIdentifier method, Class clazz);
+
+    @Message(id = 18756, value = "Method cannot be null")
+    IllegalArgumentException nullMethod();
+
+    @Message(id = 18757, value = "Error getting reflective information for %s with ClassLoader %s")
+    RuntimeException errorGettingReflectiveInformation(Class clazz, ClassLoader cl, @Param Throwable cause);
+
+    @Message(id = 18758, value = "External Module Service already started")
+    IllegalStateException externalModuleServiceAlreadyStarted();
+
+    @Message(id = 18759, value = "Failed to load module: %s")
+    StartException failedToLoadModule(ModuleIdentifier module, @Cause ModuleLoadException cause);
+
+    @Message(id = 18760, value = "Timeout waiting for module service: %s")
+    ModuleLoadException timeoutWaitingForModuleService(ModuleIdentifier module);
+
+    @Message(id = 18761, value = "%s cannot be defined when %s is also defined")
+    OperationFailedException conflictingConfigs(String choice, String alternative);
+
+    @Message(id = 18762, value = "This operation is for internal use only")
+    OperationFailedException internalUseOnly();
+
+    @Message(id = 18763, value = "Was not able to get root resource")
+    RuntimeException cannotGetRootResource();
+
+    @Message(id = 18764, value = "Failed to resolve expression: %s")
+    IllegalStateException failedToResolveExpression(String expression);
+
+    @Message(id = 18765, value = "Unexpected char seen: %s")
+    IllegalStateException unexpectedChar(String c);
+
+    @Message(id = 18766, value = "Incomplete expression: %s")
+    IllegalStateException incompleteExpression(String expression);
+
+    @Message(id = 18767, value = "Failed to get multicast address for %s")
+    OperationFailedException failedToResolveMulticastAddress(@Cause UnknownHostException cause, String address);
+
+    @Message(id = 18768, value = "Failed to get multicast address for %s")
+    RuntimeException failedToResolveMulticastAddressForRollback(@Cause UnknownHostException cause, String address);
+
+    @Message(id = 18769, value = "Validation for %s is not implemented")
+    UnsupportedOperationException attributeValidationUnimplemented(String attribute);
 }
