@@ -37,7 +37,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOU
 
 import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.validation.MaskedAddressValidator;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
+import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
@@ -67,6 +69,18 @@ public class BindingAddHandler extends SocketBindingAddHandler {
     }
 
     private BindingAddHandler() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
+
+        ModelNode model = resource.getModel();
+        populateModel(operation, model);
+
+        SocketBindingResourceDefinition.validateInterfaceReference(context, model);
     }
 
     @Override
