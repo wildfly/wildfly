@@ -561,7 +561,6 @@ public interface CommonAttributes {
     String DURABLE_SUBSCRIPTION_COUNT = "durable-subscription-count";
     String ENTRIES_STRING = "entries";
     String ENTRY ="entry";
-    String FACTORY_TYPE = "factory-type";
     String FILE_DEPLOYMENT_ENABLED ="file-deployment-enabled";
     String GENERIC_FACTORY = "GENERIC";
     String GROUPING_HANDLER ="grouping-handler";

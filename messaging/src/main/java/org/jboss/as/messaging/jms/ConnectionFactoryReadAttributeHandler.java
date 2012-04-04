@@ -22,7 +22,7 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.messaging.CommonAttributes.FACTORY_TYPE;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.INITIAL_MESSAGE_PACKET_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.NAME;
@@ -62,7 +62,7 @@ public class ConnectionFactoryReadAttributeHandler extends AbstractRuntimeOnlyHa
 
     public static final ConnectionFactoryReadAttributeHandler INSTANCE = new ConnectionFactoryReadAttributeHandler();
 
-    public static final List<String> READ_ATTRIBUTES = Arrays.asList( FACTORY_TYPE, INITIAL_MESSAGE_PACKET_SIZE );
+    public static final List<String> READ_ATTRIBUTES = Arrays.asList( CONNECTION_FACTORY_TYPE.getName(), INITIAL_MESSAGE_PACKET_SIZE );
 
     private ParametersValidator validator = new ParametersValidator();
 
@@ -85,7 +85,7 @@ public class ConnectionFactoryReadAttributeHandler extends AbstractRuntimeOnlyHa
 
         if (HA.getName().equals(attributeName)) {
             context.getResult().set(control.isHA());
-        } else if (FACTORY_TYPE.equals(attributeName)) {
+        } else if (CONNECTION_FACTORY_TYPE.getName().equals(attributeName)) {
             context.getResult().set(control.getFactoryType());
         } else if (INITIAL_MESSAGE_PACKET_SIZE.equals(attributeName)) {
             context.getResult().set(control.getInitialMessagePacketSize());
