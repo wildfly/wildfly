@@ -26,9 +26,45 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class TransformerRegistry {
     private final ConcurrentHashMap<String, List<SubsystemTransformer>> subsystemTransformers = new ConcurrentHashMap<String, List<SubsystemTransformer>>();
+    public static final ModelNode AS_7_1_1_SUBSYSTEM_VERSIONS = new ModelNode();
     private static TransformerRegistry INSTANCE;
     private final SimpleFullModelTransformer modelTransformer;
     private final ExtensionRegistry extensionRegistry;
+
+    static {
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("cmp", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("configadmin", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("datasources", "1.1");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("deployment-scanner", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("ee", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("ejb3", "1.1");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("infinispan", "1.2");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jacorb", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jaxr", "1.1");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jaxrs", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jca", "1.1");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jdr", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jgroups", "1.1");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jmx", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jpa", "1.1");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jsr77", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("logging", "1.1");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("mail", "1.1");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("messaging", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("modcluster", "1.1");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("naming", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("osgi", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("pojo", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("remoting", "1.1");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("resource-adapters", "1.1");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("sar", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("security", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("threads", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("transactions", "1.0");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("web", "1.1");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("webservices", "1.1");
+        AS_7_1_1_SUBSYSTEM_VERSIONS.add("weld", "1.0");
+    }
 
     private TransformerRegistry(final ExtensionRegistry extensionRegistry) {
         this.modelTransformer = new SimpleFullModelTransformer(extensionRegistry);
@@ -134,6 +170,21 @@ public final class TransformerRegistry {
         versions.put(subsystemName, majorVersion + "." + minorVersion);
         return getTransformedResource(resource, resourceRegistration, versions);
 
+    }
+
+    @Deprecated
+    public Resource getTransformedRootResource(OperationContext context, Map<String, String> subsystemVersions) {
+        context.acquireControllerLock();
+        final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
+        if (subsystemVersions.isEmpty()) {
+            return root;
+        }
+        try {
+            return getTransformedResource(root, context.getRootResourceRegistration(), subsystemVersions);
+        } catch (Exception e) {
+            log.error("could not transform", e);
+            return root;
+        }
     }
 
     public SubsystemTransformer getSubsystemTransformer(final String name, final int majorVersion, int minorVersion) {

@@ -1,5 +1,6 @@
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
@@ -47,7 +48,7 @@ public class SimpleFullModelTransformer {
                 if (info.getManagementInterfaceMajorVersion() == major && info.getManagementInterfaceMinorVersion() == minor) {
                     return resource; //no need to transform
                 }
-                log.debug("transforming subsystem: " + subsystem + ", to model version: " + subsystemVersions.get(subsystemName));
+                log.trace("transforming subsystem: " + subsystem + ", to model version: " + subsystemVersions.get(subsystemName));
                 SubsystemTransformer transformer = extensionRegistry.getTransformerRegistry().getSubsystemTransformer(subsystemName, major, minor);
                 if (transformer != null) {
                     ResourceDefinition rd = TransformerRegistry.loadSubsystemDefinition(subsystemName, major, minor);
@@ -56,7 +57,7 @@ public class SimpleFullModelTransformer {
                     ModelNode transformed = transformer.transformModel(null, fullSubsystemModel);
                     return TransformerRegistry.modelToResource(targetDefinition, transformed);
                 } else { //for now no default subsystem transformer
-                    log.debug("We have no transformer for subsystem: " + subsystemName + "-" + major + "." + minor + " model transfer can break!");
+                    ControllerLogger.ROOT_LOGGER.transformerNotFound(subsystemName, major, minor);
                     //defaultSubsystemTransformer.transformSubsystem(resource, registration, subsystemName, major, minor);
                 }
             }

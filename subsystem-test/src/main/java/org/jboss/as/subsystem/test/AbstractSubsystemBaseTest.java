@@ -179,6 +179,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
     protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
         return Collections.<PathAddress>emptySet();
     }
+
     protected void testConverter(final ModelNode expected, int major, int minor) throws Exception {
         KernelServices service = super.installInController(AdditionalInitialization.MANAGEMENT, getSubsystemXml());
         ModelNode transformed = service.readTransformedModel(major,minor).get(ModelDescriptionConstants.SUBSYSTEM, mainSubsystemName);

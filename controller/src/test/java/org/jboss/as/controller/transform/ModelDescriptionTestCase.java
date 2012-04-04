@@ -41,6 +41,9 @@ public class ModelDescriptionTestCase {
         validate(registration, loaded);
 
 
+        List<TransformRule> rules1 = ModelMatcher.getRules(registration, loaded);
+        List<TransformRule> rules2 = ModelMatcher.getRules(loaded, loaded);
+        Assert.assertEquals(rules1, rules2);
 
     }
 
@@ -51,7 +54,7 @@ public class ModelDescriptionTestCase {
         for (String name : orig.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
             AttributeDefinition attr1 = orig.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name).getAttributeDefinition();
             AttributeDefinition attr2 = loaded.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name).getAttributeDefinition();
-
+            Assert.assertEquals(1d, SimilarityIndex.compareAttributes(attr1, attr2));
         }
         for (PathElement pe : orig.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
             ManagementResourceRegistration origSub = orig.getSubModel(PathAddress.pathAddress(pe));
@@ -60,4 +63,10 @@ public class ModelDescriptionTestCase {
         }
     }
 
+    @Test
+    public void testSimilarity() {
+        double factor = SimilarityIndex.compareStrings("test", "testa");
+        double factor2 = SimilarityIndex.compareStrings("modelController", "model-controller");
+
+    }
 }
