@@ -101,14 +101,14 @@ public class FrameworkBootstrapService implements Service<Void> {
     public static final ServiceName FRAMEWORK_BOOTSTRAP = FRAMEWORK_BASE_NAME.append("bootstrap");
     public static final String MAPPED_OSGI_SOCKET_BINDINGS = "org.jboss.as.osgi.socket.bindings";
 
-    private final InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
+    private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
     private final InjectedValue<SocketBinding> httpServerPortBinding = new InjectedValue<SocketBinding>();
 
     public static ServiceController<?> addService(final ServiceTarget target, final ServiceListener<Object>... listeners) {
         FrameworkBootstrapService service = new FrameworkBootstrapService();
         ServiceBuilder<?> builder = target.addService(FRAMEWORK_BOOTSTRAP, service);
-        builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedEnvironment);
+        builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
         builder.addDependency(JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.httpServerPortBinding);
         builder.addListener(listeners);
@@ -186,7 +186,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         props.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
         String storage = (String) props.get(Constants.FRAMEWORK_STORAGE);
         if (storage == null) {
-            ServerEnvironment environment = injectedEnvironment.getValue();
+            ServerEnvironment environment = injectedServerEnvironment.getValue();
             File dataDir = environment.getServerDataDir();
             storage = dataDir.getAbsolutePath() + File.separator + "osgi-store";
             props.put(Constants.FRAMEWORK_STORAGE, storage);

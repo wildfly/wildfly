@@ -21,6 +21,8 @@
  */
 package org.jboss.as.osgi.service;
 
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -54,12 +56,14 @@ final class RepositoryProvider extends AbstractService<Repository> {
 
     public static final ServiceName SERVICE_NAME = SERVICE_BASE_NAME.append("repository.provider");
 
+    private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
     private Repository repository;
 
     static ServiceController<?> addService(final ServiceTarget target) {
         RepositoryProvider service = new RepositoryProvider();
         ServiceBuilder<?> builder = target.addService(SERVICE_NAME, service);
+        builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedSystemContext);
         builder.addDependency(Services.FRAMEWORK_CREATE);
         builder.setInitialMode(Mode.PASSIVE);
@@ -76,7 +80,8 @@ final class RepositoryProvider extends AbstractService<Repository> {
         ArtifactProviderPlugin provider = new MavenArtifactProvider();
         syscontext.registerService(ArtifactProviderPlugin.class.getName(), provider, null);
         // Create the RepositoryCachePlugin
-        File cacheFile = syscontext.getDataFile("repository");
+        File dataDir = injectedServerEnvironment.getValue().getServerDataDir();
+        File cacheFile = new File(dataDir.getPath() + File.separator + "repository");
         RepositoryCachePlugin cache = new FileBasedRepositoryCachePlugin(cacheFile);
         // Register the Repository
         repository = new RepositoryImpl(new TrackingArtifactProvider(syscontext), cache);
