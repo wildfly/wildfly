@@ -90,7 +90,6 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private volatile InjectedSocketBindingStreamServerService remotingServer;
     private final byte serverProtocolVersion;
     private final String[] supportedMarshallingStrategies;
-    private volatile ChannelAssociation channelAssociation;
 
     public EJBRemoteConnectorService(final byte serverProtocolVersion, final String[] supportedMarshallingStrategies, final ServiceName remotingConnectorServiceName) {
         this.serverProtocolVersion = serverProtocolVersion;
@@ -148,7 +147,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         return this.txSyncRegistry;
     }
 
-    private void sendVersionMessage() throws IOException {
+    private void sendVersionMessage(final ChannelAssociation channelAssociation) throws IOException {
         final DataOutputStream outputStream;
         final MessageOutputStream messageOutputStream;
         try {
@@ -182,7 +181,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
         @Override
         public void channelOpened(Channel channel) {
-            EJBRemoteConnectorService.this.channelAssociation = new ChannelAssociation(channel);
+            final ChannelAssociation channelAssociation = new ChannelAssociation(channel);
 
             log.tracef("Welcome %s to the " + EJB_CHANNEL_NAME + " channel", channel);
             channel.addCloseHandler(new CloseHandler<Channel>() {
@@ -194,14 +193,14 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
             });
             // send the server version and supported marshalling types to the client
             try {
-                EJBRemoteConnectorService.this.sendVersionMessage();
+                EJBRemoteConnectorService.this.sendVersionMessage(channelAssociation);
             } catch (IOException e) {
                 EjbLogger.EJB3_LOGGER.closingChannel(channel, e);
                 IoUtils.safeClose(channel);
             }
 
             // receive messages from the client
-            channel.receiveMessage(new ClientVersionMessageReceiver(this.serviceContainer));
+            channel.receiveMessage(new ClientVersionMessageReceiver(this.serviceContainer, channelAssociation));
         }
 
         @Override
@@ -212,9 +211,11 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private class ClientVersionMessageReceiver implements Channel.Receiver {
 
         private final ServiceContainer serviceContainer;
+        private final ChannelAssociation channelAssociation;
 
-        ClientVersionMessageReceiver(final ServiceContainer serviceContainer) {
+        ClientVersionMessageReceiver(final ServiceContainer serviceContainer, final ChannelAssociation channelAssociation) {
             this.serviceContainer = serviceContainer;
+            this.channelAssociation = channelAssociation;
         }
 
         @Override
@@ -256,7 +257,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                         // enroll VersionOneProtocolChannelReceiver for handling subsequent messages on this channel
                         final DeploymentRepository deploymentRepository = EJBRemoteConnectorService.this.deploymentRepositoryInjectedValue.getValue();
                         final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector = EJBRemoteConnectorService.this.clusterRegistryCollector.getValue();
-                        final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(EJBRemoteConnectorService.this.channelAssociation, deploymentRepository,
+                        final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(this.channelAssociation, deploymentRepository,
                                 EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), clientMappingRegistryCollector,
                                 marshallerFactory, executorService.getValue());
                         // trigger the receiving
