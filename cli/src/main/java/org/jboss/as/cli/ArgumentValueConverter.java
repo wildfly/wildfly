@@ -22,6 +22,13 @@
 package org.jboss.as.cli;
 
 
+import org.jboss.as.cli.parsing.DefaultParsingState;
+import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
+import org.jboss.as.cli.parsing.StateParser;
+import org.jboss.as.cli.parsing.arguments.ArgumentValueCallbackHandler;
+import org.jboss.as.cli.parsing.arguments.ArgumentValueInitialState;
+import org.jboss.as.cli.parsing.arguments.ArgumentValueState;
+import org.jboss.as.cli.parsing.arguments.ListState;
 import org.jboss.dmr.ModelNode;
 
 
@@ -58,16 +65,24 @@ public interface ArgumentValueConverter {
                 toSet = ModelNode.fromString(value);
             } catch (Exception e) {
                 // just use the string
-                toSet = new ModelNode().set(value);
+                //toSet = new ModelNode().set(value);
+                final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
+                StateParser.parse(value, handler, ArgumentValueInitialState.INSTANCE);
+                toSet = handler.getResult();
             }
             return toSet;
         }
     };
 
     ArgumentValueConverter LIST = new DMRWithFallbackConverter() {
+        final DefaultParsingState initialState = new DefaultParsingState("IL"){
+            {
+                setDefaultHandler(new EnterStateCharacterHandler(new ListState(new ArgumentValueState())));
+            }
+        };
         @Override
         protected ModelNode fromNonDMRString(String value) throws CommandFormatException {
-            // strip [] if they are present
+/*            // strip [] if they are present
             if(value.length() >= 2 && value.charAt(0) == '[' && value.charAt(value.length() - 1) == ']') {
                 value = value.substring(1, value.length() - 1);
             }
@@ -76,12 +91,22 @@ public interface ArgumentValueConverter {
                 list.add(new ModelNode().set(item));
             }
             return list;
+*/
+            final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
+            StateParser.parse(value, handler, initialState);
+            return handler.getResult();
         }
     };
 
     ArgumentValueConverter PROPERTIES = new DMRWithFallbackConverter() {
+        final DefaultParsingState initialState = new DefaultParsingState("IPL"){
+            {
+                setDefaultHandler(new EnterStateCharacterHandler(new ListState(new ArgumentValueState())));
+            }
+        };
         @Override
         protected ModelNode fromNonDMRString(String value) throws CommandFormatException {
+            /*
             // strip [] if they are present
             if(value.length() >= 2 && value.charAt(0) == '[' && value.charAt(value.length() - 1) == ']') {
                 value = value.substring(1, value.length() - 1);
@@ -100,6 +125,10 @@ public interface ArgumentValueConverter {
                 list.add(propName, prop.substring(equals + 1));
             }
             return list;
+*/
+            final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
+            StateParser.parse(value, handler, initialState);
+            return handler.getResult();
         }
     };
 
@@ -107,7 +136,7 @@ public interface ArgumentValueConverter {
         @Override
         protected ModelNode fromNonDMRString(String value)
                 throws CommandFormatException {
-            // strip {} if they are present
+/*            // strip {} if they are present
             if(value.length() >= 2 && value.charAt(0) == '{' && value.charAt(value.length() - 1) == '}') {
                 value = value.substring(1, value.length() - 1);
             }
@@ -126,6 +155,10 @@ public interface ArgumentValueConverter {
                 o.get(propName).set(prop.substring(equals + 1));
             }
             return o;
+*/
+            final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
+            StateParser.parse(value, handler, ArgumentValueInitialState.INSTANCE);
+            return handler.getResult();
         }
     };
 

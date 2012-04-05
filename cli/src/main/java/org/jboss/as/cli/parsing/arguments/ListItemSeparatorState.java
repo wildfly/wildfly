@@ -19,28 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.parsing;
+package org.jboss.as.cli.parsing.arguments;
 
-import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.parsing.DefaultParsingState;
+import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 
 /**
-*
-* @author Alexey Loubyansky
-*/
-public class EnterStateCharacterHandler implements CharacterHandler {
+ *
+ * @author Alexey Loubyansky
+ */
+public class ListItemSeparatorState extends DefaultParsingState {
 
-    protected final ParsingState state;
+    public static final String ID = "LIST_ITEM_SEP";
 
-    public EnterStateCharacterHandler(ParsingState state) {
-        if(state == null) {
-            throw new IllegalArgumentException("State can't be null.");
-        }
-        this.state = state;
-    }
+    public static final ListItemSeparatorState INSTANCE = new ListItemSeparatorState();
 
-    @Override
-    public void handle(ParsingContext ctx)
-            throws CommandFormatException {
-        ctx.enterState(state);
+    public ListItemSeparatorState() {
+        super(ID);
+        setEnterHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
     }
 }
