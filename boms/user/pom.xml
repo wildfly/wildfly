@@ -30,7 +30,7 @@
 
     <properties>
         <!-- Versions of JBoss projects -->
-        <version.org.jboss.spec.jboss.javaee.6.0>3.0.0.Beta1</version.org.jboss.spec.jboss.javaee.6.0>
+        <version.org.jboss.spec.jboss.javaee.6.0>3.0.0.Final</version.org.jboss.spec.jboss.javaee.6.0>
         <version.org.jboss.arquillian>1.0.0.CR7</version.org.jboss.arquillian>
         <version.org.jboss.arquillian.extension.drone>1.0.0.CR3</version.org.jboss.arquillian.extension.drone>
         <version.org.jboss.arquillian.ajocado>1.0.0.CR2</version.org.jboss.arquillian.ajocado>
