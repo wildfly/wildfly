@@ -22,6 +22,7 @@
 package org.jboss.as.clustering.jgroups;
 
 import org.jgroups.JChannel;
+import org.jgroups.Receiver;
 import org.jgroups.UpHandler;
 import org.jgroups.blocks.mux.MuxUpHandler;
 import org.jgroups.blocks.mux.Muxer;
@@ -35,6 +36,15 @@ public class MuxChannel extends JChannel {
     public MuxChannel(ProtocolStackConfigurator configurator) throws Exception {
         super(configurator);
         this.setUpHandler(new MuxUpHandler());
+    }
+
+    @Override
+    public void setReceiver(Receiver receiver) {
+        super.setReceiver(receiver);
+        // If we're using a receiver, we're not interested in using an up handler
+        if (receiver != null) {
+            super.setUpHandler(null);
+        }
     }
 
     @Override
