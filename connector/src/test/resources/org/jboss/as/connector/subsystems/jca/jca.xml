@@ -1,0 +1,54 @@
+<subsystem xmlns="urn:jboss:domain:jca:1.1">
+            <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
+            <bean-validation enabled="true"/>
+            <default-workmanager>
+                <short-running-threads>
+                    <core-threads count="50"/>
+                    <queue-length count="50"/>
+                    <max-threads count="50"/>
+                    <keepalive-time time="10" unit="seconds"/>
+                </short-running-threads>
+                <long-running-threads allow-core-timeout="true">
+                    <core-threads count="50"/>
+                    <queue-length count="50"/>
+                    <max-threads count="50"/>
+                    <keepalive-time time="10" unit="milliseconds"/>
+                    <thread-factory name="factory1"/>
+                </long-running-threads>
+            </default-workmanager>
+            <workmanager name="wm">
+            	<short-running-threads allow-core-timeout="false">
+                    <core-threads count="5"/>
+                    <queue-length count="5"/>
+                    <max-threads count="50"/>
+                    <keepalive-time time="10" unit="minutes"/>
+                    <thread-factory name="factory"/>
+                </short-running-threads>
+                <long-running-threads>
+                    <core-threads count="0"/>
+                    <queue-length count="5"/>
+                    <max-threads count="50"/>
+                    <keepalive-time time="1" unit="minutes"/>
+                </long-running-threads>
+            </workmanager>
+            <workmanager name="wm1">
+            	<short-running-threads allow-core-timeout="false">
+                    <core-threads count="5"/>
+                    <queue-length count="5"/>
+                    <max-threads count="50"/>
+                    <keepalive-time time="10" unit="hours"/>
+                    <thread-factory name="factory"/>
+                </short-running-threads>
+                <long-running-threads>
+                    <core-threads count="0"/>
+                    <queue-length count="5"/>
+                    <max-threads count="50"/>
+                    <keepalive-time time="1" unit="days"/>
+                </long-running-threads>
+            </workmanager>
+            <bootstrap-contexts>
+            	<bootstrap-context name="bc" workmanager="wm"/>
+            	<bootstrap-context name="bc1" workmanager="wm1"/>
+            </bootstrap-contexts>
+            <cached-connection-manager debug="true" error="false"/>
+        </subsystem>

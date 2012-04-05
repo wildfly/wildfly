@@ -27,55 +27,19 @@ import static org.jboss.as.connector.subsystems.jca.ParseUtils.raCommonPropertie
 import static org.jboss.as.connector.subsystems.jca.ParseUtils.raConnectionProperties;
 
 import java.util.Properties;
-
 import junit.framework.Assert;
-
-import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
-import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemTest {
+public class ComplexResourceAdaptersSubsystemTestCase extends AbstractComplexSubsystemTestCase {
 
     public ComplexResourceAdaptersSubsystemTestCase() {
         super(ResourceAdaptersExtension.SUBSYSTEM_NAME, new ResourceAdaptersExtension());
-    }
-
-    public ModelNode getModel(String resourceFileName, String archiveName) throws Exception {
-        return getModel(resourceFileName, true, archiveName);
-    }
-
-    public ModelNode getModel(String resourceFileName, boolean checkMarshalledXML, String archiveName) throws Exception {
-
-        String xml = readResource(resourceFileName);
-
-        KernelServices services = super.installInController(AdditionalInitialization.MANAGEMENT, xml);
-
-        ModelNode model = services.readWholeModel();
-        ConnectorServices.unregisterResourceIdentifiers(archiveName);
-
-        // Marshal the xml to see that it is the same as before
-        String marshalled = services.getPersistedSubsystemXml();
-        if (checkMarshalledXML)
-            Assert.assertEquals(normalizeXML(xml), normalizeXML(marshalled));
-
-        services = super.installInController(AdditionalInitialization.MANAGEMENT, marshalled);
-
-        // Check that the model looks the same
-        ModelNode modelReloaded = services.readWholeModel();
-        compare(model, modelReloaded);
-
-        assertRemoveSubsystemResources(services);
-        return model;
-
     }
 
     @Test
