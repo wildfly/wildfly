@@ -42,7 +42,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Assert;
-import org.junit.Ignore;
 
 /**
  *
@@ -321,8 +320,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
     /**
      * Tests rollout plan with RollbackAcrossGroups set to true.
      */
-    @Test    
-    @Ignore("AS7-4214")
+    @Test
     public void testRollbackAcrossGroupsRolloutPlan() throws Exception {
         // deploy helper servlets
         cli.sendLine("deploy " + warFile.getAbsolutePath() + " --all-server-groups");

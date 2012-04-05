@@ -268,7 +268,8 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
             if (trace) {
                 HOST_CONTROLLER_LOGGER.tracef("Rollout plan result is %s", planResult);
             }
-            if (planResult == RolloutPlanController.Result.FAILED) {
+            if (planResult == RolloutPlanController.Result.FAILED ||
+                    (planResult == RolloutPlanController.Result.PARTIAL && domainOperationContext.isCompleteRollback())) {
                 domainOperationContext.setCompleteRollback(true);
                 // AS7-801 -- we need to record a failure description here so the local host change gets aborted
                 // Waiting to do it in the DomainFinalResultHandler on the way out is too late
