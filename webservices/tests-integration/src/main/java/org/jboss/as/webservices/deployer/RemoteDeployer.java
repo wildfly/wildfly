@@ -96,6 +96,8 @@ public final class RemoteDeployer implements Deployer {
     private final CallbackHandler callbackHandler = getCallbackHandler();
     private final ServerDeploymentManager deploymentManager;
     private final ModelControllerClient modelControllerClient;
+    private final Map<String, Integer> securityDomainUsers = new HashMap<String, Integer>(1);
+    private final Map<String, Integer> archiveCounters = new HashMap<String, Integer>();
 
     public RemoteDeployer() throws IOException {
         final String host = System.getProperty(JBWS_DEPLOYER_HOST);
@@ -112,24 +114,47 @@ public final class RemoteDeployer implements Deployer {
 
     @Override
     public void deploy(final URL archiveURL) throws Exception {
-        final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan().add(archiveURL).andDeploy();
-        final DeploymentPlan plan = builder.build();
-        final DeploymentAction deployAction = builder.getLastAction();
-        final String uniqueId = deployAction.getDeploymentUnitUniqueName();
-        executeDeploymentPlan(plan, deployAction);
-        url2Id.put(archiveURL, uniqueId);
+        synchronized (archiveCounters) {
+            String k = archiveURL.toString();
+            if (archiveCounters.containsKey(k)) {
+                int count = archiveCounters.get(k);
+                archiveCounters.put(k, (count + 1));
+                return;
+            } else {
+                archiveCounters.put(k, 1);
+            }
+
+            final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan().add(archiveURL).andDeploy();
+            final DeploymentPlan plan = builder.build();
+            final DeploymentAction deployAction = builder.getLastAction();
+            final String uniqueId = deployAction.getDeploymentUnitUniqueName();
+            executeDeploymentPlan(plan, deployAction);
+            url2Id.put(archiveURL, uniqueId);
+        }
     }
 
+    @Override
     public void undeploy(final URL archiveURL) throws Exception {
-        final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-        final String uniqueName = url2Id.get(archiveURL);
-        if (uniqueName != null) {
-            final DeploymentPlan plan = builder.undeploy(uniqueName).remove(uniqueName).build();
-            final DeploymentAction deployAction = builder.getLastAction();
-            try {
-                executeDeploymentPlan(plan, deployAction);
-            } finally {
-                url2Id.remove(archiveURL);
+        synchronized (archiveCounters) {
+            String k = archiveURL.toString();
+            int count = archiveCounters.get(k);
+            if (count > 1) {
+                archiveCounters.put(k, (count - 1));
+                return;
+            } else {
+                archiveCounters.remove(k);
+            }
+
+            final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
+            final String uniqueName = url2Id.get(archiveURL);
+            if (uniqueName != null) {
+                final DeploymentPlan plan = builder.undeploy(uniqueName).remove(uniqueName).build();
+                final DeploymentAction deployAction = builder.getLastAction();
+                try {
+                    executeDeploymentPlan(plan, deployAction);
+                } finally {
+                    url2Id.remove(archiveURL);
+                }
             }
         }
     }
@@ -162,45 +187,67 @@ public final class RemoteDeployer implements Deployer {
         return response.get(RESULT).asString();
     }
 
+    @Override
     public void addSecurityDomain(String name, Map<String, String> authenticationOptions) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-
-        ModelNode op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
-        updates.add(op);
-
-        op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
-        op.get(OP_ADDR).add(AUTHENTICATION, CLASSIC);
-
-        final ModelNode loginModule = op.get(LOGIN_MODULES).add();
-        loginModule.get(CODE).set("UsersRoles");
-        loginModule.get(FLAG).set(REQUIRED);
-        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        updates.add(op);
-
-        final ModelNode moduleOptions = loginModule.get(MODULE_OPTIONS);
-        if (authenticationOptions != null) {
-            for (final String k : authenticationOptions.keySet()) {
-                moduleOptions.add(k, authenticationOptions.get(k));
+        synchronized (securityDomainUsers) {
+            if (securityDomainUsers.containsKey(name)) {
+                int count = securityDomainUsers.get(name);
+                securityDomainUsers.put(name, (count + 1));
+                return;
+            } else {
+                securityDomainUsers.put(name, 1);
             }
-        }
 
-        applyUpdates(updates, getModelControllerClient());
+            final List<ModelNode> updates = new ArrayList<ModelNode>();
+
+            ModelNode op = new ModelNode();
+            op.get(OP).set(ADD);
+            op.get(OP_ADDR).add(SUBSYSTEM, "security");
+            op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
+            updates.add(op);
+
+            op = new ModelNode();
+            op.get(OP).set(ADD);
+            op.get(OP_ADDR).add(SUBSYSTEM, "security");
+            op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
+            op.get(OP_ADDR).add(AUTHENTICATION, CLASSIC);
+
+            final ModelNode loginModule = op.get(LOGIN_MODULES).add();
+            loginModule.get(CODE).set("UsersRoles");
+            loginModule.get(FLAG).set(REQUIRED);
+            op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            updates.add(op);
+
+            final ModelNode moduleOptions = loginModule.get(MODULE_OPTIONS);
+            if (authenticationOptions != null) {
+                for (final String k : authenticationOptions.keySet()) {
+                    moduleOptions.add(k, authenticationOptions.get(k));
+                }
+            }
+
+            applyUpdates(updates, getModelControllerClient());
+        }
     }
 
+    @Override
     public void removeSecurityDomain(String name) throws Exception {
-        final ModelNode op = new ModelNode();
-        op.get(OP).set(REMOVE);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
-        op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+        synchronized (securityDomainUsers) {
+            int count = securityDomainUsers.get(name);
+            if (count > 1) {
+                securityDomainUsers.put(name, (count - 1));
+                return;
+            } else {
+                securityDomainUsers.remove(name);
+            }
 
-        applyUpdate(op, getModelControllerClient());
+            final ModelNode op = new ModelNode();
+            op.get(OP).set(REMOVE);
+            op.get(OP_ADDR).add(SUBSYSTEM, "security");
+            op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
+            op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+
+            applyUpdate(op, getModelControllerClient());
+        }
     }
 
     private ModelControllerClient getModelControllerClient() {
