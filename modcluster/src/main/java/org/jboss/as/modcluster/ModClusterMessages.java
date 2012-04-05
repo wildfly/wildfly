@@ -50,7 +50,7 @@ interface ModClusterMessages {
     String classAttributeRequired(String attributeName);
 
     /**
-     * A message indicating the context and host ar needed.
+     * A message indicating the context and host are needed.
      *
      * @return the message.
      */
@@ -66,4 +66,13 @@ interface ModClusterMessages {
      */
     @Message(id = 11732, value = "A type attribute is needed for %s")
     String typeAttributeRequired(String attributeName);
+
+    /**
+     * A message indicating that the virtualhost or the context can't be found by modcluster.
+     * @param Host
+     * @param Context
+     * @return the message.
+     */
+    @Message(id = 11733, value = "virtualhost: %s or context %s not found")
+    String ContextorHostNotFound(String Host, String Context);
 }

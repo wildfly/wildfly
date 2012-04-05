@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
+import static org.jboss.as.modcluster.ModClusterMessages.MESSAGES;
 import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
 public class ModClusterEnableContext implements OperationStepHandler {
@@ -46,7 +47,11 @@ public class ModClusterEnableContext implements OperationStepHandler {
                     ROOT_LOGGER.debugf("enable-context: %s", operation);
 
                     ContextHost contexthost = new ContextHost(operation);
-                    modcluster.enableContext(contexthost.webhost, contexthost.webcontext);
+                    try {
+                        modcluster.enableContext(contexthost.webhost, contexthost.webcontext);
+                    } catch(IllegalArgumentException e) {
+                        throw new OperationFailedException(new ModelNode().set(MESSAGES.ContextorHostNotFound(contexthost.webhost, contexthost.webcontext)));
+                    }
 
                     context.completeStep();
                 }
