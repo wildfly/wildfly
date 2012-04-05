@@ -34,11 +34,22 @@ import org.jboss.dmr.ModelType;
  * Utility class to hold some {@link AttributeDefinition}s used in different resources.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class KeystoreAttributes {
 
+    public static final SimpleAttributeDefinition ALIAS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ALIAS,
+            ModelType.STRING, true).setXmlName(ModelDescriptionConstants.ALIAS)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+
+    public static final SimpleAttributeDefinition KEY_PASSWORD = new SimpleAttributeDefinitionBuilder(
+            ModelDescriptionConstants.KEY_PASSWORD, ModelType.STRING, true).setXmlName(ModelDescriptionConstants.KEY_PASSWORD)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true)).setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+
     public static final SimpleAttributeDefinition KEYSTORE_PASSWORD = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.KEYSTORE_PASSWORD, ModelType.STRING, false)
-            .setXmlName(ModelDescriptionConstants.PASSWORD).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false))
+            .setXmlName(ModelDescriptionConstants.KEYSTORE_PASSWORD).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false))
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final SimpleAttributeDefinition KEYSTORE_PATH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.KEYSTORE_PATH, ModelType.STRING, false)

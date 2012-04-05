@@ -299,7 +299,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="keystore" type="keystoreType" />
+            <xs:element name="keystore" type="extendedKeyStoreType" />
         </xs:sequence>
         <xs:attribute name="protocol" type="xs:string" default="TLS">
             <xs:annotation>
@@ -310,7 +310,7 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="keystoreType">
+    <xs:complexType name="keyStoreType">
         <xs:annotation>
             <xs:documentation>
                 The keystore configuration for the server.
@@ -333,7 +333,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="password" type="xs:string" use="required">
+        <xs:attribute name="keystore-password" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
                     The password to open the keystore.
@@ -341,6 +341,35 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
+    
+    <xs:complexType name="extendedKeyStoreType">
+        <xs:annotation>
+            <xs:documentation>
+                This is a more complex keystore definition which also allows for an alias
+                and key password to be specified.
+            </xs:documentation>
+        </xs:annotation>
+	    <xs:complexContent>
+		    <xs:extension base="keyStoreType">
+                <xs:attribute name="alias" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The alias of the entry to use from the keystore, if specified all remaining
+                            entries in the keystore will be ignored.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>			
+                <xs:attribute name="key-password" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The password to use when loading keys from the keystore.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>                
+		    </xs:extension>
+	    </xs:complexContent>                            
+    </xs:complexType>
+    
 
     <xs:complexType name="authenticationType">
         <xs:annotation>
@@ -356,7 +385,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="truststore" type="keystoreType" minOccurs="0">
+            <xs:element name="truststore" type="keyStoreType" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>
                         Configuration of a keystore to use to create a trust manager to verify clients.

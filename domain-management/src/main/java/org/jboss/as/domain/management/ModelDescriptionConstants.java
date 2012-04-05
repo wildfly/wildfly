@@ -29,7 +29,9 @@ package org.jboss.as.domain.management;
  */
 public class ModelDescriptionConstants {
 
+    public static final String ALIAS = "alias";
     public static final String IDENTITY = "identity";
+    public static final String KEY_PASSWORD = "key-password";
     public static final String KEYSTORE_PASSWORD = "keystore-password";
     public static final String KEYSTORE_PATH = "keystore-path";
     public static final String KEYSTORE_RELATIVE_TO = "keystore-relative-to";
