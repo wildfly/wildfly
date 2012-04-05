@@ -55,7 +55,7 @@
                 <module>basic</module>
                 <module>clust</module>
                 <module>iiop</module>
-                <module>xts</module>
+                <!-- module>xts</module -->
                 <module>multinode</module>
                 <module>manualmode</module>
             </modules>
@@ -69,7 +69,7 @@
                 <module>basic</module>
                 <module>clust</module>
                 <module>iiop</module>
-                <module>xts</module>
+                <!-- module>xts</module -->
                 <module>multinode</module>
                 <module>manualmode</module>
             </modules>
@@ -112,13 +112,13 @@
         </profile>
 
         <!-- -Dts.xts -->
-        <profile>
+        <!-- profile>
             <id>ts.integ.group.xts</id>
             <activation><property><name>ts.xts</name></property></activation>
             <modules>
                 <module>xts</module>
             </modules>
-        </profile>
+        </profile -->
 
         <!-- -Dts.multinode -->
         <profile>

@@ -74,7 +74,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.TempDir;
 import org.jboss.vfs.VFSUtils;
 import org.jgroups.Channel;
@@ -155,9 +154,9 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String stack = "tcp"; // TODO -- from config!
         final String clusterId = "Hibernate Search Cluster";
         final ServiceName serviceName = ChannelService.getServiceName("indexing");
-        final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
-        final ServiceBuilder<Channel> channelBuilder = serviceTarget.addService(serviceName, new HackChannelService(clusterId, channelFactory))
-                .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
+        final HackChannelService channelService = new HackChannelService(clusterId);
+        final ServiceBuilder<Channel> channelBuilder = serviceTarget.addService(serviceName, channelService)
+                .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelService.getFactory())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
         newControllers.add(channelBuilder.install());
 
