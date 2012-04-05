@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.ejb.client.remoting.ProtocolV1ClassTable;
 import org.jboss.ejb.client.remoting.ProtocolV1ObjectTable;
@@ -35,6 +37,7 @@ import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.marshalling.reflect.SunReflectiveCreator;
 import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.MessageOutputStream;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -89,10 +92,17 @@ abstract class AbstractMessageHandler implements MessageHandler {
         }
     }
 
-    protected void writeException(final Channel channel, final MarshallerFactory marshallerFactory,
+    protected void writeException(final ChannelAssociation channelAssociation, final MarshallerFactory marshallerFactory,
                                   final short invocationId, final Throwable t,
                                   final Map<String, Object> attachments) throws IOException {
-        final DataOutputStream outputStream = new DataOutputStream(channel.writeMessage());
+        final DataOutputStream outputStream;
+        final MessageOutputStream messageOutputStream;
+        try {
+            messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
+        } catch (Exception e) {
+            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+        }
+        outputStream = new DataOutputStream(messageOutputStream);
         try {
             // write the header
             outputStream.write(HEADER_INVOCATION_EXCEPTION);
@@ -106,12 +116,20 @@ abstract class AbstractMessageHandler implements MessageHandler {
             // finish marshalling
             marshaller.finish();
         } finally {
+            channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
             outputStream.close();
         }
     }
 
-    protected void writeInvocationFailure(final Channel channel, final byte messageHeader, final short invocationId, final String failureMessage) throws IOException {
-        final DataOutputStream dataOutputStream = new DataOutputStream(channel.writeMessage());
+    protected void writeInvocationFailure(final ChannelAssociation channelAssociation, final byte messageHeader, final short invocationId, final String failureMessage) throws IOException {
+        final DataOutputStream dataOutputStream;
+        final MessageOutputStream messageOutputStream;
+        try {
+            messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
+        } catch (Exception e) {
+            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+        }
+        dataOutputStream = new DataOutputStream(messageOutputStream);
         try {
             // write header
             dataOutputStream.writeByte(messageHeader);
@@ -120,12 +138,13 @@ abstract class AbstractMessageHandler implements MessageHandler {
             // write the failure message
             dataOutputStream.writeUTF(failureMessage);
         } finally {
+            channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
             dataOutputStream.close();
         }
 
     }
 
-    protected void writeNoSuchEJBFailureMessage(final Channel channel, final short invocationId, final String appName, final String moduleName,
+    protected void writeNoSuchEJBFailureMessage(final ChannelAssociation channelAssociation, final short invocationId, final String appName, final String moduleName,
                                                 final String distinctname, final String beanName, final String viewClassName) throws IOException {
         final StringBuffer sb = new StringBuffer("No such EJB[");
         sb.append("appname=").append(appName).append(",");
@@ -136,20 +155,20 @@ abstract class AbstractMessageHandler implements MessageHandler {
             sb.append(",").append("viewclassname=").append(viewClassName);
         }
         sb.append("]");
-        this.writeInvocationFailure(channel, HEADER_NO_SUCH_EJB_FAILURE, invocationId, sb.toString());
+        this.writeInvocationFailure(channelAssociation, HEADER_NO_SUCH_EJB_FAILURE, invocationId, sb.toString());
     }
 
-    protected void writeSessionNotActiveFailureMessage(final Channel channel, final short invocationId, final String appName, final String moduleName,
+    protected void writeSessionNotActiveFailureMessage(final ChannelAssociation channelAssociation, final short invocationId, final String appName, final String moduleName,
                                                        final String distinctname, final String beanName) throws IOException {
         final StringBuffer sb = new StringBuffer("Session not active for EJB[");
         sb.append("appname=").append(appName).append(",");
         sb.append("modulename=").append(moduleName).append(",");
         sb.append("distinctname=").append(distinctname).append(",");
         sb.append("beanname=").append(beanName).append("]");
-        this.writeInvocationFailure(channel, HEADER_SESSION_NOT_ACTIVE_FAILURE, invocationId, sb.toString());
+        this.writeInvocationFailure(channelAssociation, HEADER_SESSION_NOT_ACTIVE_FAILURE, invocationId, sb.toString());
     }
 
-    protected void writeNoSuchEJBMethodFailureMessage(final Channel channel, final short invocationId, final String appName, final String moduleName,
+    protected void writeNoSuchEJBMethodFailureMessage(final ChannelAssociation channelAssociation, final short invocationId, final String appName, final String moduleName,
                                                       final String distinctname, final String beanName, final String viewClassName,
                                                       final String methodName, final String[] methodParamTypes) throws IOException {
         final StringBuffer sb = new StringBuffer("No such method ");
@@ -168,7 +187,7 @@ abstract class AbstractMessageHandler implements MessageHandler {
         sb.append("distinctname=").append(distinctname).append(",");
         sb.append("beanname=").append(beanName).append(",");
         sb.append("viewclassname=").append(viewClassName).append("]");
-        this.writeInvocationFailure(channel, HEADER_NO_SUCH_EJB_METHOD_FAILURE, invocationId, sb.toString());
+        this.writeInvocationFailure(channelAssociation, HEADER_NO_SUCH_EJB_METHOD_FAILURE, invocationId, sb.toString());
     }
 
     /**
