@@ -69,6 +69,7 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
     private static final ModuleIdentifier ACTIVATION = ModuleIdentifier.create("javax.activation.api");
     private static final ModuleIdentifier MAIL = ModuleIdentifier.create("org.javassist");
     private static final ModuleIdentifier JAVASSIST = ModuleIdentifier.create("javax.mail.api");
+    private static final ModuleIdentifier JGROUPS = ModuleIdentifier.create("org.jgroups");
     private static final ModuleIdentifier INFINISPAN_QUERY = ModuleIdentifier.create("org.infinispan.query");
     private static final ModuleIdentifier HIBERNATE_SEARCH = ModuleIdentifier.create("org.hibernate.search");
     private static final ModuleIdentifier LUCENE = ModuleIdentifier.create("org.apache.lucene");
@@ -76,7 +77,21 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
     private static final ModuleIdentifier PICKETLINK_FED = ModuleIdentifier.create("org.picketlink.fed");
     private static final ModuleIdentifier PICKETLINK_SOCIAL = ModuleIdentifier.create("org.picketlink.social");
     // inline this module deps, if running with bundled
-    private static final ModuleIdentifier[] INLINE = {MODULES, VELOCITY, TX, ACTIVATION, MAIL, JAVASSIST, INFINISPAN_QUERY, HIBERNATE_SEARCH, LUCENE, HTTP_COMPONENTS, PICKETLINK_FED, PICKETLINK_SOCIAL};
+    private static final ModuleIdentifier[] INLINE = {
+            MODULES,
+            VELOCITY,
+            TX,
+            ACTIVATION,
+            MAIL,
+            JAVASSIST,
+            JGROUPS,
+            INFINISPAN_QUERY,
+            HIBERNATE_SEARCH,
+            LUCENE,
+            HTTP_COMPONENTS,
+            PICKETLINK_FED,
+            PICKETLINK_SOCIAL
+    };
 
     private static final VirtualFileFilter JARS_VFS = new VirtualFileFilter() {
         public boolean accepts(VirtualFile file) {
