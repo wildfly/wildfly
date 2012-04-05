@@ -23,13 +23,12 @@
 package org.jboss.as.test.smoke.messaging.client.messaging;
 
 import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.resource.spi.IllegalStateException;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -74,10 +73,7 @@ public class MessagingClientTestCase {
         final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
         final ModelControllerClient client = managementClient.getControllerClient();
 
-        // Check that the queue does not exists
-        if (queueExists(queueName, sf)) {
-            throw new IllegalStateException();
-        }
+        checkQueueDoesNotExist(queueName, sf);
 
         // Create a new core queue using the standalone client
         ModelNode op = new ModelNode();
@@ -87,10 +83,8 @@ public class MessagingClientTestCase {
         op.get("address").add("queue", queueName);
         op.get("queue-address").set(queueName);
         applyUpdate(op, client);
-        // Check if the queue exists
-        if (!queueExists(queueName, sf)) {
-            throw new IllegalStateException();
-        }
+
+        checkQueueExists(queueName, sf);
 
         ClientSession session = null;
         try {
@@ -121,10 +115,7 @@ public class MessagingClientTestCase {
         op.get("address").add("queue", queueName);
         applyUpdate(op, client);
 
-        // Check that the queue does not exists
-        if(queueExists(queueName, sf)) {
-            throw new IllegalStateException();
-        }
+        checkQueueDoesNotExist(queueName, sf);
     }
 
     static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
@@ -140,14 +131,35 @@ public class MessagingClientTestCase {
         }
     }
 
-    static boolean queueExists(final String queueName, final ClientSessionFactory sf) throws HornetQException {
+    static void checkQueueExists(final String queueName, final ClientSessionFactory sf) throws Exception {
+        if (!checkQueueExistence(queueName, true, sf)) {
+            fail("queue " + queueName + " does not exist");
+        }
+    }
+
+    static void checkQueueDoesNotExist(final String queueName, final ClientSessionFactory sf) throws Exception {
+        if (!checkQueueExistence(queueName, false, sf)) {
+            fail("queue " + queueName + " exists");
+        }
+    }
+
+    static boolean checkQueueExistence(final String queueName, final boolean mustExist, final ClientSessionFactory sf) throws HornetQException {
         final ClientSession session = sf.createSession("guest", "guest", false, false, false, false, 1);
+        long start = System.currentTimeMillis();
         try {
-            final QueueQuery query = session.queueQuery(new SimpleString(queueName));
-            return query.isExists();
+            while (System.currentTimeMillis() - start < 5000) {
+                final QueueQuery query = session.queueQuery(new SimpleString(queueName));
+                boolean queueExists = query.isExists();
+                if (queueExists == mustExist) {
+                    return true;
+                }
+                Thread.sleep(100);
+            }
+        } catch (InterruptedException e) {
         } finally {
             session.close();
         }
+        return false;
     }
 
     static ClientSessionFactory createClientSessionFactory(String host, int port) throws Exception {
