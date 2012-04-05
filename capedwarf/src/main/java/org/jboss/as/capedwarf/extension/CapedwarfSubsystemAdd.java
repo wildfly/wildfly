@@ -41,13 +41,10 @@ import org.jboss.as.capedwarf.deployment.CapedwarfWebCleanupProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWebComponentsDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWeldParseProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWeldProcessor;
-import org.jboss.as.capedwarf.services.MasterInfoService;
 import org.jboss.as.capedwarf.services.ServletExecutorConsumerService;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
-import org.jboss.as.clustering.singleton.SingletonService;
-import org.jboss.as.clustering.singleton.election.SimpleSingletonElectionPolicy;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -62,7 +59,6 @@ import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
-import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Phase;
@@ -80,7 +76,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.TempDir;
 import org.jboss.vfs.VFSUtils;
-import org.jgroups.Address;
 import org.jgroups.Channel;
 
 /**
@@ -174,19 +169,6 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
         newControllers.add(binderBuilder.install());
-
-        final MasterInfoService masterInfoService = new MasterInfoService();
-        final SingletonService<Address> singleton = new SingletonService<Address>(masterInfoService, MasterInfoService.NAME);
-        singleton.setElectionPolicy(new SimpleSingletonElectionPolicy());
-
-        final String masterJndiName = Constants.MASTER_JNDI;
-        final ContextNames.BindInfo masterBindInfo = Constants.MASTER_BIND_INFO;
-        final ServiceBuilder<Address> masterBinder = singleton.build(CurrentServiceContainer.getServiceContainer())
-                .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(masterJndiName))
-                .addDependency(serviceName, Channel.class, masterInfoService.getChannel())
-                .addDependency(masterBindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, masterInfoService.getNamingStoreInjector())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
-        newControllers.add(masterBinder.install());
     }
 
     protected static TempDir createTempDir(final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers) {

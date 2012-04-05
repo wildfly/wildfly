@@ -36,8 +36,6 @@ public final class Constants {
     public static final String[] CACHES = {"default", "data", "metadata", "memcache", "dist", "tasks"};
     // JNDI names
     public static final String CHANNEL_JNDI = JndiName.of("java:jboss").append(CAPEDWARF).append("indexing").append("channel").getAbsoluteName();
-    public static final String MASTER_JNDI = JndiName.of("java:jboss").append(CAPEDWARF).append("indexing").append("master").getAbsoluteName();
     // Bind info
     public static final ContextNames.BindInfo CHANNEL_BIND_INFO = ContextNames.bindInfoFor(CHANNEL_JNDI);
-    public static final ContextNames.BindInfo MASTER_BIND_INFO = ContextNames.bindInfoFor(MASTER_JNDI);
 }

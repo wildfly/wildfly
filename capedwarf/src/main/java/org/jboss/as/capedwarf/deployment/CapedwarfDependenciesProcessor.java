@@ -56,7 +56,6 @@ public class CapedwarfDependenciesProcessor extends CapedwarfDeploymentUnitProce
         serviceTarget.addDependency(ServletExecutorConsumerService.NAME); // we need queue -- as default gae queue is there by default
         // serviceTarget.addDependency(IndexingConsumerService.NAME); // we need indexing
         serviceTarget.addDependency(Constants.CHANNEL_BIND_INFO.getBinderServiceName()); // we need indexing
-        serviceTarget.addDependency(Constants.MASTER_BIND_INFO.getBinderServiceName()); // check for master
         serviceTarget.addDependency(LogServices.loggerHandlerName("ROOT", CAPEDWARF.toUpperCase())); // we need logger
     }
 
