@@ -23,15 +23,9 @@ package org.jboss.as.connector.subsystems.jca;
 
 import junit.framework.Assert;
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
-import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
-import org.junit.Ignore;
 import org.junit.Test;
-
 import java.util.Properties;
-
 import static org.jboss.as.connector.subsystems.jca.ParseUtils.checkModelParams;
 import static org.jboss.as.connector.subsystems.jca.ParseUtils.nonXaDsProperties;
 import static org.jboss.as.connector.subsystems.jca.ParseUtils.xaDsProperties;
@@ -41,7 +35,7 @@ import static org.jboss.as.connector.subsystems.jca.ParseUtils.xaDsProperties;
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 //@Ignore
-public class ComplexDatasourceSubsystemTestCase extends AbstractSubsystemTest {
+public class ComplexDatasourceSubsystemTestCase extends AbstractComplexSubsystemTestCase {
 
     public ComplexDatasourceSubsystemTestCase() {
         super(DataSourcesExtension.SUBSYSTEM_NAME, new DataSourcesExtension());
@@ -49,15 +43,8 @@ public class ComplexDatasourceSubsystemTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testDatasource() throws Exception{
-        // Only contain the subsystem xml, e.g.
-        //  <subsystem xmlns="urn:jboss:domain:datasources:1.0"> ... </subsystem>
-        String xml = readResource("datasource.xml");
-
-        KernelServices services = super.installInController(AdditionalInitialization.MANAGEMENT, xml);
-
-        ModelNode model = services.readWholeModel();
-
-        //Check model..
+        ModelNode model = getModel("datasource.xml",false,null);
+       //Check model..
         final String complexDs = "complexDs";
         final String complexDsJndi = "java:jboss/datasources/" + complexDs;
         Properties params=nonXaDsProperties(complexDsJndi);
@@ -82,17 +69,6 @@ public class ComplexDatasourceSubsystemTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(modelXaDs.asString(),"Property5",modelXaDs.get("recovery-plugin-properties","name").asString());
         Assert.assertEquals(modelXaDs.asString(),"Property6",modelXaDs.get("recovery-plugin-properties","name1").asString());
 
-        //Marshal the xml to see that it is the same as before
-        String marshalled = services.getPersistedSubsystemXml();
-       // Assert.assertEquals(normalizeXML(xml), normalizeXML(marshalled));
 
-        services = super.installInController(AdditionalInitialization.MANAGEMENT, marshalled);
-
-        //Check that the model looks the same
-        ModelNode modelReloaded = services.readWholeModel();
-        compare(model, modelReloaded);
-
-
-        assertRemoveSubsystemResources(services);
     }
 }
