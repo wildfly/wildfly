@@ -39,6 +39,7 @@ public enum Attribute {
     SCHEMA_LOCATION("schemaLocation"),
 
     // domain 1.0 attributes in alpha order
+    ALIAS("alias"),
     AUTO_START("auto-start"),
     ATTRIBUTE("attribute"),
     BASE_DN("base-dn"),
@@ -66,6 +67,8 @@ public enum Attribute {
     INITIAL_CONTEXT_FACTORY("initial-context-factory"),
     INTERFACE("interface"),
     JAVA_HOME("java-home"),
+    KEY_PASSWORD("key-password"),
+    KEYSTORE_PASSWORD("keystore-password"),
     MANAGEMENT_SUBSYSTEM_ENDPOINT("management-subsystem-endpoint"),
     MAX_SIZE("max-size"),
     MAX_THREADS("max-threads"),

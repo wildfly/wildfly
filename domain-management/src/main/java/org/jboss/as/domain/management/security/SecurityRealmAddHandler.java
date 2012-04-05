@@ -21,6 +21,30 @@
  */
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.ALIAS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KEY_PASSWORD;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PASSWORD;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PATH;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_RELATIVE_TO;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.PASSWORD;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
+
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,28 +66,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PASSWORD;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PATH;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_RELATIVE_TO;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.PASSWORD;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
 /**
  * Handler to add security realm definitions and register the service.
@@ -244,11 +246,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         ServiceName sslServiceName = realmServiceName.append(SSLIdentityService.SERVICE_SUFFIX);
 
         ServiceName keystoreServiceName = null;
-        char[] password = null;
+        KeyPair pair = null;
         if (ssl != null && ssl.hasDefined(KEYSTORE_PATH)) {
             keystoreServiceName = realmServiceName.append(FileKeystoreService.KEYSTORE_SUFFIX);
-            password = addFileKeystoreService(context, ssl, keystoreServiceName, serviceTarget,
-                    newControllers);
+            pair = addFileKeystoreService(context, ssl, keystoreServiceName, serviceTarget, newControllers);
         }
         ServiceName truststoreServiceName = null;
         if (trustStore != null) {
@@ -260,7 +261,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         if (ssl != null && ssl.hasDefined(PROTOCOL)) {
             protocol = ssl.get(PROTOCOL).asString();
         }
-        SSLIdentityService sslIdentityService = new SSLIdentityService(protocol, password);
+        SSLIdentityService sslIdentityService = new SSLIdentityService(protocol, pair == null ? null : pair.keystorePassword,
+                pair == null ? null : pair.keyPassword);
 
         ServiceBuilder<?> sslBuilder = serviceTarget.addService(sslServiceName, sslIdentityService);
 
@@ -279,11 +281,22 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         return sslServiceName;
     }
 
-    private char[] addFileKeystoreService(OperationContext context, ModelNode ssl, ServiceName serviceName,
-            ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        char[] password = unmaskPassword(context, ssl.require(KEYSTORE_PASSWORD));
+    private static class KeyPair {
+        private char[] keystorePassword;
+        private char[] keyPassword;
+    }
 
-        FileKeystoreService fileKeystoreService = new FileKeystoreService(ssl.require(KEYSTORE_PATH).asString(), password);
+    private KeyPair addFileKeystoreService(OperationContext context, ModelNode ssl, ServiceName serviceName,
+            ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        char[] keystorePassword = unmaskPassword(context, ssl.require(KEYSTORE_PASSWORD));
+        char[] keyPassword = null;
+        if (ssl.hasDefined(KEY_PASSWORD)) {
+            keyPassword = unmaskPassword(context, ssl.require(KEY_PASSWORD));
+        }
+
+        String path = ssl.require(KEYSTORE_PATH).asString();
+        String alias = ssl.hasDefined(ALIAS) ? ssl.require(ALIAS).asString() : null;
+        FileKeystoreService fileKeystoreService = new FileKeystoreService(path, keystorePassword, alias, keyPassword);
 
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(serviceName, fileKeystoreService);
         if (ssl.hasDefined(KEYSTORE_RELATIVE_TO)) {
@@ -296,7 +309,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             newControllers.add(serviceController);
         }
 
-        return password;
+        KeyPair pair = new KeyPair();
+        pair.keystorePassword = keystorePassword;
+        pair.keyPassword = keyPassword;
+        return pair;
     }
 
     private ServiceName addSecretService(OperationContext context, ModelNode secret, ServiceName realmServiceName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {

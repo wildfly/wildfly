@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 
 import org.jboss.msc.service.Service;
@@ -48,16 +49,22 @@ public class FileKeystoreService implements Service<KeyStore> {
     public static final String KEYSTORE_SUFFIX = "keystore";
     public static final String TRUSTSTORE_SUFFIX = "truststore";
 
-
     private KeyStore theKeyStore;
     private final String path;
-    private final char[] password;
+    private final char[] keystorePassword;
+    /*
+     * The next to values are only applicable when loading a keystore as a keystore.
+     */
+    private final String alias;
+    private final char[] keyPassword;
 
     private final InjectedValue<String> relativeTo = new InjectedValue<String>();
 
-    public FileKeystoreService(final String path, final char[] password) {
+    public FileKeystoreService(final String path, final char[] keystorePassword, final String alias, final char[] keyPassword) {
         this.path = path;
-        this.password = password;
+        this.keystorePassword = keystorePassword;
+        this.alias = alias;
+        this.keyPassword = keyPassword;
     }
 
     public void start(StartContext ctx) throws StartException {
@@ -66,11 +73,23 @@ public class FileKeystoreService implements Service<KeyStore> {
 
         FileInputStream fis = null;
         try {
-            KeyStore keystore = KeyStore.getInstance("JKS");
+            KeyStore loadedKeystore = KeyStore.getInstance("JKS");
             fis = new FileInputStream(file);
-            keystore.load(fis, password);
+            loadedKeystore.load(fis, keystorePassword);
 
-            this.theKeyStore = keystore;
+            if (alias == null) {
+                this.theKeyStore = loadedKeystore;
+            } else {
+                KeyStore newKeystore = KeyStore.getInstance("JKS");
+                newKeystore.load(null);
+
+                KeyStore.ProtectionParameter passParam = new KeyStore.PasswordProtection(keyPassword == null ? keystorePassword
+                        : keyPassword);
+                KeyStore.Entry entry = loadedKeystore.getEntry(alias, passParam);
+                newKeystore.setEntry(alias, entry, passParam);
+
+                this.theKeyStore = newKeystore;
+            }
         } catch (KeyStoreException e) {
             throw MESSAGES.unableToStart(e);
         } catch (NoSuchAlgorithmException e) {
@@ -78,6 +97,8 @@ public class FileKeystoreService implements Service<KeyStore> {
         } catch (CertificateException e) {
             throw MESSAGES.unableToStart(e);
         } catch (IOException e) {
+            throw MESSAGES.unableToStart(e);
+        } catch (UnrecoverableEntryException e) {
             throw MESSAGES.unableToStart(e);
         } finally {
             safeClose(fis);

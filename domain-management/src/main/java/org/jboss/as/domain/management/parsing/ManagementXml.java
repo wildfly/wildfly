@@ -23,7 +23,6 @@
 package org.jboss.as.domain.management.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
@@ -58,6 +57,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -389,7 +389,15 @@ public class ManagementXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case KEYSTORE: {
-                    parseKeystore(reader, ssl);
+                    switch (expectedNs) {
+                        case DOMAIN_1_0:
+                        case DOMAIN_1_1:
+                        case DOMAIN_1_2:
+                            parseKeystore_1_0(reader, ssl);
+                            break;
+                        default:
+                            parseKeystore_1_3(reader, ssl, true);
+                    }
                     break;
                 }
                 default: {
@@ -400,7 +408,7 @@ public class ManagementXml {
 
     }
 
-    private void parseKeystore(final XMLExtendedStreamReader reader, final ModelNode addOperation)
+    private void parseKeystore_1_0(final XMLExtendedStreamReader reader, final ModelNode addOperation)
             throws XMLStreamException {
 
         Set<Attribute> required = EnumSet.of(Attribute.PATH, Attribute.PASSWORD);
@@ -424,6 +432,71 @@ public class ManagementXml {
                         KeystoreAttributes.KEYSTORE_RELATIVE_TO.parseAndSetParameter(value, addOperation, reader);
                         break;
                     }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (required.size() > 0) {
+            throw missingRequired(reader, required);
+        }
+
+        requireNoContent(reader);
+    }
+
+    private void parseKeystore_1_3(final XMLExtendedStreamReader reader, final ModelNode addOperation, final boolean extended)
+            throws XMLStreamException {
+        Set<Attribute> required = EnumSet.of(Attribute.PATH, Attribute.KEYSTORE_PASSWORD);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                required.remove(attribute);
+                switch (attribute) {
+                    case PATH:
+                        KeystoreAttributes.KEYSTORE_PATH.parseAndSetParameter(value, addOperation, reader);
+                        break;
+                    case PASSWORD: {
+                        // TODO - Support for this attribute can later be removed, would suggest removing at the
+                        //        start of AS 7.2.x development.
+                        ROOT_LOGGER.passwordAttributeDeprecated();
+                        required.remove(Attribute.KEYSTORE_PASSWORD);
+                        KeystoreAttributes.KEYSTORE_PASSWORD.parseAndSetParameter(value, addOperation, reader);
+                        break;
+                    }
+                    case KEYSTORE_PASSWORD: {
+                        KeystoreAttributes.KEYSTORE_PASSWORD.parseAndSetParameter(value, addOperation, reader);
+                        break;
+                    }
+                    case RELATIVE_TO: {
+                        KeystoreAttributes.KEYSTORE_RELATIVE_TO.parseAndSetParameter(value, addOperation, reader);
+                        break;
+                    }
+                    /*
+                     * The 'extended' attributes when a true keystore and not just a keystore acting as a truststore.
+                     */
+                    case ALIAS: {
+                        if (extended) {
+                            KeystoreAttributes.ALIAS.parseAndSetParameter(value, addOperation, reader);
+                        } else {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                        break;
+                    }
+                    case KEY_PASSWORD: {
+                        if (extended) {
+                            KeystoreAttributes.KEY_PASSWORD.parseAndSetParameter(value, addOperation, reader);
+                        } else {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                        break;
+                    }
+
                     default: {
                         throw unexpectedAttribute(reader, i);
                     }
@@ -510,7 +583,7 @@ public class ManagementXml {
                     if (trustStoreFound) {
                         throw unexpectedElement(reader);
                     }
-                    parseTruststore(reader, realmAddress, list);
+                    parseTruststore(reader, expectedNs, realmAddress, list);
                     trustStoreFound = true;
                     break;
                 }
@@ -829,13 +902,21 @@ public class ManagementXml {
         }
     }
 
-    private void parseTruststore(final XMLExtendedStreamReader reader, final ModelNode realmAddress,
+    private void parseTruststore(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress,
                                  final List<ModelNode> list) throws XMLStreamException {
         final ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
         op.get(OP_ADDR).set(realmAddress).add(ModelDescriptionConstants.AUTHENTICATION, ModelDescriptionConstants.TRUSTSTORE);
 
-        parseKeystore(reader, op);
+        switch (expectedNs) {
+            case DOMAIN_1_0:
+            case DOMAIN_1_1:
+            case DOMAIN_1_2:
+                parseKeystore_1_0(reader, op);
+                break;
+            default:
+                parseKeystore_1_3(reader, op, true);
+        }
 
         list.add(op);
     }
@@ -964,6 +1045,8 @@ public class ManagementXml {
                 KeystoreAttributes.KEYSTORE_PATH.marshallAsAttribute(ssl, writer);
                 KeystoreAttributes.KEYSTORE_RELATIVE_TO.marshallAsAttribute(ssl, writer);
                 KeystoreAttributes.KEYSTORE_PASSWORD.marshallAsAttribute(ssl, writer);
+                KeystoreAttributes.ALIAS.marshallAsAttribute(ssl, writer);
+                KeystoreAttributes.KEY_PASSWORD.marshallAsAttribute(ssl, writer);
             }
             writer.writeEndElement();
         }

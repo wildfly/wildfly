@@ -49,7 +49,7 @@ public class SSLServerIdentityResourceDefinition extends SimpleResourceDefinitio
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {
-            PROTOCOL, KeystoreAttributes.KEYSTORE_PASSWORD, KeystoreAttributes.KEYSTORE_PATH, KeystoreAttributes.KEYSTORE_RELATIVE_TO
+            PROTOCOL, KeystoreAttributes.KEYSTORE_PASSWORD, KeystoreAttributes.KEYSTORE_PATH, KeystoreAttributes.KEYSTORE_RELATIVE_TO, KeystoreAttributes.ALIAS, KeystoreAttributes.KEY_PASSWORD
     };
 
     public SSLServerIdentityResourceDefinition() {

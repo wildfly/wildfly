@@ -52,15 +52,17 @@ public class SSLIdentityService implements Service<SSLIdentityService> {
     public static final String SERVICE_SUFFIX = "ssl";
 
     private final String protocol;
-    private final char[] password;
+    private final char[] keystorePassword;
+    private final char[] keyPassword;
     private final InjectedValue<KeyStore> keystore = new InjectedValue<KeyStore>();
     private final InjectedValue<KeyStore> truststore = new InjectedValue<KeyStore>();
 
     private volatile SSLContext sslContext;
 
-    public SSLIdentityService(String protocol, char[] password) {
+    public SSLIdentityService(String protocol, char[] keystorePassword, char[] keyPassword) {
         this.protocol = protocol;
-        this.password = password;
+        this.keystorePassword = keystorePassword;
+        this.keyPassword = keyPassword;
     }
 
     public void start(StartContext context) throws StartException {
@@ -69,7 +71,7 @@ public class SSLIdentityService implements Service<SSLIdentityService> {
             KeyStore theKeyStore = keystore.getOptionalValue();
             if (theKeyStore != null) {
                 KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-                keyManagerFactory.init(theKeyStore, password);
+                keyManagerFactory.init(theKeyStore, keyPassword == null ? keystorePassword : keyPassword);
                 keyManagers = keyManagerFactory.getKeyManagers();
             }
 
