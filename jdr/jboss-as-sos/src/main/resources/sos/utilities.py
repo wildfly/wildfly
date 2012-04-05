@@ -304,6 +304,10 @@ class ZipFileArchive(Archive):
         return self.name()
 
     def add_file(self, src, dest=None):
+        src = str(src)
+        if dest:
+            dest = str(dest)
+
         if os.path.isdir(src):
             # We may not need, this, but if we do I only want to do it
             # one time

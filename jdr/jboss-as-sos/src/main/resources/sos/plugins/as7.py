@@ -126,7 +126,6 @@ class AS7(Plugin, IndependentPlugin, AS7Mixin):
         This function will collect files from JBOSS_HOME for analysis.  The scope of files to
         be collected are determined by options to this SOS plug-in.
         """
-
         for dir_ in configDirAry:
             path = os.path.join(self.__jbossHome, dir_)
             ## First add forbidden files
@@ -155,6 +154,9 @@ class AS7(Plugin, IndependentPlugin, AS7Mixin):
                 deployments = self.__get_deployments(path)
                 for deployment in deployments:
                     self.__get_listing_from_deployment(deployment, deployment_info)
+
+        for xml in find("*.xml", os.path.join(self.__jbossHome, 'modules')):
+            self.addCopySpec(xml, sub=(self.__jbossHome, 'JBOSSHOME'))
 
     def __get_deployment_info(self, dir_):
         """Gets the deployment name to sha1 mapping for all deployments defined

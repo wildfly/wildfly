@@ -289,7 +289,8 @@ class Plugin(object):
                 time_passed = time() - start_time
                 self.proflog.debug("copied: %-75s time: %f" % (srcpath, time_passed))
         except Exception, e:
-            self.soslog.debug(traceback.format_exc())
+            self.soslog.error("Unable to copy %s to %s" % (srcpath, dest))
+            self.soslog.error(traceback.format_exc())
 
 
     def addForbiddenPath(self, forbiddenPath):
