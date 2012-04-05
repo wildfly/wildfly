@@ -41,6 +41,7 @@ import org.jboss.as.capedwarf.deployment.CapedwarfWebCleanupProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWebComponentsDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWeldParseProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWeldProcessor;
+import org.jboss.as.capedwarf.services.HackChannelService;
 import org.jboss.as.capedwarf.services.ServletExecutorConsumerService;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
@@ -155,7 +156,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String clusterId = "Hibernate Search Cluster";
         final ServiceName serviceName = ChannelService.getServiceName("indexing");
         final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
-        final ServiceBuilder<Channel> channelBuilder = serviceTarget.addService(serviceName, new ChannelService(clusterId, channelFactory))
+        final ServiceBuilder<Channel> channelBuilder = serviceTarget.addService(serviceName, new HackChannelService(clusterId, channelFactory))
                 .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
         newControllers.add(channelBuilder.install());
