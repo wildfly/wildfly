@@ -26,7 +26,10 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 
-import org.jboss.as.cli.ArgumentValueConverter;
+import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.parsing.StateParser;
+import org.jboss.as.cli.parsing.arguments.ArgumentValueCallbackHandler;
+import org.jboss.as.cli.parsing.arguments.ArgumentValueInitialState;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -36,43 +39,19 @@ import org.junit.Test;
  *
  * @author Alexey Loubyansky
  */
-public class ArgumentValueConverterTestCase {
+public class ArgumentValueParsingTestCase {
 
     @Test
-    public void testDefault_String() throws Exception {
-        final ModelNode value = ArgumentValueConverter.DEFAULT.fromString("text");
+    public void testSimpleString() throws Exception {
+        final ModelNode value = parse("text");
         assertNotNull(value);
         assertEquals(ModelType.STRING, value.getType());
         assertEquals("text", value.asString());
     }
 
     @Test
-    public void testDefault_List() throws Exception {
-        final ModelNode value = ArgumentValueConverter.DEFAULT.fromString("[\"item1\",\"item2\"]");
-        assertNotNull(value);
-        assertEquals(ModelType.LIST, value.getType());
-        final List<ModelNode> list = value.asList();
-        assertEquals(2, list.size());
-        assertEquals("item1", list.get(0).asString());
-        assertEquals("item2", list.get(1).asString());
-    }
-
-    @Test
-    public void testDefault_Object() throws Exception {
-        final ModelNode value = ArgumentValueConverter.DEFAULT.fromString("{\"item1\"=>\"value1\",\"item2\"=>\"value2\"}");
-        assertNotNull(value);
-        assertEquals(ModelType.OBJECT, value.getType());
-        final List<Property> list = value.asPropertyList();
-        assertEquals(2, list.size());
-        assertEquals("item1", list.get(0).getName());
-        assertEquals("value1", list.get(0).getValue().asString());
-        assertEquals("item2", list.get(1).getName());
-        assertEquals("value2", list.get(1).getValue().asString());
-    }
-
-    @Test
-    public void testList_NoBrackets() throws Exception {
-        final ModelNode value = ArgumentValueConverter.LIST.fromString("a,b,c");
+    public void testListInBrackets() throws Exception {
+        final ModelNode value = parse("[a,b,c]");
         assertNotNull(value);
         assertEquals(ModelType.LIST, value.getType());
         final List<ModelNode> list = value.asList();
@@ -86,19 +65,28 @@ public class ArgumentValueConverterTestCase {
     }
 
     @Test
-    public void testList_NoBracketsOneItem() throws Exception {
-        final ModelNode value = ArgumentValueConverter.LIST.fromString("a");
+    public void testNestedList() throws Exception {
+        final ModelNode value = parse("[a,b,[c,d]]");
         assertNotNull(value);
         assertEquals(ModelType.LIST, value.getType());
-        final List<ModelNode> list = value.asList();
-        assertEquals(1, list.size());
+        List<ModelNode> list = value.asList();
+        assertEquals(3, list.size());
         assertNotNull(list.get(0));
         assertEquals("a", list.get(0).asString());
+        assertNotNull(list.get(1));
+        assertEquals("b", list.get(1).asString());
+        final ModelNode c = list.get(2);
+        assertNotNull(c);
+        assertEquals(ModelType.LIST, c.getType());
+        list = c.asList();
+        assertEquals(2, list.size());
+        assertEquals("c", c.get(0).asString());
+        assertEquals("d", c.get(1).asString());
     }
 
     @Test
-    public void testList_WithBrackets() throws Exception {
-        final ModelNode value = ArgumentValueConverter.LIST.fromString("[a,b,c]");
+    public void testListNoBrackets() throws Exception {
+        final ModelNode value = parse("a,b,c");
         assertNotNull(value);
         assertEquals(ModelType.LIST, value.getType());
         final List<ModelNode> list = value.asList();
@@ -112,23 +100,8 @@ public class ArgumentValueConverterTestCase {
     }
 
     @Test
-    public void testList_DMR() throws Exception {
-        final ModelNode value = ArgumentValueConverter.LIST.fromString("[\"a\",\"b\",\"c\"]");
-        assertNotNull(value);
-        assertEquals(ModelType.LIST, value.getType());
-        final List<ModelNode> list = value.asList();
-        assertEquals(3, list.size());
-        assertNotNull(list.get(0));
-        assertEquals("a", list.get(0).asString());
-        assertNotNull(list.get(1));
-        assertEquals("b", list.get(1).asString());
-        assertNotNull(list.get(2));
-        assertEquals("c", list.get(2).asString());
-    }
-
-    @Test
-    public void testPropertyList_DMR() throws Exception {
-        final ModelNode value = ArgumentValueConverter.PROPERTIES.fromString("[(\"a\"=>\"b\"),(\"c\"=>\"d\")]");
+    public void testPropertyListInBrackets() throws Exception {
+        final ModelNode value = parse("[a=b,c=d]");
         assertNotNull(value);
         assertEquals(ModelType.LIST, value.getType());
         final List<Property> list = value.asPropertyList();
@@ -144,42 +117,8 @@ public class ArgumentValueConverterTestCase {
     }
 
     @Test
-    public void testPropertyList_SimpleCommaSeparated() throws Exception {
-        final ModelNode value = ArgumentValueConverter.PROPERTIES.fromString("a=b,c=d");
-        assertNotNull(value);
-        assertEquals(ModelType.LIST, value.getType());
-        final List<Property> list = value.asPropertyList();
-        assertEquals(2, list.size());
-        Property prop = list.get(0);
-        assertNotNull(prop);
-        assertEquals("a", prop.getName());
-        assertEquals("b", prop.getValue().asString());
-        prop = list.get(1);
-        assertNotNull(prop);
-        assertEquals("c", prop.getName());
-        assertEquals("d", prop.getValue().asString());
-    }
-
-    @Test
-    public void testPropertyList_SimpleCommaSeparatedInBrackets() throws Exception {
-        final ModelNode value = ArgumentValueConverter.PROPERTIES.fromString("[a=b,c=d]");
-        assertNotNull(value);
-        assertEquals(ModelType.LIST, value.getType());
-        final List<Property> list = value.asPropertyList();
-        assertEquals(2, list.size());
-        Property prop = list.get(0);
-        assertNotNull(prop);
-        assertEquals("a", prop.getName());
-        assertEquals("b", prop.getValue().asString());
-        prop = list.get(1);
-        assertNotNull(prop);
-        assertEquals("c", prop.getName());
-        assertEquals("d", prop.getValue().asString());
-    }
-
-    @Test
-    public void testObject_DMR() throws Exception {
-        final ModelNode value = ArgumentValueConverter.OBJECT.fromString("{\"a\"=>\"b\",\"c\"=>\"d\"}");
+    public void testObject() throws Exception {
+        final ModelNode value = parse("a=b,c=d");
         assertNotNull(value);
         assertEquals(ModelType.OBJECT, value.getType());
         final List<Property> list = value.asPropertyList();
@@ -195,8 +134,8 @@ public class ArgumentValueConverterTestCase {
     }
 
     @Test
-    public void testObject_SimpleCommaSeparated() throws Exception {
-        final ModelNode value = ArgumentValueConverter.OBJECT.fromString("a=b,c=d");
+    public void testObjectInBraces() throws Exception {
+        final ModelNode value = parse("{a=b,c=d}");
         assertNotNull(value);
         assertEquals(ModelType.OBJECT, value.getType());
         final List<Property> list = value.asPropertyList();
@@ -212,8 +151,8 @@ public class ArgumentValueConverterTestCase {
     }
 
     @Test
-    public void testObject_SimpleCommaSeparatedInCurlyBraces() throws Exception {
-        final ModelNode value = ArgumentValueConverter.OBJECT.fromString("{a=b,c=d}");
+    public void testObjectWithList() throws Exception {
+        final ModelNode value = parse("a=b,c=[d,e]");
         assertNotNull(value);
         assertEquals(ModelType.OBJECT, value.getType());
         final List<Property> list = value.asPropertyList();
@@ -225,14 +164,91 @@ public class ArgumentValueConverterTestCase {
         prop = list.get(1);
         assertNotNull(prop);
         assertEquals("c", prop.getName());
-        assertEquals("d", prop.getValue().asString());
+        final ModelNode de = prop.getValue();
+        assertEquals(ModelType.LIST, de.getType());
+        final List<ModelNode> deList = de.asList();
+        assertEquals(2, deList.size());
+        assertEquals("d", deList.get(0).asString());
+        assertEquals("e", deList.get(1).asString());
     }
 
     @Test
-    public void testObject_TextValue() throws Exception {
-        final ModelNode value = ArgumentValueConverter.OBJECT.fromString("\"text\"");
+    public void testObjectWithChildObject() throws Exception {
+        final ModelNode value = parse("a=b,c={d=e}");
         assertNotNull(value);
-        assertEquals(ModelType.STRING, value.getType());
-        assertEquals("text", value.asString());
+        assertEquals(ModelType.OBJECT, value.getType());
+        final List<Property> list = value.asPropertyList();
+        assertEquals(2, list.size());
+        Property prop = list.get(0);
+        assertNotNull(prop);
+        assertEquals("a", prop.getName());
+        assertEquals("b", prop.getValue().asString());
+        prop = list.get(1);
+        assertNotNull(prop);
+        assertEquals("c", prop.getName());
+        final ModelNode de = prop.getValue();
+        assertEquals(ModelType.OBJECT, de.getType());
+        assertEquals(1, de.keys().size());
+        assertEquals("e", de.get("d").asString());
+    }
+
+    @Test
+    public void testObjectWithPropertyList() throws Exception {
+        final ModelNode value = parse("a=b,c=[d=e,f=g]");
+        assertNotNull(value);
+        assertEquals(ModelType.OBJECT, value.getType());
+        final List<Property> list = value.asPropertyList();
+        assertEquals(2, list.size());
+        Property prop = list.get(0);
+        assertNotNull(prop);
+        assertEquals("a", prop.getName());
+        assertEquals("b", prop.getValue().asString());
+        prop = list.get(1);
+        assertNotNull(prop);
+        assertEquals("c", prop.getName());
+        final ModelNode c = prop.getValue();
+        assertEquals(ModelType.LIST, c.getType());
+        final List<Property> propList = c.asPropertyList();
+        assertEquals(2, propList.size());
+        prop = propList.get(0);
+        assertEquals("d", prop.getName());
+        assertEquals("e", prop.getValue().asString());
+        prop = propList.get(1);
+        assertEquals("f", prop.getName());
+        assertEquals("g", prop.getValue().asString());
+    }
+
+    @Test
+    public void testMix() throws Exception {
+        final ModelNode value = parse("a=b,c=[d=e,f={g=h}]");
+        assertNotNull(value);
+        assertEquals(ModelType.OBJECT, value.getType());
+        final List<Property> list = value.asPropertyList();
+        assertEquals(2, list.size());
+        Property prop = list.get(0);
+        assertNotNull(prop);
+        assertEquals("a", prop.getName());
+        assertEquals("b", prop.getValue().asString());
+        prop = list.get(1);
+        assertNotNull(prop);
+        assertEquals("c", prop.getName());
+        final ModelNode c = prop.getValue();
+        assertEquals(ModelType.LIST, c.getType());
+        final List<Property> propList = c.asPropertyList();
+        assertEquals(2, propList.size());
+        prop = propList.get(0);
+        assertEquals("d", prop.getName());
+        assertEquals("e", prop.getValue().asString());
+        prop = propList.get(1);
+        assertEquals("f", prop.getName());
+        final ModelNode gh = prop.getValue();
+        assertEquals(1, gh.keys().size());
+        assertEquals("h", gh.get("g").asString());
+    }
+
+    protected ModelNode parse(String str) throws CommandFormatException {
+        final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
+        StateParser.parse(str, handler, ArgumentValueInitialState.INSTANCE);
+        return handler.getResult();
     }
 }

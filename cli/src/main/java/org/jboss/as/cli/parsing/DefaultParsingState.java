@@ -83,6 +83,10 @@ public class DefaultParsingState extends BaseParsingState {
         enterStateHandlers.putHandler(ch, new EnterStateCharacterHandler(state));
     }
 
+    public void leaveState(char ch) {
+        enterStateHandlers.putHandler(ch, GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+    }
+
     public void setHandleEntrance(boolean handleEntrance) {
         if (handleEntrance) {
             setEnterHandler(new CharacterHandler() {
