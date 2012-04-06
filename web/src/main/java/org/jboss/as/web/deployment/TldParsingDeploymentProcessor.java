@@ -88,11 +88,14 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         if (webInf.exists() && webInf.isDirectory()) {
             for (VirtualFile file : webInf.getChildren()) {
                 if (file.isFile() && file.getName().toLowerCase().endsWith(TLD)) {
+                    String pathNameRelativeToRoot;
                     try {
-                        tlds.put("/" + file.getPathNameRelativeTo(deploymentRoot), parseTLD(file));
+                        pathNameRelativeToRoot = file.getPathNameRelativeTo(deploymentRoot);
                     } catch (IllegalArgumentException e) {
-                        throw new IllegalArgumentException("TLD file " + file.getPathName() + " not contained in root " + deploymentRoot.getPathName(), e);
+                        throw new DeploymentUnitProcessingException(MESSAGES.tldFileNotContainedInRoot(file.getPathName(),
+                                deploymentRoot.getPathName()), e);
                     }
+                    tlds.put("/" + pathNameRelativeToRoot, parseTLD(file));
                 } else if (file.isDirectory() && !CLASSES.equals(file.getName()) && !LIB.equals(file.getName())) {
                     processTlds(deploymentRoot, file.getChildren(), tlds);
                 }
@@ -108,11 +111,14 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
     throws DeploymentUnitProcessingException {
         for (VirtualFile file : files) {
             if (file.isFile() && file.getName().toLowerCase().endsWith(TLD)) {
+                String pathNameRelativeToRoot;
                 try {
-                    tlds.put("/" + file.getPathNameRelativeTo(root), parseTLD(file));
+                    pathNameRelativeToRoot = file.getPathNameRelativeTo(root);
                 } catch (IllegalArgumentException e) {
-                    throw new IllegalArgumentException("TLD file " + file.getPathName() + " not contained in root " + root.getPathName(), e);
+                    throw new DeploymentUnitProcessingException(MESSAGES.tldFileNotContainedInRoot(file.getPathName(),
+                            root.getPathName()), e);
                 }
+                tlds.put("/" + pathNameRelativeToRoot, parseTLD(file));
             } else if (file.isDirectory()) {
                 processTlds(root, file.getChildren(), tlds);
             }
@@ -133,7 +139,8 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
             return TldMetaDataParser.parse(xmlReader);
         } catch (XMLStreamException e) {
-            throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(tld, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()));
+            throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(tld, e.getLocation().getLineNumber(),
+                    e.getLocation().getColumnNumber()));
         } catch (IOException e) {
             throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(tld), e);
         } finally {

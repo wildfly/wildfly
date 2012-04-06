@@ -331,4 +331,7 @@ public interface WebMessages {
     @Message(id = 18096, value = "Error instantiating container component: %s")
     String failToCreateContainerComponentInstance(String className);
 
+    @Message(id = 18097, value = "TLD file %s not contained in root %s")
+    String tldFileNotContainedInRoot(String tldPath, String rootPath);
+
 }
