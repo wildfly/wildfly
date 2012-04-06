@@ -374,7 +374,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         }
     }
 
-    private void writeRemote(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+    protected void writeRemote(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
         writer.writeAttribute(EJB3SubsystemXMLAttribute.CONNECTOR_REF.getLocalName(), model.require(EJB3SubsystemModel.CONNECTOR_REF).asString());
         writer.writeAttribute(EJB3SubsystemXMLAttribute.THREAD_POOL_NAME.getLocalName(), model.require(EJB3SubsystemModel.THREAD_POOL_NAME).asString());
     }
@@ -569,7 +569,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
     }
 
 
-    private void parseRemote(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    protected void parseRemote(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         String connectorName = null;
         String threadPoolName = null;

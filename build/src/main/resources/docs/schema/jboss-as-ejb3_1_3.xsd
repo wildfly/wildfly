@@ -76,6 +76,9 @@
     </xs:complexType>
 
     <xs:complexType name="remoteType">
+        <xs:all>
+            <xs:element name="channel-creation-options" type="channel-creation-optionsType" minOccurs="0" maxOccurs="1"/>
+        </xs:all>
         <xs:attribute name="connector-ref" type="xs:string" use="required"/>
         <xs:attribute name="thread-pool-name" type="xs:token" use="required"/>
     </xs:complexType>
@@ -287,6 +290,17 @@
 
     <xs:complexType name="statisticsType">
         <xs:attribute name="enabled" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="channel-creation-optionsType">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="option" type="optionType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="optionType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="value" type="xs:string"/>
     </xs:complexType>
 
 </xs:schema>

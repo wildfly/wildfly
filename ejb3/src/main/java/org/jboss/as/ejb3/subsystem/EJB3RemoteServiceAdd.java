@@ -25,7 +25,10 @@ import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSourceService;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
@@ -38,11 +41,14 @@ import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
+import org.xnio.Option;
+import org.xnio.OptionMap;
 
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
@@ -52,9 +58,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CONNECTOR_REF;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
+
 
 /**
  * A {@link AbstractBoottimeAddStepHandler} to handle the add operation for the EJB
@@ -119,10 +131,10 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         // add it to the services to be returned
         services.add(clientMappingEntryProviderServiceController);
 
-
+        final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
         // Install the EJB remoting connector service which will listen for client connections on the remoting channel
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
-        final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService((byte) 0x01, new String[]{"river"}, remotingServerServiceName);
+        final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService((byte) 0x01, new String[]{"river"}, remotingServerServiceName, channelCreationOptions);
         final ServiceBuilder<EJBRemoteConnectorService> ejbRemoteConnectorServiceBuilder = serviceTarget.addService(EJBRemoteConnectorService.SERVICE_NAME, ejbRemoteConnectorService);
         // add dependency on the Remoting subsystem endpoint
         ejbRemoteConnectorServiceBuilder.addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector());
@@ -153,4 +165,24 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         model.get(THREAD_POOL_NAME).set(operation.require(THREAD_POOL_NAME).asString());
     }
 
+    private OptionMap getChannelCreationOptions(final OperationContext context) {
+        // read the full model of the current resource
+        final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        final ModelNode channelCreationOptions = fullModel.get(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS);
+        if (channelCreationOptions.isDefined() && channelCreationOptions.asInt() > 0) {
+            final ClassLoader loader = this.getClass().getClassLoader();
+            final OptionMap.Builder builder = OptionMap.builder();
+            for (Property property : channelCreationOptions.asPropertyList()) {
+                String name = property.getName();
+                if (!name.contains(".")) {
+                    name = "org.xnio.Options." + name;
+                }
+                final Option option = Option.fromString(name, loader);
+                builder.set(option, option.parseValue(property.getValue().get(ModelDescriptionConstants.VALUE).asString(), loader));
+            }
+            return builder.getMap();
+        } else {
+            return OptionMap.EMPTY;
+        }
+    }
 }

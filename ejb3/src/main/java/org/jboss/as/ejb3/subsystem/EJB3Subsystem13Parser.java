@@ -22,22 +22,37 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.EnumSet;
-import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.remoting.Attribute;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.readProperty;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_DISTINCT_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ENABLE_STATISTICS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
+
 
 /**
  */
@@ -138,5 +153,89 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
         if (!missingRequiredAttributes.isEmpty()) {
             throw missingRequired(reader, missingRequiredAttributes);
         }
+    }
+
+    @Override
+    protected void parseRemote(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        String connectorName = null;
+        String threadPoolName = null;
+        final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.CONNECTOR_REF, EJB3SubsystemXMLAttribute.THREAD_POOL_NAME);
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case CONNECTOR_REF:
+                    connectorName = value;
+                    break;
+                case THREAD_POOL_NAME:
+                    threadPoolName = value;
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        operations.add(EJB3RemoteServiceAdd.create(connectorName, threadPoolName));
+
+        // set the address for this operation
+        final ModelNode ejb3RemoteServiceAddress = new ModelNode();
+        ejb3RemoteServiceAddress.add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
+        ejb3RemoteServiceAddress.add(SERVICE, REMOTE);
+
+        final Set<EJB3SubsystemXMLElement> parsedElements = new HashSet<EJB3SubsystemXMLElement>();
+        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
+                case CHANNEL_CREATION_OPTIONS: {
+                    if (parsedElements.contains(EJB3SubsystemXMLElement.CHANNEL_CREATION_OPTIONS)) {
+                        throw unexpectedElement(reader);
+                    }
+                    parsedElements.add(EJB3SubsystemXMLElement.CHANNEL_CREATION_OPTIONS);
+                    this.parseChannelCreationOptions(reader, ejb3RemoteServiceAddress, operations);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+
+    }
+
+    private void parseChannelCreationOptions(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+        while (reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            reader.require(XMLStreamConstants.START_ELEMENT, this.getExpectedNamespace().getUriString(), EJB3SubsystemXMLElement.OPTION.getLocalName());
+            final Property property = readProperty(reader);
+            ModelNode propertyOp = new ModelNode();
+            propertyOp.get(OP).set(ADD);
+            propertyOp.get(OP_ADDR).set(address).add(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS, property.getName());
+            propertyOp.get(VALUE).set(property.getValue());
+            list.add(propertyOp);
+        }
+    }
+
+    @Override
+    protected void writeRemote(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
+        super.writeRemote(writer, model);
+
+        // write out any channel creation options
+        if (model.hasDefined(CHANNEL_CREATION_OPTIONS)) {
+            writeChannelCreationOptions(writer, model.get(CHANNEL_CREATION_OPTIONS));
+        }
+    }
+
+    private void writeChannelCreationOptions(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        writer.writeStartElement(EJB3SubsystemXMLElement.CHANNEL_CREATION_OPTIONS.getLocalName());
+        for (Property prop : node.asPropertyList()) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.OPTION.getLocalName());
+            writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
+            ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE.marshallAsAttribute(prop.getValue(), writer);
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
     }
 }

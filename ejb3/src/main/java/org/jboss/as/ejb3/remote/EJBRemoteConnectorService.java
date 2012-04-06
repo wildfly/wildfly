@@ -90,11 +90,18 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private volatile InjectedSocketBindingStreamServerService remotingServer;
     private final byte serverProtocolVersion;
     private final String[] supportedMarshallingStrategies;
+    private final OptionMap channelCreationOptions;
 
     public EJBRemoteConnectorService(final byte serverProtocolVersion, final String[] supportedMarshallingStrategies, final ServiceName remotingConnectorServiceName) {
+        this(serverProtocolVersion, supportedMarshallingStrategies, remotingConnectorServiceName, OptionMap.EMPTY);
+    }
+
+    public EJBRemoteConnectorService(final byte serverProtocolVersion, final String[] supportedMarshallingStrategies, final ServiceName remotingConnectorServiceName,
+                                     final OptionMap channelCreationOptions) {
         this.serverProtocolVersion = serverProtocolVersion;
         this.supportedMarshallingStrategies = supportedMarshallingStrategies;
         this.remotingConnectorServiceName = remotingConnectorServiceName;
+        this.channelCreationOptions = channelCreationOptions;
     }
 
     @Override
@@ -111,7 +118,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         // Register a EJB channel open listener
         final OpenListener channelOpenListener = new ChannelOpenListener(serviceContainer);
         try {
-            registration = endpointValue.getValue().registerService(EJB_CHANNEL_NAME, channelOpenListener, OptionMap.EMPTY);
+            registration = endpointValue.getValue().registerService(EJB_CHANNEL_NAME, channelOpenListener, this.channelCreationOptions);
         } catch (ServiceRegistrationException e) {
             throw new StartException(e);
         }
