@@ -2,7 +2,7 @@ package org.jboss.as.capedwarf.services;
 
 import java.lang.reflect.Field;
 
-import org.hibernate.search.backend.impl.jgroups.MapMultiJGroupsMasterMessageListener;
+import org.hibernate.search.backend.impl.jgroups.ClassloadingMultiJGroupsMasterMessageListener;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.JGroupsMessages;
 import org.jboss.as.clustering.msc.AsynchronousService;
@@ -33,7 +33,7 @@ public class HackChannelService extends AsynchronousService<Channel> {
         ChannelFactory factory = this.factory.getValue();
         this.channel = factory.createChannel(this.id);
         // set multi receiver
-        channel.setReceiver(new MapMultiJGroupsMasterMessageListener());
+        channel.setReceiver(new ClassloadingMultiJGroupsMasterMessageListener());
         // connect
         if (this.channel.getProtocolStack().findProtocol(STATE_TRANSFER.class, STATE.class, STATE_SOCK.class) != null) {
             this.channel.connect(this.id, null, STATE_TRANSFER_TIMEOUT);
