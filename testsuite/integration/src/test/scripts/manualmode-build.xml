@@ -42,8 +42,7 @@
         <ts.config-as.ip-with-multicast name="jbossas-with-remote-outbound-connection"
             node="${node1}"
             mcast="${mcast}"
-            mcast.jgroupsDiag="${mcast.jgroupsDiag}"
-            mcast.modcluster="${mcast.modcluster}"/>
+        />
         <ts.config-as.add-port-offset name="jbossas-with-remote-outbound-connection" offset="100" nativePort="9999" httpPort="9990"/>
     </target>
 
