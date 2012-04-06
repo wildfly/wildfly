@@ -92,6 +92,9 @@ public interface EJB3SubsystemModel {
     String CLIENT_MAPPINGS_CACHE = "client-mappings-cache";
     String PASSIVATE_EVENTS_ON_REPLICATE = "passivate-events-on-replicate";
 
+    String CHANNEL_CREATION_OPTIONS = "channel-creation-options";
+    String VALUE = "value";
+
     PathElement REMOTE_SERVICE_PATH = PathElement.pathElement(SERVICE, REMOTE);
     PathElement ASYNC_SERVICE_PATH = PathElement.pathElement(SERVICE, ASYNC);
     PathElement TIMER_SERVICE_PATH = PathElement.pathElement(SERVICE, TIMER_SERVICE);
