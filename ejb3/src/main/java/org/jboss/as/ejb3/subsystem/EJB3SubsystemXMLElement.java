@@ -53,8 +53,10 @@ public enum EJB3SubsystemXMLElement {
 
     CACHE("cache"),
     CACHES("caches"),
+    CHANNEL_CREATION_OPTIONS("channel-creation-options"),
 
     OPTIMISTIC_LOCKING("optimistic-locking"),
+    OPTION("option"),
 
     PASSIVATION_STORES("passivation-stores"),
     CLUSTER_PASSIVATION_STORE("cluster-passivation-store"),
