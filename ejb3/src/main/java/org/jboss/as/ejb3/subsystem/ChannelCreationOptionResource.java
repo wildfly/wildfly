@@ -30,7 +30,9 @@ import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.RestartParentWriteAttributeHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.dmr.ModelNode;
@@ -51,7 +53,8 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
     /**
      * Attribute definition of the channel creation option "value"
      */
-    static final SimpleAttributeDefinition CHANNEL_CREATION_OPTION_VALUE = new SimpleAttributeDefinition(EJB3SubsystemModel.VALUE, ModelType.STRING, true);
+    static final SimpleAttributeDefinition CHANNEL_CREATION_OPTION_VALUE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.VALUE, ModelType.STRING, true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     ChannelCreationOptionResource() {
         super(PathElement.pathElement(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS),
