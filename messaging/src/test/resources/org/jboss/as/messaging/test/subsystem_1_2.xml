@@ -20,6 +20,11 @@
             <journal-directory path="test" relative-to="test" />
             <large-messages-directory path="test" relative-to="test" />
             <connectors>
+               <connector name="myconnector">
+                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+                  <param key="host" value="192.168.1.2"/>
+                  <param key="port" value="5445"/>
+               </connector>
                <netty-connector name="netty" socket-binding="messaging" />
                <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
                   <param key="batch-delay" value="50"/>
