@@ -137,6 +137,9 @@ class TransportConfigOperationHandlers {
         if(node.hasDefined(CommonAttributes.SERVER_ID.getName())) {
             operation.get(CommonAttributes.SERVER_ID.getName()).set(node.get(CommonAttributes.SERVER_ID.getName()));
         }
+        if(node.hasDefined(CommonAttributes.FACTORY_CLASS.getName())) {
+            operation.get(CommonAttributes.FACTORY_CLASS.getName()).set(node.get(CommonAttributes.FACTORY_CLASS.getName()));
+        }
         if(node.hasDefined(CommonAttributes.PARAM)) {
             for(final Property param : node.get(CommonAttributes.PARAM).asPropertyList()) {
                 operation.get(CommonAttributes.PARAM, param.getName()).set(param.getValue().get(ModelDescriptionConstants.VALUE));
