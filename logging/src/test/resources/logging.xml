@@ -99,6 +99,14 @@
         <level name="WARN"/>
     </logger>
 
+    <logger category="spaced logger">
+        <level name="INFO"/>
+    </logger>
+
+    <logger category="asterisk*logger">
+        <level name="INFO"/>
+    </logger>
+
     <root-logger>
         <level name="INFO"/>
         <handlers>
