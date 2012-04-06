@@ -29,9 +29,17 @@ public class HackChannelService extends AsynchronousService<Channel> {
         this.id = id;
     }
 
+    private void hackHandler() throws Exception {
+        final Field up_handler = Channel.class.getDeclaredField("up_handler");
+        up_handler.setAccessible(true);
+        up_handler.set(channel, null);
+    }
+
     protected void start() throws Exception {
         ChannelFactory factory = this.factory.getValue();
         this.channel = factory.createChannel(this.id);
+        // hack mux handler
+        hackHandler();
         // set multi receiver
         channel.setReceiver(new ClassloadingMultiJGroupsMasterMessageListener());
         // connect
@@ -59,14 +67,7 @@ public class HackChannelService extends AsynchronousService<Channel> {
     }
 
     public Channel getValue() {
-        try {
-            final Field up_handler = Channel.class.getDeclaredField("up_handler");
-            up_handler.setAccessible(true);
-            up_handler.set(channel, null);
-            return channel;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return channel;
     }
 
     public InjectedValue<ChannelFactory> getFactory() {
