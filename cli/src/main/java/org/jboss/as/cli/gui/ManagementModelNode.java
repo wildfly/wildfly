@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
@@ -65,7 +66,9 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
 
         try {
             String addressPath = addressPath();
-            ModelNode response = executor.doCommand(addressPath + ":read-resource");
+            ModelNode resourceDesc = executor.doCommand(addressPath + ":read-resource-description");
+            resourceDesc = resourceDesc.get("result");
+            ModelNode response = executor.doCommand(addressPath + ":read-resource(include-runtime=true,include-defaults=true)");
             ModelNode result = response.get("result");
             if (!result.isDefined()) return;
 
@@ -78,12 +81,12 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
                     }
                     if (prop.getValue().isDefined()) {
                         for (ModelNode innerNode : prop.getValue().asList()) {
-                            UserObject usrObj = new UserObject(innerNode, prop.getName(), innerNode.asProperty().getName(), false);
+                            UserObject usrObj = new UserObject(innerNode, prop.getName(), innerNode.asProperty().getName());
                             add(new ManagementModelNode(cliGuiCtx, usrObj));
                         }
                     }
                 } else { // attribute node
-                    UserObject usrObj = new UserObject(node, prop.getName(), prop.getValue().asString(), true);
+                    UserObject usrObj = new UserObject(node, resourceDesc, prop.getName(), prop.getValue().asString());
                     add(new ManagementModelNode(cliGuiCtx, usrObj));
                 }
             }
@@ -163,6 +166,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
         private boolean isLeaf;
         private boolean isGeneric = false;
         private String separator;
+        private AttributeDescription attribDesc = null;
 
         /**
          * Constructor for the root node.
@@ -174,6 +178,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
             this.isLeaf = false;
             this.separator = "";
         }
+
         /**
          * Constructor for generic folder where resource=*.
          *
@@ -188,20 +193,36 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
             this.separator = "=";
         }
 
-        public UserObject(ModelNode backingNode, String name, String value, boolean isLeaf) {
+        // resource node such as subsystem=weld
+        public UserObject(ModelNode backingNode, String name, String value) {
             this.backingNode = backingNode;
             this.name = name;
             this.value = value;
-            this.isLeaf = isLeaf;
-            if (isLeaf) {
-                this.separator = " => ";
+            this.isLeaf = false;
+            this.separator = "=";
+        }
+
+        // attribute
+        public UserObject(ModelNode backingNode, ModelNode resourceDesc, String name, String value) {
+            this.attribDesc = new AttributeDescription(resourceDesc.get("attributes", name));
+            this.backingNode = backingNode;
+            this.name = name;
+            this.value = value;
+            this.isLeaf = true;
+
+            if (this.attribDesc.isGraphable()) {
+                this.separator = " \u2245 ";
             } else {
-                this.separator = "=";
+                this.separator = " => ";
             }
         }
 
         public ModelNode getBackingNode() {
             return this.backingNode;
+        }
+
+        public AttributeDescription getAttributeDescription() {
+            return this.attribDesc;
         }
 
         public String getName() {
@@ -227,6 +248,39 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
         @Override
         public String toString() {
             return this.name + this.separator + this.value;
+        }
+    }
+
+    class AttributeDescription {
+
+        private ModelNode attributes;
+
+        AttributeDescription(ModelNode attributes) {
+            this.attributes = attributes;
+        }
+
+        /**
+         * Is this a runtime attribute?
+         */
+        public boolean isRuntime() {
+            return attributes.get("storage").asString().equals("runtime");
+        }
+
+        public ModelType getType() {
+            return attributes.get("type").asType();
+        }
+
+        public boolean isGraphable() {
+            return isRuntime() && isNumeric();
+        }
+
+        public boolean isNumeric() {
+            ModelType type = getType();
+            return (type == ModelType.BIG_DECIMAL) ||
+                   (type == ModelType.BIG_INTEGER) ||
+                   (type == ModelType.DOUBLE) ||
+                   (type == ModelType.INT) ||
+                   (type == ModelType.LONG);
         }
     }
 

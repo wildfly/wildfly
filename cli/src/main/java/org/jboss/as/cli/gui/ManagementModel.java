@@ -31,6 +31,8 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.jboss.as.cli.gui.ManagementModelNode.AttributeDescription;
+import org.jboss.as.cli.gui.ManagementModelNode.UserObject;
 
 /**
  * This class contains a JTree view of the management model that allows you to build commands by
@@ -93,16 +95,18 @@ public class ManagementModel extends JPanel {
     }
 
     /**
-     * Listener that triggers the popup menu containing operations.
+     * Listener that triggers the operationMenu menu containing operations.
      */
     private class ManagementTreeMouseListener extends MouseAdapter {
 
         private JTree tree;
-        private OperationMenu popup;
+        private OperationMenu operationMenu;
+        private GraphingMenu graphingMenu;
 
         public ManagementTreeMouseListener(JTree tree) {
             this.tree = tree;
-            this.popup = new OperationMenu(cliGuiCtx, tree);
+            this.operationMenu = new OperationMenu(cliGuiCtx, tree);
+            this.graphingMenu = new GraphingMenu(cliGuiCtx, tree);
         }
 
         @Override
@@ -126,7 +130,13 @@ public class ManagementModel extends JPanel {
 
             ManagementModelNode node = (ManagementModelNode)selPath.getLastPathComponent();
 
-            popup.show(node, e.getX(), e.getY());
+            UserObject usrObj = (UserObject)node.getUserObject();
+            AttributeDescription attrDesc = usrObj.getAttributeDescription();
+            if ((attrDesc != null) && attrDesc.isGraphable()) {
+        //        graphingMenu.show(node, e.getX(), e.getY());
+            } else {
+                operationMenu.show(node, e.getX(), e.getY());
+            }
         }
     }
 }
