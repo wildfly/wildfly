@@ -12,6 +12,10 @@
             <property name="allowConnectingToRunningServer">true</property>
             <property name="managementAddress">${node0:127.0.0.1}</property>
             <property name="managementPort">${as.managementPort:9999}</property>
+
+            <!-- AS7-4070 -->
+            <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9999}</property>
+            <property name="waitForPortsTimeoutInSeconds">8</property>
         </configuration>
     </container>
 </arquillian>
