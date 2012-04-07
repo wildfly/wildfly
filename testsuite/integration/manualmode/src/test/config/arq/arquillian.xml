@@ -12,6 +12,10 @@
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
                 <property name="managementPort">${as.managementPort:9999}</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9999}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
 
@@ -23,6 +27,10 @@
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node1}</property>
                 <property name="managementPort">10099</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port.node1} 10099</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
     </group>
