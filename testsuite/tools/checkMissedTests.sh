@@ -30,7 +30,7 @@ function main {
 function all {
     for NAME in `find testsuite -name '*TestCase.java' | sort` ; do echo $NAME | sed "s#.*src/test/java/##g" | sed "s#\./\|\.java##g" | sed "s#/#.#g"  >>  /tmp/AS.ts.tests.txt;  done
     echo "###"  >>  /tmp/AS.ts.tests.txt;
-    for NAME in `find testsuite -name '*TestCase.xml' | sort`  ; do echo $NAME | sed "s#.*surefire-reports/##g" | sed "s#.*TEST-\|\.xml##g"  >>  /tmp/AS.ts.tests.txt;  done
+    for NAME in `find testsuite -name '*TestCase.xml' -or  -name '*TestCase-*.xml' | sort`  ; do echo $NAME | sed "s#.*surefire-reports/##g" | sed "s#.*TEST-##g" | sed 's#TestCase\(-.*\)\?\.xml#TestCase#'  >>  /tmp/AS.ts.tests.txt;  done
     # for NAME in `find . -name *TestCase.xml`  ; do echo $NAME | sed "s#.*TEST-\|\.xml##g";  done
 }
 
