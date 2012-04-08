@@ -1060,16 +1060,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.interceptor</groupId>
-                    <artifactId>jboss-interceptor-core</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.interceptor</groupId>
-                    <artifactId>jboss-interceptor-spi</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.jboss.ironjacamar</groupId>
                     <artifactId>ironjacamar-core-api</artifactId>
                 </dependency>
@@ -1873,7 +1863,7 @@
                         </executions>
                     </plugin>
                 </plugins>
-            
+
             </build>
         </profile>
 

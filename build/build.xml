@@ -911,14 +911,6 @@
             <maven-resource group="org.jboss" artifact="jboss-iiop-client"/>
         </module-def>
 
-        <module-def name="org.jboss.interceptor">
-            <maven-resource group="org.jboss.interceptor" artifact="jboss-interceptor-core"/>
-        </module-def>
-
-        <module-def name="org.jboss.interceptor.spi">
-            <maven-resource group="org.jboss.interceptor" artifact="jboss-interceptor-spi"/>
-        </module-def>
-
         <module-def name="org.jboss.ironjacamar.api">
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-common-api"/>
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-common-spi"/>

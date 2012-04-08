@@ -47,8 +47,6 @@
         <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>
         <module name="org.javassist"/>
-        <module name="org.jboss.interceptor"/>
-        <module name="org.jboss.interceptor.spi"/>
         <module name="org.jboss.weld.api" />
         <module name="org.jboss.weld.spi" />
         <module name="org.slf4j" />
