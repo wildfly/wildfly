@@ -71,13 +71,14 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
     private volatile FutureServiceContainer futureContainer;
     private volatile long startTime;
 
-    ApplicationServerService(final List<ServiceActivator> extraServices, final Bootstrap.Configuration configuration) {
+    ApplicationServerService(final List<ServiceActivator> extraServices, final Bootstrap.Configuration configuration,
+                             final ControlledProcessState processState) {
         this.extraServices = extraServices;
         this.configuration = configuration;
         runningModeControl = configuration.getRunningModeControl();
         startTime = configuration.getStartTime();
         standalone = configuration.getServerEnvironment().isStandalone();
-        processState = new ControlledProcessState(configuration.getServerEnvironment().isStandalone());
+        this.processState = processState;
     }
 
     @Override

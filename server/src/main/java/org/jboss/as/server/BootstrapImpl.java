@@ -25,6 +25,8 @@ package org.jboss.as.server;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -64,7 +66,9 @@ final class BootstrapImpl implements Bootstrap {
         }
         final FutureServiceContainer future = new FutureServiceContainer(container);
         final ServiceTarget tracker = container.subTarget();
-        final Service<?> applicationServerService = new ApplicationServerService(extraServices, configuration);
+        final ControlledProcessState processState = new ControlledProcessState(configuration.getServerEnvironment().isStandalone());
+        ControlledProcessStateService.addService(tracker, processState);
+        final Service<?> applicationServerService = new ApplicationServerService(extraServices, configuration, processState);
         tracker.addService(Services.JBOSS_AS, applicationServerService)
             .install();
         final ServiceController<?> rootService = container.getRequiredService(Services.JBOSS_AS);

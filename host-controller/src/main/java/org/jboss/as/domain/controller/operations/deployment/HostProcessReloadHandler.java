@@ -21,6 +21,7 @@
 */
 package org.jboss.as.domain.controller.operations.deployment;
 
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.ProcessReloadHandler;
@@ -34,10 +35,10 @@ import org.jboss.msc.service.ServiceName;
  */
 public class HostProcessReloadHandler extends ProcessReloadHandler<HostRunningModeControl>{
 
-    public HostProcessReloadHandler(ServiceName rootService, HostRunningModeControl runningModeControl,
-            ResourceDescriptionResolver resourceDescriptionResolver) {
-        // FIXME HostProcessReloadHandler constructor
-        super(rootService, runningModeControl, resourceDescriptionResolver);
+    public HostProcessReloadHandler(final ServiceName rootService, final HostRunningModeControl runningModeControl,
+                                    final ControlledProcessState processState,
+                                    final ResourceDescriptionResolver resourceDescriptionResolver) {
+        super(rootService, runningModeControl, processState, resourceDescriptionResolver);
     }
 
     protected boolean isIncludeRestartServers() {

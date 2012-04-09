@@ -71,11 +71,12 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
     private volatile FutureServiceContainer futureContainer;
     private volatile long startTime;
 
-    HostControllerService(final HostControllerEnvironment environment, final HostRunningModeControl runningModeControl, byte[] authCode) {
+    HostControllerService(final HostControllerEnvironment environment, final HostRunningModeControl runningModeControl,
+                          final byte[] authCode, final ControlledProcessState processState) {
         this.environment = environment;
         this.runningModeControl = runningModeControl;
         this.authCode = authCode;
-        this.processState = new ControlledProcessState(false);
+        this.processState = processState;
         this.startTime = Module.getStartTime();
     }
 

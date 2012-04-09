@@ -25,6 +25,7 @@ package org.jboss.as.controller.operations.common;
 import java.util.Locale;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -63,15 +64,18 @@ public class ProcessReloadHandler<T extends RunningModeControl> implements Opera
 
 
     private final T runningModeControl;
+    private final ControlledProcessState processState;
     private DescriptionProvider descriptionProvider;
 
     private final ServiceName rootService;
     private final ResourceDescriptionResolver resourceDescriptionResolver;
 
     public ProcessReloadHandler(final ServiceName rootService, final T runningModeControl,
+                                final ControlledProcessState processState,
                                 final ResourceDescriptionResolver resourceDescriptionResolver) {
         this.rootService = rootService;
         this.runningModeControl = runningModeControl;
+        this.processState = processState;
         this.resourceDescriptionResolver = resourceDescriptionResolver;
     }
 
@@ -88,6 +92,7 @@ public class ProcessReloadHandler<T extends RunningModeControl> implements Opera
                     service.addListener(new AbstractServiceListener<Object>() {
                         public void listenerAdded(final ServiceController<?> controller) {
                             reloadInitiated(runningModeControl, adminOnly, restartServers);
+                            processState.setStopping();
                             controller.setMode(ServiceController.Mode.NEVER);
                         }
 

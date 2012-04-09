@@ -105,10 +105,10 @@ public enum ConsoleMode {
         }
 
         /*
-         * This method is override so we can ensure the RealmReadinessFilter is in place.
-         *
-         * (Later may change the return type to return the context so a sub-class can just continue after the parent class start)
-         */
+        * This method is override so we can ensure the RealmReadinessFilter is in place.
+        *
+        * (Later may change the return type to return the context so a sub-class can just continue after the parent class start)
+        */
         @Override
         public void start(HttpServer httpServer, SecurityRealm securityRealm) {
             HttpContext httpContext = httpServer.createContext(getContext(), this);
