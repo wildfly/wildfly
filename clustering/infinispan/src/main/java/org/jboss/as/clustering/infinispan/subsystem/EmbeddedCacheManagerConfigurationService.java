@@ -190,6 +190,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
             jmxBuilder.disable();
         }
         this.config = builder.build();
+        System.out.println(this.name + " cache container will use " + this.config.classLoader());
     }
 
     @Override
