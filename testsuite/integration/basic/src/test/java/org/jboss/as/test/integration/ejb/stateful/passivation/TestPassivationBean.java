@@ -32,6 +32,7 @@ import javax.ejb.PrePassivate;
 import javax.ejb.Remote;
 import javax.ejb.Remove;
 import javax.ejb.Stateful;
+import javax.interceptor.Interceptors;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
@@ -44,6 +45,7 @@ import org.jboss.logging.Logger;
 @Stateful
 @Remote(TestPassivationRemote.class)
 @Cache("passivating")
+@Interceptors(PassivationInterceptor.class)
 public class TestPassivationBean extends PassivationSuperClass implements TestPassivationRemote {
     private static final Logger log = Logger.getLogger(TestPassivationBean.class);
 

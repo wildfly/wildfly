@@ -141,6 +141,7 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         interceptorContext.putPrivateData(ComponentInstance.class, this);
         interceptorContext.putPrivateData(InvokeMethodOnTargetInterceptor.PARAMETERS_KEY, parameters);
         interceptorContext.setContextData(new HashMap<String, Object>());
+        interceptorContext.setTarget(getInstance());
         try {
             return interceptor.processInvocation(interceptorContext);
         } catch (Error e) {

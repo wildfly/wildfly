@@ -122,6 +122,7 @@ public class PassivationSucceedsUnitTestCase {
 
     @Test
     public void testPassivationMaxSize() throws Exception {
+        PassivationInterceptor.reset();
         TestPassivationRemote remote1 = (TestPassivationRemote) ctx.lookup("java:module/"
                 + TestPassivationBean.class.getSimpleName());
         Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
@@ -149,10 +150,13 @@ public class PassivationSucceedsUnitTestCase {
 
         remote1.remove();
         remote2.remove();
+        Assert.assertTrue(PassivationInterceptor.getPostActivateTarget() instanceof TestPassivationBean);
+        Assert.assertTrue(PassivationInterceptor.getPrePassivateTarget() instanceof TestPassivationBean);
     }
 
     @Test
     public void testPassivationIdleTimeout() throws Exception {
+        PassivationInterceptor.reset();
         // Lookup and create stateful instance
         TestPassivationRemote remote = (TestPassivationRemote) ctx.lookup("java:module/"
                 + TestPassivationBean.class.getSimpleName());
@@ -169,5 +173,7 @@ public class PassivationSucceedsUnitTestCase {
         // Ensure that @PrePassivate was called during the client sleep
         Assert.assertTrue("@PrePassivate not called, check CacheConfig and client sleep time", remote.hasBeenPassivated());
         remote.remove();
+        Assert.assertTrue(PassivationInterceptor.getPostActivateTarget() instanceof TestPassivationBean);
+        Assert.assertTrue(PassivationInterceptor.getPrePassivateTarget() instanceof TestPassivationBean);
     }
 }
