@@ -22,11 +22,6 @@
 
 package org.jboss.as.jacorb;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -50,10 +45,16 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.omg.CORBA.ORB;
 import org.omg.PortableServer.IdAssignmentPolicyValue;
 import org.omg.PortableServer.LifespanPolicyValue;
 import org.omg.PortableServer.POA;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * <p>
@@ -76,6 +77,8 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
     private static final String JACORB_SSL_SOCKET_BINDING = "jacorb-ssl";
 
     static final JacORBSubsystemAdd INSTANCE = new JacORBSubsystemAdd();
+
+    private static final ServiceName SECURITY_DOMAIN_SERVICE_NAME = ServiceName.JBOSS.append("security");
 
     /**
      * <p>
@@ -133,13 +136,15 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
         // setup the ORB initializers using the configured properties.
         this.setupInitializers(props);
 
-        // setup the SSL socket factories, if necessary.
-        this.setupSSLFactories(props);
 
         // create the service that initializes and starts the CORBA ORB.
         CorbaORBService orbService = new CorbaORBService(props);
         final ServiceBuilder<ORB> builder = context.getServiceTarget().addService(
                 CorbaORBService.SERVICE_NAME, orbService);
+
+        // setup the SSL socket factories, if necessary.
+        this.setupSSLFactories(builder, props);
+
         // inject the socket bindings that specify the JacORB IIOP and IIOP/SSL ports.
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(JACORB_SOCKET_BINDING), SocketBinding.class,
                 orbService.getJacORBSocketBindingInjector());
@@ -274,7 +279,7 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
      * @throws OperationFailedException if the SSL setup has not been done correctly (SSL support has been turned on
      * but no security domain has been specified).
      */
-    private void setupSSLFactories(Properties props) throws OperationFailedException {
+    private void setupSSLFactories(final ServiceBuilder orbService, final Properties props) throws OperationFailedException {
         String supportSSLKey = PropertiesMap.JACORB_PROPS_MAP.get(JacORBSubsystemConstants.SECURITY_SUPPORT_SSL);
         boolean supportSSL = "on".equalsIgnoreCase(props.getProperty(supportSSLKey));
 
@@ -283,6 +288,8 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
             String securityDomain = props.getProperty(JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN);
             if (securityDomain == null || securityDomain.isEmpty())
                 throw JacORBMessages.MESSAGES.noSecurityDomainSpecified();
+
+            orbService.addDependency(SECURITY_DOMAIN_SERVICE_NAME.append(securityDomain));
 
             // add the domain socket factories.
             props.setProperty(JacORBSubsystemConstants.JACORB_SSL_SOCKET_FACTORY, DomainSocketFactory.class.getName());
