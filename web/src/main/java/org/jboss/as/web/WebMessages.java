@@ -331,4 +331,14 @@ public interface WebMessages {
     @Message(id = 18096, value = "Error instantiating container component: %s")
     String failToCreateContainerComponentInstance(String className);
 
+    /**
+     * A message indicating the metric is unknown.
+     *
+     * @param metric the unknown metric.
+     *
+     * @return the message.
+     */
+    @Message(id = 18097, value = "Unknown metric %s")
+    String unknownMetric(Object metric);
+
 }
