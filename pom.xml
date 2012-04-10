@@ -139,7 +139,7 @@
         <version.org.jacorb>2.3.1.jbossorg-1</version.org.jacorb>
         <version.org.javassist>3.15.0-GA</version.org.javassist>
         <version.org.jdom>1.1.2</version.org.jdom>
-        <version.org.jboss.arquillian.core>1.0.0.CR7</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.core>1.0.0.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>1.0.2.Final</version.org.jboss.arquillian.osgi>
         <version.org.jboss.as.console>1.2.0.Final</version.org.jboss.as.console>
         <version.org.jboss.as.jbossweb-native>2.0.10.Final</version.org.jboss.as.jbossweb-native>
@@ -187,7 +187,7 @@
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>2.2.0.SP1</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.6.Final</version.org.jboss.security.jbossxacml>
-        <version.org.jboss.shrinkwrap.shrinkwrap>1.0.0-cr-1</version.org.jboss.shrinkwrap.shrinkwrap>
+        <version.org.jboss.shrinkwrap.shrinkwrap>1.0.0</version.org.jboss.shrinkwrap.shrinkwrap>
         <version.org.jboss.shrinkwrap.resolver>1.0.0-beta-5</version.org.jboss.shrinkwrap.resolver>
         <version.org.jboss.slf4j.slf4j-jboss-logmanager>1.0.0.GA</version.org.jboss.slf4j.slf4j-jboss-logmanager>
         <version.org.jboss.logging.jul-to-slf4j-stub>1.0.0.Final</version.org.jboss.logging.jul-to-slf4j-stub>
