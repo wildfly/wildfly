@@ -55,20 +55,15 @@ public class ChartMenu extends JPopupMenu {
     }
 
     /**
-     * Action for a menu selection.  For operations with params, display an Operation Dialog.  For operations
-     * without params, just construct the operation and set the command line.
+     * Action for a menu selection.
      */
     private class OperationAction extends AbstractAction {
 
         private ManagementModelNode node;
-        private String opName;
-        private String addressPath;
 
         public OperationAction(ManagementModelNode node, String opName, String helpText) {
             super(opName);
             this.node = node;
-            this.opName = opName;
-            this.addressPath = node.addressPath();
             putValue(Action.SHORT_DESCRIPTION, helpText);
         }
 
@@ -77,6 +72,5 @@ public class ChartMenu extends JPopupMenu {
             dialog.setLocationRelativeTo(cliGuiCtx.getMainWindow());
             dialog.setVisible(true);
         }
-
     }
 }

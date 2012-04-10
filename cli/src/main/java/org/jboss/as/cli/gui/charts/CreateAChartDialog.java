@@ -17,7 +17,6 @@
  * MA  02110-1301, USA.
  */
 package org.jboss.as.cli.gui.charts;
-import javax.swing.JTabbedPane;
 import org.jboss.as.cli.gui.ManagementModelNode;
 import org.jboss.as.cli.gui.ManagementModelNode.UserObject;
 
@@ -40,8 +39,7 @@ import javax.swing.JTextField;
 import org.jboss.as.cli.gui.CliGuiContext;
 
 /**
- * Creates a dialog that lets you build a deploy command.  This dialog
- * behaves differently depending on standalone or domain mode.
+ * A dialog that lets you define a graph for a real time attribute.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
@@ -50,6 +48,7 @@ public class CreateAChartDialog extends JDialog implements ActionListener {
     private ManagementModelNode node;
     private JPanel inputPanel = new JPanel(new GridBagLayout());
     private JTextField graphNameField = new JTextField(20);
+    private JTextField graphTitleField = new JTextField(40);
     private JTextField descriptionField = new JTextField(40);
 
     public CreateAChartDialog(CliGuiContext cliGuiCtx, ManagementModelNode node) {
@@ -72,6 +71,7 @@ public class CreateAChartDialog extends JDialog implements ActionListener {
         UserObject usrObj = (UserObject)node.getUserObject();
         String name = usrObj.getName();
         graphNameField.setText(name);
+        graphTitleField.setText(node.addressPath() + name);
         descriptionField.setText(usrObj.getAttributeProps().getDescription());
 
         GridBagConstraints gbConst = new GridBagConstraints();
@@ -83,13 +83,22 @@ public class CreateAChartDialog extends JDialog implements ActionListener {
         inputPanel.add(headingLabel, gbConst);
 
         JLabel graphNameLabel = new JLabel("Graph Name:");
-        graphNameLabel.setToolTipText("The title of your graph.");
+        graphNameLabel.setToolTipText("The name of your graph. Its tab name.");
         gbConst.gridwidth = 1;
         inputPanel.add(graphNameLabel, gbConst);
 
         addStrut();
         gbConst.gridwidth = GridBagConstraints.REMAINDER;
         inputPanel.add(graphNameField, gbConst);
+
+        JLabel titleLabel = new JLabel("Title:");
+        titleLabel.setToolTipText("The title of your graph.");
+        gbConst.gridwidth = 1;
+        inputPanel.add(titleLabel, gbConst);
+
+        addStrut();
+        gbConst.gridwidth = GridBagConstraints.REMAINDER;
+        inputPanel.add(graphTitleField, gbConst);
 
         JLabel descriptionLabel = new JLabel("Description:");
         descriptionLabel.setToolTipText("The description of the attribute you are graphing.");
@@ -127,7 +136,7 @@ public class CreateAChartDialog extends JDialog implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent e) {
-        JBossChart chart = new JBossChart(cliGuiCtx, graphNameField.getText(), descriptionField.getText(), node);
+        JBossChart chart = new JBossChart(cliGuiCtx, graphNameField.getText(), graphTitleField.getText(), descriptionField.getText(), node);
         cliGuiCtx.getChartManager().addChart(chart);
         dispose();
     }

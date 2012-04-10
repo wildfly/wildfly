@@ -24,6 +24,7 @@
 
     <dependencies>
         <module name="org.jfree.jcommon"/>
+        <module name="javax.api"/>
     </dependencies>
 
     <resources>
