@@ -36,7 +36,7 @@ public class ServerSetupObserver {
     private Map<String, Integer> deployed;
     boolean afterClassRun = false;
 
-    public synchronized void handleBeforeDeployment(@Observes BeforeDeploy event, Container container) throws Exception {
+    public synchronized void handleBeforeDeployment(@Observes BeforeDeploy event, Container container) throws Throwable {
         if (deployed == null) {
             deployed = new HashMap<String, Integer>();
             current.clear();
@@ -80,9 +80,16 @@ public class ServerSetupObserver {
         }
 
         final ManagementClient client = managementClient.get();
-        for (ServerSetupTask instance : current) {
-            instance.setup(client, container.getName());
+        try {
+            for (ServerSetupTask instance : current) {
+                instance.setup(client, container.getName());
+            }
+        } catch (Throwable e) {
+            //setup failed, so clear the current map
+            current.clear();
+            throw e;
         }
+
         active.put(container.getName(), client);
     }
 
