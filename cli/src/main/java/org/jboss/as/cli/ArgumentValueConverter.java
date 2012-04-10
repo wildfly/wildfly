@@ -82,16 +82,6 @@ public interface ArgumentValueConverter {
         };
         @Override
         protected ModelNode fromNonDMRString(String value) throws CommandFormatException {
-/*            // strip [] if they are present
-            if(value.length() >= 2 && value.charAt(0) == '[' && value.charAt(value.length() - 1) == ']') {
-                value = value.substring(1, value.length() - 1);
-            }
-            final ModelNode list = new ModelNode();
-            for (String item : value.split(",")) {
-                list.add(new ModelNode().set(item));
-            }
-            return list;
-*/
             final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
             StateParser.parse(value, handler, initialState);
             return handler.getResult();
@@ -106,26 +96,6 @@ public interface ArgumentValueConverter {
         };
         @Override
         protected ModelNode fromNonDMRString(String value) throws CommandFormatException {
-            /*
-            // strip [] if they are present
-            if(value.length() >= 2 && value.charAt(0) == '[' && value.charAt(value.length() - 1) == ']') {
-                value = value.substring(1, value.length() - 1);
-            }
-            final String[] props = value.split(",");
-            final ModelNode list = new ModelNode();
-            for (String prop : props) {
-                int equals = prop.indexOf('=');
-                if (equals == -1) {
-                    throw new CommandFormatException("Property '" + prop + "' in '" + value + "' is missing the equals sign.");
-                }
-                String propName = prop.substring(0, equals);
-                if (propName.isEmpty()) {
-                    throw new CommandFormatException("Property name is missing for '" + prop + "' in '" + value + "'");
-                }
-                list.add(propName, prop.substring(equals + 1));
-            }
-            return list;
-*/
             final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
             StateParser.parse(value, handler, initialState);
             return handler.getResult();
@@ -134,28 +104,7 @@ public interface ArgumentValueConverter {
 
     ArgumentValueConverter OBJECT = new DMRWithFallbackConverter() {
         @Override
-        protected ModelNode fromNonDMRString(String value)
-                throws CommandFormatException {
-/*            // strip {} if they are present
-            if(value.length() >= 2 && value.charAt(0) == '{' && value.charAt(value.length() - 1) == '}') {
-                value = value.substring(1, value.length() - 1);
-            }
-
-            final String[] props = value.split(",");
-            final ModelNode o = new ModelNode();
-            for (String prop : props) {
-                int equals = prop.indexOf('=');
-                if (equals == -1) {
-                    throw new CommandFormatException("Property '" + prop + "' in '" + value + "' is missing the equals sign.");
-                }
-                String propName = prop.substring(0, equals);
-                if (propName.isEmpty()) {
-                    throw new CommandFormatException("Property name is missing for '" + prop + "' in '" + value + "'");
-                }
-                o.get(propName).set(prop.substring(equals + 1));
-            }
-            return o;
-*/
+        protected ModelNode fromNonDMRString(String value) throws CommandFormatException {
             final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
             StateParser.parse(value, handler, ArgumentValueInitialState.INSTANCE);
             return handler.getResult();
