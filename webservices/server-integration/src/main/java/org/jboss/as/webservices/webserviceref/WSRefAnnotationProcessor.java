@@ -32,6 +32,7 @@ import static org.jboss.as.webservices.webserviceref.WSRefUtils.processType;
 
 import java.lang.reflect.AccessibleObject;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.ws.Service;
 
@@ -229,7 +230,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         if (injectionTarget instanceof FieldInjectionTarget) {
             return name;
         } else if (injectionTarget instanceof MethodInjectionTarget) {
-            return name.substring(3, 4).toUpperCase() + name.substring(4);
+            return name.substring(3, 4).toUpperCase(Locale.ENGLISH) + name.substring(4);
         }
         throw new UnsupportedOperationException();
     }

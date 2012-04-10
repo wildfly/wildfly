@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.jpa.beanvalidation;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
+import java.util.Locale;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -42,7 +43,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Test bean validation is propagated on inherited attributes
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
@@ -98,7 +99,12 @@ public class BeanValidationJPAInheritanceTestCase {
             StringWriter w = new StringWriter();
             e.printStackTrace(new PrintWriter(w));
             String stacktrace = w.toString();
-            Assert.assertTrue(stacktrace.contains("interpolatedMessage='may not be empty', propertyPath=lastName"));
+
+            if (Locale.getDefault().getLanguage().equals("en")) {
+                Assert.assertTrue(stacktrace.contains("interpolatedMessage='may not be empty', propertyPath=lastName, rootBeanClass=class org.jboss.as.test.integration.jpa.beanvalidation.SoccerPlayer"));
+            } else {
+                Assert.assertTrue(stacktrace.contains("propertyPath=lastName, rootBeanClass=class org.jboss.as.test.integration.jpa.beanvalidation.SoccerPlayer"));
+            }
         }
 
     }

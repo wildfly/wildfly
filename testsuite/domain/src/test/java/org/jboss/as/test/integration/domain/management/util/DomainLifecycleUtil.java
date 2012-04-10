@@ -18,6 +18,8 @@
  */
 package org.jboss.as.test.integration.domain.management.util;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -33,6 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -58,8 +61,6 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.xnio.IoUtils;
-
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
  * Utility for controlling the lifecycle of a domain.
@@ -458,7 +459,7 @@ public class DomainLifecycleUtil {
             address.add("host", configuration.getHostName());
             address.add("server", server);
 
-            ControlledProcessState.State status = Enum.valueOf(ControlledProcessState.State.class, readAttribute("server-state", address).asString().toUpperCase());
+            ControlledProcessState.State status = Enum.valueOf(ControlledProcessState.State.class, readAttribute("server-state", address).asString().toUpperCase(Locale.ENGLISH));
             ServerIdentity id = new ServerIdentity(configuration.getHostName(), group, server);
             result.put(id, status);
         }

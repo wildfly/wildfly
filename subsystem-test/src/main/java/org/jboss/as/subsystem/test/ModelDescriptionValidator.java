@@ -57,6 +57,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -467,7 +468,7 @@ public class ModelDescriptionValidator {
         public String validate(ModelType currentType, ModelNode currentNode, String descriptor) {
             if (currentNode.hasDefined(descriptor)) {
                 try {
-                    AccessType.valueOf(currentNode.get(descriptor).asString().toUpperCase().replace('-', '_'));
+                    AccessType.valueOf(currentNode.get(descriptor).asString().toUpperCase(Locale.ENGLISH).replace('-', '_'));
                 } catch (Exception e) {
                     return "'" + descriptor + "=" + currentNode.get(descriptor) + "' is not an access type";
                 }
@@ -482,7 +483,7 @@ public class ModelDescriptionValidator {
         public String validate(ModelType currentType, ModelNode currentNode, String descriptor) {
             if (currentNode.hasDefined(descriptor)) {
                 try {
-                    AttributeAccess.Storage.valueOf(currentNode.get(descriptor).asString().toUpperCase());
+                    AttributeAccess.Storage.valueOf(currentNode.get(descriptor).asString().toUpperCase(Locale.ENGLISH));
                 } catch (Exception e) {
                     return "'" + descriptor + "' is not a storage type";
                 }
