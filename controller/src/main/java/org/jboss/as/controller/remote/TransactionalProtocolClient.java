@@ -28,10 +28,7 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * A transactional protocol client.
@@ -51,7 +48,7 @@ public interface TransactionalProtocolClient {
      * @return the future result
      * @throws IOException
      */
-    Future<ModelNode> execute(OperationListener<Operation> listener, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) throws IOException;
+    Future<ModelNode> execute(TransactionalOperationListener<Operation> listener, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) throws IOException;
 
     /**
      * Execute an operation. This returns a future for the final result, which will only available after the prepared
@@ -63,14 +60,14 @@ public interface TransactionalProtocolClient {
      * @return the future result
      * @throws IOException
      */
-    <T extends Operation> Future<ModelNode> execute(OperationListener<T> listener, T operation) throws IOException;
+    <T extends Operation> Future<ModelNode> execute(TransactionalOperationListener<T> listener, T operation) throws IOException;
 
     /**
-     * The operation listener.
+     * The transactional operation listener.
      *
      * @param <T> the operation type
      */
-    interface OperationListener<T extends Operation> {
+    interface TransactionalOperationListener<T extends Operation> {
 
         /**
          * Notification that an operation was prepared.

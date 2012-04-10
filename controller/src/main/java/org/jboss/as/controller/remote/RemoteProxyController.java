@@ -28,7 +28,6 @@ import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.dmr.ModelNode;
 
@@ -42,17 +41,29 @@ import java.util.concurrent.Future;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Emanuel Muckenhuber
  */
-public class RemoteProxyController extends TransactionalProtocolClientImpl implements ProxyController {
+public class RemoteProxyController implements ProxyController {
 
     private final PathAddress pathAddress;
     private final ProxyOperationAddressTranslator addressTranslator;
+    private final TransactionalProtocolClient client;
 
-    private RemoteProxyController(final ManagementChannelAssociation channelAssociation, final PathAddress pathAddress,
-                                  final ProxyOperationAddressTranslator addressTranslator) {
-        // TODO delegate rather than implement the TransactionalProtocolClient
-        super(channelAssociation);
+    private RemoteProxyController(final TransactionalProtocolClient client, final PathAddress pathAddress,
+                                      final ProxyOperationAddressTranslator addressTranslator) {
+        this.client = client;
         this.pathAddress = pathAddress;
         this.addressTranslator = addressTranslator;
+    }
+
+    /**
+     * Create a new remote proxy controller.
+     *
+     * @param client the transactional protocol client
+     * @param pathAddress the path address
+     * @param addressTranslator the address translator
+     * @return the proxy controller
+     */
+    public static RemoteProxyController create(final TransactionalProtocolClient client, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator) {
+        return new RemoteProxyController(client, pathAddress, addressTranslator);
     }
 
     /**
@@ -64,9 +75,20 @@ public class RemoteProxyController extends TransactionalProtocolClientImpl imple
      * @return the proxy controller
      */
     public static RemoteProxyController create(final ManagementChannelHandler channelAssociation, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator) {
-        final RemoteProxyController controller = new RemoteProxyController(channelAssociation, pathAddress, addressTranslator);
-        channelAssociation.addHandlerFactory(controller);
-        return controller;
+        // Create the protocol client here for now
+        final TransactionalProtocolClientImpl client = new TransactionalProtocolClientImpl(channelAssociation);
+        channelAssociation.addHandlerFactory(client);
+        // the remote proxy
+        return create(client, pathAddress, addressTranslator);
+    }
+
+    /**
+     * Get the underlying transactional protocol client.
+     *
+     * @return the protocol client
+     */
+    public TransactionalProtocolClient getTransactionalProtocolClient() {
+        return client;
     }
 
     /** {@inheritDoc} */
@@ -79,22 +101,22 @@ public class RemoteProxyController extends TransactionalProtocolClientImpl imple
     @Override
     public void execute(final ModelNode original, final OperationMessageHandler messageHandler, final ProxyOperationControl control, final OperationAttachments attachments) {
         // Add blocking support to adhere to the proxy controller API contracts
-        final BlockingQueue<PreparedOperation<Operation>> queue = new ArrayBlockingQueue<PreparedOperation<Operation>>(1, true);
-        final OperationListener<Operation> operationListener = new OperationListener<Operation>() {
+        final BlockingQueue<TransactionalProtocolClient.PreparedOperation<TransactionalProtocolClient.Operation>> queue = new ArrayBlockingQueue<TransactionalProtocolClient.PreparedOperation<TransactionalProtocolClient.Operation>>(1, true);
+        final TransactionalProtocolClient.TransactionalOperationListener<TransactionalProtocolClient.Operation> operationListener = new TransactionalProtocolClient.TransactionalOperationListener<TransactionalProtocolClient.Operation>() {
             @Override
-            public void operationPrepared(PreparedOperation<Operation> prepared) {
+            public void operationPrepared(TransactionalProtocolClient.PreparedOperation<TransactionalProtocolClient.Operation> prepared) {
                 if(! queue.offer(prepared)) {
                     prepared.rollback();
                 }
             }
 
             @Override
-            public void operationFailed(Operation operation, ModelNode result) {
-                queue.offer(new TransactionalProtocolHandlers.FailedOperation<Operation>(operation, result));
+            public void operationFailed(TransactionalProtocolClient.Operation operation, ModelNode result) {
+                queue.offer(new BlockingQueueOperationListener.FailedOperation<TransactionalProtocolClient.Operation>(operation, result));
             }
 
             @Override
-            public void operationComplete(Operation operation, ModelNode result) {
+            public void operationComplete(TransactionalProtocolClient.Operation operation, ModelNode result) {
                 control.operationCompleted(result);
             }
         };
@@ -103,9 +125,9 @@ public class RemoteProxyController extends TransactionalProtocolClientImpl imple
             // Translate the operation
             final ModelNode translated = getOperationForProxy(original);
             // Execute the operation
-            futureResult = execute(operationListener, translated, messageHandler, attachments);
+            futureResult = client.execute(operationListener, translated, messageHandler, attachments);
             // Wait for the prepared response
-            final PreparedOperation<Operation> prepared = queue.take();
+            final TransactionalProtocolClient.PreparedOperation<TransactionalProtocolClient.Operation> prepared = queue.take();
             if(prepared.isFailed()) {
                 // If the operation failed, there is nothing more to do
                 control.operationFailed(prepared.getPreparedResult());

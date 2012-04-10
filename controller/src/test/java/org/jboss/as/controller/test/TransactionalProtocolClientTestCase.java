@@ -28,6 +28,8 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.remote.BlockingQueueOperationListener;
+import org.jboss.as.controller.remote.TransactionalOperationImpl;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolClientImpl;
@@ -53,7 +55,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -323,7 +324,7 @@ public class TransactionalProtocolClientTestCase {
     /**
      * A basic blocking operation listener implementation
      */
-    static class BlockingOperationListener extends TransactionalProtocolHandlers.BlockingQueueOperationListener<TestUpdateWrapper> {
+    static class BlockingOperationListener extends BlockingQueueOperationListener<TestUpdateWrapper> {
 
         BlockingOperationListener() {
             this(1);
@@ -337,7 +338,7 @@ public class TransactionalProtocolClientTestCase {
     /**
      * Operation wrapper.
      */
-    static class TestUpdateWrapper extends TransactionalProtocolHandlers.OperationImpl {
+    static class TestUpdateWrapper extends TransactionalOperationImpl {
 
         private final int id;
         private final MockController controller;
@@ -371,7 +372,7 @@ public class TransactionalProtocolClientTestCase {
             controller.action = null;
         }
 
-        Future<ModelNode> execute(TransactionalProtocolClient.OperationListener<TestUpdateWrapper> listener) throws IOException {
+        Future<ModelNode> execute(TransactionalProtocolClient.TransactionalOperationListener<TestUpdateWrapper> listener) throws IOException {
             return client.execute(listener, this);
         }
 

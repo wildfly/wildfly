@@ -77,7 +77,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
     }
 
     /**
-     * The request handler for requests from {@link org.jboss.as.controller.remote.RemoteProxyController#execute}.
+     * The request handler for requests from {@link org.jboss.as.controller.remote.TransactionalProtocolClient#execute}.
      */
     private class ExecuteRequestHandler implements ManagementRequestHandler<Void, ExecuteRequestContext> {
 
@@ -133,7 +133,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
     }
 
     /**
-     * The request handler for requests from {@link org.jboss.as.controller.remote.RemoteProxyController.CompleteTxRequest}
+     * The request handler for requests from {@link org.jboss.as.controller.remote.TransactionalProtocolClientImpl.CompleteTxRequest}
      */
     private class CompleteTxOperationHandler implements ManagementRequestHandler<Void, ExecuteRequestContext> {
 
