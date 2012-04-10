@@ -54,6 +54,6 @@ public abstract class ForwardingEjbClientConfiguration implements EJBClientConfi
 
     @Override
     public long getInvocationTimeout() {
-        return 0;
+        return delegate.getInvocationTimeout();
     }
 }
