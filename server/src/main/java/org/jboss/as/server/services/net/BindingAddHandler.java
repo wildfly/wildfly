@@ -153,7 +153,7 @@ public class BindingAddHandler extends SocketBindingAddHandler {
             ModelNode destinationNode = mappingNode.get(DESTINATION_ADDRESS);
             if (! destinationNode.isDefined()) {
                 // Validation prevents this, but just in case
-                throw new OperationFailedException(ControllerMessages.MESSAGES.nullNotAllowed(DESTINATION_ADDRESS));
+                throw ControllerMessages.MESSAGES.nullNotAllowed(DESTINATION_ADDRESS);
             }
             destination = destinationNode.asString();
 

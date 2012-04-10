@@ -124,7 +124,7 @@ public class ModelTypeValidator implements ParameterValidator {
     public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
         if (!value.isDefined()) {
             if (!nullable)
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.nullNotAllowed(parameterName)));
+                throw MESSAGES.nullNotAllowed(parameterName);
         } else  {
             boolean matched = false;
             if (strictType) {
@@ -138,7 +138,7 @@ public class ModelTypeValidator implements ParameterValidator {
                 }
             }
             if  (!matched)
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.incorrectType(parameterName, validTypes, value.getType())));
+                throw MESSAGES.incorrectType(parameterName, validTypes, value.getType());
         }
     }
 

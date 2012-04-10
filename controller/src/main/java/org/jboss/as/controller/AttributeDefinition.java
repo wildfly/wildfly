@@ -37,6 +37,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.MinMaxValidator;
+import org.jboss.as.controller.operations.validation.NillableOrExpressionParameterValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -76,13 +77,14 @@ public abstract class AttributeDefinition {
                                final ParameterValidator validator, final String[] alternatives, final String[] requires,
                                final AttributeAccess.Flag... flags) {
         this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                null, validator, alternatives, requires, flags);
+                null, validator, true, alternatives, requires, flags);
     }
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
-            final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
-            final ParameterCorrector valueCorrector, final ParameterValidator validator,
-            final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
+                                  final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
+                                  final ParameterCorrector valueCorrector, final ParameterValidator validator,
+                                  boolean validateNull, final String[] alternatives, final String[] requires,
+                                  final AttributeAccess.Flag... flags) {
 
         this.name = name;
         this.xmlName = xmlName;
@@ -98,7 +100,12 @@ public abstract class AttributeDefinition {
         this.alternatives = alternatives;
         this.requires = requires;
         this.valueCorrector = valueCorrector;
-        this.validator = validator;
+        if (validator == null) {
+            this.validator = null;
+        } else {
+            Boolean nullCheck = validateNull ? allowNull : null;
+            this.validator = new NillableOrExpressionParameterValidator(validator, nullCheck, allowExpression);
+        }
         if (flags == null || flags.length == 0) {
             this.flags = EnumSet.noneOf(AttributeAccess.Flag.class);
         } else if (flags.length == 0) {

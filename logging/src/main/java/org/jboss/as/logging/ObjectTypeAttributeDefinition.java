@@ -54,7 +54,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
     private final String suffix;
 
     private ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull, final ParameterCorrector corrector, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, new ObjectTypeValidator(allowNull, valueTypes), alternatives, requires, flags);
+        super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, new ObjectTypeValidator(allowNull, valueTypes), false, alternatives, requires, flags);
         this.valueTypes = valueTypes;
         if (suffix == null) {
             this.suffix = "";
