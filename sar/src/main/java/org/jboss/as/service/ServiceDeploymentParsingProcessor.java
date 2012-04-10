@@ -22,22 +22,24 @@
 
 package org.jboss.as.service;
 
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
-import org.jboss.as.service.descriptor.JBossServiceXmlDescriptorParser;
-import org.jboss.as.service.descriptor.ParseResult;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.staxmapper.XMLMapper;
-import org.jboss.vfs.VFSUtils;
-import org.jboss.vfs.VirtualFile;
+import java.io.InputStream;
+import java.util.Locale;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
-import java.io.InputStream;
+
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
+import org.jboss.as.service.descriptor.JBossServiceXmlDescriptorParser;
+import org.jboss.as.service.descriptor.ParseResult;
+import org.jboss.staxmapper.XMLMapper;
+import org.jboss.vfs.VFSUtils;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * DeploymentUnitProcessor responsible for parsing a jboss-service.xml descriptor and attaching the corresponding JBossServiceXmlDescriptor.
@@ -74,7 +76,7 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
         VirtualFile serviceXmlFile = null;
         if(deploymentRoot.isDirectory()) {
             serviceXmlFile = deploymentRoot.getChild(SERVICE_DESCRIPTOR_PATH);
-        } else if(deploymentRoot.getName().toLowerCase().endsWith(SERVICE_DESCRIPTOR_SUFFIX)) {
+        } else if(deploymentRoot.getName().toLowerCase(Locale.ENGLISH).endsWith(SERVICE_DESCRIPTOR_SUFFIX)) {
             serviceXmlFile = deploymentRoot;
         }
         if(serviceXmlFile == null || !serviceXmlFile.exists())

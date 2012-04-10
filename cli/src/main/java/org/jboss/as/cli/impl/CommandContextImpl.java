@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -84,6 +85,7 @@ import org.jboss.as.cli.handlers.CommandCommandHandler;
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
 import org.jboss.as.cli.handlers.DeploymentInfoHandler;
+import org.jboss.as.cli.handlers.EchoDMRHandler;
 import org.jboss.as.cli.handlers.GenericTypeOperationHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
 import org.jboss.as.cli.handlers.HistoryHandler;
@@ -94,7 +96,6 @@ import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
 import org.jboss.as.cli.handlers.ReadAttributeHandler;
 import org.jboss.as.cli.handlers.ReadOperationHandler;
-import org.jboss.as.cli.handlers.EchoDMRHandler;
 import org.jboss.as.cli.handlers.UndeployHandler;
 import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.cli.handlers.batch.BatchClearHandler;
@@ -113,11 +114,11 @@ import org.jboss.as.cli.handlers.jms.CreateJmsResourceHandler;
 import org.jboss.as.cli.handlers.jms.DeleteJmsResourceHandler;
 import org.jboss.as.cli.handlers.module.ASModuleHandler;
 import org.jboss.as.cli.operation.CommandLineParser;
+import org.jboss.as.cli.operation.NodePathFormatter;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.ParsedCommandLine;
-import org.jboss.as.cli.operation.NodePathFormatter;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
@@ -448,7 +449,7 @@ class CommandContextImpl implements CommandContext {
 
         } else {
             final String cmdName = parsedCmd.getOperationName();
-            CommandHandler handler = cmdRegistry.getCommandHandler(cmdName.toLowerCase());
+            CommandHandler handler = cmdRegistry.getCommandHandler(cmdName.toLowerCase(Locale.ENGLISH));
             if (handler != null) {
                 if (isBatchMode() && handler.isBatchMode(this)) {
                     if (!(handler instanceof OperationCommand)) {
@@ -726,7 +727,7 @@ class CommandContextImpl implements CommandContext {
             }
 
             if (response != null && response.length() == 1) {
-                switch (response.toLowerCase().charAt(0)) {
+                switch (response.toLowerCase(Locale.ENGLISH).charAt(0)) {
                     case 'n':
                         return false;
                     case 't':

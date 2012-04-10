@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.cli.CommandContext;
@@ -32,12 +33,12 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
+import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
-import org.jboss.as.cli.operation.OperationRequestCompleter;
-import org.jboss.as.cli.operation.CommandLineParser;
-import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.OperationRequestAddress.Node;
+import org.jboss.as.cli.operation.OperationRequestCompleter;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.util.SimpleTable;
@@ -261,7 +262,7 @@ public class LsHandler extends CommandHandlerWithHelp {
                                         headers[2] = "TYPE";
                                         int i = 3;
                                         for (String additional : additionalProps) {
-                                            headers[i++] = additional.toUpperCase();
+                                            headers[i++] = additional.toUpperCase(Locale.ENGLISH);
                                         }
                                         attrTable = new SimpleTable(headers);
                                     } else {

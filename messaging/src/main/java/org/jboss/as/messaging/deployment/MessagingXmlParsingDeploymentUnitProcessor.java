@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
@@ -98,7 +99,7 @@ public class MessagingXmlParsingDeploymentUnitProcessor implements DeploymentUni
             return Collections.emptySet();
         }
 
-        final String deploymentRootName = deploymentRoot.getName().toLowerCase();
+        final String deploymentRootName = deploymentRoot.getName().toLowerCase(Locale.ENGLISH);
 
         if (deploymentRootName.endsWith("-jms.xml")) {
             return Collections.singleton(deploymentRoot);

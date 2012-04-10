@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment.module;
 
+import java.util.Locale;
+
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -40,7 +42,7 @@ public class DeploymentRootExplodedMountProcessor implements DeploymentUnitProce
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if(deploymentUnit.getName().toLowerCase().endsWith(WAR_EXTENSION)) {
+        if(deploymentUnit.getName().toLowerCase(Locale.ENGLISH).endsWith(WAR_EXTENSION)) {
             MountExplodedMarker.setMountExploded(deploymentUnit);
         }
     }

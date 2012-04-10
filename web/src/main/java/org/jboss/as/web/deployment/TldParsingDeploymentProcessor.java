@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.stream.XMLInputFactory;
@@ -77,7 +78,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
         assert resourceRoots != null;
         for (ResourceRoot resourceRoot : resourceRoots) {
-            if (resourceRoot.getRoot().getName().toLowerCase().endsWith(".jar")) {
+            if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
                 VirtualFile webFragment = resourceRoot.getRoot().getChild(META_INF);
                 if (webFragment.exists() && webFragment.isDirectory()) {
                     processTlds(deploymentRoot, webFragment.getChildren(), tlds);
@@ -87,7 +88,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         VirtualFile webInf = deploymentRoot.getChild(WEB_INF);
         if (webInf.exists() && webInf.isDirectory()) {
             for (VirtualFile file : webInf.getChildren()) {
-                if (file.isFile() && file.getName().toLowerCase().endsWith(TLD)) {
+                if (file.isFile() && file.getName().toLowerCase(Locale.ENGLISH).endsWith(TLD)) {
                     String pathNameRelativeToRoot;
                     try {
                         pathNameRelativeToRoot = file.getPathNameRelativeTo(deploymentRoot);
@@ -110,7 +111,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
     private void processTlds(VirtualFile root, List<VirtualFile> files, Map<String, TldMetaData> tlds)
     throws DeploymentUnitProcessingException {
         for (VirtualFile file : files) {
-            if (file.isFile() && file.getName().toLowerCase().endsWith(TLD)) {
+            if (file.isFile() && file.getName().toLowerCase(Locale.ENGLISH).endsWith(TLD)) {
                 String pathNameRelativeToRoot;
                 try {
                     pathNameRelativeToRoot = file.getPathNameRelativeTo(root);

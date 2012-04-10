@@ -21,12 +21,14 @@
  */
 package org.jboss.as.domain.management.security.state;
 
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.DEFAULT_APPLICATION_REALM;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.DEFAULT_MANAGEMENT_REALM;
+
+import java.util.Locale;
+
 import org.jboss.as.domain.management.security.AddPropertiesUser;
 import org.jboss.as.domain.management.security.ConsoleWrapper;
-import static org.jboss.as.domain.management.security.AddPropertiesUser.DEFAULT_MANAGEMENT_REALM;
-import static org.jboss.as.domain.management.security.AddPropertiesUser.DEFAULT_APPLICATION_REALM;
-
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 /**
 * Describe the purpose
@@ -89,7 +91,7 @@ public class PropertyFilePrompt implements State {
     }
 
     private int convertResponse(final String response) {
-        String temp = response.toLowerCase();
+        String temp = response.toLowerCase(Locale.ENGLISH);
         if ("A".equals(temp) || "a".equals(temp)) {
             return MANAGEMENT;
         }

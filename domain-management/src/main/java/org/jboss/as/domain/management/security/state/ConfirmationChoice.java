@@ -22,11 +22,13 @@
 
 package org.jboss.as.domain.management.security.state;
 
-import org.jboss.as.domain.management.security.ConsoleWrapper;
-
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.AddPropertiesUser.NEW_LINE;
 import static org.jboss.as.domain.management.security.AddPropertiesUser.SPACE;
+
+import java.util.Locale;
+
+import org.jboss.as.domain.management.security.ConsoleWrapper;
 
 /**
  * State to display a message to the user with option to confirm a choice.
@@ -79,7 +81,7 @@ public class ConfirmationChoice implements State {
 
     private int convertResponse(final String response) {
         if (response != null) {
-            String temp = response.toLowerCase();
+            String temp = response.toLowerCase(Locale.ENGLISH);
             if ("yes".equals(temp) || "y".equals(temp)) {
                 return YES;
             }

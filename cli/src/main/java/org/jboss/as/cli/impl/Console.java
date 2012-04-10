@@ -31,6 +31,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import jline.Completor;
 
@@ -71,7 +72,7 @@ public interface Console {
         public static Console getConsole(final CommandContext ctx) {
 
             final String bindingsName;
-            final String osName = SecurityActions.getSystemProperty("os.name").toLowerCase();
+            final String osName = SecurityActions.getSystemProperty("os.name").toLowerCase(Locale.ENGLISH);
             if(osName.indexOf("windows") >= 0) {
                 bindingsName = "keybindings/jline-windows-bindings.properties";
             } else if(osName.startsWith("mac")) {

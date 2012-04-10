@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.structure;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,8 +50,6 @@ import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for detecting EAR deployments and putting setting up the basic structure.
@@ -118,7 +118,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                         final Closeable closable = child.isFile() ? mount(child, false) : null;
                         final MountHandle mountHandle = new MountHandle(closable);
                         final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
-                        if (child.getName().toLowerCase().endsWith(JAR_EXTENSION)) {
+                        if (child.getName().toLowerCase(Locale.ENGLISH).endsWith(JAR_EXTENSION)) {
                             ModuleRootMarker.mark(childResource);
                             deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
                         }

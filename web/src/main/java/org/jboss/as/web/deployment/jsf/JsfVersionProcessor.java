@@ -21,6 +21,10 @@
  */
 package org.jboss.as.web.deployment.jsf;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -29,9 +33,6 @@ import org.jboss.as.web.deployment.JsfVersionMarker;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Stuart Douglas
@@ -74,7 +75,7 @@ public class JsfVersionProcessor implements DeploymentUnitProcessor {
         for (final ParamValueMetaData param : contextParams) {
             if ((param.getParamName().equals(WAR_BUNDLES_JSF_IMPL_PARAM) &&
                     (param.getParamValue() != null) &&
-                    (param.getParamValue().toLowerCase().equals("true")))) {
+                    (param.getParamValue().toLowerCase(Locale.ENGLISH).equals("true")))) {
                 JsfVersionMarker.setVersion(topLevelDeployment, JsfVersionMarker.WAR_BUNDLES_JSF_IMPL);
                 break; // WAR_BUNDLES_JSF_IMPL always wins
             }

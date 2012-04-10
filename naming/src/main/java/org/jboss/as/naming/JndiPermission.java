@@ -22,7 +22,8 @@
 
 package org.jboss.as.naming;
 
-import javax.naming.Name;
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -33,8 +34,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
+import javax.naming.Name;
 
 /**
  * This class represents access to a path in the JNDI tree. A JndiPermission
@@ -397,7 +399,7 @@ public final class JndiPermission extends Permission
 
         String[] sa = actions.split(",");
         for (String s : sa) {
-            String key = s.toLowerCase();
+            String key = s.toLowerCase(Locale.ENGLISH);
             action = Action.forName(key);
             if (action == null) {
                 throw MESSAGES.invalidPermissionAction(s);

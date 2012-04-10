@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jpa.epcpropagation;
 
+import java.util.Locale;
+
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Local;
@@ -52,11 +54,11 @@ public class NoTxEPCStatefulBean extends AbstractStatefulInterface {
 
     public boolean execute(Integer id, String name) throws Exception {
         MyEntity eb = em.find(MyEntity.class, id);
-        eb.setName(name.toUpperCase());
+        eb.setName(name.toUpperCase(Locale.ENGLISH));
 
-        String propagatedName = cmtBean.updateEntity(id, name.toLowerCase());
+        String propagatedName = cmtBean.updateEntity(id, name.toLowerCase(Locale.ENGLISH));
 
-        return propagatedName.equals(name.toUpperCase());
+        return propagatedName.equals(name.toUpperCase(Locale.ENGLISH));
     }
 
 

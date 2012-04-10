@@ -21,18 +21,22 @@
  */
 package org.jboss.as.cmp.jdbc;
 
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
+
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+
 import javax.sql.DataSource;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+
 import org.jboss.as.cmp.CmpLogger;
 import org.jboss.as.cmp.CmpMessages;
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.bridge.EntityBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractCMRFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractEntityBridge;
@@ -105,7 +109,7 @@ public final class JDBCStartCommand {
 
                 for (int j = 0; j < columnNames.length; j++) {
                     String name = columnNames[j];
-                    String ucName = name.toUpperCase();
+                    String ucName = name.toUpperCase(Locale.ENGLISH);
 
                     newNames.add(ucName);
 
@@ -225,7 +229,7 @@ public final class JDBCStartCommand {
                         for (int j = 0; j < fields.length; j++) {
                             JDBCFieldBridge field = fields[j];
 
-                            String name = field.getJDBCType().getColumnNames()[0].toUpperCase();
+                            String name = field.getJDBCType().getColumnNames()[0].toUpperCase(Locale.ENGLISH);
                             newNames.add(name);
 
                             if (!oldNames.contains(name)) {

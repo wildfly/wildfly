@@ -23,28 +23,6 @@
 package org.jboss.as.test.integration.ejb.remote.common;
 
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import javax.security.auth.callback.CallbackHandler;
-
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.ClientConstants;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.ejb3.subsystem.EJB3Extension;
-import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
-import org.jboss.as.remoting.RemotingExtension;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -68,6 +46,29 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.callback.CallbackHandler;
+
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.ejb3.subsystem.EJB3Extension;
+import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
+import org.jboss.as.remoting.RemotingExtension;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -472,7 +473,7 @@ public class EJBManagementUtil {
                 // Give up
                 qualifiedHostName = "unknown-host.unknown-domain";
             }
-            qualifiedHostName = qualifiedHostName.trim().toLowerCase();
+            qualifiedHostName = qualifiedHostName.trim().toLowerCase(Locale.ENGLISH);
         }
         if (hostName == null) {
             // Use the host part of the qualified host name

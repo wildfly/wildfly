@@ -22,6 +22,8 @@
 
 package org.jboss.as.web.deployment;
 
+import java.util.Locale;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -44,7 +46,7 @@ public class WarDeploymentInitializingProcessor implements DeploymentUnitProcess
         if(deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
             return;
         }
-        if(deploymentUnit.getName().toLowerCase().endsWith(WAR_EXTENSION)) {
+        if(deploymentUnit.getName().toLowerCase(Locale.ENGLISH).endsWith(WAR_EXTENSION)) {
             DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
         }
     }

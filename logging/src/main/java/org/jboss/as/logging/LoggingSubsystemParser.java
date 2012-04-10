@@ -1230,7 +1230,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         }
         if (OVERFLOW_ACTION.isMarshallable(node)) {
             writer.writeStartElement(Element.OVERFLOW_ACTION.getLocalName());
-            writer.writeAttribute(Attribute.VALUE.getLocalName(), node.get(OVERFLOW_ACTION.getName()).asString().toLowerCase());
+            writer.writeAttribute(Attribute.VALUE.getLocalName(), node.get(OVERFLOW_ACTION.getName()).asString().toLowerCase(Locale.ENGLISH));
             writer.writeEndElement();
         }
         if (SUBHANDLERS.isMarshallable(node)) {

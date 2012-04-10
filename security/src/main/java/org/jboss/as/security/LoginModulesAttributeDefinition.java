@@ -122,7 +122,7 @@ public class LoginModulesAttributeDefinition extends ListAttributeDefinition {
             for (ModelNode module : modules.asList()) {
                 writer.writeStartElement(getXmlName());
                 writer.writeAttribute(Attribute.CODE.getLocalName(), module.get(CODE).asString());
-                writer.writeAttribute(Attribute.FLAG.getLocalName(), module.get(Constants.FLAG).asString().toLowerCase());
+                writer.writeAttribute(Attribute.FLAG.getLocalName(), module.get(Constants.FLAG).asString().toLowerCase(Locale.ENGLISH));
 
                 if(module.hasDefined(Constants.MODULE)){
                     writer.writeAttribute(Attribute.MODULE.getLocalName(), module.get(Constants.MODULE).asString());

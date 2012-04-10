@@ -144,7 +144,7 @@ public class SaslResource extends SimpleResourceDefinition {
         SaslEnumValidator(Enum<?>[] src, boolean toLowerCase) {
             super(1);
             for (Enum<?> e : src) {
-                allowedValues.add(new ModelNode().set(toLowerCase ? e.name().toLowerCase() : e.name()));
+                allowedValues.add(new ModelNode().set(toLowerCase ? e.name().toLowerCase(Locale.ENGLISH) : e.name()));
             }
         }
 

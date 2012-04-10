@@ -26,6 +26,7 @@ package org.jboss.as.ejb3.deployment.processors;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.stream.XMLInputFactory;
@@ -173,7 +174,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         if (isWar(deploymentRoot)) {
             // it's a .war file, so look for the ejb-jar.xml in WEB-INF
             descriptor = deploymentRoot.getChild(WEB_INF + "/" + descriptorName);
-        } else if (deploymentRoot.getName().toLowerCase().endsWith(JAR_FILE_EXTENSION)) {
+        } else if (deploymentRoot.getName().toLowerCase(Locale.ENGLISH).endsWith(JAR_FILE_EXTENSION)) {
             descriptor = deploymentRoot.getChild(META_INF + "/" + descriptorName);
         } else {
             // neither a .jar nor a .war. Return
@@ -209,7 +210,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
 
     private static boolean isWar(final VirtualFile deploymentRoot) {
         // TODO: Is there a better way to do this?
-        return deploymentRoot.getName().toLowerCase().endsWith(WAR_FILE_EXTENSION);
+        return deploymentRoot.getName().toLowerCase(Locale.ENGLISH).endsWith(WAR_FILE_EXTENSION);
     }
 
     private static InputStream open(final VirtualFile file) throws DeploymentUnitProcessingException {

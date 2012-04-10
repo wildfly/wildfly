@@ -21,7 +21,12 @@
  */
 package org.jboss.as.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CODE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -97,7 +102,7 @@ public class MappingModulesAttributeDefinition extends ListAttributeDefinition {
             for (ModelNode module : modules.asList()) {
                 writer.writeStartElement(getXmlName());
                 writer.writeAttribute(Attribute.CODE.getLocalName(), module.get(CODE).asString());
-                writer.writeAttribute(Attribute.TYPE.getLocalName(), module.get(Constants.TYPE).asString().toLowerCase());
+                writer.writeAttribute(Attribute.TYPE.getLocalName(), module.get(Constants.TYPE).asString().toLowerCase(Locale.ENGLISH));
 
                 if (module.hasDefined(Constants.MODULE_OPTIONS)) {
                     for (ModelNode option : module.get(Constants.MODULE_OPTIONS).asList()) {

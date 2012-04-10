@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import org.jboss.as.jacorb.JacORBMessages;
 
@@ -265,7 +266,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
      * Convert an integer to a 16-digit hex string.
      */
     protected String toHexString(int i) {
-        String s = Integer.toHexString(i).toUpperCase();
+        String s = Integer.toHexString(i).toUpperCase(Locale.ENGLISH);
 
         if (s.length() < 8)
             return "00000000".substring(0, 8 - s.length()) + s;
@@ -277,7 +278,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
      * Convert a long to a 16-digit hex string.
      */
     protected String toHexString(long l) {
-        String s = Long.toHexString(l).toUpperCase();
+        String s = Long.toHexString(l).toUpperCase(Locale.ENGLISH);
 
         if (s.length() < 16)
             return "0000000000000000".substring(0, 16 - s.length()) + s;
@@ -650,7 +651,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
             AbstractAnalysis aa = (AbstractAnalysis) entries.get(i);
 
             clash[i] = false;
-            upperNames[i] = aa.getIDLName().toUpperCase();
+            upperNames[i] = aa.getIDLName().toUpperCase(Locale.ENGLISH);
 
             for (int j = 0; j < i; ++j) {
                 if (upperNames[i].equals(upperNames[j])) {
