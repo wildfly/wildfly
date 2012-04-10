@@ -53,7 +53,7 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
                     stack = new ArrayDeque<ValueState>();
                 }
                 stack.push(currentState);
-                currentState = new DefaultValueState(currentState instanceof ListValueState);
+                currentState = new DefaultValueState(currentState.isList());
             } else {
                 currentState = new DefaultValueState(false);
             }
@@ -80,13 +80,7 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         final String stateId = ctx.getState().getId();
         //System.out.println("left " + stateId + " '" + ctx.getCharacter() + "'");
 
-        if(ArgumentValueState.ID.equals(stateId)) {
-            currentState.complete();
-            if(stack != null && stack.peek() != null) {
-                stack.peek().addChild(currentState);
-                currentState = stack.pop();
-            }
-        } else if(ListState.ID.equals(stateId)) {
+        if(ArgumentValueState.ID.equals(stateId) || ListState.ID.equals(stateId)) {
             currentState.complete();
             if(stack != null && stack.peek() != null) {
                 stack.peek().addChild(currentState);
@@ -123,6 +117,8 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         void character(char ch);
 
         ModelNode getValue();
+
+        boolean isList();
     }
 
     class DefaultValueState implements ValueState {
@@ -227,6 +223,11 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
                 }
             }
         }
+
+        @Override
+        public boolean isList() {
+            return false;
+        }
     }
 
     class ListValueState implements ValueState {
@@ -275,6 +276,11 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         @Override
         public ModelNode getValue() {
             return list;
+        }
+
+        @Override
+        public boolean isList() {
+            return true;
         }
     }
 
