@@ -27,11 +27,17 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import org.jboss.as.cli.gui.CliGuiContext;
 import org.jfree.chart.event.ChartChangeEvent;
 import org.jfree.chart.event.ChartChangeListener;
 
 /**
+ * This class is responsible for adding/removing chart tabs and invoking the
+ * SwingWorker to update the graph data.
+ *
+ * When CLI GUI is embedded into another GUI such as jconsole, updateCharts()
+ * must be called from the client program instead of our own SwingWorker.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
@@ -51,6 +57,29 @@ public class ChartManager {
         tabs.add(jbossChart.getName(), makeTabPanel(jbossChart));
         tabs.setSelectedIndex(tabCount);
         this.chartList.add(jbossChart);
+
+        if (!cliGuiCtx.isEmbedded() && (chartList.size() == 1)) {
+            new ChartUpdater().execute();
+        }
+    }
+
+    private class ChartUpdater extends SwingWorker<Object, Object> {
+
+        private boolean stopped = false;
+
+        @Override
+        protected Object doInBackground() throws Exception {
+            while (!stopped) {
+                Thread.currentThread().sleep(4000);
+                updateCharts();
+            }
+
+            return null;
+        }
+
+        public void stop() {
+            this.stopped = true;
+        }
     }
 
     private JPanel makeTabPanel(JBossChart jbossChart) {
