@@ -114,7 +114,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             distinctName = (String) unmarshaller.readObject();
             beanName = (String) unmarshaller.readObject();
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            throw EjbMessages.MESSAGES.classNotFoundException(e);
         }
         final EjbDeploymentInformation ejbDeploymentInformation = this.findEJB(appName, moduleName, distinctName, beanName);
         if (ejbDeploymentInformation == null) {
@@ -134,7 +134,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             try {
                 locator = (EJBLocator) unmarshaller.readObject();
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
+                throw EjbMessages.MESSAGES.classNotFoundException(e);
             }
             final String viewClassName = locator.getViewType().getName();
             // Make sure it's a remote view

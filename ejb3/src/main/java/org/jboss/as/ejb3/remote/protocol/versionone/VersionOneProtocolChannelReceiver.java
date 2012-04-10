@@ -122,7 +122,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             channel.close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw EjbMessages.MESSAGES.couldNotCloseChannel(e);
         } finally {
             this.cleanupOnChannelDown();
         }

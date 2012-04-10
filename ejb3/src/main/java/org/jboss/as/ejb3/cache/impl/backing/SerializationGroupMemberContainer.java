@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.cache.impl.backing;
 import java.io.Serializable;
 import java.util.Set;
 
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryFactory;
@@ -162,7 +163,7 @@ public class SerializationGroupMemberContainer<K extends Serializable, V extends
         SerializationGroup<K, V, G> group = entry.getGroup();
         if (group != null) {
             if (!group.tryLock())
-                throw new IllegalStateException("Cannot obtain lock on " + group.getId() + " to passivate " + entry);
+                throw EjbMessages.MESSAGES.couldNotObtainLockForGroup(group.getId().toString(), entry.toString());
             try {
                 // Remove ourself from group's active list so we don't get
                 // called again via entry.prePassivate()
