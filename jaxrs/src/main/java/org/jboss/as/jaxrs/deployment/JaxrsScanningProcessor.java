@@ -21,12 +21,19 @@
  */
 package org.jboss.as.jaxrs.deployment;
 
+import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
+import static org.jboss.as.jaxrs.JaxrsMessages.MESSAGES;
+import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN;
+import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_PROVIDERS;
+import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_RESOURCES;
+
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -58,12 +65,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrapClasses;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
-
-import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
-import static org.jboss.as.jaxrs.JaxrsMessages.MESSAGES;
-import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN;
-import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_PROVIDERS;
-import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_RESOURCES;
 
 /**
  * Processor that finds jax-rs classes in the deployment
@@ -317,9 +318,9 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         if (value == null) {
             throw JaxrsMessages.MESSAGES.invalidParamValue(paramName, value);
         }
-        if (value.toLowerCase().equals("true")) {
+        if (value.toLowerCase(Locale.ENGLISH).equals("true")) {
             return true;
-        } else if (value.toLowerCase().equals("false")) {
+        } else if (value.toLowerCase(Locale.ENGLISH).equals("false")) {
             return false;
         } else {
             throw JaxrsMessages.MESSAGES.invalidParamValue(paramName, value);

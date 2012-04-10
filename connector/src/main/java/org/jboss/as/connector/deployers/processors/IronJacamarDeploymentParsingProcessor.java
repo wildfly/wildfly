@@ -22,21 +22,22 @@
 
 package org.jboss.as.connector.deployers.processors;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 import java.io.InputStream;
+import java.util.Locale;
 
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.metadata.ironjacamar.IronJacamarParser;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 
 /**
  * DeploymentUnitProcessor responsible for parsing a iron-jacamar.xml descriptor
@@ -67,7 +68,7 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
         if (deploymentRoot == null || !deploymentRoot.exists())
             return;
 
-        final String deploymentRootName = deploymentRoot.getName().toLowerCase();
+        final String deploymentRootName = deploymentRoot.getName().toLowerCase(Locale.ENGLISH);
         VirtualFile serviceXmlFile = null;
         if (deploymentRootName.endsWith(".rar")) {
             serviceXmlFile = deploymentRoot.getChild("/META-INF/ironjacamar.xml");

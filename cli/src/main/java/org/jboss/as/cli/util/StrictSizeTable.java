@@ -23,6 +23,7 @@ package org.jboss.as.cli.util;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -84,7 +85,7 @@ public class StrictSizeTable {
             if(buf.length() < columnOffset) {
                 buf.setLength(columnOffset);
             }
-            buf.insert(columnOffset, column.header.toUpperCase());
+            buf.insert(columnOffset, column.header.toUpperCase(Locale.ENGLISH));
             for(int i = column.header.length(); i < column.maxWidth; ++i) {
                 buf.insert(columnOffset + i, ' ');
             }

@@ -22,11 +22,12 @@
 
 package org.jboss.as.pojo.descriptor;
 
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
 import org.jboss.as.pojo.PojoMessages;
 import org.jboss.msc.service.ServiceController;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Mode config.
@@ -63,7 +64,7 @@ public enum ModeConfig {
         if (value == null)
             throw PojoMessages.MESSAGES.nullValue();
 
-        final ModeConfig controllerMode = MAP.get(value.toLowerCase());
+        final ModeConfig controllerMode = MAP.get(value.toLowerCase(Locale.ENGLISH));
         return controllerMode == null ? PASSIVE : controllerMode;
     }
 }

@@ -122,7 +122,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         }
         final String injectionType = isEmpty(annotation.type()) || annotation.type().equals(Object.class.getName()) ? methodInfo.args()[0].name().toString() : annotation.type();
         final InjectionTarget injectionTarget = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, injectionType);
-        final String bindingName = isEmpty(annotation.name()) ? methodInfo.declaringClass().name().toString() + "/" + methodName.substring(3, 4).toLowerCase() + methodName.substring(4) : annotation.name();
+        final String bindingName = isEmpty(annotation.name()) ? methodInfo.declaringClass().name().toString() + "/" + methodName.substring(3, 4).toLowerCase(Locale.ENGLISH) + methodName.substring(4) : annotation.name();
         processRef(unit, injectionType, annotation, methodInfo.declaringClass(), injectionTarget, bindingName);
     }
 

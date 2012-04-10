@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import java.util.Locale;
+
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilterWithAttributes;
 import org.jboss.vfs.VisitorAttributes;
@@ -71,7 +73,7 @@ final class WSVirtualFileFilter implements VirtualFileFilterWithAttributes {
             return false;
         }
 
-        final String fileName = file.getName().toLowerCase();
+        final String fileName = file.getName().toLowerCase(Locale.ENGLISH);
         final boolean hasWsdlSuffix = fileName.endsWith(".wsdl");
         final boolean hasXsdSuffix = fileName.endsWith(".xsd");
         final boolean hasXmlSuffix = fileName.endsWith(".xml");

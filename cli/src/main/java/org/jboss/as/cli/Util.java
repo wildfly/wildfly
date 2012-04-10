@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -129,7 +130,7 @@ public class Util {
     public static final String WRITE_ATTRIBUTE = "write-attribute";
 
     public static boolean isWindows() {
-        return SecurityActions.getSystemProperty("os.name").toLowerCase().indexOf("windows") >= 0;
+        return SecurityActions.getSystemProperty("os.name").toLowerCase(Locale.ENGLISH).indexOf("windows") >= 0;
     }
 
     public static boolean isSuccess(ModelNode operationResult) {

@@ -21,19 +21,22 @@
  */
 package org.jboss.as.cmp.jdbc;
 
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Vector;
 import java.util.zip.CRC32;
+
 import javax.sql.DataSource;
 
 import org.jboss.as.cmp.CmpLogger;
 import org.jboss.as.cmp.CmpMessages;
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractCMRFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractEntityBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
@@ -173,9 +176,9 @@ public final class SQLUtil {
 
             // fix case
             if (dmd.storesLowerCaseIdentifiers()) {
-                tableName = tableName.toLowerCase();
+                tableName = tableName.toLowerCase(Locale.ENGLISH);
             } else if (dmd.storesUpperCaseIdentifiers()) {
-                tableName = tableName.toUpperCase();
+                tableName = tableName.toUpperCase(Locale.ENGLISH);
             }
             // now put the schema name back on the table name
             if (strSchema.length() > 0) {
@@ -927,14 +930,14 @@ public final class SQLUtil {
                 int quoteLength = quote.length();
                 tableName = tableName.substring(quoteLength, tableName.length() - quoteLength);
                 if (dmd.storesLowerCaseQuotedIdentifiers())
-                    tableName = tableName.toLowerCase();
+                    tableName = tableName.toLowerCase(Locale.ENGLISH);
                 else if (dmd.storesUpperCaseQuotedIdentifiers())
-                    tableName = tableName.toUpperCase();
+                    tableName = tableName.toUpperCase(Locale.ENGLISH);
             } else {
                 if (dmd.storesLowerCaseIdentifiers())
-                    tableName = tableName.toLowerCase();
+                    tableName = tableName.toLowerCase(Locale.ENGLISH);
                 else if (dmd.storesUpperCaseIdentifiers())
-                    tableName = tableName.toUpperCase();
+                    tableName = tableName.toUpperCase(Locale.ENGLISH);
             }
 
             // Patch #927759: Split tablename into "schema" and "table" separated by '.'
@@ -979,14 +982,14 @@ public final class SQLUtil {
                 int quoteLength = quote.length();
                 tableName = tableName.substring(quoteLength, tableName.length() - quoteLength);
                 if (dmd.storesLowerCaseQuotedIdentifiers())
-                    tableName = tableName.toLowerCase();
+                    tableName = tableName.toLowerCase(Locale.ENGLISH);
                 else if (dmd.storesUpperCaseQuotedIdentifiers())
-                    tableName = tableName.toUpperCase();
+                    tableName = tableName.toUpperCase(Locale.ENGLISH);
             } else {
                 if (dmd.storesLowerCaseIdentifiers())
-                    tableName = tableName.toLowerCase();
+                    tableName = tableName.toLowerCase(Locale.ENGLISH);
                 else if (dmd.storesUpperCaseIdentifiers())
-                    tableName = tableName.toUpperCase();
+                    tableName = tableName.toUpperCase(Locale.ENGLISH);
             }
 
             // Patch #927759: Split tablename into "schema" and "table" separated by '.'
@@ -1000,7 +1003,7 @@ public final class SQLUtil {
             rs = dmd.getColumns(catalog, schema, tableName, null);
             while (rs.next()) {
                 String columnName = rs.getString("COLUMN_NAME");
-                columnNames.add(columnName == null ? null : columnName.toUpperCase());
+                columnNames.add(columnName == null ? null : columnName.toUpperCase(Locale.ENGLISH));
                 typeNames.add(rs.getString("TYPE_NAME"));
                 columnSizes.add(new Integer(rs.getInt("COLUMN_SIZE")));
             }
@@ -1033,9 +1036,9 @@ public final class SQLUtil {
             String catalog = con.getCatalog();
             String schema = null;
             if (dmd.storesLowerCaseIdentifiers())
-                tableName = tableName.toLowerCase();
+                tableName = tableName.toLowerCase(Locale.ENGLISH);
             else if (dmd.storesUpperCaseIdentifiers())
-                tableName = tableName.toUpperCase();
+                tableName = tableName.toUpperCase(Locale.ENGLISH);
 
             // Patch #927759: Split tablename into "schema" and "table" separated by '.'
             int dotIndex;

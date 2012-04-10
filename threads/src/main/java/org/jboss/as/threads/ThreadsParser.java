@@ -1205,6 +1205,6 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
 
     private void writeAttributeLowerCaseValue(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value)
             throws XMLStreamException {
-        writer.writeAttribute(attr.getLocalName(), value.asString().toLowerCase());
+        writer.writeAttribute(attr.getLocalName(), value.asString().toLowerCase(Locale.ENGLISH));
     }
 }

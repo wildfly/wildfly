@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.http.server;
 
+import java.util.Locale;
+
 import org.jboss.modules.ModuleLoadException;
 
 /**
@@ -40,7 +42,7 @@ class ErrorHandler extends ResourceHandler {
 
     static {
         String os = System.getProperty("os.name");
-        if (os != null && os.toLowerCase().contains("win")) {
+        if (os != null && os.toLowerCase(Locale.ENGLISH).contains("win")) {
             DEFAULT_RESOURCE = "/" + INDEX_WIN_HTML;
         } else {
             DEFAULT_RESOURCE = "/" + INDEX_HTML;

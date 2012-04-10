@@ -48,7 +48,7 @@ public class ActivationAttributeHandler implements OperationStepHandler {
         Activation val = Activation.valueOf(operation.require(ModelDescriptionConstants.VALUE).asString().toUpperCase(Locale.ENGLISH));
 
         ModelNode node = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        node.get(ModelConstants.ACTIVATION).set(val.toString().toLowerCase());
+        node.get(ModelConstants.ACTIVATION).set(val.toString().toLowerCase(Locale.ENGLISH));
 
         context.completeStep();
     }

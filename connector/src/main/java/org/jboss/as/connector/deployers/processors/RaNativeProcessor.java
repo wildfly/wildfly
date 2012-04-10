@@ -22,8 +22,12 @@
 
 package org.jboss.as.connector.deployers.processors;
 
+import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -32,9 +36,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
-
-import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
-import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 
 /**
  * Load native libraries for .rar deployments
@@ -62,7 +63,7 @@ public class RaNativeProcessor implements DeploymentUnitProcessor {
         if (deploymentRoot == null || !deploymentRoot.exists())
             return;
 
-        final String deploymentRootName = deploymentRoot.getName().toLowerCase();
+        final String deploymentRootName = deploymentRoot.getName().toLowerCase(Locale.ENGLISH);
         if (!deploymentRootName.endsWith(".rar")) {
             return;
         }
@@ -72,7 +73,7 @@ public class RaNativeProcessor implements DeploymentUnitProcessor {
 
             if (libs != null && libs.size() > 0) {
                 for (VirtualFile vf : libs) {
-                    String fileName = vf.getName().toLowerCase();
+                    String fileName = vf.getName().toLowerCase(Locale.ENGLISH);
                     ROOT_LOGGER.tracef("Processing library: %s", fileName);
 
                     try {
@@ -102,7 +103,7 @@ public class RaNativeProcessor implements DeploymentUnitProcessor {
                 return false;
 
             if (vf.isFile()) {
-                String fileName = vf.getName().toLowerCase();
+                String fileName = vf.getName().toLowerCase(Locale.ENGLISH);
                 if (fileName.endsWith(".a") || fileName.endsWith(".so") || fileName.endsWith(".dll")) {
                     return true;
                 }

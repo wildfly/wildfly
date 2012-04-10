@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.structure;
 
+import java.util.Locale;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -45,7 +47,7 @@ public class EarInitializationProcessor implements DeploymentUnitProcessor {
         final VirtualFile virtualFile = resourceRoot.getRoot();
 
         // Make sure this is an EAR deployment
-        if (virtualFile.getName().toLowerCase().endsWith(EAR_EXTENSION)) {
+        if (virtualFile.getName().toLowerCase(Locale.ENGLISH).endsWith(EAR_EXTENSION)) {
             //  Let other processors know this is an EAR deployment
             DeploymentTypeMarker.setType(DeploymentType.EAR, deploymentUnit);
         }

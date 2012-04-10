@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import java.util.List;
+import java.util.Locale;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBs;
@@ -127,7 +128,7 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
         final String methodParamType = methodInfo.args()[0].name().toString();
         final InjectionTarget targetDescription = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, methodParamType);
 
-        final String localContextName = isEmpty(annotation.name()) ? methodInfo.declaringClass().name().toString() + "/" + methodName.substring(3, 4).toLowerCase() + methodName.substring(4) : annotation.name();
+        final String localContextName = isEmpty(annotation.name()) ? methodInfo.declaringClass().name().toString() + "/" + methodName.substring(3, 4).toLowerCase(Locale.ENGLISH) + methodName.substring(4) : annotation.name();
         final String beanInterfaceType = isEmpty(annotation.beanInterface()) || annotation.beanInterface().equals(Object.class.getName()) ? methodParamType : annotation.beanInterface();
         process(deploymentUnit, beanInterfaceType, annotation.beanName(), annotation.lookup(), methodInfo.declaringClass(), targetDescription, localContextName, eeModuleDescription);
     }

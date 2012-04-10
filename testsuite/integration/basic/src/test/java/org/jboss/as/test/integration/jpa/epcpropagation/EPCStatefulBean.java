@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jpa.epcpropagation;
 
+import java.util.Locale;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -69,12 +71,12 @@ public class EPCStatefulBean extends AbstractStatefulInterface  implements State
             tx1.begin();
             em.joinTransaction();
             MyEntity entity = em.find(MyEntity.class, id);
-            entity.setName(name.toUpperCase());
+            entity.setName(name.toUpperCase(Locale.ENGLISH));
 
-            String propagatedName = cmtBean.updateEntity(id, name.toLowerCase());
+            String propagatedName = cmtBean.updateEntity(id, name.toLowerCase(Locale.ENGLISH));
             tx1.commit();
 
-            return propagatedName.equals(name.toUpperCase());
+            return propagatedName.equals(name.toUpperCase(Locale.ENGLISH));
         } catch (Exception e) {
             try {
                 sessionContext.getUserTransaction().rollback();

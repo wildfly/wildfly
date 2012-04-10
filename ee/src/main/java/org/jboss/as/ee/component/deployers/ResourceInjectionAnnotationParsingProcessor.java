@@ -22,10 +22,14 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.server.deployment.Attachments.OSGI_MANIFEST;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,9 +61,6 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.modules.Module;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-import static org.jboss.as.server.deployment.Attachments.OSGI_MANIFEST;
 
 /**
  * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.component.ComponentDescription} instance to configure
@@ -192,7 +193,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             throw MESSAGES.setterMethodOnly("@Resource", methodInfo);
         }
 
-        final String contextNameSuffix = methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
+        final String contextNameSuffix = methodName.substring(3, 4).toLowerCase(Locale.ENGLISH) + methodName.substring(4);
         final String localContextName = isEmpty(name) ? methodInfo.declaringClass().name().toString() + "/" + contextNameSuffix : name;
 
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? methodInfo.args()[0].name().toString() : type;

@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.server.deployment.AttachmentKey;
@@ -95,7 +96,7 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
             return Collections.emptySet();
         }
 
-        final String deploymentRootName = deploymentRoot.getName().toLowerCase();
+        final String deploymentRootName = deploymentRoot.getName().toLowerCase(Locale.ENGLISH);
 
         if (deploymentRootName.endsWith("-ds.xml")) {
             return Collections.singleton(deploymentRoot);

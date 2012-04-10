@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -105,7 +106,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         boolean fragmentFound = false;
         Map<String, WebFragmentMetaData> webFragments = warMetaData.getWebFragmentsMetaData();
         for (ResourceRoot resourceRoot : resourceRoots) {
-            if (resourceRoot.getRoot().getName().toLowerCase().endsWith(".jar")) {
+            if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
                 jarsSet.add(resourceRoot.getRootName());
                 // Find overlays
                 VirtualFile overlay = resourceRoot.getRoot().getChild("META-INF/resources");

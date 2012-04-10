@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jpa.epcpropagation;
 
+import java.util.Locale;
+
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Local;
@@ -56,9 +58,9 @@ public class InitEPCStatefulBean extends AbstractStatefulInterface {
             tx1.begin();
             em.joinTransaction();
             MyEntity entity = em.find(MyEntity.class, id);
-            entity.setName(name.toUpperCase());
+            entity.setName(name.toUpperCase(Locale.ENGLISH));
 
-            boolean result = cmtBean.execute(id, name.toLowerCase());
+            boolean result = cmtBean.execute(id, name.toLowerCase(Locale.ENGLISH));
             tx1.commit();
 
             return result;

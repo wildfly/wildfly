@@ -26,6 +26,7 @@ import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.persistence.PersistenceContext;
@@ -172,7 +173,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final String contextNameSuffix = methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
+        final String contextNameSuffix = methodName.substring(3, 4).toLowerCase(Locale.ENGLISH) + methodName.substring(4);
         final AnnotationValue declaredNameValue = annotation.value("name");
         final String declaredName = declaredNameValue != null ? declaredNameValue.asString() : null;
         final String localContextName;

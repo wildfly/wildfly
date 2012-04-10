@@ -9,6 +9,7 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.as.controller.RunningMode;
@@ -272,7 +273,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
                 // Give up
                 qualifiedHostName = "unknown-host.unknown-domain";
             }
-            qualifiedHostName = qualifiedHostName.trim().toLowerCase();
+            qualifiedHostName = qualifiedHostName.trim().toLowerCase(Locale.ENGLISH);
         }
         this.qualifiedHostName = qualifiedHostName;
         this.hostControllerName = qualifiedHostName;

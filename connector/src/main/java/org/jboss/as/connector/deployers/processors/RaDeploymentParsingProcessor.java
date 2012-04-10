@@ -23,9 +23,12 @@
 package org.jboss.as.connector.deployers.processors;
 
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Locale;
 
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.server.deployment.Attachments;
@@ -38,8 +41,6 @@ import org.jboss.jca.common.api.metadata.ra.Connector;
 import org.jboss.jca.common.metadata.ra.RaParser;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 
 /**
  * DeploymentUnitProcessor responsible for parsing a standard jca xml descriptor
@@ -73,7 +74,7 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
         if (file == null || !file.exists())
             return;
 
-        final String deploymentRootName = file.getName().toLowerCase();
+        final String deploymentRootName = file.getName().toLowerCase(Locale.ENGLISH);
         if (!deploymentRootName.endsWith(".rar")) {
             return;
         }

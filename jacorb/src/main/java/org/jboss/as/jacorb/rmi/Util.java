@@ -36,6 +36,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -358,7 +359,7 @@ public class Util {
      * Convert an integer to a 16-digit hex string.
      */
     private static String toHexString(int i) {
-        String s = Integer.toHexString(i).toUpperCase();
+        String s = Integer.toHexString(i).toUpperCase(Locale.ENGLISH);
 
         if (s.length() < 8)
             return "00000000".substring(8 - s.length()) + s;
@@ -370,7 +371,7 @@ public class Util {
      * Convert a long to a 16-digit hex string.
      */
     private static String toHexString(long l) {
-        String s = Long.toHexString(l).toUpperCase();
+        String s = Long.toHexString(l).toUpperCase(Locale.ENGLISH);
 
         if (s.length() < 16)
             return "0000000000000000".substring(16 - s.length()) + s;

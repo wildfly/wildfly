@@ -22,6 +22,13 @@
 
 package org.jboss.as.connector.deployers.processors;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -36,12 +43,6 @@ import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.List;
-
-import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 
 /**
  * Deployment processor used to determine the structure of RAR deployments.
@@ -71,7 +72,7 @@ public class RaStructureProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final String deploymentRootName = deploymentRoot.getName().toLowerCase();
+        final String deploymentRootName = deploymentRoot.getName().toLowerCase(Locale.ENGLISH);
         if (!deploymentRootName.endsWith(RAR_EXTENSION)) {
             return;
         }
