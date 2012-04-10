@@ -25,7 +25,9 @@ package org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover.dd;
 import org.jboss.arquillian.container.test.api.*;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeNameGetter;
@@ -40,7 +42,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,7 +51,6 @@ import org.junit.runner.RunWith;
  *
  * @author Jaikiran Pai
  */
-@Ignore("AS7-4358")
 @RunWith(Arquillian.class)
 @RunAsClient
 public class RemoteEJBClientDDBasedSFSBFailoverTestCase {
