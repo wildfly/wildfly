@@ -137,7 +137,17 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
             configureMyJInternalFrame();
         }
 
-        return null;
+        return new ChartUpdater();
+    }
+
+    class ChartUpdater extends SwingWorker<Object, Object> {
+
+        @Override
+        protected Object doInBackground() throws Exception {
+            cliGuiCtx.getChartManager().updateCharts();
+            return null;
+        }
+
     }
 
     private void configureMyJInternalFrame() {

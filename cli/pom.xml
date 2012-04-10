@@ -107,6 +107,16 @@
            <artifactId>remoting-jmx</artifactId>
         </dependency>
 
+        <dependency>
+             <groupId>org.jfree</groupId>
+             <artifactId>jfreechart</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jcommon</artifactId>
+        </dependency>
+
         <!-- Test Dependencies -->
         <dependency>
             <groupId>junit</groupId>
@@ -114,7 +124,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
     <profiles>
         <profile>
             <id>linux-windows</id>
@@ -146,5 +156,5 @@
                 </dependency>
             </dependencies>
         </profile>
-    </profiles>    
+    </profiles>
 </project>
