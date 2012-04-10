@@ -100,16 +100,16 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
     public SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                      final ParameterValidator validator, String[] alternatives, String[] requires, AttributeAccess.Flag... flags) {
-        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                createParameterValidator(validator, type, allowNull, allowExpression), alternatives, requires, flags);
+        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, null,
+                createParameterValidator(validator, type, allowNull, allowExpression), true, alternatives, requires, flags);
     }
 
     public SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
-            final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
-            final ParameterCorrector corrector, final ParameterValidator validator,
-            String[] alternatives, String[] requires, AttributeAccess.Flag... flags) {
+                                     final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
+                                     final ParameterCorrector corrector, final ParameterValidator validator,
+                                     boolean validateNull, String[] alternatives, String[] requires, AttributeAccess.Flag... flags) {
         super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                corrector, createParameterValidator(validator, type, allowNull, allowExpression), alternatives, requires, flags);
+                corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires, flags);
     }
 
     public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull, final String[] alternatives) {
@@ -117,7 +117,7 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
     }
 
     public SimpleAttributeDefinition(final String name, final ModelType type, final boolean allowNull, ParameterCorrector corrector, ParameterValidator validator) {
-        this(name, name, null, type, allowNull, false, MeasurementUnit.NONE, corrector, validator, null, null);
+        this(name, name, null, type, allowNull, false, MeasurementUnit.NONE, corrector, validator, true, null, null);
     }
 
     private static ParameterValidator createParameterValidator(final ParameterValidator existing, final ModelType type,final boolean allowNull, final boolean allowExpression) {

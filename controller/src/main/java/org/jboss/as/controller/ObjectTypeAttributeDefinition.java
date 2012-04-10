@@ -56,7 +56,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
      * Constructor which enables validation via ObjectTypeValidator.
      */
     private ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull, final ParameterCorrector corrector, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, new ObjectTypeValidator(allowNull, valueTypes), alternatives, requires, flags);
+        super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, new ObjectTypeValidator(allowNull, valueTypes), false, alternatives, requires, flags);
         this.valueTypes = valueTypes;
         if (suffix == null) {
             this.suffix = "";
@@ -69,7 +69,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
      * Constructor which allows specifying a custom ParameterValidator. Disabled by default.
      */
     private ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull, final ParameterValidator validator, final ParameterCorrector corrector, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, validator, alternatives, requires, flags);
+        super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, validator, false, alternatives, requires, flags);
         this.valueTypes = valueTypes;
         if (suffix == null) {
             this.suffix = "";

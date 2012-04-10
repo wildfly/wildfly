@@ -701,16 +701,16 @@ public interface ControllerMessages {
     UnsupportedOperationException immutableResource();
 
     /**
-     * A message indicating the type is invalid.
+     * An exception indicating the type is invalid.
      *
      * @param name        the name the invalid type was found for.
      * @param validTypes  a collection of valid types.
      * @param invalidType the invalid type.
      *
-     * @return the message.
+     * @return the exception.
      */
     @Message(id = 14688, value = "Wrong type for %s. Expected %s but was %s")
-    String incorrectType(String name, Collection<ModelType> validTypes, ModelType invalidType);
+    OperationFailedException incorrectType(String name, Collection<ModelType> validTypes, ModelType invalidType);
 
     /**
      * A message indicating interrupted while waiting for request.
@@ -1379,14 +1379,14 @@ public interface ControllerMessages {
     IllegalStateException nullAsynchronousExecutor();
 
     /**
-     * A message indicating the {@code name} may not be {@code null}.
+     * An exception indicating the {@code name} may not be {@code null}.
      *
      * @param name the name that cannot be {@code null}.
      *
-     * @return the message.
+     * @return the exception.
      */
     @Message(id = 14746, value = "%s may not be null")
-    String nullNotAllowed(String name);
+    OperationFailedException nullNotAllowed(String name);
 
     /**
      * Creates an exception indicating the variable, represented by the {@code name} parameter, was {@code null}.
@@ -2458,5 +2458,15 @@ public interface ControllerMessages {
 
     @Message(id = 14854, value="Path '%s' is read-only; it cannot be modified")
     OperationFailedException cannotModifyReadOnlyPath(String pathName);
+
+    /**
+     * An exception indicating the {@code name} may not be {@link ModelType#EXPRESSION}.
+     *
+     * @param name the name of the attribute or parameter value that cannot be an expression
+     *
+     * @return the exception.
+     */
+    @Message(id = 14855, value = "%s may not be ModelType.EXPRESSION")
+    OperationFailedException expressionNotAllowed(String name);
 
 }

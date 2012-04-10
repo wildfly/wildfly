@@ -61,6 +61,8 @@ public class SimpleAttributeDefinitionBuilder {
     private String[] requires;
     private ParameterCorrector corrector;
     private ParameterValidator validator;
+    private boolean validateNull = true;
+
     private AttributeAccess.Flag[] flags;
 
     public SimpleAttributeDefinitionBuilder(final String attributeName, final ModelType type) {
@@ -91,7 +93,7 @@ public class SimpleAttributeDefinitionBuilder {
 
     public SimpleAttributeDefinition build() {
         return new SimpleAttributeDefinition(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                                     corrector, validator, alternatives, requires, flags);
+                                     corrector, validator, validateNull, alternatives, requires, flags);
     }
 
     public SimpleAttributeDefinitionBuilder setXmlName(String xmlName) {
@@ -126,6 +128,21 @@ public class SimpleAttributeDefinitionBuilder {
 
     public SimpleAttributeDefinitionBuilder setValidator(ParameterValidator validator) {
         this.validator = validator;
+        return this;
+    }
+
+    /**
+     * Sets whether the attribute definition should check for {@link ModelNode#isDefined() undefined} values if
+     * {@link #setAllowNull(boolean) null is not allowed} in addition to any validation provided by any
+     * {@link #setValidator(ParameterValidator) configured validator}. The default if not set is {@code true}. The use
+     * case for setting this to {@code false} would be to ignore undefined values in the basic validation performed
+     * by the {@link AttributeDefinition} and instead let operation handlers validate using more complex logic
+     * (e.g. checking for {@link #setAlternatives(String...) alternatives}.
+     *
+     * @param validateNull {@code true} if additional validation should be performed; {@false} otherwise
+     */
+    public SimpleAttributeDefinitionBuilder setValidateNull(boolean validateNull) {
+        this.validateNull = validateNull;
         return this;
     }
 
