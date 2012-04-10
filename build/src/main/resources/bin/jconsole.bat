@@ -80,6 +80,8 @@ call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\dmr\main
 call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\as\controller-client\main
 call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\threads\main
 call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\as\controller\main
+call :SearchForJars %JBOSS_MODULEPATH%\org\jfree\chart\main
+call :SearchForJars %JBOSS_MODULEPATH%\org\jfree\jcommon\main
 
 rem echo %CLASSPATH%
 

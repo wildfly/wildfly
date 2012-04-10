@@ -353,6 +353,16 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jfree</groupId>
+                    <artifactId>jfreechart</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jfree</groupId>
+                    <artifactId>jcommon</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>jline</groupId>
                     <artifactId>jline</artifactId>
                 </dependency>

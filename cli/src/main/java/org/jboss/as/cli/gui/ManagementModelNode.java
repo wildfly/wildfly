@@ -159,14 +159,14 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
     /**
      * Encapsulates name/value pair.  Also encapsulates escaping of the value.
      */
-    class UserObject {
+    public class UserObject {
         private ModelNode backingNode;
         private String name;
         private String value;
         private boolean isLeaf;
         private boolean isGeneric = false;
         private String separator;
-        private AttributeDescription attribDesc = null;
+        private AttributeProps attribProps = null;
 
         /**
          * Constructor for the root node.
@@ -184,7 +184,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
          *
          * @param name The name of the resource.
          */
-        public UserObject(ModelNode backingNode, String name) {
+        UserObject(ModelNode backingNode, String name) {
             this.backingNode = backingNode;
             this.name = name;
             this.value = "*";
@@ -194,7 +194,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
         }
 
         // resource node such as subsystem=weld
-        public UserObject(ModelNode backingNode, String name, String value) {
+        UserObject(ModelNode backingNode, String name, String value) {
             this.backingNode = backingNode;
             this.name = name;
             this.value = value;
@@ -203,14 +203,14 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
         }
 
         // attribute
-        public UserObject(ModelNode backingNode, ModelNode resourceDesc, String name, String value) {
-            this.attribDesc = new AttributeDescription(resourceDesc.get("attributes", name));
+        UserObject(ModelNode backingNode, ModelNode resourceDesc, String name, String value) {
+            this.attribProps = new AttributeProps(resourceDesc.get("attributes", name));
             this.backingNode = backingNode;
             this.name = name;
             this.value = value;
             this.isLeaf = true;
 
-            if (this.attribDesc.isGraphable()) {
+            if (this.attribProps.isGraphable()) {
                 this.separator = " \u2245 ";
             } else {
                 this.separator = " => ";
@@ -221,8 +221,8 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
             return this.backingNode;
         }
 
-        public AttributeDescription getAttributeDescription() {
-            return this.attribDesc;
+        public AttributeProps getAttributeProps() {
+            return this.attribProps;
         }
 
         public String getName() {
@@ -251,11 +251,11 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
         }
     }
 
-    class AttributeDescription {
+    public class AttributeProps {
 
         private ModelNode attributes;
 
-        AttributeDescription(ModelNode attributes) {
+        AttributeProps(ModelNode attributes) {
             this.attributes = attributes;
         }
 
@@ -281,6 +281,10 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
                    (type == ModelType.DOUBLE) ||
                    (type == ModelType.INT) ||
                    (type == ModelType.LONG);
+        }
+
+        public String getDescription() {
+            return attributes.get("description").asString();
         }
     }
 

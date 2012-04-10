@@ -16,24 +16,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.cli.gui;
+package org.jboss.as.cli.gui.charts;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import org.jboss.as.cli.gui.CliGuiContext;
+import org.jboss.as.cli.gui.ManagementModelNode;
 
 /**
  * JPopupMenu that provides graphing for real time attributes.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
-public class GraphingMenu extends JPopupMenu {
+public class ChartMenu extends JPopupMenu {
     private CliGuiContext cliGuiCtx;
     private JTree invoker;
 
-    public GraphingMenu(CliGuiContext cliGuiCtx, JTree invoker) {
+    public ChartMenu(CliGuiContext cliGuiCtx, JTree invoker) {
         this.cliGuiCtx = cliGuiCtx;
         this.invoker = invoker;
         setLightWeightPopupEnabled(true);
@@ -71,7 +73,9 @@ public class GraphingMenu extends JPopupMenu {
         }
 
         public void actionPerformed(ActionEvent ae) {
-            System.out.println("selected menu item");
+            CreateAChartDialog dialog = new CreateAChartDialog(cliGuiCtx, node);
+            dialog.setLocationRelativeTo(cliGuiCtx.getMainWindow());
+            dialog.setVisible(true);
         }
 
     }
