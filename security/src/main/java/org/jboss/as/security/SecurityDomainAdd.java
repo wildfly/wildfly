@@ -65,6 +65,7 @@ import static org.jboss.as.security.Constants.URL;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
@@ -624,7 +625,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
 
     private LoginModuleControlFlag getControlFlag(String flag) {
-        switch (ModuleFlag.valueOf(flag.toUpperCase())) {
+        switch (ModuleFlag.valueOf(flag.toUpperCase(Locale.ENGLISH))) {
             case SUFFICIENT:
                 return LoginModuleControlFlag.SUFFICIENT;
             case OPTIONAL:

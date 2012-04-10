@@ -21,6 +21,13 @@
  */
 package org.jboss.as.osgi.parser;
 
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -48,13 +55,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.Bundle;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
 
 /**
  * OSGi subsystem operation handler.
@@ -165,7 +165,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private Activation getActivationMode(ModelNode operation) {
         Activation activation = SubsystemState.DEFAULT_ACTIVATION;
         if (operation.has(ModelConstants.ACTIVATION)) {
-            activation = Activation.valueOf(operation.get(ModelConstants.ACTIVATION).asString().toUpperCase());
+            activation = Activation.valueOf(operation.get(ModelConstants.ACTIVATION).asString().toUpperCase(Locale.ENGLISH));
         }
         return activation;
     }

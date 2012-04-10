@@ -64,6 +64,7 @@ import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -362,7 +363,7 @@ public class RemotingExtension implements Extension {
                                 String[] qop = readArrayAttributeElement(reader, "value", String.class);
                                 for (String q : qop) {
                                     try {
-                                        saslElement.get(QOP).add(SaslQop.fromString(q).getString().toLowerCase());
+                                        saslElement.get(QOP).add(SaslQop.fromString(q).getString().toLowerCase(Locale.ENGLISH));
                                     } catch (IllegalArgumentException e) {
                                         throw MESSAGES.invalidQOPV(q);
                                     }
@@ -382,7 +383,7 @@ public class RemotingExtension implements Extension {
                                 String[] strength = readArrayAttributeElement(reader, "value", String.class);
                                 for (String s : strength) {
                                     try {
-                                        saslElement.get(STRENGTH).add(SaslStrength.valueOf(s.toUpperCase()).name().toLowerCase());
+                                        saslElement.get(STRENGTH).add(SaslStrength.valueOf(s.toUpperCase(Locale.ENGLISH)).name().toLowerCase(Locale.ENGLISH));
                                     } catch (IllegalArgumentException e) {
                                         throw MESSAGES.invalidStrength(s);
                                     }

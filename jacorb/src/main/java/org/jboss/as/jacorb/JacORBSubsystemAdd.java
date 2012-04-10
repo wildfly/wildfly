@@ -25,6 +25,7 @@ package org.jboss.as.jacorb;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -224,7 +225,7 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
                 // check if the property is an SSL config property, in which case the value must be mapped to the JacORB
                 // integer representation.
                 if (JacORBSubsystemDefinitions.SSL_CONFIG_ATTRIBUTES.contains(attrDefinition)) {
-                    SSLConfigValue sslConfigValue = SSLConfigValue.valueOf(value.toUpperCase());
+                    SSLConfigValue sslConfigValue = SSLConfigValue.valueOf(value.toUpperCase(Locale.ENGLISH));
                     if (sslConfigValue != null)
                         value = sslConfigValue.getJacorbValue();
                 }

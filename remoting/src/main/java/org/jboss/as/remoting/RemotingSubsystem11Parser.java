@@ -22,26 +22,6 @@
 
 package org.jboss.as.remoting;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.xnio.sasl.SaslQop;
-import org.xnio.sasl.SaslStrength;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.EnumSet;
-import java.util.List;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -58,8 +38,55 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.remoting.CommonAttributes.*;
+import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
+import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
+import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
+import static org.jboss.as.remoting.CommonAttributes.INCLUDE_MECHANISMS;
+import static org.jboss.as.remoting.CommonAttributes.LOCAL_OUTBOUND_CONNECTION;
+import static org.jboss.as.remoting.CommonAttributes.NO_ACTIVE;
+import static org.jboss.as.remoting.CommonAttributes.NO_ANONYMOUS;
+import static org.jboss.as.remoting.CommonAttributes.NO_DICTIONARY;
+import static org.jboss.as.remoting.CommonAttributes.NO_PLAIN_TEXT;
+import static org.jboss.as.remoting.CommonAttributes.OUTBOUND_CONNECTION;
+import static org.jboss.as.remoting.CommonAttributes.OUTBOUND_SOCKET_BINDING_REF;
+import static org.jboss.as.remoting.CommonAttributes.PASS_CREDENTIALS;
+import static org.jboss.as.remoting.CommonAttributes.POLICY;
+import static org.jboss.as.remoting.CommonAttributes.PROPERTY;
+import static org.jboss.as.remoting.CommonAttributes.QOP;
+import static org.jboss.as.remoting.CommonAttributes.REMOTE_OUTBOUND_CONNECTION;
+import static org.jboss.as.remoting.CommonAttributes.REUSE_SESSION;
+import static org.jboss.as.remoting.CommonAttributes.SASL;
+import static org.jboss.as.remoting.CommonAttributes.SASL_POLICY;
+import static org.jboss.as.remoting.CommonAttributes.SECURITY;
+import static org.jboss.as.remoting.CommonAttributes.SECURITY_REALM;
+import static org.jboss.as.remoting.CommonAttributes.SERVER_AUTH;
+import static org.jboss.as.remoting.CommonAttributes.SOCKET_BINDING;
+import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
+import static org.jboss.as.remoting.CommonAttributes.URI;
+import static org.jboss.as.remoting.CommonAttributes.VALUE;
 import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
+
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Locale;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.xnio.sasl.SaslQop;
+import org.xnio.sasl.SaslStrength;
 
 /**
  * Parser for remoting subsystem 1.1 version
@@ -276,7 +303,7 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
                     String[] qop = readArrayAttributeElement(reader, "value", String.class);
                     for (String q : qop) {
                         try {
-                            saslElement.get(QOP).add(SaslQop.fromString(q).getString().toLowerCase());
+                            saslElement.get(QOP).add(SaslQop.fromString(q).getString().toLowerCase(Locale.ENGLISH));
                         } catch (IllegalArgumentException e) {
                             throw MESSAGES.invalidQOPV(q);
                         }
@@ -296,7 +323,7 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
                     String[] strength = readArrayAttributeElement(reader, "value", String.class);
                     for (String s : strength) {
                         try {
-                            saslElement.get(STRENGTH).add(SaslStrength.valueOf(s.toUpperCase()).name().toLowerCase());
+                            saslElement.get(STRENGTH).add(SaslStrength.valueOf(s.toUpperCase(Locale.ENGLISH)).name().toLowerCase(Locale.ENGLISH));
                         } catch (IllegalArgumentException e) {
                             throw MESSAGES.invalidStrength(s);
                         }

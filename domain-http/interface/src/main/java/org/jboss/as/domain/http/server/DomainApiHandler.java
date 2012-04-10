@@ -59,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -456,7 +457,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             String value = entry.getValue();
             if ("operation".equals(key)) {
                 try {
-                    operation = GetOperation.valueOf(value.toUpperCase().replace('-', '_'));
+                    operation = GetOperation.valueOf(value.toUpperCase(Locale.ENGLISH).replace('-', '_'));
                     value = operation.realOperation();
                 } catch (Exception e) {
                     throw MESSAGES.invalidOperation(e, value);

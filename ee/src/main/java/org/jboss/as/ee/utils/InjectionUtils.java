@@ -28,6 +28,7 @@ import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Locale;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
@@ -52,7 +53,7 @@ public final class InjectionUtils {
             throw MESSAGES.cannotLoad(e, injectionTargetClassName);
         }
         final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(injectionTargetClass);
-        String methodName = "set" + injectionTargetName.substring(0, 1).toUpperCase() + injectionTargetName.substring(1);
+        String methodName = "set" + injectionTargetName.substring(0, 1).toUpperCase(Locale.ENGLISH) + injectionTargetName.substring(1);
 
         boolean methodFound = false;
         Method method = null;
