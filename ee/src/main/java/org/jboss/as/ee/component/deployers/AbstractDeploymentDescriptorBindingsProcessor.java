@@ -142,7 +142,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                 final String memberName = fieldOrMethod instanceof Field ? ((Field) fieldOrMethod).getName() : ((Method) fieldOrMethod).getName();
 
                 if (classType != null) {
-                    if (!classType.isAssignableFrom(injectionTargetType)) {
+                    if (!injectionTargetType.isAssignableFrom(classType)) {
                         boolean ok = false;
                         if (classType.isPrimitive()) {
                             if (BOXED_TYPES.get(classType).equals(injectionTargetType)) {

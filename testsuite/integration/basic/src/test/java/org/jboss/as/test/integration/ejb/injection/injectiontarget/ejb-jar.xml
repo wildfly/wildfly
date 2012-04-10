@@ -1,0 +1,22 @@
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+	version="3.1">
+	<enterprise-beans>
+
+		<session>
+			<ejb-name>InjectingBean</ejb-name>
+			<session-type>Stateless</session-type>
+
+            <ejb-local-ref>
+                <ejb-ref-name>ejb/local</ejb-ref-name>
+                <ejb-ref-type>Session</ejb-ref-type>
+                <local>org.jboss.as.test.integration.ejb.injection.injectiontarget.SubInterface</local>
+                <injection-target>
+                    <injection-target-class>org.jboss.as.test.integration.ejb.injection.injectiontarget.InjectingBean</injection-target-class>
+                    <injection-target-name>injected</injection-target-name>
+                </injection-target>
+            </ejb-local-ref>
+		</session>
+	</enterprise-beans>
+
+</ejb-jar>
