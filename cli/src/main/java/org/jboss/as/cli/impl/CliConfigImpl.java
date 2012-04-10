@@ -59,6 +59,7 @@ class CliConfigImpl implements CliConfig {
     private static final String HOST = "host";
     private static final String MAX_SIZE = "max-size";
     private static final String PORT = "port";
+    private static final String VALIDATE_OPERATION_REQUESTS = "validate-operation-requests";
 
     static CliConfig load(final CommandContext ctx) throws CliInitializationException {
         final String jbossHome = SecurityActions.getEnvironmentVariable("JBOSS_HOME");
@@ -99,6 +100,9 @@ class CliConfigImpl implements CliConfig {
                                 SslConfig sslConfig = new SslConfig();
                                 readSSLElement(reader, sslConfig);
                                 config.sslConfig = sslConfig;
+                            } else if(localName.equals(VALIDATE_OPERATION_REQUESTS)) {
+                                final String resolved = resolveString(reader.getElementText());
+                                config.validateOperationRequests = Boolean.parseBoolean(resolved);
                             } else {
                                 throw new XMLStreamException("Unexpected element: " + localName);
                             }
@@ -215,6 +219,8 @@ class CliConfigImpl implements CliConfig {
     private String historyFileDir;
     private int historyMaxSize;
 
+    private boolean validateOperationRequests = true;
+
     private SSLConfig sslConfig;
 
     @Override
@@ -245,6 +251,11 @@ class CliConfigImpl implements CliConfig {
     @Override
     public int getHistoryMaxSize() {
         return historyMaxSize;
+    }
+
+    @Override
+    public boolean isValidateOperationRequests() {
+        return validateOperationRequests;
     }
 
     @Override
