@@ -82,6 +82,11 @@ public class OpenJPAPersistenceProviderAdaptor implements PersistenceProviderAda
     }
 
     @Override
+    public boolean doesScopedPersistenceUnitNameIdentifyCacheRegionName(PersistenceUnitMetadata pu) {
+        return true;
+    }
+
+    @Override
     public void cleanup(PersistenceUnitMetadata pu) {
         JBossPersistenceMetaDataFactory.cleanup(pu);
     }

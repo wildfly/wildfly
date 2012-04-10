@@ -81,6 +81,16 @@ public interface PersistenceProviderAdaptor {
     ManagementAdaptor getManagementAdaptor();
 
     /**
+     * for adapters that support getManagementAdaptor(), does the scoped persistence unit name
+     * correctly identify cache entities.  This is intended for Hibernate, other adapters can return true.
+     *
+     * @return the Hibernate adapter will return false if
+     * the persistence unit has specified a custom "hibernate.cache.region_prefix" property.  True otherwise.
+     *
+     */
+    boolean doesScopedPersistenceUnitNameIdentifyCacheRegionName(PersistenceUnitMetadata pu);
+
+    /**
      * Called when we are done with the persistence unit metadata
      */
     void cleanup(PersistenceUnitMetadata pu);

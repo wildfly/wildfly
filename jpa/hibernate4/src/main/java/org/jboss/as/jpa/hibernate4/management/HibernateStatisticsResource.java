@@ -316,7 +316,7 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
                     // remove the scoped PU name plus one for '.' the separator character added to it.
                     // and replace period with underscore.  Filtered region name will be "org_jboss_as_testsuite_integration_jpa_hibernate_Employee"
                     int stripUpTo = puName.length() + 1;
-                    if (stripUpTo > 0) {
+                    if (stripUpTo > 0 && stripUpTo < region.length()) {
                         result.add(region.substring(stripUpTo));
                     }
                     else { // if puName is missing, just use the region as is (AS7-3858)
