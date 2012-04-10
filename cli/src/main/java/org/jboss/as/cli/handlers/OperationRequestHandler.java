@@ -69,7 +69,9 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
             throw new CommandFormatException("Parsed request isn't available.");
         }
 
-        validateRequest(ctx, request);
+        if(ctx.getConfig().isValidateOperationRequests()) {
+            validateRequest(ctx, request);
+        }
 
         try {
             final ModelNode result = client.execute(request);

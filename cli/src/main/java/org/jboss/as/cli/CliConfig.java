@@ -77,4 +77,13 @@ public interface CliConfig {
      * @return The SSLConfig
      */
     SSLConfig getSslConfig();
+
+    /**
+     * Whether the operation requests should be validated in terms of
+     * addresses, operation names and parameters before they are
+     * sent to the controller for execution.
+     *
+     * @return  true is the operation requests should be validated, false - otherwise.
+     */
+    boolean isValidateOperationRequests();
 }
