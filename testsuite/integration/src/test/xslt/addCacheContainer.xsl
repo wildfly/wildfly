@@ -2,7 +2,7 @@
 <!-- See http://www.w3.org/TR/xslt -->
 
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:ispn="urn:jboss:domain:infinispan:1.1" version="1.0">
+                xmlns:ispn="urn:jboss:domain:infinispan:1.3" version="1.0">
     <xsl:output method="xml" indent="yes"/>
 
     <xsl:param name="filename">none</xsl:param>
