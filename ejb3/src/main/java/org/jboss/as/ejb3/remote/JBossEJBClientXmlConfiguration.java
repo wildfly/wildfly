@@ -80,6 +80,11 @@ public class JBossEJBClientXmlConfiguration implements EJBClientConfiguration {
         return this.clusterConfigs.get(nodeName);
     }
 
+    @Override
+    public long getInvocationTimeout() {
+        return 0;
+    }
+
     public void addClusterConfiguration(final EJBClientClusterConfig clusterConfig) {
         this.clusterConfigs.put(clusterConfig.getClusterName(), clusterConfig);
     }
