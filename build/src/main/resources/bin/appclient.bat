@@ -15,14 +15,14 @@ if "%OS%" == "Windows_NT" (
 )
 
 rem Read an optional configuration file.
-if "x%STANDALONE_CONF%" == "x" (   
-   set "STANDALONE_CONF=%DIRNAME%standalone.conf.bat"
+if "x%APPCLIENT_CONF%" == "x" (
+   set "APPCLIENT_CONF=%DIRNAME%appclient.conf.bat"
 )
-if exist "%STANDALONE_CONF%" (
-   echo Calling %STANDALONE_CONF%
-   call "%STANDALONE_CONF%" %*
+if exist "%APPCLIENT_CONF%" (
+   echo Calling %APPCLIENT_CONF%
+   call "%APPCLIENT_CONF%" %*
 ) else (
-   echo Config file not found %STANDALONE_CONF%
+   echo Config file not found %APPCLIENT_CONF%
 )
 
 pushd %DIRNAME%..
@@ -30,7 +30,7 @@ set "RESOLVED_JBOSS_HOME=%CD%"
 popd
 
 if "x%JBOSS_HOME%" == "x" (
-  set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%" 
+  set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%"
 )
 
 pushd "%JBOSS_HOME%"
@@ -46,7 +46,7 @@ set DIRNAME=
 if "%OS%" == "Windows_NT" (
   set "PROGNAME=%~nx0%"
 ) else (
-  set "PROGNAME=standalone.bat"
+  set "PROGNAME=appclient.bat"
 )
 
 rem Setup JBoss specific properties
@@ -87,12 +87,12 @@ if "x%JBOSS_MODULEPATH%" == "x" (
 
 
 "%JAVA%" %JAVA_OPTS% ^
- "-Dorg.jboss.boot.log.file=%JBOSS_HOME%\standalone\log\boot.log" ^
- "-Dlogging.configuration=file:%JBOSS_HOME%/standalone/configuration/logging.properties" ^
+ "-Dorg.jboss.boot.log.file=%JBOSS_HOME%\appclient\log\boot.log" ^
+ "-Dlogging.configuration=file:%JBOSS_HOME%/appclient/configuration/logging.properties" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
     -jaxpmodule "javax.xml.jaxp-provider" ^
-     org.jboss.as.standalone ^
+     org.jboss.as.appclient ^
     -Djboss.home.dir="%JBOSS_HOME%" ^
     -Djboss.server.base.dir="%JBOSS_HOME%\appclient" ^
      %*
