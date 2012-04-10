@@ -43,6 +43,7 @@ public class Util {
     public static final String ADD = "add";
     public static final String ADDRESS = "address";
     public static final String ALLOW_RESOURCE_SERVICE_RESTART = "allow-resource-service-restart";
+    public static final String ARCHIVE = "archive";
     public static final String ATTRIBUTES = "attributes";
     public static final String BYTES = "bytes";
     public static final String CHILDREN = "children";
@@ -79,6 +80,7 @@ public class Util {
     public static final String OPERATION = "operation";
     public static final String OPERATION_HEADERS = "operation-headers";
     public static final String OUTCOME = "outcome";
+    public static final String PATH = "path";
     public static final String PERSISTENT = "persistent";
     public static final String PRODUCT_NAME = "product-name";
     public static final String PRODUCT_VERSION = "product-version";

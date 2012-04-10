@@ -1,6 +1,7 @@
 SYNOPSIS
 
-    deploy (file_path [--name=deployment_name] [--runtime_name=deployment_runtime_name] [--force | --disabled] | --name=deployment_name)
+    deploy (file_path [--name=deployment_name] [--runtime_name=deployment_runtime_name] [--force | --disabled] [--unmanaged]
+               | --name=deployment_name)
            [--server-groups=group_name (,group_name)* | --all-server-groups]
            [--headers={operation_header (;operation_header)*}]
 
@@ -30,6 +31,14 @@ ARGUMENTS
                        with the one specified in the command arguments.
 
  --disabled          - indicates that the deployment has to be added to the repository disabled.
+ 
+ --unmanaged         - if this argument is not specified, the deployment content will be
+                       copied (i.e. uploaded) to the server's deployment repository
+                       before it is deployed.
+                       If the argument is present, the deployment content will remain
+                       at and be deployed directly from its original location specified
+                       with the file_path.
+                       NOTE: exploded deployments are supported only as unmanaged.
 
  --server-groups     - comma separated list of server group names the deploy command should apply to.
                        Either server-groups or all-server-groups is required in the domain mode.

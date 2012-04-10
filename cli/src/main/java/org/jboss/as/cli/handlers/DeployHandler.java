@@ -59,6 +59,7 @@ public class DeployHandler extends BatchModeCommandHandler {
     private final ArgumentWithValue serverGroups;
     private final ArgumentWithoutValue allServerGroups;
     private final ArgumentWithoutValue disabled;
+    private final ArgumentWithoutValue unmanaged;
 
     public DeployHandler(CommandContext ctx) {
         super(ctx, "deploy", true);
@@ -217,6 +218,9 @@ public class DeployHandler extends BatchModeCommandHandler {
         disabled.addCantAppearAfter(allServerGroups);
         disabled.addCantAppearAfter(force);
         force.addCantAppearAfter(disabled);
+
+        unmanaged = new ArgumentWithoutValue(this, "--unmanaged");
+        unmanaged.addRequiredPreceding(path);
     }
 
     @Override
@@ -231,6 +235,8 @@ public class DeployHandler extends BatchModeCommandHandler {
             return;
         }
 
+        final boolean unmanaged = this.unmanaged.isPresent(args);
+
         final String path = this.path.getValue(args);
         final File f;
         if(path != null) {
@@ -238,7 +244,7 @@ public class DeployHandler extends BatchModeCommandHandler {
             if(!f.exists()) {
                 throw new CommandFormatException("Path " + f.getAbsolutePath() + " doesn't exist.");
             }
-            if(f.isDirectory()) {
+            if(!unmanaged && f.isDirectory()) {
                 throw new CommandFormatException(f.getAbsolutePath() + " is a directory.");
             }
         } else {
@@ -275,8 +281,8 @@ public class DeployHandler extends BatchModeCommandHandler {
                 return;
             } else if(ctx.isDomainMode()) {
                 // add deployment to the repository (enabled in standalone, disabled in domain (i.e. not associated with any sg))
-                final ModelNode request = buildAddRequest(ctx, f, name, runtimeName);
-                execute(ctx, request, f);
+                final ModelNode request = buildAddRequest(ctx, f, name, runtimeName, unmanaged);
+                execute(ctx, request, f, unmanaged);
                 return;
             }
             // standalone mode will add and deploy
@@ -298,8 +304,8 @@ public class DeployHandler extends BatchModeCommandHandler {
             }
 
             // add deployment to the repository disabled
-            final ModelNode request = buildAddRequest(ctx, f, name, runtimeName);
-            execute(ctx, request, f);
+            final ModelNode request = buildAddRequest(ctx, f, name, runtimeName, unmanaged);
+            execute(ctx, request, f, unmanaged);
             return;
         }
 
@@ -360,9 +366,9 @@ public class DeployHandler extends BatchModeCommandHandler {
             request.get(Util.OPERATION).set(Util.COMPOSITE);
             request.get(Util.ADDRESS).setEmptyList();
             final ModelNode steps = request.get(Util.STEPS);
-            steps.add(buildAddRequest(ctx, f, name, runtimeName));
+            steps.add(buildAddRequest(ctx, f, name, runtimeName, unmanaged));
             steps.add(deployRequest);
-            execute(ctx, request, f);
+            execute(ctx, request, f, unmanaged);
             return;
         } else if(!Util.isDeploymentInRepository(name, client)) {
             throw new CommandFormatException("'" + name + "' is not found among the registered deployments.");
@@ -389,6 +395,8 @@ public class DeployHandler extends BatchModeCommandHandler {
             throw new OperationFormatException("Command is missing arguments for non-interactive mode: '" + args.getOriginalLine() + "'.");
         }
 
+        final boolean unmanaged = this.unmanaged.isPresent(args);
+
         final String path = this.path.getValue(args);
         final File f;
         if(path != null) {
@@ -396,7 +404,7 @@ public class DeployHandler extends BatchModeCommandHandler {
             if(!f.exists()) {
                 throw new OperationFormatException("Path " + f.getAbsolutePath() + " doesn't exist.");
             }
-            if(f.isDirectory()) {
+            if(!unmanaged && f.isDirectory()) {
                 throw new OperationFormatException(f.getAbsolutePath() + " is a directory.");
             }
         } else {
@@ -432,7 +440,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                 return buildDeploymentReplace(f, name, runtimeName);
             } else {
                 // add deployment to the repository (enabled in standalone, disabled in domain (i.e. not associated with any sg))
-                return buildDeploymentAdd(f, name, runtimeName);
+                return buildDeploymentAdd(f, name, runtimeName, unmanaged);
             }
         }
 
@@ -453,7 +461,7 @@ public class DeployHandler extends BatchModeCommandHandler {
             }
 
             // add deployment to the repository disabled
-            return buildDeploymentAdd(f, name, runtimeName);
+            return buildDeploymentAdd(f, name, runtimeName, unmanaged);
         }
 
         // actually, the deployment is added before it is deployed
@@ -510,7 +518,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                 throw new OperationFormatException("'" + name + "' already exists in the deployment repository (use " +
                     this.force.getFullName() + " to replace the existing content in the repository).");
             }
-            addRequest = this.buildDeploymentAdd(f, name, runtimeName);
+            addRequest = this.buildDeploymentAdd(f, name, runtimeName, unmanaged);
         } else if(!Util.isDeploymentInRepository(name, client)) {
             throw new OperationFormatException("'" + name + "' is not found among the registered deployments.");
         } else {
@@ -542,30 +550,40 @@ public class DeployHandler extends BatchModeCommandHandler {
         return request;
     }
 
-    protected ModelNode buildDeploymentAdd(final File f, String name, String runtimeName) throws OperationFormatException {
+    protected ModelNode buildDeploymentAdd(final File f, String name, String runtimeName, boolean unmanaged) throws OperationFormatException {
         final ModelNode request = new ModelNode();
         request.get(Util.OPERATION).set(Util.ADD);
         request.get(Util.ADDRESS, Util.DEPLOYMENT).set(name);
         if (runtimeName != null) {
             request.get(Util.RUNTIME_NAME).set(runtimeName);
         }
-        byte[] bytes = readBytes(f);
-        request.get(Util.CONTENT).get(0).get(Util.BYTES).set(bytes);
+        if(unmanaged) {
+            final ModelNode content = request.get(Util.CONTENT).get(0);
+            content.get(Util.PATH).set(f.getAbsolutePath());
+            content.get(Util.ARCHIVE).set(f.isFile());
+        } else {
+            byte[] bytes = readBytes(f);
+            request.get(Util.CONTENT).get(0).get(Util.BYTES).set(bytes);
+        }
         return request;
     }
 
-    protected void execute(CommandContext ctx, ModelNode request, File f) throws CommandFormatException {
+    protected void execute(CommandContext ctx, ModelNode request, File f, boolean unmanaged) throws CommandFormatException {
 
         addHeaders(ctx, request);
 
         ModelNode result;
         FileInputStream is = null;
         try {
-            is = new FileInputStream(f);
-            OperationBuilder op = new OperationBuilder(request);
-            op.addInputStream(is);
-            request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
-            result = ctx.getModelControllerClient().execute(op.build());
+            if(!unmanaged) {
+                is = new FileInputStream(f);
+                OperationBuilder op = new OperationBuilder(request);
+                op.addInputStream(is);
+                request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
+                result = ctx.getModelControllerClient().execute(op.build());
+            } else {
+                result = ctx.getModelControllerClient().execute(request);
+            }
         } catch (Exception e) {
             throw new CommandFormatException("Failed to add the deployment content to the repository: " + e.getLocalizedMessage());
         } finally {
@@ -576,14 +594,20 @@ public class DeployHandler extends BatchModeCommandHandler {
         }
     }
 
-    protected ModelNode buildAddRequest(CommandContext ctx, final File f, String name, final String runtimeName) {
+    protected ModelNode buildAddRequest(CommandContext ctx, final File f, String name, final String runtimeName, boolean unmanaged) {
         final ModelNode request = new ModelNode();
         request.get(Util.OPERATION).set(Util.ADD);
         request.get(Util.ADDRESS, Util.DEPLOYMENT).set(name);
         if (runtimeName != null) {
             request.get(Util.RUNTIME_NAME).set(runtimeName);
         }
-        request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
+        if(unmanaged) {
+            final ModelNode content = request.get(Util.CONTENT).get(0);
+            content.get(Util.PATH).set(f.getAbsolutePath());
+            content.get(Util.ARCHIVE).set(f.isFile());
+        } else {
+            request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
+        }
         return request;
     }
 
@@ -596,7 +620,7 @@ public class DeployHandler extends BatchModeCommandHandler {
             request.get(Util.RUNTIME_NAME).set(runtimeName);
         }
         request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
-        execute(ctx, request, f);
+        execute(ctx, request, f, false);
     }
 
     protected byte[] readBytes(File f) throws OperationFormatException {
