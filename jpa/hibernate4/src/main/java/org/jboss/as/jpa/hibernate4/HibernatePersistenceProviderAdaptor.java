@@ -96,6 +96,20 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         return HibernateManagementAdaptor.getInstance();
     }
 
+    /**
+     * determine if management console can display the second level cache entries
+     *
+     * @param pu
+     * @return false if a custom AvailableSettings.CACHE_REGION_PREFIX property is specified.
+     *         true if the scoped persistence unit name is used to prefix cache entries.
+     */
+    @Override
+    public boolean doesScopedPersistenceUnitNameIdentifyCacheRegionName(PersistenceUnitMetadata pu) {
+        String cacheRegionPrefix = pu.getProperties().getProperty(AvailableSettings.CACHE_REGION_PREFIX);
+
+        return cacheRegionPrefix == null || cacheRegionPrefix.equals(pu.getScopedPersistenceUnitName());
+    }
+
     public void cleanup(PersistenceUnitMetadata pu) {
         HibernateAnnotationScanner.cleanup(pu);
     }

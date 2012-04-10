@@ -105,6 +105,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
     public static final String JNDI_PROPERTY = "jboss.entity.manager.factory.jndi.name";
 
     private static final AttachmentKey<Map<String,PersistenceProviderAdaptor>> providerAdaptorMapKey = AttachmentKey.create(Map.class);
+    private static final String SCOPED_UNIT_NAME = "scoped-unit-name";
 
     private final PersistenceUnitRegistryImpl persistenceUnitRegistry;
 
@@ -377,7 +378,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                 .install();
 
             JPA_LOGGER.tracef("added PersistenceUnitService for '%s'.  PU is ready for injector action.", puServiceName);
-            addManagementConsole(deploymentUnit, pu, service, adaptor);
+            addManagementConsole(deploymentUnit, pu, adaptor);
 
         } catch (ServiceRegistryException e) {
             throw MESSAGES.failedToAddPersistenceUnit(e, pu.getPersistenceUnitName());
@@ -662,19 +663,22 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
      *
      * @param deploymentUnit
      * @param pu
-     * @param persistenceUnitService
      * @param adaptor
      */
     private void addManagementConsole(final DeploymentUnit deploymentUnit, final PersistenceUnitMetadata pu,
-                                      final PersistenceUnitService persistenceUnitService, final PersistenceProviderAdaptor adaptor) {
+                                      final PersistenceProviderAdaptor adaptor) {
         ManagementAdaptor managementAdaptor = adaptor.getManagementAdaptor();
-        if (managementAdaptor != null) {
+        // workaround for AS7-4441, if a custom hibernate.cache.region_prefix is specified, don't show the persistence
+        // unit in management console.
+        if (managementAdaptor != null &&
+                adaptor.doesScopedPersistenceUnitNameIdentifyCacheRegionName(pu)) {
             final String providerLabel = managementAdaptor.getIdentificationLabel();
             final String scopedPersistenceUnitName = pu.getScopedPersistenceUnitName();
 
+
             Resource providerResource = managementAdaptor.createPersistenceUnitResource(scopedPersistenceUnitName, providerLabel);
             ModelNode perPuNode = providerResource.getModel();
-            perPuNode.get("scoped-unit-name").set(pu.getScopedPersistenceUnitName());
+            perPuNode.get(SCOPED_UNIT_NAME).set(pu.getScopedPersistenceUnitName());
             // TODO this is a temporary hack into internals until DeploymentUnit exposes a proper Resource-based API
             final Resource deploymentResource = deploymentUnit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
             Resource subsystemResource;
