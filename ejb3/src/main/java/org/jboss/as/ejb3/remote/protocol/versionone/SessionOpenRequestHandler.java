@@ -65,7 +65,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
     @Override
     public void processMessage(ChannelAssociation channelAssociation, MessageInputStream messageInputStream) throws IOException {
         if (messageInputStream == null) {
-            throw new IllegalArgumentException("Cannot read from null message inputstream");
+            throw EjbMessages.MESSAGES.messageInputStreamCannotBeNull();
         }
         final DataInputStream dataInputStream = new DataInputStream(messageInputStream);
         // read invocation id

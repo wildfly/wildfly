@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.remote;
 
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.msc.service.Service;
@@ -53,7 +54,7 @@ public class TCCLEJBClientContextSelectorService implements Service<TCCLEJBClien
         final ClassLoader tccl = SecurityActions.getContextClassLoader();
         // TODO: Do we fall back on some other CL?
         if (tccl == null) {
-            throw new IllegalStateException("No thread context classloader available");
+            throw EjbMessages.MESSAGES.tcclNotAvailable();
         }
         synchronized (this.ejbClientContexts) {
             return this.ejbClientContexts.get(tccl);

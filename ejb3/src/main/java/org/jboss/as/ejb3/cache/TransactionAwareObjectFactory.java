@@ -28,6 +28,7 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.jca.core.spi.transaction.TxUtils;
 
 /**
@@ -64,9 +65,9 @@ public class TransactionAwareObjectFactory<T> implements StatefulObjectFactory<T
                 // A transaction is in progress, so register a Synchronization so that the session can be destroyed on tx completion.
                 tx.registerSynchronization(new DestroySynchronization<T>(this.factory, instance));
             } catch (RollbackException e) {
-                throw new RuntimeException(e);
+                throw EjbMessages.MESSAGES.failedToRegisterTransactionSynchronization(e);
             } catch (SystemException e) {
-                throw new RuntimeException(e);
+                throw EjbMessages.MESSAGES.failedToRegisterTransactionSynchronization(e);
             }
         } else {
             this.factory.destroyInstance(instance);
@@ -77,7 +78,7 @@ public class TransactionAwareObjectFactory<T> implements StatefulObjectFactory<T
         try {
             return this.tm.getTransaction();
         } catch (SystemException e) {
-            throw new RuntimeException(e);
+            throw EjbMessages.MESSAGES.failedToGetCurrentTransaction(e);
         }
     }
 

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
@@ -88,7 +89,7 @@ public class RemoteViewManagedReferenceFactory implements ManagedReferenceFactor
             try {
                 ejbLocator = EJBClient.createSession(viewClass, appName, moduleName, beanName, distinctName);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw EjbMessages.MESSAGES.failedToCreateSessionForStatefulBean(e, beanName);
             }
         } else {
             ejbLocator = new StatelessEJBLocator(viewClass, appName, moduleName, beanName, distinctName);

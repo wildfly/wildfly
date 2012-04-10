@@ -101,7 +101,7 @@ class TransactionRequestHandler extends AbstractMessageHandler {
                     userTransactionManagementTask = new UserTransactionRollbackTask(this, this.transactionsRepository, this.marshallerFactory, (UserTransactionID) transactionID, channelAssociation, invocationId);
                     break;
                 default:
-                    throw new IllegalArgumentException("Unknown transaction request type " + this.txRequestType);
+                    throw EjbMessages.MESSAGES.unknownTransactionRequestType(this.txRequestType.name());
             }
             // submit to a seperate thread for processing the request
             this.executorService.submit(userTransactionManagementTask);
@@ -127,7 +127,7 @@ class TransactionRequestHandler extends AbstractMessageHandler {
                     xidTransactionManagementTask = new XidTransactionBeforeCompletionTask(this, this.transactionsRepository, this.marshallerFactory, xidTransactionID, channelAssociation, invocationId);
                     break;
                 default:
-                    throw new IllegalArgumentException("Unknown transaction request type " + this.txRequestType);
+                    throw EjbMessages.MESSAGES.unknownTransactionRequestType(this.txRequestType.name());
             }
             // submit to a separate thread for processing the request
             this.executorService.submit(xidTransactionManagementTask);

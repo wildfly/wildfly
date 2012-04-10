@@ -242,7 +242,7 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
         E entry = store.remove(key);
 
         if (entry == null)
-            throw new NoSuchEJBException(String.valueOf(key));
+            throw EjbMessages.MESSAGES.couldNotFindEjb(String.valueOf(key));
 
         entry.lock();
         try {

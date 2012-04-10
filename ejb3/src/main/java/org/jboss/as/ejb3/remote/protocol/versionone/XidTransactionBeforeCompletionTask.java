@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.marshalling.MarshallerFactory;
@@ -53,7 +54,7 @@ class XidTransactionBeforeCompletionTask extends XidTransactionManagementTask {
             // Courtesy: com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple
             final SubordinateTransaction subordinateTransaction = SubordinationManager.getTransactionImporter().getImportedTransaction(xid);
             if (subordinateTransaction == null) {
-                throw new RuntimeException("No subordinate transaction present with xid " + xid);
+                throw EjbMessages.MESSAGES.noSubordinateTransactionPresentForXid(xid);
             }
             // do beforeCompletion()
             subordinateTransaction.doBeforeCompletion();

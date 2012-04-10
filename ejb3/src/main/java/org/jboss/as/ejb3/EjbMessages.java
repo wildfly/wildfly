@@ -5,6 +5,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
@@ -42,8 +43,10 @@ import javax.ejb.ScheduleExpression;
 import javax.ejb.TimerHandle;
 import javax.interceptor.InvocationContext;
 import javax.naming.Context;
+import javax.transaction.xa.Xid;
 import javax.xml.stream.Location;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.Set;
@@ -69,11 +72,11 @@ public interface EjbMessages {
     /**
      * Creates an exception indicating it could not find the EJB with specific id
      *
-     * @param sessionId the name of the integration.
+     * @param sessionId Session id
      * @return a {@link NoSuchEJBException} for the error.
      */
     @Message(id = 14300, value = "Could not find EJB with id %s")
-    NoSuchEJBException couldNotFindEjb(SessionID sessionId);
+    NoSuchEJBException couldNotFindEjb(String sessionId);
 
     /**
      * Creates an exception indicating it a component was not set on the InterceptorContext
@@ -2011,6 +2014,46 @@ public interface EjbMessages {
 
     @Message(id = 14560, value = "Could not open message outputstream for writing to Channel")
     RuntimeException failedToOpenMessageOutputStream(@Cause Exception e);
+
+    @Message(id = 14561, value = "Could not create session for stateful bean %s")
+    RuntimeException failedToCreateSessionForStatefulBean(@Cause Exception e, String beanName);
+
+    @Message(id = 14562, value = "No thread context classloader available")
+    IllegalStateException tcclNotAvailable();
+
+    @Message(id = 14563, value = "Cannot write to null DataOutput")
+    IllegalArgumentException cannotWriteToNullDataOutput();
+
+    @Message(id = 14564, value = "No client-mapping entries found for node %s in cluster %s")
+    IllegalStateException clientMappingMissing(String nodeName, String clusterName);
+
+    @Message(id = 14565, value = "Could not load class")
+    RuntimeException classNotFoundException(@Cause ClassNotFoundException cnfe);
+
+    @Message(id = 14566, value = "EJB module identifiers cannot be null")
+    IllegalArgumentException ejbModuleIdentifiersCannotBeNull();
+
+    @Message(id = 14567, value = "MessageInputStream cannot be null")
+    IllegalArgumentException messageInputStreamCannotBeNull();
+
+    @Message(id = 14568, value = "Unknown transaction request type %s")
+    IllegalArgumentException unknownTransactionRequestType(String txRequestType);
+
+    @Message(id = 14569, value = "Could not close channel")
+    RuntimeException couldNotCloseChannel(@Cause IOException ioe);
+
+    @Message(id = 14570, value = "No subordinate transaction present for xid %s")
+    RuntimeException noSubordinateTransactionPresentForXid(Xid xid);
+
+    @Message(id = 14571, value = "Failed to register transaction synchronization")
+    RuntimeException failedToRegisterTransactionSynchronization(@Cause Exception e);
+
+    @Message(id = 14572, value = "Failed to get current transaction")
+    RuntimeException failedToGetCurrentTransaction(@Cause Exception e);
+
+    @Message(id = 14573, value = "Could not obtain lock on %s to passivate %s")
+    IllegalStateException couldNotObtainLockForGroup(String groupId, String groupMember);
+
 
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
