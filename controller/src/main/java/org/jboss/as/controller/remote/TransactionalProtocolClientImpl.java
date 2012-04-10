@@ -83,13 +83,13 @@ public class TransactionalProtocolClientImpl implements ManagementRequestHandler
     }
 
     @Override
-    public Future<ModelNode> execute(OperationListener<Operation> listener, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) throws IOException {
-        final Operation wrapper = new TransactionalProtocolHandlers.OperationImpl(operation, messageHandler, attachments);
+    public Future<ModelNode> execute(TransactionalOperationListener<Operation> listener, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) throws IOException {
+        final Operation wrapper = new TransactionalOperationImpl(operation, messageHandler, attachments);
         return execute(listener, wrapper);
     }
 
     @Override
-    public <T extends Operation> Future<ModelNode> execute(OperationListener<T> listener, T operation) throws IOException {
+    public <T extends Operation> Future<ModelNode> execute(TransactionalOperationListener<T> listener, T operation) throws IOException {
         final ExecuteRequestContext context = new ExecuteRequestContext(new OperationWrapper<T>(listener, operation));
         final ActiveOperation<ModelNode, ExecuteRequestContext> op = channelAssociation.executeRequest(new ExecuteRequest(), context, context);
         final Future<ModelNode> result = context.getResult();
@@ -374,10 +374,10 @@ public class TransactionalProtocolClientImpl implements ManagementRequestHandler
     private static class OperationWrapper<T extends Operation> {
 
         private final T operation;
-        private final OperationListener<T> listener;
+        private final TransactionalOperationListener<T> listener;
         private SimpleFuture<ModelNode> future = new SimpleFuture<ModelNode>();
 
-        OperationWrapper(OperationListener<T> listener, T operation) {
+        OperationWrapper(TransactionalOperationListener<T> listener, T operation) {
             this.listener = listener;
             this.operation = operation;
         }
@@ -395,7 +395,7 @@ public class TransactionalProtocolClientImpl implements ManagementRequestHandler
         }
 
         void prepared(final ModelController.OperationTransaction transaction, final ModelNode result) {
-            final PreparedOperation<T> preparedOperation = new TransactionalProtocolHandlers.PreparedOperationImpl<T>(operation, result, future, transaction);
+            final PreparedOperation<T> preparedOperation = new PreparedOperationImpl<T>(operation, result, future, transaction);
             listener.operationPrepared(preparedOperation);
         }
 
@@ -413,6 +413,57 @@ public class TransactionalProtocolClientImpl implements ManagementRequestHandler
             } finally {
                 future.set(response);
             }
+        }
+
+    }
+
+    static class PreparedOperationImpl<T extends Operation> implements PreparedOperation<T> {
+
+        private final T operation;
+        private final ModelNode preparedResult;
+        private final Future<ModelNode> finalResult;
+        private final ModelController.OperationTransaction transaction;
+
+        protected PreparedOperationImpl(T operation, ModelNode preparedResult, Future<ModelNode> finalResult, ModelController.OperationTransaction transaction) {
+            this.operation = operation;
+            this.preparedResult = preparedResult;
+            this.finalResult = finalResult;
+            this.transaction = transaction;
+        }
+
+        @Override
+        public T getOperation() {
+            return operation;
+        }
+
+        @Override
+        public ModelNode getPreparedResult() {
+            return preparedResult;
+        }
+
+        @Override
+        public boolean isFailed() {
+            return false;
+        }
+
+        @Override
+        public boolean isDone() {
+            return finalResult.isDone();
+        }
+
+        @Override
+        public Future<ModelNode> getFinalResult() {
+            return finalResult;
+        }
+
+        @Override
+        public void commit() {
+            transaction.commit();
+        }
+
+        @Override
+        public void rollback() {
+            transaction.rollback();
         }
 
     }
