@@ -53,7 +53,6 @@ import org.jboss.osgi.framework.ModuleLoaderProvider;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.resolver.XIdentityCapability;
 import org.jboss.osgi.resolver.XResource;
-import org.jboss.osgi.spi.NotImplementedException;
 
 /**
  * This is the single {@link ModuleLoader} that the OSGi layer uses for the modules that are associated with the bundles that
@@ -184,7 +183,7 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
 
     @Override
     public void setAndRelinkDependencies(Module module, List<DependencySpec> dependencies) throws ModuleLoadException {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     private ServiceName getModuleSpecServiceName(ModuleIdentifier identifier) {
