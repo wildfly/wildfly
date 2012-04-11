@@ -65,4 +65,9 @@ public class MockCliConfig implements CliConfig {
     public int getHistoryMaxSize() {
         return 500;
     }
+
+    @Override
+    public boolean isValidateOperationRequests() {
+        return true;
+    }
 }
