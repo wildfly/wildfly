@@ -210,8 +210,7 @@ class Constants {
 
         @Override
         public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
-            //TODO implement validateResolvedParameter
-            throw new UnsupportedOperationException();
+            validateParameter(parameterName,  value.resolve());
         }
     });
 
