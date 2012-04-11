@@ -22,6 +22,21 @@
 
 package org.jboss.as.web.security.jaspi;
 
+import java.io.IOException;
+import java.security.Principal;
+import java.security.acl.Group;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
+import javax.security.auth.Subject;
+import javax.security.auth.message.callback.CallerPrincipalCallback;
+import javax.security.auth.message.callback.PasswordValidationCallback;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.AuthenticatorBase;
 import org.apache.catalina.authenticator.Constants;
@@ -36,19 +51,6 @@ import org.jboss.security.SimplePrincipal;
 import org.jboss.security.auth.callback.JBossCallbackHandler;
 import org.jboss.security.auth.message.GenericMessageInfo;
 import org.jboss.security.plugins.auth.JASPIServerAuthenticationManager;
-
-import javax.security.auth.Subject;
-import javax.security.auth.message.callback.CallerPrincipalCallback;
-import javax.security.auth.message.callback.PasswordValidationCallback;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.security.Principal;
-import java.security.acl.Group;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Random;
 
 /**
  * <p>
@@ -320,8 +322,9 @@ public class WebJASPIAuthenticator extends AuthenticatorBase {
 
         // if the subject didn't contain any roles, look for the roles declared in the deployment descriptor.
         JBossWebRealm realm = (JBossWebRealm) this.getContainer().getRealm();
-        if (roles.isEmpty())
-            roles.addAll(realm.getPrincipalVersusRolesMap().get(principal.getName()));
+        Set<String> descriptorRoles = realm.getPrincipalVersusRolesMap().get(principal.getName());
+        if (roles.isEmpty() && descriptorRoles != null)
+            roles.addAll(descriptorRoles);
 
         // build and return the JBossGenericPrincipal.
         return new JBossGenericPrincipal(realm, principal.getName(), null, roles, principal, null, null, null, subject);
