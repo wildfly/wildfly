@@ -85,13 +85,13 @@
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="keyStore" type="xs:string" minOccurs="0" />
-                <xs:element name="keyStorePassword" type="xs:string" minOccurs="0" />
+                <xs:element name="key-store" type="xs:string" minOccurs="0" />
+                <xs:element name="key-store-password" type="xs:string" minOccurs="0" />
                 <xs:element name="alias" type="xs:string" minOccurs="0" />
-                <xs:element name="keyPassword" type="xs:string" minOccurs="0" />                
-                <xs:element name="trustStore" type="xs:string" minOccurs="0" />
-                <xs:element name="trustStorePassword" type="xs:string" minOccurs="0" />
-                <xs:element name="modifyTrustStore" type="xs:boolean" default="true" minOccurs="0">
+                <xs:element name="key-password" type="xs:string" minOccurs="0" />                
+                <xs:element name="trust-store" type="xs:string" minOccurs="0" />
+                <xs:element name="trust-store-password" type="xs:string" minOccurs="0" />
+                <xs:element name="modify-trust-store" type="xs:boolean" default="true" minOccurs="0">
                     <xs:annotation>
                         <xs:documentation>
                             Setting to true will cause the CLI to prompt when unrecognised certificates are received
