@@ -49,7 +49,7 @@ public class KeystoreAttributes {
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final SimpleAttributeDefinition KEYSTORE_PASSWORD = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.KEYSTORE_PASSWORD, ModelType.STRING, false)
-            .setXmlName(ModelDescriptionConstants.KEYSTORE_PASSWORD).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false))
+            .setXmlName(ModelDescriptionConstants.KEYSTORE_PASSWORD).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true)).setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final SimpleAttributeDefinition KEYSTORE_PATH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.KEYSTORE_PATH, ModelType.STRING, false)

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,39 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.parsing;
+package org.jboss.as.cli.impl;
 
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
 
 /**
- * An enumeration of the supported domain model namespaces.
+ * An enumeration of the supported namespaces for CLI configuration.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public enum Namespace {
+
     // must be first
     UNKNOWN(null), NONE(null),
 
     // predefined standard
     XML_SCHEMA_INSTANCE("http://www.w3.org/2001/XMLSchema-instance"),
 
-    // domain versions, oldest to newest
-    DOMAIN_1_0("urn:jboss:domain:1.0"),
+    CLI_1_0("urn:jboss:cli:1.0"),
 
-    DOMAIN_1_1("urn:jboss:domain:1.1"),
-
-    DOMAIN_1_2("urn:jboss:domain:1.2"),
-
-    DOMAIN_1_3("urn:jboss:domain:1.3") ;
+    CLI_1_1("urn:jboss:cli:1.1");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = DOMAIN_1_3;
+    public static final Namespace CURRENT = CLI_1_1;
 
     private final String name;
 
@@ -68,11 +63,6 @@ public enum Namespace {
     public String getUriString() {
         return name;
     }
-
-    /**
-     * Set of all namespaces, excluding the special {@link #UNKNOWN} value.
-     */
-    public static final EnumSet<Namespace> STANDARD_NAMESPACES = EnumSet.complementOf(EnumSet.of(UNKNOWN, XML_SCHEMA_INSTANCE));
 
     private static final Map<String, Namespace> MAP;
 
@@ -94,7 +84,7 @@ public enum Namespace {
         return element == null ? UNKNOWN : element;
     }
 
-    public static Namespace[] domainValues() {
+    public static Namespace[] cliValues() {
         Namespace[] temp = values();
         // The 3 is for the 3 namespaces excluded below.
         Namespace[] response = new Namespace[temp.length - 3];

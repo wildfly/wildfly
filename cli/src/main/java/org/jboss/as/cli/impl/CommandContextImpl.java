@@ -353,6 +353,8 @@ class CommandContextImpl implements CommandContext {
             String keyStoreLoc = sslConfig.getKeyStore();
             if (keyStoreLoc != null) {
                 char[] keyStorePassword = sslConfig.getKeyStorePassword().toCharArray();
+                String tmpKeyPassword = sslConfig.getKeyPassword();
+                char[] keyPassword = tmpKeyPassword != null ? tmpKeyPassword.toCharArray() : keyStorePassword;
 
                 File keyStoreFile = new File(keyStoreLoc);
 
@@ -362,8 +364,18 @@ class CommandContextImpl implements CommandContext {
                     KeyStore theKeyStore = KeyStore.getInstance("JKS");
                     theKeyStore.load(fis, keyStorePassword);
 
+                    String alias = sslConfig.getAlias();
+                    if (alias != null) {
+                        KeyStore replacement = KeyStore.getInstance("JKS");
+                        replacement.load(null);
+                        KeyStore.ProtectionParameter protection = new KeyStore.PasswordProtection(keyPassword);
+
+                        replacement.setEntry(alias, theKeyStore.getEntry(alias, protection), protection);
+                        theKeyStore = replacement;
+                    }
+
                     KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-                    keyManagerFactory.init(theKeyStore, keyStorePassword);
+                    keyManagerFactory.init(theKeyStore, keyPassword);
                     keyManagers = keyManagerFactory.getKeyManagers();
                 } catch (IOException e) {
                     throw new CliInitializationException(e);

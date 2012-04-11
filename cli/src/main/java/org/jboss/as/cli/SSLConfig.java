@@ -40,6 +40,16 @@ public interface SSLConfig {
     String getKeyStorePassword();
 
     /**
+     * @return The alias or null if not specified.
+     */
+    String getAlias();
+
+    /**
+     * @return The keyPassword or null if not specified.
+     */
+    String getKeyPassword();
+
+    /**
      * @return The location of the trustStore or null if not specified.
      */
     String getTrustStore();
