@@ -90,6 +90,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition STOP_CONTEXT_TIMEOUT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.STOP_CONTEXT_TIMEOUT, ModelType.INT, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(10))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setValidator(new IntRangeValidator(1, true, true))
@@ -97,6 +98,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition SOCKET_TIMEOUT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SOCKET_TIMEOUT, ModelType.INT, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(20))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setValidator(new IntRangeValidator(1, true, true))
@@ -119,6 +121,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition WORKER_TIMEOUT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.WORKER_TIMEOUT, ModelType.INT, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(-1))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setValidator(new IntRangeValidator(-1, true, true))
@@ -127,6 +130,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition MAX_ATTEMPTS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.MAX_ATTEMPTS, ModelType.INT, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(1))
             .setValidator(new IntRangeValidator(-1, true, true))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -138,6 +142,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition FLUSH_WAIT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.FLUSH_WAIT, ModelType.INT, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(-1))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setValidator(new IntRangeValidator(-1, true, true))
@@ -152,6 +157,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition SMAX = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SMAX, ModelType.INT, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(-1))
             .setValidator(new IntRangeValidator(-1, true, true))
             .setCorrector(ZeroToNegativeOneParameterCorrector.INSTANCE)
@@ -159,6 +165,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition TTL = SimpleAttributeDefinitionBuilder.create(CommonAttributes.TTL, ModelType.INT, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(-1))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setValidator(new IntRangeValidator(-1, true, true))
@@ -167,6 +174,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition NODE_TIMEOUT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.NODE_TIMEOUT, ModelType.INT, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(-1))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setValidator(new IntRangeValidator(-1, true, true))
@@ -192,6 +200,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .setValidator(new IntRangeValidator(1, true, true))
             .build();
+
     // order here controls the order of writing into xml, should follow xsd schema
     static final SimpleAttributeDefinition[] ATTRIBUTES = {
             ADVERTISE_SOCKET,

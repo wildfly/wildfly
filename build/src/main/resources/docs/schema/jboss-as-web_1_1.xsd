@@ -308,14 +308,14 @@
       <xs:annotation>
          <xs:documentation>
             <![CDATA[
-                The "relative-to" references a global path configuration in the domain model, with the default
-                to the JBoss Application data directory (jboss.server.data.dir).
-                The "path" the directory based on the referenced path.
+                The "relative-to" references a global path configuration in the domain model.
+                The "path" is the directory based on the referenced path. If "path" is not
+                set, the name of the virtual-server is used.
             ]]>
          </xs:documentation>
       </xs:annotation>
-      <xs:attribute name="path" type="xs:string" default="tx-object-store" />
-      <xs:attribute name="relative-to" type="xs:string" use="optional" />
+      <xs:attribute name="path" type="xs:string" use="optional" />
+      <xs:attribute name="relative-to" type="xs:string" use="optional" default="jboss.server.log.dir" />
    </xs:complexType>
 
    <xs:complexType name="mime-mappingType">
