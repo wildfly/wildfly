@@ -40,9 +40,11 @@ public class PropertyFilePrompt implements State {
     private static final int INVALID = 2;
 
     private ConsoleWrapper theConsole;
+    private StateValues stateValues;
 
-    public PropertyFilePrompt(ConsoleWrapper theConsole) {
+    public PropertyFilePrompt(ConsoleWrapper theConsole, StateValues stateValues) {
         this.theConsole = theConsole;
+        this.stateValues = stateValues;
         if (theConsole.getConsole() == null) {
             throw MESSAGES.noConsoleAvailable();
         }
@@ -50,7 +52,6 @@ public class PropertyFilePrompt implements State {
 
     @Override
     public State execute() {
-        StateValues stateValues = new StateValues();
 
         theConsole.printf(AddPropertiesUser.NEW_LINE);
         theConsole.printf(MESSAGES.filePrompt());

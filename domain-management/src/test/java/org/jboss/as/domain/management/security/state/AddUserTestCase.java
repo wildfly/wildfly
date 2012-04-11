@@ -28,11 +28,8 @@ import org.jboss.msc.service.StartException;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Properties;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Test the AddUser state
@@ -54,21 +51,11 @@ public class AddUserTestCase extends PropertyTestHelper {
         consoleMock.setResponses(consoleBuilder);
         addUserState.update(values);
 
-        assertRolePropertyFile();
-        assertUserPropertyFile();
+        assertRolePropertyFile(USER_NAME);
+        assertUserPropertyFile(USER_NAME);
 
         consoleBuilder.validate();
     }
 
-    private void assertUserPropertyFile() throws StartException, IOException {
-        Properties properties = loadProperties(values.getPropertiesFiles().get(0).getAbsolutePath());
-        String password = (String) properties.get(USER_NAME);
-        assertNotNull(password);
-    }
 
-    private void assertRolePropertyFile() throws StartException, IOException {
-        Properties properties = loadProperties(values.getRoleFiles().get(0).getAbsolutePath());
-        String roles = (String) properties.get(USER_NAME);
-        assertEquals(ROLES,roles);
-    }
 }

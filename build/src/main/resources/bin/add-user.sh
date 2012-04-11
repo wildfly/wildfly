@@ -62,6 +62,8 @@ fi
 
 # Sample JPDA settings for remote socket debugging
 #JAVA_OPTS="$JAVA_OPTS -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y"
+# Uncomment to override standalone and domain user location  
+#JAVA_OPTS="$JAVA_OPTS -Djboss.server.config.user.dir=../standalone/configuration -Djboss.domain.config.user.dir=../domain/configuration"
 
 eval \"$JAVA\" $JAVA_OPTS \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
