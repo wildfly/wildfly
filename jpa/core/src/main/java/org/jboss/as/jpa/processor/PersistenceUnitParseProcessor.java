@@ -22,9 +22,6 @@
 
 package org.jboss.as.jpa.processor;
 
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -42,6 +39,7 @@ import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
 import org.jboss.as.jpa.puparser.PersistenceUnitXmlParser;
+import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -53,7 +51,11 @@ import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
+
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Handle parsing of Persistence unit persistence.xml files
@@ -256,6 +258,8 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             URL url = getPersistenceUnitURL(persistence_xml);
             pu.setPersistenceUnitRootUrl(url);
             pu.setScopedPersistenceUnitName(createBeanName(deploymentUnit, pu.getPersistenceUnitName()));
+            final ServiceName puServiceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
+            deploymentUnit.addToAttachmentList(org.jboss.as.ee.structure.Attachments.INITIALISE_IN_ORDER_SERVICES, puServiceName);
         }
     }
 
