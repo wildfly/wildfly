@@ -365,19 +365,24 @@ class CliConfigImpl implements CliConfig {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 assertExpectedNamespace(reader, expectedNs);
                 final String localName = reader.getLocalName();
+                /*
+                 * The element naming was inconsistent with the rest of the schema so from version 1.1 of the schema we have
+                 * switched to the hyphenated form of element names instead of camel case, the original forms are still handled
+                 * by the parser but are subject to being removed in subsequent releases.
+                 */
                 if ("alias".equals(localName)) {
                     config.setAlias(reader.getElementText());
-                } else if ("keyStore".equals(localName)) {
+                } else if ("key-store".equals(localName) || "keyStore".equals(localName)) {
                     config.setKeyStore(reader.getElementText());
-                } else if ("keyStorePassword".equals(localName)) {
+                } else if ("key-store-password".equals(localName) || "keyStorePassword".equals(localName)) {
                     config.setKeyStorePassword(reader.getElementText());
-                } else if ("keyPassword".equals(localName)) {
+                } else if ("key-password".equals(localName) || "keyPassword".equals(localName)) {
                     config.setKeyPassword(reader.getElementText());
-                } else if ("trustStore".equals(localName)) {
+                } else if ("trust-store".equals(localName) || "trustStore".equals(localName)) {
                     config.setTrustStore(reader.getElementText());
-                } else if ("trustStorePassword".equals(localName)) {
+                } else if ("trust-store-password".equals(localName) || "trustStorePassword".equals(localName)) {
                     config.setTrustStorePassword(reader.getElementText());
-                } else if ("modifyTrustStore".equals(localName)) {
+                } else if ("modify-trust-store".equals(localName) || "modifyTrustStore".equals(localName)) {
                     config.setModifyTrustStore(Boolean.getBoolean(reader.getElementText()));
                 } else {
                     throw new XMLStreamException("Unexpected child of ssl : " + localName);
