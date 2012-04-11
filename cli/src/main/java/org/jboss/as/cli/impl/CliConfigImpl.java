@@ -41,7 +41,6 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLMapper;
-import org.xml.sax.XMLReader;
 
 /**
  * Represents the JBoss CLI configuration.
@@ -86,9 +85,7 @@ class CliConfigImpl implements CliConfig {
             final XMLMapper mapper = XMLMapper.Factory.create();
             final XMLElementReader<CliConfigImpl> reader = new CliConfigReader();
             for (Namespace current : Namespace.cliValues()) {
-                if (current != Namespace.CURRENT) {
-                    mapper.registerRootElement(new QName(current.getUriString(), JBOSS_CLI), reader);
-                }
+                mapper.registerRootElement(new QName(current.getUriString(), JBOSS_CLI), reader);
             }
             FileInputStream is = new FileInputStream(f);
             input = new BufferedInputStream(is);
@@ -205,23 +202,23 @@ class CliConfigImpl implements CliConfig {
         void setKeyStorePassword(final String keyStorePassword) {
             this.keyStorePassword = keyStorePassword;
         }
-                
+
         public String getAlias() {
             return alias;
         }
-        
+
         void setAlias(final String alias) {
             this.alias = alias;
         }
 
         public String getKeyPassword() {
-            return keyPassword;        
+            return keyPassword;
         }
-        
+
         void setKeyPassword(final String keyPassword) {
             this.keyPassword = keyPassword;
         }
-                        
+
         public String getTrustStore() {
             return trustStore;
         }
@@ -246,7 +243,7 @@ class CliConfigImpl implements CliConfig {
             this.modifyTrustStore = modifyTrustStore;
         }
     }
-    
+
     static class CliConfigReader implements XMLElementReader<CliConfigImpl> {
 
         public void readElement(XMLExtendedStreamReader reader, CliConfigImpl config) throws XMLStreamException {
@@ -282,6 +279,7 @@ class CliConfigImpl implements CliConfig {
                         switch (expectedNs) {
                             case CLI_1_0:
                                 readSSLElement_1_0(reader, expectedNs, sslConfig);
+                                break;
                             default:
                                 readSSLElement_1_1(reader, expectedNs, sslConfig);
                         }
@@ -298,7 +296,7 @@ class CliConfigImpl implements CliConfig {
                         jbossCliEnded = true;
                     }
                 }
-            }            
+            }
         }
 
         private void readDefaultController(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
@@ -357,10 +355,12 @@ class CliConfigImpl implements CliConfig {
                     config.setTrustStorePassword(reader.getElementText());
                 } else if ("modifyTrustStore".equals(localName)) {
                     config.setModifyTrustStore(Boolean.getBoolean(reader.getElementText()));
+                } else {
+                    throw new XMLStreamException("Unexpected child of ssl : " + localName);
                 }
             }
-        }        
-        
+        }
+
         public void readSSLElement_1_1(XMLExtendedStreamReader reader, Namespace expectedNs, SslConfig config) throws XMLStreamException {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 assertExpectedNamespace(reader, expectedNs);
@@ -379,9 +379,11 @@ class CliConfigImpl implements CliConfig {
                     config.setTrustStorePassword(reader.getElementText());
                 } else if ("modifyTrustStore".equals(localName)) {
                     config.setModifyTrustStore(Boolean.getBoolean(reader.getElementText()));
+                } else {
+                    throw new XMLStreamException("Unexpected child of ssl : " + localName);
                 }
             }
-        }        
+        }
 
         private void assertExpectedNamespace(XMLExtendedStreamReader reader, Namespace expectedNs) throws XMLStreamException {
             if (expectedNs.equals(Namespace.forUri(reader.getNamespaceURI())) == false) {

@@ -27,11 +27,9 @@ import java.util.Map;
 
 import javax.xml.XMLConstants;
 
-import org.jboss.as.controller.parsing.Namespace;
-
 /**
  * An enumeration of the supported namespaces for CLI configuration.
- * 
+ *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public enum Namespace {
@@ -42,9 +40,9 @@ public enum Namespace {
     // predefined standard
     XML_SCHEMA_INSTANCE("http://www.w3.org/2001/XMLSchema-instance"),
 
-    CLI_1_0("urn:jboss:domain:1.0"),
+    CLI_1_0("urn:jboss:cli:1.0"),
 
-    CLI_1_1("urn:jboss:domain:1.1");
+    CLI_1_1("urn:jboss:cli:1.1");
 
     /**
      * The current namespace version.
@@ -59,7 +57,7 @@ public enum Namespace {
 
     /**
      * Get the URI of this namespace.
-     * 
+     *
      * @return the URI
      */
     public String getUriString() {
