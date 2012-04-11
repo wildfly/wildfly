@@ -259,7 +259,7 @@ public interface CommonAttributes {
                     .setXmlName(Attribute.MODE.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<TransactionMode>(TransactionMode.class, true, false))
+                    .setValidator(new EnumValidator<TransactionMode>(TransactionMode.class, true, true))
                     .setDefaultValue(new ModelNode().set(TransactionMode.NONE.name()))
                     .build();
     SimpleAttributeDefinition MODIFICATION_QUEUE_SIZE =

@@ -119,7 +119,7 @@ class LogStoreConstants {
             .setAllowNull(true)
             .setDefaultValue(new ModelNode())
             .setMeasurementUnit(MeasurementUnit.NONE)
-            .setValidator(new EnumValidator(ParticipantStatus.class, false, false))
+            .setValidator(new EnumValidator(ParticipantStatus.class, true, false))
             .build();
 
     static SimpleAttributeDefinition PARTICIPANT_JNDI_NAME = (new SimpleAttributeDefinitionBuilder(JNDI_ATTRIBUTE, ModelType.STRING))

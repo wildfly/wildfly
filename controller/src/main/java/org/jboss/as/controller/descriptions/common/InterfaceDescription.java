@@ -166,18 +166,18 @@ public class InterfaceDescription {
             .build();
 
     public static final AttributeDefinition ANY_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ANY_ADDRESS, ModelType.BOOLEAN)
-            .setAllowExpression(false).setAllowNull(false).setRestartAllServices()
-            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true, true))
+            .setAllowExpression(false).setAllowNull(true).setRestartAllServices()
+            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true, false))
             .addAlternatives(OTHERS).addAlternatives(ModelDescriptionConstants.ANY_IPV4_ADDRESS, ModelDescriptionConstants.ANY_IPV6_ADDRESS)
             .build();
     public static final AttributeDefinition ANY_IPV4_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ANY_IPV4_ADDRESS, ModelType.BOOLEAN)
-            .setAllowExpression(false).setAllowNull(false).setRestartAllServices()
-            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true, true))
+            .setAllowExpression(false).setAllowNull(true).setRestartAllServices()
+            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true, false))
             .addAlternatives(OTHERS).addAlternatives(ModelDescriptionConstants.ANY_ADDRESS, ModelDescriptionConstants.ANY_IPV6_ADDRESS)
             .build();
     public static final AttributeDefinition ANY_IPV6_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ANY_IPV6_ADDRESS, ModelType.BOOLEAN)
-            .setAllowExpression(false).setAllowNull(false).setRestartAllServices()
-            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true, true))
+            .setAllowExpression(false).setAllowNull(true).setRestartAllServices()
+            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true, false))
             .addAlternatives(OTHERS).addAlternatives(ModelDescriptionConstants.ANY_ADDRESS, ModelDescriptionConstants.ANY_IPV4_ADDRESS)
             .build();
     public static final AttributeDefinition INET_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.INET_ADDRESS, ModelType.STRING)

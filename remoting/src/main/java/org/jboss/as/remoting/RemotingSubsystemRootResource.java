@@ -78,7 +78,7 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
     }
 
     private static SimpleAttributeDefinition createIntAttribute(String name, Attribute attribute, int defaultValue) {
-        return SimpleAttributeDefinitionBuilder.create(name, ModelType.INT, true).setDefaultValue(new ModelNode().set(defaultValue)).setXmlName(attribute.getLocalName()).setValidator(new IntRangeValidator(1)).build();
+        return SimpleAttributeDefinitionBuilder.create(name, ModelType.INT, true).setDefaultValue(new ModelNode().set(defaultValue)).setXmlName(attribute.getLocalName()).setValidator(new IntRangeValidator(1, true)).build();
     }
 
     private static class ThreadWriteAttributeHandler extends RestartParentWriteAttributeHandler {

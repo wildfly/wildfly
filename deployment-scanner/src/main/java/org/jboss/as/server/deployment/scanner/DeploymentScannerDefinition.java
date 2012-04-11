@@ -27,7 +27,7 @@ public class DeploymentScannerDefinition extends SimpleResourceDefinition {
     protected static final SimpleAttributeDefinition NAME =
             new SimpleAttributeDefinitionBuilder(CommonAttributes.NAME, ModelType.STRING, false)
                     .setXmlName(Attribute.NAME.getLocalName())
-                    .setAllowExpression(true)
+                    .setAllowExpression(false)
                     .setValidator(new StringLengthValidator(1))
                     .setDefaultValue(new ModelNode().set(DeploymentScannerExtension.DEFAULT_SCANNER_NAME))
                     .build();
