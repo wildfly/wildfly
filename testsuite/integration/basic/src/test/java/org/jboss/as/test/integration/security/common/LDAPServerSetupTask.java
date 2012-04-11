@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -103,6 +104,8 @@ public class LDAPServerSetupTask implements ServerSetupTask {
     protected DirectoryService directoryService;
     protected LdapServer ldapServer;
 
+    private Locale origLocale;
+
     // Public methods --------------------------------------------------------
 
     /**
@@ -115,6 +118,11 @@ public class LDAPServerSetupTask implements ServerSetupTask {
      *      java.lang.String)
      */
     public final void setup(ManagementClient managementClient, String containerId) throws Exception {
+        // AS7-4450 workaround - switch to the en_US locale, because of the bugs in the ApacheDS
+        LOGGER.info("Setting the default locale: en_US");
+        origLocale = Locale.getDefault();
+        Locale.setDefault(Locale.US);
+
         directoryService = new DefaultDirectoryService();
         directoryService.setShutdownHookEnabled(false);
         port = getPort();
@@ -159,6 +167,11 @@ public class LDAPServerSetupTask implements ServerSetupTask {
         LOGGER.info("Shutting down DirectoryService");
         directoryService.shutdown();
         sysRoot = null;
+
+        // AS7-4450 workaround
+        LOGGER.info("Setting back the default locale: " + origLocale);
+        Locale.setDefault(origLocale);
+        origLocale = null;
     }
 
     // Protected methods -----------------------------------------------------
