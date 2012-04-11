@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathEntry.PathResolver;
@@ -175,15 +176,28 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
         }
     }
 
-    final void removePathEntry(final String pathName) {
+    final void removePathEntry(final String pathName, boolean check) throws OperationFailedException{
         synchronized (pathEntries) {
             PathEntry pathEntry = pathEntries.get(pathName);
             if (pathEntry.isReadOnly()) {
                 throw MESSAGES.pathEntryIsReadOnly(pathName);
             }
+
+            Set<String> dependents = dependenctRelativePaths.get(pathName);
+            if (dependents != null) {
+                throw MESSAGES.cannotRemovePathWithDependencies(pathName, dependents);
+            }
             pathEntries.remove(pathName);
             triggerCallbacksForEvent(pathEntry, Event.REMOVED);
-            dependenctRelativePaths.remove(pathName);
+            if (pathEntry.getRelativeTo() != null) {
+                dependents = dependenctRelativePaths.get(pathEntry.getRelativeTo());
+                if (dependents != null) {
+                    dependents.remove(pathEntry.getName());
+                    if (dependents.size() == 0) {
+                        dependenctRelativePaths.remove(pathEntry.getRelativeTo());
+                    }
+                }
+            }
         }
     }
 
@@ -217,12 +231,15 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
         return pathEntry;
     }
 
-    final void changeRelativePath(String pathName, String relativePath) {
+    final void changeRelativePath(String pathName, String relativePath, boolean check) throws OperationFailedException {
         PathEntry pathEntry = findPathEntry(pathName);
         synchronized (pathEntries) {
             if (pathEntry.getRelativeTo() != null) {
                 Set<String> dependents = dependenctRelativePaths.get(pathEntry.getRelativeTo());
                 dependents.remove(pathEntry.getName());
+            }
+            if (check && relativePath != null && pathEntries.get(relativePath) == null) {
+                throw MESSAGES.pathEntryNotFound(pathName);
             }
             pathEntry.setRelativeTo(relativePath);
             pathEntry.setPathResolver(relativePath == null ? absoluteResolver : relativeResolver);

@@ -132,7 +132,12 @@ public class PathAddHandler implements OperationStepHandler {
                                 if (legacyService != null) {
                                     context.removeService(legacyService.getName());
                                 }
-                                pathManager.removePathEntry(name);
+                                try {
+                                    pathManager.removePathEntry(name, false);
+                                } catch (OperationFailedException e) {
+                                    //Should not happen since 'false' passed in for the check parameter
+                                    throw new RuntimeException(e);
+                                }
                             } else {
                                 pathEventContext.revert();
                             }
