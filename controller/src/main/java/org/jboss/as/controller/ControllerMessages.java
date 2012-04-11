@@ -2444,7 +2444,6 @@ public interface ControllerMessages {
 
     @Message(id = 14854, value="Path '%s' is read-only; it cannot be modified")
     OperationFailedException cannotModifyReadOnlyPath(String pathName);
-
     /**
      * An exception indicating the {@code name} may not be {@link ModelType#EXPRESSION}.
      *
@@ -2467,5 +2466,7 @@ public interface ControllerMessages {
      */
     @Message(id = 14857, value = "Value %s for attribute %s is not a valid multicast address")
     OperationFailedException unknownMulticastAddress(@Cause UnknownHostException cause, String value, String name);
-
+    
+    @Message(id = 14856, value="Path '%s' cannot be removed, since the following paths depend on it: %s")
+    OperationFailedException cannotRemovePathWithDependencies(String pathName, Set<String> dependencies);
 }

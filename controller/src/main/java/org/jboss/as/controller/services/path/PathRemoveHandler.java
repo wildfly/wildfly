@@ -97,8 +97,8 @@ public class PathRemoveHandler implements OperationStepHandler {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final PathEventContextImpl pathEventContext = pathManager.checkRestartRequired(context, name, Event.REMOVED);
                     if (pathEventContext.isInstallServices()) {
+                        pathManager.removePathEntry(name, true);
                         pathManager.removePathService(context, name);
-                        pathManager.removePathEntry(name);
                     }
 
                     context.completeStep(new OperationContext.RollbackHandler() {
