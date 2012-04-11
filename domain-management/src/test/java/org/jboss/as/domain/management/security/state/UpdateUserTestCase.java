@@ -28,10 +28,6 @@ import org.jboss.msc.service.StartException;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Properties;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Test update user
@@ -51,7 +47,7 @@ public class UpdateUserTestCase extends PropertyTestHelper {
         consoleMock.setResponses(consoleBuilder);
         updateUserState.update(values);
 
-        assertUserPropertyFile();
+        assertUserPropertyFile(USER_NAME);
 
         consoleBuilder.validate();
     }
@@ -68,22 +64,10 @@ public class UpdateUserTestCase extends PropertyTestHelper {
         consoleMock.setResponses(consoleBuilder);
         updateUserState.update(values);
 
-        assertUserPropertyFile();
-        assertRolePropertyFile();
+        assertUserPropertyFile(USER_NAME);
+        assertRolePropertyFile(USER_NAME);
 
         consoleBuilder.validate();
-    }
-
-    private void assertUserPropertyFile() throws StartException, IOException {
-        Properties properties = loadProperties(values.getPropertiesFiles().get(0).getAbsolutePath());
-        String password = (String) properties.get(USER_NAME);
-        assertNotNull(password);
-    }
-
-    private void assertRolePropertyFile() throws StartException, IOException {
-        Properties properties = loadProperties(values.getRoleFiles().get(0).getAbsolutePath());
-        String roles = (String) properties.get(USER_NAME);
-        assertEquals(ROLES,roles);
     }
 
 

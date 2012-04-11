@@ -46,6 +46,7 @@ public class StateValues {
     private List<File> roleFiles;
     private Set<String> knownUsers;
     private Map<String,String> knownRoles;
+    private String jbossHome;
 
     public boolean isSilentOrNonInteractive() {
         return (howInteractive == AddPropertiesUser.Interactiveness.NON_INTERACTIVE) || isSilent();
@@ -138,5 +139,13 @@ public class StateValues {
 
     public void setKnownRoles(Map<String, String> knownRoles) {
         this.knownRoles = knownRoles;
+    }
+
+    public String getJBossHome() {
+        return this.jbossHome;
+    }
+
+    public void setJbossHome(String path) {
+        this.jbossHome = path;
     }
 }

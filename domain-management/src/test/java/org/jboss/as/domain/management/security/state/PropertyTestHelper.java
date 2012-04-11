@@ -31,6 +31,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 /**
  * Helper for setting up a test case with ConsoleMock, StateValues and
  * property files for user and roles
@@ -73,5 +76,17 @@ public class PropertyTestHelper {
         Properties properties = (Properties) propertiesLoad.getProperties().clone();
         propertiesLoad.stop(null);
         return properties;
+    }
+
+    protected void assertUserPropertyFile(String userName) throws StartException, IOException {
+        Properties properties = loadProperties(values.getPropertiesFiles().get(0).getAbsolutePath());
+        String password = (String) properties.get(userName);
+        assertNotNull(password);
+    }
+
+    protected void assertRolePropertyFile(String userName) throws StartException, IOException {
+        Properties properties = loadProperties(values.getRoleFiles().get(0).getAbsolutePath());
+        String roles = (String) properties.get(userName);
+        assertEquals(ROLES,roles);
     }
 }

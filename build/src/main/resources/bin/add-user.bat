@@ -69,7 +69,10 @@ if "x%JBOSS_MODULEPATH%" == "x" (
   set  "JBOSS_MODULEPATH=%JBOSS_HOME%\modules"
 )
 
-"%JAVA%" ^
+# Uncomment to override standalone and domain user location  
+# set "JAVA_OPTS=%JAVA_OPTS% -Djboss.server.config.user.dir=../standalone/configuration -Djboss.domain.config.user.dir=../domain/configuration"
+
+"%JAVA%" %JAVA_OPTS% ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
      org.jboss.as.domain-add-user ^
