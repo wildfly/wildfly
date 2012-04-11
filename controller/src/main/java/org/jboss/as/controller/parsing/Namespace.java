@@ -47,7 +47,7 @@ public enum Namespace {
 
     DOMAIN_1_2("urn:jboss:domain:1.2"),
 
-    DOMAIN_1_3("urn:jboss:domain:1.3"), ;
+    DOMAIN_1_3("urn:jboss:domain:1.3") ;
 
     /**
      * The current namespace version.
