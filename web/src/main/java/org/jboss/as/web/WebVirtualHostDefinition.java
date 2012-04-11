@@ -39,7 +39,7 @@ public class WebVirtualHostDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_WEB_MODULE, ModelType.STRING, true)
                     .setXmlName(Constants.DEFAULT_WEB_MODULE)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setValidator(new StringLengthValidator(1, true,true))
+                    .setValidator(new StringLengthValidator(1, true, false))
                     .setDefaultValue(new ModelNode("ROOT.war"))
                     .build();
     protected static final SimpleAttributeDefinition ENABLE_WELCOME_ROOT =

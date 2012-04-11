@@ -21,9 +21,9 @@ public class WebAccessLogDirectoryDefinition extends AbstractAliasedResourceDefi
     public static final WebAccessLogDirectoryDefinition INSTANCE = new WebAccessLogDirectoryDefinition();
 
     protected static final SimpleAttributeDefinition RELATIVE_TO =
-            new SimpleAttributeDefinitionBuilder(Constants.RELATIVE_TO, ModelType.STRING, true)
+            new SimpleAttributeDefinitionBuilder(Constants.RELATIVE_TO, ModelType.STRING)
                     .setXmlName(Constants.RELATIVE_TO)
-                    .setAllowNull(false)
+                    .setAllowNull(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
                     .setDefaultValue(new ModelNode("jboss.server.log.dir"))
@@ -31,11 +31,12 @@ public class WebAccessLogDirectoryDefinition extends AbstractAliasedResourceDefi
 
 
     protected static final SimpleAttributeDefinition PATH =
-            new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING, true)
+            new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING)
                     .setXmlName(Constants.PATH)
+                    .setAllowNull(true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new StringLengthValidator(1, true))
+                    .setValidator(new StringLengthValidator(1, true, true))
                     .build();
 
 

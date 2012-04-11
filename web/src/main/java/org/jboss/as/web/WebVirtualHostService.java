@@ -82,7 +82,7 @@ public class WebVirtualHostService implements Service<VirtualHost> {
         }
         if(accessLog != null) {
             host.addValve(createAccessLogValve(host, pathManagerInjector.getValue().resolveRelativePathEntry(accessLogPath, accessLogRelativeTo), accessLog));
-            pathManagerInjector.getValue().registerCallback(accessLogRelativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
+            callbackHandle = pathManagerInjector.getValue().registerCallback(accessLogRelativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
         }
         if(rewrite != null) {
             host.addValve(createRewriteValve(host, rewrite));

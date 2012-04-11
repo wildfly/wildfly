@@ -24,7 +24,7 @@ public class WebStaticResources extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.LISTINGS, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.LISTINGS)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(false))
                     .build();
     protected static final SimpleAttributeDefinition SENDFILE =
@@ -45,14 +45,14 @@ public class WebStaticResources extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.READ_ONLY, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.READ_ONLY)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(true))
                     .build();
     protected static final SimpleAttributeDefinition WEBDAV =
             new SimpleAttributeDefinitionBuilder(Constants.WEBDAV, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.WEBDAV)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(false))
                     .build();
 
@@ -74,7 +74,7 @@ public class WebStaticResources extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.DISABLED, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.DISABLED)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(false))
                     .build();
     protected static final SimpleAttributeDefinition[] STATIC_ATTRIBUTES = {

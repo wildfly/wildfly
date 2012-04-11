@@ -18,14 +18,14 @@ public class WebReWriteConditionDefinition extends SimpleResourceDefinition {
     public static final WebReWriteConditionDefinition INSTANCE = new WebReWriteConditionDefinition();
 
     protected static final SimpleAttributeDefinition TEST =
-            new SimpleAttributeDefinitionBuilder(Constants.TEST, ModelType.STRING, true)
+            new SimpleAttributeDefinitionBuilder(Constants.TEST, ModelType.STRING, false)
                     .setXmlName(Constants.TEST)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, false))
                     .build();
 
     protected static final SimpleAttributeDefinition PATTERN =
-            new SimpleAttributeDefinitionBuilder(Constants.PATTERN, ModelType.STRING, true)
+            new SimpleAttributeDefinitionBuilder(Constants.PATTERN, ModelType.STRING, false)
                     .setXmlName(Constants.PATTERN)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, false))
@@ -33,7 +33,7 @@ public class WebReWriteConditionDefinition extends SimpleResourceDefinition {
 
 
     protected static final SimpleAttributeDefinition FLAGS =
-            new SimpleAttributeDefinitionBuilder(Constants.FLAGS, ModelType.STRING, true)
+            new SimpleAttributeDefinitionBuilder(Constants.FLAGS, ModelType.STRING, false)
                     .setXmlName(Constants.FLAGS)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, false))

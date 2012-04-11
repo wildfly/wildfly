@@ -24,21 +24,21 @@ public class WebJSPDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.DEVELOPMENT, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.DEVELOPMENT)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(false))
                     .build();
     protected static final SimpleAttributeDefinition DISABLED =
             new SimpleAttributeDefinitionBuilder(Constants.DISABLED, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.DISABLED)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(false))
                     .build();
     protected static final SimpleAttributeDefinition KEEP_GENERATED =
             new SimpleAttributeDefinitionBuilder(Constants.KEEP_GENERATED, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.KEEP_GENERATED)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(true))
                     .build();
 
@@ -46,7 +46,7 @@ public class WebJSPDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.TRIM_SPACES, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.TRIM_SPACES)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(false))
                     .build();
 
@@ -54,7 +54,7 @@ public class WebJSPDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.TAG_POOLING, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.TAG_POOLING)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(true))
                     .build();
 
@@ -62,7 +62,7 @@ public class WebJSPDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.MAPPED_FILE, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.MAPPED_FILE)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(true))
                     .build();
 
@@ -85,7 +85,7 @@ public class WebJSPDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.RECOMPILE_ON_FAIL, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.RECOMPILE_ON_FAIL)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(false))
                     .build();
 
@@ -93,7 +93,7 @@ public class WebJSPDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.SMAP, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.SMAP)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(true))
                     .build();
 
@@ -101,7 +101,7 @@ public class WebJSPDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.DUMP_SMAP, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.DUMP_SMAP)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(false))
                     .build();
 
@@ -109,7 +109,7 @@ public class WebJSPDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.GENERATE_STRINGS_AS_CHAR_ARRAYS, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.GENERATE_STRINGS_AS_CHAR_ARRAYS)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(false))
                     .build();
 
@@ -118,7 +118,7 @@ public class WebJSPDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(false))
                     .build();
 
@@ -158,7 +158,7 @@ public class WebJSPDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.X_POWERED_BY, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.X_POWERED_BY)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(true))
                     .build();
 
@@ -166,7 +166,7 @@ public class WebJSPDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.DISPLAY_SOURCE_FRAGMENT, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.DISPLAY_SOURCE_FRAGMENT)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN))
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
                     .setDefaultValue(new ModelNode(true))
                     .build();
     protected static final SimpleAttributeDefinition[] JSP_ATTRIBUTES = {
