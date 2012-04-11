@@ -85,9 +85,9 @@ class CliConfigImpl implements CliConfig {
         try {
             final XMLMapper mapper = XMLMapper.Factory.create();
             final XMLElementReader<CliConfigImpl> reader = new CliConfigReader();
-            for (Namespace current : Namespace.values()) {
+            for (Namespace current : Namespace.cliValues()) {
                 if (current != Namespace.CURRENT) {
-                    mapper.registerRootElement(new QName(current.name(), JBOSS_CLI), reader);
+                    mapper.registerRootElement(new QName(current.getUriString(), JBOSS_CLI), reader);
                 }
             }
             FileInputStream is = new FileInputStream(f);
@@ -248,20 +248,43 @@ class CliConfigImpl implements CliConfig {
     }
     
     static class CliConfigReader implements XMLElementReader<CliConfigImpl> {
-        @Override
+
         public void readElement(XMLExtendedStreamReader reader, CliConfigImpl config) throws XMLStreamException {
+            String localName = reader.getLocalName();
+            if (JBOSS_CLI.equals(localName) == false) {
+                throw new XMLStreamException("Unexpected element: " + localName);
+            }
+
+            Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
+            switch (readerNS) {
+                case CLI_1_0:
+                case CLI_1_1:
+                    readCLIElement_1_0(reader, readerNS, config);
+                    break;
+                default:
+                    throw new XMLStreamException("Unexpected element: " + localName);
+            }
+        }
+
+        public void readCLIElement_1_0(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
             boolean jbossCliEnded = false;
             while (reader.hasNext() && jbossCliEnded == false) {
                 int tag = reader.nextTag();
+                assertExpectedNamespace(reader, expectedNs);
                 if(tag == XMLStreamConstants.START_ELEMENT) {
                     final String localName = reader.getLocalName();
                     if(localName.equals(DEFAULT_CONTROLLER)) {
-                        readDefaultController(reader, config);
+                        readDefaultController(reader, expectedNs, config);
                     } else if(localName.equals(HISTORY)) {
-                        readHistory(reader, config);
+                        readHistory(reader, expectedNs, config);
                     } else if (localName.equals("ssl")) {
                         SslConfig sslConfig = new SslConfig();
-                        readSSLElement(reader, sslConfig);
+                        switch (expectedNs) {
+                            case CLI_1_0:
+                                readSSLElement_1_0(reader, expectedNs, sslConfig);
+                            default:
+                                readSSLElement_1_1(reader, expectedNs, sslConfig);
+                        }
                         config.sslConfig = sslConfig;
                     } else if(localName.equals(VALIDATE_OPERATION_REQUESTS)) {
                         final String resolved = resolveString(reader.getElementText());
@@ -275,11 +298,12 @@ class CliConfigImpl implements CliConfig {
                         jbossCliEnded = true;
                     }
                 }
-            }
+            }            
         }
 
-        private void readDefaultController(XMLExtendedStreamReader reader, CliConfigImpl config) throws XMLStreamException {
+        private void readDefaultController(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                assertExpectedNamespace(reader, expectedNs);
                 final String localName = reader.getLocalName();
                 final String resolved = resolveString(reader.getElementText());
                 if (HOST.equals(localName)) {
@@ -296,8 +320,9 @@ class CliConfigImpl implements CliConfig {
             }
         }
 
-        private void readHistory(XMLExtendedStreamReader reader, CliConfigImpl config) throws XMLStreamException {
+        private void readHistory(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                assertExpectedNamespace(reader, expectedNs);
                 final String localName = reader.getLocalName();
                 final String resolved = resolveString(reader.getElementText());
                 if (ENABLED.equals(localName)) {
@@ -318,8 +343,9 @@ class CliConfigImpl implements CliConfig {
             }
         }
 
-        public void readSSLElement(XMLExtendedStreamReader reader, SslConfig config) throws XMLStreamException {
+        public void readSSLElement_1_0(XMLExtendedStreamReader reader, Namespace expectedNs, SslConfig config) throws XMLStreamException {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                assertExpectedNamespace(reader, expectedNs);
                 final String localName = reader.getLocalName();
                 if ("keyStore".equals(localName)) {
                     config.setKeyStore(reader.getElementText());
@@ -334,6 +360,34 @@ class CliConfigImpl implements CliConfig {
                 }
             }
         }        
+        
+        public void readSSLElement_1_1(XMLExtendedStreamReader reader, Namespace expectedNs, SslConfig config) throws XMLStreamException {
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                assertExpectedNamespace(reader, expectedNs);
+                final String localName = reader.getLocalName();
+                if ("alias".equals(localName)) {
+                    config.setAlias(reader.getElementText());
+                } else if ("keyStore".equals(localName)) {
+                    config.setKeyStore(reader.getElementText());
+                } else if ("keyStorePassword".equals(localName)) {
+                    config.setKeyStorePassword(reader.getElementText());
+                } else if ("keyPassword".equals(localName)) {
+                    config.setKeyPassword(reader.getElementText());
+                } else if ("trustStore".equals(localName)) {
+                    config.setTrustStore(reader.getElementText());
+                } else if ("trustStorePassword".equals(localName)) {
+                    config.setTrustStorePassword(reader.getElementText());
+                } else if ("modifyTrustStore".equals(localName)) {
+                    config.setModifyTrustStore(Boolean.getBoolean(reader.getElementText()));
+                }
+            }
+        }        
+
+        private void assertExpectedNamespace(XMLExtendedStreamReader reader, Namespace expectedNs) throws XMLStreamException {
+            if (expectedNs.equals(Namespace.forUri(reader.getNamespaceURI())) == false) {
+                throw new XMLStreamException("Unexpected element: " + reader.getLocalName());
+            }
+        }
     }
-    
+
 }
