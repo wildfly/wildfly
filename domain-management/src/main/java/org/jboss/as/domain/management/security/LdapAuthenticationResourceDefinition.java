@@ -65,12 +65,17 @@ public class LdapAuthenticationResourceDefinition extends SimpleResourceDefiniti
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final SimpleAttributeDefinition USERNAME_FILTER = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USERNAME_ATTRIBUTE, ModelType.STRING, false)
-            .setXmlName("attribute").setAlternatives(ModelDescriptionConstants.ADVANCED_FILTER)
-            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+            .setXmlName("attribute")
+            .setAlternatives(ModelDescriptionConstants.ADVANCED_FILTER)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .setValidateNull(false)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final SimpleAttributeDefinition ADVANCED_FILTER = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ADVANCED_FILTER, ModelType.STRING, false)
             .setXmlName("filter")
-            .setAlternatives(ModelDescriptionConstants.USERNAME_ATTRIBUTE).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .setAlternatives(ModelDescriptionConstants.USERNAME_ATTRIBUTE)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .setValidateNull(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {
