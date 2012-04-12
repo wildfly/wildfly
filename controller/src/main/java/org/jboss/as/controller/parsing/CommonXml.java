@@ -70,7 +70,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.parseBoundedIntegerAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
-import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
@@ -426,28 +425,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
             updates.add(op);
         }
-    }
-
-    public static ModelNode parseProperties(final XMLExtendedStreamReader reader, final Namespace expectedNs) throws XMLStreamException {
-        return parseProperties(reader, expectedNs, Element.PROPERTY);
-    }
-
-    public static ModelNode parseEnvironmentVariables(final XMLExtendedStreamReader reader, final Namespace expectedNs) throws XMLStreamException {
-        return parseProperties(reader, expectedNs, Element.VARIABLE);
-    }
-
-    private static ModelNode parseProperties(final XMLExtendedStreamReader reader, final Namespace expectedNs, final Element element) throws XMLStreamException {
-        final ModelNode properties = new ModelNode();
-        while (reader.nextTag() != END_ELEMENT) {
-            requireNamespace(reader, expectedNs);
-            if (Element.forName(reader.getLocalName()) != element) {
-                throw unexpectedElement(reader);
-            }
-            final String[] array = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.VALUE.getLocalName());
-            requireNoContent(reader);
-            properties.get(array[0]).set(array[1]);
-        }
-        return properties;
     }
 
     protected void parseInterfaceCriteria(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode interfaceModel)

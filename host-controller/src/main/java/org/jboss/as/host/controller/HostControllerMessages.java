@@ -630,4 +630,6 @@ public interface HostControllerMessages {
     @Message(id = 15862, value = "Unable to connect due to SSL failure.")
     IllegalStateException sslFailureUnableToConnect(@Cause Throwable cause);
 
+    @Message(id = 15863, value = "Option '%s' already exists")
+    IllegalStateException jvmOptionAlreadyExists(String option);
 }

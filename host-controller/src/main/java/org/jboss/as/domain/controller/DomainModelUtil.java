@@ -29,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_HOST_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
@@ -67,7 +66,6 @@ import org.jboss.as.controller.extension.ExtensionResourceDefinition;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
-import org.jboss.as.controller.operations.common.JVMHandlers;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
@@ -125,6 +123,7 @@ import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymen
 import org.jboss.as.domain.controller.resource.SocketBindingResourceDefinition;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
+import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.management.client.content.ManagedDMRContentResourceDefinition;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResourceDefinition;
 import org.jboss.as.repository.ContentRepository;
@@ -278,8 +277,8 @@ public class DomainModelUtil {
         DomainServerLifecycleHandlers.registerServerGroupHandlers(serverGroups);
 
 
-        final ManagementResourceRegistration groupVMs = serverGroups.registerSubModel(PathElement.pathElement(JVM), CommonProviders.JVM_PROVIDER);
-        JVMHandlers.register(groupVMs);
+        final ManagementResourceRegistration groupVMs = serverGroups.registerSubModel(JvmResourceDefinition.GLOBAL);
+
         ServerGroupDeploymentReplaceHandler sgdrh = new ServerGroupDeploymentReplaceHandler(fileRepository);
         serverGroups.registerOperationHandler(ServerGroupDeploymentReplaceHandler.OPERATION_NAME, sgdrh, sgdrh);
         final ManagementResourceRegistration serverGroupDeployments = serverGroups.registerSubModel(PathElement.pathElement(DEPLOYMENT), DomainDescriptionProviders.SERVER_GROUP_DEPLOYMENT);
