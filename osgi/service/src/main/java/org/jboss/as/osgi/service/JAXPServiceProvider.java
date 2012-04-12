@@ -38,7 +38,7 @@ import org.osgi.util.xml.XMLParserActivator;
 
 import java.net.URL;
 
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.service.FrameworkBootstrapService.SERVICE_BASE_NAME;
 
 /**
@@ -92,7 +92,7 @@ final class JAXPServiceProvider extends AbstractService<Void> {
                 activator.stop(syscontext);
                 activator = null;
             } catch (Exception e) {
-                ROOT_LOGGER.warn(e);
+                LOGGER.warn(e);
             }
         }
     }

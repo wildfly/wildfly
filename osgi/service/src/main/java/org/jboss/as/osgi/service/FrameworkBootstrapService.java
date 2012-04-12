@@ -80,7 +80,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.jboss.as.network.SocketBinding.JBOSS_BINDING_NAME;
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
 import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA;
@@ -120,7 +120,7 @@ public class FrameworkBootstrapService implements Service<Void> {
 
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
-        ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         try {
             ServiceContainer serviceContainer = context.getController().getServiceContainer();
 
@@ -166,8 +166,8 @@ public class FrameworkBootstrapService implements Service<Void> {
 
     public synchronized void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
-        ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
-        ROOT_LOGGER.stoppingOsgiFramework();
+        LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.infoStoppingFramework();
     }
 
     @Override
@@ -262,7 +262,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         @Override
         public void start(StartContext context) throws StartException {
             ServiceController<?> controller = context.getController();
-            ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+            LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
             serviceContainer = context.getController().getServiceContainer();
             final BundleContext syscontext = injectedBundleContext.getValue();
 
@@ -304,7 +304,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         @Override
         public void stop(StopContext context) {
             ServiceController<?> controller = context.getController();
-            ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+            LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
             injectedBundleContext.getValue().removeServiceListener(jndiServiceListener);
         }
 
@@ -344,13 +344,13 @@ public class FrameworkBootstrapService implements Service<Void> {
         @Override
         public void start(StartContext context) throws StartException {
             ServiceController<?> controller = context.getController();
-            ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+            LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         }
 
         @Override
         public void stop(StopContext context) {
             ServiceController<?> controller = context.getController();
-            ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+            LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
             frameworkModule = null;
         }
 
