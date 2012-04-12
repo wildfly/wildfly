@@ -22,47 +22,6 @@
 
 package org.jboss.as.host.controller.parsing;
 
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLANS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
-import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
-import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -99,6 +58,49 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLANS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
+import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
+
 /**
  * A mapper between an AS server's configuration model and XML representations, particularly  {@code domain.xml}.
  *
@@ -131,7 +133,8 @@ public class DomainXml extends CommonXml {
             case DOMAIN_1_2:
                 readDomainElement1_1(reader, new ModelNode(), readerNS, nodes);
                 break;
-            case DOMAIN_1_3:{
+            case DOMAIN_1_3:
+            case DOMAIN_1_4: {
                 readDomainElement1_3(reader, new ModelNode(), readerNS, nodes);
                 break;
             }
@@ -160,41 +163,45 @@ public class DomainXml extends CommonXml {
             extensionXml.writeExtensions(writer, modelNode.get(EXTENSION));
             writeNewLine(writer);
         }
-        if(modelNode.hasDefined(SYSTEM_PROPERTY)) {
+        if (modelNode.hasDefined(SYSTEM_PROPERTY)) {
             writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, false);
             writeNewLine(writer);
         }
-        if(modelNode.hasDefined(PATH)) {
+        if (modelNode.hasDefined(PATH)) {
             writePaths(writer, modelNode.get(PATH));
             writeNewLine(writer);
         }
-        if(modelNode.hasDefined(PROFILE)) {
+        if (modelNode.hasDefined(PROFILE)) {
             writer.writeStartElement(Element.PROFILES.getLocalName());
-            for(final Property profile : modelNode.get(PROFILE).asPropertyList()) {
+            for (final Property profile : modelNode.get(PROFILE).asPropertyList()) {
                 writeProfile(writer, profile.getName(), profile.getValue(), context);
             }
             writer.writeEndElement();
             writeNewLine(writer);
         }
-        if(modelNode.hasDefined(INTERFACE)) {
+        if (modelNode.hasDefined(INTERFACE)) {
             writeInterfaces(writer, modelNode.get(INTERFACE));
             writeNewLine(writer);
         }
-        if(modelNode.hasDefined(SOCKET_BINDING_GROUP)) {
+        if (modelNode.hasDefined(SOCKET_BINDING_GROUP)) {
             writer.writeStartElement(Element.SOCKET_BINDING_GROUPS.getLocalName());
-            for(final Property property : modelNode.get(SOCKET_BINDING_GROUP).asPropertyList()) {
+            for (final Property property : modelNode.get(SOCKET_BINDING_GROUP).asPropertyList()) {
                 writeSocketBindingGroup(writer, property.getValue(), false);
             }
             writer.writeEndElement();
             writeNewLine(writer);
         }
-        if(modelNode.hasDefined(DEPLOYMENT)) {
+        if (modelNode.hasDefined(DEPLOYMENT)) {
             writeDomainDeployments(writer, modelNode.get(DEPLOYMENT));
             writeNewLine(writer);
         }
-        if(modelNode.hasDefined(SERVER_GROUP)) {
+        if (modelNode.hasDefined(DEPLOYMENT_OVERLAY)) {
+            writeDeploymentOverlays(writer, modelNode.get(DEPLOYMENT_OVERLAY));
+            writeNewLine(writer);
+        }
+        if (modelNode.hasDefined(SERVER_GROUP)) {
             writer.writeStartElement(Element.SERVER_GROUPS.getLocalName());
-            for(final Property property : modelNode.get(SERVER_GROUP).asPropertyList()) {
+            for (final Property property : modelNode.get(SERVER_GROUP).asPropertyList()) {
                 writeServerGroup(writer, property.getName(), property.getValue());
             }
             writer.writeEndElement();
@@ -359,6 +366,10 @@ public class DomainXml extends CommonXml {
                     EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
             element = nextElement(reader, expectedNs);
         }
+        if (element == Element.DEPLOYMENT_OVERLAYS && expectedNs.ordinal() >= Namespace.DOMAIN_1_4.ordinal()) {
+            parseDeploymentOverlays(reader, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        }
         if (element == Element.SERVER_GROUPS) {
             parseServerGroups(reader, address, expectedNs, list);
             element = nextElement(reader, expectedNs);
@@ -373,6 +384,7 @@ public class DomainXml extends CommonXml {
             throw unexpectedElement(reader);
         }
     }
+
     protected void readDomainElementAttributes_1_0(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> list) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -432,7 +444,7 @@ public class DomainXml extends CommonXml {
                             op.get(NAME).set(NAME);
                             op.get(VALUE).set(ParseUtils.parsePossibleExpression(reader.getAttributeValue(i)));
                             list.add(op);
-                        break;
+                            break;
                         default:
                             throw unexpectedAttribute(reader, i);
                     }
@@ -467,7 +479,7 @@ public class DomainXml extends CommonXml {
     }
 
     void parseSocketBindingGroup_1_0(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address,
-                                 final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
+                                     final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
         final Set<String> includedGroups = new HashSet<String>();
         // unique socket-binding names
         final Set<String> uniqueBindingNames = new HashSet<String>();
@@ -527,7 +539,7 @@ public class DomainXml extends CommonXml {
     }
 
     void parseSocketBindingGroup_1_1(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address,
-                                 final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
+                                     final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
         final Set<String> includedGroups = new HashSet<String>();
         // both outbound-socket-bindings and socket-binding names
         final Set<String> uniqueBindingNames = new HashSet<String>();
@@ -560,7 +572,7 @@ public class DomainXml extends CommonXml {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
-               /* This will be reintroduced for 7.2.0, leave commented out
+                /* This will be reintroduced for 7.2.0, leave commented out
                 case INCLUDE: {
                     final String includedGroup = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
                     if (!includedGroups.add(includedGroup)) {
@@ -634,7 +646,8 @@ public class DomainXml extends CommonXml {
                             }
                             profile = value;
                             break;
-                        } case MANAGEMENT_SUBSYSTEM_ENDPOINT: {
+                        }
+                        case MANAGEMENT_SUBSYSTEM_ENDPOINT: {
                             if (managementSubsystemEndpoint != null) {
                                 throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                             }
@@ -688,6 +701,10 @@ public class DomainXml extends CommonXml {
                         parseDeployments(reader, groupAddress, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED), Collections.<Element>emptySet());
                         break;
                     }
+                    case DEPLOYMENT_OVERLAY_LINKS: {
+                        parseDeploymentOverlayLinks(reader, expectedNs, groupAddress, list);
+                        break;
+                    }
                     case SYSTEM_PROPERTIES: {
                         parseSystemProperties(reader, groupAddress, expectedNs, list, false);
                         break;
@@ -715,7 +732,7 @@ public class DomainXml extends CommonXml {
             // Attributes
             requireSingleAttribute(reader, Attribute.NAME.getLocalName());
             final String name = reader.getAttributeValue(0);
-            if (! names.add(name)) {
+            if (!names.add(name)) {
                 throw MESSAGES.duplicateDeclaration("profile", name, reader.getLocation());
             }
 
@@ -748,7 +765,7 @@ public class DomainXml extends CommonXml {
                     case DOMAIN_1_0:
                     case DOMAIN_1_1:
                     case DOMAIN_1_2:
-                    case DOMAIN_1_3:{
+                    case DOMAIN_1_3: {
                         requireNamespace(reader, expectedNs);
                         // include should come first
                         if (profileOps.size() > 0) {
@@ -796,10 +813,10 @@ public class DomainXml extends CommonXml {
 
             // Process subsystems
             for (List<ModelNode> subsystems : profileOps.values()) {
-                for(final ModelNode update : subsystems) {
+                for (final ModelNode update : subsystems) {
                     // Process relative subsystem path address
                     final ModelNode subsystemAddress = address.clone().set(address).add(ModelDescriptionConstants.PROFILE, name);
-                    for(final Property path : update.get(OP_ADDR).asPropertyList()) {
+                    for (final Property path : update.get(OP_ADDR).asPropertyList()) {
                         subsystemAddress.add(path.getName(), path.getValue().asString());
                     }
                     update.get(OP_ADDR).set(subsystemAddress);
@@ -869,13 +886,13 @@ public class DomainXml extends CommonXml {
         writer.writeStartElement(Element.PROFILE.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), profileName);
 
-        if(profileNode.hasDefined(INCLUDES)) {
-            for(final ModelNode include : profileNode.get(INCLUDES).asList()) {
+        if (profileNode.hasDefined(INCLUDES)) {
+            for (final ModelNode include : profileNode.get(INCLUDES).asList()) {
                 writer.writeEmptyElement(INCLUDE);
                 writer.writeAttribute(PROFILE, include.asString());
             }
         }
-        if(profileNode.hasDefined(SUBSYSTEM)) {
+        if (profileNode.hasDefined(SUBSYSTEM)) {
             final Set<String> subsystemNames = profileNode.get(SUBSYSTEM).keys();
             if (subsystemNames.size() > 0) {
                 String defaultNamespace = writer.getNamespaceContext().getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
@@ -886,8 +903,7 @@ public class DomainXml extends CommonXml {
                         if (subsystemWriter != null) { // FIXME -- remove when extensions are doing the registration
                             subsystemWriter.writeContent(writer, new SubsystemMarshallingContext(subsystem, writer));
                         }
-                    }
-                    finally {
+                    } finally {
                         writer.setDefaultNamespace(defaultNamespace);
                     }
                 }
@@ -944,8 +960,8 @@ public class DomainXml extends CommonXml {
         writer.writeAttribute(Attribute.PROFILE.getLocalName(), group.get(PROFILE).asString());
 
         // JVM
-        if(group.hasDefined(JVM)) {
-            for(final Property jvm : group.get(JVM).asPropertyList()) {
+        if (group.hasDefined(JVM)) {
+            for (final Property jvm : group.get(JVM).asPropertyList()) {
                 JvmXml.writeJVMElement(writer, jvm.getName(), jvm.getValue());
                 break; // TODO just write the first !?
             }
@@ -969,11 +985,15 @@ public class DomainXml extends CommonXml {
             writer.writeEndElement();
         }
 
-        if(group.hasDefined(DEPLOYMENT)) {
+        if (group.hasDefined(DEPLOYMENT)) {
             writeServerGroupDeployments(writer, group.get(DEPLOYMENT));
         }
+        if (group.hasDefined(DEPLOYMENT_OVERLAY_LINK)) {
+            writeDeploymentOverlayLinks(writer, group.get(DEPLOYMENT_OVERLAY_LINK));
+            writeNewLine(writer);
+        }
         // System properties
-        if(group.hasDefined(SYSTEM_PROPERTY)) {
+        if (group.hasDefined(SYSTEM_PROPERTY)) {
             writeProperties(writer, group.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, false);
         }
 

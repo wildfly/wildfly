@@ -55,7 +55,7 @@ public class HttpRequest {
             throw new RuntimeException(e);
         } catch (ExecutionException e) {
             // by virtue of the Callable redefinition above I can cast
-            throw (IOException) e.getCause();
+            throw new IOException(e);
         } finally {
             executor.shutdownNow();
             try {

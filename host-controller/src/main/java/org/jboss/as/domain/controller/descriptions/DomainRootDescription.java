@@ -20,10 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */package org.jboss.as.domain.controller.descriptions;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
+import org.jboss.as.server.deployment.DeploymentRemoveHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
@@ -57,17 +69,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROCESS_TYPE;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
-import org.jboss.as.server.deployment.DeploymentRemoveHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Model description for the domain root.
@@ -186,6 +187,11 @@ public class DomainRootDescription {
         root.get(CHILDREN, DEPLOYMENT, MIN_OCCURS).set(0);
         root.get(CHILDREN, DEPLOYMENT, MAX_OCCURS).set(Integer.MAX_VALUE);
         root.get(CHILDREN, DEPLOYMENT, MODEL_DESCRIPTION).setEmptyObject();
+
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY, DESCRIPTION).set(bundle.getString("domain.deployment-overlay"));
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY, MIN_OCCURS).set(0);
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY, MODEL_DESCRIPTION).setEmptyObject();
 
         root.get(CHILDREN, SERVER_GROUP, DESCRIPTION).set(bundle.getString("domain.server-group"));
         root.get(CHILDREN, SERVER_GROUP, MIN_OCCURS).set(0);

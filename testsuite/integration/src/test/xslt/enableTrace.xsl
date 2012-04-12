@@ -1,6 +1,6 @@
 <xsl:stylesheet version="2.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:d="urn:jboss:domain:1.3"
+                xmlns:d="urn:jboss:domain:1.4"
                 xmlns:l="urn:jboss:domain:logging:1.1"
                 exclude-result-prefixes="l d"
         >

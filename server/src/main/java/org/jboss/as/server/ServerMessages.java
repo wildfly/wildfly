@@ -630,4 +630,10 @@ public interface ServerMessages {
 
     @Message(id = 18775, value = "Cannot obtain required module for: %s")
     IllegalStateException nullModuleAttachment(DeploymentUnit depUnit);
+
+    @Message(id = 18776, value = "Failed to get content for deployment overlay %s at %s")
+    DeploymentUnitProcessingException deploymentOverlayFailed(@Cause Exception cause, String contentOverlay, String file);
+
+    @Message(id = 18777, value = "Wildcard character * is only allowed at the beginning or end of the deployment name %s")
+    OperationFailedException wildcardOnlyAllowedAtStartOrEnd(String str);
 }

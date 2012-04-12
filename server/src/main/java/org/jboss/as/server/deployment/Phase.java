@@ -194,6 +194,7 @@ public enum Phase {
     public static final int STRUCTURE_RAR                               = 0x0700;
     public static final int STRUCTURE_WAR_DEPLOYMENT_INIT               = 0x0800;
     public static final int STRUCTURE_WAR                               = 0x0900;
+    public static final int STRUCTURE_CONTENT_OVERRIDE                  = 0x0950;
     public static final int STRUCTURE_EAR_DEPLOYMENT_INIT               = 0x0A00;
     public static final int STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER     = 0x0A10;
     public static final int STRUCTURE_PARSE_JBOSS_ALL_XML               = 0x0A20;

@@ -21,41 +21,6 @@
  */
 package org.jboss.as.server;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE_CONTAINER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
-
 import java.util.EnumSet;
 
 import org.jboss.as.controller.CompositeOperationHandler;
@@ -117,6 +82,10 @@ import org.jboss.as.server.deployment.DeploymentUndeployHandler;
 import org.jboss.as.server.deployment.DeploymentUploadBytesHandler;
 import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.server.deployment.DeploymentUploadURLHandler;
+import org.jboss.as.server.deploymentoverlay.ContentDefinition;
+import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDefinition;
+import org.jboss.as.server.deploymentoverlay.DeploymentOverlayLinkDefinition;
+import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayPriority;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeRemotingManagementResourceDefinition;
@@ -143,8 +112,42 @@ import org.jboss.as.server.services.security.VaultWriteAttributeHandler;
 import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE_CONTAINER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
+
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author David Bosschaert
  */
@@ -158,7 +161,7 @@ public class ServerControllerModelUtil {
         root.get(MANAGEMENT_MINOR_VERSION).set(Version.MANAGEMENT_MINOR_VERSION);
         root.get(MANAGEMENT_MICRO_VERSION).set(Version.MANAGEMENT_MICRO_VERSION);
 
-         // Community uses UNDEF values
+        // Community uses UNDEF values
         ModelNode nameNode = root.get(PRODUCT_NAME);
         ModelNode versionNode = root.get(PRODUCT_VERSION);
 
@@ -250,10 +253,10 @@ public class ServerControllerModelUtil {
         DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(contentRepository);
         root.registerOperationHandler(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, dush, dush, false);
         final DeploymentReplaceHandler drh = isDomain ? DeploymentReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository, vaultReader)
-                                                      : DeploymentReplaceHandler.createForStandalone(contentRepository, vaultReader);
+                : DeploymentReplaceHandler.createForStandalone(contentRepository, vaultReader);
         root.registerOperationHandler(DeploymentReplaceHandler.OPERATION_NAME, drh, drh, false);
         DeploymentFullReplaceHandler dfrh = isDomain ? DeploymentFullReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository, vaultReader)
-                                                     : DeploymentFullReplaceHandler.createForStandalone(contentRepository, vaultReader);
+                : DeploymentFullReplaceHandler.createForStandalone(contentRepository, vaultReader);
         root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh, false);
 
         if (!isDomain) {
@@ -282,7 +285,7 @@ public class ServerControllerModelUtil {
         // Runtime operations
         if (serverEnvironment != null) {
             // Reload op -- does not work on a domain mode server
-            if (serverEnvironment.getLaunchType() != ServerEnvironment.LaunchType.DOMAIN)  {
+            if (serverEnvironment.getLaunchType() != ServerEnvironment.LaunchType.DOMAIN) {
                 ServerProcessReloadHandler reloadHandler = new ServerProcessReloadHandler(Services.JBOSS_AS, runningModeControl,
                         processState, ServerDescriptions.getResourceDescriptionResolver("server"));
                 root.registerOperationHandler(ProcessReloadHandler.OPERATION_NAME, reloadHandler, reloadHandler);
@@ -353,7 +356,7 @@ public class ServerControllerModelUtil {
         // Deployments
         ManagementResourceRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
         DeploymentAddHandler dah = isDomain ? DeploymentAddHandler.createForDomainServer(contentRepository, remoteFileRepository, vaultReader)
-                                            : DeploymentAddHandler.createForStandalone(contentRepository, vaultReader);
+                : DeploymentAddHandler.createForStandalone(contentRepository, vaultReader);
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah, false);
         DeploymentRemoveHandler dremh = new DeploymentRemoveHandler(contentRepository, vaultReader);
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, dremh, dremh, false);
@@ -364,6 +367,17 @@ public class ServerControllerModelUtil {
         final DeploymentRedeployHandler drdh = new DeploymentRedeployHandler(vaultReader);
         deployments.registerOperationHandler(DeploymentRedeployHandler.OPERATION_NAME, drdh, drdh, false);
         deployments.registerMetric(DeploymentStatusHandler.ATTRIBUTE_NAME, DeploymentStatusHandler.INSTANCE);
+
+        //deployment overlays
+        final ManagementResourceRegistration contentOverrides = root.registerSubModel(DeploymentOverlayDefinition.INSTANCE);
+        if (isDomain) {
+            contentOverrides.registerSubModel(new ContentDefinition(contentRepository, remoteFileRepository));
+        } else {
+            contentOverrides.registerSubModel(new ContentDefinition(contentRepository, null));
+        }
+
+        //deployment overlay links
+        root.registerSubModel(new DeploymentOverlayLinkDefinition(DeploymentOverlayPriority.SERVER));
 
         // The sub-deployments registry
         deployments.registerSubModel(PathElement.pathElement(SUBDEPLOYMENT), ServerDescriptionProviders.SUBDEPLOYMENT_PROVIDER);
@@ -380,14 +394,14 @@ public class ServerControllerModelUtil {
     static ProcessType getProcessType(ServerEnvironment serverEnvironment) {
         if (serverEnvironment != null) {
             switch (serverEnvironment.getLaunchType()) {
-            case DOMAIN:
-                return ProcessType.DOMAIN_SERVER;
-            case STANDALONE:
-                return ProcessType.STANDALONE_SERVER;
-            case EMBEDDED:
-                return ProcessType.EMBEDDED_SERVER;
-            case APPCLIENT:
-                return ProcessType.APPLICATION_CLIENT;
+                case DOMAIN:
+                    return ProcessType.DOMAIN_SERVER;
+                case STANDALONE:
+                    return ProcessType.STANDALONE_SERVER;
+                case EMBEDDED:
+                    return ProcessType.EMBEDDED_SERVER;
+                case APPCLIENT:
+                    return ProcessType.APPLICATION_CLIENT;
             }
         }
 

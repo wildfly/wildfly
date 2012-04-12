@@ -74,6 +74,8 @@ public class ModelDescriptionConstants {
     public static final String DEFAULT_INTERFACE = "default-interface";
     public static final String DEPLOY = "deploy";
     public static final String DEPLOYMENT = "deployment";
+    public static final String DEPLOYMENT_OVERLAY = "deployment-overlay";
+    public static final String DEPLOYMENT_OVERLAY_LINK = "deployment-overlay-link";
     public static final String DESCRIBE = "describe";
     public static final String DESCRIPTION = "description";
     public static final String DESTINATION_ADDRESS = "destination-address";

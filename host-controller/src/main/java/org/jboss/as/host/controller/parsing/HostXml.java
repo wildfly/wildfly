@@ -22,6 +22,35 @@
 
 package org.jboss.as.host.controller.parsing;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.Attribute;
+import org.jboss.as.controller.parsing.Element;
+import org.jboss.as.controller.parsing.Namespace;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.as.domain.management.parsing.ManagementXml;
+import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
+import org.jboss.as.host.controller.operations.HostModelRegistrationHandler;
+import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
+import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
+import org.jboss.as.server.parsing.CommonXml;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -66,35 +95,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.parsing.Attribute;
-import org.jboss.as.server.parsing.CommonXml;
-import org.jboss.as.controller.parsing.Element;
-import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.ModelMarshallingContext;
-import org.jboss.as.domain.management.parsing.ManagementXml;
-import org.jboss.as.host.controller.HostControllerMessages;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
-import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
-import org.jboss.as.host.controller.operations.HostModelRegistrationHandler;
-import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
-import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
 /**
  * A mapper between an AS server's configuration model and XML representations, particularly {@code host.xml}
  *
@@ -125,7 +125,8 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             }
             case DOMAIN_1_1:
             case DOMAIN_1_2:
-            case DOMAIN_1_3:{
+            case DOMAIN_1_3:
+            case DOMAIN_1_4:{
                 readHostElement_1_1(readerNS, reader, address, operationList);
                 break;
             }

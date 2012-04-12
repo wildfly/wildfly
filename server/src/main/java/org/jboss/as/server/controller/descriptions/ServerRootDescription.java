@@ -20,6 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */package org.jboss.as.server.controller.descriptions;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.operations.ServerRestartRequiredHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -27,6 +36,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DUMP_SERVICES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -62,18 +73,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.LAUNCH_TYPE;
+import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROCESS_STATE;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROCESS_TYPE;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
-import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROCESS_STATE;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.operations.ServerRestartRequiredHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Model description for the server root.
@@ -201,6 +203,14 @@ public class ServerRootDescription {
         root.get(CHILDREN, DEPLOYMENT, DESCRIPTION).set(bundle.getString("server.deployment"));
         root.get(CHILDREN, DEPLOYMENT, MIN_OCCURS).set(0);
         root.get(CHILDREN, DEPLOYMENT, MODEL_DESCRIPTION);
+
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY, DESCRIPTION).set(bundle.getString("server.deployment-overlay"));
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY, MIN_OCCURS).set(0);
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY, MODEL_DESCRIPTION);
+
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY_LINK, DESCRIPTION).set(bundle.getString("server.deployment-overlay-link"));
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY_LINK, MIN_OCCURS).set(0);
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY_LINK, MODEL_DESCRIPTION);
 
         root.get(CHILDREN, SUBSYSTEM, DESCRIPTION).set(bundle.getString("server.subsystem"));
         root.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(0);
