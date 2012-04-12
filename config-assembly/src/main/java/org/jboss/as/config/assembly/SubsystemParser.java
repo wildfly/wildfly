@@ -30,8 +30,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.stream.XMLInputFactory;
@@ -53,7 +55,7 @@ class SubsystemParser extends NodeParser {
     private final Map<String, ElementNode> outboundSocketBindings = new HashMap<String, ElementNode>();
     private final Map<String, ProcessingInstructionNode> supplementPlaceholders = new HashMap<String, ProcessingInstructionNode>();
     private final Map<String, Supplement> supplementReplacements = new HashMap<String, Supplement>();
-    private final Map<String, AttributeValue> attributesForReplacement = new HashMap<String, AttributeValue>();
+    private final Map<String, List<AttributeValue>> attributesForReplacement = new HashMap<String, List<AttributeValue>>();
 
     SubsystemParser(String socketBindingNamespace, String supplementName, File inputFile){
         this.socketBindingNamespace = socketBindingNamespace;
@@ -130,12 +132,14 @@ class SubsystemParser extends NodeParser {
                 }
 
                 Map<String, String> attributeReplacements = supplement.getAllAttributeReplacements();
-                for (Map.Entry<String, AttributeValue> entry : attributesForReplacement.entrySet()) {
+                for (Map.Entry<String, List<AttributeValue>> entry : attributesForReplacement.entrySet()) {
                     String replacement = attributeReplacements.get(entry.getKey());
                     if (replacement == null) {
                         throw new IllegalStateException("No replacement found for " + entry.getKey() + " in supplement " + supplementName);
                     }
-                    entry.getValue().setValue(replacement);
+                    for (AttributeValue attrValue : entry.getValue()) {
+                        attrValue.setValue(replacement);
+                    }
                 }
             }
 
@@ -254,7 +258,12 @@ class SubsystemParser extends NodeParser {
     protected AttributeValue createAttributeValue(String attributeValue) {
         AttributeValue value = super.createAttributeValue(attributeValue);
         if (attributeValue.startsWith("@@")) {
-            attributesForReplacement.put(attributeValue, value);
+            List<AttributeValue> attributeValues = attributesForReplacement.get(attributeValue);
+            if (attributeValues == null) {
+                attributeValues = new ArrayList<AttributeValue>();
+                attributesForReplacement.put(attributeValue, attributeValues);
+            }
+            attributeValues.add(value);
         }
         return value;
     }
