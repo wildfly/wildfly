@@ -23,11 +23,13 @@
 package org.jboss.as.jacorb.service;
 
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.util.Properties;
 
 import org.jboss.as.jacorb.JacORBLogger;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.naming.jndi.CorbaUtils;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.inject.Injector;
@@ -102,7 +104,7 @@ public class CorbaORBService implements Service<ORB> {
             String host = properties.getProperty(JacORBSubsystemConstants.ORB_ADDRESS);
             String port = properties.getProperty(JacORBSubsystemConstants.ORB_PORT);
             properties.setProperty(JacORBSubsystemConstants.JACORB_NAME_SERVICE_INIT_REF,
-                    "corbaloc::" + host + ":" + port + "/" + rootContext);
+                    "corbaloc::" + NetworkUtils.formatPossibleIpv6Address(host) + ":" + port + "/" + rootContext);
 
             // export the naming service corbaloc if necessary.
             String exportCorbalocProperty = properties.getProperty(JacORBSubsystemConstants.NAMING_EXPORT_CORBALOC, "on");
