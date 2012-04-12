@@ -86,10 +86,6 @@ public class ClusteredBeanDeploymentTestCase {
      */
     @Test
     public void testDDBasedClusteredBeanDeployment() throws Exception {
-        
-        System.out.println("I am here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");        
-        System.out.println("Module: " + this.getClass().getClassLoader().getClass().toString());
-        
         final Context ctx = new InitialContext();
         final DDBasedClusteredBean ddBasedClusteredBean = (DDBasedClusteredBean) ctx.lookup("java:module/" + DDBasedClusteredBean.class.getSimpleName() + "!" + DDBasedClusteredBean.class.getName());
         final int NUM_TIMES = 5;
