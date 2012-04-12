@@ -52,6 +52,10 @@ public enum Element {
     DOMAIN_CONTROLLER("domain-controller"),
     DEPLOYMENT("deployment"),
     DEPLOYMENTS("deployments"),
+    DEPLOYMENT_OVERLAY("deployment-overlay"),
+    DEPLOYMENT_OVERLAYS("deployment-overlays"),
+    DEPLOYMENT_OVERLAY_LINK("deployment-overlay-link"),
+    DEPLOYMENT_OVERLAY_LINKS("deployment-overlay-links"),
 
     ENVIRONMENT_VARIABLES("environment-variables"),
     EXTENSION("extension"),

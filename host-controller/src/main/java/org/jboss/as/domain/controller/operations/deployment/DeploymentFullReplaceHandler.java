@@ -18,27 +18,6 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
-import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
-import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.CONTENT_ADDITION_PARAMETERS;
-import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.createFailureException;
-import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.getInputStream;
-import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
-import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -66,6 +45,27 @@ import org.jboss.as.repository.HostFileRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
+import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.CONTENT_ADDITION_PARAMETERS;
+import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.createFailureException;
+import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.getInputStream;
+import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
+import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
+
 /**
  * Handles replacement in the runtime of one deployment by another.
  *
@@ -82,14 +82,18 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
     private final ParametersValidator unmanagedContentValidator = new ParametersValidator();
     private final ParametersValidator managedContentValidator = new ParametersValidator();
 
-    /** Constructor for a master Host Controller */
+    /**
+     * Constructor for a master Host Controller
+     */
     public DeploymentFullReplaceHandler(final ContentRepository contentRepository) {
         this.contentRepository = contentRepository;
         this.fileRepository = null;
         init();
     }
 
-    /** Constructor for a slave Host Controller */
+    /**
+     * Constructor for a slave Host Controller
+     */
     public DeploymentFullReplaceHandler(final HostFileRepository fileRepository) {
         this.contentRepository = null;
         this.fileRepository = fileRepository;
@@ -191,17 +195,16 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         deployNode.get(RUNTIME_NAME).set(runtimeName);
         deployNode.get(CONTENT).set(content);
 
-        if(root.hasChild(PathElement.pathElement(SERVER_GROUP))) {
-            for(final Resource.ResourceEntry serverGroupResource : root.getChildren(SERVER_GROUP)) {
+        if (root.hasChild(PathElement.pathElement(SERVER_GROUP))) {
+            for (final Resource.ResourceEntry serverGroupResource : root.getChildren(SERVER_GROUP)) {
                 Resource deploymentResource = serverGroupResource.getChild(deploymentPath);
-                if(deploymentResource != null) {
+                if (deploymentResource != null) {
                     deploymentResource.getModel().get(RUNTIME_NAME).set(runtimeName);
                 }
             }
         }
         // the content repo will already have these, note that content should not be empty
         removeContentAdditions(replaceNode.getModel().require(CONTENT));
-
         if (context.completeStep() == ResultAction.KEEP) {
             if (originalHash != null && contentRepository != null) {
                 if (deployNode.get(CONTENT).get(0).hasDefined(HASH)) {

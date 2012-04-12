@@ -22,11 +22,21 @@
 
 package org.jboss.as.domain.controller.descriptions;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
+import org.jboss.as.server.deployment.DeploymentRemoveHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
@@ -47,15 +57,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
-import org.jboss.as.server.deployment.DeploymentRemoveHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * @author Emanuel Muckenhuber
@@ -95,6 +96,10 @@ public class ServerGroupDescription {
         root.get(CHILDREN, DEPLOYMENT, DESCRIPTION).set(bundle.getString("server-group.deployment"));
         root.get(CHILDREN, DEPLOYMENT, MIN_OCCURS).set(0);
         root.get(CHILDREN, DEPLOYMENT, MODEL_DESCRIPTION);
+
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY_LINK, DESCRIPTION).set(bundle.getString("server-group.deployment-overlay-link"));
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY_LINK, MIN_OCCURS).set(0);
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY_LINK, MODEL_DESCRIPTION);
 
         root.get(CHILDREN, JVM, DESCRIPTION).set(bundle.getString("server-group.jvm"));
         root.get(CHILDREN, JVM, MIN_OCCURS).set(0);

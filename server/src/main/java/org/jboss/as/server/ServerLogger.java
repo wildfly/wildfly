@@ -381,7 +381,13 @@ public interface ServerLogger extends BasicLogger {
     @Message(id = 15965, value = "urn:jboss:deployment-structure namespace found in jboss.xml for a sub deployment %s. This is only valid in a top level deployment.")
     void jbossDeploymentStructureNamespaceIgnored(String deploymentUnitName);
 
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 15966, value = "Failed to unmount deployment overlay")
+    void failedToUnmountContentOverride(@Cause Throwable cause);
+
     @LogMessage(level = WARN)
     @Message(id = 15967, value= "Cannot install reflection index for unresolved bundle: %s")
     void warnCannotInstallReflectionIndexForUnresolvedBundle(String bundle);
+
+    // NOTE
 }

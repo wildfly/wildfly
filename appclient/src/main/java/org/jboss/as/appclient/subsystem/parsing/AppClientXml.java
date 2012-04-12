@@ -22,21 +22,6 @@
 
 package org.jboss.as.appclient.subsystem.parsing;
 
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_0;
-import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -61,6 +46,21 @@ import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_0;
+import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 /**
  * A mapper between an AS server's configuration model and XML representations, particularly {@code appclient.xml}.
@@ -92,7 +92,8 @@ public class AppClientXml extends CommonXml {
             }
             case DOMAIN_1_1:
             case DOMAIN_1_2:
-            case DOMAIN_1_3:{
+            case DOMAIN_1_3:
+            case DOMAIN_1_4:{
                 readServerElement_1_1(readerNS, reader, address, operationList);
                 break;
             }

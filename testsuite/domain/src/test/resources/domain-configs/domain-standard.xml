@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<domain xmlns="urn:jboss:domain:1.3"
+<domain xmlns="urn:jboss:domain:1.4"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <extensions>
@@ -883,7 +883,7 @@
                <heap size="64m" max-size="512m"/>
                 <environment-variables>
                     <variable name="DOMAIN_TEST_MAIN_GROUP" value="main_group"/>
-                </environment-variables>               
+                </environment-variables>
             </jvm>
             <socket-binding-group ref="standard-sockets"/>
         </server-group>

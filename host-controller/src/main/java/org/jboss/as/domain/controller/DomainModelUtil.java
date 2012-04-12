@@ -22,38 +22,6 @@
 
 package org.jboss.as.domain.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_HOST_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ACROSS_GROUPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLING_TO_SERVERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLANS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
-
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -133,12 +101,48 @@ import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
+import org.jboss.as.server.deploymentoverlay.ContentDefinition;
+import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDefinition;
+import org.jboss.as.server.deploymentoverlay.DeploymentOverlayLinkDefinition;
+import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayPriority;
 import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_HOST_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ACROSS_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLING_TO_SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLANS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 
 /**
@@ -307,6 +311,13 @@ public class DomainModelUtil {
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah);
         DeploymentRemoveHandler drh = isMaster ? DeploymentRemoveHandler.createForMaster(contentRepo) : DeploymentRemoveHandler.createForSlave(fileRepository);
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, drh, drh);
+
+        //deployment overlays
+        final ManagementResourceRegistration contentOverrides = root.registerSubModel(DeploymentOverlayDefinition.INSTANCE);
+        contentOverrides.registerSubModel(new ContentDefinition(contentRepo, fileRepository));
+
+        //server group deployment overlay links
+        serverGroups.registerSubModel(new DeploymentOverlayLinkDefinition(DeploymentOverlayPriority.SERVER_GROUP));
 
         // Management client content
         ManagedDMRContentTypeResourceDefinition plansDef = new ManagedDMRContentTypeResourceDefinition(contentRepo, ROLLOUT_PLAN,
