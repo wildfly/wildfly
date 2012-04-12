@@ -115,4 +115,10 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 11405, value = "Could not load default persistence provider module.  ")
     void errorPreloadingDefaultProvider(@Cause Throwable cause);
 
+    /**
+     * Logs warning message for case when persistence.xml is in wrong deployment root.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11406, value = "Warning, the '%s' is not a valid root for persistence.xml, it may not be supported in future release.")
+    void warnOnWrongPerisistnceXMLRoot(String deploymentRoot);
 }
