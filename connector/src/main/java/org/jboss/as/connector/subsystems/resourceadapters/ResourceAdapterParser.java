@@ -21,6 +21,22 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.util.ParserException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.CommonBundle;
+import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
+import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.logging.Messages;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+
+import javax.xml.stream.XMLStreamException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS_NAME;
@@ -35,23 +51,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.util.ParserException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.jca.common.CommonBundle;
-import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
-import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.logging.Messages;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * A ResourceAdapterParserr.
@@ -68,6 +67,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
     public void parse(final XMLExtendedStreamReader reader, final List<ModelNode> list, ModelNode parentAddress) throws Exception {
 
         ResourceAdapters adapters = null;
+
 
         //iterate over tags
         int iterate;

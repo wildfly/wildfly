@@ -23,6 +23,7 @@
 package org.jboss.as.connector.metadata.deployment;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.services.AdminObjectReferenceFactoryService;
 import org.jboss.as.connector.services.AdminObjectService;
@@ -83,7 +84,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
     // Must be set by the start method
     protected ResourceAdapterDeployment value;
 
-    protected final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();
+    protected final InjectedValue<AS7MetadataRepository> mdr = new InjectedValue<AS7MetadataRepository>();
 
     protected final InjectedValue<ResourceAdapterRepository> raRepository = new InjectedValue<ResourceAdapterRepository>();
 
@@ -188,7 +189,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     }
 
-    public Injector<MetadataRepository> getMdrInjector() {
+    public Injector<AS7MetadataRepository> getMdrInjector() {
         return mdr;
     }
 

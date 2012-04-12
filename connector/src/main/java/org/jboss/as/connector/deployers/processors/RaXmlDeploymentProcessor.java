@@ -31,6 +31,7 @@ import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersService;
 import org.jboss.as.connector.util.RaServicesFactory;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -73,6 +74,8 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ManagementResourceRegistration registration = deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
+        final Resource deploymentResource = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
+
 
         final ConnectorXmlDescriptor connectorXmlDescriptor = deploymentUnit
                 .getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
@@ -118,7 +121,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                         rarName = rarName.substring(0, rarName.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR));
                     }
                     if (deploymentUnitName.equals(rarName)) {
-                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deployment, raxml);
+                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deployment, raxml, deploymentResource);
 
 
                     }
@@ -128,7 +131,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
             //create service pointing to rar for other future activations
             ServiceName serviceName = ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(deploymentUnitName);
 
-            InactiveResourceAdapterDeploymentService service = new InactiveResourceAdapterDeploymentService(connectorXmlDescriptor, module, deployment, deploymentUnitName, registration, serviceTarget);
+            InactiveResourceAdapterDeploymentService service = new InactiveResourceAdapterDeploymentService(connectorXmlDescriptor, module, deployment, deploymentUnitName, registration, serviceTarget, deploymentResource);
             ServiceBuilder builder = serviceTarget
                     .addService(serviceName, service);
             builder.setInitialMode(Mode.ACTIVE).install();
