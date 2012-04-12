@@ -41,6 +41,7 @@
         <module name="javax.validation.api"/>
         <module name="org.apache.commons.collections"/>
         <module name="org.hibernate.validator"/>
+        <module name="org.jboss.common-beans"/>
         <module name="org.jboss.as.connector" />
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>

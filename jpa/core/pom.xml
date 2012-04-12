@@ -92,6 +92,11 @@
             <artifactId>jbossweb</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.common</groupId>
+            <artifactId>jboss-common-beans</artifactId>
+        </dependency>
+        
         <!-- External -->
 
         <dependency>

@@ -33,6 +33,7 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.messaging.Attribute;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.Element;
+import org.jboss.common.beans.property.PropertiesValueResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -43,7 +44,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
-import org.jboss.as.server.parsing.PropertiesValueResolver;
+
 
 /**
  * The messaging subsystem domain parser

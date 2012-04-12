@@ -36,6 +36,7 @@
         <module name="javax.transaction.api"/>
         <module name="org.hornetq"/>
         <module name="org.hornetq.ra"/>
+        <module name="org.jboss.common-beans"/>
         <module name="org.jboss.as.transactions"/>
         <module name="org.jboss.netty"/>
         <module name="org.jboss.staxmapper"/>

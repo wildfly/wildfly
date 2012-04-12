@@ -22,7 +22,7 @@
  */
 package org.jboss.as.jpa.config;
 
-import org.jboss.as.server.parsing.PropertiesValueResolver;
+import org.jboss.common.beans.property.PropertiesValueResolver;
 
 /**
  * Defines properties of the attribute.
