@@ -61,12 +61,12 @@ public class CLISecurityTestCase {
             super();
         }
 
-        protected String getCliCommand() throws Exception {
-            
+        protected String getCliCommand() {
+
             String authenticatedCommand = super.getCliCommand();
             String unauthenticatedCommand = authenticatedCommand.replaceAll("--user=\\w*\\s*--password=\\w*\\s*", "");
             return unauthenticatedCommand;
-            
+
             //return super.getCliCommand();
         }
 

@@ -24,10 +24,6 @@ package org.jboss.as.test.osgi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -47,10 +43,10 @@ import org.osgi.service.startlevel.StartLevel;
  * @author thomas.diesler@jboss.com
  * @since 24-May-2011
  */
-public final class OSGiTestSupport {
+public final class OSGiTestUtil {
 
     // Hide ctor
-    private OSGiTestSupport() {
+    private OSGiTestUtil() {
     }
 
     /**

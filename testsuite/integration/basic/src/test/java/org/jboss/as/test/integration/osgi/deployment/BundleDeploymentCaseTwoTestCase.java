@@ -31,7 +31,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.osgi.xservice.bundle.SimpleActivator;
 import org.jboss.as.test.integration.osgi.xservice.bundle.SimpleService;
-import org.jboss.as.test.osgi.OSGiTestSupport;
+import org.jboss.as.test.osgi.OSGiTestUtil;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -65,7 +65,7 @@ public class BundleDeploymentCaseTwoTestCase {
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bundle-deployment-casetwo");
-        archive.addClass(OSGiTestSupport.class);
+        archive.addClass(OSGiTestUtil.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
@@ -84,7 +84,7 @@ public class BundleDeploymentCaseTwoTestCase {
         deployer.deploy(BUNDLE_DEPLOYMENT_NAME);
 
         // Find the deployed bundle
-        Bundle bundle = OSGiTestSupport.getDeployedBundle(context, BUNDLE_DEPLOYMENT_NAME, null);
+        Bundle bundle = OSGiTestUtil.getDeployedBundle(context, BUNDLE_DEPLOYMENT_NAME, null);
 
         // Start the bundle. Note, it may have started already
         bundle.start();

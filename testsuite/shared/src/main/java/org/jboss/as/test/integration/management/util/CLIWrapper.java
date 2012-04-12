@@ -72,9 +72,9 @@ public class CLIWrapper implements Runnable {
      * <code>connect</code> command.
      *
      * @param connect indicates if the CLI should connect to server automatically.
-     * @throws Exception
+     * @throws IOException
      */
-    public CLIWrapper(boolean connect) throws Exception {
+    public CLIWrapper(boolean connect) throws IOException {
         this(connect, null, null);
     }
 
@@ -111,9 +111,8 @@ public class CLIWrapper implements Runnable {
      * @param cliAddress The default name of the property containing the cli address. If null the value of the {@code node0} property is
      * used, and if that is absent {@code localhost} is used
      * @param cliArgs specifies additional CLI command line arguments
-     * @throws Exception
      */
-    public CLIWrapper(boolean connect, String cliAddress, String[] cliArgs) throws Exception {
+    public CLIWrapper(boolean connect, String cliAddress, String[] cliArgs) throws IOException {
         init(cliArgs);
         if (!connect) {
             return;
@@ -156,7 +155,7 @@ public class CLIWrapper implements Runnable {
      * property and use that as the address. If the system property is not set {@code localhost} will
      * be used
      */
-    public void sendConnect(String cliAddress) throws Exception {
+    public void sendConnect(String cliAddress) {
         String addr = cliAddress != null ? cliAddress : TestSuiteEnvironment.getServerAddress();
         sendLine("connect " + addr + ":" + TestSuiteEnvironment.getServerPort(), false);
 
@@ -169,7 +168,7 @@ public class CLIWrapper implements Runnable {
      * @param readEcho if set to true reads the echo response form the CLI.
      * @throws Exception
      */
-    public void sendLine(String line, boolean readEcho) throws Exception {
+    public void sendLine(String line, boolean readEcho)  {
         System.out.println("[CLI-inp] " + line);
         writer.println(line);
         writer.flush();
@@ -183,7 +182,7 @@ public class CLIWrapper implements Runnable {
         while (!found) {
             String eLine = readLine(5000);
             if (eLine == null) {
-                throw new Exception("CLI command failed. Sent:" + line + ", received:" + lines.toString());
+                throw new RuntimeException("CLI command failed. Sent:" + line + ", received:" + lines.toString());
             }
             lines.append(eLine);
             lines.append(System.getProperty("line.separator"));
@@ -199,7 +198,7 @@ public class CLIWrapper implements Runnable {
      * @param line specifies the command line.
      * @throws Exception
      */
-    public void sendLine(String line) throws Exception {
+    public void sendLine(String line) {
         sendLine(line, true);
     }
 
@@ -227,14 +226,14 @@ public class CLIWrapper implements Runnable {
      * @return next line from CLI output
      * @throws Exception is thrown if there is no output available and timeout expired
      */
-    public String readLine(long timeout) throws Exception {
+    public String readLine(long timeout)  {
         String line = null;
         try {
             line = outputQueue.poll(timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ioe) {
         }
         if (line == null) {
-            throw new Exception("CLI read timeout.");
+            throw new RuntimeException("CLI read timeout.");
         }
         return line;
     }
@@ -284,7 +283,7 @@ public class CLIWrapper implements Runnable {
      * @param lineTimeout number of milliseconds to wait for each subsequent line
      * @return array of CLI output lines
      */
-    public CLIOpResult readAllAsOpResult(long timeout, long lineTimeout) throws Exception {
+    public CLIOpResult readAllAsOpResult(long timeout, long lineTimeout) throws IOException {
         String output = readAllUnformated(timeout, lineTimeout);
         StreamTokenizer st = new StreamTokenizer(new StringReader(output));
         st.resetSyntax();
@@ -298,7 +297,7 @@ public class CLIWrapper implements Runnable {
         if (token != '{') {
             throw new CLIException("Parse error. '{' expected, received: '" + token + "'.");
         }
-        Map compound = parseCompound(st);
+        Map<String, Object> compound = parseCompound(st);
         CLIOpResult res = new CLIOpResult();
         res.setIsOutcomeSuccess("success".equals(compound.get("outcome")));
         res.setResult(compound.get("result"));
@@ -306,7 +305,7 @@ public class CLIWrapper implements Runnable {
         return res;
     }
 
-    private Map<String, Object> parseCompound(StreamTokenizer st) throws IOException, ParseException {
+    private Map<String, Object> parseCompound(StreamTokenizer st) throws IOException {
         Map<String, Object> map = new HashMap<String, Object>();
 
         int token = st.nextToken();
@@ -314,7 +313,7 @@ public class CLIWrapper implements Runnable {
             String key = st.sval;
             st.nextToken();
             if (!"=>".equals(st.sval)) {
-                throw new ParseException("=> expected, got:" + st.sval, st.lineno());
+                throw new IllegalStateException(new ParseException("=> expected, got:" + st.sval, st.lineno()));
             }
             token = st.nextToken();
             if (token == '{') {
@@ -335,7 +334,7 @@ public class CLIWrapper implements Runnable {
         return map;
     }
 
-    private List parseList(StreamTokenizer st) throws IOException, ParseException {
+    private List parseList(StreamTokenizer st) throws IOException {
         List list = new LinkedList();
 
         int token = st.nextToken();
@@ -370,7 +369,7 @@ public class CLIWrapper implements Runnable {
      *
      * @throws Exception
      */
-    public synchronized void quit() throws Exception {
+    public synchronized void quit() {
         sendLine("quit", false);
         long timeout = System.currentTimeMillis() + 10000;
         while ( running && (System.currentTimeMillis() < timeout) ) {
@@ -392,7 +391,7 @@ public class CLIWrapper implements Runnable {
         return !running;
     }
 
-    private void init(String[] cliArgs) throws Exception {
+    private void init(String[] cliArgs) throws IOException {
 
         StringBuilder cmd = new StringBuilder(getCliCommand());
         if (cliArgs != null)
@@ -422,7 +421,7 @@ public class CLIWrapper implements Runnable {
         return cliProcess;
     }
 
-    protected String getCliCommand() throws Exception {
+    protected String getCliCommand() {
         if (cliCommand != null) {
             return cliCommand;
         }
