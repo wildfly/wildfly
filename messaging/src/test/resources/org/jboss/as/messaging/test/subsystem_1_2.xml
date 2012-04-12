@@ -218,6 +218,12 @@
                  </entries>
                  <client-id>testClient</client-id>
               </connection-factory>
+              <connection-factory name="otherConnectionFactory">
+                 <discovery-group-ref discovery-group-name="groupC"/>
+                 <entries>
+                    <entry name="otherConnectionFactory"/>
+                 </entries>
+              </connection-factory>
               <pooled-connection-factory name="hornetq-ra">
                  <min-pool-size>42</min-pool-size>
                  <max-pool-size>242</max-pool-size>

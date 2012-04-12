@@ -265,12 +265,6 @@
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
-    <xs:element name="discovery-group-ref">
-       <xs:complexType>
-          <xs:attribute name="discovery-group-name" type="xs:string" />
-       </xs:complexType>
-    </xs:element>
-
     <xs:complexType name="remoting-interceptorsType">
        <xs:sequence>
           <xs:element maxOccurs="unbounded" minOccurs="1" name="class-name" type="xs:string" />
@@ -421,11 +415,7 @@
                    </xs:sequence>
                 </xs:complexType>
              </xs:element>
-             <xs:element maxOccurs="1" minOccurs="1" name="discovery-group-ref">
-                <xs:complexType>
-                   <xs:attribute name="discovery-group-name" type="xs:string" use="required" />
-                </xs:complexType>
-             </xs:element>
+             <xs:element maxOccurs="1" minOccurs="1" name="discovery-group-ref" type="discovery-group-refType" />
           </xs:choice>
        </xs:sequence>
        <xs:attribute name="name" type="xs:string" use="required"/>
@@ -449,11 +439,7 @@
                    <xs:attribute name="allow-direct-connections-only" type="xs:boolean" use="optional"/>
                 </xs:complexType>
              </xs:element>
-             <xs:element maxOccurs="1" minOccurs="0" name="discovery-group-ref">
-                <xs:complexType>
-                   <xs:attribute name="discovery-group-name" type="xs:string" use="required" />
-                </xs:complexType>
-             </xs:element>
+             <xs:element maxOccurs="1" minOccurs="0" name="discovery-group-ref" type="discovery-group-refType" />
           </xs:choice>
        </xs:sequence>
        <xs:attribute name="name" type="xs:string" use="required"/>
