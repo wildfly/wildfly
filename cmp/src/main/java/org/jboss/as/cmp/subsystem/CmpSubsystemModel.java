@@ -22,10 +22,12 @@
 
 package org.jboss.as.cmp.subsystem;
 
+import org.jboss.as.controller.PathElement;
+
 /**
  * @author John Bailey
  */
-public class CmpConstants {
+public class CmpSubsystemModel {
     public static String HILO_KEY_GENERATOR = "hilo-keygenerator";
     public static String UUID_KEY_GENERATOR = "uuid-keygenerator";
 
@@ -39,5 +41,8 @@ public class CmpConstants {
     public static String SEQUENCE_COLUMN = "sequence-column";
     public static String SEQUENCE_NAME = "sequence-name";
     public static String TABLE_NAME = "table-name";
+
+    public static final PathElement HILO_KEY_GENERATOR_PATH =  PathElement.pathElement(HILO_KEY_GENERATOR);
+    public static final PathElement UUID_KEY_GENERATOR_PATH =  PathElement.pathElement(UUID_KEY_GENERATOR);
 
 }

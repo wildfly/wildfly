@@ -22,9 +22,7 @@
 
 package org.jboss.as.cmp.subsystem;
 
-import java.util.Locale;
 import org.jboss.as.cmp.keygenerator.hilo.HiLoKeyGeneratorFactory;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -38,9 +36,5 @@ public class HiLoKeyGeneratorRemove extends AbstractKeyGeneratorRemove {
 
     protected ServiceName getServiceName(final String name) {
         return HiLoKeyGeneratorFactory.SERVICE_NAME.append(name);
-    }
-
-    public ModelNode getModelDescription(final Locale locale) {
-        return CmpSubsystemDescriptions.getHiLoRemoveDescription(locale);
     }
 }

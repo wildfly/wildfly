@@ -23,7 +23,6 @@
 package org.jboss.as.cmp.subsystem;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.cmp.component.CmpEntityBeanComponentDescription;
 import org.jboss.as.cmp.keygenerator.KeyGeneratorFactoryRegistry;
@@ -37,7 +36,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -48,7 +46,7 @@ import org.jboss.msc.service.ServiceController;
 /**
  * @author John Bailey
  */
-public class CmpSubsystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
+public class CmpSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final Logger logger = Logger.getLogger(CmpSubsystemAdd.class);
     static CmpSubsystemAdd INSTANCE = new CmpSubsystemAdd();
@@ -80,9 +78,5 @@ public class CmpSubsystemAdd extends AbstractBoottimeAddStepHandler implements D
 
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
         model.setEmptyObject();
-    }
-
-    public ModelNode getModelDescription(final Locale locale) {
-        return CmpSubsystemDescriptions.getSubystemAddDescription(locale);
     }
 }

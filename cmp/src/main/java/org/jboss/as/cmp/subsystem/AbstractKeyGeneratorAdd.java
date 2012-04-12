@@ -23,6 +23,7 @@
 package org.jboss.as.cmp.subsystem;
 
 import java.util.List;
+
 import org.jboss.as.cmp.keygenerator.KeyGeneratorFactory;
 import org.jboss.as.cmp.keygenerator.KeyGeneratorFactoryRegistry;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -30,7 +31,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -41,7 +41,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author John Bailey
  */
-public abstract class AbstractKeyGeneratorAdd extends AbstractAddStepHandler  implements DescriptionProvider {
+public abstract class AbstractKeyGeneratorAdd extends AbstractAddStepHandler {
 
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();

@@ -22,28 +22,30 @@
 
 package org.jboss.as.cmp.subsystem;
 
-import java.util.Locale;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
+
 import org.jboss.as.cmp.keygenerator.KeyGeneratorFactory;
 import org.jboss.as.cmp.keygenerator.hilo.HiLoKeyGeneratorFactory;
-import static org.jboss.as.cmp.subsystem.CmpConstants.BLOCK_SIZE;
-import static org.jboss.as.cmp.subsystem.CmpConstants.CREATE_TABLE;
-import static org.jboss.as.cmp.subsystem.CmpConstants.CREATE_TABLE_DDL;
-import static org.jboss.as.cmp.subsystem.CmpConstants.DATA_SOURCE;
-import static org.jboss.as.cmp.subsystem.CmpConstants.DROP_TABLE;
-import static org.jboss.as.cmp.subsystem.CmpConstants.ID_COLUMN;
-import static org.jboss.as.cmp.subsystem.CmpConstants.SELECT_HI_DDL;
-import static org.jboss.as.cmp.subsystem.CmpConstants.SEQUENCE_COLUMN;
-import static org.jboss.as.cmp.subsystem.CmpConstants.SEQUENCE_NAME;
-import static org.jboss.as.cmp.subsystem.CmpConstants.TABLE_NAME;
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+
+import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.BLOCK_SIZE;
+import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.CREATE_TABLE;
+import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.CREATE_TABLE_DDL;
+import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.DATA_SOURCE;
+import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.DROP_TABLE;
+import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.ID_COLUMN;
+import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.SELECT_HI_DDL;
+import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.SEQUENCE_COLUMN;
+import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.SEQUENCE_NAME;
+import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.TABLE_NAME;
 
 /**
  * @author John Bailey
@@ -56,6 +58,7 @@ public class HiLoKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
 
     protected Service<KeyGeneratorFactory> getKeyGeneratorFactory(final ModelNode operation) {
         final HiLoKeyGeneratorFactory factory = new HiLoKeyGeneratorFactory();
+
         if (operation.hasDefined(BLOCK_SIZE)) {
             factory.setBlockSize(operation.get(BLOCK_SIZE).asLong());
         }
@@ -97,25 +100,8 @@ public class HiLoKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
     }
 
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        setOnModel(operation, model, BLOCK_SIZE);
-        setOnModel(operation, model, CREATE_TABLE);
-        setOnModel(operation, model, CREATE_TABLE_DDL);
-        setOnModel(operation, model, DATA_SOURCE);
-        setOnModel(operation, model, DROP_TABLE);
-        setOnModel(operation, model, ID_COLUMN);
-        setOnModel(operation, model, SELECT_HI_DDL);
-        setOnModel(operation, model, SEQUENCE_COLUMN);
-        setOnModel(operation, model, SEQUENCE_NAME);
-        setOnModel(operation, model, TABLE_NAME);
-    }
-
-    private void setOnModel(final ModelNode operation, final ModelNode model, final String attName) {
-        if (operation.hasDefined(attName)) {
-            model.get(attName).set(operation.get(attName));
+        for(AttributeDefinition attribute : HiLoKeyGeneratorResourceDescription.ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
         }
-    }
-
-    public ModelNode getModelDescription(final Locale locale) {
-        return CmpSubsystemDescriptions.getHiLoAddDescription(locale);
     }
 }

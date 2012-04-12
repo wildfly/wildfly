@@ -24,20 +24,21 @@ package org.jboss.as.cmp.subsystem;
 
 import java.util.Collections;
 import java.util.List;
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+
 import javax.xml.stream.XMLStreamException;
-import static org.jboss.as.cmp.subsystem.CmpConstants.BLOCK_SIZE;
-import static org.jboss.as.cmp.subsystem.CmpConstants.CREATE_TABLE;
-import static org.jboss.as.cmp.subsystem.CmpConstants.CREATE_TABLE_DDL;
-import static org.jboss.as.cmp.subsystem.CmpConstants.DATA_SOURCE;
-import static org.jboss.as.cmp.subsystem.CmpConstants.DROP_TABLE;
-import static org.jboss.as.cmp.subsystem.CmpConstants.HILO_KEY_GENERATOR;
-import static org.jboss.as.cmp.subsystem.CmpConstants.ID_COLUMN;
-import static org.jboss.as.cmp.subsystem.CmpConstants.SELECT_HI_DDL;
-import static org.jboss.as.cmp.subsystem.CmpConstants.SEQUENCE_COLUMN;
-import static org.jboss.as.cmp.subsystem.CmpConstants.SEQUENCE_NAME;
-import static org.jboss.as.cmp.subsystem.CmpConstants.TABLE_NAME;
-import static org.jboss.as.cmp.subsystem.CmpConstants.UUID_KEY_GENERATOR;
+
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.HILO_KEY_GENERATOR;
+import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.UUID_KEY_GENERATOR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -48,13 +49,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author John Bailey
@@ -169,51 +163,13 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final String value = reader.getElementText();
-            switch (Element.forName(reader.getLocalName())) {
-                case BLOCK_SIZE: {
-                    op.get(CmpConstants.BLOCK_SIZE).set(Long.parseLong(value));
-                    break;
-                }
-                case CREATE_TABLE: {
-                    op.get(CmpConstants.CREATE_TABLE).set(Boolean.parseBoolean(value));
-                    break;
-                }
-                case CREATE_TABLE_DDL: {
-                    op.get(CmpConstants.CREATE_TABLE_DDL).set(value);
-                    break;
-                }
-                case DATA_SOURCE: {
-                    op.get(CmpConstants.DATA_SOURCE).set(value);
-                    break;
-                }
-                case DROP_TABLE: {
-                    op.get(DROP_TABLE).set(Boolean.parseBoolean(value));
-                    break;
-                }
-                case ID_COLUMN: {
-                    op.get(ID_COLUMN).set(value);
-                    break;
-                }
-                case SELECT_HI_DDL: {
-                    op.get(CmpConstants.SELECT_HI_DDL).set(value);
-                    break;
-                }
-                case SEQUENCE_COLUMN: {
-                    op.get(CmpConstants.SEQUENCE_COLUMN).set(value);
-                    break;
-                }
-                case SEQUENCE_NAME: {
-                    op.get(CmpConstants.SEQUENCE_NAME).set(value);
-                    break;
-                }
-                case TABLE_NAME: {
-                    op.get(CmpConstants.TABLE_NAME).set(value);
-                    break;
-                }
-                default: {
-                    throw unexpectedElement(reader);
-                }
+            final String tag = reader.getLocalName();
+
+            SimpleAttributeDefinition attribute = HiLoKeyGeneratorResourceDescription.ATTRIBUTE_MAP.get(tag);
+            if(attribute == null) {
+                throw unexpectedElement(reader);
             }
+            attribute.parseAndSetParameter(value, op, reader);
         }
         return op;
     }
@@ -247,55 +203,8 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
         writer.writeStartElement(Element.HILO.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), name);
 
-        if (model.hasDefined(BLOCK_SIZE)) {
-            writer.writeStartElement(Element.BLOCK_SIZE.getLocalName());
-            writer.writeCharacters(model.get(BLOCK_SIZE).asString());
-            writer.writeEndElement();
-        }
-        if (model.hasDefined(CREATE_TABLE)) {
-            writer.writeStartElement(Element.CREATE_TABLE.getLocalName());
-            writer.writeCharacters(model.get(CREATE_TABLE).asString());
-            writer.writeEndElement();
-        }
-        if (model.hasDefined(CREATE_TABLE_DDL)) {
-            writer.writeStartElement(Element.CREATE_TABLE_DDL.getLocalName());
-            writer.writeCharacters(model.get(CREATE_TABLE_DDL).asString());
-            writer.writeEndElement();
-        }
-        if (model.hasDefined(DATA_SOURCE)) {
-            writer.writeStartElement(Element.DATA_SOURCE.getLocalName());
-            writer.writeCharacters(model.get(DATA_SOURCE).asString());
-            writer.writeEndElement();
-        }
-        if (model.hasDefined(DROP_TABLE)) {
-            writer.writeStartElement(Element.DROP_TABLE.getLocalName());
-            writer.writeCharacters(model.get(DROP_TABLE).asString());
-            writer.writeEndElement();
-        }
-        if (model.hasDefined(ID_COLUMN)) {
-            writer.writeStartElement(Element.ID_COLUMN.getLocalName());
-            writer.writeCharacters(model.get(ID_COLUMN).asString());
-            writer.writeEndElement();
-        }
-        if (model.hasDefined(SELECT_HI_DDL)) {
-            writer.writeStartElement(Element.SELECT_HI_DDL.getLocalName());
-            writer.writeCharacters(model.get(SELECT_HI_DDL).asString());
-            writer.writeEndElement();
-        }
-        if (model.hasDefined(SEQUENCE_COLUMN)) {
-            writer.writeStartElement(Element.SEQUENCE_COLUMN.getLocalName());
-            writer.writeCharacters(model.get(SEQUENCE_COLUMN).asString());
-            writer.writeEndElement();
-        }
-        if (model.hasDefined(SEQUENCE_NAME)) {
-            writer.writeStartElement(Element.SEQUENCE_NAME.getLocalName());
-            writer.writeCharacters(model.get(SEQUENCE_NAME).asString());
-            writer.writeEndElement();
-        }
-        if (model.hasDefined(TABLE_NAME)) {
-            writer.writeStartElement(Element.TABLE_NAME.getLocalName());
-            writer.writeCharacters(model.get(TABLE_NAME).asString());
-            writer.writeEndElement();
+        for(SimpleAttributeDefinition attribute : HiLoKeyGeneratorResourceDescription.ATTRIBUTES) {
+            attribute.marshallAsElement(model, writer);
         }
         writer.writeEndElement();
     }
