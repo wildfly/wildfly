@@ -39,6 +39,8 @@ import javax.servlet.http.HttpSession;
 public class SimpleServlet extends HttpServlet {
     private static final long serialVersionUID = -592774116315946908L;
     public static final String REQUEST_DURATION_PARAM = "requestduration";
+    public static final String HEADER_SERIALIZED = "serialized";
+    public static final String URL = "simple";
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -51,7 +53,7 @@ public class SimpleServlet extends HttpServlet {
             custom.increment();
         }
         resp.setIntHeader("value", custom.getValue());
-        resp.setHeader("serialized", Boolean.toString(custom.wasSerialized()));
+        resp.setHeader(HEADER_SERIALIZED, Boolean.toString(custom.wasSerialized()));
 
         // Long running request?
         if (req.getParameter(REQUEST_DURATION_PARAM) != null) {
