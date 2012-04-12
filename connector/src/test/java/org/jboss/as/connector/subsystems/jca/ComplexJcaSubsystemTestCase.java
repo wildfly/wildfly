@@ -39,12 +39,11 @@ public class ComplexJcaSubsystemTestCase extends AbstractComplexSubsystemTestCas
     }
 
     @Test
-    @Ignore("JBPAPP-8636")
     public void testModel() throws Exception {
 
         getModel("jca.xml");
     }
-    
+
     @Test
     public void testMinModel() throws Exception {
 
