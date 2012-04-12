@@ -42,10 +42,6 @@ import static org.jboss.logging.Logger.Level.WARN;
  *
  * https://community.jboss.org/wiki/LoggingIds
  *
- * ERROR: 11900-11919
- * WARN : 11920-11939
- * INFO : 11940-11959
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Thomas.Diesler@jboss.com
  */
@@ -99,6 +95,6 @@ public interface OSGiLogger extends BasicLogger {
     void infoUnregisterModule(Module module);
 
     @LogMessage(level = ERROR)
-    @Message(id = 11911, value = "Management operation failed: %s")
+    @Message(id = 11911, value = "Management operation '%s' failed")
     void errorInOperationHandler(@Cause Throwable cause, String opname);
 }

@@ -22,19 +22,17 @@
 
 package org.jboss.as.test.integration.osgi.management;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
-import org.jboss.as.test.integration.management.util.CLIOpResult;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.management.util.CLIOpResult;
+import org.jboss.as.test.osgi.OSGiManagementTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Test OSGi management operations
@@ -42,35 +40,24 @@ import static org.junit.Assert.fail;
  * @author thomas.diesler@jboss.com
  * @since 06-Mar-2012
  */
-@RunWith(Arquillian.class)
 @RunAsClient
-public class OSGiManagementTestCase extends AbstractCliTestBase {
-
-    @BeforeClass
-    public static void before() throws Exception {
-        AbstractCliTestBase.initCLI();
-    }
-
-    @AfterClass
-    public static void after() throws Exception {
-        AbstractCliTestBase.closeCLI();
-    }
+@RunWith(Arquillian.class)
+public class OSGiManagementTestCase extends OSGiManagementTest {
 
     @Test
     public void testFrameworkActivation() throws Exception {
 
         // Get the current startlevel
         String startLevel = getFrameworkStartLevel();
-        
+
         // If the startlevel is not defined the subsystem is down
         // [TODO] define a more explicit runtime atttribute
         if ("undefined".equals(startLevel)) {
-            cli.sendLine("/subsystem=osgi:activate");
-            CLIOpResult cliresult = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+            CLIOpResult cliresult = sendLine("/subsystem=osgi:activate");
             assertTrue(cliresult.isIsOutcomeSuccess());
             assertEquals("1", getFrameworkStartLevel());
         } else if ("1".equals(startLevel)) {
-            // Nothing to do            
+            // Nothing to do
         } else {
             fail("Unexpected startlevel: " + startLevel);
         }
@@ -107,12 +94,4 @@ public class OSGiManagementTestCase extends AbstractCliTestBase {
     }
 
     // [TODO] any other management operations that need testing?
-
-    private String getFrameworkStartLevel() throws Exception {
-        cli.sendLine("/subsystem=osgi:read-attribute(name=startlevel)");
-        CLIOpResult cliresult = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-
-        assertTrue(cliresult.isIsOutcomeSuccess());
-        return (String)cliresult.getResult();
-    }
 }
