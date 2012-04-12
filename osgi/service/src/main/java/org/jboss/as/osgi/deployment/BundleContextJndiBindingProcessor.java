@@ -24,7 +24,7 @@ package org.jboss.as.osgi.deployment;
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.naming.deployment.ContextNames.contextServiceNameOfComponent;
 import static org.jboss.as.naming.deployment.ContextNames.contextServiceNameOfModule;
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX;
 
 import java.util.List;
@@ -76,7 +76,7 @@ public class BundleContextJndiBindingProcessor implements DeploymentUnitProcesso
 
         final CompositeIndex compositeIndex = depUnit.getAttachment(COMPOSITE_ANNOTATION_INDEX);
         if (compositeIndex == null) {
-            ROOT_LOGGER.cannotFindAnnotationIndex(depUnit);
+            LOGGER.warnCannotFindAnnotationIndex(depUnit);
             return;
         }
 
@@ -124,7 +124,7 @@ public class BundleContextJndiBindingProcessor implements DeploymentUnitProcesso
     private void bindServices(DeploymentUnit depUnit, ServiceTarget serviceTarget, EEModuleDescription description, String componentName, ServiceName contextServiceName) {
         final ServiceName serviceName = contextServiceName.append("BundleContext");
         BinderService binderService = new BinderService("BundleContext");
-        ROOT_LOGGER.debugf("Install BundleContext binder service: %s", binderService);
+        LOGGER.debugf("Install BundleContext binder service: %s", binderService);
         ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(serviceName, binderService);
         builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, new ManagedReferenceInjector<BundleContext>(binderService.getManagedObjectInjector()));
         builder.addDependency(contextServiceName, ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());

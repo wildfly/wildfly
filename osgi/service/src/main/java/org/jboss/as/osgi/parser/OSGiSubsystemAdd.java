@@ -21,8 +21,6 @@
  */
 package org.jboss.as.osgi.parser;
 
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -55,6 +53,13 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.Bundle;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 
 /**
  * OSGi subsystem operation handler.
@@ -112,7 +117,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
 
-        ROOT_LOGGER.activatingSubsystem();
+        LOGGER.infoActivatingSubsystem();
 
         context.addStep(new OperationStepHandler() {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -159,7 +164,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        ROOT_LOGGER.debugf("Activated OSGi Subsystem");
+        LOGGER.debugf("Activated OSGi Subsystem");
     }
 
     private Activation getActivationMode(ModelNode operation) {
