@@ -1462,7 +1462,7 @@
             <xs:element name="stack" type="memory-sizeType" minOccurs="0"/>
             <xs:element name="agent-lib" type="jvm-agentLibType" minOccurs="0"/>
             <xs:element name="agent-path" type="jvm-agentPathType" minOccurs="0"/>
-            <xs:element name="javaagent" type="jvm-javaagentType" minOccurs="0"/>
+            <xs:element name="java-agent" type="jvm-javaagentType" minOccurs="0"/>
             <xs:element name="jvm-options" type="jvm-optionsType" minOccurs="0"/>
             <xs:element name="environment-variables" type="environmentVariablesType" minOccurs="0"/>
         </xs:all>

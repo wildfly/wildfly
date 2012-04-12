@@ -86,6 +86,8 @@ import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.services.path.PathAddHandler;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
+import org.jboss.as.host.controller.model.jvm.JvmElement;
+import org.jboss.as.host.controller.model.jvm.JvmOptionsBuilderFactory;
 import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.ServerEnvironment;

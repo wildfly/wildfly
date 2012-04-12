@@ -70,16 +70,6 @@ public final class CommonProviders {
         }
     };
 
-    /**
-     * Provider for a sub-model that defines the JVM configuration.
-     */
-    public static final DescriptionProvider JVM_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return JVMDescriptions.getJVMDescription(locale);
-        }
-    };
-
     public static final DescriptionProvider READ_RESOURCE_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {

@@ -1,14 +1,13 @@
 /**
  *
  */
-package org.jboss.as.host.controller;
+package org.jboss.as.host.controller.model.jvm;
 
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.controller.operations.common.JVMHandlers;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -59,51 +58,51 @@ public class JvmElement {
                 continue;
             }
 
-            if(node.hasDefined(JVMHandlers.JVM_AGENT_LIB)) {
-                agentLib = node.get(JVMHandlers.JVM_AGENT_LIB).asString();
+            if(node.hasDefined(JvmAttributes.JVM_AGENT_LIB)) {
+                agentLib = node.get(JvmAttributes.JVM_AGENT_LIB).asString();
             }
-            if(node.hasDefined(JVMHandlers.JVM_AGENT_PATH)) {
-                agentPath = node.get(JVMHandlers.JVM_AGENT_PATH).asString();
+            if(node.hasDefined(JvmAttributes.JVM_AGENT_PATH)) {
+                agentPath = node.get(JvmAttributes.JVM_AGENT_PATH).asString();
             }
-            if(node.hasDefined(JVMHandlers.JVM_DEBUG_ENABLED)) {
-                debugEnabled = node.get(JVMHandlers.JVM_DEBUG_ENABLED).asBoolean();
+            if(node.hasDefined(JvmAttributes.JVM_DEBUG_ENABLED)) {
+                debugEnabled = node.get(JvmAttributes.JVM_DEBUG_ENABLED).asBoolean();
             }
-            if(node.hasDefined(JVMHandlers.JVM_DEBUG_OPTIONS)) {
-                debugOptions = node.get(JVMHandlers.JVM_DEBUG_OPTIONS).asString();
+            if(node.hasDefined(JvmAttributes.JVM_DEBUG_OPTIONS)) {
+                debugOptions = node.get(JvmAttributes.JVM_DEBUG_OPTIONS).asString();
             }
-            if(node.hasDefined(JVMHandlers.JVM_ENV_CLASSPATH_IGNORED)) {
-                envClasspathIgnored = node.get(JVMHandlers.JVM_ENV_CLASSPATH_IGNORED).asBoolean();
+            if(node.hasDefined(JvmAttributes.JVM_ENV_CLASSPATH_IGNORED)) {
+                envClasspathIgnored = node.get(JvmAttributes.JVM_ENV_CLASSPATH_IGNORED).asBoolean();
             }
-            if(node.hasDefined(JVMHandlers.JVM_ENV_VARIABLES)) {
-                for(Property property : node.get(JVMHandlers.JVM_ENV_VARIABLES).asPropertyList()) {
+            if(node.hasDefined(JvmAttributes.JVM_ENV_VARIABLES)) {
+                for(Property property : node.get(JvmAttributes.JVM_ENV_VARIABLES).asPropertyList()) {
                     environmentVariables.put(property.getName(), property.getValue().asString());
                 }
             }
-            if(node.hasDefined(JVMHandlers.JVM_HEAP)) {
-                heapSize = node.get(JVMHandlers.JVM_HEAP).asString();
+            if(node.hasDefined(JvmAttributes.JVM_HEAP)) {
+                heapSize = node.get(JvmAttributes.JVM_HEAP).asString();
             }
-            if(node.hasDefined(JVMHandlers.JVM_MAX_HEAP)) {
-                maxHeap = node.get(JVMHandlers.JVM_MAX_HEAP).asString();
+            if(node.hasDefined(JvmAttributes.JVM_MAX_HEAP)) {
+                maxHeap = node.get(JvmAttributes.JVM_MAX_HEAP).asString();
             }
-            if(node.hasDefined(JVMHandlers.JVM_JAVA_AGENT)) {
-                javaagent = node.get(JVMHandlers.JVM_JAVA_AGENT).asString();
+            if(node.hasDefined(JvmAttributes.JVM_JAVA_AGENT)) {
+                javaagent = node.get(JvmAttributes.JVM_JAVA_AGENT).asString();
             }
-            if(node.hasDefined(JVMHandlers.JVM_JAVA_HOME)) {
-                javaHome = node.get(JVMHandlers.JVM_JAVA_HOME).asString();
+            if(node.hasDefined(JvmAttributes.JVM_JAVA_HOME)) {
+                javaHome = node.get(JvmAttributes.JVM_JAVA_HOME).asString();
             }
-            if(node.hasDefined(JVMHandlers.JVM_OPTIONS)) {
-                for(final ModelNode option : node.get(JVMHandlers.JVM_OPTIONS).asList()) {
+            if(node.hasDefined(JvmAttributes.JVM_OPTIONS)) {
+                for(final ModelNode option : node.get(JvmAttributes.JVM_OPTIONS).asList()) {
                     jvmOptionsElement.addOption(option.asString());
                 }
             }
-            if(node.hasDefined(JVMHandlers.JVM_PERMGEN)) {
-                permgenSize = node.get(JVMHandlers.JVM_PERMGEN).asString();
+            if(node.hasDefined(JvmAttributes.JVM_PERMGEN)) {
+                permgenSize = node.get(JvmAttributes.JVM_PERMGEN).asString();
             }
-            if(node.hasDefined(JVMHandlers.JVM_MAX_PERMGEN)) {
-                maxPermgen = node.get(JVMHandlers.JVM_MAX_PERMGEN).asString();
+            if(node.hasDefined(JvmAttributes.JVM_MAX_PERMGEN)) {
+                maxPermgen = node.get(JvmAttributes.JVM_MAX_PERMGEN).asString();
             }
-            if(node.hasDefined(JVMHandlers.JVM_STACK)) {
-                stack = node.get(JVMHandlers.JVM_STACK).asString();
+            if(node.hasDefined(JvmAttributes.JVM_STACK)) {
+                stack = node.get(JvmAttributes.JVM_STACK).asString();
             }
         }
 

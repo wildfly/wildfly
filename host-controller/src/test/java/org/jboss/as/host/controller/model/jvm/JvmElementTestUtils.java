@@ -19,7 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.host.controller;
+package org.jboss.as.host.controller.model.jvm;
+
+import org.jboss.as.host.controller.model.jvm.JvmElement;
+import org.jboss.as.host.controller.model.jvm.JvmType;
+
 
 /**
  *

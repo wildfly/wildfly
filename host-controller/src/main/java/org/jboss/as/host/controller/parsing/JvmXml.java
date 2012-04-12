@@ -25,16 +25,15 @@ package org.jboss.as.host.controller.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -43,16 +42,12 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.JVMHandlers;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
-import org.jboss.as.controller.parsing.CommonXml;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.host.controller.JvmType;
+import org.jboss.as.host.controller.model.jvm.JvmAttributes;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -60,6 +55,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * Utilities for parsing and marshalling domain.xml and host.xml JVM configurations.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author Kabir Khan
  */
 public class JvmXml {
 
@@ -71,14 +67,13 @@ public class JvmXml {
     public static void parseJvm(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final Namespace expectedNs, final List<ModelNode> updates,
             final Set<String> jvmNames, final boolean server) throws XMLStreamException {
 
+        ModelNode addOp = new ModelNode();
+        addOp.get(OP).set(ADD);
+
         // Handle attributes
-        final List<ModelNode> attrUpdates = new ArrayList<ModelNode>();
         String name = null;
-        String type = null;
-        String home = null;
         Boolean debugEnabled = null;
         String debugOptions = null;
-        Boolean envClasspathIgnored = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -98,18 +93,13 @@ public class JvmXml {
                         break;
                     }
                     case JAVA_HOME: {
-                        if (home != null)
-                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
-                        home = value;
-                        final ModelNode update = Util.getWriteAttributeOperation(null, JVMHandlers.JVM_JAVA_HOME, home);
-                        attrUpdates.add(update);
+                        JvmAttributes.JAVA_HOME.parseAndSetParameter(value, addOp, reader);
                         break;
                     }
                     case TYPE: {
                         try {
                             // Validate the type against the enum
-                            Enum.valueOf(JvmType.class, value);
-                            type = value;
+                            JvmAttributes.TYPE.parseAndSetParameter(value, addOp, reader);
                         } catch (final IllegalArgumentException e) {
                             throw ParseUtils.invalidAttributeValue(reader, i);
                         }
@@ -119,35 +109,20 @@ public class JvmXml {
                         if (!server) {
                             throw ParseUtils.unexpectedAttribute(reader, i);
                         }
-                        if (debugEnabled != null) {
-                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
-                        }
                         debugEnabled = Boolean.valueOf(value);
-                        final ModelNode update = Util.getWriteAttributeOperation(null, JVMHandlers.JVM_DEBUG_ENABLED,
-                                debugEnabled);
-                        attrUpdates.add(update);
+                        JvmAttributes.DEBUG_ENABLED.parseAndSetParameter(value, addOp, reader);
                         break;
                     }
                     case DEBUG_OPTIONS: {
                         if (!server) {
                             throw ParseUtils.unexpectedAttribute(reader, i);
                         }
-                        if (debugOptions != null) {
-                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
-                        }
                         debugOptions = value;
-                        final ModelNode update = Util.getWriteAttributeOperation(null, JVMHandlers.JVM_DEBUG_OPTIONS,
-                                debugOptions);
-                        attrUpdates.add(update);
+                        JvmAttributes.DEBUG_OPTIONS.parseAndSetParameter(value, addOp, reader);
                         break;
                     }
                     case ENV_CLASSPATH_IGNORED: {
-                        if (envClasspathIgnored != null)
-                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
-                        envClasspathIgnored = Boolean.valueOf(value);
-                        final ModelNode update = Util.getWriteAttributeOperation(null, JVMHandlers.JVM_ENV_CLASSPATH_IGNORED,
-                                envClasspathIgnored);
-                        attrUpdates.add(update);
+                        JvmAttributes.ENV_CLASSPATH_IGNORED.parseAndSetParameter(value, addOp, reader);
                         break;
                     }
                     default:
@@ -168,17 +143,8 @@ public class JvmXml {
 
         final ModelNode address = parentAddress.clone();
         address.add(ModelDescriptionConstants.JVM, name);
-
-        final ModelNode addUpdate = Util.getEmptyOperation(ADD, address);
-        if (type != null)
-            addUpdate.get(JVM_TYPE).set(type);
-        updates.add(addUpdate);
-
-        // Now we've done the add and we know the address
-        for (final ModelNode attrUpdate : attrUpdates) {
-            attrUpdate.get(OP_ADDR).set(address);
-            updates.add(attrUpdate);
-        }
+        addOp.get(OP_ADDR).set(address);
+        updates.add(addOp);
 
         // Handle elements
         boolean hasJvmOptions = false;
@@ -188,35 +154,34 @@ public class JvmXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case HEAP: {
-                    parseHeap(reader, address, updates);
+                    parseHeap(reader, address, addOp);
                     break;
                 }
                 case PERMGEN: {
-                    parsePermgen(reader, address, updates);
+                    parsePermgen(reader, address, addOp);
                     break;
                 }
                 case STACK: {
-                    parseStack(reader, address, updates);
+                    parseStack(reader, address, addOp);
                     break;
                 }
                 case AGENT_LIB: {
-                    parseAgentLib(reader, address, updates);
+                    parseAgentLib(reader, address, addOp);
                     break;
                 }
                 case AGENT_PATH: {
-                    parseAgentPath(reader, address, updates);
+                    parseAgentPath(reader, address, addOp);
                     break;
                 }
                 case JAVA_AGENT: {
-                    parseJavaagent(reader, address, updates);
+                    parseJavaagent(reader, address, addOp);
                     break;
                 }
                 case ENVIRONMENT_VARIABLES: {
                     if (hasEnvironmentVariables) {
                         throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
-                    updates.add(Util.getWriteAttributeOperation(address, JVMHandlers.JVM_ENV_VARIABLES,
-                            CommonXml.parseEnvironmentVariables(reader, expectedNs)));
+                    parseEnvironmentVariables(reader, expectedNs, addOp);
                     hasEnvironmentVariables = true;
                     break;
                 }
@@ -224,7 +189,7 @@ public class JvmXml {
                     if (hasJvmOptions) {
                         throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
-                    parseJvmOptions(reader, address, expectedNs, updates);
+                    parseJvmOptions(reader, address, expectedNs, addOp);
                     hasJvmOptions = true;
                     break;
                 }
@@ -234,12 +199,28 @@ public class JvmXml {
         }
     }
 
-    private static void parseHeap(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates)
+    public static ModelNode parseEnvironmentVariables(final XMLExtendedStreamReader reader, final Namespace expectedNs, ModelNode addOp) throws XMLStreamException {
+        final ModelNode properties = new ModelNode();
+        while (reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            if (Element.forName(reader.getLocalName()) != Element.VARIABLE) {
+                throw unexpectedElement(reader);
+            }
+            final String[] array = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.VALUE.getLocalName());
+            requireNoContent(reader);
+            properties.add(array[0], array[1]);
+        }
+
+        if (!properties.isDefined()) {
+            throw missingRequiredElement(reader, Collections.singleton(Element.OPTION));
+        }
+        addOp.get(JvmAttributes.JVM_ENV_VARIABLES).set(properties);
+        return properties;
+    }
+
+
+    private static void parseHeap(final XMLExtendedStreamReader reader, final ModelNode address, ModelNode addOp)
             throws XMLStreamException {
-
-        String size = null;
-        String maxSize = null;
-
         // Handle attributes
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -250,11 +231,15 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case SIZE: {
-                        size = value;
+                        if (JvmAttributes.HEAP_SIZE.parseAndSetParameter(value, addOp, reader)) {
+                            throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
+                        }
                         break;
                     }
                     case MAX_SIZE: {
-                        maxSize = value;
+                        if (JvmAttributes.MAX_HEAP_SIZE.parseAndSetParameter(value, addOp, reader)) {
+                            throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
+                        }
                         break;
                     }
                     default:
@@ -263,27 +248,16 @@ public class JvmXml {
             }
         }
 
-        if (size != null) {
-            final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_HEAP, size);
-            updates.add(update);
-        }
-
-        if (maxSize != null) {
-            final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_MAX_HEAP, maxSize);
-            updates.add(update);
-        }
-
         // Handle elements
         requireNoContent(reader);
     }
 
-    private static void parsePermgen(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates)
+    private static void parsePermgen(final XMLExtendedStreamReader reader, final ModelNode address, ModelNode addOp)
             throws XMLStreamException {
 
-        String size = null;
-        String maxSize = null;
-
         // Handle attributes
+        boolean sizeSet = false;
+        boolean maxSet = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -293,11 +267,15 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case SIZE: {
-                        size = value;
+                        if (JvmAttributes.PERMGEN_SIZE.parseAndSetParameter(value, addOp, reader)) {
+                            throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
+                        }
                         break;
                     }
                     case MAX_SIZE: {
-                        maxSize = value;
+                        if (JvmAttributes.MAX_PERMGEN_SIZE.parseAndSetParameter(value, addOp, reader)) {
+                            throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
+                        }
                         break;
                     }
                     default:
@@ -306,21 +284,11 @@ public class JvmXml {
             }
         }
 
-        if (size != null) {
-            final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_PERMGEN, size);
-            updates.add(update);
-        }
-
-        if (maxSize != null) {
-            final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_MAX_PERMGEN, maxSize);
-            updates.add(update);
-        }
-
         // Handle elements
         requireNoContent(reader);
     }
 
-    private static void parseStack(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates)
+    private static void parseStack(final XMLExtendedStreamReader reader, final ModelNode address, ModelNode addOp)
             throws XMLStreamException {
 
         // Handle attributes
@@ -334,9 +302,11 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case SIZE: {
-                        final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_STACK, value);
-                        updates.add(update);
                         sizeSet = true;
+                        if (JvmAttributes.STACK_SIZE.parseAndSetParameter(value, addOp, reader)){
+                            throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
+
+                        }
                         break;
                     }
                     default:
@@ -351,7 +321,7 @@ public class JvmXml {
         requireNoContent(reader);
     }
 
-    private static void parseAgentLib(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates)
+    private static void parseAgentLib(final XMLExtendedStreamReader reader, final ModelNode address, ModelNode addOp)
             throws XMLStreamException {
 
         // Handle attributes
@@ -365,8 +335,9 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case VALUE: {
-                        final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_AGENT_LIB, value);
-                        updates.add(update);
+                        if (JvmAttributes.AGENT_LIB.parseAndSetParameter(value, addOp, reader)){
+                            throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
+                        }
                         valueSet = true;
                         break;
                     }
@@ -382,7 +353,7 @@ public class JvmXml {
         requireNoContent(reader);
     }
 
-    private static void parseAgentPath(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates)
+    private static void parseAgentPath(final XMLExtendedStreamReader reader, final ModelNode address, ModelNode addOp)
             throws XMLStreamException {
 
         // Handle attributes
@@ -396,8 +367,9 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case VALUE: {
-                        final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_AGENT_PATH, value);
-                        updates.add(update);
+                        if (JvmAttributes.AGENT_PATH.parseAndSetParameter(value, addOp, reader)){
+                            throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
+                        }
                         valueSet = true;
                         break;
                     }
@@ -413,7 +385,7 @@ public class JvmXml {
         requireNoContent(reader);
     }
 
-    private static void parseJavaagent(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates)
+    private static void parseJavaagent(final XMLExtendedStreamReader reader, final ModelNode address, ModelNode addOp)
             throws XMLStreamException {
 
         // Handle attributes
@@ -427,8 +399,9 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case VALUE: {
-                        final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_JAVA_AGENT, value);
-                        updates.add(update);
+                        if (JvmAttributes.JAVA_AGENT.parseAndSetParameter(value, addOp, reader)) {
+                            throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
+                        }
                         valueSet = true;
                         break;
                     }
@@ -444,13 +417,13 @@ public class JvmXml {
         requireNoContent(reader);
     }
 
-    private static void parseJvmOptions(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> updates)
+    private static void parseJvmOptions(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final ModelNode addOp)
             throws XMLStreamException {
 
+        ModelNode options = new ModelNode();
         // Handle attributes
         ParseUtils.requireNoAttributes(reader);
         // Handle elements
-        boolean optionSet = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
@@ -478,22 +451,18 @@ public class JvmXml {
                     throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
                 }
 
-                // PropertyAdd
-                final ModelNode update = new ModelNode();
-                update.get(OP_ADDR).set(address);
-                update.get(OP).set(JVMHandlers.ADD_JVM_OPTION);
-                update.get(JVMHandlers.JVM_OPTION).set(option);
-                updates.add(update);
-                optionSet = true;
+                options.add(option);
+
                 // Handle elements
                 requireNoContent(reader);
             } else {
                 throw unexpectedElement(reader);
             }
         }
-        if (!optionSet) {
+        if (!options.isDefined()) {
             throw missingRequiredElement(reader, Collections.singleton(Element.OPTION));
         }
+        addOp.get(JvmAttributes.JVM_OPTIONS).set(options);
     }
 
     public static void writeJVMElement(final XMLExtendedStreamWriter writer, final String jvmName, final ModelNode jvmElement)
@@ -501,74 +470,47 @@ public class JvmXml {
         writer.writeStartElement(Element.JVM.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), jvmName);
 
-        if (jvmElement.hasDefined(JVM_TYPE)) {
-            writer.writeAttribute(Attribute.TYPE.getLocalName(), jvmElement.get(JVM_TYPE).asString());
-        }
-        if (jvmElement.hasDefined(JVMHandlers.JVM_JAVA_HOME)) {
-            writer.writeAttribute(Attribute.JAVA_HOME.getLocalName(), jvmElement.get(JVMHandlers.JVM_JAVA_HOME).asString());
-        }
-        if (jvmElement.hasDefined(JVMHandlers.JVM_DEBUG_ENABLED)) {
-            writer.writeAttribute(Attribute.DEBUG_ENABLED.getLocalName(), jvmElement.get(JVMHandlers.JVM_DEBUG_ENABLED)
-                    .asString());
-        }
-        if (jvmElement.hasDefined(JVMHandlers.JVM_DEBUG_OPTIONS)) {
-            if (!jvmElement.hasDefined(JVMHandlers.JVM_DEBUG_ENABLED)) {
+        JvmAttributes.TYPE.marshallAsAttribute(jvmElement, writer);
+        JvmAttributes.JAVA_HOME.marshallAsAttribute(jvmElement, writer);
+        JvmAttributes.DEBUG_ENABLED.marshallAsAttribute(jvmElement, writer);
+        JvmAttributes.DEBUG_OPTIONS.marshallAsAttribute(jvmElement, writer);
+        if (JvmAttributes.DEBUG_OPTIONS.isMarshallable(jvmElement)) {
+            if (!JvmAttributes.DEBUG_ENABLED.isMarshallable(jvmElement)) {
                 writer.writeAttribute(Attribute.DEBUG_ENABLED.getLocalName(), "false");
             }
-            writer.writeAttribute(Attribute.DEBUG_OPTIONS.getLocalName(), jvmElement.get(JVMHandlers.JVM_DEBUG_OPTIONS)
-                    .asString());
         }
-        if (jvmElement.hasDefined(JVMHandlers.JVM_ENV_CLASSPATH_IGNORED)) {
-            writer.writeAttribute(Attribute.ENV_CLASSPATH_IGNORED.getLocalName(),
-                    jvmElement.get(JVMHandlers.JVM_ENV_CLASSPATH_IGNORED).asString());
-        }
-
-        if (jvmElement.hasDefined(JVMHandlers.JVM_HEAP) || jvmElement.hasDefined(JVMHandlers.JVM_MAX_HEAP)) {
+        JvmAttributes.ENV_CLASSPATH_IGNORED.marshallAsAttribute(jvmElement, writer);
+        if (JvmAttributes.HEAP_SIZE.isMarshallable(jvmElement) || JvmAttributes.MAX_HEAP_SIZE.isMarshallable(jvmElement)) {
             writer.writeEmptyElement(Element.HEAP.getLocalName());
-            if (jvmElement.hasDefined(JVMHandlers.JVM_HEAP))
-                writer.writeAttribute(Attribute.SIZE.getLocalName(), jvmElement.get(JVMHandlers.JVM_HEAP).asString());
-            if (jvmElement.hasDefined(JVMHandlers.JVM_MAX_HEAP))
-                writer.writeAttribute(Attribute.MAX_SIZE.getLocalName(), jvmElement.get(JVMHandlers.JVM_MAX_HEAP).asString());
+            JvmAttributes.HEAP_SIZE.marshallAsAttribute(jvmElement, writer);
+            JvmAttributes.MAX_HEAP_SIZE.marshallAsAttribute(jvmElement, writer);
         }
-        if (jvmElement.hasDefined(JVMHandlers.JVM_PERMGEN) || jvmElement.hasDefined(JVMHandlers.JVM_MAX_PERMGEN)) {
+        if (JvmAttributes.PERMGEN_SIZE.isMarshallable(jvmElement) || JvmAttributes.MAX_HEAP_SIZE.isMarshallable(jvmElement)) {
             writer.writeEmptyElement(Element.PERMGEN.getLocalName());
-            if (jvmElement.hasDefined(JVMHandlers.JVM_PERMGEN))
-                writer.writeAttribute(Attribute.SIZE.getLocalName(), jvmElement.get(JVMHandlers.JVM_PERMGEN).asString());
-            if (jvmElement.hasDefined(JVMHandlers.JVM_MAX_PERMGEN))
-                writer.writeAttribute(Attribute.MAX_SIZE.getLocalName(), jvmElement.get(JVMHandlers.JVM_MAX_PERMGEN).asString());
+            JvmAttributes.PERMGEN_SIZE.marshallAsAttribute(jvmElement, writer);
+            JvmAttributes.MAX_PERMGEN_SIZE.marshallAsAttribute(jvmElement, writer);
         }
-        if (jvmElement.hasDefined(JVMHandlers.JVM_STACK)) {
+        if (JvmAttributes.STACK_SIZE.isMarshallable(jvmElement)) {
             writer.writeEmptyElement(Element.STACK.getLocalName());
-            writer.writeAttribute(Attribute.SIZE.getLocalName(), jvmElement.get(JVMHandlers.JVM_STACK).asString());
+            JvmAttributes.STACK_SIZE.marshallAsAttribute(jvmElement, writer);
         }
-        if (jvmElement.hasDefined(JVMHandlers.JVM_AGENT_LIB)) {
+        if (JvmAttributes.AGENT_LIB.isMarshallable(jvmElement)) {
             writer.writeEmptyElement(Element.AGENT_LIB.getLocalName());
-            writer.writeAttribute(Attribute.VALUE.getLocalName(), jvmElement.get(JVMHandlers.JVM_AGENT_LIB).asString());
+            JvmAttributes.AGENT_LIB.marshallAsAttribute(jvmElement, writer);
         }
-        if (jvmElement.hasDefined(JVMHandlers.JVM_AGENT_PATH)) {
+        if (JvmAttributes.AGENT_PATH.isMarshallable(jvmElement)) {
             writer.writeEmptyElement(Element.AGENT_PATH.getLocalName());
-            writer.writeAttribute(Attribute.VALUE.getLocalName(), jvmElement.get(JVMHandlers.JVM_AGENT_PATH).asString());
+            JvmAttributes.AGENT_PATH.marshallAsAttribute(jvmElement, writer);
         }
-        if (jvmElement.hasDefined(JVMHandlers.JVM_JAVA_AGENT)) {
+        if (JvmAttributes.JAVA_AGENT.isMarshallable(jvmElement)) {
             writer.writeEmptyElement(Element.JAVA_AGENT.getLocalName());
-            writer.writeAttribute(Attribute.VALUE.getLocalName(), jvmElement.get(JVMHandlers.JVM_JAVA_AGENT).asString());
+            JvmAttributes.JAVA_AGENT.marshallAsAttribute(jvmElement, writer);
         }
-        if (jvmElement.hasDefined(JVMHandlers.JVM_OPTIONS)) {
-            writer.writeStartElement(Element.JVM_OPTIONS.getLocalName());
-            for (final ModelNode option : jvmElement.get(JVMHandlers.JVM_OPTIONS).asList()) {
-                writer.writeEmptyElement(Element.OPTION.getLocalName());
-                writer.writeAttribute(Attribute.VALUE.getLocalName(), option.asString());
-            }
-            writer.writeEndElement();
+        if (JvmAttributes.OPTIONS.isMarshallable(jvmElement)) {
+            JvmAttributes.OPTIONS.marshallAsElement(jvmElement, writer);
         }
-        if (jvmElement.hasDefined(JVMHandlers.JVM_ENV_VARIABLES)) {
-            writer.writeStartElement(Element.ENVIRONMENT_VARIABLES.getLocalName());
-            for (final Property variable : jvmElement.get(JVMHandlers.JVM_ENV_VARIABLES).asPropertyList()) {
-                writer.writeEmptyElement(Element.VARIABLE.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), variable.getName());
-                writer.writeAttribute(Attribute.VALUE.getLocalName(), variable.getValue().asString());
-            }
-            writer.writeEndElement();
+        if (JvmAttributes.ENVIRONMENT_VARIABLES.isMarshallable(jvmElement)) {
+            JvmAttributes.ENVIRONMENT_VARIABLES.marshallAsElement(jvmElement, writer);
         }
 
         writer.writeEndElement();

@@ -201,11 +201,14 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
      * @param reader {@link XMLStreamReader} from which the {@link XMLStreamReader#getLocation() location} from which
      *               the attribute value was read can be obtained and used in any {@code XMLStreamException}, in case
      *               the given value is invalid.
+     * @return {@code false} if the parameter was not already set, {@code true} if it was already set
      * @throws XMLStreamException if {@code value} is not valid
      */
-    public void parseAndSetParameter(final String value, final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException {
+    public boolean parseAndSetParameter(final String value, final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException {
         ModelNode paramVal = parse(value, reader);
+        boolean alreadyExisted = operation.hasDefined(getName());
         operation.get(getName()).set(paramVal);
+        return alreadyExisted;
     }
 
     /**

@@ -204,9 +204,13 @@ public abstract class AbstractSubsystemTest {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(configURL.openStream()));
         StringWriter writer = new StringWriter();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            writer.write(line);
+        try {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                writer.write(line);
+            }
+        } finally {
+            reader.close();
         }
         return writer.toString();
     }
