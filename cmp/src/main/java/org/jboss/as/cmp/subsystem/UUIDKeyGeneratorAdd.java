@@ -22,7 +22,6 @@
 
 package org.jboss.as.cmp.subsystem;
 
-import java.util.Locale;
 import org.jboss.as.cmp.keygenerator.KeyGeneratorFactory;
 import org.jboss.as.cmp.keygenerator.uuid.UUIDKeyGeneratorFactory;
 import org.jboss.as.controller.OperationFailedException;
@@ -50,7 +49,4 @@ public class UUIDKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
     }
 
-    public ModelNode getModelDescription(final Locale locale) {
-        return CmpSubsystemDescriptions.getUuidAddDescription(locale);
-    }
 }

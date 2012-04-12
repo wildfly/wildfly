@@ -25,26 +25,26 @@
         <uuid name="uuid1"/>
         <uuid name="uuid2"/>
         <hilo name="hilo1">
-            <data-source>java:/jdbc/DB1</data-source>
-            <table-name>HILOSEQUENCES1</table-name>
-            <sequence-column>SEQUENCENAME1</sequence-column>
-            <id-column>HIGHVALUES1</id-column>
-            <create-table-ddl>create table HILOSEQUENCES1</create-table-ddl>
-            <create-table>true</create-table>
-            <drop-table>true</drop-table>
-            <sequence-name>general1</sequence-name>
             <block-size>10</block-size>
+            <create-table>true</create-table>
+            <create-table-ddl>create table HILOSEQUENCES1</create-table-ddl>
+            <data-source>java:/jdbc/DB1</data-source>
+            <drop-table>true</drop-table>
+            <id-column>HIGHVALUES1</id-column>
+            <sequence-column>SEQUENCENAME1</sequence-column>
+            <sequence-name>general1</sequence-name>
+            <table-name>HILOSEQUENCES1</table-name>
         </hilo>
         <hilo name="hilo2">
-            <data-source>java:/jdbc/DB2</data-source>
-            <table-name>HILOSEQUENCES2</table-name>
-            <sequence-column>SEQUENCENAME2</sequence-column>
-            <id-column>HIGHVALUES2</id-column>
-            <create-table-ddl>create table HILOSEQUENCES2</create-table-ddl>
-            <create-table>false</create-table>
-            <drop-table>false</drop-table>
-            <sequence-name>general2</sequence-name>
             <block-size>11</block-size>
+            <create-table>false</create-table>
+            <create-table-ddl>create table HILOSEQUENCES2</create-table-ddl>
+            <data-source>java:/jdbc/DB2</data-source>
+            <drop-table>false</drop-table>
+            <id-column>HIGHVALUES2</id-column>
+            <sequence-column>SEQUENCENAME2</sequence-column>
+            <sequence-name>general2</sequence-name>
+            <table-name>HILOSEQUENCES2</table-name>
         </hilo>
     </key-generators>
 </subsystem>

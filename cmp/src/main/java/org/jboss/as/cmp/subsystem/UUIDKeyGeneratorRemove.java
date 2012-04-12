@@ -22,15 +22,13 @@
 
 package org.jboss.as.cmp.subsystem;
 
-import java.util.Locale;
 import org.jboss.as.cmp.keygenerator.uuid.UUIDKeyGeneratorFactory;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * @author John Bailey
  */
-public class UUIDKeyGeneratorRemove extends AbstractKeyGeneratorRemove {
+public class UUIDKeyGeneratorRemove extends AbstractKeyGeneratorRemove  {
     static UUIDKeyGeneratorRemove INSTANCE = new UUIDKeyGeneratorRemove();
 
     private UUIDKeyGeneratorRemove() {
@@ -38,9 +36,5 @@ public class UUIDKeyGeneratorRemove extends AbstractKeyGeneratorRemove {
 
     protected ServiceName getServiceName(final String name) {
         return UUIDKeyGeneratorFactory.SERVICE_NAME.append();
-    }
-
-    public ModelNode getModelDescription(final Locale locale) {
-        return CmpSubsystemDescriptions.getUuidRemoveDescription(locale);
     }
 }
