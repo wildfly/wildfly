@@ -38,7 +38,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 /**
- * Logging Id ranges: 11900-11959
+ * Logging Id ranges: 11900-11949
  *
  * https://community.jboss.org/wiki/LoggingIds
  *
@@ -52,11 +52,11 @@ import static org.jboss.logging.Logger.Level.WARN;
 @MessageLogger(projectCode = "JBAS")
 public interface OSGiLogger extends BasicLogger {
 
-    OSGiLogger ROOT_LOGGER = Logger.getMessageLogger(OSGiLogger.class, OSGiLogger.class.getPackage().getName());
+    OSGiLogger LOGGER = Logger.getMessageLogger(OSGiLogger.class, OSGiLogger.class.getPackage().getName());
 
     @LogMessage(level = ERROR)
     @Message(id = 11900, value = "Cannot start bundle: %s")
-    void cannotStart(@Cause Throwable cause, Bundle bundle);
+    void errorCannotStartBundle(@Cause Throwable cause, Bundle bundle);
 
     @LogMessage(level = ERROR)
     @Message(id = 11901, value = "Problem adding module: %s")
@@ -64,37 +64,41 @@ public interface OSGiLogger extends BasicLogger {
 
     @LogMessage(level = ERROR)
     @Message(id = 11902, value = "Failed to uninstall deployment: %s")
-    void failedToUninstallDeployment(@Cause Throwable cause, Deployment deployment);
+    void errorFailedToUninstallDeployment(@Cause Throwable cause, Deployment deployment);
 
     @LogMessage(level = ERROR)
-    @Message(id = 11904, value = "Cannot add module as it was not found: %s")
-    void moduleNotFound(String moduleId);
+    @Message(id = 11903, value = "Cannot add module as it was not found: %s")
+    void errorModuleNotFound(String moduleId);
 
     @LogMessage(level = WARN)
-    @Message(id = 11920, value = "Cannot find composite annotation index in: %s")
-    void cannotFindAnnotationIndex(DeploymentUnit deploymentUnit);
+    @Message(id = 11904, value = "Cannot find composite annotation index in: %s")
+    void warnCannotFindAnnotationIndex(DeploymentUnit deploymentUnit);
 
     @LogMessage(level = WARN)
-    @Message(id = 11921, value = "Cannot undeploy bundle: %s")
-    void cannotUndeployBundle(@Cause Throwable cause, Deployment deployment);
+    @Message(id = 11905, value = "Cannot undeploy bundle: %s")
+    void warnCannotUndeployBundle(@Cause Throwable cause, Deployment deployment);
 
     @LogMessage(level = WARN)
-    @Message(id = 11922, value = "Cannot resolve capability: %s")
-    void cannotResolveCapability(String identifier);
+    @Message(id = 11906, value = "Cannot resolve capability: %s")
+    void warnCannotResolveCapability(String identifier);
 
     @LogMessage(level = INFO)
-    @Message(id = 11940, value = "Activating OSGi Subsystem")
-    void activatingSubsystem();
+    @Message(id = 11907, value = "Activating OSGi Subsystem")
+    void infoActivatingSubsystem();
 
     @LogMessage(level = INFO)
-    @Message(id = 11941, value = "Register module: %s")
-    void registerModule(Module module);
+    @Message(id = 11908, value = "Register module: %s")
+    void infoRegisterModule(Module module);
 
     @LogMessage(level = INFO)
-    @Message(id = 11942, value = "Stopping OSGi Framework")
-    void stoppingOsgiFramework();
+    @Message(id = 11909, value = "Stopping OSGi Framework")
+    void infoStoppingFramework();
 
     @LogMessage(level = INFO)
-    @Message(id = 11943, value = "Unregister module: %s")
-    void unregisterModule(Module module);
+    @Message(id = 11910, value = "Unregister module: %s")
+    void infoUnregisterModule(Module module);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 11911, value = "Management operation failed: %s")
+    void errorInOperationHandler(@Cause Throwable cause, String opname);
 }

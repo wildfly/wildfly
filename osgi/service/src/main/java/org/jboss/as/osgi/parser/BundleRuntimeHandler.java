@@ -21,6 +21,8 @@
  */
 package org.jboss.as.osgi.parser;
 
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
+
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Locale;
@@ -133,10 +135,10 @@ public class BundleRuntimeHandler extends AbstractRuntimeOnlyHandler {
             } else if (STOP_OPERATION.equals(operationName)) {
                 bundle.stop();
             }
-        } catch (BundleException e) {
-            context.getFailureDescription().set(e.getLocalizedMessage());
+        } catch (BundleException ex) {
+            LOGGER.errorInOperationHandler(ex, operationName);
+            context.getFailureDescription().set(ex.getLocalizedMessage());
         }
-
         context.completeStep();
     }
 
