@@ -22,7 +22,7 @@
 
 package org.jboss.as.osgi.service;
 
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.service.FrameworkBootstrapService.SERVICE_BASE_NAME;
 
 import org.jboss.msc.service.AbstractService;
@@ -66,7 +66,7 @@ class ResolverService extends AbstractService<Resolver> {
     @Override
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> serviceController = context.getController();
-        ROOT_LOGGER.debugf("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
+        LOGGER.debugf("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
         resolver = new StatelessResolver();
     }
 

@@ -87,7 +87,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
 /**
@@ -134,7 +134,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
     @Override
     public synchronized void start(StartContext context) throws StartException {
         serviceController = context.getController();
-        ROOT_LOGGER.debugf("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
+        LOGGER.debugf("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
 
         final Map<ServiceName, OSGiCapability> installedServices = new LinkedHashMap<ServiceName, OSGiCapability>();
         final Set<ServiceName> resolvableServices = new LinkedHashSet<ServiceName>();
@@ -187,7 +187,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
                         Bundle bundle = (Bundle) controller.getValue();
                         startBundle(bundle, moduleMetaData.getStartLevel());
                     }
-                    ROOT_LOGGER.debugf("Auto bundles bundles started");
+                    LOGGER.debugf("Auto bundles bundles started");
                 }
             });
             ServiceName[] serviceNameArray = resolvableServices.toArray(new ServiceName[resolvableServices.size()]);
@@ -220,7 +220,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
                 ModuleLoader moduleLoader = Module.getBootModuleLoader();
                 module = moduleLoader.loadModule(moduleId);
             } catch (ModuleLoadException e) {
-                ROOT_LOGGER.debugf("Cannot load module: %s", moduleId);
+                LOGGER.debugf("Cannot load module: %s", moduleId);
             }
             if (module != null) {
                 OSGiMetaData metadata = getModuleMetadata(module);
@@ -248,7 +248,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
                 return installBundleFromURL(bundleManager, bundleURL, startLevel);
             }
         }
-        ROOT_LOGGER.cannotResolveCapability(identifier);
+        LOGGER.warnCannotResolveCapability(identifier);
         return null;
     }
 
@@ -287,7 +287,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
             try {
                 bundle.start();
             } catch (BundleException ex) {
-                ROOT_LOGGER.cannotStart(ex, bundle);
+                LOGGER.errorCannotStartBundle(ex, bundle);
             }
         }
     }
@@ -367,10 +367,10 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
                     }
                 }
             } catch (Exception e) {
-                ROOT_LOGGER.errorAddingModule(e, event.getId());
+                LOGGER.errorAddingModule(e, event.getId());
                 return;
             }
-            ROOT_LOGGER.moduleNotFound(event.getId());
+            LOGGER.errorModuleNotFound(event.getId());
         }
     }
 }
