@@ -128,7 +128,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                     throw unexpectedElement(reader);
             }
         }
-        PersistenceUnitMetadataHolder result = new PersistenceUnitMetadataHolder().setPersistenceUnits(PUs);
+        PersistenceUnitMetadataHolder result = new PersistenceUnitMetadataHolder(PUs);
         if (JPA_LOGGER.isTraceEnabled())
             JPA_LOGGER.trace(result.toString());
 

@@ -316,8 +316,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 }
             }
         }
-        PersistenceUnitMetadataHolder holder = new PersistenceUnitMetadataHolder();
-        holder.setPersistenceUnits(new ArrayList<PersistenceUnitMetadata>(flattened.values()));
+        PersistenceUnitMetadataHolder holder = new PersistenceUnitMetadataHolder(new ArrayList<PersistenceUnitMetadata>(flattened.values()));
         return holder;
     }
 
