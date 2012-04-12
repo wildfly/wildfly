@@ -100,8 +100,8 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
             @Override
             public void run() {
+                final ClassLoader oldTccl = SecurityActions.getContextClassLoader();
                 try {
-                    final ClassLoader oldTccl = SecurityActions.getContextClassLoader();
                     try {
                         try {
                             SecurityActions.setContextClassLoader(classLoader);
@@ -140,13 +140,12 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                             SecurityActions.setContextClassLoader(oldTccl);
                         }
                     } finally {
-                        CurrentServiceContainer.getServiceContainer().shutdown();
+                        if(contextSelector instanceof LazyConnectionContextSelector) {
+                            ((LazyConnectionContextSelector)contextSelector).close();
+                        }
                     }
-
                 } finally {
-                    if(contextSelector instanceof LazyConnectionContextSelector) {
-                        ((LazyConnectionContextSelector)contextSelector).close();
-                    }
+                    CurrentServiceContainer.getServiceContainer().shutdown();
                 }
             }
         });
