@@ -344,13 +344,12 @@ public class JcaExtension implements Extension {
                             }
                             case WORKMANAGER: {
                                 parseWorkManager(reader, address, list, subsystem, false);
+                                // AS7-4434 Multiple work managers are allowed
+                                visited.remove(Element.WORKMANAGER);
                                 break;
                             }
                             case BOOTSTRAP_CONTEXTS: {
-                                ModelNode operation = parseBootstrapContexts(reader, address);
-                                if (operation != null) {
-                                    list.add(operation);
-                                }
+                                parseBootstrapContexts(reader, address, list);
                                 break;
                             }
                            default:
@@ -577,15 +576,14 @@ public class JcaExtension implements Extension {
 
         }
 
-        private ModelNode parseBootstrapContexts(final XMLExtendedStreamReader reader, final ModelNode parentAddress) throws XMLStreamException {
-            ModelNode bootstrapContextOperation = null;
+        private void parseBootstrapContexts(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> list) throws XMLStreamException {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
 
                 final Element element = Element.forName(reader.getLocalName());
 
                 switch (element) {
                     case BOOTSTRAP_CONTEXT: {
-                        bootstrapContextOperation = new ModelNode();
+                        ModelNode bootstrapContextOperation = new ModelNode();
                         bootstrapContextOperation.get(OP).set(ADD);
 
                         final int cnt = reader.getAttributeCount();
@@ -626,6 +624,9 @@ public class JcaExtension implements Extension {
 
                         // Handle elements
                         requireNoContent(reader);
+
+                        list.add(bootstrapContextOperation);
+
                         break;
                     }
                     default: {
@@ -634,7 +635,6 @@ public class JcaExtension implements Extension {
                     }
                 }
             }
-            return bootstrapContextOperation;
         }
 
         public String rawElementText(XMLStreamReader reader) throws XMLStreamException {
