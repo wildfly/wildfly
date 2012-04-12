@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config default-supplement="default">
+   <extension-module>org.jboss.as.simple</extension-module>
+   <subsystem xmlns="urn:jboss:domain:simple-with-text-and-comments:1.0">
+      <some-element value="@@value"/>
+      <another-element value="@@value"/>
+      <yet-another-element value="@@value"/>
+   </subsystem>
+   <supplement name="default">
+      <replacement placeholder="@@value" attributeValue="12345"/>
+   </supplement>
+</config>

@@ -107,7 +107,6 @@ public class ConfigurationAssemblerTestCase {
 
     }
 
-
     private File getFileForResource(String name) throws MalformedURLException, URISyntaxException {
         URL url = this.getClass().getResource(name);
         return new File(url.toURI());
