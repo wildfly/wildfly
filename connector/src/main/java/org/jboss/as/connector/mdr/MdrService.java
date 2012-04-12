@@ -23,8 +23,6 @@
 package org.jboss.as.connector.mdr;
 
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.jca.core.mdr.SimpleMetadataRepository;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -37,19 +35,19 @@ import static org.jboss.as.connector.ConnectorLogger.MDR_LOGGER;
  * A MdrService. it provide access to IronJacamar's metadata repository
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-public final class MdrService implements Service<MetadataRepository> {
+public final class MdrService implements Service<AS7MetadataRepository> {
 
-    private final MetadataRepository value;
+    private final AS7MetadataRepository value;
 
     /**
      * Create instance
      */
     public MdrService() {
-        this.value = new SimpleMetadataRepository();
+        this.value = new AS7MetadataRepositoryImpl();
     }
 
     @Override
-    public MetadataRepository getValue() throws IllegalStateException {
+    public AS7MetadataRepository getValue() throws IllegalStateException {
         return ConnectorServices.notNull(value);
     }
 

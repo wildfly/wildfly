@@ -24,6 +24,7 @@ package org.jboss.as.connector.metadata.deployment;
 
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.jca.deployers.DeployersLogger;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
@@ -49,8 +50,8 @@ public final class InactiveResourceAdapterDeploymentService implements
 
     public InactiveResourceAdapterDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor,
                                                     Module module, final String deployment, final String deploymentUnitName,
-                                                    final ManagementResourceRegistration registration, final ServiceTarget serviceTarget) {
-        this.value = new InactiveResourceAdapterDeployment(connectorXmlDescriptor, module, deployment, deploymentUnitName, registration, serviceTarget);
+                                                    final ManagementResourceRegistration registration, final ServiceTarget serviceTarget, final Resource resource) {
+        this.value = new InactiveResourceAdapterDeployment(connectorXmlDescriptor, module, deployment, deploymentUnitName, registration, serviceTarget, resource);
     }
 
 
@@ -81,16 +82,22 @@ public final class InactiveResourceAdapterDeploymentService implements
         private final String deploymentUnitName;
         private final ManagementResourceRegistration registration;
         private final ServiceTarget serviceTarget;
+private final Resource resource;
 
         public InactiveResourceAdapterDeployment(final ConnectorXmlDescriptor connectorXmlDescriptor, final Module module, final String deployment,
                                                  final String deploymentUnitName, final ManagementResourceRegistration registration,
-                                                 final ServiceTarget serviceTarget) {
+                                                 final ServiceTarget serviceTarget, final Resource resource) {
             this.connectorXmlDescriptor = connectorXmlDescriptor;
             this.module = module;
             this.deployment = deployment;
             this.deploymentUnitName = deploymentUnitName;
             this.registration = registration;
             this.serviceTarget = serviceTarget;
+            this.resource = resource;
+        }
+
+        public Resource getResource() {
+            return resource;
         }
 
         public Module getModule() {

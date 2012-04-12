@@ -34,11 +34,11 @@ public abstract class PoolOperations implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String jndiName;
-        if(address.getElement(0).getKey().equals(ModelDescriptionConstants.DEPLOYMENT)) {
-            //if this is a datasource that was deployed in a -ds.xml file
-            jndiName = address.getLastElement().getValue();
-        } else {
+        if (!address.getElement(0).getKey().equals(ModelDescriptionConstants.DEPLOYMENT) &&
+                context.readModel(PathAddress.EMPTY_ADDRESS).isDefined()) {
             jndiName = Util.getJndiName(context.readModel(PathAddress.EMPTY_ADDRESS));
+        } else {
+            jndiName = address.getLastElement().getValue();
         }
 
         if (context.isNormalServer()) {

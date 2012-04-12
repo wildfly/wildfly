@@ -319,6 +319,6 @@ public class RaOperationUtil {
         final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
         ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
 
-        RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(), inactive.getDeployment(), inactive.getDeployment(), raxml);
+        RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(), inactive.getDeployment(), inactive.getDeployment(), raxml, inactive.getResource());
     }
 }

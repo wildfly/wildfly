@@ -3,6 +3,7 @@ package org.jboss.as.connector.util;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.StatisticsDescriptionProvider;
 import org.jboss.as.connector.SubSystemExtensionDescriptionProvider;
+import org.jboss.as.connector.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterXmlDeploymentService;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.pool.PoolMetrics;
@@ -10,6 +11,7 @@ import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.ClearStatisticsHandler;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.subsystems.resourceadapters.Constants;
+import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResource;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders;
 import org.jboss.as.controller.PathAddress;
@@ -18,6 +20,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.dmr.ModelNode;
@@ -43,7 +46,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class RaServicesFactory {
-    public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, String deployment, ResourceAdapter raxml) {
+    public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, String deployment, ResourceAdapter raxml, final Resource deploymentResource) {
         // Create the service
         ServiceName serviceName = ConnectorServices.registerDeployment(raxml.getArchive());
 
@@ -52,7 +55,7 @@ public class RaServicesFactory {
 
         ServiceBuilder builder = serviceTarget
                 .addService(serviceName, service)
-                .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, service.getMdrInjector())
+                .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, service.getMdrInjector())
                 .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class,
                         service.getRaRepositoryInjector())
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
@@ -111,8 +114,16 @@ public class RaServicesFactory {
                                     if (subRegistration == null) {
                                         subRegistration = overrideRegistration.registerSubModel(pe, new SubSystemExtensionDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics"));
                                     }
+
+                                    final IronJacamarResource subsystemResource = new IronJacamarResource();
+
+                                    deploymentResource.registerChild(pe, subsystemResource);
+
                                     if (subRegistration.getSubModel(PathAddress.pathAddress(peCD)) == null) {
                                         ManagementResourceRegistration cdSubRegistration = subRegistration.registerSubModel(peCD, statsResourceDescriptionProvider);
+                                        final IronJacamarResource cdResource = new IronJacamarResource();
+
+                                        subsystemResource.registerChild(peCD, cdResource);
                                         for (String statName : poolStats.getNames()) {
                                             cdSubRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
                                         }
