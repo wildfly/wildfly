@@ -25,7 +25,7 @@ package org.jboss.as.test.integration.osgi.configadmin;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.osgi.xservice.bundle.ConfiguredService;
-import org.jboss.as.test.osgi.OSGiTestSupport;
+import org.jboss.as.test.osgi.OSGiTestUtil;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -72,7 +72,7 @@ public class ConfigurationAdminTestCase {
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-configadmin");
-        archive.addClasses(OSGiTestSupport.class, ConfiguredService.class);
+        archive.addClasses(OSGiTestUtil.class, ConfiguredService.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
