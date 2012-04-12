@@ -36,22 +36,19 @@ import org.jboss.as.server.deployment.AttachmentKey;
  */
 public class PersistenceUnitMetadataHolder {
 
-    // TODO:  deal with serializing PersistenceUnitMetadataHolder ()
-
     /**
      * List<PersistenceUnitMetadataImpl> that represents the JPA persistent units
      */
     public static final AttachmentKey<PersistenceUnitMetadataHolder> PERSISTENCE_UNITS = AttachmentKey.create(PersistenceUnitMetadataHolder.class);
 
-    private List<PersistenceUnitMetadata> persistenceUnits;
+    private final List<PersistenceUnitMetadata> persistenceUnits;
 
     public List<PersistenceUnitMetadata> getPersistenceUnits() {
         return persistenceUnits;
     }
 
-    public PersistenceUnitMetadataHolder setPersistenceUnits(List<PersistenceUnitMetadata> persistenceUnits) {
+    public PersistenceUnitMetadataHolder(List<PersistenceUnitMetadata> persistenceUnits) {
         this.persistenceUnits = persistenceUnits;
-        return this;
     }
 
     public String toString() {
