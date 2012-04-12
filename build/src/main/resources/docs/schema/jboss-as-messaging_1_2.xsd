@@ -585,11 +585,22 @@
     </xs:complexType>
 
 
+   <!-- using a xs:all does not allow to factorize connection-factoryType and pooled-connection-factoryType
+        in a common base type definition.
+        The elements/attributes common to both are copied/pasted...
+    -->
    <xs:complexType name="connection-factoryType">
       <xs:all>
+         <!-- start of JMS connection-factoryType specific elements          -->
+         <!-- ============================================================== -->
+         <xs:element name="factory-type" type="connectionFactoryType" minOccurs="0" maxOccurs="1"/>
+         <!-- ============================================================== -->
+         <!-- end of JMS connection-factoryType specific elements            -->
+
+         <!-- start of common elements                                       -->
+         <!--  ============================================================= -->
          <xs:element name="discovery-group-ref" type="discovery-group-refType" maxOccurs="1" minOccurs="0" />
          <xs:element name="discovery-initial-wait-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
-
          <xs:element name="connectors" maxOccurs="1" minOccurs="0">
             <xs:complexType>
                <xs:sequence>
@@ -605,7 +616,6 @@
                </xs:sequence>
             </xs:complexType>
          </xs:element>
-         <xs:element name="factory-type" type="connectionFactoryType" minOccurs="0" maxOccurs="1"/>
          <xs:element name="ha" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
          <xs:element name="client-failure-check-period" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="connection-ttl" type="xs:long" maxOccurs="1" minOccurs="0" />
@@ -636,6 +646,8 @@
          <xs:element name="scheduled-thread-pool-max-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="thread-pool-max-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="group-id" type="xs:string" maxOccurs="1" minOccurs="0" />
+         <!-- ============================================================= -->
+         <!-- end of common elements                                        -->
       </xs:all>
       <xs:attribute name="name" type="xs:string" />
    </xs:complexType>
@@ -653,6 +665,8 @@
 
    <xs:complexType name="pooled-connection-factoryType">
       <xs:all>
+         <!-- start of JMS pooled-connection-factoryType specific elements   -->
+         <!-- ============================================================== -->
          <xs:element name="inbound-config" maxOccurs="1" minOccurs="0">
             <xs:complexType>
                <xs:sequence>
@@ -664,12 +678,18 @@
                </xs:sequence>
             </xs:complexType>
          </xs:element>
-
          <xs:element name="transaction" type="transactionType" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="user" type="xs:string" maxOccurs="1" minOccurs="0" />
+         <xs:element name="password" type="xs:string" maxOccurs="1" minOccurs="0" />
+         <xs:element name="min-pool-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="max-pool-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <!-- ============================================================== -->
+         <!-- end of JMS pooled-connection-factoryType specific elements     -->
 
+         <!-- start of common elements                                       -->
+         <!--  ============================================================= -->
          <xs:element name="discovery-group-ref" type="discovery-group-refType" maxOccurs="1" minOccurs="0" />
          <xs:element name="discovery-initial-wait-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
-
          <xs:element name="connectors" maxOccurs="1" minOccurs="0">
             <xs:complexType>
                <xs:sequence>
@@ -715,10 +735,8 @@
          <xs:element name="scheduled-thread-pool-max-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="thread-pool-max-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="group-id" type="xs:string" maxOccurs="1" minOccurs="0" />
-         <xs:element name="user" type="xs:string" maxOccurs="1" minOccurs="0" />
-         <xs:element name="password" type="xs:string" maxOccurs="1" minOccurs="0" />
-         <xs:element name="min-pool-size" type="xs:int" maxOccurs="1" minOccurs="0" />
-         <xs:element name="max-pool-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <!-- ============================================================= -->
+         <!-- end of common elements                                        -->
       </xs:all>
       <xs:attribute name="name" type="xs:string" />
    </xs:complexType>
