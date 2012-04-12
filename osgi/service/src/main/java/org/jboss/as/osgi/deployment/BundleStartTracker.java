@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.service.FrameworkBootstrapService.FRAMEWORK_BASE_NAME;
 import static org.osgi.service.packageadmin.PackageAdmin.BUNDLE_TYPE_FRAGMENT;
 
@@ -78,14 +78,14 @@ public class BundleStartTracker implements Service<BundleStartTracker> {
     @Override
     public void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
-        ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         serviceContainer = context.getController().getServiceContainer();
     }
 
     @Override
     public void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
-        ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
     }
 
     @Override
@@ -144,7 +144,7 @@ public class BundleStartTracker implements Service<BundleStartTracker> {
                                     bundle.start(Bundle.START_TRANSIENT | Bundle.START_ACTIVATION_POLICY);
                                 }
                             } catch (BundleException ex) {
-                                ROOT_LOGGER.cannotStart(ex, bundle);
+                                LOGGER.errorCannotStartBundle(ex, bundle);
                             }
                         }
                     }

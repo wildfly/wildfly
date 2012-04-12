@@ -33,7 +33,7 @@ import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.vfs.VirtualFile;
 
 /**
- * Logging Id ranges: 11960-11999
+ * Logging Id ranges: 11950-11999
  *
  * https://community.jboss.org/wiki/LoggingIds
  *
@@ -45,39 +45,39 @@ public interface OSGiMessages {
 
     OSGiMessages MESSAGES = Messages.getBundle(OSGiMessages.class);
 
-    @Message(id = 11960, value = "Cannot create bundle deployment from: %s")
+    @Message(id = 11950, value = "Cannot create bundle deployment from: %s")
     String cannotCreateBundleDeployment(DeploymentUnit deploymentUnit);
 
-    @Message(id = 11961, value = "Cannot deploy bundle: %s")
+    @Message(id = 11951, value = "Cannot deploy bundle: %s")
     String cannotDeployBundle(Deployment deployment);
 
-    @Message(id = 11962, value = "Cannot find bundles directory: %s")
+    @Message(id = 11952, value = "Cannot find bundles directory: %s")
     IllegalArgumentException cannotFindBundleDir(File dir);
 
-    @Message(id = 11963, value = "Cannot parse: %s")
+    @Message(id = 11953, value = "Cannot parse: %s")
     String cannotParse(VirtualFile file);
 
-    @Message(id = 11964, value = "Failed to create auto install list")
+    @Message(id = 11954, value = "Failed to create auto install list")
     String failedToCreateAutoInstallList();
 
-    @Message(id = 11965, value = "Failed to create Framework services")
+    @Message(id = 11955, value = "Failed to create Framework services")
     String failedToCreateFrameworkServices();
 
-    @Message(id = 11966, value = "Failed to install deployment: %s")
+    @Message(id = 11956, value = "Failed to install deployment: %s")
     String failedToInstallDeployment(Deployment deployment);
 
-    @Message(id = 11967, value = "Failed to register module: %s")
+    @Message(id = 11957, value = "Failed to register module: %s")
     String failedToRegisterModule(Module module);
 
-    @Message(id = 11968, value = "%s is null")
+    @Message(id = 11958, value = "%s is null")
     IllegalArgumentException nullVar(String varName);
 
-    @Message(id = 11969, value = "OSGi subsystem not active")
+    @Message(id = 11959, value = "OSGi subsystem not active")
     String osgiSubsystemNotActive();
 
-    @Message(id = 11970, value = "Property %s already exists")
+    @Message(id = 11960, value = "Property %s already exists")
     String propertyAlreadyExists(String name);
 
-    @Message(id = 11971, value = "Service not available")
+    @Message(id = 11961, value = "Service not available")
     String serviceNotAvailable();
 }
