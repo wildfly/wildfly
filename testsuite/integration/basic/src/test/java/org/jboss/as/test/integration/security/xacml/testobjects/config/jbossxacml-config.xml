@@ -1,0 +1,13 @@
+<ns:jbosspdp xmlns:ns="urn:jboss:xacml:2.0">
+	<ns:Policies>
+		<ns:Policy>
+			<ns:Location>xacml-policy.xml</ns:Location>
+		</ns:Policy>
+	</ns:Policies>
+	<ns:Locators>
+<!-- 
+		<ns:Locator Name="org.jboss.security.xacml.locators.JBossPolicySetLocator" />
+ -->		
+		<ns:Locator Name="org.jboss.security.xacml.locators.JBossPolicyLocator" />
+	</ns:Locators>
+</ns:jbosspdp>
