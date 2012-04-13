@@ -62,7 +62,11 @@ public class JvmResourceDefinition extends SimpleResourceDefinition {
         super.registerOperations(resourceRegistration);
         resourceRegistration.registerOperationHandler(JVMOptionAddHandler.OPERATION_NAME, JVMOptionAddHandler.INSTANCE, JVMOptionAddHandler.INSTANCE, false);
         resourceRegistration.registerOperationHandler(JVMOptionRemoveHandler.OPERATION_NAME, JVMOptionRemoveHandler.INSTANCE, JVMOptionRemoveHandler.INSTANCE, false);
-        resourceRegistration.registerOperationHandler(JVMEnvironmentVariableAddHandler.OPERATION_NAME, JVMEnvironmentVariableAddHandler.INSTANCE, JVMEnvironmentVariableAddHandler.INSTANCE, false);
-        resourceRegistration.registerOperationHandler(JVMEnvironmentVariableRemoveHandler.OPERATION_NAME, JVMEnvironmentVariableRemoveHandler.INSTANCE, JVMEnvironmentVariableRemoveHandler.INSTANCE, false);
+
+        //AS7-4437 is scheduled for 7.2.0 so uncomment these once we have decided on the format of the operation names
+        //There are some tests in AbstractJvmModelTest for these which need uncommenting as well
+
+        //resourceRegistration.registerOperationHandler(JVMEnvironmentVariableAddHandler.OPERATION_NAME, JVMEnvironmentVariableAddHandler.INSTANCE, JVMEnvironmentVariableAddHandler.INSTANCE, false);
+        //resourceRegistration.registerOperationHandler(JVMEnvironmentVariableRemoveHandler.OPERATION_NAME, JVMEnvironmentVariableRemoveHandler.INSTANCE, JVMEnvironmentVariableRemoveHandler.INSTANCE, false);
     }
 }
