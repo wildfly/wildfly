@@ -39,7 +39,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="default-controller" minOccurs="0"/>
-                <xs:element ref="validate-operation-requests" minOccurs="0">
+                <xs:element ref="validate-operation-requests" minOccurs="0"/>
                 <xs:element ref="history" minOccurs="0"/>
                 <xs:element ref="ssl" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
