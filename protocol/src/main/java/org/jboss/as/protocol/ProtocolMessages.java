@@ -384,4 +384,7 @@ public interface ProtocolMessages {
     @Message(id = 12175, value = "Channel closed")
     IOException channelClosed();
 
+    @Message(id = 12176, value = "no handler registered for request type '%s'.")
+    IOException noSuchResponseHandler(String type);
+
 }

@@ -58,4 +58,9 @@ public abstract class AbstractManagementRequest<T, A> implements ManagementReque
         }
     }
 
+    @Override
+    public void handleFailed(final ManagementResponseHeader header, final ActiveOperation.ResultHandler<T> resultHandler) {
+        resultHandler.failed(new IOException(header.getError()));
+    }
+
 }
