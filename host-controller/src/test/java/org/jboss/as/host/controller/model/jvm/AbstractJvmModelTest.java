@@ -230,10 +230,9 @@ public abstract class AbstractJvmModelTest extends ManagementTestSetup {
     public void testAddSameJvmOption() throws Exception {
         testEmptyAddSubsystem();
         executeForResult(createAddJvmOptionOperation("-Xoption"));
-        ModelNode resource = readModel(true);
-        Assert.assertEquals(new ModelNode().add("-Xoption"), resource.get(JVM, "test", "jvm-options"));
+        Assert.assertEquals(new ModelNode().add("-Xoption"), readModel(true).get(JVM, "test", "jvm-options"));
         executeForFailure(createAddJvmOptionOperation("-Xoption"));
-        Assert.assertEquals(new ModelNode().add("-Xoption"), resource.get(JVM, "test", "jvm-options"));
+        Assert.assertEquals(new ModelNode().add("-Xoption"), readModel(true).get(JVM, "test", "jvm-options"));
     }
 
     @Test
@@ -255,12 +254,51 @@ public abstract class AbstractJvmModelTest extends ManagementTestSetup {
         Assert.assertEquals(new ModelNode().setEmptyList(), readModel(true).get(JVM, "test", "jvm-options"));
     }
 
+    @Test
+    public void testAddSameEnvironmentVariable() throws Exception {
+        testEmptyAddSubsystem();
+        executeForResult(createAddEnvVarOperation("ONE", "uno"));
+        Assert.assertEquals(new ModelNode().add("ONE", "uno"), readModel(true).get(JVM, "test", "environment-variables"));
+        executeForFailure(createAddEnvVarOperation("ONE", "uno"));
+        Assert.assertEquals(new ModelNode().add("ONE", "uno"), readModel(true).get(JVM, "test", "environment-variables"));
+    }
+
+    @Test
+    public void testRemoveEnvironmentVariable() throws Exception {
+        testEmptyAddSubsystem();
+        executeForResult(createAddEnvVarOperation("ONE", "uno"));
+        executeForResult(createAddEnvVarOperation("TWO", "dos"));
+        executeForResult(createAddEnvVarOperation("THREE", "tres"));
+        Assert.assertEquals(new ModelNode().add("ONE", "uno").add("TWO", "dos").add("THREE", "tres"), readModel(true).get(JVM, "test", "environment-variables"));
+        executeForResult(createRemoveEnvVarOperation("TWO"));
+        Assert.assertEquals(new ModelNode().add("ONE", "uno").add("THREE", "tres"), readModel(true).get(JVM, "test", "environment-variables"));
+        executeForResult(createRemoveEnvVarOperation("ONE"));
+        Assert.assertEquals(new ModelNode().add("THREE", "tres"), readModel(true).get(JVM, "test", "environment-variables"));
+        executeForResult(createRemoveEnvVarOperation("THREE"));
+        Assert.assertEquals(new ModelNode().setEmptyList(), readModel(true).get(JVM, "test", "environment-variables"));
+    }
+
+
     protected ModelNode createWriteAttributeOperation(String name, ModelNode value) {
         ModelNode op = createOperation(WRITE_ATTRIBUTE_OPERATION);
         op.get(NAME).set(name);
         op.get(VALUE).set(value);
         return op;
     }
+
+    protected ModelNode createAddEnvVarOperation(String key, String value) {
+        ModelNode op = createOperation(JVMEnvironmentVariableAddHandler.OPERATION_NAME);
+        op.get(NAME).set(key);
+        op.get(VALUE).set(value);
+        return op;
+    }
+
+    protected ModelNode createRemoveEnvVarOperation(String key) {
+        ModelNode op = createOperation(JVMEnvironmentVariableRemoveHandler.OPERATION_NAME);
+        op.get("name").set(key);
+        return op;
+    }
+
 
     protected ModelNode createAddJvmOptionOperation(String option) {
         ModelNode op = createOperation("add-jvm-option");

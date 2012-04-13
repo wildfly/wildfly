@@ -632,4 +632,7 @@ public interface HostControllerMessages {
 
     @Message(id = 15863, value = "Option '%s' already exists")
     IllegalStateException jvmOptionAlreadyExists(String option);
+
+    @Message(id = 15864, value = "Environment variable '%s' already exists")
+    IllegalStateException envVariableAlreadyExists(String var);
 }

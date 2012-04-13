@@ -60,7 +60,6 @@ public class JvmAttributes {
     public static final String JVM_JAVA_HOME = "java-home";
     public static final String JVM_OPTIONS = "jvm-options";
     public static final String JVM_OPTION = "jvm-option";
-    public static final String ADD_JVM_OPTION = "add-jvm-option";
     public static final String JVM_PERMGEN = "permgen-size";
     public static final String JVM_MAX_PERMGEN = "max-permgen-size";
     public static final String JVM_STACK = "stack-size";
@@ -68,6 +67,7 @@ public class JvmAttributes {
     public static final String SIZE = "size";
     public static final String VALUE = "value";
     public static final String MAX_SIZE = "max-size";
+
 
     public static final SimpleAttributeDefinition AGENT_LIB =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_AGENT_LIB, ModelType.STRING, true)
