@@ -99,14 +99,18 @@ public class JDBCDriverInfoHandler extends BaseOperationCommand {
             for (ModelNode node : list) {
                 final ModelNode driverName = node.get(Util.DRIVER_NAME);
                 if (!driverName.isDefined()) {
-                    throw new CommandLineException(Util.DRIVER_NAME
-                            + " is not available: " + node);
+                    throw new CommandLineException(Util.DRIVER_NAME + " is not available: " + node);
                 }
                 final String source;
                 if (node.hasDefined(Util.DEPLOYMENT_NAME)) {
                     source = node.get(Util.DEPLOYMENT_NAME).asString();
                 } else if (node.hasDefined(Util.DRIVER_MODULE_NAME)) {
-                    source = node.get(Util.DRIVER_MODULE_NAME).asString();
+                    final StringBuilder buf = new StringBuilder();
+                    buf.append(node.get(Util.DRIVER_MODULE_NAME).asString());
+                    if(node.hasDefined(Util.MODULE_SLOT)) {
+                        buf.append('/').append(node.get(Util.MODULE_SLOT).asString());
+                    }
+                    source = buf.toString();
                 } else {
                     source = "n/a";
                 }
@@ -119,8 +123,7 @@ public class JDBCDriverInfoHandler extends BaseOperationCommand {
             for (ModelNode node : list) {
                 final ModelNode driverName = node.get(Util.DRIVER_NAME);
                 if (!driverName.isDefined()) {
-                    throw new CommandLineException(Util.DRIVER_NAME
-                            + " is not available: " + node);
+                    throw new CommandLineException(Util.DRIVER_NAME + " is not available: " + node);
                 }
                 if(name.equals(driverName.asString())) {
                     for(String propName : node.keys()) {
