@@ -40,14 +40,8 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.as.clustering.infinispan.invoker.BatchOperation;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.msc.AsynchronousService;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
 /**
  * @author Paul Ferraro
@@ -57,23 +51,13 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
 
     static final Address LOCAL_ADDRESS = new Address() {};
 
-    @SuppressWarnings("rawtypes")
-    private final InjectedValue<Cache> cacheRef = new InjectedValue<Cache>();
-    private final RegistryEntryProvider<K, V> provider;
+    private final Value<Cache<Address, Map.Entry<K, V>>> cache;
+    private final Value<RegistryEntryProvider<K, V>> provider;
     private final Set<Listener<K, V>> listeners = new CopyOnWriteArraySet<Listener<K, V>>();
-    private volatile Cache<Address, Map.Entry<K, V>> cache;
 
-    public RegistryService(RegistryEntryProvider<K, V> provider) {
+    public RegistryService(Value<Cache<Address, Map.Entry<K, V>>> cache, Value<RegistryEntryProvider<K, V>> provider) {
+        this.cache = cache;
         this.provider = provider;
-    }
-
-    public ServiceBuilder<Registry<K, V>> build(ServiceTarget target, ServiceName serviceName, ServiceName cacheServiceName) {
-        return target.addService(serviceName, this).addDependency(cacheServiceName, Cache.class, this.cacheRef);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public Injector<Cache> getCacheInjector() {
-        return this.cacheRef;
     }
 
     /**
@@ -87,7 +71,7 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
 
     @Override
     public String getName() {
-        return this.cache.getCacheManager().getClusterName();
+        return this.cache.getValue().getCacheManager().getClusterName();
     }
 
     @Override
@@ -107,7 +91,7 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
     @Override
     public Map<K, V> getEntries() {
         Map<K, V> map = new HashMap<K, V>();
-        for (Map.Entry<K, V> entry: this.cache.values()) {
+        for (Map.Entry<K, V> entry: this.cache.getValue().values()) {
             map.put(entry.getKey(), entry.getValue());
         }
         return Collections.unmodifiableMap(map);
@@ -115,21 +99,21 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
 
     @Override
     public Map.Entry<K, V> getLocalEntry() {
-        return this.cache.get(getLocalAddress(this.cache));
+        Cache<Address, Map.Entry<K, V>> cache = this.cache.getValue();
+        return cache.get(getLocalAddress(cache));
     }
 
     @Override
     public Map.Entry<K, V> getRemoteEntry(Object address) {
-        return this.cache.get(address);
+        return this.cache.getValue().get(address);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void start() {
-        this.cache = this.cacheRef.getValue();
         this.refreshLocalEntry();
-        this.cache.getCacheManager().addListener(this);
-        this.cache.addListener(this);
+        Cache<Address, Map.Entry<K, V>> cache = this.cache.getValue();
+        cache.getCacheManager().addListener(this);
+        cache.addListener(this);
     }
 
     @Override
@@ -145,27 +129,27 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
     }
 
     void addCacheEntry(Cache<Address, Map.Entry<K, V>> cache) {
-        K key = this.provider.getKey();
+        RegistryEntryProvider<K, V> provider = this.provider.getValue();
+        K key = provider.getKey();
         if (key != null) {
-            cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(getLocalAddress(cache), new AbstractMap.SimpleImmutableEntry<K, V>(this.provider.getKey(), this.provider.getValue()));
+            cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(getLocalAddress(cache), new AbstractMap.SimpleImmutableEntry<K, V>(provider.getKey(), provider.getValue()));
         }
     }
 
     @Override
     protected void stop() {
-        if (this.cache != null) {
-            this.cache.removeListener(this);
-            this.cache.getCacheManager().removeListener(this);
-            Operation<Void> operation = new Operation<Void>() {
-                @Override
-                public Void invoke(Cache<Address, Map.Entry<K, V>> cache) {
-                    // Add SKIP_LOCKING flag to so that we aren't blocked by state transfer lock
-                    cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.SKIP_LOCKING).removeAsync(getLocalAddress(cache));
-                    return null;
-                }
-            };
-            this.invoke(operation);
-        }
+        Cache<Address, Map.Entry<K, V>> cache = this.cache.getValue();
+        cache.removeListener(this);
+        cache.getCacheManager().removeListener(this);
+        Operation<Void> operation = new Operation<Void>() {
+            @Override
+            public Void invoke(Cache<Address, Map.Entry<K, V>> cache) {
+                // Add SKIP_LOCKING flag to so that we aren't blocked by state transfer lock
+                cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.SKIP_LOCKING).removeAsync(getLocalAddress(cache));
+                return null;
+            }
+        };
+        this.invoke(operation);
     }
 
     static Address getLocalAddress(Cache<?, ?> cache) {
@@ -251,9 +235,24 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
     }
 
     <R> R invoke(Operation<R> operation) {
-        return new BatchOperation<Address, Map.Entry<K, V>, R>(operation).invoke(this.cache);
+        Cache<Address, Map.Entry<K, V>> cache = this.cache.getValue();
+        boolean started = cache.startBatch();
+        boolean success = false;
+
+        try {
+            R result = operation.invoke(cache);
+
+            success = true;
+
+            return result;
+        } finally {
+            if (started) {
+                cache.endBatch(success);
+            }
+        }
     }
 
-    abstract class Operation<R> implements CacheInvoker.Operation<Address, Map.Entry<K, V>, R> {
+    abstract class Operation<R> {
+        abstract R invoke(Cache<Address, Map.Entry<K, V>> cache);
     }
 }

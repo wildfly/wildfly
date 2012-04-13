@@ -34,7 +34,6 @@
     <dependencies>
         <module name="org.jboss.as.clustering.api"/>
         <module name="org.jboss.as.clustering.common"/>
-        <module name="org.jboss.as.clustering.jgroups"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling"/>

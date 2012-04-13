@@ -79,7 +79,7 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler {
         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler() ;
 
         // re-install the cache container services
-        CacheContainerAdd.INSTANCE.installRuntimeServices(context, operation, model, verificationHandler, null);
+        CacheContainerAdd.INSTANCE.installRuntimeServices(context, operation, model, verificationHandler);
 
         // re-install any existing cache services
         reinstallExistingCacheServices(context, model, containerName, verificationHandler);
@@ -99,41 +99,44 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler {
         // re-install the services of any local caches
         List<Property> localCacheList = getCachesFromParentModel(ModelKeys.LOCAL_CACHE, containerModel);
         // don't know why extended for loop doesn't detect null list ...
-        if (localCacheList != null)
+        if (localCacheList != null) {
             for (Property localCache : localCacheList) {
                 String localCacheName = localCache.getName();
                 ModelNode localCacheModel = localCache.getValue();
                 ModelNode localCacheAddOp = createCacheAddOperation(ModelKeys.LOCAL_CACHE, containerName, localCacheName);
-                LocalCacheAdd.INSTANCE.installRuntimeServices(context, localCacheAddOp, containerModel, localCacheModel, verificationHandler, null);
+                LocalCacheAdd.INSTANCE.installRuntimeServices(context, localCacheAddOp, containerModel, localCacheModel, verificationHandler);
             }
-
+        }
         // re-install the services of any invalidation caches
         List<Property> invalidationCacheList = getCachesFromParentModel(ModelKeys.INVALIDATION_CACHE, containerModel);
-        if (invalidationCacheList != null)
+        if (invalidationCacheList != null) {
             for (Property invCache : invalidationCacheList) {
                 String invCacheName = invCache.getName();
                 ModelNode invCacheModel = invCache.getValue();
                 ModelNode invCacheAddOp = createCacheAddOperation(ModelKeys.INVALIDATION_CACHE, containerName, invCacheName);
-                InvalidationCacheAdd.INSTANCE.installRuntimeServices(context, invCacheAddOp, containerModel, invCacheModel, verificationHandler, null);
+                InvalidationCacheAdd.INSTANCE.installRuntimeServices(context, invCacheAddOp, containerModel, invCacheModel, verificationHandler);
             }
+        }
         // re-install the services of any replicated caches
         List<Property> replCacheList = getCachesFromParentModel(ModelKeys.REPLICATED_CACHE, containerModel);
-        if (replCacheList != null)
+        if (replCacheList != null) {
             for (Property replCache : replCacheList) {
                 String replCacheName = replCache.getName();
                 ModelNode replCacheModel = replCache.getValue();
                 ModelNode replCacheAddOp = createCacheAddOperation(ModelKeys.REPLICATED_CACHE, containerName, replCacheName);
-                ReplicatedCacheAdd.INSTANCE.installRuntimeServices(context, replCacheAddOp, containerModel, replCacheModel, verificationHandler, null);
+                ReplicatedCacheAdd.INSTANCE.installRuntimeServices(context, replCacheAddOp, containerModel, replCacheModel, verificationHandler);
             }
+        }
         // re-install the services of any distributed caches
         List<Property> distCacheList = getCachesFromParentModel(ModelKeys.DISTRIBUTED_CACHE, containerModel);
-        if (distCacheList != null)
+        if (distCacheList != null) {
             for (Property distCache : distCacheList) {
                 String distCacheName = distCache.getName();
                 ModelNode distCacheModel = distCache.getValue();
                 ModelNode distCacheAddOp = createCacheAddOperation(ModelKeys.DISTRIBUTED_CACHE, containerName, distCacheName);
-                DistributedCacheAdd.INSTANCE.installRuntimeServices(context, distCacheAddOp, containerModel, distCacheModel, verificationHandler, null);
+                DistributedCacheAdd.INSTANCE.installRuntimeServices(context, distCacheAddOp, containerModel, distCacheModel, verificationHandler);
             }
+        }
     }
 
     /**
@@ -149,41 +152,44 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler {
         // remove the services of any local caches
         List<Property> localCacheList = getCachesFromParentModel(ModelKeys.LOCAL_CACHE, containerModel);
         // don't know why extended for loop doesn't detect null list ...
-        if (localCacheList != null)
+        if (localCacheList != null) {
             for (Property localCache : localCacheList) {
                 String localCacheName = localCache.getName();
                 ModelNode localCacheModel = localCache.getValue();
                 ModelNode localCacheRemoveOp = createCacheRemoveOperation(ModelKeys.LOCAL_CACHE, containerName, localCacheName);
                 LocalCacheAdd.INSTANCE.removeRuntimeServices(context, localCacheRemoveOp, localCacheModel);
             }
-
+        }
         // remove the services of any invalidation caches
         List<Property> invalidationCacheList = getCachesFromParentModel(ModelKeys.INVALIDATION_CACHE, containerModel);
-        if (invalidationCacheList != null)
+        if (invalidationCacheList != null) {
             for (Property invCache : invalidationCacheList) {
                 String invCacheName = invCache.getName();
                 ModelNode invCacheModel = invCache.getValue();
                 ModelNode invCacheRemoveOp = createCacheRemoveOperation(ModelKeys.INVALIDATION_CACHE, containerName, invCacheName);
                 InvalidationCacheAdd.INSTANCE.removeRuntimeServices(context, invCacheRemoveOp, invCacheModel);
             }
+        }
         // remove the services of any replicated caches
         List<Property> replCacheList = getCachesFromParentModel(ModelKeys.REPLICATED_CACHE, containerModel);
-        if (replCacheList != null)
+        if (replCacheList != null) {
             for (Property replCache : replCacheList) {
                 String replCacheName = replCache.getName();
                 ModelNode replCacheModel = replCache.getValue();
                 ModelNode replCacheRemoveOp = createCacheRemoveOperation(ModelKeys.REPLICATED_CACHE, containerName, replCacheName);
                 ReplicatedCacheAdd.INSTANCE.removeRuntimeServices(context, replCacheRemoveOp, replCacheModel);
             }
+        }
         // remove the services of any distributed caches
         List<Property> distCacheList = getCachesFromParentModel(ModelKeys.DISTRIBUTED_CACHE, containerModel);
-        if (distCacheList != null)
+        if (distCacheList != null) {
             for (Property distCache : distCacheList) {
                 String distCacheName = distCache.getName();
                 ModelNode distCacheModel = distCache.getValue();
                 ModelNode distCacheRemoveOp = createCacheRemoveOperation(ModelKeys.DISTRIBUTED_CACHE, containerName, distCacheName);
                 DistributedCacheAdd.INSTANCE.removeRuntimeServices(context, distCacheRemoveOp, distCacheModel);
             }
+        }
     }
 
     private List<Property> getCachesFromParentModel(String cacheType, ModelNode model) {

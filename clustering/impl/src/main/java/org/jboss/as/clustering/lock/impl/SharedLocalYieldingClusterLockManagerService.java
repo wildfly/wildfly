@@ -26,10 +26,8 @@ import org.jboss.as.clustering.impl.ClusteringImplLogger;
 import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.msc.AsynchronousService;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
 /**
  * @author Paul Ferraro
@@ -41,17 +39,12 @@ public class SharedLocalYieldingClusterLockManagerService extends AsynchronousSe
     }
 
     private final String name;
-    private final InjectedValue<CoreGroupCommunicationService> service = new InjectedValue<CoreGroupCommunicationService>();
+    private final Value<CoreGroupCommunicationService> service;
     private volatile SharedLocalYieldingClusterLockManager lockManager;
 
-    public SharedLocalYieldingClusterLockManagerService(String name) {
+    public SharedLocalYieldingClusterLockManagerService(String name, Value<CoreGroupCommunicationService> service) {
         this.name = name;
-    }
-
-    public ServiceBuilder<SharedLocalYieldingClusterLockManager> build(ServiceTarget target) {
-        return target.addService(getServiceName(this.name), this)
-            .addDependency(CoreGroupCommunicationService.getServiceName(this.name), CoreGroupCommunicationService.class, this.service)
-        ;
+        this.service = service;
     }
 
     /**

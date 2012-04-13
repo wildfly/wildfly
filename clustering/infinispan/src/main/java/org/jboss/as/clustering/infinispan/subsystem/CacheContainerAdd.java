@@ -25,6 +25,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -32,10 +34,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.management.MBeanServer;
 
 import org.infinispan.manager.CacheContainer;
-import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
+import org.jboss.as.clustering.lock.impl.SharedLocalYieldingClusterLockManagerService;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -44,7 +47,6 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jmx.MBeanServerService;
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -70,6 +72,7 @@ import org.jgroups.Channel;
  */
 public class CacheContainerAdd extends AbstractAddStepHandler {
 
+    private static final short GROUP_COMMUNICATION_SERVICE_SCOPE = 222;
     private static final Logger log = Logger.getLogger(CacheContainerAdd.class.getPackage().getName());
 
     public static final CacheContainerAdd INSTANCE = new CacheContainerAdd();
@@ -101,14 +104,15 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         populate(operation, model);
     }
+
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         // Because we use child resources in a read-only manner to configure the cache container, replace the local model with the full model
         model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
-        installRuntimeServices(context, operation, model, verificationHandler, newControllers) ;
+        newControllers.addAll(installRuntimeServices(context, operation, model, verificationHandler));
     }
 
-    protected void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode containerModel, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode operation, ModelNode containerModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
 
         final PathAddress address = getCacheContainerAddressFromOperation(operation);
         final String name = address.getLastElement().getValue();
@@ -144,6 +148,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         String transportExecutor = null ;
         Transport transportConfig = null ;
 
+        Collection<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>(6);
+
         if (hasTransport) {
             ModelNode transport = containerModel.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
 
@@ -158,38 +164,28 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             transportConfig.setLockTimeout(lockTimeout);
 
             // install a name service entry for the cache container
-            ServiceController<Channel> csController =
-                    installChannelService(target, name, cluster, stack, verificationHandler);
-            if (newControllers != null) {
-                newControllers.add(csController);
-            }
+            controllers.add(this.installChannelService(target, name, cluster, stack, verificationHandler));
+
+            controllers.add(this.installGroupCommunicationService(target, name, verificationHandler));
+
+            controllers.add(this.installLockManager(target, name, verificationHandler));
         }
 
         // install the cache container configuration service
-        ServiceController<EmbeddedCacheManagerConfiguration> ccsController =
-                installContainerConfigurationService(target, name, defaultCache, moduleId, transportConfig,
-                        transportExecutor, listenerExecutor, evictionExecutor, replicationQueueExecutor, verificationHandler);
-        if (newControllers != null) {
-            newControllers.add(ccsController);
-        }
+        controllers.add(this.installContainerConfigurationService(target, name, defaultCache, moduleId, transportConfig,
+                        transportExecutor, listenerExecutor, evictionExecutor, replicationQueueExecutor, verificationHandler));
 
         // install a cache container service
-        ServiceController<EmbeddedCacheManager> ccController =
-                installContainerService(target, name, aliases, initialMode, verificationHandler);
-        if (newControllers != null) {
-            newControllers.add(ccController);
-        }
+        controllers.add(this.installContainerService(target, name, aliases, initialMode, verificationHandler));
 
         // install a name service entry for the cache container
-        ServiceController<ManagedReferenceFactory> jsController =
-                installJndiService(target, name, jndiNameString, verificationHandler);
-        if (newControllers != null) {
-            newControllers.add(jsController);
-        }
+        controllers.add(this.installJndiService(target, name, jndiNameString, verificationHandler));
+
         log.debugf("%s cache container installed", name);
+        return controllers;
      }
 
-    protected void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+     void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         final PathAddress address = getCacheContainerAddressFromOperation(operation);
         final String containerName = address.getLastElement().getValue();
@@ -210,30 +206,53 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         ServiceName channelServiceName = ChannelService.getServiceName(containerName) ;
         ServiceController<?> channelServiceController = context.getServiceRegistry(false).getService(channelServiceName);
         if (channelServiceController != null) {
+            context.removeService(SharedLocalYieldingClusterLockManagerService.getServiceName(containerName));
+            context.removeService(CoreGroupCommunicationService.getServiceName(containerName));
             context.removeService(channelServiceName);
         }
     }
 
-    protected ServiceController<Channel> installChannelService(ServiceTarget target,
-            String containerName, String cluster, String stack,
-            ServiceVerificationHandler verificationHandler) {
+    ServiceController<?> installChannelService(ServiceTarget target, String containerName, String cluster, String stack, ServiceVerificationHandler verificationHandler) {
 
         ServiceName channelServiceName = ChannelService.getServiceName(containerName);
 
         InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
-        ServiceBuilder<Channel> channelBuilder = target.addService(channelServiceName, new ChannelService(cluster, channelFactory))
+        return target.addService(channelServiceName, new ChannelService(cluster, channelFactory))
                 .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install()
         ;
-
-        return channelBuilder.install();
     }
 
-    protected PathAddress getCacheContainerAddressFromOperation(ModelNode operation) {
+    ServiceController<?> installGroupCommunicationService(ServiceTarget target, String containerName, ServiceVerificationHandler verificationHandler) {
+        final InjectedValue<Channel> channel = new InjectedValue<Channel>();
+        final InjectedValue<ModuleLoader> loader = new InjectedValue<ModuleLoader>();
+
+        return target.addService(CoreGroupCommunicationService.getServiceName(containerName), new CoreGroupCommunicationService(GROUP_COMMUNICATION_SERVICE_SCOPE, channel, loader))
+                // AS7-3906 Ensure that the cache manager's rpc dispatcher starts before GroupCommunicationService's (since channel doesn't start until 1st cache starts)
+                .addDependency(CacheService.getServiceName(containerName, null))
+                .addDependency(ChannelService.getServiceName(containerName), Channel.class, channel)
+                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, loader)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install()
+        ;
+    }
+
+    ServiceController<?> installLockManager(ServiceTarget target, String containerName, ServiceVerificationHandler verificationHandler) {
+        final InjectedValue<CoreGroupCommunicationService> service = new InjectedValue<CoreGroupCommunicationService>();
+
+        return target.addService(SharedLocalYieldingClusterLockManagerService.getServiceName(containerName), new SharedLocalYieldingClusterLockManagerService(containerName, service))
+                .addDependency(CoreGroupCommunicationService.getServiceName(containerName), CoreGroupCommunicationService.class, service)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install()
+        ;
+    }
+
+    PathAddress getCacheContainerAddressFromOperation(ModelNode operation) {
         return PathAddress.pathAddress(operation.get(OP_ADDR)) ;
     }
 
-    protected ServiceController<EmbeddedCacheManagerConfiguration> installContainerConfigurationService(ServiceTarget target,
+    ServiceController<?> installContainerConfigurationService(ServiceTarget target,
             String containerName, String defaultCache, ModuleIdentifier moduleId, Transport transportConfig,
             String transportExecutor, String listenerExecutor, String evictionExecutor, String replicationQueueExecutor,
             ServiceVerificationHandler verificationHandler) {
@@ -250,9 +269,9 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         // add these dependencies only if we have a transport defined
         if (transportConfig != null) {
-            if (transportExecutor != null)
+            if (transportExecutor != null) {
                 addExecutorDependency(configBuilder, transportExecutor, transportConfig.getExecutorInjector());
-
+            }
             // AS7-1751 decouple channel service name (name) and name used to create channel id (cluster)
             ServiceName channelServiceName = ChannelService.getServiceName(containerName);
             configBuilder.addDependency(channelServiceName, Channel.class, transportConfig.getChannelInjector());
@@ -265,26 +284,21 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         return configBuilder.install();
     }
 
-    protected ServiceController<EmbeddedCacheManager> installContainerService(ServiceTarget target,
-                                                                            String containerName, ServiceName[] aliases,
-                                                                            ServiceController.Mode initialMode,
-                                                                            ServiceVerificationHandler verificationHandler) {
+    ServiceController<?> installContainerService(ServiceTarget target, String containerName, ServiceName[] aliases, ServiceController.Mode initialMode, ServiceVerificationHandler verificationHandler) {
 
         ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
         ServiceName configServiceName = EmbeddedCacheManagerConfigurationService.getServiceName(containerName);
 
         InjectedValue<EmbeddedCacheManagerConfiguration> config = new InjectedValue<EmbeddedCacheManagerConfiguration>();
-        ServiceBuilder<EmbeddedCacheManager> containerBuilder = target.addService(containerServiceName, new EmbeddedCacheManagerService(config))
+        return target.addService(containerServiceName, new EmbeddedCacheManagerService(config))
                 .addDependency(configServiceName, EmbeddedCacheManagerConfiguration.class, config)
                 .addAliases(aliases)
                 .setInitialMode(initialMode)
+                .install()
         ;
-        return containerBuilder.install();
     }
 
-    protected ServiceController<ManagedReferenceFactory> installJndiService(ServiceTarget target,
-                                                                            String containerName, String jndiNameString,
-                                                                            ServiceVerificationHandler verificationHandler) {
+    ServiceController<?> installJndiService(ServiceTarget target, String containerName, String jndiNameString, ServiceVerificationHandler verificationHandler) {
 
         String jndiName = InfinispanJndiName.createCacheContainerJndiNameOrDefault(jndiNameString, containerName);
 
@@ -292,14 +306,14 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
 
         BinderService binder = new BinderService(bindInfo.getBindName());
-        ServiceBuilder<ManagedReferenceFactory> binderBuilder = target.addService(bindInfo.getBinderServiceName(), binder)
+        return target.addService(bindInfo.getBinderServiceName(), binder)
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
                 .addDependency(containerServiceName, CacheContainer.class, new ManagedReferenceInjector<CacheContainer>(binder.getManagedObjectInjector()))
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
-                .setInitialMode(ServiceController.Mode.PASSIVE);
-        return binderBuilder.install();
+                .setInitialMode(ServiceController.Mode.PASSIVE)
+                .install()
+        ;
     }
-
 
     private void addExecutorDependency(ServiceBuilder<EmbeddedCacheManagerConfiguration> builder, String executor, Injector<Executor> injector) {
         if (executor != null) {

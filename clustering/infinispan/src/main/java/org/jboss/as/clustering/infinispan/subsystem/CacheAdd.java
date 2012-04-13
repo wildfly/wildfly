@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,7 +48,6 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -155,10 +156,10 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         ModelNode containerModel = context.readResourceFromRoot(containerAddress).getModel();
 
         // install the services from a reusable method
-        installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler, newControllers);
+        newControllers.addAll(this.installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler));
     }
 
-    protected void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode containerModel, ModelNode cacheModel, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode operation, ModelNode containerModel, ModelNode cacheModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
 
         // get all required addresses, names and service names
         PathAddress cacheAddress = getCacheAddressFromOperation(operation);
@@ -185,35 +186,27 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         // AS7-3488 make default-cache no required attribute
         String defaultCache = CommonAttributes.DEFAULT_CACHE.resolveModelAttribute(context, containerModel).asString();
 
-        InjectedValue<EmbeddedCacheManager> containerInjection = new InjectedValue<EmbeddedCacheManager>();
         ServiceTarget target = context.getServiceTarget();
+        Configuration config = builder.build();
+
+        Collection<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>(3);
 
         // install the cache configuration service (configures a cache)
-        ServiceController<Configuration> ccsController =
-                installCacheConfigurationService(target, containerName, cacheName, defaultCache, moduleId,
-                        builder, containerInjection, dependencies, verificationHandler);
-        if (newControllers != null) {
-            newControllers.add(ccsController);
-        }
+        controllers.add(this.installCacheConfigurationService(target, containerName, cacheName, defaultCache, moduleId,
+                        builder, config, dependencies, verificationHandler));
         log.debugf("Cache configuration service for %s installed for container %s", cacheName, containerName);
 
         // now install the corresponding cache service (starts a configured cache)
-        ServiceController<Cache<Object, Object>> cController =
-                installCacheService(target, containerName, cacheName, defaultCache, initialMode, builder, containerInjection, verificationHandler);
-        if (newControllers != null) {
-            newControllers.add(cController);
-        }
+        controllers.add(this.installCacheService(target, containerName, cacheName, defaultCache, initialMode, builder, config, verificationHandler));
 
         // install a name service entry for the cache
-        ServiceController<ManagedReferenceFactory> jsController =
-                installJndiService(target, containerName, cacheName, jndiName, verificationHandler);
-        if (newControllers != null) {
-            newControllers.add(jsController);
-        }
+        controllers.add(this.installJndiService(target, containerName, cacheName, jndiName, verificationHandler));
         log.debugf("Cache service for cache %s installed for container %s", cacheName, containerName);
+
+        return controllers;
     }
 
-    protected void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model)
+    void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model)
             throws OperationFailedException {
         // get container and cache addresses
         final PathAddress cacheAddress = getCacheAddressFromOperation(operation) ;
@@ -225,7 +218,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         // remove all services started by CacheAdd, in reverse order
         // remove the binder service
         ModelNode resolvedValue = null;
-        final String jndiNameString = ((resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, model)).isDefined()) ? resolvedValue.asString() : null;
+        final String jndiNameString = (resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, model)).isDefined() ? resolvedValue.asString() : null;
         final String jndiName = InfinispanJndiName.createCacheJndiNameOrDefault(jndiNameString, containerName, cacheName);
         ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
         context.removeService(bindInfo.getBinderServiceName()) ;
@@ -247,22 +240,18 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         return containerAddress ;
     }
 
-    protected ServiceController<Configuration> installCacheConfigurationService(ServiceTarget target,
-            String containerName, String cacheName, String defaultCache, ModuleIdentifier moduleId,
-            ConfigurationBuilder builder, InjectedValue<EmbeddedCacheManager> containerInjection,
-            List<Dependency<?>> dependencies, ServiceVerificationHandler verificationHandler) {
+    ServiceController<?> installCacheConfigurationService(ServiceTarget target, String containerName, String cacheName, String defaultCache, ModuleIdentifier moduleId,
+            ConfigurationBuilder builder, Configuration config, List<Dependency<?>> dependencies, ServiceVerificationHandler verificationHandler) {
 
-        CacheConfigurationDependencies cacheConfigurationDependencies = new CacheConfigurationDependencies(containerInjection);
+        InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
+        CacheConfigurationDependencies cacheConfigurationDependencies = new CacheConfigurationDependencies(container);
         CacheConfigurationService cacheConfigurationService = new CacheConfigurationService(cacheName, builder, moduleId, cacheConfigurationDependencies);
-        ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
-        ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
 
-        ServiceBuilder<Configuration> configBuilder = target.addService(cacheConfigurationServiceName, cacheConfigurationService)
-                .addDependency(containerServiceName, EmbeddedCacheManager.class, containerInjection)
+        ServiceBuilder<?> configBuilder = target.addService(CacheConfigurationService.getServiceName(containerName, cacheName), cacheConfigurationService)
+                .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), EmbeddedCacheManager.class, container)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, cacheConfigurationDependencies.getModuleLoaderInjector())
-                .setInitialMode(ServiceController.Mode.PASSIVE);
-
-        Configuration config = builder.build();
+                .setInitialMode(ServiceController.Mode.PASSIVE)
+        ;
         if (config.invocationBatching().enabled()) {
             cacheConfigurationDependencies.getTransactionManagerInjector().inject(BatchModeTransactionManager.getInstance());
         } else if (config.transaction().transactionMode() == org.infinispan.transaction.TransactionMode.TRANSACTIONAL) {
@@ -283,21 +272,18 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         return configBuilder.install();
     }
 
-    protected ServiceController<Cache<Object, Object>> installCacheService(ServiceTarget target,
-            String containerName, String cacheName, String defaultCache, ServiceController.Mode initialMode,
-            ConfigurationBuilder builder, InjectedValue<EmbeddedCacheManager> containerInjection,
-            ServiceVerificationHandler verificationHandler) {
+    ServiceController<?> installCacheService(ServiceTarget target, String containerName, String cacheName, String defaultCache, ServiceController.Mode initialMode,
+            ConfigurationBuilder builder, Configuration config, ServiceVerificationHandler verificationHandler) {
 
-        CacheDependencies cacheDependencies = new CacheDependencies(containerInjection);
+        InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
+        CacheDependencies cacheDependencies = new CacheDependencies(container);
         CacheService<Object, Object> cacheService = new CacheService<Object, Object>(cacheName, cacheDependencies);
-        ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
-        ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
-        Configuration config = builder.build();
 
-        ServiceBuilder<Cache<Object, Object>> cacheBuilder = target.addService(cacheServiceName, cacheService)
-                .addDependency(cacheConfigurationServiceName)
-                .setInitialMode(initialMode);
-
+        ServiceBuilder<?> cacheBuilder = target.addService(CacheService.getServiceName(containerName, cacheName), cacheService)
+                .addDependency(CacheConfigurationService.getServiceName(containerName, cacheName))
+                .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), EmbeddedCacheManager.class, container)
+                .setInitialMode(initialMode)
+        ;
         if (config.transaction().recovery().enabled()) {
             cacheBuilder.addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, cacheDependencies.getRecoveryRegistryInjector());
         }
@@ -314,9 +300,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         return cacheBuilder.install();
     }
 
-    protected ServiceController<ManagedReferenceFactory> installJndiService(ServiceTarget target,
-                                                                            String containerName, String cacheName, String jndiNameString,
-                                                                            ServiceVerificationHandler verificationHandler) {
+    @SuppressWarnings("rawtypes")
+    ServiceController<?> installJndiService(ServiceTarget target, String containerName, String cacheName, String jndiNameString, ServiceVerificationHandler verificationHandler) {
 
         String jndiName = InfinispanJndiName.createCacheJndiNameOrDefault(jndiNameString, containerName, cacheName);
 
@@ -324,13 +309,13 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
 
         BinderService binder = new BinderService(bindInfo.getBindName());
-        @SuppressWarnings("rawtypes")
-        ServiceBuilder<ManagedReferenceFactory> binderBuilder = target.addService(bindInfo.getBinderServiceName(), binder)
+        return target.addService(bindInfo.getBinderServiceName(), binder)
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
                 .addDependency(cacheServiceName, Cache.class, new ManagedReferenceInjector<Cache>(binder.getManagedObjectInjector()))
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
-                .setInitialMode(ServiceController.Mode.PASSIVE);
-        return binderBuilder.install();
+                .setInitialMode(ServiceController.Mode.PASSIVE)
+                .install()
+        ;
     }
 
     private <T> void addDependency(ServiceBuilder<?> builder, Dependency<T> dependency) {
