@@ -51,7 +51,7 @@ import java.util.Observable;
  * @author David Bosschaert
  * @since 13-Oct-2010
  */
-public class SubsystemState  extends Observable implements Serializable, Service<SubsystemState> {
+public class SubsystemState  extends Observable implements Service<SubsystemState> {
 
     public static final ServiceName SERVICE_NAME = FrameworkBootstrapService.FRAMEWORK_BASE_NAME.append("subsystemstate");
     public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES = "org.jboss.osgi.system.modules";
