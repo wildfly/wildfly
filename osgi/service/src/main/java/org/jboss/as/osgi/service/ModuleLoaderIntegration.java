@@ -48,15 +48,15 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.BundleManagerService;
+import org.jboss.osgi.framework.BundleManagerIntegration;
+import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.ModuleLoaderProvider;
-import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.resolver.XIdentityCapability;
 import org.jboss.osgi.resolver.XResource;
 
 /**
  * This is the single {@link ModuleLoader} that the OSGi layer uses for the modules that are associated with the bundles that
- * are registered with the {@link BundleManagerService}.
+ * are registered with the {@link BundleManagerIntegration}.
  * <p/>
  * Plain AS7 modules can create dependencies on OSGi deployments, because OSGi modules can also be loaded from the
  * {@link ServiceModuleLoader}
@@ -72,7 +72,7 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
 
     static ServiceController<?> addService(final ServiceTarget target) {
         ModuleLoaderIntegration service = new ModuleLoaderIntegration();
-        ServiceBuilder<?> builder = target.addService(Services.MODULE_LOADER_PROVIDER, service);
+        ServiceBuilder<?> builder = target.addService(IntegrationServices.MODULE_LOADER_PROVIDER, service);
         builder.addDependency(JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.injectedModuleLoader);
         builder.setInitialMode(Mode.ON_DEMAND);
         return builder.install();
@@ -130,7 +130,7 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
 
     /**
      * Add an already loaded {@link Module} to the OSGi {@link ModuleLoader}. This happens when AS registers an existing
-     * {@link Module} with the {@link BundleManagerService}.
+     * {@link Module} with the {@link BundleManagerIntegration}.
      * <p/>
      * The {@link Module} may not necessarily result from a user deployment. We use the same {@link ServiceName} convention as
      * in {@link ServiceModuleLoader#moduleServiceName(ModuleIdentifier)}

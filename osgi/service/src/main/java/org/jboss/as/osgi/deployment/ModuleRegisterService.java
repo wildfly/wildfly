@@ -22,6 +22,7 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
@@ -56,7 +57,7 @@ import org.jboss.osgi.resolver.XResourceBuilderFactory;
  */
 public class ModuleRegisterService implements Service<ModuleRegisterService> {
 
-    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("osgi", "registration");
+    public static final ServiceName SERVICE_NAME_BASE = SERVICE_BASE_NAME.append("module", "registration");
 
     private final Module module;
     private final OSGiMetaData metadata;
@@ -102,8 +103,8 @@ public class ModuleRegisterService implements Service<ModuleRegisterService> {
             resource = builder.getResource();
             resource.addAttachment(Module.class, module);
             injectedEnvironment.getValue().installResources(resource);
-        } catch (Throwable t) {
-            throw new StartException(MESSAGES.failedToRegisterModule(module), t);
+        } catch (Throwable th) {
+            throw MESSAGES.startFailedToRegisterModule(th, module);
         }
     }
 

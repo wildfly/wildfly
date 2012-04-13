@@ -46,7 +46,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.startlevel.StartLevel;
 
 /**
@@ -95,17 +94,18 @@ public class BundleRuntimeHandler extends AbstractRuntimeOnlyHandler {
     private void handleReadAttribute(OperationContext context, ModelNode operation) {
         String name = operation.require(ModelDescriptionConstants.NAME).asString();
         Long id = Long.parseLong(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue());
-        BundleContext bc = getBundleContext(context);
-        Bundle bundle = bc.getBundle(id);
-
+        BundleContext systemContext = getSystemContext(context);
+        Bundle bundle = systemContext.getBundle(id);
         if (ModelConstants.ID.equals(name)) {
             context.getResult().set(id);
         } else if (ModelConstants.STARTLEVEL.equals(name)) {
-            Integer startLevel = getStartLevel(bc, bundle);
-            if (startLevel != null) {
-                context.getResult().set(startLevel);
+            StartLevel startLevel = getStartLevel(context);
+            Integer level = startLevel != null ? startLevel.getBundleStartLevel(bundle) : null;
+            if (level != null) {
+                context.getResult().set(level);
             } else {
-                context.getFailureDescription().set(OSGiMessages.MESSAGES.serviceNotAvailable());
+                ModelNode failureDescription = context.getFailureDescription();
+                failureDescription.set(OSGiMessages.MESSAGES.startLevelSrviceNotAvailable());
             }
         } else if (ModelConstants.STATE.equals(name)) {
             context.getResult().set(getBundleState(bundle));
@@ -120,15 +120,13 @@ public class BundleRuntimeHandler extends AbstractRuntimeOnlyHandler {
         } else if (ModelConstants.VERSION.equals(name)) {
             context.getResult().set(bundle.getVersion().toString());
         }
-
         context.completeStep();
     }
 
     private void handleOperation(String operationName, OperationContext context, ModelNode operation) {
         Long id = Long.parseLong(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue());
-        BundleContext bc = getBundleContext(context);
-        Bundle bundle = bc.getBundle(id);
-
+        BundleContext systemContext = getSystemContext(context);
+        Bundle bundle = systemContext.getBundle(id);
         try {
             if (START_OPERATION.equals(operationName)) {
                 bundle.start();
@@ -160,29 +158,13 @@ public class BundleRuntimeHandler extends AbstractRuntimeOnlyHandler {
         return null;
     }
 
-    private BundleContext getBundleContext(OperationContext context) {
-        ServiceController<?> sbs = context.getServiceRegistry(false).getService(Services.SYSTEM_BUNDLE);
-        if (sbs == null) {
-            return null;
-        }
-
-        Bundle systemBundle = Bundle.class.cast(sbs.getValue());
-        return systemBundle.getBundleContext();
+    private BundleContext getSystemContext(OperationContext context) {
+        ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.SYSTEM_CONTEXT);
+        return controller != null ? (BundleContext)controller.getValue() : null;
     }
 
-    private Integer getStartLevel(BundleContext bc, Bundle b) {
-        ServiceReference sref = bc.getServiceReference(StartLevel.class.getName());
-        if (sref == null)
-            return null;
-
-        try {
-            Object sls = bc.getService(sref);
-            if (sls instanceof StartLevel == false)
-                return null;
-
-            return ((StartLevel) sls).getBundleStartLevel(b);
-        } finally {
-            bc.ungetService(sref);
-        }
+    private StartLevel getStartLevel(OperationContext context) {
+        ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.START_LEVEL);
+        return controller != null ? (StartLevel)controller.getValue() : null;
     }
 }

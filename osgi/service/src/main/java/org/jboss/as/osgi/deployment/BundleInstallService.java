@@ -22,13 +22,15 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.server.deployment.Services.deploymentUnitName;
 
+import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -39,8 +41,10 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.BundleManagerService;
+import org.jboss.osgi.framework.BundleManagerIntegration;
 import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.framework.StorageState;
+import org.jboss.osgi.framework.StorageStateProvider;
 
 /**
  * Service responsible for creating and managing the life-cycle of an OSGi deployment.
@@ -48,41 +52,45 @@ import org.jboss.osgi.framework.Services;
  * @author Thomas.Diesler@jboss.com
  * @since 20-Sep-2010
  */
-public class BundleInstallService implements Service<BundleInstallService> {
+public class BundleInstallService extends AbstractService<Void> {
 
-    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("osgi", "deployment");
+    public static final ServiceName SERVICE_NAME_BASE = SERVICE_BASE_NAME.append("bundle", "deployment");
 
+    private final InjectedValue<BundleManagerIntegration> injectedBundleManager = new InjectedValue<BundleManagerIntegration>();
+    private final InjectedValue<StorageStateProvider> injectedStorageProvider = new InjectedValue<StorageStateProvider>();
+    private final InitialDeploymentTracker deploymentTracker;
     private final Deployment deployment;
-    private InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
-    private ServiceName installedBundleName;
 
-    private BundleInstallService(Deployment deployment) {
+    private BundleInstallService(InitialDeploymentTracker deploymentTracker, Deployment deployment) {
+        this.deploymentTracker = deploymentTracker;
         this.deployment = deployment;
     }
 
-    public static void addService(DeploymentPhaseContext phaseContext, Deployment deployment) {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final BundleInstallService service = new BundleInstallService(deployment);
-        final String contextName = deploymentUnit.getName();
-        final ServiceName serviceName = getServiceName(contextName);
+    public static ServiceName addService(InitialDeploymentTracker deploymentTracker, DeploymentPhaseContext phaseContext, Deployment deployment, ServiceName frameworkDependency) {
+        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        final BundleInstallService service = new BundleInstallService(deploymentTracker, deployment);
+        final String contextName = depUnit.getName();
+        final ServiceName serviceName = getServiceName(depUnit);
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        ServiceBuilder<BundleInstallService> builder = serviceTarget.addService(serviceName, service);
-        builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
+        ServiceBuilder<Void> builder = serviceTarget.addService(serviceName, service);
+        builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerIntegration.class, service.injectedBundleManager);
+        builder.addDependency(Services.STORAGE_STATE_PROVIDER, StorageStateProvider.class, service.injectedStorageProvider);
         builder.addDependency(deploymentUnitName(contextName));
-        builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
+        builder.addDependency(frameworkDependency);
         builder.install();
+        return serviceName;
     }
 
     public static void removeService(DeploymentUnit depUnit) {
-        final ServiceName serviceName = getServiceName(depUnit.getName());
+        final ServiceName serviceName = getServiceName(depUnit);
         final ServiceController<?> serviceController = depUnit.getServiceRegistry().getService(serviceName);
         if (serviceController != null) {
             serviceController.setMode(Mode.REMOVE);
         }
     }
 
-    public static ServiceName getServiceName(String contextName) {
-        ServiceName deploymentServiceName = deploymentUnitName(contextName);
+    private static ServiceName getServiceName(DeploymentUnit depUnit) {
+        ServiceName deploymentServiceName = deploymentUnitName(depUnit.getName());
         return BundleInstallService.SERVICE_NAME_BASE.append(deploymentServiceName.getSimpleName());
     }
 
@@ -91,10 +99,15 @@ public class BundleInstallService implements Service<BundleInstallService> {
         LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         try {
             ServiceTarget serviceTarget = context.getChildTarget();
-            BundleManagerService bundleManager = injectedBundleManager.getValue();
-            installedBundleName = bundleManager.installBundle(serviceTarget, deployment);
-        } catch (Throwable t) {
-            throw new StartException(MESSAGES.failedToInstallDeployment(deployment), t);
+            BundleManagerIntegration bundleManager = injectedBundleManager.getValue();
+            StorageStateProvider storageStateProvider = injectedStorageProvider.getValue();
+            StorageState storageState = storageStateProvider.getByLocation(deployment.getLocation());
+            ServiceName serviceName = bundleManager.installBundle(serviceTarget, deployment);
+            if (storageState != null) {
+                deploymentTracker.addInstalledBundle(serviceName, deployment);
+            }
+        } catch (Throwable th) {
+            throw MESSAGES.startFailedToInstallDeployment(th, deployment);
         }
     }
 
@@ -102,27 +115,10 @@ public class BundleInstallService implements Service<BundleInstallService> {
         ServiceController<?> controller = context.getController();
         LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
         try {
-            BundleManagerService bundleManager = injectedBundleManager.getValue();
+            BundleManagerIntegration bundleManager = injectedBundleManager.getValue();
             bundleManager.uninstallBundle(deployment);
         } catch (Throwable t) {
             LOGGER.errorFailedToUninstallDeployment(t, deployment);
         }
-
-        // [JBAS-8801] Undeployment leaks root deployment service
-        // [TODO] remove this workaround
-        ServiceName serviceName = deploymentUnitName(context.getController().getName().getSimpleName());
-        ServiceController<?> deploymentController = context.getController().getServiceContainer().getService(serviceName);
-        if (deploymentController != null) {
-            deploymentController.setMode(Mode.REMOVE);
-        }
-    }
-
-    @Override
-    public synchronized BundleInstallService getValue() throws IllegalStateException {
-        return this;
-    }
-
-    public ServiceName getInstalledBundleName() {
-        return installedBundleName;
     }
 }

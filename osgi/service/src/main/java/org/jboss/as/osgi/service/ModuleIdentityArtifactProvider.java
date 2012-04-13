@@ -22,7 +22,7 @@
 package org.jboss.as.osgi.service;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-import static org.jboss.as.osgi.service.FrameworkBootstrapService.SERVICE_BASE_NAME;
+import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 import static org.jboss.osgi.resolver.XResourceConstants.MODULE_IDENTITY_NAMESPACE;
 
 import java.io.File;
