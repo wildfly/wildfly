@@ -22,9 +22,17 @@
 
 package org.jboss.as.osgi.parser;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -34,15 +42,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
 
 /**
  * The OSGi subsystem state.
@@ -124,13 +123,12 @@ public class SubsystemState  extends Observable implements Serializable, Service
     }
 
     public OSGiCapability removeCapability(String id) {
-        ModuleIdentifier identifier = ModuleIdentifier.fromString(id);
         synchronized (capabilities) {
             for (Iterator<OSGiCapability> it = capabilities.iterator(); it.hasNext(); ) {
                 OSGiCapability module = it.next();
-                if (module.getIdentifier().equals(identifier)) {
+                if (module.getIdentifier().equals(id)) {
                     it.remove();
-                    notifyObservers(new ChangeEvent(ChangeType.CAPABILITY, true, identifier.toString()));
+                    notifyObservers(new ChangeEvent(ChangeType.CAPABILITY, true, id));
                     return module;
                 }
             }
