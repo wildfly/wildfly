@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Policy xmlns="urn:oasis:names:tc:xacml:2.0:policy:schema:os"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:oasis:names:tc:xacml:2.0:policy:schema:os
+        http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-policy-schema-os.xsd"
+	PolicyId="urn:oasis:names:tc:xacml:2.0:jboss-test:XV:policy"
+	RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:deny-overrides">
+	<Description> Policy for Subject RBAC</Description>
+	<Target />
+	<Rule RuleId="urn:oasis:names:tc:xacml:2.0:jboss-test:XVI:rule"
+		Effect="Permit">
+		<Description>
+        	jduke can read or write resource information when he has a role of ServletUserRole 
+        </Description>
+		<Target>
+			<Subjects>
+				<Subject>
+					<SubjectMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">jduke</AttributeValue>
+						<SubjectAttributeDesignator
+							AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
+							DataType="http://www.w3.org/2001/XMLSchema#string" />
+					</SubjectMatch>
+					<SubjectMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">ServletUserRole</AttributeValue>
+						<SubjectAttributeDesignator
+							AttributeId="urn:oasis:names:tc:xacml:2.0:subject:role" DataType="http://www.w3.org/2001/XMLSchema#string" />
+					</SubjectMatch>
+				</Subject>
+			</Subjects>
+			<Actions>
+				<Action>
+					<ActionMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">read</AttributeValue>
+						<ActionAttributeDesignator
+							AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+							DataType="http://www.w3.org/2001/XMLSchema#string" />
+					</ActionMatch>
+				</Action>
+				<Action>
+					<ActionMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">write</AttributeValue>
+						<ActionAttributeDesignator
+							AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+							DataType="http://www.w3.org/2001/XMLSchema#string" />
+					</ActionMatch>
+				</Action>
+			</Actions>
+		</Target>
+		<Condition>
+			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:anyURI-is-in">
+				<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:anyURI-one-and-only">
+					<ResourceAttributeDesignator
+						AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
+						DataType="http://www.w3.org/2001/XMLSchema#anyURI" />
+				</Apply>
+				<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:anyURI-bag">
+					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#anyURI">/xacml-web-test/secured</AttributeValue>
+					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#anyURI">/custom-xacml-web-test/secured</AttributeValue>
+				</Apply>
+			</Apply>
+		</Condition>
+	</Rule>
+</Policy>
