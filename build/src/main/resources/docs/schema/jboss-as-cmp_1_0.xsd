@@ -68,16 +68,16 @@
 
     <xs:complexType name="hiloType">
         <xs:sequence>
-            <xs:element name="block-size" type="xs:long"/>
-            <xs:element name="create-table" type="xs:boolean"/>
-            <xs:element name="create-table-ddl" type="xs:string"/>
-            <xs:element name="data-source" type="xs:token"/>
-            <xs:element name="drop-table" type="xs:boolean"/>
-            <xs:element name="id-column" type="xs:token"/>
-            <xs:element name="select-hi-ddl" type="xs:string"/>
-            <xs:element name="sequence-column" type="xs:token"/>
-            <xs:element name="sequence-name" type="xs:token"/>
-            <xs:element name="table-name" type="xs:token"/>
+            <xs:element name="block-size" type="xs:long" maxOccurs="1"/>
+            <xs:element name="create-table" type="xs:boolean" maxOccurs="1"/>
+            <xs:element name="create-table-ddl" type="xs:string" maxOccurs="1"/>
+            <xs:element name="data-source" type="xs:token"  minOccurs="1" maxOccurs="1"/>
+            <xs:element name="drop-table" type="xs:boolean" maxOccurs="1"/>
+            <xs:element name="id-column" type="xs:token"  minOccurs="1" maxOccurs="1"/>
+            <xs:element name="select-hi-ddl" type="xs:string" maxOccurs="1"/>
+            <xs:element name="sequence-column" type="xs:token"  minOccurs="1" maxOccurs="1"/>
+            <xs:element name="sequence-name" type="xs:token"  minOccurs="1" maxOccurs="1"/>
+            <xs:element name="table-name" type="xs:token" minOccurs="1" maxOccurs="1"/>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string"/>
     </xs:complexType>
