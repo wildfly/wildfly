@@ -55,7 +55,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.security.common.AbstractLoginModuleStackServerSetupTask;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask;
 import org.jboss.as.test.integration.security.common.LDAPServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.loginmodules.common.servlets.PrincipalPrintingServlet;
@@ -383,7 +383,7 @@ public class LdapExtLoginModuleTestCase {
     /**
      * A SecurityDomainSetup1.
      */
-    static class SecurityDomainSetup1 extends AbstractLoginModuleStackServerSetupTask {
+    static class SecurityDomainSetup1 extends AbstractSecurityDomainStackServerSetupTask {
 
         protected static final String SECURITY_DOMAIN_NAME = SECURITY_DOMAIN_NAME_PREFIX + DEP1;
 
@@ -396,11 +396,11 @@ public class LdapExtLoginModuleTestCase {
         }
 
         /**
-         * @see org.jboss.as.test.integration.security.common.AbstractLoginModuleStackServerSetupTask#getLoginModuleConfigurations()
+         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getLoginModuleConfigurations()
          */
         @Override
-        protected LoginModuleConfiguration[] getLoginModuleConfigurations() {
-            LoginModuleConfiguration ldapLoginModule = new LoginModuleConfiguration() {
+        protected SecurityModuleConfiguration[] getLoginModuleConfigurations() {
+            SecurityModuleConfiguration ldapLoginModule = new SecurityModuleConfiguration() {
 
                 public String getName() {
                     return "org.jboss.security.auth.spi.LdapExtLoginModule";
@@ -427,14 +427,14 @@ public class LdapExtLoginModuleTestCase {
                 }
 
             };
-            return new LoginModuleConfiguration[] { ldapLoginModule };
+            return new SecurityModuleConfiguration[] { ldapLoginModule };
         }
     }
 
     /**
      * A SecurityDomainSetup2.
      */
-    static class SecurityDomainSetup2 extends AbstractLoginModuleStackServerSetupTask {
+    static class SecurityDomainSetup2 extends AbstractSecurityDomainStackServerSetupTask {
 
         protected static final String SECURITY_DOMAIN_NAME = SECURITY_DOMAIN_NAME_PREFIX + DEP2;
 
@@ -447,11 +447,11 @@ public class LdapExtLoginModuleTestCase {
         }
 
         /**
-         * @see org.jboss.as.test.integration.security.common.AbstractLoginModuleStackServerSetupTask#getLoginModuleConfigurations()
+         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getLoginModuleConfigurations()
          */
         @Override
-        protected LoginModuleConfiguration[] getLoginModuleConfigurations() {
-            LoginModuleConfiguration ldapLoginModule = new LoginModuleConfiguration() {
+        protected SecurityModuleConfiguration[] getLoginModuleConfigurations() {
+            SecurityModuleConfiguration ldapLoginModule = new SecurityModuleConfiguration() {
 
                 public String getName() {
                     return "LdapExtended";
@@ -481,14 +481,14 @@ public class LdapExtLoginModuleTestCase {
                 }
 
             };
-            return new LoginModuleConfiguration[] { ldapLoginModule };
+            return new SecurityModuleConfiguration[] { ldapLoginModule };
         }
     }
 
     /**
      * A SecurityDomainSetup3.
      */
-    static class SecurityDomainSetup3 extends AbstractLoginModuleStackServerSetupTask {
+    static class SecurityDomainSetup3 extends AbstractSecurityDomainStackServerSetupTask {
 
         protected static final String SECURITY_DOMAIN_NAME = SECURITY_DOMAIN_NAME_PREFIX + DEP3;
 
@@ -501,11 +501,11 @@ public class LdapExtLoginModuleTestCase {
         }
 
         /**
-         * @see org.jboss.as.test.integration.security.common.AbstractLoginModuleStackServerSetupTask#getLoginModuleConfigurations()
+         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getLoginModuleConfigurations()
          */
         @Override
-        protected LoginModuleConfiguration[] getLoginModuleConfigurations() {
-            LoginModuleConfiguration ldapLoginModule = new LoginModuleConfiguration() {
+        protected SecurityModuleConfiguration[] getLoginModuleConfigurations() {
+            SecurityModuleConfiguration ldapLoginModule = new SecurityModuleConfiguration() {
 
                 public String getName() {
                     return "LdapExtended";
@@ -534,14 +534,14 @@ public class LdapExtLoginModuleTestCase {
                 }
 
             };
-            return new LoginModuleConfiguration[] { ldapLoginModule };
+            return new SecurityModuleConfiguration[] { ldapLoginModule };
         }
     }
 
     /**
      * A SecurityDomainSetup4.
      */
-    static class SecurityDomainSetup4 extends AbstractLoginModuleStackServerSetupTask {
+    static class SecurityDomainSetup4 extends AbstractSecurityDomainStackServerSetupTask {
 
         protected static final String SECURITY_DOMAIN_NAME = SECURITY_DOMAIN_NAME_PREFIX + DEP4;
 
@@ -554,11 +554,11 @@ public class LdapExtLoginModuleTestCase {
         }
 
         /**
-         * @see org.jboss.as.test.integration.security.common.AbstractLoginModuleStackServerSetupTask#getLoginModuleConfigurations()
+         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getLoginModuleConfigurations()
          */
         @Override
-        protected LoginModuleConfiguration[] getLoginModuleConfigurations() {
-            LoginModuleConfiguration ldapLoginModule = new LoginModuleConfiguration() {
+        protected SecurityModuleConfiguration[] getLoginModuleConfigurations() {
+            SecurityModuleConfiguration ldapLoginModule = new SecurityModuleConfiguration() {
 
                 public String getName() {
                     return "LdapExtended";
@@ -588,7 +588,7 @@ public class LdapExtLoginModuleTestCase {
                 }
 
             };
-            return new LoginModuleConfiguration[] { ldapLoginModule };
+            return new SecurityModuleConfiguration[] { ldapLoginModule };
         }
     }
 
