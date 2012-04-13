@@ -31,6 +31,7 @@ import javax.management.MBeanServer;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.webservices.WSMessages;
 import org.jboss.as.webservices.security.SecurityDomainContextAdaptor;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.as.webservices.util.WebAppController;
@@ -120,27 +121,36 @@ public final class EndpointService implements Service<Endpoint> {
     }
 
     private void registerRecordProcessor(final RecordProcessor processor, final Endpoint ep) {
-        try {
-            mBeanServerValue.getValue().registerMBean(processor, ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
-        }
-        catch (final JMException ex) {
-            ROOT_LOGGER.trace("Cannot register endpoint with JMX server, trying with the default ManagedRecordProcessor: " + ex.getMessage());
+        MBeanServer mbeanServer = mBeanServerValue.getValue();
+        if (mbeanServer != null) {
             try {
-                mBeanServerValue.getValue().registerMBean(new ManagedRecordProcessor(processor), ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
+                mbeanServer.registerMBean(processor, ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
             }
-            catch (final JMException e) {
-                ROOT_LOGGER.cannotRegisterRecordProcessor();
+            catch (final JMException ex) {
+                ROOT_LOGGER.trace("Cannot register endpoint with JMX server, trying with the default ManagedRecordProcessor: " + ex.getMessage());
+                try {
+                    mbeanServer.registerMBean(new ManagedRecordProcessor(processor), ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
+                }
+                catch (final JMException e) {
+                    ROOT_LOGGER.cannotRegisterRecordProcessor();
+                }
             }
+        } else {
+            ROOT_LOGGER.mBeanServerNotAvailable(processor);
         }
     }
 
     private void unregisterRecordProcessor(final RecordProcessor processor, final Endpoint ep) {
-       try {
-           mBeanServerValue.getValue().unregisterMBean(ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
-       }
-       catch (final JMException e) {
-           ROOT_LOGGER.cannotUnregisterRecordProcessor();
-       }
+        MBeanServer mbeanServer = mBeanServerValue.getValue();
+        if (mbeanServer != null) {
+            try {
+                mbeanServer.unregisterMBean(ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
+            } catch (final JMException e) {
+                ROOT_LOGGER.cannotUnregisterRecordProcessor();
+            }
+        } else {
+            ROOT_LOGGER.mBeanServerNotAvailable(processor);
+        }
     }
 
     private boolean hasWebservicesMD(final Endpoint endpoint) {
@@ -177,7 +187,7 @@ public final class EndpointService implements Service<Endpoint> {
         builder.addDependency(DependencyType.REQUIRED,
                 WSServices.PORT_COMPONENT_LINK_SERVICE,
                 WebAppController.class, service.getPclWebAppControllerInjector());
-        builder.addDependency(DependencyType.REQUIRED, MBEAN_SERVER_NAME,
+        builder.addDependency(DependencyType.OPTIONAL, MBEAN_SERVER_NAME,
                 MBeanServer.class,
                 service.getMBeanServerInjector());
         builder.setInitialMode(Mode.ACTIVE);
