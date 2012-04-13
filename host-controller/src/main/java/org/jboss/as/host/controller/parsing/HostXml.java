@@ -86,6 +86,7 @@ import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.host.controller.HostControllerMessages;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
+import org.jboss.as.host.controller.operations.HostModelRegistrationHandler;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -702,18 +703,23 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
      * Add the operation to add the local host definition.
      */
     private void addLocalHost(final ModelNode address, final List<ModelNode> operationList, final String hostName) {
+
+        String resolvedHost =  hostName != null ? hostName : defaultHostControllerName;
+
         // All further operations should modify the newly added host so the address passed in is updated.
-        address.add(HOST, hostName != null ? hostName : defaultHostControllerName);
+        address.add(HOST, resolvedHost);
 
-        final ModelNode host = new ModelNode();
-        host.get(OP).set("add-host");
-        host.get(OP_ADDR).set(address.clone());
+        // Add a step to setup the ManagementResourceRegistrations for the root host resource
+        final ModelNode hostAdd = new ModelNode();
+        hostAdd.get(OP).set(HostModelRegistrationHandler.OPERATION_NAME);
+        hostAdd.get(NAME).set(resolvedHost);
 
-        if (hostName != null) {
-            host.get(NAME).set(hostName);
-        }
+        operationList.add(hostAdd);
 
-        operationList.add(host);
+        // Add a step to store the HC name
+        ModelNode nameValue = hostName == null ? new ModelNode() : new ModelNode(hostName);
+        final ModelNode writeName = Util.getWriteAttributeOperation(address, NAME, nameValue);
+        operationList.add(writeName);
     }
 
     private void parseDomainController(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)

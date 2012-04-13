@@ -39,7 +39,9 @@ import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 import java.io.File;
 import java.io.IOException;
 import java.security.AccessController;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
@@ -111,7 +113,7 @@ import org.jboss.threads.JBossThreadFactory;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DomainModelControllerService extends AbstractControllerService implements DomainController {
+public class DomainModelControllerService extends AbstractControllerService implements DomainController, HostModelUtil.HostModelRegistrar {
 
     public static final ServiceName SERVICE_NAME = HostControllerService.HC_SERVICE_NAME.append("model", "controller");
 
@@ -244,7 +246,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             throw MESSAGES.serverNameAlreadyRegistered(pe.getValue());
         }
         ROOT_LOGGER.registeringServer(pe.getValue());
-        ManagementResourceRegistration hostRegistration = modelNodeRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement(HOST)));
+        ManagementResourceRegistration hostRegistration = modelNodeRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerInfo.getLocalHostName())));
         hostRegistration.registerProxyController(pe, serverControllerClient);
         serverProxies.put(pe.getValue(), serverControllerClient);
     }
@@ -300,9 +302,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         DomainModelUtil.updateCoreModel(rootResource, environment);
-        HostModelUtil.createHostRegistry(rootRegistration, hostControllerConfigurationPersister, environment, runningModeControl,
-                localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, contentRepository,
-                this, extensionRegistry,vaultReader, ignoredRegistry, processState, pathManager);
+        HostModelUtil.createRootRegistry(rootRegistration, environment, ignoredRegistry, this);
         this.modelNodeRegistration = rootRegistration;
     }
 
@@ -319,7 +319,11 @@ public class DomainModelControllerService extends AbstractControllerService impl
             ServerInventoryCallbackService.install(serviceTarget);
 
             // Parse the host.xml and invoke all the ops. The ops should rollback on any Stage.RUNTIME failure
-            ok = boot(hostControllerConfigurationPersister.load(), true);
+            // We run the first op ("add-host") separately to let it set up the host ManagementResourceRegistration
+            List<ModelNode> hostBootOps = hostControllerConfigurationPersister.load();
+            ModelNode addHostOp = hostBootOps.remove(0);
+            ok = boot(Collections.singletonList(addHostOp), true);
+            ok = ok && boot(hostBootOps, true);
 
             final RunningMode currentRunningMode = runningModeControl.getRunningMode();
 
@@ -473,6 +477,13 @@ public class DomainModelControllerService extends AbstractControllerService impl
         } catch (IOException e) {
             throw MESSAGES.errorClosingDownHost(e);
         }
+    }
+
+    @Override
+    public void registerHostModel(String hostName, ManagementResourceRegistration root) {
+        HostModelUtil.createHostRegistry(hostName, root, hostControllerConfigurationPersister, environment, runningModeControl,
+                localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, contentRepository,
+                this, extensionRegistry,vaultReader, ignoredRegistry, processState, pathManager);
     }
 
     private class DelegatingServerInventory implements ServerInventory {
