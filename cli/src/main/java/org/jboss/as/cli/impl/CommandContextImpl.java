@@ -107,6 +107,7 @@ import org.jboss.as.cli.handlers.batch.BatchMoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRemoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRunHandler;
 import org.jboss.as.cli.handlers.jca.JDBCDriverNameProvider;
+import org.jboss.as.cli.handlers.jca.JDBCDriverInfoHandler;
 import org.jboss.as.cli.handlers.jca.XADataSourceAddCompositeHandler;
 import org.jboss.as.cli.handlers.jms.CreateJmsResourceHandler;
 import org.jboss.as.cli.handlers.jms.DeleteJmsResourceHandler;
@@ -305,6 +306,7 @@ class CommandContextImpl implements CommandContext {
         xaDsAddHandler.addValueCompleter(Util.DRIVER_NAME, driverNameCompleter);
         xaDsHandler.addHandler("add", xaDsAddHandler);
         cmdRegistry.registerHandler(xaDsHandler, "xa-data-source");
+        cmdRegistry.registerHandler(new JDBCDriverInfoHandler(this), "installed-jdbc-drivers");
 
         // JMS
         cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=messaging/hornetq-server=default/jms-queue", "queue-address"), "jms-queue");
