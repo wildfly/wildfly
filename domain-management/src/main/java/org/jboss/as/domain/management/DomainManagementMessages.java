@@ -534,6 +534,15 @@ public interface DomainManagementMessages {
     @Message(value = "Updated user '%s' with roles %s to file '%s'")
     String updatedRoles(String username, String roles, String fileName);
 
+    /**
+     * IOException to indicate the user attempting to use local authentication has been rejected.
+     *
+     * @param userName - The user attempting local authentication.
+     * @return an {@link IOException} for the failure.
+     */
+    @Message(id = 15255, value = "The user '%s' is not allowed in a local authentication.")
+    IOException invalidLocalUser(final String userName);
+
     /*
     * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
     * this range commencing 15200.

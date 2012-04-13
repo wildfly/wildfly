@@ -24,6 +24,7 @@ package org.jboss.as.domain.management;
 import javax.net.ssl.SSLContext;
 
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import org.jboss.as.domain.management.security.LocalCallbackHandler;
 import org.jboss.as.domain.management.security.SubjectSupplemental;
 
 /**
@@ -37,6 +38,11 @@ public interface SecurityRealm {
      * @return The name of this SecurityRealm
      */
     String getName();
+
+    /**
+     * @return The LocalCallbackHandler if defined, null if not.
+     */
+    LocalCallbackHandler getLocalCallbackHandler();
 
     /**
      * @return The CallbackHandler for the realm

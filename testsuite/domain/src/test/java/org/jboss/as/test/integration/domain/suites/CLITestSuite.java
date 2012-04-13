@@ -21,7 +21,10 @@
  */
 package org.jboss.as.test.integration.domain.suites;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.cli.BasicOpsTestCase;
@@ -32,7 +35,6 @@ import org.jboss.as.test.integration.domain.management.cli.JmsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.RolloutPlanTestCase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 

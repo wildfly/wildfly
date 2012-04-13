@@ -36,11 +36,13 @@
                      <secret value="c2xhdmVfdXNlcl9wYXNzd29yZA==" />
                 </server-identities>
                 <authentication>
+                     <local default-user="$local" />
                      <properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir" />
                 </authentication>
             </security-realm>
             <security-realm name="ApplicationRealm">
                 <authentication>
+                    <local default-user="$local" allowed-users="*" />
                     <properties path="application-users.properties" relative-to="jboss.domain.config.dir" />
                 </authentication>
             </security-realm>

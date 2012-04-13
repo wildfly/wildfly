@@ -38,10 +38,11 @@ public enum Attribute {
     NO_NAMESPACE_SCHEMA_LOCATION("noNamespaceSchemaLocation"),
     SCHEMA_LOCATION("schemaLocation"),
 
-    // domain 1.0 attributes in alpha order
+    // domain attributes in alpha order
     ALIAS("alias"),
-    AUTO_START("auto-start"),
+    ALLOWED_USERS("allowed-users"),
     ATTRIBUTE("attribute"),
+    AUTO_START("auto-start"),
     BASE_DN("base-dn"),
     BOOT_TIME("boot-time"),
     CODE("code"),
@@ -49,6 +50,7 @@ public enum Attribute {
     CONNECTOR("connector"),
     CONSOLE_ENABLED("console-enabled"),
     DEFAULT_INTERFACE("default-interface"),
+    DEFAULT_USER("default-user"),
     DEBUG_ENABLED("debug-enabled"),
     DEBUG_OPTIONS("debug-options"),
     DESTINATION_ADDRESS("destination-address"),
