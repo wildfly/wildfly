@@ -16,6 +16,7 @@
             <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
             <journal-file-size>102400</journal-file-size>
             <journal-min-files>2</journal-min-files>
+            <page-max-concurrent-io>10</page-max-concurrent-io>
             <paging-directory path="test" relative-to="test" />
             <bindings-directory path="test" relative-to="test" />
             <journal-directory path="test" relative-to="test" />
@@ -105,8 +106,12 @@
                     <ha>true</ha>
                     <filter string="afilter"/>
                     <transformer-class-name>foo.bar</transformer-class-name>
+                    <min-large-message-size>10240</min-large-message-size>
+                    <connection-ttl>36000</connection-ttl>
                     <retry-interval>750</retry-interval>
                     <retry-interval-multiplier>2</retry-interval-multiplier>
+                    <max-retry-interval>3000</max-retry-interval>
+                    <check-period>666</check-period>
                     <reconnect-attempts>3</reconnect-attempts>
                     <failover-on-server-shutdown>true</failover-on-server-shutdown>
                     <use-duplicate-detection>true</use-duplicate-detection>
@@ -127,8 +132,15 @@
                 <cluster-connection name="cc1">
                     <address>cc1-address</address>
                     <connector-ref>netty</connector-ref>
+                    <min-large-message-size>10245</min-large-message-size>
+                    <connection-ttl>1234</connection-ttl>
                     <retry-interval>987</retry-interval>
+                    <retry-interval-multiplier>3.0</retry-interval-multiplier>
+                    <max-retry-interval>3600</max-retry-interval>
+                    <reconnect-attempts>-1</reconnect-attempts>
                     <use-duplicate-detection>true</use-duplicate-detection>
+                    <check-period>2345</check-period>
+                    <call-timeout>3456</call-timeout>
                     <forward-when-no-consumers>true</forward-when-no-consumers>
                     <max-hops>7</max-hops>
                     <confirmation-window-size>459</confirmation-window-size>

@@ -104,6 +104,7 @@
           <xs:element maxOccurs="1" minOccurs="0" name="shared-store" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="persist-delivery-count-before-delivery" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="live-connector-ref" type="live-connectorType" />
+          <xs:element maxOccurs="1" minOccurs="0" name="page-max-concurrent-io" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="create-bindings-dir" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="create-journal-dir" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="journal-type" type="journalType" />
@@ -399,8 +400,12 @@
              </xs:complexType>
           </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="transformer-class-name" type="xs:string" />
+          <xs:element maxOccurs="1" minOccurs="0" name="min-large-message-size" type="xs:int" />
+          <xs:element maxOccurs="1" minOccurs="0" name="check-period" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="connection-ttl" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="retry-interval" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="retry-interval-multiplier" type="xs:double" />
+          <xs:element maxOccurs="1" minOccurs="0" name="max-retry-interval" type="xs:long"  />
           <xs:element maxOccurs="1" minOccurs="0" name="reconnect-attempts" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="failover-on-server-shutdown" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="use-duplicate-detection" type="xs:boolean" />
@@ -425,7 +430,14 @@
        <xs:sequence>
           <xs:element maxOccurs="1" minOccurs="1" name="address" type="xs:string" />
           <xs:element maxOccurs="1" minOccurs="1" name="connector-ref" type="xs:string" />
+          <xs:element maxOccurs="1" minOccurs="0" name="check-period" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="connection-ttl" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="min-large-message-size" type="xs:int" />
+          <xs:element maxOccurs="1" minOccurs="0" name="call-timeout" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="retry-interval" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="retry-interval-multiplier" type="xs:double" />
+          <xs:element maxOccurs="1" minOccurs="0" name="max-retry-interval" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="reconnect-attempts" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="use-duplicate-detection" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="forward-when-no-consumers" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="max-hops" type="xs:int" />

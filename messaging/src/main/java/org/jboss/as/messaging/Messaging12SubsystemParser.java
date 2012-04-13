@@ -1,13 +1,23 @@
 package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.operations.common.Util.getEmptyOperation;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
+import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_REF;
+import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.MAX_POOL_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.MIN_POOL_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -159,5 +169,152 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
         }
         return connectionFactory;
     }
+
+    protected void processBridge(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+
+        requireSingleAttribute(reader, CommonAttributes.NAME);
+        String name = reader.getAttributeValue(0);
+
+        ModelNode bridgeAdd = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.BRIDGE, name));
+
+        EnumSet<Element> required = EnumSet.of(Element.QUEUE_NAME);
+        Set<Element> seen = EnumSet.noneOf(Element.class);
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (!seen.add(element)) {
+                throw ParseUtils.duplicateNamedElement(reader, element.getLocalName());
+            }
+            required.remove(element);
+            switch (element) {
+                case CHECK_PERIOD:
+                case CONNECTION_TTL:
+                case QUEUE_NAME:
+                case HA:
+                case TRANSFORMER_CLASS_NAME:
+                case MIN_LARGE_MESSAGE_SIZE:
+                case RETRY_INTERVAL_MULTIPLIER:
+                case MAX_RETRY_INTERVAL:
+                case FAILOVER_ON_SERVER_SHUTDOWN:
+                case CONFIRMATION_WINDOW_SIZE:
+                case USER:
+                case PASSWORD:
+                    handleElementText(reader, element, bridgeAdd);
+                    break;
+                case FILTER:  {
+                    String string = readStringAttributeElement(reader, CommonAttributes.STRING);
+                    FILTER.parseAndSetParameter(string, bridgeAdd, reader);
+                    break;
+                }
+                case RETRY_INTERVAL:
+                    // Use the "default" variant
+                    handleElementText(reader, element, "default", bridgeAdd);
+                    break;
+                case FORWARDING_ADDRESS:
+                case RECONNECT_ATTEMPTS:
+                case USE_DUPLICATE_DETECTION:
+                    handleElementText(reader, element, "bridge", bridgeAdd);
+                    break;
+                case STATIC_CONNECTORS:
+                    if (seen.contains(Element.DISCOVERY_GROUP_REF)) {
+                        throw new XMLStreamException(MESSAGES.illegalElement(STATIC_CONNECTORS, DISCOVERY_GROUP_REF), reader.getLocation());
+                    }
+                    processStaticConnectors(reader, bridgeAdd, false);
+                    break;
+                case DISCOVERY_GROUP_REF: {
+                    if (seen.contains(Element.STATIC_CONNECTORS)) {
+                        throw new XMLStreamException(MESSAGES.illegalElement(DISCOVERY_GROUP_REF, STATIC_CONNECTORS), reader.getLocation());
+                    }
+                    final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
+                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, bridgeAdd, reader);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+
+        if (!seen.contains(Element.STATIC_CONNECTORS) && !seen.contains(Element.DISCOVERY_GROUP_REF)) {
+            throw new XMLStreamException(MESSAGES.required(Element.STATIC_CONNECTORS.getLocalName(),
+                    Element.DISCOVERY_GROUP_REF.getLocalName()), reader.getLocation());
+        }
+
+        if(!required.isEmpty()) {
+            missingRequired(reader, required);
+        }
+
+        updates.add(bridgeAdd);
+    }
+
+    protected void processClusterConnection(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+
+        requireSingleAttribute(reader, CommonAttributes.NAME);
+        String name = reader.getAttributeValue(0);
+
+        ModelNode clusterConnectionAdd = getEmptyOperation(ADD, address.clone().add(CommonAttributes.CLUSTER_CONNECTION, name));
+
+        EnumSet<Element> required = EnumSet.of(Element.ADDRESS, Element.CONNECTOR_REF);
+        Set<Element> seen = EnumSet.noneOf(Element.class);
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (!seen.add(element)) {
+                throw ParseUtils.duplicateNamedElement(reader, element.getLocalName());
+            }
+            required.remove(element);
+            switch (element) {
+                case CALL_TIMEOUT:
+                case CONFIRMATION_WINDOW_SIZE:
+                case FORWARD_WHEN_NO_CONSUMERS:
+                case MAX_HOPS:
+                case MIN_LARGE_MESSAGE_SIZE:
+                    handleElementText(reader, element, clusterConnectionAdd);
+                    break;
+                case ADDRESS:  {
+                    handleElementText(reader, element, CommonAttributes.CLUSTER_CONNECTION_ADDRESS.getName(), clusterConnectionAdd);
+                    break;
+                }
+                case CONNECTOR_REF:  {
+                    // Use the "simple" variant
+                    handleElementText(reader, element, "simple", clusterConnectionAdd);
+                    break;
+                }
+                case CHECK_PERIOD:
+                case CONNECTION_TTL:
+                case MAX_RETRY_INTERVAL:
+                case RECONNECT_ATTEMPTS:
+                case RETRY_INTERVAL:
+                case RETRY_INTERVAL_MULTIPLIER:
+                case USE_DUPLICATE_DETECTION:
+                    // Use the "cluster" variant
+                    handleElementText(reader, element, "cluster", clusterConnectionAdd);
+                    break;
+                case STATIC_CONNECTORS:
+                    if (seen.contains(Element.DISCOVERY_GROUP_REF)) {
+                        throw new XMLStreamException(MESSAGES.illegalElement(STATIC_CONNECTORS, DISCOVERY_GROUP_REF), reader.getLocation());
+                    }
+                    processStaticConnectors(reader, clusterConnectionAdd, true);
+                    break;
+                case DISCOVERY_GROUP_REF: {
+                    if (seen.contains(Element.STATIC_CONNECTORS)) {
+                        throw new XMLStreamException(MESSAGES.illegalElement(DISCOVERY_GROUP_REF, STATIC_CONNECTORS), reader.getLocation());
+                    }
+                    final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
+                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, clusterConnectionAdd, reader);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+
+        if(!required.isEmpty()) {
+            missingRequired(reader, required);
+        }
+
+        updates.add(clusterConnectionAdd);
+    }
+
+
 
 }
