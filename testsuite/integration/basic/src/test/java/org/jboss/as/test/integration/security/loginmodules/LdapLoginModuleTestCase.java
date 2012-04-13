@@ -52,7 +52,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.security.common.AbstractLoginModuleStackServerSetupTask;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask;
 import org.jboss.as.test.integration.security.common.LDAPServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.loginmodules.common.servlets.AbstractLoginModuleTestServlet;
@@ -76,8 +76,6 @@ import org.junit.runner.RunWith;
 public class LdapLoginModuleTestCase {
 
     private static Logger LOGGER = Logger.getLogger(LdapLoginModuleTestCase.class);
-
-    private static String SECURITY_DOMAIN_NAME = "LDAP-test";
 
     private static int LDAP_PORT = 1389;
 
@@ -108,7 +106,8 @@ public class LdapLoginModuleTestCase {
         war.addClasses(SecuredLdapLoginModuleTestServlet.class, SimpleUnsecuredServlet.class,
                 AbstractLoginModuleTestServlet.class);
         war.addAsWebInfResource(LdapLoginModuleTestCase.class.getPackage(), "web-basic-authn.xml", "web.xml");
-        war.addAsWebInfResource(new StringAsset("<jboss-web><security-domain>" + SECURITY_DOMAIN_NAME
+        war.addAsWebInfResource(new StringAsset("<jboss-web><security-domain>"
+                + AbstractSecurityDomainStackServerSetupTask.SECURITY_DOMAIN_NAME
                 + "</security-domain></jboss-web>"), "jboss-web.xml");
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(war.toString(true));
@@ -307,22 +306,14 @@ public class LdapLoginModuleTestCase {
     /**
      * A SecurityDomainSetup.
      */
-    static class SecurityDomainSetup extends AbstractLoginModuleStackServerSetupTask {
+    static class SecurityDomainSetup extends AbstractSecurityDomainStackServerSetupTask {
 
         /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup#getSecurityDomainName()
+         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getLoginModuleConfigurations()
          */
         @Override
-        protected String getSecurityDomainName() {
-            return SECURITY_DOMAIN_NAME;
-        }
-
-        /**
-         * @see org.jboss.as.test.integration.security.common.AbstractLoginModuleStackServerSetupTask#getLoginModuleConfigurations()
-         */
-        @Override
-        protected LoginModuleConfiguration[] getLoginModuleConfigurations() {
-            LoginModuleConfiguration ldapLoginModule = new LoginModuleConfiguration() {
+        protected SecurityModuleConfiguration[] getLoginModuleConfigurations() {
+            SecurityModuleConfiguration ldapLoginModule = new SecurityModuleConfiguration() {
 
                 public String getName() {
                     return "Ldap";
@@ -391,7 +382,7 @@ public class LdapLoginModuleTestCase {
                 }
 
             };
-            return new LoginModuleConfiguration[] { ldapLoginModule };
+            return new SecurityModuleConfiguration[] { ldapLoginModule };
         }
     }
 }
