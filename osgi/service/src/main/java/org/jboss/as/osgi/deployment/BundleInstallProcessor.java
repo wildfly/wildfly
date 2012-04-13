@@ -22,11 +22,27 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.as.osgi.OSGiConstants.FRAMEWORK_BASE_NAME;
+import static org.jboss.osgi.framework.IntegrationServices.AUTOINSTALL_PROVIDER_COMPLETE;
+import static org.jboss.osgi.framework.Services.FRAMEWORK_ACTIVE;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.framework.Services;
 
 /**
  * Processes deployments that have OSGi metadata attached.
@@ -38,13 +54,24 @@ import org.jboss.osgi.deployment.deployer.Deployment;
  */
 public class BundleInstallProcessor implements DeploymentUnitProcessor {
 
-    @Override
-    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    private final InitialDeploymentTracker deploymentTracker;
+    private final AtomicBoolean frameworkActivated = new AtomicBoolean();
 
-        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+    public BundleInstallProcessor(InitialDeploymentTracker deploymentListener) {
+        this.deploymentTracker = deploymentListener;
+    }
+
+    @Override
+    public void deploy(final DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
+        final DeploymentUnit depUnit = context.getDeploymentUnit();
         final Deployment deployment = OSGiDeploymentAttachment.getDeployment(depUnit);
         if (deployment != null) {
-            BundleInstallService.addService(phaseContext, deployment);
+            if (frameworkActivated.compareAndSet(false, true)) {
+                activateFramework(context);
+            }
+            ServiceName frameworkDependency = deploymentTracker.isClosed() ? FRAMEWORK_ACTIVE : AUTOINSTALL_PROVIDER_COMPLETE;
+            ServiceName serviceName = BundleInstallService.addService(deploymentTracker, context, deployment, frameworkDependency);
+            deploymentTracker.registerBundleInstallService(serviceName);
         }
     }
 
@@ -54,5 +81,17 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
         if (deployment != null) {
             BundleInstallService.removeService(depUnit);
         }
+    }
+
+    private void activateFramework(final DeploymentPhaseContext context) {
+        Service<Void> service = new AbstractService<Void>() {
+            public void start(StartContext context) throws StartException {
+                context.getController().setMode(Mode.REMOVE);
+            }
+        };
+        ServiceTarget serviceTarget = context.getServiceTarget();
+        ServiceBuilder<Void> builder = serviceTarget.addService(FRAMEWORK_BASE_NAME.append("ACTIVATE"), service);
+        builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
+        builder.install();
     }
 }

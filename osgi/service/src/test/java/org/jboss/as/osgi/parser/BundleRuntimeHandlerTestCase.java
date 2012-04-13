@@ -34,13 +34,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.framework.Services;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
-import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 import org.osgi.service.startlevel.StartLevel;
 
@@ -49,20 +47,11 @@ import org.osgi.service.startlevel.StartLevel;
  * @author Thomas.Diesler@jboss.com
  */
 public class BundleRuntimeHandlerTestCase {
+
     private BundleContext bundleContext;
     private ModelNode contextResult;
     private OperationContext operationContext;
     private StartLevel startLevelService;
-    private ServiceReference startLevelSRef;
-
-    @Before
-    public void setUp() {
-        bundleContext = null;
-        contextResult = null;
-        operationContext = null;
-        startLevelService = null;
-        startLevelSRef = null;
-    }
 
     @Test
     public void testRegister() throws Exception {
@@ -113,9 +102,6 @@ public class BundleRuntimeHandlerTestCase {
 
         BundleRuntimeHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
         Assert.assertEquals(7, contextResult.asInt());
-
-        Mockito.verify(bundleContext).getService(startLevelSRef);
-        Mockito.verify(bundleContext).ungetService(startLevelSRef);
     }
 
     @Test
@@ -234,11 +220,7 @@ public class BundleRuntimeHandlerTestCase {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void mockEnvironment() {
         startLevelService = Mockito.mock(StartLevel.class);
-        startLevelSRef = Mockito.mock(ServiceReference.class);
-
         bundleContext = Mockito.mock(BundleContext.class);
-        Mockito.when(bundleContext.getServiceReference(StartLevel.class.getName())).thenReturn(startLevelSRef);
-        Mockito.when(bundleContext.getService(startLevelSRef)).thenReturn(startLevelService);
 
         Bundle systemBundle = Mockito.mock(Bundle.class);
         Mockito.when(systemBundle.getBundleContext()).thenReturn(bundleContext);
@@ -246,8 +228,16 @@ public class BundleRuntimeHandlerTestCase {
         ServiceController sbsc = Mockito.mock(ServiceController.class);
         Mockito.when(sbsc.getValue()).thenReturn(systemBundle);
 
+        ServiceController scsc = Mockito.mock(ServiceController.class);
+        Mockito.when(scsc.getValue()).thenReturn(bundleContext);
+
+        ServiceController slsc = Mockito.mock(ServiceController.class);
+        Mockito.when(slsc.getValue()).thenReturn(startLevelService);
+
         ServiceRegistry sr = Mockito.mock(ServiceRegistry.class);
+        Mockito.when(sr.getService(Services.SYSTEM_CONTEXT)).thenReturn(scsc);
         Mockito.when(sr.getService(Services.SYSTEM_BUNDLE)).thenReturn(sbsc);
+        Mockito.when(sr.getService(Services.START_LEVEL)).thenReturn(slsc);
 
         contextResult = new ModelNode();
         operationContext = Mockito.mock(OperationContext.class);

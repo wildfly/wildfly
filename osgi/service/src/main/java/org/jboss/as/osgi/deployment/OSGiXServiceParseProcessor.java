@@ -64,7 +64,7 @@ public class OSGiXServiceParseProcessor implements DeploymentUnitProcessor {
             metadata = OSGiMetaDataBuilder.load(xserviceFile.openStream());
             OSGiMetaDataAttachment.attachOSGiMetaData(deploymentUnit, metadata);
         } catch (IOException ex) {
-            throw new DeploymentUnitProcessingException(MESSAGES.cannotParse(xserviceFile));
+            throw MESSAGES.cannotParseOSGiMetadata(ex, xserviceFile);
         }
     }
 

@@ -63,7 +63,7 @@ import org.osgi.framework.BundleContext;
  * @author Thomas.Diesler@jboss.com
  * @since 03-Aug-2011
  */
-public class BundleContextJndiBindingProcessor implements DeploymentUnitProcessor {
+public class BundleContextBindingProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {

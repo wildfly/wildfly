@@ -41,7 +41,7 @@ class BundleReferenceClassLoader extends ModuleClassLoader implements BundleRefe
     BundleReferenceClassLoader(Configuration configuration, Bundle bundle) {
         super(configuration);
         if (bundle == null)
-            throw MESSAGES.nullVar("bundle");
+            throw MESSAGES.illegalArgumentNull("bundle");
         this.bundle = bundle;
     }
 

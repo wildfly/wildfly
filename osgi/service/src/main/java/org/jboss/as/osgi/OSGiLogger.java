@@ -87,14 +87,10 @@ public interface OSGiLogger extends BasicLogger {
     void infoRegisterModule(Module module);
 
     @LogMessage(level = INFO)
-    @Message(id = 11909, value = "Stopping OSGi Framework")
-    void infoStoppingFramework();
-
-    @LogMessage(level = INFO)
-    @Message(id = 11910, value = "Unregister module: %s")
+    @Message(id = 11909, value = "Unregister module: %s")
     void infoUnregisterModule(Module module);
 
     @LogMessage(level = ERROR)
-    @Message(id = 11911, value = "Management operation '%s' failed")
+    @Message(id = 11910, value = "Management operation '%s' failed")
     void errorInOperationHandler(@Cause Throwable cause, String opname);
 }
