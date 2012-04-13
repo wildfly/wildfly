@@ -74,6 +74,7 @@ public enum EJB3SubsystemXMLAttribute {
     SUBDIRECTORY_COUNT("subdirectory-count"),
 
     THREAD_POOL_NAME("thread-pool-name"),
+    TYPE("type"),
 
     USE_QUALIFIED_NAME("use-qualified-name"),
 

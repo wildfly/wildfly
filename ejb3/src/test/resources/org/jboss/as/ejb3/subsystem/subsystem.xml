@@ -2,8 +2,8 @@
 
     <remote connector-ref="remoting-connector" thread-pool-name="default">
         <channel-creation-options>
-            <option name="org.xnio.Options.READ_TIMEOUT" value="20"/>
-            <option name="org.jboss.remoting3.RemotingOptions.MAX_OUTBOUND_MESSAGES" value="1234"/>
+            <option name="READ_TIMEOUT" value="20" type="xnio"/>
+            <option name="MAX_OUTBOUND_MESSAGES" value="1234" type="remoting"/>
         </channel-creation-options>
     </remote>
 

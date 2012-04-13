@@ -51,7 +51,8 @@
             <xs:element name="remote" type="remoteType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="thread-pools" type="threadPoolsType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="iiop" type="iiopType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="in-vm-remote-interface-invocation" type="in-vm-remote-interface-invocationType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="in-vm-remote-interface-invocation" type="in-vm-remote-interface-invocationType"
+                        minOccurs="0" maxOccurs="1"/>
             <xs:element name="default-distinct-name" type="default-distinct-nameType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="statistics" type="statisticsType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
@@ -67,7 +68,7 @@
     <xs:complexType name="entityType">
         <xs:all>
             <xs:element name="bean-instance-pool-ref" type="bean-instance-pool-refType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="optimistic-locking" type="optimistic-lockingType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="optimistic-locking" type="optimistic-lockingType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
     </xs:complexType>
 
@@ -77,7 +78,8 @@
 
     <xs:complexType name="remoteType">
         <xs:all>
-            <xs:element name="channel-creation-options" type="channel-creation-optionsType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="channel-creation-options" type="channel-creation-optionsType" minOccurs="0"
+                        maxOccurs="1"/>
         </xs:all>
         <xs:attribute name="connector-ref" type="xs:string" use="required"/>
         <xs:attribute name="thread-pool-name" type="xs:token" use="required"/>
@@ -234,7 +236,7 @@
     <xs:complexType name="threadPoolType">
         <xs:annotation>
             <xs:documentation>
-            <![CDATA[
+                <![CDATA[
                 A thread pool executor with an unbounded queue.  Such a thread pool has a core size and a queue with no
                 upper bound.  When a task is submitted, if the number of running threads is less than the core size,
                 a new thread is created.  Otherwise, the task is placed in queue.  If too many tasks are allowed to be
@@ -293,14 +295,35 @@
     </xs:complexType>
 
     <xs:complexType name="channel-creation-optionsType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                The options that will be used while creating the channel for EJB remote invocation communication
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
         <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="option" type="optionType"/>
         </xs:choice>
     </xs:complexType>
 
     <xs:complexType name="optionType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                The "name" attribute specifies the name of the option being configured.
+
+                The "value" attribute is the value that's going to be set for the option.
+
+                The "type" attribute value can either be "xnio" or "remoting". If it's "xnio", then the option
+                being configured will be looked up against the org.xnio.Options class. If it's "remoting" then
+                the option will be looked up against the org.xnio.Option.RemotingOptions class.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="value" type="xs:string"/>
+        <xs:attribute name="type" type="xs:string" use="required"/>
     </xs:complexType>
 
 </xs:schema>
