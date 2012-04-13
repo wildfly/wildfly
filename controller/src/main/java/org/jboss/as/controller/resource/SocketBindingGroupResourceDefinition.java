@@ -93,9 +93,7 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
         resourceRegistration.registerReadOnlyAttribute(NAME, null);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_INTERFACE, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_INTERFACE) {
             protected void validateUpdatedModel(final OperationContext context, final Resource model) throws OperationFailedException {
-                if (!forDomainModel) {
-                    validateDefaultInterfaceReference(context, model.getModel());
-                }
+                validateDefaultInterfaceReference(context, model.getModel());
             }
         });
 
