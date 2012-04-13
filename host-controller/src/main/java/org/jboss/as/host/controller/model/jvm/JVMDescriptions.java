@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -46,7 +47,7 @@ final class JVMDescriptions {
     static ModelNode getOptionAddOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set("add-jvm-option");
+        node.get(OPERATION_NAME).set(JVMOptionAddHandler.OPERATION_NAME);
         node.get(DESCRIPTION).set(bundle.getString("jvm.option.add"));
         node.get(REQUEST_PROPERTIES, JvmAttributes.JVM_OPTION, TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, JvmAttributes.JVM_OPTION, DESCRIPTION).set(bundle.getString("jvm.option"));
@@ -58,11 +59,38 @@ final class JVMDescriptions {
     static ModelNode getOptionRemoveOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set("remove-jvm-option");
+        node.get(OPERATION_NAME).set(JVMOptionRemoveHandler.OPERATION_NAME);
         node.get(DESCRIPTION).set(bundle.getString("jvm.option.remove"));
         node.get(REQUEST_PROPERTIES, JvmAttributes.JVM_OPTION, TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, JvmAttributes.JVM_OPTION, DESCRIPTION).set(bundle.getString("jvm.option"));
         node.get(REQUEST_PROPERTIES, JvmAttributes.JVM_OPTION, REQUIRED).set(true);
+        node.get(REPLY_PROPERTIES).setEmptyObject();
+        return node;
+    }
+
+    static ModelNode getEnvVarAddOperation(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(JVMEnvironmentVariableAddHandler.OPERATION_NAME);
+        node.get(DESCRIPTION).set(bundle.getString("jvm.environment-variable.add"));
+        node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.NAME, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.NAME, DESCRIPTION).set(bundle.getString("jvm.environment-variable.name"));
+        node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.NAME, REQUIRED).set(true);
+        node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.VALUE, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.VALUE, DESCRIPTION).set(bundle.getString("jvm.environment-variable.value"));
+        node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.VALUE, REQUIRED).set(true);
+        node.get(REPLY_PROPERTIES).setEmptyObject();
+        return node;
+    }
+
+    static ModelNode getEnvVarRemoveOperation(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(JVMEnvironmentVariableRemoveHandler.OPERATION_NAME);
+        node.get(DESCRIPTION).set(bundle.getString("jvm.environment-variable.remove"));
+        node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.NAME, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.NAME, DESCRIPTION).set(bundle.getString("jvm.environment-variable.name"));
+        node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.NAME, REQUIRED).set(true);
         node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
@@ -73,5 +101,4 @@ final class JVMDescriptions {
         }
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
-
 }

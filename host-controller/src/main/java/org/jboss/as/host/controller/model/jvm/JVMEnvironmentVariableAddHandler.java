@@ -21,6 +21,8 @@
 */
 package org.jboss.as.host.controller.model.jvm;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.util.Locale;
@@ -35,31 +37,33 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
-final class JVMOptionAddHandler implements OperationStepHandler, DescriptionProvider {
+final class JVMEnvironmentVariableAddHandler implements OperationStepHandler, DescriptionProvider {
 
-    static final String OPERATION_NAME = "add-jvm-option";
-    static final JVMOptionAddHandler INSTANCE = new JVMOptionAddHandler();
+    static final String OPERATION_NAME = "add-item-to-environment-variables-list";
+    static final JVMEnvironmentVariableAddHandler INSTANCE = new JVMEnvironmentVariableAddHandler();
 
     private final ParameterValidator validator = new StringLengthValidator(1);
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        validator.validateParameter(JvmAttributes.JVM_OPTION, operation.get(JvmAttributes.JVM_OPTION));
+        validator.validateParameter(NAME, operation.get(NAME));
+        validator.validateParameter(VALUE, operation.get(VALUE));
 
         final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         final ModelNode model = resource.getModel();
 
-        final ModelNode option = operation.require(JvmAttributes.JVM_OPTION);
-        ModelNode jvmOptions = model.get(JvmAttributes.JVM_OPTIONS);
-        if (jvmOptions.isDefined()) {
-            for (ModelNode optionNode : jvmOptions.asList()) {
-                if (optionNode.equals(option)) {
-                    throw MESSAGES.jvmOptionAlreadyExists(option.asString());
+        final String name = operation.require(NAME).asString();
+        final String value = operation.require(VALUE).asString();
+        ModelNode variables = model.get(JvmAttributes.JVM_ENV_VARIABLES);
+        if (variables.isDefined()) {
+            for (ModelNode varNode : variables.asList()) {
+                if (varNode.asProperty().getName().equals(name)) {
+                    throw MESSAGES.envVariableAlreadyExists(varNode.asProperty().getName());
                 }
             }
         }
-        model.get(JvmAttributes.JVM_OPTIONS).add(option);
+        model.get(JvmAttributes.JVM_ENV_VARIABLES).add(name, value);
 
         context.completeStep();
     }
@@ -69,6 +73,6 @@ final class JVMOptionAddHandler implements OperationStepHandler, DescriptionProv
      */
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return JVMDescriptions.getOptionAddOperation(locale);
+        return JVMDescriptions.getEnvVarAddOperation(locale);
     }
 }
