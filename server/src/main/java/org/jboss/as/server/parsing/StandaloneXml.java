@@ -85,6 +85,7 @@ import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -761,6 +762,11 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                 case DEFAULT_INTERFACE: {
                     SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(value, op, reader);
                     required.remove(attribute);
+                    if (op.get(SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.getName()).getType() != ModelType.EXPRESSION
+                            && !interfaces.contains(value)) {
+                        throw MESSAGES.unknownInterface(value, Attribute.DEFAULT_INTERFACE.getLocalName(),
+                                Element.INTERFACES.getLocalName(), reader.getLocation());
+                    }
                     break;
                 }
                 case PORT_OFFSET: {
@@ -829,6 +835,11 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                 case DEFAULT_INTERFACE: {
                     SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(value, op, reader);
                     required.remove(attribute);
+                    if (op.get(SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.getName()).getType() != ModelType.EXPRESSION
+                            && !interfaces.contains(value)) {
+                        throw MESSAGES.unknownInterface(value, Attribute.DEFAULT_INTERFACE.getLocalName(),
+                                Element.INTERFACES.getLocalName(), reader.getLocation());
+                    }
                     break;
                 }
                 case PORT_OFFSET: {
@@ -856,7 +867,6 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case SOCKET_BINDING: {
-                    // FIXME JBAS-8825
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
                         throw MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(),

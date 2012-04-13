@@ -85,6 +85,7 @@ import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -375,6 +376,11 @@ public class DomainXml extends CommonXml {
         bindingGroupUpdate.get(OP).set(ADD);
 
         SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(defaultInterface, bindingGroupUpdate, reader);
+        if (bindingGroupUpdate.get(SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.getName()).getType() != ModelType.EXPRESSION
+                && !interfaces.contains(defaultInterface)) {
+            throw MESSAGES.unknownInterface(defaultInterface, Attribute.DEFAULT_INTERFACE.getLocalName(),
+                    Element.INTERFACES.getLocalName(), reader.getLocation());
+        }
 
         final ModelNode includes = bindingGroupUpdate.get(INCLUDES);
         includes.setEmptyList();
@@ -430,6 +436,11 @@ public class DomainXml extends CommonXml {
         bindingGroupUpdate.get(OP).set(ADD);
 
         SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(defaultInterface, bindingGroupUpdate, reader);
+        if (bindingGroupUpdate.get(SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.getName()).getType() != ModelType.EXPRESSION
+                && !interfaces.contains(defaultInterface)) {
+            throw MESSAGES.unknownInterface(defaultInterface, Attribute.DEFAULT_INTERFACE.getLocalName(),
+                    Element.INTERFACES.getLocalName(), reader.getLocation());
+        }
 
         final ModelNode includes = bindingGroupUpdate.get(INCLUDES);
         includes.setEmptyList();

@@ -984,26 +984,12 @@ public interface ControllerMessages {
      * is not a valid multicast address.
      *
      * @param value    the invalid value.
-     * @param name     the name of the attribute.
-     * @param location the location of the error.
+     * @param name     the name of the attribute.\
      *
      * @return a {@link XMLStreamException} for the error.
      */
     @Message(id = 14710, value = "Value %s for attribute %s is not a valid multicast address")
-    XMLStreamException invalidMulticastAddress(String value, String name, @Param Location location);
-
-    /**
-     * Creates an exception indicating the {@code value} for the attribute, represented by the {@code name} parameter,
-     * is not a valid multicast address.
-     *
-     * @param cause    the cause of the error.
-     * @param value    the invalid value.
-     * @param name     the name of the attribute.
-     * @param location the location of the error.
-     *
-     * @return a {@link XMLStreamException} for the error.
-     */
-    XMLStreamException invalidMulticastAddress(@Cause Throwable cause, String value, String name, @Param Location location);
+    OperationFailedException invalidMulticastAddress(String value, String name);
 
     /**
      * Creates an exception indicating an outbound socket binding cannot have both the {@code localTag} and the
@@ -2468,5 +2454,18 @@ public interface ControllerMessages {
      */
     @Message(id = 14855, value = "%s may not be ModelType.EXPRESSION")
     OperationFailedException expressionNotAllowed(String name);
+
+    /**
+     * Creates an exception indicating the {@code value} for the attribute, represented by the {@code name} parameter,
+     * is not a valid multicast address.
+     *
+     * @param cause    the cause of the error.
+     * @param value    the invalid value.
+     * @param name     the name of the attribute.
+     *
+     * @return a {@link XMLStreamException} for the error.
+     */
+    @Message(id = 14857, value = "Value %s for attribute %s is not a valid multicast address")
+    OperationFailedException unknownMulticastAddress(@Cause UnknownHostException cause, String value, String name);
 
 }
