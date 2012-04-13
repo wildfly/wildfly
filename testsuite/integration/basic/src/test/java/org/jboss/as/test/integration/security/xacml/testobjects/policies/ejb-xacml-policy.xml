@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Policy xmlns="urn:oasis:names:tc:xacml:2.0:policy:schema:os"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:oasis:names:tc:xacml:2.0:policy:schema:os
+        http://docs.oasis-open.org/xacml/access_control-xacml-2.0-policy-schema-os.xsd"
+	PolicyId="urn:oasis:names:tc:xacml:2.0:jboss-test:XV:policy"
+	RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:deny-overrides">
+	<Description>Policy for Subject RBAC</Description>
+	<Target />
+	<Rule RuleId="urn:oasis:names:tc:xacml:2.0:jboss-test:XVI:rule"
+		Effect="Deny">
+		<Description>
+		</Description>
+		<Target>
+			<Subjects>
+				<Subject>
+					<SubjectMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">jduke</AttributeValue>
+						<SubjectAttributeDesignator
+							AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
+							DataType="http://www.w3.org/2001/XMLSchema#string" />
+					</SubjectMatch>
+				</Subject>
+<!-- 
+				<Subject>				
+					<SubjectMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">TestRole</AttributeValue>
+						<SubjectAttributeDesignator
+							AttributeId="urn:oasis:names:tc:xacml:2.0:subject:role" DataType="http://www.w3.org/2001/XMLSchema#string" />
+					</SubjectMatch>
+				</Subject>
+ -->			
+			</Subjects>
+			<Resources>
+				<Resource>
+					<ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">HelloBean</AttributeValue>
+						<ResourceAttributeDesignator
+							AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
+							DataType="http://www.w3.org/2001/XMLSchema#string" />
+					</ResourceMatch>
+				</Resource>
+			</Resources>
+			<Actions>
+				<Action>
+					<ActionMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">sayHello</AttributeValue>
+						<ActionAttributeDesignator
+							AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+							DataType="http://www.w3.org/2001/XMLSchema#string" />
+					</ActionMatch>
+				</Action>
+			</Actions>
+		</Target>
+	</Rule>
+</Policy>
