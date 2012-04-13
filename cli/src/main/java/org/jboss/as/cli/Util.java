@@ -54,9 +54,11 @@ public class Util {
     public static final String DATASOURCES = "datasources";
     public static final String DEPLOY = "deploy";
     public static final String DEPLOYMENT = "deployment";
+    public static final String DEPLOYMENT_NAME = "deployment-name";
     public static final String DESCRIPTION = "description";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
     public static final String DOMAIN_RESULTS = "domain-results";
+    public static final String DRIVER_MODULE_NAME = "driver-module-name";
     public static final String DRIVER_NAME = "driver-name";
     public static final String ENABLED = "enabled";
     public static final String EXPRESSIONS_ALLOWED = "expressions-allowed";

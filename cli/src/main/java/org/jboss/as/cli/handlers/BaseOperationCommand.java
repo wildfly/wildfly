@@ -104,7 +104,7 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
         final Iterator<Node> iterator = requiredAddress.iterator();
         if(iterator.hasNext()) {
             final String firstType = iterator.next().getType();
-            dependsOnProfile = "subsystem".equals(firstType) || Util.PROFILE.equals(firstType);
+            dependsOnProfile = Util.SUBSYSTEM.equals(firstType) || Util.PROFILE.equals(firstType);
         }
         if(requiredAddress.endsOnType()) {
             requiredType = requiredAddress.toParentNode().getType();
@@ -195,6 +195,9 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
         } catch (Exception e) {
             throw new CommandFormatException("Failed to perform operation: " + e.getLocalizedMessage());
         }
+        if (!Util.isSuccess(response)) {
+            throw new CommandFormatException(Util.getFailureDescription(response));
+        }
         handleResponse(ctx, response, Util.COMPOSITE.equals(request.get(Util.OPERATION).asString()));
     }
 
@@ -217,10 +220,7 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
         opHeaders.set(headersNode);
     }
 
-    protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) throws CommandFormatException {
-        if (!Util.isSuccess(response)) {
-            throw new CommandFormatException(Util.getFailureDescription(response));
-        }
+    protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) throws CommandLineException {
     }
 
     @Override
