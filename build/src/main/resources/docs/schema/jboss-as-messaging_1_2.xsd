@@ -600,7 +600,6 @@
          <!-- start of common elements                                       -->
          <!--  ============================================================= -->
          <xs:element name="discovery-group-ref" type="discovery-group-refType" maxOccurs="1" minOccurs="0" />
-         <xs:element name="discovery-initial-wait-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="connectors" maxOccurs="1" minOccurs="0">
             <xs:complexType>
                <xs:sequence>
@@ -689,7 +688,6 @@
          <!-- start of common elements                                       -->
          <!--  ============================================================= -->
          <xs:element name="discovery-group-ref" type="discovery-group-refType" maxOccurs="1" minOccurs="0" />
-         <xs:element name="discovery-initial-wait-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="connectors" maxOccurs="1" minOccurs="0">
             <xs:complexType>
                <xs:sequence>

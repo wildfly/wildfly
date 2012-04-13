@@ -105,7 +105,6 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 }
                 case HA:
                 case CONNECTION_FACTORY_TYPE:
-                case DISCOVERY_INITIAL_WAIT_TIMEOUT:
                 case CLIENT_FAILURE_CHECK_PERIOD:
                 case CONNECTION_TTL:
                 case CALL_TIMEOUT:

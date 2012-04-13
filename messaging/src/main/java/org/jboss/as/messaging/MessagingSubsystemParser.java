@@ -89,8 +89,6 @@ import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
 import static org.jboss.as.messaging.CommonAttributes.LIVE_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
-import static org.jboss.as.messaging.CommonAttributes.MAX_POOL_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.MIN_POOL_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.PARAMS;
 import static org.jboss.as.messaging.CommonAttributes.PATH;
@@ -1335,6 +1333,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
+    static void skipElementText(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        reader.getElementText();
+    }
+
     /** @deprecated use AttributeDefinition */
     @Deprecated
     static void handleElementText(final XMLExtendedStreamReader reader, final Element element, final ModelNode node, final ModelType expectedType,
@@ -1972,6 +1974,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             writer.writeEndElement();
         }
 
+        // write the element for compatibility sake but it is deprecated
         CommonAttributes.DISCOVERY_INITIAL_WAIT_TIMEOUT.marshallAsElement(factory, writer);
 
         if (factory.hasDefined(CONNECTOR)) {
@@ -2254,7 +2257,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 }
                 case HA:
                 case CONNECTION_FACTORY_TYPE:
-                case DISCOVERY_INITIAL_WAIT_TIMEOUT:
                 case CLIENT_FAILURE_CHECK_PERIOD:
                 case CONNECTION_TTL:
                 case CALL_TIMEOUT:
@@ -2299,6 +2301,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case PASSWORD:
                     // Element name is overloaded, handleElementText can not be used, we must use the correct attribute
                     CommonAttributes.PCF_PASSWORD.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
+                    break;
+                case DISCOVERY_INITIAL_WAIT_TIMEOUT:
+                    MessagingLogger.ROOT_LOGGER.deprecatedXMLElement(element.toString());
+                    skipElementText(reader);
                     break;
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
