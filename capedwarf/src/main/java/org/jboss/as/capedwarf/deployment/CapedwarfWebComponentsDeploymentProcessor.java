@@ -32,6 +32,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
     private static final String GAE_FILTER_NAME = "GAEFilter";
     private static final String AUTH_SERVLET_NAME = "authservlet";
     private static final String ADMIN_SERVLET_NAME = "CapedwarfAdminServlet";
+    private static final String CHANNEL_SERVLET_NAME = "ChannelServlet";
 
     private final ListenerMetaData GAE_LISTENER;
     private final ListenerMetaData CDI_LISTENER;
@@ -40,8 +41,10 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
     private final FilterMappingMetaData GAE_FILTER_MAPPING;
     private final ServletMetaData GAE_SERVLET;
     private final ServletMetaData ADMIN_SERVLET;
+    private final ServletMetaData CHANNEL_SERVLET;
     private final ServletMappingMetaData GAE_SERVLET_MAPPING;
     private final ServletMappingMetaData ADMIN_SERVLET_MAPPING;
+    private final ServletMappingMetaData CHANNEL_SERVLET_MAPPING;
     private final ResourceReferenceMetaData INFINISPAN_REF;
     private final ResourceReferenceMetaData HS_REF;
 
@@ -55,6 +58,9 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         GAE_SERVLET_MAPPING = createAuthServletMapping();
         ADMIN_SERVLET = createAdminServlet();
         ADMIN_SERVLET_MAPPING = createAdminServletMapping();
+        CHANNEL_SERVLET = createChannelServlet();
+        CHANNEL_SERVLET_MAPPING = createChannelServletMapping();
+
         INFINISPAN_REF = createInfinispanRef();
         HS_REF = createHibernateSearchRef();
     }
@@ -62,18 +68,21 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
     @Override
     protected void doDeploy(DeploymentUnit unit, WebMetaData webMetaData, Type type) {
         if (type == Type.SPEC) {
-            addGaeListenerTo(webMetaData);
-            addCdiListenerTo(webMetaData);
-            addAsListenerTo(webMetaData);
+            getListeners(webMetaData).add(0, GAE_LISTENER);
+            getListeners(webMetaData).add(CDI_LISTENER);
+            getListeners(webMetaData).add(CDAS_LISTENER);
 
-            addGaeFilterTo(webMetaData);
-            addGaeFilterMappingTo(webMetaData);
+            getFilters(webMetaData).add(GAE_FILTER);
+            getFilterMappings(webMetaData).add(0, GAE_FILTER_MAPPING);
 
-            addAuthServletTo(webMetaData);
-            addAuthServletMappingTo(webMetaData);
+            getServlets(webMetaData).add(GAE_SERVLET);
+            getServletMappings(webMetaData).add(GAE_SERVLET_MAPPING);
 
-            addAdminServletTo(webMetaData);
-            addAdminServletMappingTo(webMetaData);
+            getServlets(webMetaData).add(ADMIN_SERVLET);
+            getServletMappings(webMetaData).add(ADMIN_SERVLET_MAPPING);
+
+            getServlets(webMetaData).add(CHANNEL_SERVLET);
+            getServletMappings(webMetaData).add(CHANNEL_SERVLET_MAPPING);
 
             addResourceReference(webMetaData);
         }
@@ -86,18 +95,6 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
             webMetaData.setContextParams(contextParams);
         }
         contextParams.add(param);
-    }
-
-    private void addGaeListenerTo(WebMetaData webMetaData) {
-        getListeners(webMetaData).add(0, GAE_LISTENER);
-    }
-
-    private void addCdiListenerTo(WebMetaData webMetaData) {
-        getListeners(webMetaData).add(CDI_LISTENER);
-    }
-
-    private void addAsListenerTo(WebMetaData webMetaData) {
-        getListeners(webMetaData).add(CDAS_LISTENER);
     }
 
     private ListenerMetaData createCdiListener() {
@@ -127,10 +124,6 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         return listeners;
     }
 
-    private void addGaeFilterTo(WebMetaData webMetaData) {
-        getFilters(webMetaData).add(GAE_FILTER);
-    }
-
     private FilterMetaData createGaeFilter() {
         FilterMetaData filter = new FilterMetaData();
         filter.setFilterName(GAE_FILTER_NAME);
@@ -145,10 +138,6 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
             webMetaData.setFilters(filters);
         }
         return filters;
-    }
-
-    private void addGaeFilterMappingTo(WebMetaData webMetaData) {
-        getFilterMappings(webMetaData).add(0, GAE_FILTER_MAPPING);
     }
 
     private FilterMappingMetaData createGaeFilterMapping() {
@@ -166,14 +155,6 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
             webMetaData.setFilterMappings(filterMappings);
         }
         return filterMappings;
-    }
-
-    private void addAuthServletTo(WebMetaData webMetaData) {
-        getServlets(webMetaData).add(GAE_SERVLET);
-    }
-
-    private void addAdminServletTo(WebMetaData webMetaData) {
-        getServlets(webMetaData).add(ADMIN_SERVLET);
     }
 
     private ServletsMetaData getServlets(WebMetaData webMetaData) {
@@ -201,12 +182,12 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         return servlet;
     }
 
-    private void addAuthServletMappingTo(WebMetaData webMetaData) {
-        getServletMappings(webMetaData).add(GAE_SERVLET_MAPPING);
-    }
-
-    private void addAdminServletMappingTo(WebMetaData webMetaData) {
-        getServletMappings(webMetaData).add(ADMIN_SERVLET_MAPPING);
+    private ServletMetaData createChannelServlet() {
+        ServletMetaData servlet = new ServletMetaData();
+        servlet.setServletName(CHANNEL_SERVLET_NAME);
+        servlet.setServletClass("org.jboss.capedwarf.channel.servlet.ChannelServlet");
+        servlet.setEnabled(true);
+        return servlet;
     }
 
     private List<ServletMappingMetaData> getServletMappings(WebMetaData webMetaData) {
@@ -229,6 +210,13 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         ServletMappingMetaData servletMapping = new ServletMappingMetaData();
         servletMapping.setServletName(ADMIN_SERVLET_NAME);
         servletMapping.setUrlPatterns(Arrays.asList("/_ah/admin/*", "/_ah/admin/"));
+        return servletMapping;
+    }
+
+    private ServletMappingMetaData createChannelServletMapping() {
+        ServletMappingMetaData servletMapping = new ServletMappingMetaData();
+        servletMapping.setServletName(CHANNEL_SERVLET_NAME);
+        servletMapping.setUrlPatterns(Arrays.asList("/_ah/channel/*", "/_ah/channel/"));
         return servletMapping;
     }
 
