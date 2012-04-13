@@ -253,4 +253,8 @@ public interface WSLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 15592, value = "Cannot unregister record processor with JMX server")
     void cannotUnregisterRecordProcessor();
+
+    @LogMessage(level = INFO)
+    @Message(id = 15593, value = "MBeanServer not available, skipping registration/unregistration of %s")
+    void mBeanServerNotAvailable(Object bean);
 }

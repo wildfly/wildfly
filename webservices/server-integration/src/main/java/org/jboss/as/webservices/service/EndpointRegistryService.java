@@ -82,7 +82,7 @@ public final class EndpointRegistryService implements Service<EndpointRegistry> 
 
     public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServiceListener<Object> listener) {
         final ServiceBuilder<EndpointRegistry> builder = serviceTarget.addService(WSServices.REGISTRY_SERVICE, INSTANCE);
-        builder.addDependency(DependencyType.REQUIRED, MBEAN_SERVER_NAME, MBeanServer.class, INSTANCE.getMBeanServerInjector());
+        builder.addDependency(DependencyType.OPTIONAL, MBEAN_SERVER_NAME, MBeanServer.class, INSTANCE.getMBeanServerInjector());
         builder.addListener(listener);
         builder.setInitialMode(Mode.ACTIVE);
         return builder.install();
