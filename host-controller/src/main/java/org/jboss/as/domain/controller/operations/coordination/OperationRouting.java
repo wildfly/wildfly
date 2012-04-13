@@ -177,7 +177,6 @@ public class OperationRouting {
         this.hosts.add(host);
         this.twoStep = twoStep;
         singleHost = host;
-        hosts.add(host);
     }
 
     /**
