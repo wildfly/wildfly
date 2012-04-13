@@ -39,7 +39,7 @@ import org.osgi.util.xml.XMLParserActivator;
 import java.net.URL;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-import static org.jboss.as.osgi.service.FrameworkBootstrapService.SERVICE_BASE_NAME;
+import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 
 /**
  * An service that provides {@link javax.xml.parsers.SAXParserFactory} and {@link javax.xml.parsers.DocumentBuilderFactory}

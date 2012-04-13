@@ -22,8 +22,19 @@
 
 package org.jboss.as.osgi.parser;
 
+import static org.jboss.as.osgi.OSGiConstants.FRAMEWORK_BASE_NAME;
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.osgi.service.FrameworkBootstrapService;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -35,15 +46,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
-
 /**
  * The OSGi subsystem state.
  *
@@ -53,7 +55,7 @@ import java.util.Observable;
  */
 public class SubsystemState  extends Observable implements Service<SubsystemState> {
 
-    public static final ServiceName SERVICE_NAME = FrameworkBootstrapService.FRAMEWORK_BASE_NAME.append("subsystemstate");
+    public static final ServiceName SERVICE_NAME = FRAMEWORK_BASE_NAME.append("subsystemstate");
     public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES = "org.jboss.osgi.system.modules";
     public static final String PROP_JBOSS_OSGI_SYSTEM_PACKAGES = "org.jboss.osgi.system.packages";
     public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA = "org.jboss.osgi.system.modules.extra";
@@ -167,9 +169,9 @@ public class SubsystemState  extends Observable implements Service<SubsystemStat
 
         public OSGiCapability(String identifier, Integer startlevel) {
             if (identifier == null)
-                throw new IllegalArgumentException("Null identifier");
+                throw MESSAGES.illegalArgumentNull("identifier");
             this.identifier = identifier;
-            this.startlevel = (startlevel != null ? startlevel : 1);
+            this.startlevel = startlevel;
         }
 
         public String getIdentifier() {

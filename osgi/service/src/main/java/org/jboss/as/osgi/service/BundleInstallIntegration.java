@@ -40,7 +40,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleInstallProvider;
-import org.jboss.osgi.framework.BundleManagerService;
+import org.jboss.osgi.framework.BundleManagerIntegration;
+import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.BundleException;
 
@@ -58,23 +59,23 @@ import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
  * @author thomas.diesler@jboss.com
  * @since 24-Nov-2010
  */
-public class BundleInstallProviderIntegration implements BundleInstallProvider {
+public class BundleInstallIntegration implements BundleInstallProvider {
 
     private final InjectedValue<ModelController> injectedController = new InjectedValue<ModelController>();
-    private final InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
+    private final InjectedValue<BundleManagerIntegration> injectedBundleManager = new InjectedValue<BundleManagerIntegration>();
     private volatile ServerDeploymentManager deploymentManager;
 
     public static ServiceController<?> addService(final ServiceTarget target) {
-        BundleInstallProviderIntegration service = new BundleInstallProviderIntegration();
-        ServiceBuilder<BundleInstallProvider> builder = target.addService(Services.BUNDLE_INSTALL_PROVIDER, service);
+        BundleInstallIntegration service = new BundleInstallIntegration();
+        ServiceBuilder<BundleInstallProvider> builder = target.addService(IntegrationServices.BUNDLE_INSTALL_PROVIDER, service);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, service.injectedController);
-        builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
+        builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerIntegration.class, service.injectedBundleManager);
         builder.addDependency(Services.FRAMEWORK_CREATE);
         builder.setInitialMode(Mode.ON_DEMAND);
         return builder.install();
     }
 
-    private BundleInstallProviderIntegration() {
+    private BundleInstallIntegration() {
     }
 
     @Override
@@ -124,7 +125,7 @@ public class BundleInstallProviderIntegration implements BundleInstallProvider {
         } catch (BundleException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new BundleException(MESSAGES.cannotDeployBundle(dep), ex);
+            throw MESSAGES.cannotDeployBundle(ex, dep);
         }
     }
 
