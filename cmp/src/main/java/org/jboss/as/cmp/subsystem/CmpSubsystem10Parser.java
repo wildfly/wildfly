@@ -23,6 +23,7 @@
 package org.jboss.as.cmp.subsystem;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
@@ -44,6 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
@@ -160,16 +162,22 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
         address.add(HILO_KEY_GENERATOR, name);
         address.protect();
         op.get(OP_ADDR).set(address);
+        final EnumSet<Element> required = EnumSet.of(Element.DATA_SOURCE, Element.TABLE_NAME, Element.ID_COLUMN, Element.SEQUENCE_COLUMN, Element.SEQUENCE_NAME);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final String value = reader.getElementText();
             final String tag = reader.getLocalName();
+            final Element element = Element.forName(tag);
+            required.remove(element);
 
             SimpleAttributeDefinition attribute = HiLoKeyGeneratorResourceDescription.ATTRIBUTE_MAP.get(tag);
             if(attribute == null) {
                 throw unexpectedElement(reader);
             }
             attribute.parseAndSetParameter(value, op, reader);
+        }
+        if(!required.isEmpty()) {
+            throw missingRequiredElement(reader, required);
         }
         return op;
     }
