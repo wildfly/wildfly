@@ -39,6 +39,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="default-controller" minOccurs="0"/>
+                <xs:element ref="validate-operation-requests" minOccurs="0">
                 <xs:element ref="history" minOccurs="0"/>
                 <xs:element ref="ssl" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
@@ -58,6 +59,16 @@
                 <xs:element name="port" type="xs:int" minOccurs="0" default="9999"/>
             </xs:sequence>
         </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="validate-operation-requests" type="xs:boolean" default="true">
+        <xs:annotation>
+            <xs:documentation>
+                Indicates whether the parameter list of the operation reuqests
+                should be validated before the requests are sent to the controller
+                for the execution.
+            </xs:documentation>
+        </xs:annotation>
     </xs:element>
     
     <xs:element name="history">

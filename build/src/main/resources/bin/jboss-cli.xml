@@ -3,13 +3,15 @@
 <!--
    JBoss AS7 Command-line Interface configuration.
 -->
-<jboss-cli xmlns="urn:jboss:cli:1.0">
+<jboss-cli xmlns="urn:jboss:cli:1.1">
 
     <!-- The default controller to connect to when 'connect' command is executed w/o arguments -->
     <default-controller>
         <host>localhost</host>
         <port>9999</port>
     </default-controller>
+    
+    <validate-operation-requests>true</validate-operation-requests>
     
     <!-- Command and operation history log configuration -->
     <history>
