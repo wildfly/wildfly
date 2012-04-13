@@ -27,11 +27,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -180,18 +178,11 @@ public class OSGiManagementTestCase extends AbstractCliTestBase {
         List<?> propertyNames = (List<?>) cliresult1.getResult();
         assertTrue(propertyNames.contains(propName));
 
-        // check the standalone.xml file to see that the value appeared in there
-        String contents = readTextFile(getStandaloneFullFile());
-        assertTrue("Configuration file should contain the property", contents.contains("testing123testing"));
-
         callCLI("/subsystem=osgi/property=" + propName + ":remove");
 
         CLIOpResult cliresult2 = callCLI("/subsystem=osgi:read-children-names(child-type=property)");
         List<?> propertyNames2 = (List<?>) cliresult2.getResult();
         assertFalse(propertyNames2.contains(propName));
-
-        String contents2 = readTextFile(getStandaloneFullFile());
-        assertFalse("Property should be removed from configuration file", contents2.contains("testing123testing"));
     }
 
     @Test
@@ -220,18 +211,11 @@ public class OSGiManagementTestCase extends AbstractCliTestBase {
         Map<?, ?> resultMap = (Map<?, ?>) cliresult2.getResult();
         assertEquals("ACTIVE", resultMap.get("state"));
 
-        // Check the xml configuration file
-        String contents = readTextFile(getStandaloneFullFile());
-        assertTrue("Configuration file should contain the capability", contents.contains(capabilityName));
-
         callCLI("/subsystem=osgi/capability=" + capabilityName + ":remove");
 
         CLIOpResult cliresult3 = callCLI("/subsystem=osgi:read-children-names(child-type=capability)");
         List<?> capNames2 = (List<?>) cliresult3.getResult();
         assertFalse(capNames2.contains(capabilityName));
-
-        String contents2 = readTextFile(getStandaloneFullFile());
-        assertFalse("Configuration file should contain the capability", contents2.contains(capabilityName));
 
         // clean up
         bundleFile.delete();
@@ -245,26 +229,11 @@ public class OSGiManagementTestCase extends AbstractCliTestBase {
         try {
             callCLI("/subsystem=osgi:write-attribute(name=activation,value=eager)");
 
-            // Check the xml configuration file
-            String contents = readTextFile(getStandaloneFullFile());
-            assertTrue("Configuration file should contain the eager setting", contents.contains("activation=\"eager\""));
+            CLIOpResult cliresult2 = callCLI("/subsystem=osgi:read-attribute(name=activation)");
+            assertEquals("eager", cliresult2.getResult());
         } finally {
             callCLI("/subsystem=osgi:write-attribute(name=activation,value=lazy)");
-
-            String contents = readTextFile(getStandaloneFullFile());
-            assertTrue("Configuration file should contain the lazy setting", contents.contains("activation=\"lazy\""));
         }
-    }
-
-    private File getStandaloneFullFile() {
-        String baseDir = System.getProperty("jboss.inst");
-        String xmlFile = baseDir + "/standalone/configuration/standalone-full.xml";
-        return new File(xmlFile);
-    }
-
-    private String readTextFile(File file) throws FileNotFoundException {
-        // The following reads the file into a string
-        return new Scanner(file).useDelimiter("\\A").next();
     }
 
     @SuppressWarnings("unchecked")
