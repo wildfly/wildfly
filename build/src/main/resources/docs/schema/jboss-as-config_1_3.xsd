@@ -370,7 +370,37 @@
 	    </xs:complexContent>                            
     </xs:complexType>
     
-
+    <xs:complexType name="localType">
+        <xs:annotation>
+            <xs:documentation>
+                This type definition is used to control the local authentication mechanism.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="default-user" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    When using the local mechanism it is optional for the client side to send an
+                    authentication user name - this attribute specifies the user name to be assumed
+                    if the remote client does not send one.
+                </xs:documentation>
+            </xs:annotation>            
+        </xs:attribute>
+        <xs:attribute name="allowed-users" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    A comma separated list of users that can be specified by the client when connecting 
+                    using the local authentication mechanism.
+                
+                    If a default user has been specified then that user is automatically added to the 
+                    allowed list.  If both default-user and allowed-users are ommitted despite the mechanism
+                    being enabled no incomming connection attemps using the mechanism will succeed.
+                  
+                    If any user name should be accepted the value should be set to "*".
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
     <xs:complexType name="authenticationType">
         <xs:annotation>
             <xs:documentation>
@@ -389,6 +419,14 @@
                 <xs:annotation>
                     <xs:documentation>
                         Configuration of a keystore to use to create a trust manager to verify clients.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="local" type="localType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Configuration to enable the local authentication mechanism, if this element
+                        is ommitted then local authentication will be disabled.
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>

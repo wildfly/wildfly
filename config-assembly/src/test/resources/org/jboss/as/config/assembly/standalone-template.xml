@@ -10,6 +10,7 @@
         <security-realms>
             <security-realm name="ManagementRealm">
                 <authentication>
+                    <local default-user="$local"/>
                     <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>
             </security-realm>

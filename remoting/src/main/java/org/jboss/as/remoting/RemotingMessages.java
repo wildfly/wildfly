@@ -28,7 +28,6 @@ import java.net.URISyntaxException;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.SaslException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.Cause;
@@ -83,9 +82,6 @@ public interface RemotingMessages {
     @Message(id = 17119, value = "A security realm has been specified but no supported mechanism identified")
     IllegalStateException noSupportingMechanismsForRealm();
 
-    @Message(id = 17120, value = "Only %s user is acceptable.")
-    SaslException onlyLocalUserIsAcceptable(String local);
-
     @Message(id = 17121, value = "ANONYMOUS mechanism so not expecting a callback")
     UnsupportedCallbackException anonymousMechanismNotExpected(@Param Callback current);
 
@@ -110,7 +106,7 @@ public interface RemotingMessages {
     @Message(id = 17128, value = "Cannot create a valid URI from %s -- %s")
     OperationFailedException couldNotCreateURI(String uri, String msg);
 
-    @Message(id = 17129, value = "")
+    @Message(id = 17129, value = "Unsupported Callback")
     UnsupportedCallbackException unsupportedCallback(@Param Callback current);
 
     @Message(id = 17130, value = "Invalid Strength '%s' string given")

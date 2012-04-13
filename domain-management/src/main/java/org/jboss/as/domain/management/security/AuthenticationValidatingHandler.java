@@ -74,8 +74,13 @@ class AuthenticationValidatingHandler implements OperationStepHandler {
         String realmName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         Set<String> children = resource.getChildrenNames(ModelDescriptionConstants.AUTHENTICATION);
-        int max = children.contains(ModelDescriptionConstants.TRUSTSTORE) ? 2 : 1;
-        if (children.size() > max) {
+        /*
+         * Truststore and Local can be defined in addition to the username/password mechanism so exclude these from the
+         * validation check.
+         */
+        children.remove(ModelDescriptionConstants.TRUSTSTORE);
+        children.remove(ModelDescriptionConstants.LOCAL);
+        if (children.size() > 1) {
             Set<String> invalid = new HashSet<String>(children);
             invalid.remove(ModelDescriptionConstants.TRUSTSTORE);
             throw DomainManagementMessages.MESSAGES.multipleAuthenticationMechanismsDefined(realmName, invalid);

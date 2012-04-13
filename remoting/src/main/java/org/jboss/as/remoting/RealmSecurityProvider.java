@@ -54,6 +54,7 @@ import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.controller.security.UniqueIdUserInfo;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import org.jboss.as.domain.management.security.LocalCallbackHandler;
 import org.jboss.as.domain.management.security.RealmUser;
 import org.jboss.as.domain.management.security.SubjectCallback;
 import org.jboss.as.domain.management.security.SubjectSupplemental;
@@ -83,7 +84,7 @@ import org.xnio.ssl.XnioSsl;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RealmSecurityProvider implements RemotingSecurityProvider {
+class RealmSecurityProvider implements RemotingSecurityProvider {
 
     static final String REALM_PROPERTY = "com.sun.security.sasl.digest.realm";
     static final String PRE_DIGESTED_PROPERTY = "org.jboss.sasl.digest.pre_digested";
@@ -96,13 +97,11 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
     static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
     static final String PLAIN = "PLAIN";
 
-    private static final String DOLLAR_LOCAL = "$local";
-
     private final SecurityRealm realm;
     private final CallbackHandler serverCallbackHandler;
     private final String tokensDir;
 
-    public RealmSecurityProvider(final SecurityRealm realm, final CallbackHandler serverCallbackHandler, final String tokensDir) {
+    RealmSecurityProvider(final SecurityRealm realm, final CallbackHandler serverCallbackHandler, final String tokensDir) {
         this.realm = realm;
         this.serverCallbackHandler = serverCallbackHandler;
         this.tokensDir = tokensDir;
@@ -118,12 +117,20 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
         Set<Property> properties = new HashSet<Property>();
         Builder builder = OptionMap.builder();
 
-        mechanisms.add(JBOSS_LOCAL_USER); // If this becomes optional based on the realm config then adjust the check below.
-        builder.set(SASL_POLICY_NOPLAINTEXT, false);
-        properties.add(Property.of(LOCAL_DEFAULT_USER, DOLLAR_LOCAL));
-        if (tokensDir != null) {
-            properties.add(Property.of(LOCAL_USER_CHALLENGE_PATH, tokensDir));
+        LocalCallbackHandler localHandler = realm != null ? realm.getLocalCallbackHandler() : null;
+        if (localHandler != null) {
+            mechanisms.add(JBOSS_LOCAL_USER);
+
+            String defaultUser = localHandler.getDefaultUser();
+            if (defaultUser != null) {
+                properties.add(Property.of(LOCAL_DEFAULT_USER, defaultUser));
+            }
+            if (tokensDir != null) {
+                properties.add(Property.of(LOCAL_USER_CHALLENGE_PATH, tokensDir));
+            }
         }
+
+        builder.set(SASL_POLICY_NOPLAINTEXT, false);
         if (digestMd5Supported()) {
             mechanisms.add(DIGEST_MD5);
             properties.add(Property.of(REALM_PROPERTY, realm.getName()));
@@ -156,7 +163,7 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
         // the possibility that the local mechanism will still be needed.
         }
 
-        if (mechanisms.size() == 1) {
+        if (mechanisms.size() == 0) {
             throw MESSAGES.noSupportingMechanismsForRealm();
         }
 
@@ -224,26 +231,8 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
         // For now for the JBOSS_LOCAL_USER we are only supporting the $local user and not allowing for
         // an alternative authorizationID.
         if (JBOSS_LOCAL_USER.equals(mechanismName)) {
-            return new RealmCallbackHandler(new CallbackHandler() {
-
-                @Override
-                public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                    for (Callback current : callbacks) {
-                        if (current instanceof NameCallback) {
-                            NameCallback ncb = (NameCallback) current;
-                            if (!DOLLAR_LOCAL.equals(ncb.getDefaultName())) {
-                                throw MESSAGES.onlyLocalUserIsAcceptable(DOLLAR_LOCAL);
-                            }
-                        } else if (current instanceof AuthorizeCallback) {
-                            AuthorizeCallback acb = (AuthorizeCallback) current;
-                            acb.setAuthorized(acb.getAuthenticationID().equals(acb.getAuthorizationID()));
-                        } else {
-                            throw MESSAGES.unsupportedCallback(current);
-                        }
-                    }
-
-                }
-            }, realm != null ? realm.getSubjectSupplemental() : null);
+            // We now only enable this mechanism is configured in the realm so the realm can not be null.
+            return new RealmCallbackHandler(realm.getLocalCallbackHandler(), realm.getSubjectSupplemental());
         }
 
         // In this calls only the AuthorizeCallback is needed, we are not making use if an authorization ID just yet

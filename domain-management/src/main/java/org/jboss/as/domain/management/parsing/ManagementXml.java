@@ -58,9 +58,11 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.LOCAL;
 
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -76,6 +78,7 @@ import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDef
 import org.jboss.as.domain.management.security.JaasAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.KeystoreAttributes;
 import org.jboss.as.domain.management.security.LdapAuthenticationResourceDefinition;
+import org.jboss.as.domain.management.security.LocalAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.PropertiesAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.PropertiesAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.security.SSLServerIdentityResourceDefinition;
@@ -309,7 +312,16 @@ public class ManagementXml {
                     parseServerIdentities(reader, expectedNs, realmAddress, list);
                     break;
                 case AUTHENTICATION: {
-                    parseAuthentication_1_1(reader, expectedNs, realmAddress, list);
+                    switch (expectedNs) {
+                        // We know it will not be 1_0 as this method is only called from 1_1 and onwards.
+                        case DOMAIN_1_1:
+                        case DOMAIN_1_2:
+                            parseAuthentication_1_1(reader, expectedNs, realmAddress, list);
+                            break;
+                        default:
+                            parseAuthentication_1_3(reader, expectedNs, realmAddress, list);
+                            break;
+                    }
                     break;
                 }
                 case AUTHORIZATION:
@@ -603,6 +615,111 @@ public class ManagementXml {
         }
     }
 
+    private void parseAuthentication_1_3(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+
+        // Only one truststore can be defined.
+        boolean trustStoreFound = false;
+        // Only one local can be defined.
+        boolean localFound = false;
+        // Only one of ldap, properties or users can be defined.
+        boolean usernamePasswordFound = false;
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+
+            switch (element) {
+                case JAAS: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseJaasAuthentication(reader, expectedNs, realmAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case LDAP: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseLdapAuthentication_1_1(reader, expectedNs, realmAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case PROPERTIES: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parsePropertiesAuthentication_1_1(reader, realmAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case TRUSTSTORE: {
+                    if (trustStoreFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseTruststore(reader, expectedNs, realmAddress, list);
+                    trustStoreFound = true;
+                    break;
+                }
+                case USERS: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseUsersAuthentication(reader, expectedNs, realmAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case LOCAL: {
+                    if (localFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseLocalAuthentication(reader, expectedNs, realmAddress, list);
+                    localFound = true;
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseJaasAuthentication(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+        ModelNode addr = realmAddress.clone().add(AUTHENTICATION, JAAS);
+        ModelNode jaas = Util.getEmptyOperation(ADD, addr);
+        list.add(jaas);
+
+        boolean nameFound = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME:
+                        if (nameFound) {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                        nameFound = true;
+                        JaasAuthenticationResourceDefinition.NAME.parseAndSetParameter(value, jaas, reader);
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+        if (nameFound == false) {
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+
+        requireNoContent(reader);
+    }
+
     private void parseLdapAuthentication_1_0(final XMLExtendedStreamReader reader, final ModelNode realmAddress, final List<ModelNode> list)
             throws XMLStreamException {
 
@@ -650,41 +767,6 @@ public class ManagementXml {
 
         if (required.size() > 0)
             throw missingRequired(reader, required);
-
-        requireNoContent(reader);
-    }
-
-    private void parseJaasAuthentication(final XMLExtendedStreamReader reader, final Namespace expectedNs,
-            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
-        ModelNode addr = realmAddress.clone().add(AUTHENTICATION, JAAS);
-        ModelNode jaas = Util.getEmptyOperation(ADD, addr);
-        list.add(jaas);
-
-        boolean nameFound = false;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            if (!isNoNamespaceAttribute(reader, i)) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME:
-                        if (nameFound) {
-                            throw unexpectedAttribute(reader, i);
-                        }
-                        nameFound = true;
-                        JaasAuthenticationResourceDefinition.NAME.parseAndSetParameter(value, jaas, reader);
-                        break;
-                    default: {
-                        throw unexpectedAttribute(reader, i);
-                    }
-                }
-            }
-        }
-        if (nameFound == false) {
-            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
-        }
 
         requireNoContent(reader);
     }
@@ -761,6 +843,44 @@ public class ManagementXml {
         if (!choiceFound) {
             throw missingOneOf(reader, EnumSet.of(Element.ADVANCED_FILTER, Element.USERNAME_FILTER));
         }
+    }
+
+    private void parseLocalAuthentication(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+        ModelNode addr = realmAddress.clone().add(AUTHENTICATION, LOCAL);
+        ModelNode local = Util.getEmptyOperation(ADD, addr);
+        list.add(local);
+
+        final int count = reader.getAttributeCount();
+        Set<Attribute> attributesFound = new HashSet<Attribute>(count);
+
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                if (attributesFound.contains(attribute)) {
+                    throw unexpectedAttribute(reader, i);
+                }
+                attributesFound.add(attribute);
+
+                switch (attribute) {
+                    case DEFAULT_USER:
+                        LocalAuthenticationResourceDefinition.DEFAULT_USER.parseAndSetParameter(value, local, reader);
+                        break;
+                    case ALLOWED_USERS:
+                        LocalAuthenticationResourceDefinition.ALLOWED_USERS.parseAndSetParameter(value, local, reader);
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+        // All attributes are optional.
+
+        requireNoContent(reader);
     }
 
     private void parsePropertiesAuthentication_1_0(final XMLExtendedStreamReader reader,
@@ -1069,6 +1189,14 @@ public class ManagementXml {
             KeystoreAttributes.KEYSTORE_PATH.marshallAsAttribute(truststore, writer);
             KeystoreAttributes.KEYSTORE_RELATIVE_TO.marshallAsAttribute(truststore, writer);
             KeystoreAttributes.KEYSTORE_PASSWORD.marshallAsAttribute(truststore, writer);
+        }
+
+        if (authentication.hasDefined(LOCAL)) {
+            ModelNode local = authentication.require(LOCAL);
+            writer.writeStartElement(Element.LOCAL.getLocalName());
+            LocalAuthenticationResourceDefinition.DEFAULT_USER.marshallAsAttribute(local, writer);
+            LocalAuthenticationResourceDefinition.ALLOWED_USERS.marshallAsAttribute(local, writer);
+            writer.writeEndElement();
         }
 
         if (authentication.hasDefined(JAAS)) {

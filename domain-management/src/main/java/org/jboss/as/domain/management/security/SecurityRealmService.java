@@ -49,6 +49,7 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
 
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "security_realm");
 
+    private final InjectedValue<LocalCallbackHandler> localCallbackHandler = new InjectedValue<LocalCallbackHandler>();
     private final InjectedValue<DomainCallbackHandler> callbackHandler = new InjectedValue<DomainCallbackHandler>();
     private final InjectedValue<SubjectSupplemental> subjectSupplemental = new InjectedValue<SubjectSupplemental>();
     private final InjectedValue<SSLIdentityService> sslIdentity = new InjectedValue<SSLIdentityService>();
@@ -78,6 +79,10 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
         return name;
     }
 
+    public InjectedValue<LocalCallbackHandler> getLocalCallbackHandlerInjector() {
+        return localCallbackHandler;
+    }
+
     public InjectedValue<DomainCallbackHandler> getCallbackHandlerInjector() {
         return callbackHandler;
     }
@@ -92,6 +97,10 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
 
     public InjectedValue<CallbackHandlerFactory> getSecretCallbackFactory() {
         return secretCallbackFactory;
+    }
+
+    public LocalCallbackHandler getLocalCallbackHandler() {
+        return localCallbackHandler.getOptionalValue();
     }
 
     /**

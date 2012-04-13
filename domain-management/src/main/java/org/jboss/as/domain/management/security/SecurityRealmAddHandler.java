@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
@@ -37,6 +38,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.ALIAS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.ALLOWED_USERS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_USER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEY_PASSWORD;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PASSWORD;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PATH;
@@ -124,6 +127,12 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             if (authentication.hasDefined(TRUSTSTORE)) {
                 authTruststore = authentication.require(TRUSTSTORE);
             }
+            if (authentication.hasDefined(LOCAL)) {
+                ServiceName localName = addLocalService(authentication.require(LOCAL), realmServiceName, serviceTarget,
+                        newControllers);
+                realmBuilder.addDependency(localName, LocalCallbackHandler.class,
+                        securityRealmService.getLocalCallbackHandlerInjector());
+            }
             if (authentication.hasDefined(JAAS)) {
                 authenticationName = addJaasService(authentication.require(JAAS), realmServiceName, serviceTarget, newControllers, context.isNormalServer());
             } else if (authentication.hasDefined(LDAP)) {
@@ -201,6 +210,21 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         }
 
         return ldapServiceName;
+    }
+
+    private ServiceName addLocalService(ModelNode local, ServiceName realmServiceName, ServiceTarget serviceTarget,
+            List<ServiceController<?>> newControllers) {
+        ServiceName localServiceName = realmServiceName.append(LocalCallbackHandlerService.SERVICE_SUFFIX);
+
+        String defaultUser = local.hasDefined(DEFAULT_USER) ? local.get(DEFAULT_USER).asString() : null;
+        String allowedUsers = local.hasDefined(ALLOWED_USERS) ? local.get(ALLOWED_USERS).asString() : null;
+        LocalCallbackHandlerService localCallbackHandler = new LocalCallbackHandlerService(defaultUser, allowedUsers);
+
+        ServiceBuilder<?> jaasBuilder = serviceTarget.addService(localServiceName, localCallbackHandler);
+
+        newControllers.add(jaasBuilder.setInitialMode(ON_DEMAND).install());
+
+        return localServiceName;
     }
 
     private ServiceName addPropertiesAuthenticationService(ModelNode properties, ServiceName realmServiceName, String realmName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {

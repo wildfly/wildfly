@@ -30,11 +30,15 @@ package org.jboss.as.domain.management;
 public class ModelDescriptionConstants {
 
     public static final String ALIAS = "alias";
+    public static final String ALLOWED_USERS = "allowed-users";
+    public static final String AUTHENTICATION = "authentication";
+    public static final String DEFAULT_USER = "default-user";
     public static final String IDENTITY = "identity";
     public static final String KEY_PASSWORD = "key-password";
     public static final String KEYSTORE_PASSWORD = "keystore-password";
     public static final String KEYSTORE_PATH = "keystore-path";
     public static final String KEYSTORE_RELATIVE_TO = "keystore-relative-to";
+    public static final String LOCAL = "local";
     public static final String PASSWORD = "password";
     public static final String PATH = "path";
     public static final String REALM = "realm";
