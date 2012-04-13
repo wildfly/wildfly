@@ -3,7 +3,7 @@
 <config>
    <extension-module>org.jboss.as.modcluster</extension-module>
    <subsystem xmlns="urn:jboss:domain:modcluster:1.1">
-       <mod-cluster-config advertise-socket="modcluster">
+       <mod-cluster-config advertise-socket="modcluster" connector="ajp">
            <dynamic-load-provider>
                <load-metric type="busyness"/>
            </dynamic-load-provider>

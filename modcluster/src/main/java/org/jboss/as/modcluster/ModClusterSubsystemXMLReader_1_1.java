@@ -62,6 +62,7 @@ public class ModClusterSubsystemXMLReader_1_1 extends ModClusterSubsystemXMLRead
                 case NODE_TIMEOUT:
                 case BALANCER:
                 case LOAD_BALANCING_GROUP:
+                case CONNECTOR:
                     ModClusterConfigResourceDefinition.ATTRIBUTES_BY_NAME.get(attribute.getLocalName()).parseAndSetParameter(value, conf, reader);
                     break;
                 default:

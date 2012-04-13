@@ -135,6 +135,8 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     throw unexpectedAttribute(reader, i);
             }
         }
+        // This is a required attribute - so set it to something reasonable
+        ModClusterConfigResourceDefinition.CONNECTOR.parseAndSetParameter("ajp", conf, reader);
     }
 
     void parseSSL(XMLExtendedStreamReader reader, List<ModelNode> list, PathAddress parent) throws XMLStreamException {
