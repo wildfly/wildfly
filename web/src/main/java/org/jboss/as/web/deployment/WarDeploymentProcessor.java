@@ -297,7 +297,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     builder.addDependency(DependencyType.OPTIONAL, factoryServiceName, DistributedCacheManagerFactory.class, config.getDistributedCacheManagerFactoryInjector());
 
                     ServiceBuilder<DistributedCacheManagerFactory> factoryBuilder = serviceTarget.addService(factoryServiceName, factoryService);
-                    boolean enabled = factory.addDependencies(deploymentUnit.getServiceRegistry(), serviceTarget, factoryBuilder, metaData);
+                    boolean enabled = factory.addDeploymentDependencies(deploymentUnit.getServiceRegistry(), factoryBuilder, metaData);
                     factoryBuilder.setInitialMode(enabled ? ServiceController.Mode.ON_DEMAND : ServiceController.Mode.NEVER).install();
                 }
             }

@@ -23,18 +23,21 @@ package org.jboss.as.clustering.web.infinispan;
 
 import static org.jboss.as.clustering.web.infinispan.InfinispanWebMessages.MESSAGES;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import org.infinispan.AdvancedCache;
+import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
 import org.jboss.as.clustering.infinispan.atomic.AtomicMapCache;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
+import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.lock.impl.SharedLocalYieldingClusterLockManagerService;
@@ -42,6 +45,7 @@ import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.clustering.registry.RegistryService;
 import org.jboss.as.clustering.web.BatchingManager;
 import org.jboss.as.clustering.web.ClusteringNotSupportedException;
+import org.jboss.as.clustering.web.DistributedCacheManagerFactoryService;
 import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.SessionAttributeMarshallerFactory;
@@ -64,9 +68,8 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class DistributedCacheManagerFactory implements org.jboss.as.clustering.web.DistributedCacheManagerFactory {
     public static final String DEFAULT_CACHE_CONTAINER = "web";
-    public static final Short SCOPE_ID = Short.valueOf((short) 222);
+    private static final ServiceName JVM_ROUTE_REGISTRY_SERVICE_NAME = DistributedCacheManagerFactoryService.JVM_ROUTE_REGISTRY_ENTRY_PROVIDER_SERVICE_NAME.getParent();
 
-    private final JvmRouteRegistryEntryProvider registryEntryProvider = new JvmRouteRegistryEntryProvider();
     private SessionAttributeStorageFactory storageFactory = new SessionAttributeStorageFactoryImpl();
     private CacheInvoker invoker = new RetryingCacheInvoker(10, 100);
     private SessionAttributeMarshallerFactory marshallerFactory = new SessionAttributeMarshallerFactoryImpl();
@@ -78,7 +81,6 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
 
     @Override
     public <T extends OutgoingDistributableSessionData> org.jboss.as.clustering.web.DistributedCacheManager<T> getDistributedCacheManager(LocalDistributableSessionManager manager) throws ClusteringNotSupportedException {
-        this.registryEntryProvider.setManager(manager);
         EmbeddedCacheManager container = this.container.getValue();
         @SuppressWarnings("unchecked")
         Registry<String, Void> jvmRouteRegistry = this.registry.getValue();
@@ -102,30 +104,30 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
     }
 
     @Override
-    public boolean addDependencies(ServiceRegistry registry, ServiceTarget target, ServiceBuilder<?> builder, JBossWebMetaData metaData) {
+    public boolean addDeploymentDependencies(ServiceRegistry registry, ServiceBuilder<?> builder, JBossWebMetaData metaData) {
         ServiceName cacheServiceName = this.getCacheServiceName(metaData.getReplicationConfig());
         if (registry.getService(cacheServiceName) == null) {
             return false;
         }
         ServiceName containerServiceName = cacheServiceName.getParent();
         String container = containerServiceName.getSimpleName();
-        ServiceName lockManagerServiceName = SharedLocalYieldingClusterLockManagerService.getServiceName(container);
-        ServiceName registryServiceName = cacheServiceName.append("registry");
-        synchronized (this) {
-            if (registry.getService(lockManagerServiceName) == null) {
-                // AS7-3906 Ensure that the cache manager's rpc dispatcher starts before GroupCommunicationService's
-                new CoreGroupCommunicationService(SCOPE_ID).build(target, container).addDependency(cacheServiceName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-                new SharedLocalYieldingClusterLockManagerService(container).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-            }
-            if (registry.getService(registryServiceName) == null) {
-                new RegistryService<String, Void>(this.registryEntryProvider).build(target, registryServiceName, cacheServiceName).install();
-            }
-        }
         builder.addDependency(containerServiceName, EmbeddedCacheManager.class, this.container);
         builder.addDependency(CacheConfigurationService.getServiceName(container, cacheServiceName.getSimpleName()), Configuration.class, this.config);
-        builder.addDependency(registryServiceName, Registry.class, this.registry);
+        builder.addDependency(JVM_ROUTE_REGISTRY_SERVICE_NAME, Registry.class, this.registry);
         builder.addDependency(SharedLocalYieldingClusterLockManagerService.getServiceName(container), SharedLocalYieldingClusterLockManager.class, this.lockManager);
         return true;
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Collection<ServiceController<?>> installServices(ServiceTarget target) {
+        InjectedValue<Cache> cache = new InjectedValue<Cache>();
+        InjectedValue<Registry.RegistryEntryProvider> providerValue = new InjectedValue<Registry.RegistryEntryProvider>();
+        return Collections.<ServiceController<?>>singleton(target.addService(JVM_ROUTE_REGISTRY_SERVICE_NAME, new RegistryService(cache, providerValue))
+                .addDependency(CacheService.getServiceName(DEFAULT_CACHE_CONTAINER, null), Cache.class, cache)
+                .addDependency(DistributedCacheManagerFactoryService.JVM_ROUTE_REGISTRY_ENTRY_PROVIDER_SERVICE_NAME, Registry.RegistryEntryProvider.class, providerValue)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install());
     }
 
     private ServiceName getCacheServiceName(ReplicationConfig config) {
@@ -165,23 +167,5 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
 
     public void setCacheInvoker(CacheInvoker invoker) {
         this.invoker = invoker;
-    }
-
-    class JvmRouteRegistryEntryProvider implements Registry.RegistryEntryProvider<String, Void> {
-        private volatile LocalDistributableSessionManager manager;
-
-        void setManager(LocalDistributableSessionManager manager) {
-            this.manager = manager;
-        }
-
-        @Override
-        public String getKey() {
-            return (this.manager != null) ? this.manager.getJvmRoute() : null;
-        }
-
-        @Override
-        public Void getValue() {
-            return null;
-        }
     }
 }

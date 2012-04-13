@@ -26,6 +26,8 @@ import java.util.List;
 
 import javax.management.MBeanServer;
 
+import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
+import org.jboss.as.clustering.web.DistributedCacheManagerFactoryService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -61,6 +63,8 @@ import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Adds the web subsystem.
@@ -127,13 +131,23 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
+        final ServiceTarget target = context.getServiceTarget();
         final WebServerService service = new WebServerService(defaultVirtualServer, useNative, instanceId, TEMP_DIR);
-        newControllers.add(context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB, service)
+        newControllers.add(target.addService(WebSubsystemServices.JBOSS_WEB, service)
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManagerInjector())
                 .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
                 .setInitialMode(Mode.ON_DEMAND)
                 .install());
 
+        final DistributedCacheManagerFactory factory = new DistributedCacheManagerFactoryService().getValue();
+        if (factory != null) {
+            final InjectedValue<WebServer> server = new InjectedValue<WebServer>();
+            newControllers.add(target.addService(DistributedCacheManagerFactoryService.JVM_ROUTE_REGISTRY_ENTRY_PROVIDER_SERVICE_NAME, new JvmRouteRegistryEntryProviderService(server))
+                    .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, server)
+                    .setInitialMode(Mode.ON_DEMAND)
+                    .install());
+            newControllers.addAll(factory.installServices(target));
+        }
     }
 
     @Override
@@ -158,5 +172,4 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         return res;
     }
-
 }

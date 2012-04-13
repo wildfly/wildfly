@@ -22,6 +22,9 @@
 
 package org.jboss.as.web.session.mocks;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.jboss.as.clustering.web.ClusteringNotSupportedException;
 import org.jboss.as.clustering.web.DistributedCacheManager;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
@@ -29,6 +32,7 @@ import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -47,7 +51,12 @@ public class MockDistributedCacheManagerFactory implements DistributedCacheManag
     }
 
     @Override
-    public boolean addDependencies(ServiceRegistry registry, ServiceTarget target, ServiceBuilder<?> builder, JBossWebMetaData metaData) {
+    public boolean addDeploymentDependencies(ServiceRegistry registry, ServiceBuilder<?> builder, JBossWebMetaData metaData) {
         return true;
+    }
+
+    @Override
+    public Collection<ServiceController<?>> installServices(ServiceTarget target) {
+        return Collections.emptySet();
     }
 }

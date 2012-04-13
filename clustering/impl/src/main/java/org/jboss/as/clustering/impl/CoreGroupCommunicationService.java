@@ -64,9 +64,7 @@ import org.jboss.as.clustering.SerializableStateTransferResult;
 import org.jboss.as.clustering.StateTransferProvider;
 import org.jboss.as.clustering.StateTransferResult;
 import org.jboss.as.clustering.StreamStateTransferResult;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.clustering.msc.AsynchronousService;
-import org.jboss.as.server.Services;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
@@ -77,13 +75,11 @@ import org.jboss.marshalling.Unmarshaller;
 import org.jboss.marshalling.reflect.ReflectiveCreator;
 import org.jboss.marshalling.reflect.SunReflectiveCreator;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.Event;
@@ -131,18 +127,13 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         return ServiceName.JBOSS.append("cluster").append(name);
     }
 
-    private final InjectedValue<Channel> channelRef = new InjectedValue<Channel>();
-    private final InjectedValue<ModuleLoader> loaderRef = new InjectedValue<ModuleLoader>();
+    private final Value<Channel> channelRef;
+    private final Value<ModuleLoader> loaderRef;
 
-    public CoreGroupCommunicationService(short scope) {
+    public CoreGroupCommunicationService(short scope, Value<Channel> channel, Value<ModuleLoader> loader) {
         this.scopeId = scope;
-    }
-
-    public ServiceBuilder<CoreGroupCommunicationService> build(ServiceTarget target, String name) {
-        return target.addService(getServiceName(name), this)
-            .addDependency(ChannelService.getServiceName(name), Channel.class, this.channelRef)
-            .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loaderRef)
-        ;
+        this.channelRef = channel;
+        this.loaderRef = loader;
     }
 
     /**

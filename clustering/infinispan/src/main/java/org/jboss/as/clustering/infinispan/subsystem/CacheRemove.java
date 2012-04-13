@@ -16,6 +16,7 @@ public class CacheRemove extends AbstractRemoveStepHandler {
 
     static final CacheRemove INSTANCE = new CacheRemove();
 
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         String cacheType = getCacheType(operation) ;
@@ -31,6 +32,7 @@ public class CacheRemove extends AbstractRemoveStepHandler {
         }
     }
 
+    @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode cacheModel) throws OperationFailedException {
 
         // we also need the containerModel to re-install cache services
@@ -43,13 +45,13 @@ public class CacheRemove extends AbstractRemoveStepHandler {
         ServiceVerificationHandler verificationHandler = null ;
 
         if (cacheType.equals(ModelKeys.LOCAL_CACHE)) {
-            LocalCacheAdd.INSTANCE.installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler, null);
+            LocalCacheAdd.INSTANCE.installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler);
         } else if (cacheType.equals(ModelKeys.INVALIDATION_CACHE)) {
-            InvalidationCacheAdd.INSTANCE.installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler, null);
+            InvalidationCacheAdd.INSTANCE.installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler);
         } else if (cacheType.equals(ModelKeys.REPLICATED_CACHE)) {
-            ReplicatedCacheAdd.INSTANCE.installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler, null);
+            ReplicatedCacheAdd.INSTANCE.installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler);
         } else if (cacheType.equals(ModelKeys.DISTRIBUTED_CACHE)) {
-            DistributedCacheAdd.INSTANCE.installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler, null);
+            DistributedCacheAdd.INSTANCE.installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler);
         }
     }
 
@@ -61,5 +63,4 @@ public class CacheRemove extends AbstractRemoveStepHandler {
 
         return cacheType ;
     }
-
 }

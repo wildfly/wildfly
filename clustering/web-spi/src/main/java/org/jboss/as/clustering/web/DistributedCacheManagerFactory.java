@@ -22,8 +22,11 @@
 
 package org.jboss.as.clustering.web;
 
+import java.util.Collection;
+
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -34,5 +37,7 @@ import org.jboss.msc.service.ServiceTarget;
 public interface DistributedCacheManagerFactory {
     <T extends OutgoingDistributableSessionData> DistributedCacheManager<T> getDistributedCacheManager(LocalDistributableSessionManager localManager) throws ClusteringNotSupportedException;
 
-    boolean addDependencies(ServiceRegistry registry, ServiceTarget target, ServiceBuilder<?> builder, JBossWebMetaData metaData);
+    boolean addDeploymentDependencies(ServiceRegistry registry, ServiceBuilder<?> builder, JBossWebMetaData metaData);
+
+    Collection<ServiceController<?>> installServices(ServiceTarget target);
 }

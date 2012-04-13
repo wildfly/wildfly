@@ -44,7 +44,6 @@ import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -57,8 +56,6 @@ import org.jboss.msc.value.InjectedValue;
  */
 @org.infinispan.notifications.Listener(sync = false)
 public class ServiceProviderRegistryService implements ServiceProviderRegistry, GroupMembershipListener, Service<ServiceProviderRegistry> {
-
-    private static final short SCOPE_ID = 224;
 
     public static ServiceName getServiceName(String name) {
         return CoreGroupCommunicationService.getServiceName(name).append("registry");
@@ -73,7 +70,6 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
     private volatile Cache<String, Map<ClusterNode, Void>> cache;
 
     public ServiceBuilder<ServiceProviderRegistry> build(ServiceTarget target, String container) {
-        new CoreGroupCommunicationService(SCOPE_ID).build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         return target.addService(getServiceName(container), this)
             .addDependency(CacheService.getServiceName(container, null), Cache.class, this.cacheRef)
             .addDependency(CoreGroupCommunicationService.getServiceName(container), GroupMembershipNotifier.class, this.notifierRef)
