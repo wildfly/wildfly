@@ -246,11 +246,11 @@ public class ServerControllerModelUtil {
         root.registerOperationHandler(DeploymentUploadURLHandler.OPERATION_NAME, duuh, duuh, false);
         DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(contentRepository);
         root.registerOperationHandler(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, dush, dush, false);
-        final DeploymentReplaceHandler drh = isDomain ? DeploymentReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository)
-                                                      : DeploymentReplaceHandler.createForStandalone(contentRepository);
+        final DeploymentReplaceHandler drh = isDomain ? DeploymentReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository, vaultReader)
+                                                      : DeploymentReplaceHandler.createForStandalone(contentRepository, vaultReader);
         root.registerOperationHandler(DeploymentReplaceHandler.OPERATION_NAME, drh, drh, false);
-        DeploymentFullReplaceHandler dfrh = isDomain ? DeploymentFullReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository)
-                                                     : DeploymentFullReplaceHandler.createForStandalone(contentRepository);
+        DeploymentFullReplaceHandler dfrh = isDomain ? DeploymentFullReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository, vaultReader)
+                                                     : DeploymentFullReplaceHandler.createForStandalone(contentRepository, vaultReader);
         root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh, false);
 
         if (!isDomain) {
@@ -347,14 +347,17 @@ public class ServerControllerModelUtil {
 
         // Deployments
         ManagementResourceRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
-        DeploymentAddHandler dah = isDomain ? DeploymentAddHandler.createForDomainServer(contentRepository, remoteFileRepository)
-                                            : DeploymentAddHandler.createForStandalone(contentRepository);
+        DeploymentAddHandler dah = isDomain ? DeploymentAddHandler.createForDomainServer(contentRepository, remoteFileRepository, vaultReader)
+                                            : DeploymentAddHandler.createForStandalone(contentRepository, vaultReader);
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah, false);
-        DeploymentRemoveHandler dremh = new DeploymentRemoveHandler(contentRepository);
+        DeploymentRemoveHandler dremh = new DeploymentRemoveHandler(contentRepository, vaultReader);
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, dremh, dremh, false);
-        deployments.registerOperationHandler(DeploymentDeployHandler.OPERATION_NAME, DeploymentDeployHandler.INSTANCE, DeploymentDeployHandler.INSTANCE, false);
-        deployments.registerOperationHandler(DeploymentUndeployHandler.OPERATION_NAME, DeploymentUndeployHandler.INSTANCE, DeploymentUndeployHandler.INSTANCE, false);
-        deployments.registerOperationHandler(DeploymentRedeployHandler.OPERATION_NAME, DeploymentRedeployHandler.INSTANCE, DeploymentRedeployHandler.INSTANCE, false);
+        final DeploymentDeployHandler ddhu = new DeploymentDeployHandler(vaultReader);
+        deployments.registerOperationHandler(DeploymentDeployHandler.OPERATION_NAME, ddhu, ddhu, false);
+        final DeploymentUndeployHandler duh = new DeploymentUndeployHandler(vaultReader);
+        deployments.registerOperationHandler(DeploymentUndeployHandler.OPERATION_NAME, duh, duh, false);
+        final DeploymentRedeployHandler drdh = new DeploymentRedeployHandler(vaultReader);
+        deployments.registerOperationHandler(DeploymentRedeployHandler.OPERATION_NAME, drdh, drdh, false);
         deployments.registerMetric(DeploymentStatusHandler.ATTRIBUTE_NAME, DeploymentStatusHandler.INSTANCE);
 
         // The sub-deployments registry

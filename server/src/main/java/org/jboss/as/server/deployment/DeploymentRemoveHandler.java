@@ -42,6 +42,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
+import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -55,9 +56,11 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
     public static final String OPERATION_NAME = REMOVE;
 
     private final ContentRepository contentRepository;
+    private final AbstractVaultReader vaultReader;
 
-    public DeploymentRemoveHandler(ContentRepository contentRepository) {
+    public DeploymentRemoveHandler(ContentRepository contentRepository, final AbstractVaultReader vaultReader) {
         this.contentRepository = contentRepository;
+        this.vaultReader = vaultReader;
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -84,7 +87,7 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
                     }
                     if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         if (enabled) {
-                            recoverServices(context, model, deployment, registration, mutableRegistration);
+                            recoverServices(context, model, deployment, registration, mutableRegistration, vaultReader);
                         }
 
                         if (enabled && context.hasFailureDescription()) {
@@ -119,11 +122,11 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
 
     private void recoverServices(OperationContext context, ModelNode model, Resource deployment,
                                    ImmutableManagementResourceRegistration registration,
-                                   ManagementResourceRegistration mutableRegistration) {
+                                   ManagementResourceRegistration mutableRegistration, final AbstractVaultReader vaultReader) {
         final String name = model.require(NAME).asString();
         final String runtimeName = model.hasDefined(RUNTIME_NAME) ? model.get(RUNTIME_NAME).asString() : name;
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-        DeploymentHandlerUtil.doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, contents);
+        DeploymentHandlerUtil.doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
     }
 }

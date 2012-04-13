@@ -137,7 +137,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         ModuleIndexService.addService(serviceTarget);
         final AbstractVaultReader vaultReader = service(AbstractVaultReader.class);
         AS_ROOT_LOGGER.debugf("Using VaultReader %s", vaultReader);
-        ServerService.addService(serviceTarget, configuration, processState, bootstrapListener, runningModeControl, vaultReader, remoteFileRepository);
+        ServerService.  addService(serviceTarget, configuration, processState, bootstrapListener, runningModeControl, vaultReader, remoteFileRepository);
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             @Override
             public ServiceTarget getServiceTarget() {

@@ -22,10 +22,12 @@
 
 package org.jboss.as.server.deployment;
 
+import com.sun.xml.internal.ws.api.message.Attachment;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.value.InjectedValue;
@@ -46,6 +48,7 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
     private final ManagementResourceRegistration mutableRegistration;
     private final ServiceVerificationHandler serviceVerificationHandler;
     private Resource resource;
+    private final AbstractVaultReader vaultReader;
 
     /**
      * Construct a new instance.
@@ -57,8 +60,9 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
      * @param mutableRegistration the mutable registration
      * @param resource the model
      * @param serviceVerificationHandler
+     * @param vaultReader
      */
-    public RootDeploymentUnitService(final String name, final String managementName, final DeploymentUnit parent, final ImmutableManagementResourceRegistration registration, final ManagementResourceRegistration mutableRegistration, Resource resource, final ServiceVerificationHandler serviceVerificationHandler) {
+    public RootDeploymentUnitService(final String name, final String managementName, final DeploymentUnit parent, final ImmutableManagementResourceRegistration registration, final ManagementResourceRegistration mutableRegistration, Resource resource, final ServiceVerificationHandler serviceVerificationHandler, final AbstractVaultReader vaultReader) {
         this.serviceVerificationHandler = serviceVerificationHandler;
         assert name != null : "name is null";
         this.name = name;
@@ -67,6 +71,7 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
         this.registration = registration;
         this.mutableRegistration = mutableRegistration;
         this.resource = resource;
+        this.vaultReader = vaultReader;
     }
 
     protected DeploymentUnit createAndInitializeDeploymentUnit(final ServiceRegistry registry) {
@@ -78,6 +83,7 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
         deploymentUnit.putAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT, mutableRegistration);
         deploymentUnit.putAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE, resource);
         deploymentUnit.putAttachment(Attachments.SERVICE_VERIFICATION_HANDLER, serviceVerificationHandler);
+        deploymentUnit.putAttachment(Attachments.VAULT_READER_ATTACHMENT_KEY, vaultReader);
 
         // Attach the deployment repo
         deploymentUnit.putAttachment(Attachments.SERVER_DEPLOYMENT_REPOSITORY, serverDeploymentRepositoryInjector.getValue());

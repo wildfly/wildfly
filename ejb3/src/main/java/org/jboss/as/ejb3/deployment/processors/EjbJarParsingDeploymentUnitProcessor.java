@@ -59,6 +59,9 @@ import org.jboss.metadata.ejb.parser.spec.AbstractMetaDataParser;
 import org.jboss.metadata.ejb.parser.spec.EjbJarMetaDataParser;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
+import org.jboss.metadata.property.PropertyReplacer;
+import org.jboss.metadata.property.PropertyReplacers;
+import org.jboss.metadata.property.PropertyResolver;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -241,8 +244,9 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         InputStream stream = open(descriptor);
         try {
             XMLStreamReader reader = getXMLStreamReader(stream, descriptor, dtdInfo);
-
-            EjbJarMetaData ejbJarMetaData = EjbJarMetaDataParser.parse(reader, dtdInfo);
+            final PropertyResolver propertyResolver = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_RESOLVER);
+            final PropertyReplacer propertyReplacer = PropertyReplacers.resolvingReplacer(propertyResolver);
+            EjbJarMetaData ejbJarMetaData = EjbJarMetaDataParser.parse(reader, dtdInfo, propertyReplacer);
             return ejbJarMetaData;
         } catch (XMLStreamException xmlse) {
             throw new DeploymentUnitProcessingException("Exception while parsing ejb-jar.xml: " + descriptor.getPathName(), xmlse);
@@ -281,7 +285,10 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             parsers.put(EJBBoundPoolParser.NAMESPACE_URI, new EJBBoundPoolParser());
             parsers.put(EJBBoundCacheParser.NAMESPACE_URI, new EJBBoundCacheParser());
             final JBossEjb3MetaDataParser parser = new JBossEjb3MetaDataParser(parsers);
-            final EjbJarMetaData ejbJarMetaData = parser.parse(reader, dtdInfo);
+
+            final PropertyResolver propertyResolver = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_RESOLVER);
+            final PropertyReplacer propertyReplacer = PropertyReplacers.resolvingReplacer(propertyResolver);
+            final EjbJarMetaData ejbJarMetaData = parser.parse(reader, dtdInfo, propertyReplacer);
             return ejbJarMetaData;
         } catch (XMLStreamException xmlse) {
             throw new DeploymentUnitProcessingException("Exception while parsing " + JBOSS_EJB3_XML + ": " + descriptor.getPathName(), xmlse);

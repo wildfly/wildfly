@@ -27,6 +27,7 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.ejb3.resourceadapterbinding.metadata.EJBBoundResourceAdapterBindingMetaData;
 import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaDataParser;
+import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * Parser for EJBBoundSecurityMetaData components.
@@ -36,23 +37,23 @@ import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaDataParser;
 public class EJBBoundResourceAdapterBindingMetaDataParser extends AbstractEJBBoundMetaDataParser<EJBBoundResourceAdapterBindingMetaData> {
 
     @Override
-    public EJBBoundResourceAdapterBindingMetaData parse(XMLStreamReader reader) throws XMLStreamException {
+    public EJBBoundResourceAdapterBindingMetaData parse(XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
         EJBBoundResourceAdapterBindingMetaData metaData = new EJBBoundResourceAdapterBindingMetaData();
-        processElements(metaData, reader);
+        processElements(metaData, reader, propertyReplacer);
         return metaData;
     }
 
     @Override
-    protected void processElement(EJBBoundResourceAdapterBindingMetaData metaData, XMLStreamReader reader) throws XMLStreamException {
+    protected void processElement(EJBBoundResourceAdapterBindingMetaData metaData, XMLStreamReader reader,  final PropertyReplacer propertyReplacer) throws XMLStreamException {
         final String namespaceURI = reader.getNamespaceURI();
         final String localName = reader.getLocalName();
         if ("urn:resource-adapter-binding".equals(namespaceURI)) {
             if ("resource-adapter-name".equals(localName))
-                metaData.setResourceAdapterName(getElementText(reader));
+                metaData.setResourceAdapterName(getElementText(reader, propertyReplacer));
             else
                 throw unexpectedElement(reader);
         } else {
-            super.processElement(metaData, reader);
+            super.processElement(metaData, reader, propertyReplacer);
         }
     }
 

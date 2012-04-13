@@ -43,6 +43,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.parser.servlet.WebFragmentMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
+import org.jboss.metadata.property.PropertyReplacer;
+import org.jboss.metadata.property.PropertyReplacers;
+import org.jboss.metadata.property.PropertyResolver;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.vfs.VirtualFile;
 
@@ -80,7 +83,10 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
                         final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
                         inputFactory.setXMLResolver(NoopXMLResolver.create());
                         XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
-                        webFragments.put(resourceRoot.getRootName(), WebFragmentMetaDataParser.parse(xmlReader));
+                        final PropertyResolver propertyResolver = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_RESOLVER);
+                        final PropertyReplacer propertyReplacer = PropertyReplacers.resolvingReplacer(propertyResolver);
+
+                        webFragments.put(resourceRoot.getRootName(), WebFragmentMetaDataParser.parse(xmlReader, propertyReplacer));
                     } catch (XMLStreamException e) {
                         throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(webFragment, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()));
                     } catch (IOException e) {

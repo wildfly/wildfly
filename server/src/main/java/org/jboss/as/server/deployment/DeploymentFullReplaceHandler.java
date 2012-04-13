@@ -65,6 +65,7 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -83,7 +84,9 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
     private final ParametersValidator unmanagedContentValidator = new ParametersValidator();
     private final ParametersValidator managedContentValidator = new ParametersValidator();
 
-    protected DeploymentFullReplaceHandler(final ContentRepository contentRepository) {
+    private final AbstractVaultReader vaultReader;
+
+    protected DeploymentFullReplaceHandler(final ContentRepository contentRepository, final AbstractVaultReader vaultReader) {
         assert contentRepository != null : "Null contentRepository";
         this.contentRepository = contentRepository;
         this.validator.registerValidator(NAME, new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
@@ -112,14 +115,15 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         this.unmanagedContentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN));
         this.unmanagedContentValidator.registerValidator(PATH, new StringLengthValidator(1));
 
+        this.vaultReader = vaultReader;
     }
 
-    public static DeploymentFullReplaceHandler createForStandalone(final ContentRepository  contentRepository) {
-        return new DeploymentFullReplaceHandler(contentRepository);
+    public static DeploymentFullReplaceHandler createForStandalone(final ContentRepository  contentRepository, final AbstractVaultReader vaultReader) {
+        return new DeploymentFullReplaceHandler(contentRepository, vaultReader);
     }
 
-    public static DeploymentFullReplaceHandler createForDomainServer(final ContentRepository contentRepository, DeploymentFileRepository remoteFileRepository) {
-        return new DomainServerDeploymentFullReplaceHandler(contentRepository, remoteFileRepository);
+    public static DeploymentFullReplaceHandler createForDomainServer(final ContentRepository contentRepository, DeploymentFileRepository remoteFileRepository, final AbstractVaultReader vaultReader) {
+        return new DomainServerDeploymentFullReplaceHandler(contentRepository, remoteFileRepository, vaultReader);
     }
 
     @Override
@@ -174,7 +178,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         removeContentAdditions(deployNode.require(CONTENT));
 
         if (start) {
-            DeploymentHandlerUtil.replace(context, replaceNode, runtimeName, name, replacedRuntimeName, contentItem);
+            DeploymentHandlerUtil.replace(context, replaceNode, runtimeName, name, replacedRuntimeName, vaultReader, contentItem);
         }
 
         if (context.completeStep() == ResultAction.KEEP) {
@@ -243,8 +247,8 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
     private static class DomainServerDeploymentFullReplaceHandler extends DeploymentFullReplaceHandler {
         final DeploymentFileRepository remoteFileRepository;
 
-        DomainServerDeploymentFullReplaceHandler(ContentRepository contentRepository, DeploymentFileRepository remoteFileRepository) {
-            super(contentRepository);
+        DomainServerDeploymentFullReplaceHandler(ContentRepository contentRepository, DeploymentFileRepository remoteFileRepository, final AbstractVaultReader vaultReader) {
+            super(contentRepository, vaultReader);
             assert remoteFileRepository != null : "Null remoteFileRepository";
             this.remoteFileRepository = remoteFileRepository;
         }

@@ -29,6 +29,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
@@ -43,8 +44,9 @@ public class SubDeploymentUnitService extends AbstractDeploymentUnitService {
     private final ManagementResourceRegistration mutableRegistration;
     private final ServiceVerificationHandler serviceVerificationHandler;
     private Resource resource;
+    private final AbstractVaultReader vaultReader;
 
-    public SubDeploymentUnitService(ResourceRoot deploymentRoot, DeploymentUnit parent, ImmutableManagementResourceRegistration registration, final ManagementResourceRegistration mutableRegistration, Resource resource, final ServiceVerificationHandler serviceVerificationHandler) {
+    public SubDeploymentUnitService(ResourceRoot deploymentRoot, DeploymentUnit parent, ImmutableManagementResourceRegistration registration, final ManagementResourceRegistration mutableRegistration, Resource resource, final ServiceVerificationHandler serviceVerificationHandler, final AbstractVaultReader vaultReader) {
         this.serviceVerificationHandler = serviceVerificationHandler;
         if (deploymentRoot == null) throw ServerMessages.MESSAGES.deploymentRootRequired();
         this.deploymentRoot = deploymentRoot;
@@ -53,6 +55,7 @@ public class SubDeploymentUnitService extends AbstractDeploymentUnitService {
         this.registration = registration;
         this.mutableRegistration = mutableRegistration;
         this.resource = resource;
+        this.vaultReader = vaultReader;
     }
 
     protected DeploymentUnit createAndInitializeDeploymentUnit(ServiceRegistry registry) {
@@ -64,6 +67,7 @@ public class SubDeploymentUnitService extends AbstractDeploymentUnitService {
         deploymentUnit.putAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT, mutableRegistration);
         deploymentUnit.putAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE, resource);
         deploymentUnit.putAttachment(Attachments.SERVICE_VERIFICATION_HANDLER, serviceVerificationHandler);
+        deploymentUnit.putAttachment(Attachments.VAULT_READER_ATTACHMENT_KEY, vaultReader);
         this.resource = null;
         return deploymentUnit;
     }

@@ -39,6 +39,7 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ProxyMetadataSource;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -198,6 +199,8 @@ public final class Attachments {
     //
     // PARSE
     //
+
+    public static final AttachmentKey<AbstractVaultReader> VAULT_READER_ATTACHMENT_KEY = AttachmentKey.create(AbstractVaultReader.class);
 
     //
     // DEPENDENCIES

@@ -34,6 +34,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -49,9 +50,10 @@ public class DeploymentDeployHandler implements OperationStepHandler, Descriptio
         return Util.getEmptyOperation(OPERATION_NAME, address);
     }
 
-    public static final DeploymentDeployHandler INSTANCE = new DeploymentDeployHandler();
+    private final AbstractVaultReader vaultReader;
 
-    private DeploymentDeployHandler() {
+    public DeploymentDeployHandler(final AbstractVaultReader vaultReader) {
+        this.vaultReader = vaultReader;
     }
 
     @Override
@@ -68,7 +70,7 @@ public class DeploymentDeployHandler implements OperationStepHandler, Descriptio
         final String name = address.getLastElement().getValue();
         final String runtimeName = model.require(RUNTIME_NAME).asString();
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
-        DeploymentHandlerUtil.deploy(context, runtimeName, name, contents);
+        DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contents);
 
         context.completeStep();
     }

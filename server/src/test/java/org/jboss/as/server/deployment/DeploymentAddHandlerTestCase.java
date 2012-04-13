@@ -57,7 +57,7 @@ public class DeploymentAddHandlerTestCase {
     @Ignore("TODO: JBAS-9020: Archive deployments are not yet implemented")
     @Test
     public void testContent() throws OperationFailedException {
-        final DeploymentAddHandler handler = DeploymentAddHandler.createForStandalone(contentRepository);
+        final DeploymentAddHandler handler = DeploymentAddHandler.createForStandalone(contentRepository, null);
         final OperationContext context = Mockito.mock(OperationContext.class);
         Mockito.when(context.getResult()).thenReturn(new ModelNode());
         Mockito.when(context.readModelForUpdate(PathAddress.EMPTY_ADDRESS)).thenReturn(new ModelNode());
@@ -77,7 +77,7 @@ public class DeploymentAddHandlerTestCase {
 
     @Test (expected = OperationFailedException.class)
     public void testTooMuchContent() throws OperationFailedException {
-        final DeploymentAddHandler handler = DeploymentAddHandler.createForStandalone(contentRepository);
+        final DeploymentAddHandler handler = DeploymentAddHandler.createForStandalone(contentRepository, null);
         final OperationContext context = Mockito.mock(OperationContext.class);
         final ModelNode operation = new ModelNode();
         //operation.get("address").setEmptyList().get(0).get("deployment").set("test.war");
@@ -90,7 +90,7 @@ public class DeploymentAddHandlerTestCase {
 
     @Test
     public void testValidator() throws OperationFailedException {
-        final DeploymentAddHandler handler = DeploymentAddHandler.createForStandalone(contentRepository);
+        final DeploymentAddHandler handler = DeploymentAddHandler.createForStandalone(contentRepository, null);
         final OperationContext context = Mockito.mock(OperationContext.class);
         final ModelNode operation = new ModelNode();
         operation.get("content").get(0).get("archive").set("wrong");

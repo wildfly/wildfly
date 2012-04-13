@@ -45,6 +45,9 @@ import org.jboss.metadata.appclient.parser.spec.ApplicationClientMetaDataParser;
 import org.jboss.metadata.appclient.spec.AppClientEnvironmentRefsGroupMetaData;
 import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
+import org.jboss.metadata.property.PropertyReplacer;
+import org.jboss.metadata.property.PropertyReplacers;
+import org.jboss.metadata.property.PropertyResolver;
 import org.jboss.vfs.VirtualFile;
 
 import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
@@ -63,8 +66,11 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
         if (!DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) {
             return;
         }
-        final ApplicationClientMetaData appClientMD = parseAppClient(deploymentUnit);
-        final JBossClientMetaData jbossClientMD = parseJBossClient(deploymentUnit);
+        final PropertyResolver propertyResolver = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_RESOLVER);
+        final PropertyReplacer propertyReplacer = PropertyReplacers.resolvingReplacer(propertyResolver);
+
+        final ApplicationClientMetaData appClientMD = parseAppClient(deploymentUnit, propertyReplacer);
+        final JBossClientMetaData jbossClientMD = parseJBossClient(deploymentUnit, propertyReplacer);
         final JBossClientMetaData merged;
         if (appClientMD == null && jbossClientMD == null) {
             return;
@@ -96,7 +102,7 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
 
     }
 
-    private ApplicationClientMetaData parseAppClient(DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+    private ApplicationClientMetaData parseAppClient(DeploymentUnit deploymentUnit, final PropertyReplacer propertyReplacer) throws DeploymentUnitProcessingException {
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final VirtualFile alternateDescriptor = deploymentRoot.getAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_CLIENT_DEPLOYMENT_DESCRIPTOR);
         // Locate the descriptor
@@ -110,7 +116,7 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
             InputStream is = null;
             try {
                 is = descriptor.openStream();
-                ApplicationClientMetaData data = new ApplicationClientMetaDataParser().parse(getXMLStreamReader(is));
+                ApplicationClientMetaData data = new ApplicationClientMetaDataParser().parse(getXMLStreamReader(is), propertyReplacer);
                 return data;
             } catch (XMLStreamException e) {
                 throw MESSAGES.failedToParseXml(e, descriptor, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
@@ -130,14 +136,14 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
         }
     }
 
-    private JBossClientMetaData parseJBossClient(DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+    private JBossClientMetaData parseJBossClient(DeploymentUnit deploymentUnit, final PropertyReplacer propertyReplacer) throws DeploymentUnitProcessingException {
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final VirtualFile appXml = deploymentRoot.getChild(JBOSS_CLIENT_XML);
         if (appXml.exists()) {
             InputStream is = null;
             try {
                 is = appXml.openStream();
-                JBossClientMetaData data = new JBossClientMetaDataParser().parse(getXMLStreamReader(is));
+                JBossClientMetaData data = new JBossClientMetaDataParser().parse(getXMLStreamReader(is), propertyReplacer);
                 return data;
             } catch (XMLStreamException e) {
                 throw MESSAGES.failedToParseXml(e, appXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());

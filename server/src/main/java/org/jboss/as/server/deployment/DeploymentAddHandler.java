@@ -64,6 +64,7 @@ import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -81,8 +82,9 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
     protected final ParametersValidator validator = new ParametersValidator();
     protected final ParametersValidator unmanagedContentValidator = new ParametersValidator();
     protected final ParametersValidator managedContentValidator = new ParametersValidator();
+    private final AbstractVaultReader vaultReader;
 
-    protected DeploymentAddHandler(final ContentRepository contentRepository) {
+    protected DeploymentAddHandler(final ContentRepository contentRepository, final AbstractVaultReader vaultReader) {
         assert contentRepository != null : "Null contentRepository";
         this.contentRepository = contentRepository;
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
@@ -108,14 +110,15 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         this.managedContentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES));
         this.unmanagedContentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN));
         this.unmanagedContentValidator.registerValidator(PATH, new StringLengthValidator(1));
+        this.vaultReader = vaultReader;
     }
 
-    public static DeploymentAddHandler createForStandalone(final ContentRepository contentRepository) {
-        return new DeploymentAddHandler(contentRepository);
+    public static DeploymentAddHandler createForStandalone(final ContentRepository contentRepository, final AbstractVaultReader vaultReader) {
+        return new DeploymentAddHandler(contentRepository, vaultReader);
     }
 
-    public static DeploymentAddHandler createForDomainServer(final ContentRepository contentRepository, final DeploymentFileRepository remoteFileRepository) {
-        return new DomainServerDeploymentAddHandler(contentRepository, remoteFileRepository);
+    public static DeploymentAddHandler createForDomainServer(final ContentRepository contentRepository, final DeploymentFileRepository remoteFileRepository, final AbstractVaultReader vaultReader) {
+        return new DomainServerDeploymentAddHandler(contentRepository, remoteFileRepository, vaultReader);
     }
 
     @Override
@@ -159,7 +162,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         subModel.get(PERSISTENT).set(!operation.hasDefined(PERSISTENT) || operation.get(PERSISTENT).asBoolean());
 
         if (subModel.get(ENABLED).asBoolean() && context.isNormalServer()) {
-            DeploymentHandlerUtil.deploy(context, runtimeName, name, contentItem);
+            DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contentItem);
         }
 
         context.completeStep();
@@ -213,8 +216,8 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
     private static class DomainServerDeploymentAddHandler extends DeploymentAddHandler {
         final DeploymentFileRepository remoteFileRepository;
 
-        DomainServerDeploymentAddHandler(ContentRepository contentRepository, DeploymentFileRepository remoteFileRepository) {
-            super(contentRepository);
+        DomainServerDeploymentAddHandler(ContentRepository contentRepository, DeploymentFileRepository remoteFileRepository, final AbstractVaultReader vaultReader) {
+            super(contentRepository, vaultReader);
             assert remoteFileRepository != null : "Null remoteFileRepository";
             this.remoteFileRepository = remoteFileRepository;
         }
