@@ -77,6 +77,7 @@ public class Util {
     public static final String MAX_FAILURE_PERCENTAGE = "max-failure-percentage";
     public static final String MAX_OCCURS = "max-occurs";
     public static final String MIN_OCCURS = "min-occurs";
+    public static final String MODULE_SLOT = "module-slot";
     public static final String NAME = "name";
     public static final String NILLABLE = "nillable";
     public static final String OPERATION = "operation";
