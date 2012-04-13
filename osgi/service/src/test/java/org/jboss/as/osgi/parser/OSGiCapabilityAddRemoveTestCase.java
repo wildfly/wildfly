@@ -23,7 +23,6 @@ package org.jboss.as.osgi.parser;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import junit.framework.Assert;
 
@@ -35,7 +34,6 @@ import org.jboss.as.osgi.parser.SubsystemState.OSGiCapability;
 import org.jboss.dmr.ModelNode;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * @author David Bosschaert

@@ -22,6 +22,31 @@
 
 package org.jboss.as.osgi.service;
 
+import static org.jboss.as.network.SocketBinding.JBOSS_BINDING_NAME;
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
+import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA;
+import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_PACKAGES;
+import static org.jboss.osgi.framework.Constants.JBOSGI_PREFIX;
+
+import java.io.File;
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.management.MBeanServer;
+import javax.naming.spi.ObjectFactory;
+
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.naming.InitialContext;
 import org.jboss.as.network.SocketBinding;
@@ -45,7 +70,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -63,29 +87,6 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceReference;
-
-import javax.management.MBeanServer;
-import javax.naming.spi.ObjectFactory;
-import java.io.File;
-import java.net.InetSocketAddress;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-
-import static org.jboss.as.network.SocketBinding.JBOSS_BINDING_NAME;
-import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
-import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
-import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA;
-import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_PACKAGES;
-import static org.jboss.osgi.framework.Constants.JBOSGI_PREFIX;
 
 /**
  * Service responsible for creating and managing the life-cycle of the OSGi Framework.
@@ -105,13 +106,13 @@ public class FrameworkBootstrapService implements Service<Void> {
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
     private final InjectedValue<SocketBinding> httpServerPortBinding = new InjectedValue<SocketBinding>();
 
-    public static ServiceController<?> addService(final ServiceTarget target, final ServiceListener<Object>... listeners) {
+    public static ServiceController<Void> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler) {
         FrameworkBootstrapService service = new FrameworkBootstrapService();
-        ServiceBuilder<?> builder = target.addService(FRAMEWORK_BOOTSTRAP, service);
+        ServiceBuilder<Void> builder = target.addService(FRAMEWORK_BOOTSTRAP, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
         builder.addDependency(JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.httpServerPortBinding);
-        builder.addListener(listeners);
+        builder.addListener(verificationHandler);
         return builder.install();
     }
 

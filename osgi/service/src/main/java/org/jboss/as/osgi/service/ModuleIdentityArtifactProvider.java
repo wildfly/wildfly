@@ -92,11 +92,11 @@ final class ModuleIdentityArtifactProvider extends AbstractService<Void> impleme
     @Override
     public void start(StartContext context) throws StartException {
         BundleContext syscontext = injectedSystemContext.getValue();
-        Dictionary props = new Hashtable();
+        Dictionary<String, Object> props = new Hashtable<String, Object>();
         props.put(Constants.SERVICE_RANKING, Integer.MAX_VALUE);
         registration = syscontext.registerService(ArtifactProviderPlugin.class.getName(), this, props);
         ServerEnvironment serverEnvironment = injectedEnvironment.getValue();
-        modulesDir = serverEnvironment.getModulesDir();
+        modulesDir = new File(serverEnvironment.getHomeDir() + File.separator + "modules");
         bundlesDir = serverEnvironment.getBundlesDir();
     }
 

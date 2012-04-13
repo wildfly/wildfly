@@ -35,20 +35,19 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
-import org.junit.Ignore;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 /**
  * @author David Bosschaert
+ * @author Thomas.Diesler@jboss.com
  */
-//@Ignore("[AS7-3556] Replace mocked subsystem model tests with functional tests")
 class ResourceAddRemoveTestBase {
 
     private final AtomicReference<ModelNode> operationHolder = new AtomicReference<ModelNode>();
 
-    @SuppressWarnings({ "unchecked" })
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected OperationContext mockOperationContext(SubsystemState stateService, final List<OperationStepHandler> addedSteps,
                                                     final ResultAction stepResult) {
         ServiceRegistry serviceRegistry = Mockito.mock(ServiceRegistry.class);
