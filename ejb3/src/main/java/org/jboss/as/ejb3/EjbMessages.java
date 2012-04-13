@@ -2054,6 +2054,9 @@ public interface EjbMessages {
     @Message(id = 14573, value = "Could not obtain lock on %s to passivate %s")
     IllegalStateException couldNotObtainLockForGroup(String groupId, String groupMember);
 
+    @Message(id = 14574, value = "Unknown channel creation option type %s")
+    IllegalArgumentException unknownChannelCreationOptionType(String optionType);
+
 
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is

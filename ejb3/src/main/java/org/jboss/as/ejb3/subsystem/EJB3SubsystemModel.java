@@ -94,6 +94,7 @@ public interface EJB3SubsystemModel {
 
     String CHANNEL_CREATION_OPTIONS = "channel-creation-options";
     String VALUE = "value";
+    String TYPE = "type";
 
     PathElement REMOTE_SERVICE_PATH = PathElement.pathElement(SERVICE, REMOTE);
     PathElement ASYNC_SERVICE_PATH = PathElement.pathElement(SERVICE, ASYNC);

@@ -27,8 +27,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSourceService;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
@@ -47,8 +47,10 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
+import org.jboss.remoting3.RemotingOptions;
 import org.xnio.Option;
 import org.xnio.OptionMap;
+import org.xnio.Options;
 
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
@@ -66,6 +68,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CONNECTOR_REF;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TYPE;
 
 
 /**
@@ -172,17 +175,29 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         if (channelCreationOptions.isDefined() && channelCreationOptions.asInt() > 0) {
             final ClassLoader loader = this.getClass().getClassLoader();
             final OptionMap.Builder builder = OptionMap.builder();
-            for (Property property : channelCreationOptions.asPropertyList()) {
-                String name = property.getName();
-                if (!name.contains(".")) {
-                    name = "org.xnio.Options." + name;
-                }
-                final Option option = Option.fromString(name, loader);
-                builder.set(option, option.parseValue(property.getValue().get(ModelDescriptionConstants.VALUE).asString(), loader));
+            for (final Property optionProperty : channelCreationOptions.asPropertyList()) {
+                final String name = optionProperty.getName();
+                final ModelNode propValueModel = optionProperty.getValue();
+                final String type = propValueModel.get(TYPE).asString();
+                final String optionClassName = this.getClassNameForChannelOptionType(type);
+                final String fullyQualifiedOptionName = optionClassName + "." + name;
+                final Option option = Option.fromString(fullyQualifiedOptionName, loader);
+                final String value = propValueModel.get(EJB3SubsystemModel.VALUE).asString();
+                builder.set(option, option.parseValue(value, loader));
             }
             return builder.getMap();
         } else {
             return OptionMap.EMPTY;
         }
+    }
+
+    private String getClassNameForChannelOptionType(final String optionType) {
+        if ("remoting".equals(optionType)) {
+            return RemotingOptions.class.getName();
+        }
+        if ("xnio".equals(optionType)) {
+            return Options.class.getName();
+        }
+        throw EjbMessages.MESSAGES.unknownChannelCreationOptionType(optionType);
     }
 }

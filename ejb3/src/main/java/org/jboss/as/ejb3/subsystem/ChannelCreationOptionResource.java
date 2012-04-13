@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -32,12 +33,18 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -56,6 +63,12 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition CHANNEL_CREATION_OPTION_VALUE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.VALUE, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
+    /**
+     * Attribute definition of the channel creation option "type"
+     */
+    static final SimpleAttributeDefinition CHANNEL_CREATION_OPTION_TYPE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.TYPE, ModelType.STRING, true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).setValidator(AllowedChannelOptionTypesValidator.INSTANCE).build();
+
     ChannelCreationOptionResource() {
         super(PathElement.pathElement(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS),
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS),
@@ -65,7 +78,8 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(CHANNEL_CREATION_OPTION_VALUE, null, new ChannelCreationOptionWriteAttributeHandler());
+        resourceRegistration.registerReadWriteAttribute(CHANNEL_CREATION_OPTION_VALUE, null, new ChannelCreationOptionWriteAttributeHandler(CHANNEL_CREATION_OPTION_VALUE));
+        resourceRegistration.registerReadWriteAttribute(CHANNEL_CREATION_OPTION_TYPE, null, new ChannelCreationOptionWriteAttributeHandler(CHANNEL_CREATION_OPTION_TYPE));
     }
 
     private static void recreateParentService(OperationContext context, ModelNode ejb3RemoteServiceModelNode,
@@ -78,8 +92,8 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
      */
     private static class ChannelCreationOptionWriteAttributeHandler extends RestartParentWriteAttributeHandler {
 
-        public ChannelCreationOptionWriteAttributeHandler() {
-            super(EJB3SubsystemModel.REMOTE, CHANNEL_CREATION_OPTION_VALUE);
+        public ChannelCreationOptionWriteAttributeHandler(final AttributeDefinition attributeDefinition) {
+            super(EJB3SubsystemModel.REMOTE, attributeDefinition);
         }
 
         @Override
@@ -105,6 +119,7 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
 
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
             ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE.validateAndSet(operation, model);
+            ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_TYPE.validateAndSet(operation, model);
         }
 
         @Override
@@ -136,6 +151,34 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
         @Override
         protected ServiceName getParentServiceName(PathAddress parentAddress) {
             return EJBRemoteConnectorService.SERVICE_NAME;
+        }
+    }
+
+    private static class AllowedChannelOptionTypesValidator extends ModelTypeValidator implements AllowedValuesValidator {
+        private static AllowedChannelOptionTypesValidator INSTANCE = new AllowedChannelOptionTypesValidator();
+
+        private final List<ModelNode> allowedChannelOptTypes;
+
+        private AllowedChannelOptionTypesValidator() {
+            super(ModelType.STRING, false);
+            allowedChannelOptTypes = new ArrayList<ModelNode>();
+            allowedChannelOptTypes.add(new ModelNode().set("remoting"));
+            allowedChannelOptTypes.add(new ModelNode().set("xnio"));
+        }
+
+        @Override
+        public List<ModelNode> getAllowedValues() {
+            return allowedChannelOptTypes;
+        }
+
+        @Override
+        public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+            super.validateParameter(parameterName, value);
+            if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
+                if (!this.allowedChannelOptTypes.contains(value)) {
+                    throw EjbMessages.MESSAGES.unknownChannelCreationOptionType(value.asString());
+                }
+            }
         }
     }
 
