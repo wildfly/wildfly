@@ -254,6 +254,9 @@ public abstract class AbstractJvmModelTest extends ManagementTestSetup {
         Assert.assertEquals(new ModelNode().setEmptyList(), readModel(true).get(JVM, "test", "jvm-options"));
     }
 
+    //AS7-4437 is scheduled for 7.2.0 so uncomment these once we have decided on the format of the operation names
+    //There are some tests in AbstractJvmModelTest for these which need uncommenting as well
+    /*
     @Test
     public void testAddSameEnvironmentVariable() throws Exception {
         testEmptyAddSubsystem();
@@ -276,7 +279,7 @@ public abstract class AbstractJvmModelTest extends ManagementTestSetup {
         Assert.assertEquals(new ModelNode().add("THREE", "tres"), readModel(true).get(JVM, "test", "environment-variables"));
         executeForResult(createRemoveEnvVarOperation("THREE"));
         Assert.assertEquals(new ModelNode().setEmptyList(), readModel(true).get(JVM, "test", "environment-variables"));
-    }
+    }*/
 
 
     protected ModelNode createWriteAttributeOperation(String name, ModelNode value) {
