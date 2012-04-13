@@ -137,12 +137,17 @@ public final class RemoteDeployer implements Deployer {
     public void undeploy(final URL archiveURL) throws Exception {
         synchronized (archiveCounters) {
             String k = archiveURL.toString();
-            int count = archiveCounters.get(k);
-            if (count > 1) {
-                archiveCounters.put(k, (count - 1));
-                return;
+            if (archiveCounters.containsKey(k)) {
+                int count = archiveCounters.get(k);
+                if (count > 1) {
+                    archiveCounters.put(k, (count - 1));
+                    return;
+                } else {
+                    archiveCounters.remove(k);
+                }
             } else {
-                archiveCounters.remove(k);
+                LOGGER.warn("Trying to undeploy archive " + archiveURL + " which is not currently deployed!");
+                return;
             }
 
             final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
