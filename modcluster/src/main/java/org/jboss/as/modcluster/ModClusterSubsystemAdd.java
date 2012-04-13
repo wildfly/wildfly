@@ -22,6 +22,7 @@
 
 package org.jboss.as.modcluster;
 
+import org.apache.catalina.connector.Connector;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -82,13 +83,16 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
         final ModelNode modelConfig = fullModel.get(ModClusterExtension.CONFIGURATION_PATH.getKeyValuePair());
         final ModClusterConfig config = getModClusterConfig(context, modelConfig);
         final LoadBalanceFactorProvider loadProvider = getModClusterLoadProvider(context, modelConfig);
+        final String connector = CONNECTOR.resolveModelAttribute(context, modelConfig).asString();
         // Add mod_cluster service
         final ModClusterService service = new ModClusterService(config, loadProvider);
         final ServiceBuilder<ModCluster> serviceBuilder = context.getServiceTarget().addService(ModClusterService.NAME, service)
                 .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer())
                 .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getBindingManager())
+                .addDependency(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(connector), Connector.class, service.getConnectorInjector())
                 .addListener(verificationHandler)
-                .setInitialMode(Mode.ACTIVE);
+                .setInitialMode(Mode.ACTIVE)
+        ;
         final ModelNode bindingRefNode = ADVERTISE_SOCKET.resolveModelAttribute(context, modelConfig);
         final String bindingRef = bindingRefNode.isDefined() ? bindingRefNode.asString() : null;
         if (bindingRef != null) {

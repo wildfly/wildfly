@@ -115,6 +115,11 @@
         <xs:documentation>Load balancing group</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="connector" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The web connector on which mod_cluster will operate.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- general SSL definitions -->

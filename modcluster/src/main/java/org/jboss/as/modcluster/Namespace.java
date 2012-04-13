@@ -58,9 +58,8 @@ public enum Namespace {
      * @return the URI
      */
     public String getUri() {
-        return "urn:jboss:domain:" + ModClusterExtension.SUBSYSTEM_NAME + ":" + major + "." + minor;
+        return String.format("urn:jboss:domain:%s:%d.%d", ModClusterExtension.SUBSYSTEM_NAME, this.major, this.minor);
     }
-
 
     public XMLElementReader<List<ModelNode>> getXMLReader() {
         return this.reader;

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.modcluster;
 
-import org.apache.catalina.Engine;
+import org.apache.catalina.connector.Connector;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.web.WebServer;
@@ -54,7 +54,6 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
 
     static final ServiceName NAME = ServiceName.JBOSS.append("mod-cluster");
 
-
     private CatalinaEventHandlerAdapter adapter;
     private LoadBalanceFactorProvider load;
     private ModClusterConfig config;
@@ -62,6 +61,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     private final InjectedValue<WebServer> webServer = new InjectedValue<WebServer>();
     private final InjectedValue<SocketBindingManager> bindingManager = new InjectedValue<SocketBindingManager>();
     private final InjectedValue<SocketBinding> binding = new InjectedValue<SocketBinding>();
+    private final InjectedValue<Connector> connector = new InjectedValue<Connector>();
 
     /* Depending on configuration we use one of the other */
     private org.jboss.modcluster.ModClusterService service;
@@ -81,7 +81,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         boolean isMulticast = isMulticastEnabled(bindingManager.getValue().getDefaultInterfaceBinding().getNetworkInterfaces());
 
         // Set some defaults...
-        if (config.getProxyList() == null) {
+        if (config.getProxies().isEmpty()) {
             config.setAdvertise(isMulticast);
         }
 
@@ -90,33 +90,16 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             // There should be a socket-binding....
             final SocketBinding binding = this.binding.getValue();
             if (binding != null) {
-                config.setAdvertisePort(binding.getMulticastPort());
-                config.setAdvertiseGroupAddress(binding.getMulticastSocketAddress().getHostName());
-                config.setAdvertiseInterface(binding.getSocketAddress().getAddress().getHostAddress());
+                config.setAdvertiseSocketAddress(binding.getMulticastSocketAddress());
+                config.setAdvertiseInterface(binding.getSocketAddress().getAddress());
                 if (!isMulticast) {
                     ROOT_LOGGER.multicastInterfaceNotAvailable();
                 }
             }
         }
-        if (config.getExcludedContexts() != null) {
-            // read the default host.
-            String defaulthost = ((Engine) webServer.getValue().getService().getContainer()).getDefaultHost();
-            StringBuilder excludedContexts = new StringBuilder();
-            for (String excludedContext : config.getExcludedContexts().split(",")) {
-                String[] parts = excludedContext.trim().split(":");
-                if (parts.length != 1) {
-                    excludedContexts.append(",").append(excludedContext);
-                } else {
-                    excludedContexts.append(",").append(defaulthost).append(":").append(excludedContext);
-                }
-            }
-            config.setExcludedContexts(excludedContexts.toString());
-        } else {
-            config.setExcludedContexts("ROOT,invoker,jbossws,juddi,console");
-        }
 
         service = new org.jboss.modcluster.ModClusterService(config, load);
-        adapter = new CatalinaEventHandlerAdapter(service, webServer.getValue().getServer());
+        adapter = new CatalinaEventHandlerAdapter(service, webServer.getValue().getServer(), connector.getValue());
         adapter.start();
     }
 
@@ -160,6 +143,10 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
 
     public Injector<SocketBindingManager> getBindingManager() {
         return bindingManager;
+    }
+
+    public Injector<Connector> getConnectorInjector() {
+        return connector;
     }
 
     @Override

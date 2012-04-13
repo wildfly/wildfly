@@ -41,6 +41,7 @@ interface CommonAttributes {
     String AUTO_ENABLE_CONTEXTS = "auto-enable-contexts";
     String STOP_CONTEXT_TIMEOUT = "stop-context-timeout";
     String SOCKET_TIMEOUT = "socket-timeout";
+    String CONNECTOR = "connector";
 
     String STICKY_SESSION = "sticky-session";
     String STICKY_SESSION_REMOVE = "sticky-session-remove";
@@ -54,8 +55,6 @@ interface CommonAttributes {
     String TTL = "ttl";
     String NODE_TIMEOUT = "node-timeout";
     String BALANCER = "balancer";
-    @Deprecated
-    String DOMAIN = "domain";
     String LOAD_BALANCING_GROUP = "load-balancing-group";
 
     String LOAD_METRIC = "load-metric";

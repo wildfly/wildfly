@@ -57,6 +57,11 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
+    static final SimpleAttributeDefinition CONNECTOR = SimpleAttributeDefinitionBuilder.create(CommonAttributes.CONNECTOR, ModelType.STRING, false)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
+
+    // TODO: Convert into xs:list of outbound socket binding names
     static final SimpleAttributeDefinition PROXY_LIST = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PROXY_LIST, ModelType.STRING, true)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -78,6 +83,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
+    // TODO: Convert into an xs:list of host:context
     static final SimpleAttributeDefinition EXCLUDED_CONTEXTS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.EXCLUDED_CONTEXTS, ModelType.STRING, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("ROOT,invoker,jbossws,juddi,console"))
@@ -224,7 +230,8 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             SMAX,
             TTL,
             NODE_TIMEOUT,
-            LOAD_BALANCING_GROUP // not in the 1.0 xsd
+            LOAD_BALANCING_GROUP, // was called "domain" in the 1.0 xsd
+            CONNECTOR, // not in the 1.0 xsd
     };
 
 
