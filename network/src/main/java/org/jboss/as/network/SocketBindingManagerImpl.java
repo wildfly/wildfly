@@ -79,13 +79,13 @@ public abstract class SocketBindingManagerImpl implements SocketBindingManager {
     /** {@inheritDoc} */
     @Override
     public MulticastSocket createMulticastSocket(String name, SocketAddress address) throws IOException {
-        return new ManagedMulticastSocketBinding(null, this.unnamedRegistry, address);
+        return ManagedMulticastSocketBinding.create(null, this.unnamedRegistry, address);
     }
 
     /** {@inheritDoc} */
     @Override
     public MulticastSocket createMulticastSocket(SocketAddress address) throws IOException {
-        return new ManagedMulticastSocketBinding(null, this.unnamedRegistry, address);
+        return ManagedMulticastSocketBinding.create(null, this.unnamedRegistry, address);
     }
 
     /** {@inheritDoc} */
