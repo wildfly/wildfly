@@ -52,18 +52,17 @@ import java.util.Hashtable;
 import java.util.Properties;
 
 /**
- * Tests that if a deployment contains a jboss-ejb-client.xml pointing to a outbound connection to a server
- * which isn't yet up, then it doesn't fail the deployment. Instead it (re)connects whenever the server is ready and
- * available.
+ * Tests that a EJB client context containing a reference to a remote outbound connection, has the ability to
+ * reconnect a failed connection
  *
  * @author Jaikiran Pai
  * @see https://issues.jboss.org/browse/AS7-3820 for details
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class LazyOutboundConnectionReconnectTestCase {
+public class RemoteOutboundConnectionReconnectTestCase {
 
-    private static final Logger logger = Logger.getLogger(LazyOutboundConnectionReconnectTestCase.class);
+    private static final Logger logger = Logger.getLogger(RemoteOutboundConnectionReconnectTestCase.class);
 
     private static final String SERVER_ONE_MODULE_NAME = "server-one-module";
     private static final String SERVER_TWO_MODULE_NAME = "server-two-module";
@@ -183,6 +182,81 @@ public class LazyOutboundConnectionReconnectTestCase {
     }
 
     /**
+     * Start a server (A) which has a remote outbound connection to another server (B). Also start Server (B).
+     * Deploy (X) to server A. X contains a jboss-ejb-client.xml pointing to server B. The deployment and invocations
+     * must succeed.
+     * Now stop server (B). Invoke again on the bean. Invocation should fail since server B is down. Now
+     * restart server B and invoke again on the bean. Invocation should pass since the EJB client context is
+     * expected to reconnect to the restarted server B.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testRemoteServerRestarts() throws Exception {
+        // Start the main server
+        this.container.start(DEFAULT_JBOSSAS);
+        // deploy to this container
+        this.deployer.deploy(DEFAULT_AS_DEPLOYMENT);
+
+        // Now start the server which has a remote-outbound-connection
+        this.container.start(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
+        this.deployer.deploy(DEPLOYMENT_WITH_JBOSS_EJB_CLIENT_XML);
+
+        boolean defaultContainerStarted = true;
+        try {
+            // To make sure deployment succeeded and invocations are possible, call a independent bean
+            final RemoteEcho independentBean = (RemoteEcho) context.lookup("ejb:/" + SERVER_ONE_MODULE_NAME + "//" + IndependentBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
+            final String msg = "Hellooooo!";
+            final String echoFromIndependentBean = independentBean.echo(msg);
+            Assert.assertEquals("Unexpected echo from independent bean", msg, echoFromIndependentBean);
+
+            // now try invoking the EJB (which calls a delegate bean on other server) on this server.
+            // should fail with no EJB receivers, since the other server
+            // which can handle the delegate bean invocation hasn't yet started.
+            final RemoteEcho dependentBean = (RemoteEcho) context.lookup("ejb:/" + SERVER_ONE_MODULE_NAME + "//" + EchoOnServerOne.class.getSimpleName() + "!" + RemoteEcho.class.getName());
+            final String echoBeforeShuttingDownServer = dependentBean.echo(msg);
+            Assert.assertEquals("Unexpected echo from bean", EchoOnServerTwo.ECHO_PREFIX + msg, echoBeforeShuttingDownServer);
+
+            // now stop the main server
+            this.container.stop(DEFAULT_JBOSSAS);
+            defaultContainerStarted = false;
+
+            try {
+                final String echoAfterServerShutdown = dependentBean.echo(msg);
+                Assert.fail("Invocation on bean when was expected to fail due to other server being down");
+            } catch (Exception e) {
+                // expected
+                logger.info("Got the expected exception on invoking a bean when other server was down", e);
+            }
+
+            // now restart the main server
+            this.container.start(DEFAULT_JBOSSAS);
+            defaultContainerStarted = true;
+
+            final String echoAfterServerRestart = dependentBean.echo(msg);
+            Assert.assertEquals("Unexpected echo from bean after server restart", EchoOnServerTwo.ECHO_PREFIX + msg, echoAfterServerRestart);
+
+
+        } finally {
+            try {
+                this.deployer.undeploy(DEPLOYMENT_WITH_JBOSS_EJB_CLIENT_XML);
+                this.container.stop(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
+            } catch (Exception e) {
+                logger.debug("Exception during container shutdown", e);
+            }
+            if (defaultContainerStarted) {
+                try {
+                    this.deployer.undeploy(DEFAULT_AS_DEPLOYMENT);
+                    this.container.stop(DEFAULT_JBOSSAS);
+                } catch (Exception e) {
+                    logger.debug("Exception during container shutdown", e);
+                }
+            }
+        }
+
+    }
+
+    /**
      * Sets up the EJB client context to use a selector which processes and sets up EJB receivers
      * based on this testcase specific jboss-ejb-client.properties file
      *
@@ -192,7 +266,7 @@ public class LazyOutboundConnectionReconnectTestCase {
     private static ContextSelector<EJBClientContext> setupEJBClientContextSelector() throws IOException {
         // setup the selector
         final String clientPropertiesFile = "org/jboss/as/test/manualmode/ejb/client/outbound/connection/jboss-ejb-client.properties";
-        final InputStream inputStream = LazyOutboundConnectionReconnectTestCase.class.getClassLoader().getResourceAsStream(clientPropertiesFile);
+        final InputStream inputStream = RemoteOutboundConnectionReconnectTestCase.class.getClassLoader().getResourceAsStream(clientPropertiesFile);
         if (inputStream == null) {
             throw new IllegalStateException("Could not find " + clientPropertiesFile + " in classpath");
         }
