@@ -22,12 +22,22 @@
 
 package org.jboss.as.network;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.Locale;
+
 /**
  * Utility methods related to networking.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class NetworkUtils {
+
+    private  static final boolean can_bind_to_mcast_addr; // are we running on Linux ?
+
+    static {
+        can_bind_to_mcast_addr = checkForLinux() || checkForSolaris() || checkForHp();
+    }
 
     public static String formatPossibleIpv6Address(String address) {
         if (address == null) {
@@ -40,6 +50,47 @@ public class NetworkUtils {
             return address;
         }
         return "[" + address + "]";
+    }
+
+    public static boolean isBindingToMulticastDressSupported() {
+        return can_bind_to_mcast_addr;
+    }
+
+
+    private static boolean checkForLinux() {
+        return checkForPresence("os.name", "linux");
+    }
+
+    private static boolean checkForHp() {
+        return checkForPresence("os.name", "hp");
+    }
+
+    private static boolean checkForSolaris() {
+        return checkForPresence("os.name", "sun");
+    }
+
+    private static boolean checkForWindows() {
+        return checkForPresence("os.name", "win");
+    }
+
+    public static boolean checkForMac() {
+        return checkForPresence("os.name", "mac");
+    }
+
+    private static boolean checkForPresence(final String key, final String value) {
+
+        return AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+
+            @Override
+            public Boolean run() {
+                try {
+                    String tmp = System.getProperty(key);
+                    return tmp != null && tmp.trim().toLowerCase(Locale.ENGLISH).startsWith(value);
+                } catch (Throwable t) {
+                    return false;
+                }
+            }
+        });
     }
 
     // No instantiation

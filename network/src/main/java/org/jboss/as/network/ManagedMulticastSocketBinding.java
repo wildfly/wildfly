@@ -35,11 +35,29 @@ import java.net.SocketException;
  */
 public class ManagedMulticastSocketBinding extends MulticastSocket implements ManagedBinding {
 
+    static ManagedMulticastSocketBinding create(final String name, final ManagedBindingRegistry socketBindings, SocketAddress address) throws IOException {
+        if (NetworkUtils.isBindingToMulticastDressSupported()) {
+            return new ManagedMulticastSocketBinding(name, socketBindings, address);
+        } else if (address instanceof InetSocketAddress) {
+            return new ManagedMulticastSocketBinding(name, socketBindings, ((InetSocketAddress) address).getPort());
+        } else {
+            // Probably non-existing case; only happens if an end-user caller deliberately passes such an
+            // address to SocketBindingManager
+            return new ManagedMulticastSocketBinding(name, socketBindings, address);
+        }
+    }
+
     private final String name;
     private final ManagedBindingRegistry socketBindings;
 
-    ManagedMulticastSocketBinding(final String name, final ManagedBindingRegistry socketBindings, SocketAddress address) throws IOException {
+    private ManagedMulticastSocketBinding(final String name, final ManagedBindingRegistry socketBindings, SocketAddress address) throws IOException {
         super(address);
+        this.name = name;
+        this.socketBindings = socketBindings;
+    }
+
+    private ManagedMulticastSocketBinding(final String name, final ManagedBindingRegistry socketBindings, int port) throws IOException {
+        super(port);
         this.name = name;
         this.socketBindings = socketBindings;
     }
