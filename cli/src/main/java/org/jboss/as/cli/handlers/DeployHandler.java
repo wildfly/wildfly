@@ -22,17 +22,23 @@
 package org.jboss.as.cli.handlers;
 
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.operation.OperationFormatException;
@@ -44,6 +50,9 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.vfs.TempFileProvider;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.spi.MountHandle;
 
 /**
  *
@@ -60,6 +69,9 @@ public class DeployHandler extends BatchModeCommandHandler {
     private final ArgumentWithoutValue allServerGroups;
     private final ArgumentWithoutValue disabled;
     private final ArgumentWithoutValue unmanaged;
+    private final ArgumentWithValue script;
+
+    private static final String CLI_ARCHIVE_SUFFIX = ".cli";
 
     public DeployHandler(CommandContext ctx) {
         super(ctx, "deploy", true);
@@ -221,6 +233,9 @@ public class DeployHandler extends BatchModeCommandHandler {
 
         unmanaged = new ArgumentWithoutValue(this, "--unmanaged");
         unmanaged.addRequiredPreceding(path);
+
+        script = new ArgumentWithValue(this, "--script");
+        script.addRequiredPreceding(path);
     }
 
     @Override
@@ -265,6 +280,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         final boolean disabled = this.disabled.isPresent(args);
         final String serverGroups = this.serverGroups.getValue(args);
         final boolean allServerGroups = this.allServerGroups.isPresent(args);
+        final boolean archive = isCliArchive(f);
 
         if(force) {
             if(f == null) {
@@ -274,6 +290,10 @@ public class DeployHandler extends BatchModeCommandHandler {
                 throw new CommandFormatException(this.force.getFullName() +
                         " only replaces the content in the deployment repository and can't be used in combination with any of " +
                         this.disabled.getFullName() + ", " + this.serverGroups.getFullName() + " or " + this.allServerGroups.getFullName() + '.');
+            }
+
+            if (archive) {
+                throw new OperationFormatException(this.force.getFullName() + " can't be used in combination with a CLI archive.");
             }
 
             if(Util.isDeploymentInRepository(name, client)) {
@@ -298,6 +318,10 @@ public class DeployHandler extends BatchModeCommandHandler {
                         " can't be used in combination with " + this.disabled.getFullName() + '.');
             }
 
+            if (archive) {
+                throw new OperationFormatException(this.disabled.getFullName() + " can't be used in combination with a CLI archive.");
+            }
+
             if(Util.isDeploymentInRepository(name, client)) {
                 throw new CommandFormatException("'" + name + "' already exists in the deployment repository (use " +
                 this.force.getFullName() + " to replace the existing content in the repository).");
@@ -307,6 +331,30 @@ public class DeployHandler extends BatchModeCommandHandler {
             final ModelNode request = buildAddRequest(ctx, f, name, runtimeName, unmanaged);
             execute(ctx, request, f, unmanaged);
             return;
+        }
+
+        if (archive) {
+
+            ModelNode request;
+            try {
+                request = buildRequest(ctx);
+            } catch (CommandFormatException e1) {
+                throw new CommandFormatException(e1.getLocalizedMessage());
+            }
+
+            if(request == null) {
+                throw new CommandFormatException("Operation request wasn't built.");
+            }
+            try {
+                ModelNode result = client.execute(request);
+                if(Util.isSuccess(result)) {
+                    return;
+                } else {
+                    throw new CommandFormatException("Failed to execute archive script: " + Util.getFailureDescription(result));
+                }
+            } catch (Exception e) {
+                throw new CommandFormatException("Failed to execute archive script: " + e.getLocalizedMessage());
+            }
         }
 
         // actually, the deployment is added before it is deployed
@@ -425,6 +473,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         final boolean disabled = this.disabled.isPresent(args);
         final String serverGroups = this.serverGroups.getValue(args);
         final boolean allServerGroups = this.allServerGroups.isPresent(args);
+        final boolean archive = isCliArchive(f);
 
         if(force) {
             if(f == null) {
@@ -434,6 +483,9 @@ public class DeployHandler extends BatchModeCommandHandler {
                 throw new OperationFormatException(this.force.getFullName() +
                         " only replaces the content in the deployment repository and can't be used in combination with any of " +
                         this.disabled.getFullName() + ", " + this.serverGroups.getFullName() + " or " + this.allServerGroups.getFullName() + '.');
+            }
+            if (archive) {
+                throw new OperationFormatException(this.force.getFullName() + " can't be used in combination with a CLI archive.");
             }
 
             if(Util.isDeploymentInRepository(name, client)) {
@@ -455,6 +507,10 @@ public class DeployHandler extends BatchModeCommandHandler {
                         " can't be used in combination with " + this.disabled.getFullName() + '.');
             }
 
+            if (archive) {
+                throw new OperationFormatException(this.disabled.getFullName() + " can't be used in combination with a CLI archive.");
+            }
+
             if(Util.isDeploymentInRepository(name, client)) {
                 throw new OperationFormatException("'" + name + "' already exists in the deployment repository (use " +
                     this.force.getFullName() + " to replace the existing content in the repository).");
@@ -462,6 +518,61 @@ public class DeployHandler extends BatchModeCommandHandler {
 
             // add deployment to the repository disabled
             return buildDeploymentAdd(f, name, runtimeName, unmanaged);
+        }
+
+        if (archive) {
+            if(serverGroups != null || allServerGroups) {
+                throw new OperationFormatException(this.serverGroups.getFullName() + " and " + this.allServerGroups.getFullName() +
+                        " can't be used in combination with a CLI archive.");
+            }
+
+            MountHandle root;
+            try {
+                root = extractArchive(f);
+            } catch (IOException e) {
+                throw new OperationFormatException("Unable to extract archive '" + f.getAbsolutePath() + "' to temporary location");
+            }
+
+            ctx.setCurrentDir(root.getMountSource());
+            String holdbackBatch = activateNewBatch(ctx);
+
+            try {
+                String script = this.script.getValue(args);
+                if (script == null) {
+                    script = "deploy.scr";
+                }
+
+                File scriptFile = new File(ctx.getCurrentDir(),script);
+                if (!scriptFile.exists()) {
+                    throw new CommandFormatException("ERROR: script " + script + "' not found.");
+                }
+
+                try {
+                    BufferedReader reader = new BufferedReader(new FileReader(scriptFile));
+                    String line = reader.readLine();
+                    while (!ctx.isTerminated() && line != null) {
+                        ctx.handle(line);
+                        line = reader.readLine();
+                    }
+                } catch (FileNotFoundException e) {
+                    throw new CommandFormatException("ERROR: script " + script + "' not found.");
+                } catch (IOException e) {
+                    throw new CommandFormatException(e.getMessage());
+                } catch (CommandLineException e) {
+                    throw new CommandFormatException(e.getMessage());
+                }
+
+                ModelNode composite = ctx.getBatchManager().getActiveBatch().toRequest();
+
+                return composite;
+            } finally {
+                // reset current dir in context
+                ctx.setCurrentDir(new File(""));
+                discardBatch(ctx, holdbackBatch);
+                try {
+                    root.close();
+                } catch (IOException ignore) {}
+            }
         }
 
         // actually, the deployment is added before it is deployed
@@ -704,5 +815,37 @@ public class DeployHandler extends BatchModeCommandHandler {
         request.get(Util.OPERATION).set(Util.READ_RESOURCE);
         request.get(Util.INCLUDE_RUNTIME).set(true);
         return request;
+    }
+
+    private MountHandle extractArchive(File archive) throws IOException {
+        return ((MountHandle)VFS.mountZipExpanded(archive, VFS.getChild("cli"),
+                TempFileProvider.create("cli", Executors.newSingleThreadScheduledExecutor())));
+    }
+
+    private String activateNewBatch(CommandContext ctx) {
+        String currentBatch = null;
+        BatchManager batchManager = ctx.getBatchManager();
+        if (batchManager.isBatchActive()) {
+            currentBatch = "batch" + System.currentTimeMillis();
+            batchManager.holdbackActiveBatch(currentBatch);
+        }
+        batchManager.activateNewBatch();
+        return currentBatch;
+    }
+
+    private void discardBatch(CommandContext ctx, String holdbackBatch) {
+        BatchManager batchManager = ctx.getBatchManager();
+        batchManager.discardActiveBatch();
+        if (holdbackBatch != null) {
+            batchManager.activateHeldbackBatch(holdbackBatch);
+        }
+    }
+
+    private boolean isCliArchive(File f) {
+        if (f == null || !f.getName().endsWith(CLI_ARCHIVE_SUFFIX)) {
+            return false;
+        } else {
+            return true;
+        }
     }
 }

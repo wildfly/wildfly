@@ -42,6 +42,7 @@
         <module name="org.jboss.dmr"/>
         <module name="org.jboss.sasl"/>
         <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.vfs"/>
         <module name="javax.api"/>
     </dependencies>
 

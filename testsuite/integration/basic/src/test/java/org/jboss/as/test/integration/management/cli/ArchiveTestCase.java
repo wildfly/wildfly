@@ -102,7 +102,7 @@ public class ArchiveTestCase extends AbstractCliTestBase {
     @Test
     public void testDeployArchive() throws Exception {
         // run deploy.scr script of the cli archive
-        cli.sendLine("archive " + cliArchiveFile.getAbsolutePath() + " --script=deploy.scr", true);
+        cli.sendLine("deploy " + cliArchiveFile.getAbsolutePath() + " --script=deploy.scr", true);
         cli.readAll(WAIT_LINETIMEOUT,WAIT_LINETIMEOUT);
 
 
@@ -112,8 +112,8 @@ public class ArchiveTestCase extends AbstractCliTestBase {
         response = HttpRequest.get(getBaseURL(url) + "deployment1/SimpleServlet", 10, TimeUnit.SECONDS);
         assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
 
-        // run deploy.scr script of the cli archive
-        cli.sendLine("archive " + cliArchiveFile.getAbsolutePath() + " --script=undeploy.scr", true);
+        // run undeploy.scr script of the cli archive
+        cli.sendLine("deploy " + cliArchiveFile.getAbsolutePath() + " --script=undeploy.scr", true);
         cli.readAll(WAIT_LINETIMEOUT,WAIT_LINETIMEOUT);
 
         // check that both wars are undeployed
