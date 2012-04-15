@@ -49,8 +49,6 @@ public class PathElement {
      */
     private static final Pattern VALID_KEY_PATTERN = Pattern.compile("\\*|[_a-zA-Z](?:[-_a-zA-Z0-9]*[_a-zA-Z0-9])?");
 
-    private static final Pattern VALID_VALUE_PATTERN = Pattern.compile("\\*|[^*\\p{Space}\\p{Cntrl}]+");
-
     /**
      * Construct a new instance with a wildcard value.
      * @param key the path key to match
@@ -88,7 +86,7 @@ public class PathElement {
             final String element = key + "=" + value;
             throw new OperationClientIllegalArgumentException(MESSAGES.invalidPathElementKey(element, key));
         }
-        if (value == null || !VALID_VALUE_PATTERN.matcher(value).matches()) {
+        if (value == null) {
             final String element = key + "=" + value;
             throw new OperationClientIllegalArgumentException(MESSAGES.invalidPathElementValue(element, value, ' '));
         }
