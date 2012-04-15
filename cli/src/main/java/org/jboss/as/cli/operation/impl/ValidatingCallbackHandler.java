@@ -33,7 +33,7 @@ import org.jboss.as.cli.operation.CommandLineParser.CallbackHandler;
 public abstract class ValidatingCallbackHandler implements CallbackHandler {
 
     private static final Pattern ALPHANUMERICS_PATTERN = Pattern.compile("[_a-zA-Z](?:[-_a-zA-Z0-9]*[_a-zA-Z0-9])?");
-    private static final Pattern NODE_NAME_PATTERN = Pattern.compile("\\*|[^*\\p{Space}\\p{Cntrl}]+");
+//    private static final Pattern NODE_NAME_PATTERN = Pattern.compile("\\*|[^*\\p{Space}\\p{Cntrl}]+");
 
 
     protected String operationStr;
@@ -140,7 +140,7 @@ public abstract class ValidatingCallbackHandler implements CallbackHandler {
 
     protected void assertValidNodeName(String nodeName)
             throws OperationFormatException {
-        if (nodeName == null || !NODE_NAME_PATTERN.matcher(nodeName).matches()) {
+        if (nodeName == null) {
             throw new OperationFormatException("'" + nodeName + "' is not a valid node name.");
         }
     }
