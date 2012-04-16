@@ -77,7 +77,7 @@
                 </handlers>
             </root-logger>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:datasources:1.0">
+        <subsystem xmlns="urn:jboss:domain:datasources:1.1">
             <datasources>
                 <datasource jndi-name="java:jboss/datasources/ExampleDS" enabled="false" use-java-context="true"
                             pool-name="java:jboss/datasources/ExampleDS">

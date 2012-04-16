@@ -33,12 +33,14 @@ public enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    DATASOURCES_1_0("urn:jboss:domain:datasources:1.0");
+    DATASOURCES_1_0("urn:jboss:domain:datasources:1.0"),
+
+    DATASOURCES_1_1("urn:jboss:domain:datasources:1.1");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = DATASOURCES_1_0;
+    public static final Namespace CURRENT = DATASOURCES_1_1;
 
     private final String name;
 

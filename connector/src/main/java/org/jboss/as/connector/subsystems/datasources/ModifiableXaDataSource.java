@@ -35,10 +35,11 @@ import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.TransactionIsolation;
 import org.jboss.jca.common.api.metadata.ds.Validation;
-import org.jboss.jca.common.api.metadata.ds.XaDataSource;
+import org.jboss.jca.common.api.metadata.ds.v11.DsXaPool;
+import org.jboss.jca.common.api.metadata.ds.v11.XaDataSource;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.ds.DataSourceAbstractImpl;
-import org.jboss.jca.common.metadata.ds.XADataSourceImpl;
+import org.jboss.jca.common.metadata.ds.v11.XADataSourceImpl;
 import org.jboss.logging.Messages;
 
 /**
@@ -65,7 +66,7 @@ public class ModifiableXaDataSource extends DataSourceAbstractImpl implements Xa
 
     private final String newConnectionSql;
 
-    private final CommonXaPool xaPool;
+    private final DsXaPool xaPool;
 
     private final Recovery recovery;
 
@@ -97,7 +98,7 @@ public class ModifiableXaDataSource extends DataSourceAbstractImpl implements Xa
                                   Statement statement, Validation validation, String urlDelimiter, String urlSelectorStrategyClassName,
                                   Boolean useJavaContext, String poolName, Boolean enabled, String jndiName, Boolean spy, Boolean useCcm,
                                   Map<String, String> xaDataSourceProperty, String xaDataSourceClass, String driver, String newConnectionSql,
-                                  CommonXaPool xaPool, Recovery recovery) throws ValidateException {
+                                  DsXaPool xaPool, Recovery recovery) throws ValidateException {
         super(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
                 urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useCcm);
         if (xaDataSourceProperty != null) {
@@ -341,7 +342,7 @@ public class ModifiableXaDataSource extends DataSourceAbstractImpl implements Xa
      * @return the xaPool.
      */
     @Override
-    public final CommonXaPool getXaPool() {
+    public final DsXaPool getXaPool() {
         return xaPool;
     }
 

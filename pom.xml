@@ -151,7 +151,7 @@
         <version.org.jboss.ejb3.ext-api>2.0.0</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
         <version.org.jboss.invocation>1.1.1.Final</version.org.jboss.invocation>
-        <version.org.jboss.ironjacamar>1.0.9.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.ironjacamar>1.0.10.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>1.0.3.Final</version.org.jboss.jandex>
         <version.org.jboss.jboss-dmr>1.1.1.Final</version.org.jboss.jboss-dmr>
         <version.org.jboss.jboss-transaction-spi>7.0.0.Final</version.org.jboss.jboss-transaction-spi>
@@ -3271,7 +3271,7 @@
                 <artifactId>jboss-common-beans</artifactId>
                 <version>${version.org.jboss.common.jboss-common-beans}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-common-core</artifactId>

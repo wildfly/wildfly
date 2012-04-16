@@ -29,13 +29,13 @@ import java.util.Map;
 
 import org.jboss.jca.common.CommonBundle;
 import org.jboss.jca.common.api.metadata.ValidatableMetadata;
-import org.jboss.jca.common.api.metadata.common.CommonConnDef;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonSecurity;
 import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
 import org.jboss.jca.common.api.metadata.common.CommonValidation;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.logging.Messages;
 
