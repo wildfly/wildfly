@@ -24,6 +24,8 @@ package org.jboss.as.controller.operations.validation;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
+import java.util.List;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
@@ -33,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class NillableOrExpressionParameterValidator implements ParameterValidator {
+public class NillableOrExpressionParameterValidator implements ParameterValidator, MinMaxValidator, AllowedValuesValidator {
 
     private final ParameterValidator delegate;
     private final Boolean allowNull;
@@ -83,5 +85,20 @@ public class NillableOrExpressionParameterValidator implements ParameterValidato
         } else {
             delegate.validateResolvedParameter(parameterName, value);
         }
+    }
+
+    @Override
+    public Long getMin() {
+        return (delegate instanceof MinMaxValidator) ? ((MinMaxValidator) delegate).getMin() : null;
+    }
+
+    @Override
+    public Long getMax() {
+        return (delegate instanceof MinMaxValidator) ? ((MinMaxValidator) delegate).getMax() : null;
+    }
+
+    @Override
+    public List<ModelNode> getAllowedValues() {
+        return (delegate instanceof AllowedValuesValidator) ? ((AllowedValuesValidator) delegate).getAllowedValues() : null;
     }
 }
