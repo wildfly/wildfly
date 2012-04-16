@@ -82,8 +82,8 @@ public class PropertyFileFinderTestCase extends PropertyTestHelper {
         State nextState = propertyFileFinder.execute();
         assertTrue(nextState instanceof PromptNewUserState);
         assertTrue("Expected to find the "+USER_NAME+" in the list of known users",values.getKnownUsers().contains(USER_NAME));
-        assertTrue("Expected the values.getPropertiesFiles() contained the "+standaloneMgmtUserFile.getCanonicalPath(),values.getPropertiesFiles().contains(standaloneMgmtUserFile.getCanonicalFile()));
-        assertTrue("Expected the values.getPropertiesFiles() contained the "+domainMgmtUserFile.getCanonicalPath(),values.getPropertiesFiles().contains(domainMgmtUserFile.getCanonicalFile()));
+        assertTrue("Expected the values.getPropertiesFiles() contained the "+standaloneMgmtUserFile,values.getPropertiesFiles().contains(standaloneMgmtUserFile));
+        assertTrue("Expected the values.getPropertiesFiles() contained the "+domainMgmtUserFile,values.getPropertiesFiles().contains(domainMgmtUserFile));
     }
 
     @Test
