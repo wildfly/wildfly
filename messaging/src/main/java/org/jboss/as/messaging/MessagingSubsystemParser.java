@@ -92,6 +92,8 @@ import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.PARAMS;
 import static org.jboss.as.messaging.CommonAttributes.PATH;
+import static org.jboss.as.messaging.CommonAttributes.PCF_PASSWORD;
+import static org.jboss.as.messaging.CommonAttributes.PCF_USER;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.RELATIVE_TO;
@@ -1933,7 +1935,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 final ModelNode factory = prop.getValue();
                 if (factory.isDefined()) {
                    writer.writeStartElement(Element.POOLED_CONNECTION_FACTORY.getLocalName());
+
                    writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+                   PCF_USER.marshallAsElement(factory, writer);
+                   PCF_PASSWORD.marshallAsElement(factory, writer);
 
                    writeConnectionFactory(writer, name, factory);
                 }

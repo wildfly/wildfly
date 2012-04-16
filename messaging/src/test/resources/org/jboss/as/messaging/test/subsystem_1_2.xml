@@ -237,6 +237,8 @@
                  </entries>
               </connection-factory>
               <pooled-connection-factory name="hornetq-ra">
+                 <user>alice</user>
+                 <password>alicepassword</password>
                  <min-pool-size>42</min-pool-size>
                  <max-pool-size>242</max-pool-size>
                  <transaction mode="xa"/>

@@ -11,6 +11,8 @@ import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_REF;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.MAX_POOL_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.MIN_POOL_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.PCF_PASSWORD;
+import static org.jboss.as.messaging.CommonAttributes.PCF_USER;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
@@ -54,7 +56,10 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 final ModelNode factory = prop.getValue();
                 if (factory.isDefined()) {
                     writer.writeStartElement(Element.POOLED_CONNECTION_FACTORY.getLocalName());
+
                     writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+                    PCF_USER.marshallAsElement(factory, writer);
+                    PCF_PASSWORD.marshallAsElement(factory, writer);
                     MIN_POOL_SIZE.marshallAsElement(factory, writer);
                     MAX_POOL_SIZE.marshallAsElement(factory, writer);
 
