@@ -22,8 +22,7 @@
 package org.jboss.as.messaging.jms;
 
 
-import org.hornetq.jms.server.recovery.HornetQResourceRecovery;
-import org.hornetq.jms.server.recovery.RecoveryRegistry;
+import org.hornetq.jms.server.recovery.HornetQRegistryBase;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -33,7 +32,7 @@ import org.jboss.tm.XAResourceRecoveryRegistry;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         9/22/11
  */
-public class AS7RecoveryRegistry implements RecoveryRegistry {
+public class AS7RecoveryRegistry extends HornetQRegistryBase {
     static volatile ServiceContainer container;
 
     private XAResourceRecoveryRegistry registry;
@@ -45,12 +44,8 @@ public class AS7RecoveryRegistry implements RecoveryRegistry {
        }
     }
 
-    public void register(HornetQResourceRecovery resourceRecovery) {
-        registry.addXAResourceRecovery(resourceRecovery);
-    }
-
-    public void unRegister(HornetQResourceRecovery resourceRecovery) {
-        registry.removeXAResourceRecovery(resourceRecovery);
+    public XAResourceRecoveryRegistry getTMRegistry() {
+       return registry;
     }
 
     private static XAResourceRecoveryRegistry getXAResourceRecoveryRegistry() {
