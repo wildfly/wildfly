@@ -22,7 +22,9 @@
 package org.jboss.as.osgi.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -41,7 +43,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.osgi.framework.BundleManagerService;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -51,7 +52,6 @@ import org.osgi.framework.Bundle;
 /**
  * @author David Bosschaert
  */
-@Ignore("[AS7-3556] Replace mocked subsystem model tests with functional tests")
 public class AutoInstallIntegrationTestCase {
     @Test
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -65,8 +65,10 @@ public class AutoInstallIntegrationTestCase {
         // First we create a test version of AutoInstallIntegration that intercepts the installModule and startBundle
         // methods so that it can be checked that they are called.
         final ServiceName dummyService = ServiceName.of("dummy");
+        Bundle dummyBundle = Mockito.mock(Bundle.class);
+
         final List<OSGiCapability> installedModules = new ArrayList<SubsystemState.OSGiCapability>();
-        final List<OSGiCapability> startedBundles = new ArrayList<SubsystemState.OSGiCapability>();
+        final Map<Bundle, Integer> startedBundles = new HashMap<Bundle, Integer>();
         AutoInstallIntegration aii = new AutoInstallIntegration() {
             @Override
             ServiceName installModule(BundleManagerService bundleManager, OSGiCapability moduleMetaData) {
@@ -76,7 +78,7 @@ public class AutoInstallIntegrationTestCase {
 
             @Override
             void startBundle(Bundle bundle, Integer startLevel) {
-                //startedBundles.add(moduleMetaData);
+                startedBundles.put(bundle, startLevel);
             }
         };
 
@@ -104,8 +106,10 @@ public class AutoInstallIntegrationTestCase {
                     return builder;
                 }
         });
-        ServiceController<?> controller = Mockito.mock(ServiceController.class);
+        ServiceController controller = Mockito.mock(ServiceController.class);
         Mockito.when(controller.getServiceContainer()).thenReturn(container);
+        Mockito.when(controller.getValue()).thenReturn(dummyBundle);
+        Mockito.when(container.getRequiredService((ServiceName) Mockito.any())).thenReturn(controller);
         aii.serviceController = controller;
 
         // Do the actual Observer invocation on the AutoInstallIntegration object.
@@ -131,7 +135,8 @@ public class AutoInstallIntegrationTestCase {
         addedServices.get(0).start(context);
 
         Assert.assertEquals("The bundle should have been started", 1, startedBundles.size());
-        Assert.assertEquals(module, startedBundles.get(0));
+        Assert.assertEquals(dummyBundle, startedBundles.keySet().iterator().next());
+        Assert.assertEquals((Integer) 1, startedBundles.values().iterator().next());
         // The service should have been removed again after doing its work.
         Mockito.verify(innerController).setMode(Mode.REMOVE);
     }
