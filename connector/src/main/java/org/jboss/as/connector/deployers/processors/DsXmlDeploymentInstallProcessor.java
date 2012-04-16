@@ -59,11 +59,11 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.jca.common.api.metadata.Defaults;
-import org.jboss.jca.common.api.metadata.common.CommonXaPool;
-import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
-import org.jboss.jca.common.api.metadata.ds.XaDataSource;
-import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
+import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
+import org.jboss.jca.common.api.metadata.ds.v11.DsXaPool;
+import org.jboss.jca.common.api.metadata.ds.v11.XaDataSource;
+import org.jboss.jca.common.metadata.ds.v11.DsXaPoolImpl;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
@@ -112,7 +112,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
             ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
 
             if (dataSources.getDataSource() != null && dataSources.getDataSource().size() > 0) {
-                for (DataSource ds : dataSources.getDataSource()) {
+                for (int i = 0; i < dataSources.getDataSource().size(); i++) {
+                    DataSource ds = (DataSource)dataSources.getDataSource().get(i);
                     if (ds.isEnabled() && ds.getDriver() != null) {
                         try {
                             final String jndiName = cleanupJavaContext(ds.getJndiName());
@@ -131,7 +132,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
             }
 
             if (dataSources.getXaDataSource() != null && dataSources.getXaDataSource().size() > 0) {
-                for (XaDataSource xads : dataSources.getXaDataSource()) {
+               for (int i = 0; i < dataSources.getXaDataSource().size(); i++) {
+                    XaDataSource xads = (XaDataSource)dataSources.getXaDataSource().get(i);
                     if (xads.isEnabled() && xads.getDriver() != null) {
                         try {
                             String jndiName = cleanupJavaContext(xads.getJndiName());
@@ -191,13 +193,15 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
 
         for (final DataSources dataSources : dataSourcesList) {
             if (dataSources.getDataSource() != null) {
-                for (final DataSource ds : dataSources.getDataSource()) {
+                for (int i = 0; i < dataSources.getDataSource().size(); i++) {
+                    DataSource ds = (DataSource)dataSources.getDataSource().get(i);
                     undeployDataSource(ds, context);
                 }
             }
             if (dataSources.getXaDataSource() != null) {
-                for (final XaDataSource ds : dataSources.getXaDataSource()) {
-                    undeployXaDataSource(ds, context);
+               for (int i = 0; i < dataSources.getXaDataSource().size(); i++) {
+                    XaDataSource xads = (XaDataSource)dataSources.getXaDataSource().get(i);
+                    undeployXaDataSource(xads, context);
                 }
             }
         }
@@ -215,16 +219,16 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
     }
 
     private ModifiableXaDataSource buildXaDataSource(XaDataSource xads) throws org.jboss.jca.common.api.validator.ValidateException {
-        final CommonXaPool xaPool;
+        final DsXaPool xaPool;
         if (xads.getXaPool() == null) {
-            xaPool = new CommonXaPoolImpl(Defaults.MIN_POOL_SIZE, Defaults.MAX_POOL_SIZE, Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY,
-                    Defaults.IS_SAME_RM_OVERRIDE, Defaults.INTERLEAVING, Defaults.PAD_XID, Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL);
+            xaPool = new DsXaPoolImpl(Defaults.MIN_POOL_SIZE, Defaults.MAX_POOL_SIZE, Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY,
+                                      Defaults.IS_SAME_RM_OVERRIDE, Defaults.INTERLEAVING, Defaults.PAD_XID, Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL, Defaults.ALLOW_MULTIPLE_USERS);
         } else {
-            final CommonXaPool p = xads.getXaPool();
-            xaPool = new CommonXaPoolImpl(getDef(p.getMinPoolSize(), Defaults.MIN_POOL_SIZE), getDef(p.getMaxPoolSize(), Defaults.MAX_POOL_SIZE), getDef(p.isPrefill(), Defaults.PREFILL),
+            final DsXaPool p = xads.getXaPool();
+            xaPool = new DsXaPoolImpl(getDef(p.getMinPoolSize(), Defaults.MIN_POOL_SIZE), getDef(p.getMaxPoolSize(), Defaults.MAX_POOL_SIZE), getDef(p.isPrefill(), Defaults.PREFILL),
                     getDef(p.isUseStrictMin(), Defaults.USE_STRICT_MIN), getDef(p.getFlushStrategy(), Defaults.FLUSH_STRATEGY), getDef(p.isSameRmOverride(),
                     Defaults.IS_SAME_RM_OVERRIDE), getDef(p.isInterleaving(), Defaults.INTERLEAVING), getDef(p.isPadXid(), Defaults.PAD_XID)
-                    , getDef(p.isWrapXaResource(), Defaults.WRAP_XA_RESOURCE), getDef(p.isNoTxSeparatePool(), Defaults.NO_TX_SEPARATE_POOL));
+                    , getDef(p.isWrapXaResource(), Defaults.WRAP_XA_RESOURCE), getDef(p.isNoTxSeparatePool(), Defaults.NO_TX_SEPARATE_POOL), getDef(p.isAllowMultipleUsers(), Defaults.ALLOW_MULTIPLE_USERS));
         }
 
 

@@ -174,14 +174,14 @@ import org.jboss.dmr.Property;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.jca.common.api.metadata.ds.Driver;
 import org.jboss.jca.common.api.metadata.ds.DsSecurity;
 import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
-import org.jboss.jca.common.api.metadata.ds.XaDataSource;
+import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
+import org.jboss.jca.common.api.metadata.ds.v11.XaDataSource;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -327,7 +327,8 @@ public class DataSourcesExtension implements Extension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), DataSourceSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_1.getUriString(), DataSourceSubsystemParser.INSTANCE);
     }
 
     public static final class DataSourceSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -778,6 +779,22 @@ public class DataSourcesExtension implements Extension {
                                 break;
                             }
                         }
+                        break;
+                    }
+                    case DATASOURCES_1_1: {
+                        localName = reader.getLocalName();
+                        Element element = Element.forName(reader.getLocalName());
+                        SUBSYSTEM_DATASOURCES_LOGGER.tracef("%s -> %s", localName, element);
+                        switch (element) {
+                            case SUBSYSTEM: {
+
+                                final DsParser parser = new DsParser();
+                                parser.parse(reader, list, address);
+                                requireNoContent(reader);
+                                break;
+                            }
+                        }
+                        break;
                     }
                 }
             } catch (Exception e) {
