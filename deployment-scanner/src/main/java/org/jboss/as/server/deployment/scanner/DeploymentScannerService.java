@@ -23,18 +23,23 @@
 package org.jboss.as.server.deployment.scanner;
 
 import java.io.File;
-import java.security.AccessController;
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.Executors;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -46,7 +51,11 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.threads.JBossThreadFactory;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 /**
  * Service responsible creating a {@code DeploymentScanner}
@@ -90,25 +99,24 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
      * @param scanInterval      the scan interval
      * @param scanEnabled       scan enabled
      * @param deploymentTimeout the deployment timeout
+     * @param bootTimeService   the deployment scanner used in the boot time scan
      * @return
      */
-    public static ServiceController<?> addService(final ServiceTarget serviceTarget, final String name, final String relativeTo, final String path,
-                                  final Integer scanInterval, TimeUnit unit, final Boolean autoDeployZip,
-                                  final Boolean autoDeployExploded, final Boolean autoDeployXml, final Boolean scanEnabled, final Long deploymentTimeout,
-                                  final List<ServiceController<?>> newControllers,
-                                  final ServiceListener<Object>... listeners) {
-        final DeploymentScannerService service = new DeploymentScannerService(relativeTo, path, scanInterval, unit, autoDeployZip, autoDeployExploded, autoDeployXml, scanEnabled, deploymentTimeout);
+    public static ServiceController<DeploymentScanner> addService(final ServiceTarget serviceTarget, final String name, final String relativeTo, final String path,
+                                                                  final Integer scanInterval, TimeUnit unit, final Boolean autoDeployZip,
+                                                                  final Boolean autoDeployExploded, final Boolean autoDeployXml, final Boolean scanEnabled, final Long deploymentTimeout,
+                                                                  final List<ServiceController<?>> newControllers, final FileSystemDeploymentService bootTimeService, final ScheduledExecutorService scheduledExecutorService,
+                                                                  final ServiceListener<Object>... listeners) {
+        final DeploymentScannerService service = new DeploymentScannerService(relativeTo, path, scanInterval, unit, autoDeployZip, autoDeployExploded, autoDeployXml, scanEnabled, deploymentTimeout, bootTimeService);
         final ServiceName serviceName = getServiceName(name);
-        final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("DeploymentScanner-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
-        final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2, threadFactory);
 
-        ServiceBuilder<?> builder = serviceTarget.addService(serviceName, service)
+        ServiceBuilder<DeploymentScanner> builder = serviceTarget.addService(serviceName, service)
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.pathManagerValue)
                 .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.controllerValue)
                 .addDependency(org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT_CHAINS)
                 .addInjection(service.scheduledExecutorValue, scheduledExecutorService);
         builder.addListener(listeners);
-        ServiceController<?> svc = builder.setInitialMode(Mode.ACTIVE).install();
+        ServiceController<DeploymentScanner> svc = builder.setInitialMode(Mode.ACTIVE).install();
         if (newControllers != null) {
             newControllers.add(svc);
         }
@@ -116,7 +124,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     }
 
     DeploymentScannerService(final String relativeTo, final String path, final Integer interval, final TimeUnit unit, final Boolean autoDeployZipped,
-                             final Boolean autoDeployExploded, final Boolean autoDeployXml, final Boolean enabled, final Long deploymentTimeout) {
+                             final Boolean autoDeployExploded, final Boolean autoDeployXml, final Boolean enabled, final Long deploymentTimeout, final FileSystemDeploymentService bootTimeService) {
         this.relativeTo = relativeTo;
         this.path = path;
         this.interval = interval == null ? DEFAULT_INTERVAL : interval.longValue();
@@ -126,6 +134,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         this.autoDeployXml = autoDeployXml == null ? true : autoDeployXml.booleanValue();
         this.enabled = enabled == null ? true : enabled.booleanValue();
         this.deploymentTimeout = deploymentTimeout;
+        this.scanner = bootTimeService;
     }
 
 
@@ -135,28 +144,31 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     @Override
     public synchronized void start(StartContext context) throws StartException {
         try {
-            final PathManager pathManager = pathManagerValue.getValue();
-            final String pathName = pathManager.resolveRelativePathEntry(path, relativeTo);
-            File relativePath = null;
-            if (relativeTo != null) {
-                relativePath = new File(pathManager.getPathEntry(relativeTo).resolvePath());
-                callbackHandle = pathManager.registerCallback(pathName, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
+            //if this is the first start we want to use the same scanner that was used at boot time
+            if (scanner == null) {
+                final PathManager pathManager = pathManagerValue.getValue();
+                final String pathName = pathManager.resolveRelativePathEntry(path, relativeTo);
+                File relativePath = null;
+                if (relativeTo != null) {
+                    relativePath = new File(pathManager.getPathEntry(relativeTo).resolvePath());
+                    callbackHandle = pathManager.registerCallback(pathName, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
+                }
+
+
+                final FileSystemDeploymentService scanner = new FileSystemDeploymentService(relativeTo, new File(pathName), relativePath, scheduledExecutorValue.getValue());
+
+                scanner.setScanInterval(unit.toMillis(interval));
+                scanner.setAutoDeployExplodedContent(autoDeployExploded);
+                scanner.setAutoDeployZippedContent(autoDeployZipped);
+                scanner.setAutoDeployXMLContent(autoDeployXml);
+                if (deploymentTimeout != null) {
+                    scanner.setDeploymentTimeout(deploymentTimeout);
+                }
+                this.scanner = scanner;
             }
-
-
-            final FileSystemDeploymentService scanner = new FileSystemDeploymentService(relativeTo, new File(pathName), relativePath, controllerValue.getValue().createClient(scheduledExecutorValue.getValue()), scheduledExecutorValue.getValue());
-            scanner.setScanInterval(unit.toMillis(interval));
-            scanner.setAutoDeployExplodedContent(autoDeployExploded);
-            scanner.setAutoDeployZippedContent(autoDeployZipped);
-            scanner.setAutoDeployXMLContent(autoDeployXml);
-            if (deploymentTimeout != null) {
-                scanner.setDeploymentTimeout(deploymentTimeout);
-            }
-
             if (enabled) {
-                scanner.startScanner();
+                scanner.startScanner(new DefaultDeploymentOperations(controllerValue.getValue().createClient(scheduledExecutorValue.getValue())));
             }
-            this.scanner = scanner;
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -186,6 +198,51 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
             throw new IllegalStateException();
         }
         return scanner;
+    }
+
+    static class DefaultDeploymentOperations implements DeploymentOperations {
+
+        private final ModelControllerClient controllerClient;
+
+        DefaultDeploymentOperations(final ModelControllerClient controllerClient) {
+            this.controllerClient = controllerClient;
+        }
+
+        @Override
+        public Future<ModelNode> deploy(final ModelNode operation, final ScheduledExecutorService scheduledExecutor) {
+            return scheduledExecutor.submit(new Callable<ModelNode>() {
+                @Override
+                public ModelNode call() throws Exception {
+                    return controllerClient.execute(operation);
+                }
+            });
+        }
+
+        @Override
+        public Set<String> getDeploymentNames() {
+            final ModelNode op = Util.getEmptyOperation(READ_CHILDREN_NAMES_OPERATION, new ModelNode());
+            op.get(CHILD_TYPE).set(DEPLOYMENT);
+            ModelNode response;
+            try {
+                response = controllerClient.execute(op);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            final ModelNode result = response.get(RESULT);
+            final Set<String> deploymentNames = new HashSet<String>();
+            if (result.isDefined()) {
+                final List<ModelNode> deploymentNodes = result.asList();
+                for (ModelNode node : deploymentNodes) {
+                    deploymentNames.add(node.asString());
+                }
+            }
+            return deploymentNames;
+        }
+
+        @Override
+        public void close() throws IOException {
+            controllerClient.close();
+        }
     }
 
 }

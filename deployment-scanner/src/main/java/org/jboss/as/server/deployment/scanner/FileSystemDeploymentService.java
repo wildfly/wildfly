@@ -22,26 +22,6 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.server.deployment.scanner.DeploymentScannerLogger.ROOT_LOGGER;
-import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileFilter;
@@ -53,8 +33,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -64,10 +42,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.deployment.DeploymentAddHandler;
 import org.jboss.as.server.deployment.DeploymentDeployHandler;
@@ -79,6 +56,25 @@ import org.jboss.as.server.deployment.scanner.ZipCompletionScanner.NonScannableZ
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.msc.service.ServiceController;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerLogger.ROOT_LOGGER;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
 
 /**
  * Service that monitors the filesystem for deployment content and if found deploys it.
@@ -128,7 +124,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private final Map<File, IncompleteDeploymentStatus> incompleteDeployments = new HashMap<File, IncompleteDeploymentStatus>();
 
     private final ScheduledExecutorService scheduledExecutor;
-    private final ModelControllerClient controllerClient;
+    private volatile DeploymentOperations deploymentOperations;
 
     private FileFilter filter = new ExtensibleFilter();
     private volatile boolean autoDeployZip;
@@ -146,7 +142,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         @Override
         public void run() {
             try {
-                scan();
+                scan(true, deploymentOperations);
             } catch (Exception e) {
                 ROOT_LOGGER.scanException(e, deploymentDir.getAbsolutePath());
             }
@@ -155,14 +151,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private final DeploymentScanRunnable scanRunnable = new DeploymentScanRunnable();
 
-    FileSystemDeploymentService(final String relativeTo, final File deploymentDir, final File relativeToDir,
-                                final ModelControllerClient controllerClient, final ScheduledExecutorService scheduledExecutor)
+    FileSystemDeploymentService(final String relativeTo, final File deploymentDir, final File relativeToDir, final ScheduledExecutorService scheduledExecutor)
             throws OperationFailedException {
         if (scheduledExecutor == null) {
             throw MESSAGES.nullVar("scheduledExecutor");
-        }
-        if (controllerClient == null) {
-            throw MESSAGES.nullVar("controllerClient");
         }
         if (deploymentDir == null) {
             throw MESSAGES.nullVar("deploymentDir");
@@ -178,7 +170,6 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
         this.relativeTo = relativeTo;
         this.deploymentDir = deploymentDir;
-        this.controllerClient = controllerClient;
         this.scheduledExecutor = scheduledExecutor;
 
         if (relativeToDir != null) {
@@ -192,7 +183,6 @@ class FileSystemDeploymentService implements DeploymentScanner {
         } else {
             relativePath = null;
         }
-        establishDeployedContentList(deploymentDir);
     }
 
     @Override
@@ -252,15 +242,22 @@ class FileSystemDeploymentService implements DeploymentScanner {
         this.deploymentTimeout = deploymentTimeout;
     }
 
+    @Override
+    public void bootTimeScan(final OperationContext context, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
+
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
-    public synchronized void startScanner() {
+    public synchronized void startScanner(final DeploymentOperations deploymentOperations) {
+        this.deploymentOperations = deploymentOperations;
         final boolean scanEnabled = this.scanEnabled;
         if (scanEnabled) {
             return;
         }
+        establishDeployedContentList(deploymentDir);
         this.scanEnabled = true;
         startScan();
         ROOT_LOGGER.started(getClass().getSimpleName(), deploymentDir.getAbsolutePath());
@@ -273,7 +270,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
     public synchronized void stopScanner() {
         this.scanEnabled = false;
         cancelScan();
-        safeClose(controllerClient);
+        safeClose(deploymentOperations);
+        this.deploymentOperations = null;
     }
 
     /**
@@ -283,10 +281,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
         this.maxNoProgress = max;
     }
 
-    private void establishDeployedContentList(File dir) throws OperationFailedException {
-        final Set<String> deploymentNames = getDeploymentNames();
+    private void establishDeployedContentList(File dir) {
+        final Set<String> deploymentNames = deploymentOperations.getDeploymentNames();
         final File[] children = dir.listFiles();
-        if(children == null || children.length == 0) {
+        if (children == null || children.length == 0) {
             return;
         }
         for (File child : children) {
@@ -315,10 +313,25 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     }
 
+
+    void oneOffScan(final DeploymentOperations deploymentOperations) {
+        boolean old = scanEnabled;
+        scanEnabled = true;
+        try {
+            scan(false, deploymentOperations);
+        } finally {
+            scanEnabled = old;
+        }
+    }
+
+    void scan() {
+        scan(true, deploymentOperations);
+    }
+
     /**
      * This method isn't private solely to allow a unit test in the same package to call it.
      */
-    void scan() {
+    void scan(boolean allowRetry, final DeploymentOperations deploymentOperations) {
 
         try {
             scanLock.lockInterruptibly();
@@ -332,7 +345,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             if (scanEnabled) { // confirm the scan is still wanted
                 ROOT_LOGGER.tracef("Scanning directory %s for deployment content changes", deploymentDir.getAbsolutePath());
 
-                ScanContext scanContext = new ScanContext();
+                ScanContext scanContext = new ScanContext(deploymentOperations);
                 scanDirectory(deploymentDir, relativePath, scanContext);
 
                 // WARN about markers with no associated content. Do this first in case any auto-deploy issue
@@ -388,7 +401,6 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     File parent = deploymentDir;
                     scannerTasks.add(new UndeployTask(missing, parent, scanContext.scanStartTime));
                 }
-
                 // Process the tasks
                 if (scannerTasks.size() > 0) {
                     List<ModelNode> updates = new ArrayList<ModelNode>(scannerTasks.size());
@@ -402,11 +414,11 @@ class FileSystemDeploymentService implements DeploymentScanner {
                         updates.add(update);
                     }
 
-                    while (!updates.isEmpty()) {
-                        ModelNode composite = getCompositeUpdate(updates);
+                    boolean first = true;
+                    while (!updates.isEmpty() && (first || allowRetry)) {
+                        first = false;
 
-                        final DeploymentTask deploymentTask = new DeploymentTask(new OperationBuilder(composite).build());
-                        final Future<ModelNode> futureResults = scheduledExecutor.submit(deploymentTask);
+                        final Future<ModelNode> futureResults = deploymentOperations.deploy(getCompositeUpdate(updates), scheduledExecutor);
                         final ModelNode results;
                         try {
                             results = futureResults.get(deploymentTimeout, TimeUnit.SECONDS);
@@ -616,7 +628,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     }
 
-    private boolean isXmlComplete(final File xmlFile)  {
+    private boolean isXmlComplete(final File xmlFile) {
         try {
             return XmlCompletionScanner.isCompleteDocument(xmlFile);
         } catch (Exception e) {
@@ -833,26 +845,6 @@ class FileSystemDeploymentService implements DeploymentScanner {
             scanTask.cancel(false);
             scanTask = null;
         }
-    }
-
-    private Set<String> getDeploymentNames() throws CancellationException {
-        final ModelNode op = Util.getEmptyOperation(READ_CHILDREN_NAMES_OPERATION, new ModelNode());
-        op.get(CHILD_TYPE).set(DEPLOYMENT);
-        ModelNode response;
-        try {
-            response = controllerClient.execute(op);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        final ModelNode result = response.get(RESULT);
-        final Set<String> deploymentNames = new HashSet<String>();
-        if (result.isDefined()) {
-            final List<ModelNode> deploymentNodes = result.asList();
-            for (ModelNode node : deploymentNodes) {
-                deploymentNames.add(node.asString());
-            }
-        }
-        return deploymentNames;
     }
 
     private ModelNode getCompositeUpdate(final List<ModelNode> updates) {
@@ -1174,7 +1166,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         /**
          * Existing deployments
          */
-        private final Set<String> registeredDeployments = getDeploymentNames();
+        private final Set<String> registeredDeployments;
         /**
          * Tasks generated by the scan
          */
@@ -1211,6 +1203,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
          * Timestamp when the scan started
          */
         private final long scanStartTime = System.currentTimeMillis();
+
+        private ScanContext(final DeploymentOperations deploymentOperations) {
+            registeredDeployments = deploymentOperations.getDeploymentNames();
+        }
     }
 
     private static class IncompleteDeploymentStatus {
@@ -1239,22 +1235,5 @@ class FileSystemDeploymentService implements DeploymentScanner {
      */
     private enum ScanStatus {
         ABORT, RETRY, PROCEED
-    }
-
-    private class DeploymentTask implements Callable<ModelNode> {
-        private final Operation deploymentOp;
-
-        private DeploymentTask(final Operation deploymentOp) {
-            this.deploymentOp = deploymentOp;
-        }
-
-        @Override
-        public ModelNode call() {
-            try {
-                return controllerClient.execute(deploymentOp);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
     }
 }

@@ -63,7 +63,7 @@ public class DeploymentScannerExtension implements Extension {
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new DeploymentScannerSubsystemDefinition());
         registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        registration.registerSubModel(DeploymentScannerDefinition.INSTANCE);
+        registration.registerSubModel(new DeploymentScannerDefinition(context.getPathManager()));
     }
 
     /**

@@ -22,6 +22,12 @@
 
 package org.jboss.as.server.deployment.scanner.api;
 
+import java.util.List;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.server.deployment.scanner.DeploymentOperations;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -57,7 +63,7 @@ public interface DeploymentScanner {
     /**
      * Start the scanner, if not already started.
      */
-    void startScanner();
+    void startScanner(final DeploymentOperations deploymentOperations);
 
     /**
      * Stop the scanner, if not already stopped.
@@ -124,4 +130,13 @@ public interface DeploymentScanner {
      * @param timeout The deployment timeout
      */
     void setDeploymentTimeout(long timeout);
+
+    /**
+     * Perform a scan as part of the server boot operation.
+     *
+     * @param context
+     * @param verificationHandler
+     * @param newControllers
+     */
+    void bootTimeScan(OperationContext context, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers);
 }

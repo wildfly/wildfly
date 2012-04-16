@@ -6,6 +6,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -15,12 +16,10 @@ import org.jboss.dmr.ModelType;
  */
 public class DeploymentScannerDefinition extends SimpleResourceDefinition {
 
-    public static final DeploymentScannerDefinition INSTANCE = new DeploymentScannerDefinition();
-
-    private DeploymentScannerDefinition() {
+    DeploymentScannerDefinition(final PathManager pathManager) {
         super(DeploymentScannerExtension.SCANNERS_PATH,
                 DeploymentScannerExtension.getResourceDescriptionResolver("deployment.scanner"),
-                DeploymentScannerAdd.INSTANCE, DeploymentScannerRemove.INSTANCE
+                new DeploymentScannerAdd(pathManager), DeploymentScannerRemove.INSTANCE
         );
     }
 
