@@ -22,7 +22,7 @@
 
 package org.jboss.as.osgi.deployment;
 
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
 import org.jboss.as.server.deployment.Attachments;
@@ -90,8 +90,8 @@ public class ModuleRegisterService implements Service<ModuleRegisterService> {
 
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
-        ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
-        ROOT_LOGGER.registerModule(module);
+        LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.infoRegisterModule(module);
         try {
             XResourceBuilder builder = XResourceBuilderFactory.create();
             if (metadata != null) {
@@ -109,9 +109,9 @@ public class ModuleRegisterService implements Service<ModuleRegisterService> {
 
     public synchronized void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
-        ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
         if (resource != null) {
-            ROOT_LOGGER.unregisterModule(module);
+            LOGGER.infoUnregisterModule(module);
             injectedEnvironment.getValue().uninstallResources(resource);
         }
     }

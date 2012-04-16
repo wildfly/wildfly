@@ -16,78 +16,56 @@
  */
 package org.jboss.as.test.smoke.osgi;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.InputStream;
-
-import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.osgi.OSGiManagementTest;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleActivator;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleService;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
 
 /**
- * Test the arquillian callback to a client provided archive and its deployment through the deployer API.
+ * Test deployer API and OSGi management operations.
  *
  * @author thomas.diesler@jboss.com
- * @since 09-Sep-2010
+ * @since 12-Apr-2012
  */
+@RunAsClient
 @RunWith(Arquillian.class)
-public class SimpleArquillianDeployerTestCase {
+public class SimpleRunAsClientTestCase extends OSGiManagementTest {
 
-    private static final String DEPLOYMENT_NAME = "arquillian-deployer-test-bundle";
+    private static final String DEPLOYMENT_NAME = "runasclient-test-bundle";
 
     @ArquillianResource
     public Deployer deployer;
 
-    @Inject
-    public BundleContext context;
-
-    @Deployment
-    public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-arquillian-deployer");
-        archive.setManifest(new Asset() {
-            @Override
-            public InputStream openStream() {
-                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleSymbolicName(archive.getName());
-                builder.addBundleManifestVersion(2);
-                return builder.openStream();
-            }
-        });
-        return archive;
-    }
-
     @Test
     public void testClientDeploymentAsArchive() throws Exception {
 
-        InputStream input = deployer.getDeployment(DEPLOYMENT_NAME);
-        Bundle bundle = context.installBundle(DEPLOYMENT_NAME, input);
-        assertNotNull("Bundle found", bundle);
+        deployer.deploy(DEPLOYMENT_NAME);
+        Long bundleId = getBundleId(DEPLOYMENT_NAME, null);
+        Assert.assertNotNull("Bundle found", bundleId);
+        Assert.assertEquals("INSTALLED", getBundleState(bundleId));
 
-        // Start the bundle
-        bundle.start();
-        assertEquals(Bundle.ACTIVE, bundle.getState());
+        Assert.assertTrue("Bundle started", bundleStart(bundleId));
+        Assert.assertEquals("ACTIVE", getBundleState(bundleId));
 
-        // Stop the bundle
-        bundle.stop();
-        assertEquals(Bundle.RESOLVED, bundle.getState());
+        Assert.assertTrue("Bundle stopped", bundleStop(bundleId));
+        Assert.assertEquals("RESOLVED", getBundleState(bundleId));
 
-        bundle.uninstall();
-        assertEquals(Bundle.UNINSTALLED, bundle.getState());
+        deployer.undeploy(DEPLOYMENT_NAME);
+        Assert.assertNull("UNINSTALLED", getBundleState(bundleId));
     }
 
     @Deployment(name = DEPLOYMENT_NAME, managed = false, testable = false)

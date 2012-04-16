@@ -21,6 +21,13 @@
  */
 package org.jboss.as.osgi.parser;
 
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -29,7 +36,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.osgi.deployment.BundleStartTracker;
 import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.osgi.service.BundleInstallProviderIntegration;
@@ -48,13 +54,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.Bundle;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
 
 /**
  * OSGi subsystem operation handler.
@@ -112,12 +111,11 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
 
-        ROOT_LOGGER.activatingSubsystem();
+        LOGGER.infoActivatingSubsystem();
 
         context.addStep(new OperationStepHandler() {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 ServiceTarget serviceTarget = context.getServiceTarget();
-                newControllers.add(BundleStartTracker.addService(serviceTarget));
                 newControllers.add(BundleInstallProviderIntegration.addService(serviceTarget));
                 newControllers.add(FrameworkBootstrapService.addService(serviceTarget, verificationHandler));
                 context.completeStep();
@@ -159,7 +157,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        ROOT_LOGGER.debugf("Activated OSGi Subsystem");
+        LOGGER.debugf("Activated OSGi Subsystem");
     }
 
     private Activation getActivationMode(ModelNode operation) {
