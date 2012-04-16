@@ -18,13 +18,6 @@
  */
 package org.jboss.as.controller.services.path;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.services.path.PathResourceDefinition.PATH_SPECIFIED;
-import static org.jboss.as.controller.services.path.PathResourceDefinition.RELATIVE_TO;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -37,6 +30,13 @@ import org.jboss.as.controller.services.path.PathManagerService.PathEventContext
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.services.path.PathResourceDefinition.PATH_SPECIFIED;
+import static org.jboss.as.controller.services.path.PathResourceDefinition.RELATIVE_TO;
 
 /**
  * Handler for the path resource add operation.
@@ -102,14 +102,17 @@ public class PathAddHandler implements OperationStepHandler {
         if (services) {
             final String path = getPathValue(context, PATH_SPECIFIED, model);
             final String relativeTo = getPathValue(context, RELATIVE_TO, model);
+            final PathEventContextImpl pathEventContext = pathManager.checkRestartRequired(context, name, Event.ADDED);
+
+            if (pathEventContext.isInstallServices()) {
+                //Add service to the path manager
+                pathManager.addPathEntry(name, path, relativeTo, false);
+            }
 
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    final PathEventContextImpl pathEventContext = pathManager.checkRestartRequired(context, name, Event.ADDED);
                     final ServiceController<?> legacyService;
                     if (pathEventContext.isInstallServices()) {
-                        //Add service to the path manager
-                        pathManager.addPathEntry(name, path, relativeTo, false);
 
                         //Add the legacy services
                         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
@@ -132,12 +135,6 @@ public class PathAddHandler implements OperationStepHandler {
                                 if (legacyService != null) {
                                     context.removeService(legacyService.getName());
                                 }
-                                try {
-                                    pathManager.removePathEntry(name, false);
-                                } catch (OperationFailedException e) {
-                                    //Should not happen since 'false' passed in for the check parameter
-                                    throw new RuntimeException(e);
-                                }
                             } else {
                                 pathEventContext.revert();
                             }
@@ -145,9 +142,23 @@ public class PathAddHandler implements OperationStepHandler {
                     });
                 }
             }, OperationContext.Stage.RUNTIME);
+
+            context.completeStep(new OperationContext.RollbackHandler() {
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    if (pathEventContext.isInstallServices()) {
+                        try {
+                            pathManager.removePathEntry(name, false);
+                        } catch (OperationFailedException e) {
+                            //Should not happen since 'false' passed in for the check parameter
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            });
+        } else {
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     static String getPathValue(OperationContext context, SimpleAttributeDefinition def, ModelNode model) throws OperationFailedException {
