@@ -182,15 +182,15 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     break;
                 }
                 case SITE: {
-                    CommonAttributes.SITE.parseAndSetParameter(value, transport, reader);
+                    ROOT_LOGGER.siteAttributeDeprecated();
                     break;
                 }
                 case RACK: {
-                    CommonAttributes.RACK.parseAndSetParameter(value, transport, reader);
+                    ROOT_LOGGER.rackAttributeDeprecated();
                     break;
                 }
                 case MACHINE: {
-                    CommonAttributes.MACHINE.parseAndSetParameter(value, transport, reader);
+                    ROOT_LOGGER.machineAttributeDeprecated();
                     break;
                 }
                 default: {

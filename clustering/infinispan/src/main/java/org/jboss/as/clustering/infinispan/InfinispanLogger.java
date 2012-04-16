@@ -74,7 +74,6 @@ public interface InfinispanLogger extends BasicLogger {
     @Message(id = 10282, value = "Stopped %s cache from %s container")
     void cacheStopped(String cacheName, String containerName);
 
-
     /**
      * Logs a warning message indicating that the eager attribute of the transactional element
      * is no longer valid
@@ -83,4 +82,33 @@ public interface InfinispanLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 10283, value = "The 'eager' attribute specified on the 'transaction' element of a cache is no longer valid")
     void eagerAttributeDeprecated();
+
+    /**
+     * Logs a warning message indicating that the site attribute of the transport element
+     * is no longer valid
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 10284, value = "The 'site' attribute specified on the 'transport' element of a cache container is no longer valid" +
+                "; use the 'site' attribute specified on the 'transport' element of the corresponding JGroups stack instead")
+    void siteAttributeDeprecated();
+
+    /**
+     * Logs a warning message indicating that the rack attribute of the transport element
+     * is no longer valid
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 10285, value = "The 'rack' attribute specified on the 'transport' element of a cache container is no longer valid" +
+                "; use the 'rack' attribute specified on the 'transport' element of the corresponding JGroups stack instead")
+    void rackAttributeDeprecated();
+
+    /**
+     * Logs a warning message indicating that the machine attribute of the transport element
+     * is no longer valid
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 10286, value = "The 'site' attribute specified on the 'transport' element of a cache container is no longer valid" +
+                "; use the 'machine' attribute specified on the 'transport' element of the corresponding JGroups stack instead")
+    void machineAttributeDeprecated();
+
+
 }

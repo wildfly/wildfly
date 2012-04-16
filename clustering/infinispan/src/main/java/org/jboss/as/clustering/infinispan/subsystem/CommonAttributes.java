@@ -232,12 +232,6 @@ public interface CommonAttributes {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(240000))
                     .build();
-    SimpleAttributeDefinition MACHINE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.MACHINE, ModelType.STRING, true)
-                    .setXmlName(Attribute.MACHINE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
     SimpleAttributeDefinition MAX_ENTRIES =
             new SimpleAttributeDefinitionBuilder(ModelKeys.MAX_ENTRIES, ModelType.INT, true)
                     .setXmlName(Attribute.MAX_ENTRIES.getLocalName())
@@ -336,12 +330,6 @@ public interface CommonAttributes {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(0))
                     .build();
-    SimpleAttributeDefinition RACK =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.RACK, ModelType.STRING, true)
-                    .setXmlName(Attribute.RACK.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
     SimpleAttributeDefinition RELATIVE_TO =
             new SimpleAttributeDefinitionBuilder(ModelKeys.RELATIVE_TO, ModelType.STRING, true)
                     .setXmlName(Attribute.RELATIVE_TO.getLocalName())
@@ -383,12 +371,6 @@ public interface CommonAttributes {
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(false))
-                    .build();
-    SimpleAttributeDefinition SITE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.SITE, ModelType.STRING, true)
-                    .setXmlName(Attribute.SITE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
     SimpleAttributeDefinition SOCKET_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(ModelKeys.SOCKET_TIMEOUT, ModelType.LONG, true)
@@ -482,7 +464,7 @@ public interface CommonAttributes {
                     .build();
 
     AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = {DEFAULT_CACHE, ALIASES, JNDI_NAME, START, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR, CACHE_CONTAINER_MODULE};
-    AttributeDefinition[] TRANSPORT_ATTRIBUTES = {STACK, CLUSTER, EXECUTOR, LOCK_TIMEOUT, SITE, RACK, MACHINE};
+    AttributeDefinition[] TRANSPORT_ATTRIBUTES = {STACK, CLUSTER, EXECUTOR, LOCK_TIMEOUT};
 
     AttributeDefinition[] CACHE_ATTRIBUTES = { START, BATCHING, INDEXING, JNDI_NAME, CACHE_MODULE};
     AttributeDefinition[] CLUSTERED_CACHE_ATTRIBUTES = { ASYNC_MARSHALLING, ClusteredCacheAdd.MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT};
