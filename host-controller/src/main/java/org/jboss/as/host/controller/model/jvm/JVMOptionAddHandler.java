@@ -61,7 +61,7 @@ final class JVMOptionAddHandler implements OperationStepHandler, DescriptionProv
         }
         model.get(JvmAttributes.JVM_OPTIONS).add(option);
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     /**

@@ -39,6 +39,7 @@ import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.host.controller.ManagementTestSetup;
 import org.jboss.as.host.controller.parsing.JvmXml;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
