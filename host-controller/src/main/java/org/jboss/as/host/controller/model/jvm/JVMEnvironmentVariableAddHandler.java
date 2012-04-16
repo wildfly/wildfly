@@ -65,7 +65,7 @@ final class JVMEnvironmentVariableAddHandler implements OperationStepHandler, De
         }
         model.get(JvmAttributes.JVM_ENV_VARIABLES).add(name, value);
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     /**

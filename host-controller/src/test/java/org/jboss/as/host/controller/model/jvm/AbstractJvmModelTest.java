@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import junit.framework.Assert;
 
+import org.jboss.as.host.controller.ManagementTestSetup;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 

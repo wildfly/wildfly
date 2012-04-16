@@ -231,13 +231,13 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case SIZE: {
-                        if (JvmAttributes.HEAP_SIZE.parseAndSetParameter(value, addOp, reader)) {
+                        if (JvmAttributes.HEAP_SIZE.checkParseAndSetParameter(value, addOp, reader)) {
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
                         }
                         break;
                     }
                     case MAX_SIZE: {
-                        if (JvmAttributes.MAX_HEAP_SIZE.parseAndSetParameter(value, addOp, reader)) {
+                        if (JvmAttributes.MAX_HEAP_SIZE.checkParseAndSetParameter(value, addOp, reader)) {
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
                         }
                         break;
@@ -267,13 +267,13 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case SIZE: {
-                        if (JvmAttributes.PERMGEN_SIZE.parseAndSetParameter(value, addOp, reader)) {
+                        if (JvmAttributes.PERMGEN_SIZE.checkParseAndSetParameter(value, addOp, reader)) {
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
                         }
                         break;
                     }
                     case MAX_SIZE: {
-                        if (JvmAttributes.MAX_PERMGEN_SIZE.parseAndSetParameter(value, addOp, reader)) {
+                        if (JvmAttributes.MAX_PERMGEN_SIZE.checkParseAndSetParameter(value, addOp, reader)) {
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
                         }
                         break;
@@ -303,7 +303,7 @@ public class JvmXml {
                 switch (attribute) {
                     case SIZE: {
                         sizeSet = true;
-                        if (JvmAttributes.STACK_SIZE.parseAndSetParameter(value, addOp, reader)){
+                        if (JvmAttributes.STACK_SIZE.checkParseAndSetParameter(value, addOp, reader)){
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
 
                         }
@@ -335,7 +335,7 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case VALUE: {
-                        if (JvmAttributes.AGENT_LIB.parseAndSetParameter(value, addOp, reader)){
+                        if (JvmAttributes.AGENT_LIB.checkParseAndSetParameter(value, addOp, reader)){
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
                         }
                         valueSet = true;
@@ -367,7 +367,7 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case VALUE: {
-                        if (JvmAttributes.AGENT_PATH.parseAndSetParameter(value, addOp, reader)){
+                        if (JvmAttributes.AGENT_PATH.checkParseAndSetParameter(value, addOp, reader)){
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
                         }
                         valueSet = true;
@@ -399,7 +399,7 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case VALUE: {
-                        if (JvmAttributes.JAVA_AGENT.parseAndSetParameter(value, addOp, reader)) {
+                        if (JvmAttributes.JAVA_AGENT.checkParseAndSetParameter(value, addOp, reader)) {
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
                         }
                         valueSet = true;
