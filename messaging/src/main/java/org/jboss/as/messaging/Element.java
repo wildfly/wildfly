@@ -117,6 +117,7 @@ public enum Element {
    NAME(CommonAttributes.NAME),
    NETTY_ACCEPTOR(CommonAttributes.NETTY_ACCEPTOR),
    NETTY_CONNECTOR(CommonAttributes.NETTY_CONNECTOR),
+   PAGE_MAX_CONCURRENT_IO(CommonAttributes.PAGE_MAX_CONCURRENT_IO),
    PAGING_DIRECTORY(CommonAttributes.PAGING_DIRECTORY),
    PERF_BLAST_PAGES(CommonAttributes.PERF_BLAST_PAGES),
    PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY(CommonAttributes.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY),
@@ -170,11 +171,12 @@ public enum Element {
    BLOCK_ON_NON_DURABLE_SEND(CommonAttributes.BLOCK_ON_NON_DURABLE_SEND),
    CACHE_LARGE_MESSAGE_CLIENT(CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT),
    CALL_TIMEOUT(CommonAttributes.CALL_TIMEOUT),
+   CHECK_PERIOD(getCheckPeriodDefinitions()),
    CLIENT_FAILURE_CHECK_PERIOD(CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD),
    CLIENT_ID(CommonAttributes.CLIENT_ID),
    CONNECTION_FACTORY(CommonAttributes.CONNECTION_FACTORY),
    CONNECTION_FACTORIES(CommonAttributes.JMS_CONNECTION_FACTORIES),
-   CONNECTION_TTL(CommonAttributes.CONNECTION_TTL),
+   CONNECTION_TTL(getConnectionTTLDefinitions()),
    CONFIRMATION_WINDOW_SIZE(CommonAttributes.CONFIRMATION_WINDOW_SIZE),
    CONSUMER_MAX_RATE(CommonAttributes.CONSUMER_MAX_RATE),
    CONSUMER_WINDOW_SIZE(CommonAttributes.CONSUMER_WINDOW_SIZE),
@@ -192,7 +194,7 @@ public enum Element {
    JMS_QUEUE(CommonAttributes.JMS_QUEUE),
    LOAD_BALANCING_CLASS_NAME(CommonAttributes.LOAD_BALANCING_CLASS_NAME),
    MAX_POOL_SIZE(CommonAttributes.MAX_POOL_SIZE),
-   MAX_RETRY_INTERVAL(CommonAttributes.MAX_RETRY_INTERVAL),
+   MAX_RETRY_INTERVAL(getMaxRetryIntervalDefinitions()),
    MIN_LARGE_MESSAGE_SIZE(CommonAttributes.MIN_LARGE_MESSAGE_SIZE),
    MIN_POOL_SIZE(CommonAttributes.MIN_POOL_SIZE),
    PASSWORD(CommonAttributes.PASSWORD),
@@ -202,7 +204,7 @@ public enum Element {
    QUEUE_NAME(CommonAttributes.QUEUE_NAME),
    RECONNECT_ATTEMPTS(getReconnectAttemptsDefinitions()),
    RETRY_INTERVAL(getRetryIntervalDefinitions()),
-   RETRY_INTERVAL_MULTIPLIER(CommonAttributes.RETRY_INTERVAL_MULTIPLIER),
+   RETRY_INTERVAL_MULTIPLIER(getRetryIntervalMultiplierDefinitions()),
    SELECTOR(CommonAttributes.SELECTOR),
    SCHEDULED_THREAD_POOL_MAX_SIZE(getScheduledThreadPoolDefinitions()),
    THREAD_POOL_MAX_SIZE(getThreadPoolDefinitions()),
@@ -337,6 +339,7 @@ public enum Element {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("connection", CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS);
         result.put("bridge", CommonAttributes.BRIDGE_RECONNECT_ATTEMPTS);
+        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_RECONNECT_ATTEMPTS);
         return result;
 
     }
@@ -362,6 +365,34 @@ public enum Element {
         result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_RETRY_INTERVAL);
         result.put("default", CommonAttributes.RETRY_INTERVAL);
         return result;
-
     }
+
+    private static Map<String, AttributeDefinition> getRetryIntervalMultiplierDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_RETRY_INTERVAL_MULTIPLIER);
+        result.put("default", CommonAttributes.RETRY_INTERVAL_MULTIPLIER);
+        return result;
+    }
+
+    private static Map<String, AttributeDefinition> getMaxRetryIntervalDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_MAX_RETRY_INTERVAL);
+        result.put("default", CommonAttributes.MAX_RETRY_INTERVAL);
+        return result;
+    }
+
+    private static Map<String, AttributeDefinition> getConnectionTTLDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_CONNECTION_TTL);
+        result.put("default", CommonAttributes.CONNECTION_TTL);
+        return result;
+    }
+
+    private static Map<String, AttributeDefinition> getCheckPeriodDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_CHECK_PERIOD);
+        result.put("default", CommonAttributes.CHECK_PERIOD);
+        return result;
+    }
+
 }

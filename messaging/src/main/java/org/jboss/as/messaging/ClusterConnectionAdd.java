@@ -23,6 +23,13 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
+import static org.jboss.as.messaging.CommonAttributes.CHECK_PERIOD;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL;
+import static org.jboss.as.messaging.CommonAttributes.MAX_RETRY_INTERVAL;
+import static org.jboss.as.messaging.CommonAttributes.MIN_LARGE_MESSAGE_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.RECONNECT_ATTEMPTS;
+import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL_MULTIPLIER;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,13 +135,24 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler implements Desc
         final String discoveryGroupName = discoveryNode.isDefined() ? discoveryNode.asString() : null;
         final List<String> staticConnectors = discoveryGroupName == null ? getStaticConnectors(model) : null;
         final boolean allowDirectOnly = CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.resolveModelAttribute(context, model).asBoolean();
+        final int minLargeMessageSize = MIN_LARGE_MESSAGE_SIZE.resolveModelAttribute(context, model).asInt();
+        final long clientFailureCheckPeriod = CHECK_PERIOD.resolveModelAttribute(context, model).asInt();
+        final long connectionTTL = CONNECTION_TTL.resolveModelAttribute(context, model).asInt();
+        final long callTimeout = CALL_TIMEOUT.resolveModelAttribute(context, model).asLong();
+        final int reconnectAttempts = RECONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt();
+        final long maxRetryInterval = MAX_RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
+        final double retryIntervalMultiplier = RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, model).asDouble();
 
         if (discoveryGroupName != null) {
-            return new ClusterConnectionConfiguration(name, address, connectorName, retryInterval, duplicateDetection,
-                    forwardWhenNoConsumers, maxHops, confirmationWindowSize, discoveryGroupName);
+            return new ClusterConnectionConfiguration(name, address, connectorName, minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
+                    retryInterval, retryIntervalMultiplier, maxRetryInterval, reconnectAttempts, callTimeout,
+                    duplicateDetection, forwardWhenNoConsumers, maxHops, confirmationWindowSize,
+                    discoveryGroupName);
         } else {
-            return new ClusterConnectionConfiguration(name, address, connectorName, retryInterval, duplicateDetection,
-                    forwardWhenNoConsumers, maxHops, confirmationWindowSize, staticConnectors, allowDirectOnly);
+            return new ClusterConnectionConfiguration(name, address, connectorName, minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
+                    retryInterval, retryIntervalMultiplier, maxRetryInterval, reconnectAttempts, callTimeout,
+                    duplicateDetection, forwardWhenNoConsumers, maxHops, confirmationWindowSize,
+                    staticConnectors, allowDirectOnly);
         }
     }
 

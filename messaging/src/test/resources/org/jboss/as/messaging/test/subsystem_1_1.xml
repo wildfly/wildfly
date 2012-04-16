@@ -218,6 +218,13 @@
                  </entries>
                  <client-id>testClient2</client-id>
               </connection-factory>
+              <connection-factory name="otherConnectionFactory">
+                 <discovery-group-ref discovery-group-name="groupC" />
+                 <discovery-initial-wait-timeout>1234</discovery-initial-wait-timeout>
+                 <entries>
+                    <entry name="otherConnectionFactory"/>
+                 </entries>
+              </connection-factory>
               <pooled-connection-factory name="hornetq-ra">
                  <transaction mode="xa"/>
                  <connectors>

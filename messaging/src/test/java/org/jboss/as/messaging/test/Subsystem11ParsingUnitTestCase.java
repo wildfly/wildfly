@@ -62,10 +62,7 @@ public class Subsystem11ParsingUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
-        if (configId != null && configId.equals("xsd10.xml")) {
-            return;
-        }
-
-        super.compareXml(configId, original, marshalled, true);
+        // XML from messaging 1.2 does not have the same output than 1.1
+        return;
     }
 }
