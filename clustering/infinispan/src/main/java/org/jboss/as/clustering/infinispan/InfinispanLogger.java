@@ -84,31 +84,11 @@ public interface InfinispanLogger extends BasicLogger {
     void eagerAttributeDeprecated();
 
     /**
-     * Logs a warning message indicating that the site attribute of the transport element
+     * Logs a warning message indicating that the specified topology attribute of the transport element
      * is no longer valid
      */
     @LogMessage(level = WARN)
-    @Message(id = 10284, value = "The 'site' attribute specified on the 'transport' element of a cache container is no longer valid" +
-                "; use the 'site' attribute specified on the 'transport' element of the corresponding JGroups stack instead")
-    void siteAttributeDeprecated();
-
-    /**
-     * Logs a warning message indicating that the rack attribute of the transport element
-     * is no longer valid
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 10285, value = "The 'rack' attribute specified on the 'transport' element of a cache container is no longer valid" +
-                "; use the 'rack' attribute specified on the 'transport' element of the corresponding JGroups stack instead")
-    void rackAttributeDeprecated();
-
-    /**
-     * Logs a warning message indicating that the machine attribute of the transport element
-     * is no longer valid
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 10286, value = "The 'site' attribute specified on the 'transport' element of a cache container is no longer valid" +
-                "; use the 'machine' attribute specified on the 'transport' element of the corresponding JGroups stack instead")
-    void machineAttributeDeprecated();
-
-
+    @Message(id = 10284, value = "The '%s' attribute specified on the 'transport' element of a cache container is no longer valid" +
+                "; use the same attribute specified on the 'transport' element of corresponding JGroups stack instead")
+    void topologyAttributeDeprecated(String attribute);
 }
