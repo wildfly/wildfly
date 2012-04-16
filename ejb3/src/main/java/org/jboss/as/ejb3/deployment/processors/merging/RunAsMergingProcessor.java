@@ -99,7 +99,7 @@ public class RunAsMergingProcessor extends AbstractMergingProcessor<EJBComponent
             String principal = null;
             String globalRunAsPrincipal = null;
             EjbJarMetaData jbossMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
-            if (jbossMetaData != null) {
+            if (jbossMetaData != null && jbossMetaData.getAssemblyDescriptor() != null) {
                 List<EJBBoundSecurityMetaData> securityMetaDatas = jbossMetaData.getAssemblyDescriptor().getAny(EJBBoundSecurityMetaData.class);
                 if (securityMetaDatas != null) {
                     for (EJBBoundSecurityMetaData securityMetaData : securityMetaDatas) {
