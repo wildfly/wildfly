@@ -204,35 +204,8 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
      * @throws XMLStreamException if {@code value} is not valid
      */
     public void parseAndSetParameter(final String value, final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException {
-        checkParseAndSetParameter(value, operation, reader);
-    }
-
-    /**
-     * Creates a {@link ModelNode} using the given {@code value} after first validating the node
-     * against {@link #getValidator() this object's validator}, and then stores it in the given {@code operation}
-     * model node as a key/value pair whose key is this attribute's {@link #getName() name}.
-     * <p>
-     * If {@code value} is {@code null} an {@link ModelType#UNDEFINED undefined} node will be stored if such a value
-     * is acceptable to the validator.
-     * </p>
-     * <p>
-     * The expected usage of this method is in parsers seeking to build up an operation to store their parsed data
-     * into the configuration.
-     * </p>
-     *
-     * @param value the value. Will be {@link String#trim() trimmed} before use if not {@code null}.
-     * @param operation model node of type {@link ModelType#OBJECT} into which the parsed value should be stored
-     * @param reader {@link XMLStreamReader} from which the {@link XMLStreamReader#getLocation() location} from which
-     *               the attribute value was read can be obtained and used in any {@code XMLStreamException}, in case
-     *               the given value is invalid.
-     * @return {@code false} if the parameter was not already set, {@code true} if it was already set
-     * @throws XMLStreamException if {@code value} is not valid
-     */
-    public boolean checkParseAndSetParameter(final String value, final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException {
         ModelNode paramVal = parse(value, reader);
-        boolean alreadyExisted = operation.hasDefined(getName());
         operation.get(getName()).set(paramVal);
-        return alreadyExisted;
     }
 
     /**

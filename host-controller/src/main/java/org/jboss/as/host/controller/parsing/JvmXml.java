@@ -40,7 +40,9 @@ import java.util.List;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
@@ -231,13 +233,13 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case SIZE: {
-                        if (JvmAttributes.HEAP_SIZE.checkParseAndSetParameter(value, addOp, reader)) {
+                        if (checkParseAndSetParameter(JvmAttributes.HEAP_SIZE, value, addOp, reader)) {
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
                         }
                         break;
                     }
                     case MAX_SIZE: {
-                        if (JvmAttributes.MAX_HEAP_SIZE.checkParseAndSetParameter(value, addOp, reader)) {
+                        if (checkParseAndSetParameter(JvmAttributes.MAX_HEAP_SIZE, value, addOp, reader)) {
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
                         }
                         break;
@@ -267,13 +269,13 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case SIZE: {
-                        if (JvmAttributes.PERMGEN_SIZE.checkParseAndSetParameter(value, addOp, reader)) {
+                        if (checkParseAndSetParameter(JvmAttributes.PERMGEN_SIZE, value, addOp, reader)) {
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
                         }
                         break;
                     }
                     case MAX_SIZE: {
-                        if (JvmAttributes.MAX_PERMGEN_SIZE.checkParseAndSetParameter(value, addOp, reader)) {
+                        if (checkParseAndSetParameter(JvmAttributes.MAX_PERMGEN_SIZE, value, addOp, reader)) {
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
                         }
                         break;
@@ -303,7 +305,7 @@ public class JvmXml {
                 switch (attribute) {
                     case SIZE: {
                         sizeSet = true;
-                        if (JvmAttributes.STACK_SIZE.checkParseAndSetParameter(value, addOp, reader)){
+                        if (checkParseAndSetParameter(JvmAttributes.STACK_SIZE, value, addOp, reader)){
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
 
                         }
@@ -335,7 +337,7 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case VALUE: {
-                        if (JvmAttributes.AGENT_LIB.checkParseAndSetParameter(value, addOp, reader)){
+                        if (checkParseAndSetParameter(JvmAttributes.AGENT_LIB, value, addOp, reader)){
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
                         }
                         valueSet = true;
@@ -367,7 +369,7 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case VALUE: {
-                        if (JvmAttributes.AGENT_PATH.checkParseAndSetParameter(value, addOp, reader)){
+                        if (checkParseAndSetParameter(JvmAttributes.AGENT_PATH, value, addOp, reader)){
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
                         }
                         valueSet = true;
@@ -399,7 +401,7 @@ public class JvmXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case VALUE: {
-                        if (JvmAttributes.JAVA_AGENT.checkParseAndSetParameter(value, addOp, reader)) {
+                        if (checkParseAndSetParameter(JvmAttributes.JAVA_AGENT, value, addOp, reader)) {
                             throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
                         }
                         valueSet = true;
@@ -516,4 +518,9 @@ public class JvmXml {
         writer.writeEndElement();
     }
 
+    private static boolean checkParseAndSetParameter(final SimpleAttributeDefinition ad, final String value, final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException {
+        boolean alreadyExisted = operation.hasDefined(ad.getName());
+        ad.parseAndSetParameter(value, operation, reader);
+        return alreadyExisted;
+    }
 }
