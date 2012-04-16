@@ -184,7 +184,7 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
             }
 
             Set<String> dependents = dependenctRelativePaths.get(pathName);
-            if (dependents != null) {
+            if (check && dependents != null) {
                 throw MESSAGES.cannotRemovePathWithDependencies(pathName, dependents);
             }
             pathEntries.remove(pathName);
