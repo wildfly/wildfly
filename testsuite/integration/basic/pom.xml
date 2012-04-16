@@ -23,7 +23,8 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <version.apacheds>1.5.5</version.apacheds>
+        <version.apacheds>2.0.0-M6</version.apacheds>
+        <version.apacheds.shared>1.0.0-M11</version.apacheds.shared>
     </properties>
 
     <dependencies>
@@ -41,16 +42,35 @@
     
         <dependency>
             <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-server-unit</artifactId>
+            <artifactId>apacheds-core</artifactId>
             <version>${version.apacheds}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-bootstrap-partition</artifactId>
+            <artifactId>apacheds-server-config</artifactId>
             <version>${version.apacheds}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-protocol-ldap</artifactId>
+            <version>${version.apacheds}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-interceptors-hash</artifactId>
+            <version>${version.apacheds}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.directory.shared</groupId>
+            <artifactId>shared-ldap-codec-standalone</artifactId>
+            <version>${version.apacheds.shared}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <profiles>
@@ -241,6 +261,13 @@
 
                         </executions>
 
+                    </plugin>
+
+                    <plugin>
+                    	<groupId>org.apache.felix</groupId>
+                    	<artifactId>maven-bundle-plugin</artifactId>
+                    	<inherited>true</inherited>
+                    	<extensions>true</extensions>
                     </plugin>
 
                 </plugins>
