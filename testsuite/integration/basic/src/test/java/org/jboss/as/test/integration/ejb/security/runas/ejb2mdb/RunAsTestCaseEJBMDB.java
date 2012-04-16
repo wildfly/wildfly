@@ -120,6 +120,7 @@ public class RunAsTestCaseEJBMDB {
                         HowdyBean.class,
                         HelloMDB.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment.runasmdbejb-ejb2.jar  \n"), "MANIFEST.MF");
+        jar.addAsManifestResource(RunAsTestCaseEJBMDB.class.getPackage(), "ejb-jar-ejb3.xml", "ejb-jar.xml");
         log.info(jar.toString(true));
         return jar;
     }
