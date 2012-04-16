@@ -18,11 +18,6 @@
  */
 package org.jboss.as.controller.operations.common;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-
 import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
@@ -36,6 +31,11 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 /**
  * Operation handler for adding domain/host and server system properties.
@@ -109,25 +109,11 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
         }
 
         if (applyToRuntime) {
-            context.addStep(new OperationStepHandler() {
-                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
 
-                    SecurityActions.setSystemProperty(name, value);
-                    if (processEnvironment != null) {
-                        processEnvironment.systemPropertyUpdated(name, value);
-                    }
-
-                    context.completeStep(new OperationContext.RollbackHandler() {
-                        @Override
-                        public void handleRollback(OperationContext context, ModelNode operation) {
-                            SecurityActions.clearSystemProperty(name);
-                            if (processEnvironment != null) {
-                                processEnvironment.systemPropertyUpdated(name, null);
-                            }
-                        }
-                    });
-                }
-            }, OperationContext.Stage.RUNTIME);
+            SecurityActions.setSystemProperty(name, value);
+            if (processEnvironment != null) {
+                processEnvironment.systemPropertyUpdated(name, value);
+            }
         } else if (reload) {
             context.reloadRequired();
         }
@@ -137,6 +123,10 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
             public void handleRollback(OperationContext context, ModelNode operation) {
                 if (reload) {
                     context.revertReloadRequired();
+                }
+                SecurityActions.clearSystemProperty(name);
+                if (processEnvironment != null) {
+                    processEnvironment.systemPropertyUpdated(name, null);
                 }
             }
         });
