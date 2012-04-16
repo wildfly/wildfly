@@ -182,15 +182,15 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     break;
                 }
                 case SITE: {
-                    ROOT_LOGGER.siteAttributeDeprecated();
+                    ROOT_LOGGER.topologyAttributeDeprecated(ModelKeys.SITE);
                     break;
                 }
                 case RACK: {
-                    ROOT_LOGGER.rackAttributeDeprecated();
+                    ROOT_LOGGER.topologyAttributeDeprecated(ModelKeys.RACK);
                     break;
                 }
                 case MACHINE: {
-                    ROOT_LOGGER.machineAttributeDeprecated();
+                    ROOT_LOGGER.topologyAttributeDeprecated(ModelKeys.MACHINE);
                     break;
                 }
                 default: {
