@@ -5,14 +5,13 @@ import static org.jboss.as.controller.operations.common.Util.getEmptyOperation;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_REF;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.MAX_POOL_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.MIN_POOL_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.PCF_PASSWORD;
-import static org.jboss.as.messaging.CommonAttributes.PCF_USER;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
@@ -26,7 +25,6 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -48,25 +46,12 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
     }
 
     @Override
-    protected void writePooledConnectionFactories(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        List<Property> properties = node.asPropertyList();
-        if (!properties.isEmpty()) {
-            for (Property prop : properties) {
-                final String name = prop.getName();
-                final ModelNode factory = prop.getValue();
-                if (factory.isDefined()) {
-                    writer.writeStartElement(Element.POOLED_CONNECTION_FACTORY.getLocalName());
+    protected void writePooledConnectionFactoryAttributes(XMLExtendedStreamWriter writer, String name, ModelNode factory)
+            throws XMLStreamException {
+        super.writePooledConnectionFactoryAttributes(writer, name, factory);
 
-                    writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-                    PCF_USER.marshallAsElement(factory, writer);
-                    PCF_PASSWORD.marshallAsElement(factory, writer);
-                    MIN_POOL_SIZE.marshallAsElement(factory, writer);
-                    MAX_POOL_SIZE.marshallAsElement(factory, writer);
-
-                    writeConnectionFactory(writer, name, factory);
-                }
-            }
-        }
+        MIN_POOL_SIZE.marshallAsElement(factory, writer);
+        MAX_POOL_SIZE.marshallAsElement(factory, writer);
     }
 
     protected ModelNode createConnectionFactory(XMLExtendedStreamReader reader, ModelNode connectionFactory, boolean pooled) throws XMLStreamException
@@ -74,6 +59,8 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch(element) {
+                // =========================================================
+                // elements common to regular & pooled connection factories
                 case DISCOVERY_GROUP_REF: {
                     final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
                     DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, connectionFactory, reader);
@@ -91,35 +78,8 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                         JndiEntriesAttribute.CONNECTION_FACTORY.parseAndAddParameterElement(entry, connectionFactory, reader);
                     }
                     break;
-                } case INBOUND_CONFIG: {
-                    while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                        final Element local = Element.forName(reader.getLocalName());
-                        switch (local) {
-                            case USE_JNDI:
-                            case JNDI_PARAMS:
-                            case USE_LOCAL_TX:
-                            case SETUP_ATTEMPTS:
-                            case SETUP_INTERVAL:
-                                handleElementText(reader, local, connectionFactory);
-                                break;
-                            default:
-                                throw ParseUtils.unexpectedElement(reader);
-                        }
-                    }
-                    break;
-                } case TRANSACTION: {
-                    if(!pooled) {
-                        throw ParseUtils.unexpectedElement(reader);
-                    }
-                    final String txType = reader.getAttributeValue(0);
-                    if( txType != null) {
-                        connectionFactory.get(TRANSACTION).set(txType);
-                    }
-                    ParseUtils.requireNoContent(reader);
-                    break;
                 }
                 case HA:
-                case CONNECTION_FACTORY_TYPE:
                 case CLIENT_FAILURE_CHECK_PERIOD:
                 case CONNECTION_TTL:
                 case CALL_TIMEOUT:
@@ -145,8 +105,6 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 case LOAD_BALANCING_CLASS_NAME:
                 case USE_GLOBAL_POOLS:
                 case GROUP_ID:
-                case MAX_POOL_SIZE:
-                case MIN_POOL_SIZE:
                     handleElementText(reader, element, connectionFactory);
                     break;
                 case RETRY_INTERVAL:
@@ -159,14 +117,75 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                     // Use the "connection" variant
                     handleElementText(reader, element, "connection", connectionFactory);
                     break;
+                // end of common elements
+                // =========================================================
+
+                // =========================================================
+                // elements specific to regular (non-pooled) connection factories
+                case CONNECTION_FACTORY_TYPE:
+                    if(pooled) {
+                        throw unexpectedElement(reader);
+                    }
+                    handleElementText(reader, element, connectionFactory);
+                    break;
+                // end of regular CF elements
+                // =========================================================
+
+                // =========================================================
+                // elements specific to pooled connection factories
+                case INBOUND_CONFIG: {
+                    if(!pooled) {
+                        throw unexpectedElement(reader);
+                    }
+                    while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                        final Element local = Element.forName(reader.getLocalName());
+                        switch (local) {
+                            case USE_JNDI:
+                            case JNDI_PARAMS:
+                            case USE_LOCAL_TX:
+                            case SETUP_ATTEMPTS:
+                            case SETUP_INTERVAL:
+                                handleElementText(reader, local, connectionFactory);
+                                break;
+                            default:
+                                throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                } case TRANSACTION: {
+                    if(!pooled) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
+                    final String txType = reader.getAttributeValue(0);
+                    if( txType != null) {
+                        connectionFactory.get(TRANSACTION).set(txType);
+                    }
+                    ParseUtils.requireNoContent(reader);
+                    break;
+                }
                 case USER:
+                    if(!pooled) {
+                        throw unexpectedElement(reader);
+                    }
                     // Element name is overloaded, handleElementText can not be used, we must use the correct attribute
                     CommonAttributes.PCF_USER.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
                     break;
                 case PASSWORD:
+                    if(!pooled) {
+                        throw unexpectedElement(reader);
+                    }
                     // Element name is overloaded, handleElementText can not be used, we must use the correct attribute
                     CommonAttributes.PCF_PASSWORD.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
                     break;
+                case MAX_POOL_SIZE:
+                case MIN_POOL_SIZE:
+                    if(!pooled) {
+                        throw unexpectedElement(reader);
+                    }
+                    handleElementText(reader, element, connectionFactory);
+                    break;
+                // end of pooled CF elements
+                // =========================================================
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
                 }
@@ -319,7 +338,4 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
 
         updates.add(clusterConnectionAdd);
     }
-
-
-
 }
