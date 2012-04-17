@@ -38,7 +38,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
@@ -122,28 +124,36 @@ public abstract class PropertiesFileLoader {
         return properties;
     }
 
+    /**
+     * Saves changes in properties file. It reads the property file into memory,
+     * modifies it and saves it back to the file.
+     *
+     * @throws IOException
+     */
     public synchronized void persistProperties() throws IOException {
         Properties toSave = (Properties) properties.clone();
 
-        File backup = new File(propertiesFile.getCanonicalPath() + ".bak");
-        if (backup.exists()) {
-            if (backup.delete() == false) {
-                throw new IllegalStateException("Unable to delete backup properties file.");
+        List<String> content = new ArrayList<String>();
+        FileReader fileReader = new FileReader(propertiesFile);
+        BufferedReader bufferedFileReader = new BufferedReader(fileReader);
+
+        // Read the properties file into memory
+        // Shouldn't be so bad - it's a small file
+        try {
+            String line = null;
+            int i = 0;
+            while ((line = bufferedFileReader.readLine()) != null) {
+                content.add(line);
             }
+        } finally {
+            safeClose(bufferedFileReader);
+            safeClose(fileReader);
         }
 
-        if (propertiesFile.renameTo(backup) == false) {
-            throw new IllegalStateException("Unable to backup properties file.");
-        }
-
-        FileReader fr = new FileReader(backup);
-        BufferedReader br = new BufferedReader(fr);
-
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(propertiesFile),"UTF8"));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(propertiesFile), "UTF8"));
 
         try {
-            String line;
-            while ((line = br.readLine()) != null) {
+            for (String line : content) {
                 String trimmed = line.trim();
                 if (trimmed.startsWith("#")) {
                     bw.append(line);
@@ -172,11 +182,8 @@ public abstract class PropertiesFileLoader {
             }
         } finally {
             safeClose(bw);
-            safeClose(br);
-            safeClose(fr);
         }
     }
-
 
     public static String escapeString(String name, char[] escapeArray) {
         Arrays.sort(escapeArray);
@@ -198,6 +205,7 @@ public abstract class PropertiesFileLoader {
         }
         return name;
     }
+
     private void safeClose(final Closeable c) {
         try {
             c.close();
