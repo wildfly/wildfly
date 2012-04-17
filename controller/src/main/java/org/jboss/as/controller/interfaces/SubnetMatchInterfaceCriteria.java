@@ -16,7 +16,7 @@ import java.util.Arrays;
  *
  * @author Brian Stansberry
  */
-public class SubnetMatchInterfaceCriteria implements InterfaceCriteria {
+public class SubnetMatchInterfaceCriteria extends AbstractInterfaceCriteria {
 
 
     private static final long serialVersionUID = 149404752878332750L;
@@ -47,11 +47,11 @@ public class SubnetMatchInterfaceCriteria implements InterfaceCriteria {
      * @return <code>address</code> if the <code>address</code> is on the correct subnet.
      */
     @Override
-    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    protected InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
         byte[] addr = address.getAddress();
         if (addr.length != network.length) {
-            // different address type TODO translate?
+            // different address type
             return null;
         }
         int last = addr.length - mask;
@@ -67,15 +67,14 @@ public class SubnetMatchInterfaceCriteria implements InterfaceCriteria {
     public int hashCode() {
         int i = 17;
         i = 31 * i + mask;
-        i = 31 * 1 + Arrays.hashCode(network);
+        i = 31 * i + Arrays.hashCode(network);
         return i;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof SubnetMatchInterfaceCriteria == false) {
-            return false;
-        }
-        return Arrays.equals(network, ((SubnetMatchInterfaceCriteria)o).network) && mask == ((SubnetMatchInterfaceCriteria)o).mask;
+        return (o instanceof SubnetMatchInterfaceCriteria)
+                && Arrays.equals(network, ((SubnetMatchInterfaceCriteria)o).network)
+                && mask == ((SubnetMatchInterfaceCriteria)o).mask;
     }
 }

@@ -8,7 +8,9 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -37,21 +39,16 @@ public class AnyInterfaceCriteria implements InterfaceCriteria {
         this.criteria.addAll(criteria);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @return the first criteria {@link #isAcceptable(java.net.NetworkInterface, java.net.InetAddress)}
-     * result that is non-null, or null if no criteria apply
-     */
     @Override
-    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
-
+    public Map<NetworkInterface, Set<InetAddress>> getAcceptableAddresses(Map<NetworkInterface, Set<InetAddress>> candidates) throws SocketException {
+        final Map<NetworkInterface, Set<InetAddress>> result = new HashMap<NetworkInterface, Set<InetAddress>>();
         for (InterfaceCriteria ic : criteria) {
-            InetAddress bindAddress = ic.isAcceptable(networkInterface, address);
-            if (bindAddress != null)
-                return bindAddress;
+            final Map<NetworkInterface, Set<InetAddress>> testee = AbstractInterfaceCriteria.cloneCandidates(candidates);
+            final Map<NetworkInterface, Set<InetAddress>> accepted = ic.getAcceptableAddresses(testee);
+            addAccepted(accepted, result);
         }
-        return null;
+
+        return result;
     }
 
     @Override
@@ -67,4 +64,14 @@ public class AnyInterfaceCriteria implements InterfaceCriteria {
         return criteria.equals(((AnyInterfaceCriteria)o).criteria);
     }
 
+    private void addAccepted(Map<NetworkInterface, Set<InetAddress>> accepted, Map<NetworkInterface, Set<InetAddress>> result) {
+        for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : accepted.entrySet()) {
+            Set<InetAddress> addresses = result.get(entry.getKey());
+            if (addresses == null) {
+                result.put(entry.getKey(), new HashSet<InetAddress>(entry.getValue()));
+            } else {
+                addresses.addAll(entry.getValue());
+            }
+        }
+    }
 }

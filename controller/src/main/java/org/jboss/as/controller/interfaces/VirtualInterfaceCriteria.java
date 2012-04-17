@@ -14,7 +14,7 @@ import java.net.SocketException;
  *
  * @author Brian Stansberry
  */
-public class VirtualInterfaceCriteria implements InterfaceCriteria {
+public class VirtualInterfaceCriteria extends AbstractInterfaceCriteria {
 
     private static final long serialVersionUID = -2714634628678015738L;
 
@@ -29,7 +29,7 @@ public class VirtualInterfaceCriteria implements InterfaceCriteria {
      *         {@link NetworkInterface#isVirtual() virtual}
      */
     @Override
-    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    protected InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
         if (networkInterface.isVirtual())
             return address;

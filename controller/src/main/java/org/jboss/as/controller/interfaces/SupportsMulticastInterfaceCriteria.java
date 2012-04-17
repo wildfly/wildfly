@@ -14,7 +14,7 @@ import java.net.SocketException;
  *
  * @author Brian Stansberry
  */
-public class SupportsMulticastInterfaceCriteria implements InterfaceCriteria {
+public class SupportsMulticastInterfaceCriteria extends AbstractInterfaceCriteria {
 
     private static final long serialVersionUID = 2594955197396893923L;
 
@@ -29,7 +29,7 @@ public class SupportsMulticastInterfaceCriteria implements InterfaceCriteria {
      *         {@link NetworkInterface#supportsMulticast() supports multicast}.
      */
     @Override
-    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    protected InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
         if( networkInterface.supportsMulticast() )
             return address;

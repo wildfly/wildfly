@@ -14,7 +14,7 @@ import java.net.SocketException;
  *
  * @author Brian Stansberry
  */
-public class LoopbackInterfaceCriteria implements InterfaceCriteria {
+public class LoopbackInterfaceCriteria extends AbstractInterfaceCriteria {
 
     private static final long serialVersionUID = 1922501758657303593L;
 
@@ -28,7 +28,7 @@ public class LoopbackInterfaceCriteria implements InterfaceCriteria {
      * @return <code>address</code> if {@link NetworkInterface#isLoopback()} is true, null otherwise.
      */
     @Override
-    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    protected InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
         if( networkInterface.isLoopback() )
             return address;
