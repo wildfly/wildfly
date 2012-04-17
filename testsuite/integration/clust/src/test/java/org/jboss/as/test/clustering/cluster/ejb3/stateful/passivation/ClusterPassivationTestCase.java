@@ -39,14 +39,13 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.clustering.DMRUtil;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeInfoServlet;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.ClusterContext;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
@@ -60,7 +59,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 
 /**
@@ -76,8 +74,6 @@ public class ClusterPassivationTestCase {
     public static final String ARCHIVE_NAME = "cluster-passivation-test";
     public static final String ARCHIVE_NAME_HELPER = "cluster-passivation-test-helper";
 
-    private static final String IDLE_TIMEOUT_ATTR = "idle-timeout";
-    private static final String PASSIVATE_EVENTS_ON_REPLICATE_ATTR = "passivate-events-on-replicate";
     private static final String HELPER_DEPLOYMENT = "helper-";
     
     private static EJBDirectory context;
@@ -98,12 +94,6 @@ public class ClusterPassivationTestCase {
     private static Map<String, String> node2container = new HashMap<String, String>();
     private static Map<String, String> container2node = new HashMap<String, String>();
     private static Map<String, ManagementClient> node2client = new HashMap<String, ManagementClient>();
-
-    @BeforeClass
-    public static void setUp() throws NamingException {
-        Properties sysprops = System.getProperties();
-        System.out.println("System properties:\n" + sysprops);
-    }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -149,69 +139,11 @@ public class ClusterPassivationTestCase {
     }
 
     /**
-     * Returning modelnode address for DRM to be able to set cache attributes (client drm call).
-     */
-    private static ModelNode getAddress() {
-        ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, "ejb3");
-        address.add("cluster-passivation-store", "infinispan");
-        address.protect();
-        return address;
-    }
-
-    /**
-     * Setting passivation timeout cache attribute (client drm call).
-     */
-    private static void setPassivationIdleTimeout(ModelControllerClient client) throws Exception {
-        ModelNode address = getAddress();
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        operation.get(OP_ADDR).set(address);
-        operation.get("name").set(IDLE_TIMEOUT_ATTR);
-        operation.get("value").set(1L);
-        // ModelNode result = client.execute(operation);
-        ModelNode result = ManagementOperations.executeOperationRaw(client, operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        log.info("modelnode operation " + WRITE_ATTRIBUTE_OPERATION + " " + IDLE_TIMEOUT_ATTR + " =1: " + result);
-    }
-
-    /**
-     * Setting on cache replicate attribute (client drm call).
-     */
-    private static void setPassivationOnReplicate(ModelControllerClient client, boolean value) throws Exception {
-        ModelNode address = getAddress();
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        operation.get(OP_ADDR).set(address);
-        operation.get(NAME).set(PASSIVATE_EVENTS_ON_REPLICATE_ATTR);
-        operation.get(VALUE).set(value);
-        // ModelNode result = client.execute(operation);
-        ModelNode result = ManagementOperations.executeOperationRaw(client, operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        log.info("modelnode operation " + WRITE_ATTRIBUTE_OPERATION + " " + PASSIVATE_EVENTS_ON_REPLICATE_ATTR + " ="
-                + (value ? "TRUE" : "FALSE") + ": " + result);
-    }
-
-    /**
-     * Unsetting specific attribute (client drm call).
-     */
-    private static void unsetPassivationAttributes(ModelControllerClient client, String attrName) throws Exception {
-        ModelNode address = getAddress();
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set(UNDEFINE_ATTRIBUTE_OPERATION);
-        operation.get(OP_ADDR).set(address);
-        operation.get(NAME).set(attrName);
-        ModelNode result = client.execute(operation);
-        Assert.assertEquals("ModelNode operation execute was not successful", SUCCESS, result.get(OUTCOME).asString());
-        log.info("unset modelnode operation " + UNDEFINE_ATTRIBUTE_OPERATION + " on " + attrName + ": " + result);
-    }
-
-    /**
      * Unsetting all cache attributes - defining their default values.
      */
     private void unsetPassivationAttributes(ModelControllerClient client) throws Exception {
-        unsetPassivationAttributes(client, IDLE_TIMEOUT_ATTR);
-        unsetPassivationAttributes(client, PASSIVATE_EVENTS_ON_REPLICATE_ATTR);
+        DMRUtil.unsetIdleTimeoutPassivationAttribute(client);
+        DMRUtil.unsetPassivationOnReplicate(client);
     }
 
     /**
@@ -300,7 +232,7 @@ public class ClusterPassivationTestCase {
         // Loading context from file to get ejb:// remote context
         setupEJBClientContextSelector(); // setting context from .properties file
         final StatefulBeanRemote statefulBeanRemote = context.lookupStateful(StatefulBean.class, StatefulBeanRemote.class);
-        log.info("oochoaloup: Passivated (" + (isPassivation ? "TRUE" : "FALSE") + ") by on start: " + statefulBeanRemote.getPassivatedBy());
+        log.debug("Passivated (" + (isPassivation ? "TRUE" : "FALSE") + ") by on start: " + statefulBeanRemote.getPassivatedBy());
 
         // Calling on server one
         int clientNumber = 40;
@@ -388,10 +320,10 @@ public class ClusterPassivationTestCase {
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
         boolean isPassivated = true;
-        setPassivationIdleTimeout(client1.getControllerClient());
-        setPassivationOnReplicate(client1.getControllerClient(), isPassivated);
-        setPassivationIdleTimeout(client2.getControllerClient());
-        setPassivationOnReplicate(client2.getControllerClient(), isPassivated);
+        DMRUtil.setPassivationIdleTimeout(client1.getControllerClient());
+        DMRUtil.setPassivationOnReplicate(client1.getControllerClient(), isPassivated);
+        DMRUtil.setPassivationIdleTimeout(client2.getControllerClient());
+        DMRUtil.setPassivationOnReplicate(client2.getControllerClient(), isPassivated);
         runPassivation(isPassivated);
         startServers(client1, client2);
     }
@@ -403,10 +335,10 @@ public class ClusterPassivationTestCase {
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
         boolean isPassivated = false;
-        setPassivationIdleTimeout(client1.getControllerClient());
-        setPassivationOnReplicate(client1.getControllerClient(), isPassivated);
-        setPassivationIdleTimeout(client2.getControllerClient());
-        setPassivationOnReplicate(client2.getControllerClient(), isPassivated);
+        DMRUtil.setPassivationIdleTimeout(client1.getControllerClient());
+        DMRUtil.setPassivationOnReplicate(client1.getControllerClient(), isPassivated);
+        DMRUtil.setPassivationIdleTimeout(client2.getControllerClient());
+        DMRUtil.setPassivationOnReplicate(client2.getControllerClient(), isPassivated);
         runPassivation(isPassivated);
         startServers(client1, client2);
     }
@@ -425,10 +357,10 @@ public class ClusterPassivationTestCase {
             throws Exception {
         // Set passivation timeout once again
         boolean isPassivated = true;
-        setPassivationIdleTimeout(client1.getControllerClient());
-        setPassivationOnReplicate(client1.getControllerClient(), isPassivated);
-        setPassivationIdleTimeout(client2.getControllerClient());
-        setPassivationOnReplicate(client2.getControllerClient(), isPassivated);
+        DMRUtil.setPassivationIdleTimeout(client1.getControllerClient());
+        DMRUtil.setPassivationOnReplicate(client1.getControllerClient(), isPassivated);
+        DMRUtil.setPassivationIdleTimeout(client2.getControllerClient());
+        DMRUtil.setPassivationOnReplicate(client2.getControllerClient(), isPassivated);
         
         log.info("Setting context selector...");
         setupEJBClientContextSelector();
