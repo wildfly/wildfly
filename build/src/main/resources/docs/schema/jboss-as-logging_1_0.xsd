@@ -46,7 +46,6 @@
             <xs:element name="periodic-rotating-file-handler" type="periodicFileHandlerType"/>
             <xs:element name="size-rotating-file-handler" type="sizeFileHandlerType"/>
             <xs:element name="async-handler" type="asyncHandlerType"/>
-            <xs:any namespace="##other"/>
         </xs:choice>
     </xs:complexType>
 
@@ -369,7 +368,6 @@
         </xs:annotation>
         <xs:choice minOccurs="1" maxOccurs="1">
             <xs:element name="pattern-formatter" type="patternFormatterType" maxOccurs="1"/>
-            <xs:any namespace="##other"/>
         </xs:choice>
     </xs:complexType>
 
