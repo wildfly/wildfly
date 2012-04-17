@@ -192,7 +192,7 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
                 serverControl.createBridge(name, bridgeConfig.getQueueName(), bridgeConfig.getForwardingAddress(),
                         bridgeConfig.getFilterString(), bridgeConfig.getTransformerClassName(), bridgeConfig.getRetryInterval(),
                         bridgeConfig.getRetryIntervalMultiplier(), bridgeConfig.getReconnectAttempts(), bridgeConfig.isUseDuplicateDetection(),
-                        bridgeConfig.getConfirmationWindowSize(), HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                        bridgeConfig.getConfirmationWindowSize(), bridgeConfig.getClientFailureCheckPeriod(),
                         bridgeConfig.getDiscoveryGroupName(), true, bridgeConfig.isHA(), bridgeConfig.getUser(),
                         bridgeConfig.getPassword());
             } else {
@@ -209,7 +209,7 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
                 serverControl.createBridge(name, bridgeConfig.getQueueName(), bridgeConfig.getForwardingAddress(),
                         bridgeConfig.getFilterString(), bridgeConfig.getTransformerClassName(), bridgeConfig.getRetryInterval(),
                         bridgeConfig.getRetryIntervalMultiplier(), bridgeConfig.getReconnectAttempts(), bridgeConfig.isUseDuplicateDetection(),
-                        bridgeConfig.getConfirmationWindowSize(), HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                        bridgeConfig.getConfirmationWindowSize(), bridgeConfig.getClientFailureCheckPeriod(),
                         connectors, false, bridgeConfig.isHA(), bridgeConfig.getUser(),
                         bridgeConfig.getPassword());
             }

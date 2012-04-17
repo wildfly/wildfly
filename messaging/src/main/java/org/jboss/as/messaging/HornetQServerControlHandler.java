@@ -24,6 +24,9 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.messaging.ManagementUtil.reportListOfString;
+import static org.jboss.as.messaging.ManagementUtil.reportRoles;
+import static org.jboss.as.messaging.ManagementUtil.reportRolesAsJSON;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.EnumSet;
@@ -83,6 +86,9 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
     public static final String LIST_PRODUCERS_INFO_AS_JSON = "list-producers-info-as-json";
     public static final String LIST_SESSIONS = "list-sessions";
     public static final String GET_ROLES = "get-roles";
+    // we keep the operation for backwards compatibility but it duplicates the "get-roles" operation
+    // (except it returns a String instead of a List)
+    @Deprecated
     public static final String GET_ROLES_AS_JSON = "get-roles-as-json";
     public static final String GET_ADDRESS_SETTINGS_AS_JSON = "get-address-settings-as-json";
     public static final String FORCE_FAILOVER = "force-failover";
@@ -180,16 +186,11 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
             } else if (GET_ROLES.equals(operationName)) {
                 addressValidator.validate(operation);
                 String json = serverControl.getRolesAsJSON(operation.require(ADDRESS_MATCH).asString());
-                ModelNode camelCase = ModelNode.fromJSONString(json);
-                ModelNode converted = CamelCaseUtil.convertSecurityRole(camelCase);
-                context.getResult().set(converted);
+                reportRoles(context, json);
             } else if (GET_ROLES_AS_JSON.equals(operationName)) {
                 addressValidator.validate(operation);
                 String json = serverControl.getRolesAsJSON(operation.require(ADDRESS_MATCH).asString());
-                ModelNode camelCase = ModelNode.fromJSONString(json);
-                ModelNode converted = CamelCaseUtil.convertSecurityRole(camelCase);
-                json = converted.toJSONString(true);
-                context.getResult().set(json);
+                reportRolesAsJSON(context, json);
             } else if (GET_ADDRESS_SETTINGS_AS_JSON.equals(operationName)) {
                 addressValidator.validate(operation);
                 String json = serverControl.getAddressSettingsAsJSON(operation.require(ADDRESS_MATCH).asString());
@@ -385,13 +386,5 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         }
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         return hqServer.getHornetQServerControl();
-    }
-
-    private void reportListOfString(OperationContext context, String[] list) {
-        final ModelNode result = context.getResult();
-        result.setEmptyList();
-        for (String tx : list) {
-            result.add(tx);
-        }
     }
 }

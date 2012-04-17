@@ -23,6 +23,9 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.messaging.ManagementUtil.reportListOfString;
+import static org.jboss.as.messaging.ManagementUtil.reportRoles;
+import static org.jboss.as.messaging.ManagementUtil.reportRolesAsJSON;
 import static org.jboss.as.messaging.CommonAttributes.*;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
@@ -56,6 +59,8 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler implements
     public static AddressControlHandler INSTANCE = new AddressControlHandler();
 
     public static final String[] ATTRIBUTES = { ROLES_ATTR_NAME, QUEUE_NAMES, NUMBER_OF_BYTES_PER_PAGE, NUMBER_OF_PAGES, BINDING_NAMES };
+    // we keep the operation for backwards compatibility but it duplicates the "roles" attributes
+    @Deprecated
     public static final String GET_ROLES_AS_JSON = "get-roles-as-json";
 
     private AddressControlHandler() {
@@ -94,16 +99,10 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler implements
         try {
             if (ROLES_ATTR_NAME.equals(name)) {
                 String json = addressControl.getRolesAsJSON();
-                final ModelNode camelCase = ModelNode.fromJSONString(json);
-                final ModelNode converted = CamelCaseUtil.convertSecurityRole(camelCase);
-                context.getResult().set(converted);
+                reportRoles(context, json);
             } else if (QUEUE_NAMES.equals(name)) {
                 String[] queues = addressControl.getQueueNames();
-                final ModelNode result = context.getResult();
-                result.setEmptyList();
-                for (String queue : queues) {
-                    result.add(queue);
-                }
+                reportListOfString(context, queues);
             } else if (NUMBER_OF_BYTES_PER_PAGE.equals(name)) {
                 long l = addressControl.getNumberOfBytesPerPage();
                 context.getResult().set(l);
@@ -112,11 +111,7 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler implements
                 context.getResult().set(i);
             } else if (BINDING_NAMES.equals(name)) {
                 String[] bindings = addressControl.getBindingNames();
-                final ModelNode result = context.getResult();
-                result.setEmptyList();
-                for (String binding : bindings) {
-                    result.add(binding);
-                }
+                reportListOfString(context, bindings);
             } else {
                 // Bug
                 throw MESSAGES.unsupportedAttribute(name);
@@ -134,9 +129,7 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler implements
         final AddressControl addressControl = getAddressControl(context, operation);
         try {
             String json = addressControl.getRolesAsJSON();
-            final ModelNode camelCase = ModelNode.fromJSONString(json);
-            final ModelNode converted = CamelCaseUtil.convertSecurityRole(camelCase);
-            context.getResult().set(converted.toJSONString(true));
+            reportRolesAsJSON(context, json);
             context.completeStep();
         } catch (RuntimeException e) {
             throw e;
