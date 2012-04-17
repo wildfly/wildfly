@@ -236,7 +236,7 @@ public class ModuleConfigImpl implements ModuleConfig {
         module.addDependency(new ModuleDependency("another.module"));
 
         StringWriter strWriter = new StringWriter();
-        XMLExtendedStreamWriter writer = create(XMLOutputFactory.newFactory().createXMLStreamWriter(strWriter));
+        XMLExtendedStreamWriter writer = create(XMLOutputFactory.newInstance().createXMLStreamWriter(strWriter));
         module.writeContent(writer, module);
         writer.flush();
         System.out.println(strWriter.toString());

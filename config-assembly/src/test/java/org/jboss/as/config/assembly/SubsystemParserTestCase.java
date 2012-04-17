@@ -187,7 +187,7 @@ public class SubsystemParserTestCase {
 
     private String marshall(SubsystemParser subsystemParser) throws Exception {
         StringWriter stringWriter = new StringWriter();
-        XMLOutputFactory factory = XMLOutputFactory.newFactory();
+        XMLOutputFactory factory = XMLOutputFactory.newInstance();
         FormattingXMLStreamWriter writer = new FormattingXMLStreamWriter(factory.createXMLStreamWriter(stringWriter));
         try {
             Assert.assertNotNull(subsystemParser.getSubsystem());

@@ -177,7 +177,7 @@ public abstract class AbstractMgmtTestBase {
         dsNode.get(childType).set(result);
 
         StringWriter strWriter = new StringWriter();
-        XMLExtendedStreamWriter writer = XMLExtendedStreamWriterFactory.create(XMLOutputFactory.newFactory()
+        XMLExtendedStreamWriter writer = XMLExtendedStreamWriterFactory.create(XMLOutputFactory.newInstance()
                 .createXMLStreamWriter(strWriter));
         parser.writeContent(writer, new SubsystemMarshallingContext(dsNode, writer));
         writer.flush();

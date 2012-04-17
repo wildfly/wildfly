@@ -296,7 +296,7 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
             final File moduleFile = new File(moduleDir, "module.xml");
             try {
                 moduleWriter = new FileWriter(moduleFile);
-                XMLExtendedStreamWriter xmlWriter = create(XMLOutputFactory.newFactory().createXMLStreamWriter(moduleWriter));
+                XMLExtendedStreamWriter xmlWriter = create(XMLOutputFactory.newInstance().createXMLStreamWriter(moduleWriter));
                 config.writeContent(xmlWriter, null);
                 xmlWriter.flush();
             } catch (IOException e) {
