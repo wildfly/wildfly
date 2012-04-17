@@ -16,12 +16,15 @@
  */
 package org.jboss.as.test.smoke.osgi;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import static org.osgi.framework.Constants.ACTIVATION_LAZY;
 import static org.osgi.framework.Constants.BUNDLE_VERSION;
 
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -89,6 +92,33 @@ public class SimpleServerDeploymentTestCase {
             }
         });
         return archive;
+    }
+
+    @Test
+    public void testBundleStartLevel() throws Exception {
+
+        ModelControllerClient client = getModelControllerClient();
+        assertNotNull("ModelControllerClient available", client);
+
+        // Setup the deployment metadata
+        Map<String, Object> userdata = new HashMap<String, Object>();
+        userdata.put(DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL, Integer.valueOf(20));
+
+        // Deploy the bundle
+        InputStream input = deployer.getDeployment(GOOD_BUNDLE);
+        ServerDeploymentHelper server = new ServerDeploymentHelper(client);
+        String runtimeName = server.deploy(GOOD_BUNDLE, input, userdata);
+        try {
+            // Find the deployed bundle
+            Bundle bundle = OSGiFrameworkUtils.getDeployedBundle(context, GOOD_BUNDLE, null);
+            assertNotNull("Bundle installed", bundle);
+
+            // Verify that the bundle got installed in @ the specified start level
+            int bundleStartLevel = startLevel.getBundleStartLevel(bundle);
+            assertEquals("Bundle @ given level", 20, bundleStartLevel);
+        } finally {
+            server.undeploy(runtimeName);
+        }
     }
 
     @Test
@@ -164,7 +194,7 @@ public class SimpleServerDeploymentTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleManifestVersion(2);
                 builder.addBundleSymbolicName(archive.getName());
-                builder.addBundleActivationPolicy(ACTIVATION_LAZY);
+                builder.addBundleActivationPolicy(ACTIVATE_LAZILY);
                 return builder.openStream();
             }
         });

@@ -35,6 +35,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.client.DeploymentMetadata;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -127,6 +128,6 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
         final String runtimeName = model.hasDefined(RUNTIME_NAME) ? model.get(RUNTIME_NAME).asString() : name;
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-        DeploymentHandlerUtil.doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
+        DeploymentHandlerUtil.doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, DeploymentMetadata.UNDEFINED, vaultReader, contents);
     }
 }

@@ -24,6 +24,8 @@ package org.jboss.as.osgi.deployment;
 
 import java.util.List;
 
+import org.jboss.as.controller.client.DeploymentMetadata;
+import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.osgi.DeploymentMarker;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.BundleInstallIntegration;
@@ -76,6 +78,13 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
                     deployment.setAutoStart(false);
                     break;
                 }
+            }
+
+            // Optionally set the start level specified by the client of the deployment API
+            DeploymentMetadata metadata = depUnit.getAttachment(Attachments.DEPLOYMENT_METADATA);
+            Integer startLevel = (Integer) metadata.getValue(ClientConstants.DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL);
+            if (startLevel != null) {
+                deployment.setStartLevel(startLevel);
             }
 
             // Prevent autostart of ARQ deployments
