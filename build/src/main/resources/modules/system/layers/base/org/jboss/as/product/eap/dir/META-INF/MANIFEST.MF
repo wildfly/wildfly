@@ -1,0 +1,3 @@
+JBoss-Product-Release-Name: EAP
+JBoss-Product-Release-Version: 6.1.0.Alpha1
+JBoss-Product-Console-Slot: eap

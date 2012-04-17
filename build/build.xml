@@ -196,10 +196,6 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-deployment-repository"/>
         </module-def>
 
-        <module-def name="org.jboss.as.domain-http-error-context">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-domain-http-error-context"/>
-        </module-def>
-
         <module-def name="org.jboss.as.domain-http-interface">
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain-http-interface"/>
         </module-def>
@@ -337,7 +333,22 @@
 
     </target>
 
-    <target name="modules" depends="modules-minimalistic">
+    <target name="modules-product">
+        <!--
+          ~ Product configuration modules.
+          -->
+
+        <module-def name="org.jboss.as.console" slot="eap">
+            <maven-resource-with-classifier group="org.jboss.as" artifact="jboss-as-console" classifier="resources"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.domain-http-error-context" slot="eap"/>
+
+        <module-def name="org.jboss.as.product" slot="eap"/>
+
+    </target>
+
+    <target name="modules" depends="modules-minimalistic, modules-product">
         <!--
           ~ Complete list of modules to assemble.
           ~
@@ -764,10 +775,6 @@
 
         <module-def name="org.jboss.as.appclient">
             <maven-resource group="org.jboss.as" artifact="jboss-as-appclient"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.console">
-            <maven-resource-with-classifier group="org.jboss.as" artifact="jboss-as-console" classifier="resources"/>
         </module-def>
 
         <module-def name="org.jboss.as.cli">
