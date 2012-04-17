@@ -14,7 +14,7 @@ import java.net.SocketException;
  *
  * @author Brian Stansberry
  */
-public class PointToPointInterfaceCriteria implements InterfaceCriteria {
+public class PointToPointInterfaceCriteria extends AbstractInterfaceCriteria {
 
     private static final long serialVersionUID = -3434237413172720854L;
 
@@ -29,7 +29,7 @@ public class PointToPointInterfaceCriteria implements InterfaceCriteria {
      *         {@link NetworkInterface#isPointToPoint() point-to-point interface}.
      */
     @Override
-    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    protected InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
         if( networkInterface.isPointToPoint() )
             return address;

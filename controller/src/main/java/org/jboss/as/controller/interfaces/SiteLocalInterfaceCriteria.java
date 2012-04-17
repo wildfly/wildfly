@@ -14,7 +14,7 @@ import java.net.SocketException;
  *
  * @author Brian Stansberry
  */
-public class SiteLocalInterfaceCriteria implements InterfaceCriteria {
+public class SiteLocalInterfaceCriteria extends AbstractInterfaceCriteria {
 
     private static final long serialVersionUID = 8701772756289369451L;
 
@@ -29,7 +29,7 @@ public class SiteLocalInterfaceCriteria implements InterfaceCriteria {
      *         {@link InetAddress#isLinkLocalAddress() link-local}.
      */
     @Override
-    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    protected InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
         if( address.isSiteLocalAddress() )
             return address;

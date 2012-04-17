@@ -5,6 +5,9 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * {@link InterfaceCriteria} Placeholder interface criteria; enables support of wildcard addresses for inet-address.
@@ -20,7 +23,7 @@ public class WildcardInetAddressInterfaceCriteria implements InterfaceCriteria {
 
     public enum Version {
         V4, V6, ANY
-    };
+    }
 
     public WildcardInetAddressInterfaceCriteria(InetAddress address) {
         if (address instanceof Inet4Address) {
@@ -35,12 +38,9 @@ public class WildcardInetAddressInterfaceCriteria implements InterfaceCriteria {
         return version;
     }
 
-    /**
-     * Always false, since this should be translated into any-address during parsing.
-     */
     @Override
-    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
-        return null;
+    public Map<NetworkInterface, Set<InetAddress>> getAcceptableAddresses(Map<NetworkInterface, Set<InetAddress>> candidates) throws SocketException {
+        return Collections.emptyMap();
     }
 
     @Override
@@ -50,9 +50,7 @@ public class WildcardInetAddressInterfaceCriteria implements InterfaceCriteria {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof WildcardInetAddressInterfaceCriteria == false) {
-            return false;
-        }
-        return version == ((WildcardInetAddressInterfaceCriteria)o).version;
+        return (o instanceof WildcardInetAddressInterfaceCriteria)
+                && version == ((WildcardInetAddressInterfaceCriteria)o).version;
     }
 }

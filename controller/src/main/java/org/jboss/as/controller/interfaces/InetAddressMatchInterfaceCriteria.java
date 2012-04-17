@@ -15,7 +15,12 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -24,7 +29,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry
  */
-public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
+public class InetAddressMatchInterfaceCriteria extends AbstractInterfaceCriteria {
 
     private static final long serialVersionUID = 149404752878332750L;
 
@@ -81,13 +86,25 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
         return this.resolved;
     }
 
+    @Override
+    public Map<NetworkInterface, Set<InetAddress>> getAcceptableAddresses(Map<NetworkInterface, Set<InetAddress>> candidates) throws SocketException {
+        Map<NetworkInterface, Set<InetAddress>> result = super.getAcceptableAddresses(candidates);
+
+        // AS7-4509 Validate we only have a single match
+        if (result.size() > 1 || (result.size() == 1 && result.values().iterator().next().size() > 1)) {
+            logMultipleValidInterfaces(result);
+            result = Collections.emptyMap();
+        }
+        return result;
+    }
+
     /**
      * {@inheritDoc}
      *
      * @return <code>getAddress()</code> if the <code>address</code> is the same as the one returned by {@link #getAddress()}.
      */
     @Override
-    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    protected InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
         try {
             InetAddress toMatch = getAddress();
@@ -141,14 +158,26 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof InetAddressMatchInterfaceCriteria == false) {
-            return false;
-        }
-        if (address != null) {
-            return address.equals(((InetAddressMatchInterfaceCriteria)o).address);
-        } else if (addressString != null) {
-            return addressString.equals(((InetAddressMatchInterfaceCriteria)o).addressString);
+        if (o instanceof InetAddressMatchInterfaceCriteria) {
+            if (address != null) {
+                return address.equals(((InetAddressMatchInterfaceCriteria)o).address);
+            } else if (addressString != null) {
+                return addressString.equals(((InetAddressMatchInterfaceCriteria)o).addressString);
+            }
         }
         return false;
+    }
+
+    private void logMultipleValidInterfaces(Map<NetworkInterface, Set<InetAddress>> matches) {
+        Set<String> nis = new HashSet<String>();
+        Set<InetAddress> addresses = new HashSet<InetAddress>();
+        for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : matches.entrySet()) {
+            nis.add(entry.getKey().getName());
+            addresses.addAll(entry.getValue());
+        }
+        String toMatch = resolved != null ? resolved.getHostAddress() : addressString;
+
+
+        ControllerLogger.ROOT_LOGGER.multipleMatchingAddresses(toMatch, addresses, nis);
     }
 }
