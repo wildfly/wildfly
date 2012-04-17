@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.ejb.stateful.passivation;
+package org.jboss.as.test.integration.ejb.stateful.passivation.ejb2;
 
 import javax.naming.InitialContext;
 
@@ -28,6 +28,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.integration.ejb.stateful.passivation.PassivationSucceedsUnitTestCaseSetup;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -38,69 +39,67 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that passivation succeeds, and invocation is possible upon reactivation
+ * Tests that passivation succeeds for ejb2 beans.
+ * @see org.jboss.as.test.integration.ejb.stateful.passivation.PassivationSucceedsUnitTestCase
  *
- * @author ALR, Stuart Douglas, Ondrej Chaloupka
+ * @author Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
 @ServerSetup(PassivationSucceedsUnitTestCaseSetup.class)
-public class PassivationSucceedsUnitTestCase {
-    private static final Logger log = Logger.getLogger(PassivationSucceedsUnitTestCase.class);
-
+public class PassivationSucceedsEJB2TestCase {
+    private static final Logger log = Logger.getLogger(PassivationSucceedsEJB2TestCase.class);
+    private static String jndi;
+    
     @ArquillianResource
     private InitialContext ctx;
+    
+    static {
+        jndi = "java:module/" + TestPassivationBean.class.getSimpleName() + "!" + TestPassivationRemoteHome.class.getName();
+    }
 
     @Deployment
     public static Archive<?> deploy() throws Exception {
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "passivation-test.jar");
-        jar.addPackage(PassivationSucceedsUnitTestCase.class.getPackage());
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "passivation-ejb2-test.jar");
+        jar.addPackage(PassivationSucceedsEJB2TestCase.class.getPackage());
+        jar.addClasses(PassivationSucceedsUnitTestCaseSetup.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"),
                 "MANIFEST.MF");
-        jar.addAsManifestResource(PassivationSucceedsUnitTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         log.info(jar.toString(true));
         return jar;
     }
 
     @Test
     public void testPassivationMaxSize() throws Exception {
-        PassivationInterceptor.reset();
-        TestPassivationRemote remote1 = (TestPassivationRemote) ctx.lookup("java:module/"
-                + TestPassivationBean.class.getSimpleName());
+        TestPassivationRemoteHome home = (TestPassivationRemoteHome) ctx.lookup(jndi);
+        TestPassivationRemote remote1 = home.create();
         Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
                 remote1.returnTrueString());
-        remote1.addEntity(1, "Bob");
-        Assert.assertTrue(remote1.isPersistenceContextSame());
 
-        TestPassivationRemote remote2 = (TestPassivationRemote) ctx.lookup("java:module/"
-                + TestPassivationBean.class.getSimpleName());
+        TestPassivationRemoteHome home2 = (TestPassivationRemoteHome) ctx.lookup(jndi);
+        TestPassivationRemote remote2 = home2.create();
         Assert.assertEquals("Returned remote2 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
                 remote2.returnTrueString());
-        Assert.assertTrue(remote2.isPersistenceContextSame());
 
         // create another bean. This should force the other bean to passivate, as only one bean is allowed in the pool at a time
-        ctx.lookup("java:module/" + TestPassivationBean.class.getSimpleName());
+        ctx.lookup(jndi);
 
-        Assert.assertTrue("@PrePassivate not called, check cache configuration and client sleep time",
+        Assert.assertTrue("ejbPassivate not called on remote1, check cache configuration and client sleep time",
                 remote1.hasBeenPassivated());
-        Assert.assertTrue("@PrePassivate not called, check cache configuration and client sleep time",
+        Assert.assertTrue("ejbPassivate not called on remote2, check cache configuration and client sleep time",
                 remote2.hasBeenPassivated());
-        Assert.assertTrue(remote1.isPersistenceContextSame());
-        Assert.assertTrue(remote2.isPersistenceContextSame());
-        Assert.assertEquals("Super", remote1.getSuperEmployee().getName());
-        Assert.assertEquals("Super", remote2.getSuperEmployee().getName());
+        // Assert.assertTrue("ejbActivate not called on remote1", remote1.hasBeenActivated());
+        // Assert.assertTrue("ejbActivate not called on remote2", remote2.hasBeenActivated());
 
         remote1.remove();
         remote2.remove();
-        Assert.assertTrue(PassivationInterceptor.getPostActivateTarget() instanceof TestPassivationBean);
-        Assert.assertTrue(PassivationInterceptor.getPrePassivateTarget() instanceof TestPassivationBean);
     }
 
     @Test
     public void testPassivationIdleTimeout() throws Exception {
-        PassivationInterceptor.reset();
-        // Lookup and create stateful instance
-        TestPassivationRemote remote = (TestPassivationRemote) ctx.lookup("java:module/"
-                + TestPassivationBean.class.getSimpleName());
+        // Lookup and create stateful instance of ejb2 bean
+        TestPassivationRemoteHome home = (TestPassivationRemoteHome) ctx.lookup(jndi);
+        TestPassivationRemote remote = home.create();
+        
         // Make an invocation
         Assert.assertEquals("Returned result was not expected", TestPassivationRemote.EXPECTED_RESULT,
                 remote.returnTrueString());
@@ -109,12 +108,9 @@ public class PassivationSucceedsUnitTestCase {
         // Make another invocation
         Assert.assertEquals("Returned result was not expected", TestPassivationRemote.EXPECTED_RESULT,
                 remote.returnTrueString());
-        // Ensure that @PostActivate was called during client sleep
-        Assert.assertTrue("@PostActivate not called, check CacheConfig and client sleep time", remote.hasBeenActivated());
-        // Ensure that @PrePassivate was called during the client sleep
-        Assert.assertTrue("@PrePassivate not called, check CacheConfig and client sleep time", remote.hasBeenPassivated());
+        
+        Assert.assertTrue("ejbActivate not called, check CacheConfig and client sleep time", remote.hasBeenActivated());
+        Assert.assertTrue("ejbPassivate not called, check CacheConfig and client sleep time", remote.hasBeenPassivated());
         remote.remove();
-        Assert.assertTrue(PassivationInterceptor.getPostActivateTarget() instanceof TestPassivationBean);
-        Assert.assertTrue(PassivationInterceptor.getPrePassivateTarget() instanceof TestPassivationBean);
     }
 }
