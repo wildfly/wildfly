@@ -116,6 +116,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -1205,6 +1206,11 @@ public class ThreadsSubsystemTestCase {
         @Override
         public boolean isRuntimeOnlyRegistrationValid() {
             return getProcessType().isServer() && getRunningMode() != RunningMode.ADMIN_ONLY;
+        }
+
+        @Override
+        public PathManager getPathManager() {
+            return null;
         }
 
         @Override

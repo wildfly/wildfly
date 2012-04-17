@@ -257,7 +257,9 @@ public abstract class AbstractSubsystemTest {
 
         StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), testParser);
 
-        ExtensionRegistry outputExtensionRegistry = new ExtensionRegistry(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL));
+        // Use ProcessType.HOST_CONTROLLER for this ExtensionRegistry so we don't need to provide
+        // a PathManager via the ExtensionContext. All we need the Extension to do here is register the xml writers
+        ExtensionRegistry outputExtensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, new RunningModeControl(RunningMode.NORMAL));
         outputExtensionRegistry.setSubsystemParentResourceRegistrations(MOCK_RESOURCE_REG, MOCK_RESOURCE_REG);
         outputExtensionRegistry.setWriterRegistry(persister);
 
@@ -335,6 +337,7 @@ public abstract class AbstractSubsystemTest {
         StringConfigurationPersister persister = new StringConfigurationPersister(allOps, testParser);
         final ExtensionRegistry controllerExtensionRegistry = cloneExtensionRegistry();
         controllerExtensionRegistry.setWriterRegistry(persister);
+        controllerExtensionRegistry.setPathManager(pathManager);
         ModelControllerService svc = new ModelControllerService(mainExtension, controllerInitializer, additionalInit, controllerExtensionRegistry,
                 processState, persister, additionalInit.isValidateOperations());
         ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);

@@ -346,7 +346,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private ModelNode loadServerModel(final File file) throws Exception {
-        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL));
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.ADMIN_ONLY));
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
         final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), null, extensionRegistry);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
