@@ -51,6 +51,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UND
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -85,7 +86,6 @@ import org.junit.Test;
 public class PathsTestCase extends AbstractControllerTestBase {
 
     PathManagerService pathManagerService;
-
 
     @Test
     public void testReadResourceDescription() throws Exception{
@@ -630,10 +630,10 @@ public class PathsTestCase extends AbstractControllerTestBase {
         allCallback1.checkDone();
 
 
-        operation = createOperation(ADD);
+        operation = createOperation(WRITE_ATTRIBUTE_OPERATION);
         operation.get(OP_ADDR).add(PATH, "add1");
-        operation.get(PATH).set("123");
-        operation.get(RELATIVE_TO).set("bad");
+        operation.get(NAME).set(RELATIVE_TO);
+        operation.get(VALUE).set("bad");
 
         //TODO I changed this to fail, not 100% sure that is correct
         executeForFailure(operation);
@@ -866,7 +866,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
     private class TestServiceListener extends AbstractServiceListener<Object>{
 
         volatile CountDownLatch latch;
-        LinkedHashMap<Transition, ServiceName> services = new LinkedHashMap<ServiceController.Transition, ServiceName>();
+        Map<Transition, ServiceName> services = Collections.synchronizedMap(new LinkedHashMap<ServiceController.Transition, ServiceName>());
 
 
         void reset(int count) {

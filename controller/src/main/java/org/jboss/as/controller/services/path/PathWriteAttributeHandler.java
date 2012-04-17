@@ -82,7 +82,7 @@ class PathWriteAttributeHandler extends WriteAttributeHandlers.WriteAttributeOpe
                             pathManager.changePath(pathName, newValue.asString());
                             pathManager.changePathServices(context, pathName, newValue.asString());
                         } else if (attributeName.equals(RELATIVE_TO)) {
-                            pathManager.changeRelativePath( pathName, newValue.isDefined() ?  newValue.asString() : null);
+                            pathManager.changeRelativePath( pathName, newValue.isDefined() ?  newValue.asString() : null, true);
                             pathManager.changeRelativePathServices(context, pathName, newValue.isDefined() ?  newValue.asString() : null);
                         }
                     }
@@ -94,7 +94,12 @@ class PathWriteAttributeHandler extends WriteAttributeHandlers.WriteAttributeOpe
                                     pathManager.changePath(pathName, backup.getPath());
                                     pathManager.changePathServices(context, pathName, currentValue.asString());
                                 } else if (attributeName.equals(RELATIVE_TO)) {
-                                    pathManager.changeRelativePath( pathName, backup.getRelativeTo());
+                                    try {
+                                        pathManager.changeRelativePath(pathName, backup.getRelativeTo(), false);
+                                    } catch (OperationFailedException e) {
+                                        //Should not happen since false passed in for the 'check' parameter
+                                        throw new RuntimeException(e);
+                                    }
                                     pathManager.changeRelativePathServices(context, pathName, currentValue.isDefined() ?  currentValue.asString() : null);
                                 }
                             } else {
