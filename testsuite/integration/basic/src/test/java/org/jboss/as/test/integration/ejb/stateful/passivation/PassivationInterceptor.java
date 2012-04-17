@@ -10,7 +10,7 @@ import javax.interceptor.InvocationContext;
  * @author Stuart Douglas
  */
 public class PassivationInterceptor implements Serializable {
-
+    private static final long serialVersionUID = 1L;
     private static volatile Object postActivateTarget, prePassivateTarget;
 
     @PostActivate
