@@ -22,17 +22,45 @@
 
 package org.jboss.as.messaging;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
- * Utility for converting camel case based HQ formats to AS standards.
+ * Helper class to report management attributes or operation results
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class CamelCaseUtil {
+public class ManagementUtil {
 
-    public static ModelNode convertSecurityRole(final ModelNode camelCase) {
+    public static void reportRolesAsJSON(OperationContext context, String rolesAsJSON) {
+        ModelNode camelCase = ModelNode.fromJSONString(rolesAsJSON);
+        ModelNode converted = convertSecurityRole(camelCase);
+        String json = converted.toJSONString(true);
+        context.getResult().set(json);
+    }
+
+    public static void reportRoles(OperationContext context, String rolesAsJSON) {
+        ModelNode camelCase = ModelNode.fromJSONString(rolesAsJSON);
+        ModelNode converted = convertSecurityRole(camelCase);
+        context.getResult().set(converted);
+    }
+
+    public static void reportListOfString(OperationContext context, String[] list) {
+        final ModelNode result = context.getResult();
+        result.setEmptyList();
+        for (String tx : list) {
+            result.add(tx);
+        }
+    }
+
+    private ManagementUtil() {
+    }
+
+    /**
+     *  Utility for converting camel case based HQ formats to AS standards.
+     */
+    private static ModelNode convertSecurityRole(final ModelNode camelCase) {
         final ModelNode result = new ModelNode();
         result.setEmptyList();
         if (camelCase.isDefined()) {
@@ -56,8 +84,5 @@ public class CamelCaseUtil {
         }
 
         return result;
-    }
-
-    private CamelCaseUtil() {
     }
 }
