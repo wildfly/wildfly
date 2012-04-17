@@ -22,7 +22,6 @@
 
 package org.jboss.as.server.deployment;
 
-import com.sun.xml.internal.ws.api.message.Attachment;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
