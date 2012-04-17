@@ -96,7 +96,7 @@ final class ModuleIdentityArtifactProvider extends AbstractService<Void> impleme
         props.put(Constants.SERVICE_RANKING, Integer.MAX_VALUE);
         registration = syscontext.registerService(ArtifactProviderPlugin.class.getName(), this, props);
         ServerEnvironment serverEnvironment = injectedEnvironment.getValue();
-        modulesDir = new File(serverEnvironment.getHomeDir() + File.separator + "modules");
+        modulesDir = serverEnvironment.getModulesDir();
         bundlesDir = serverEnvironment.getBundlesDir();
     }
 
