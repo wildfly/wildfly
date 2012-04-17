@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.jboss.as.controller.client.DeploymentMetadata;
 import org.jboss.as.controller.client.helpers.domain.DeploymentAction;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlan;
@@ -88,6 +89,11 @@ public class DeploymentPlanImpl implements DeploymentPlan, Serializable {
     @Override
     public boolean isShutdown() {
         return delegate.isShutdown();
+    }
+
+    @Override
+    public DeploymentMetadata getMetadata() {
+        return delegate.getMetadata();
     }
 
     @Override
