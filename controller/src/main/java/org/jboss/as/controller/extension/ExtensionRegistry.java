@@ -63,6 +63,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -78,6 +79,7 @@ public class ExtensionRegistry {
     private final ProcessType processType;
 
     private SubsystemXmlWriterRegistry writerRegistry;
+    private volatile PathManager pathManager;
     private volatile ManagementResourceRegistration profileRegistration;
     private volatile ManagementResourceRegistration deploymentsRegistration;
 
@@ -110,6 +112,15 @@ public class ExtensionRegistry {
     public void setWriterRegistry(final SubsystemXmlWriterRegistry writerRegistry) {
         this.writerRegistry = writerRegistry;
 
+    }
+
+    /**
+     * Sets the {@link PathManager} to provide {@link ExtensionContext#getPathManager() via the ExtensionContext}.
+     *
+     * @param pathManager the path manager
+     */
+    public void setPathManager(final PathManager pathManager) {
+        this.pathManager = pathManager;
     }
 
     /**
@@ -181,13 +192,15 @@ public class ExtensionRegistry {
     /**
      * Gets an {@link ExtensionContext} for use when handling an {@code add} operation for
      * a resource representing an {@link Extension}.
+     *
      * @param moduleName the name of the extension's module. Cannot be {@code null}
+     *
      * @return  the {@link ExtensionContext}.  Will not return {@code null}
      *
      * @throws IllegalStateException if no {@link #setSubsystemParentResourceRegistrations(ManagementResourceRegistration, ManagementResourceRegistration)} profile resource registration has been set}
      */
-    public ExtensionContext getExtensionContext(String moduleName) {
-        return new ExtensionContextImpl(moduleName);
+    public ExtensionContext getExtensionContext(final String moduleName) {
+        return new ExtensionContextImpl(moduleName, pathManager);
     }
 
     /**
@@ -396,8 +409,11 @@ public class ExtensionRegistry {
     private class ExtensionContextImpl implements ExtensionContext {
 
         private final ExtensionInfo extension;
+        private final PathManager pathManager;
 
-        private ExtensionContextImpl(String extensionName) {
+        private ExtensionContextImpl(String extensionName, PathManager pathManager) {
+            assert pathManager != null || !processType.isServer() : "pathManager is null";
+            this.pathManager = pathManager;
             this.extension = getExtensionInfo(extensionName);
         }
 
@@ -434,6 +450,14 @@ public class ExtensionRegistry {
         @Override
         public boolean isRuntimeOnlyRegistrationValid() {
             return processType.isServer() && runningModeControl.getRunningMode() != RunningMode.ADMIN_ONLY;
+        }
+
+        @Override
+        public PathManager getPathManager() {
+            if (!processType.isServer()) {
+                throw ControllerMessages.MESSAGES.pathManagerNotAvailable(processType);
+            }
+            return pathManager;
         }
     }
 

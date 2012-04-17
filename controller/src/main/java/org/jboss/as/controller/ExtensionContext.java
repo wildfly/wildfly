@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller;
 
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.services.path.PathManagerService;
+
 /**
  * The context for registering a new extension.
  *
@@ -108,4 +111,13 @@ public interface ExtensionContext {
      */
     boolean isRuntimeOnlyRegistrationValid();
 
+    /**
+     * Gets the process' {@link PathManager} if the process is a {@link ProcessType#isServer() server}; throws
+     * an {@link IllegalStateException} if not.
+     *
+     * @return the path manager. Will not return {@code null}
+     *
+     * @throws IllegalStateException if the process is not a {@link ProcessType#isServer() server}
+     */
+    PathManager getPathManager();
 }

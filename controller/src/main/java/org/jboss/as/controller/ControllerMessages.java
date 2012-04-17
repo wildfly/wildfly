@@ -2454,6 +2454,9 @@ public interface ControllerMessages {
     @Message(id = 14855, value = "%s may not be ModelType.EXPRESSION")
     OperationFailedException expressionNotAllowed(String name);
 
+    @Message(id = 14856, value = "PathManager not available on processes of type '%s'")
+    IllegalStateException pathManagerNotAvailable(ProcessType processType);
+    
     /**
      * Creates an exception indicating the {@code value} for the attribute, represented by the {@code name} parameter,
      * is not a valid multicast address.

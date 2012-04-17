@@ -366,6 +366,7 @@ public class ServerControllerModelUtil {
         // Extensions
         root.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, parallelBoot));
         extensionRegistry.setSubsystemParentResourceRegistrations(root, deployments);
+        extensionRegistry.setPathManager(pathManager);
 
         // Util
         root.registerOperationHandler(DeployerChainAddHandler.NAME, DeployerChainAddHandler.INSTANCE, DeployerChainAddHandler.INSTANCE, false, EntryType.PRIVATE);
