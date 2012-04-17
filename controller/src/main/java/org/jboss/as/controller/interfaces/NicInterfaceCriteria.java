@@ -15,7 +15,7 @@ import java.net.SocketException;
  *
  * @author Brian Stansberry
  */
-public class NicInterfaceCriteria implements InterfaceCriteria {
+public class NicInterfaceCriteria extends AbstractInterfaceCriteria {
 
     private static final long serialVersionUID = 6905500001319165842L;
 
@@ -46,7 +46,7 @@ public class NicInterfaceCriteria implements InterfaceCriteria {
      *          equals <code>networkInterface</code>'s {@link NetworkInterface#getName() name}.
      */
     @Override
-    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    protected InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
         if( name.equals(networkInterface.getName()) )
             return address;
@@ -60,10 +60,8 @@ public class NicInterfaceCriteria implements InterfaceCriteria {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof NicInterfaceCriteria == false) {
-            return false;
-        }
-        return name.equals(((NicInterfaceCriteria)o).name);
+        return (o instanceof NicInterfaceCriteria)
+                && name.equals(((NicInterfaceCriteria)o).name);
     }
 
 }

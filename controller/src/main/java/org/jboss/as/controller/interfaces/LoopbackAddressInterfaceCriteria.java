@@ -34,7 +34,7 @@ import org.jboss.dmr.ModelNode;
  * @author Scott stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  * @version $Revision:$
  */
-public class LoopbackAddressInterfaceCriteria implements InterfaceCriteria {
+public class LoopbackAddressInterfaceCriteria extends AbstractInterfaceCriteria {
 
     private static final long serialVersionUID = 1L;
 
@@ -84,12 +84,11 @@ public class LoopbackAddressInterfaceCriteria implements InterfaceCriteria {
      * @return <code>{@link #getAddress()}()</code> if {@link NetworkInterface#isLoopback()} is true, null otherwise.
      */
     @Override
-    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    protected InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
         try {
             if( networkInterface.isLoopback() ) {
-                InetAddress resolved = getAddress();
-                return resolved;
+                return getAddress();
             }
         } catch (UnknownHostException e) {
             // One time only log a warning
@@ -118,9 +117,7 @@ public class LoopbackAddressInterfaceCriteria implements InterfaceCriteria {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof LoopbackAddressInterfaceCriteria == false) {
-            return false;
-        }
-        return address.equals(((LoopbackAddressInterfaceCriteria)o).address);
+        return (o instanceof LoopbackAddressInterfaceCriteria)
+                && address.equals(((LoopbackAddressInterfaceCriteria)o).address);
     }
 }

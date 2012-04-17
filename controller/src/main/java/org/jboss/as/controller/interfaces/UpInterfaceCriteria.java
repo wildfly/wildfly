@@ -14,7 +14,7 @@ import java.net.SocketException;
  *
  * @author Brian Stansberry
  */
-public class UpInterfaceCriteria implements InterfaceCriteria {
+public class UpInterfaceCriteria extends AbstractInterfaceCriteria {
 
     private static final long serialVersionUID = -5298203789711808552L;
 
@@ -29,7 +29,7 @@ public class UpInterfaceCriteria implements InterfaceCriteria {
      *         {@link NetworkInterface#isUp() up}
      */
     @Override
-    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    protected InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
         if( networkInterface.isUp() )
             return address;
