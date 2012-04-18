@@ -22,6 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javax.ejb.EJBException;
@@ -119,7 +125,7 @@ public class EJBClientAPIUsageTestCase {
         final StatelessEJBLocator<EchoRemote> locator = new StatelessEJBLocator(EchoRemote.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), "");
         final EchoRemote proxy = EJBClient.createProxy(locator);
         String shouldBeNil = proxy.getValue().getShouldBeNilAfterUnmarshalling();
-        Assert.assertNull("transient field should be serialized as null but was '" + shouldBeNil +"'",
+        Assert.assertNull("transient field should be serialized as null but was '" + shouldBeNil + "'",
                 shouldBeNil);
     }
 
@@ -359,5 +365,48 @@ public class EJBClientAPIUsageTestCase {
         final StatelessEJBLocator<EchoRemote> locator = new StatelessEJBLocator(EchoRemote.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), "");
         final EchoRemote proxy = EJBClient.createProxy(locator);
         Assert.assertTrue(proxy.testRequestScopeActive());
+    }
+
+    /**
+     * AS7-3402
+     *
+     * Tests that a NonSerializableException does not break the channel
+     *
+     */
+    @Test
+    public void testNonSerializableResponse() throws InterruptedException, ExecutionException {
+        final StatelessEJBLocator<NonSerialiazableResponseRemote> locator = new StatelessEJBLocator(NonSerialiazableResponseRemote.class, APP_NAME, MODULE_NAME, NonSerializableResponseEjb.class.getSimpleName(), "");
+        final NonSerialiazableResponseRemote proxy = EJBClient.createProxy(locator);
+
+
+        Callable<Object> task = new Callable<Object>() {
+
+            @Override
+            public Object call() throws Exception {
+                try {
+                    proxy.nonSerializable();
+                    Assert.fail();
+                } catch (Exception e) {
+                    logger.info("expected " + e);
+                }
+                Thread.sleep(1000);
+                Assert.assertEquals("hello", proxy.serializable());
+                return null;
+            }
+        };
+        final ExecutorService executor = Executors.newFixedThreadPool(10);
+        try {
+            final List<Future> tasks = new ArrayList<Future>();
+            for (int i = 0; i < 100; ++i) {
+                tasks.add(executor.submit(task));
+            }
+
+            for (Future result : tasks) {
+                result.get();
+            }
+        } finally {
+            executor.shutdown();
+        }
+
     }
 }
