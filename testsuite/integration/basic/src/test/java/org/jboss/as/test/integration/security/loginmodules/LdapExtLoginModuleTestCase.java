@@ -57,6 +57,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.security.common.AbstractLoginModuleStackServerSetupTask;
 import org.jboss.as.test.integration.security.common.LDAPServerSetupTask;
+import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.loginmodules.common.servlets.PrincipalPrintingServlet;
 import org.jboss.as.test.integration.security.loginmodules.common.servlets.RolePrintingServlet;
 import org.jboss.logging.Logger;
@@ -336,7 +337,7 @@ public class LdapExtLoginModuleTestCase {
      * @return
      */
     private static String getLDAPProviderUrl(final ManagementClient mgmtClient) {
-        return "ldap://" + mgmtClient.getMgmtAddress() + ":" + LDAP_PORT;
+        return "ldap://" + Utils.getSecondaryTestAddress(mgmtClient) + ":" + LDAP_PORT;
     }
 
     // Embedded classes ------------------------------------------------------
