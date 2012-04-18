@@ -102,11 +102,6 @@ if [ "$PRESERVE_JAVA_OPTS" != "true" ]; then
         if [ "x$NO_COMPRESSED_OOPS" = "x" ]; then
             "$JAVA" $JVM_OPTVERSION -server -XX:+UseCompressedOops -version >/dev/null 2>&1 && PREPEND_JAVA_OPTS="$PREPEND_JAVA_OPTS -XX:+UseCompressedOops"
         fi
-
-        NO_TIERED_COMPILATION=`echo $JAVA_OPTS | $GREP "\-XX:\-TieredCompilation"`
-        if [ "x$NO_TIERED_COMPILATION" = "x" ]; then
-            "$JAVA" $JVM_OPTVERSION -server -XX:+TieredCompilation -version >/dev/null 2>&1 && PREPEND_JAVA_OPTS="$PREPEND_JAVA_OPTS -XX:+TieredCompilation"
-        fi
     fi
 
     JAVA_OPTS="$PREPEND_JAVA_OPTS $JAVA_OPTS"
