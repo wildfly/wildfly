@@ -55,6 +55,13 @@ public class CommandCompleter implements CommandLineCompleter {
             return -1;
         }
 */
+        // support for commands and operations spread across multiple lines
+        int offset = 0;
+        if(ctx.getArgumentsString() != null) {
+            offset = ctx.getArgumentsString().length();
+            buffer = ctx.getArgumentsString() + buffer;
+        }
+
         if(buffer.isEmpty()) {
             for(String cmd : cmdRegistry.getTabCompletionCommands()) {
                 CommandHandler handler = cmdRegistry.getCommandHandler(cmd);
@@ -88,6 +95,10 @@ public class CommandCompleter implements CommandLineCompleter {
                 }
             }
         }
-        return OperationRequestCompleter.INSTANCE.complete(ctx, parsedCmd, candidatesProvider, buffer, cursor, candidates);
+        int result = OperationRequestCompleter.INSTANCE.complete(ctx, parsedCmd, candidatesProvider, buffer, cursor, candidates);
+        if(result <= 0) {
+            return result;
+        }
+        return result - offset;
     }
 }

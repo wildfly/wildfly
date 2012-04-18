@@ -39,6 +39,7 @@ public class AddressOperationSeparatorState extends DefaultParsingState {
 
     public AddressOperationSeparatorState(final OperationNameState opName) {
         super("ADDR_OP_SEP");
+        this.setIgnoreWhitespaces(true);
         setDefaultHandler(new EnterStateCharacterHandler(opName));
         setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
     }
