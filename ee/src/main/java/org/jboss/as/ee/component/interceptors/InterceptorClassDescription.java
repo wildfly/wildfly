@@ -83,7 +83,7 @@ public class InterceptorClassDescription {
             builder.setPrePassivate(override.getPrePassivate());
         }
         if (override.getPostActivate() != null) {
-            builder.setPrePassivate(override.getPostActivate());
+            builder.setPostActivate(override.getPostActivate());
         }
         return builder.build();
     }
