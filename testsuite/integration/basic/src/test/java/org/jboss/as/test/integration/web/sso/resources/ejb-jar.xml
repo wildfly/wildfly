@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ejb-jar PUBLIC "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN" "http://java.sun.com/dtd/ejb-jar_2_0.dtd">
+<ejb-jar>
+    <description>WebApp Integration Tests</description>
+    <enterprise-beans>
+        <session>
+            <description>A secured EJB</description>
+            <ejb-name>SecuredEJB</ejb-name>
+            <home>org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionHome</home>
+            <remote>org.jboss.as.test.integration.web.sso.interfaces.StatelessSession</remote>
+            <local-home>org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionLocalHome</local-home>
+            <local>org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionLocal</local>
+            <ejb-class>org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionBean</ejb-class>
+            <session-type>Stateless</session-type>
+            <transaction-type>Container</transaction-type>
+        </session>
+    </enterprise-beans>
+    <assembly-descriptor>
+        <!-- Security constraints for the SecuredEJB -->
+        <security-role>
+            <description>An anonymous unauthenticated user</description>
+            <role-name>Anonymous</role-name>
+        </security-role>
+        <security-role>
+            <description>An authenticated user</description>
+            <role-name>AuthorizedUser</role-name>
+        </security-role>
+        <security-role>
+            <description>A role that no user should have</description>
+            <role-name>InternalUser</role-name>
+        </security-role>
+        <!-- The methods an Anonymous user can access -->
+        <method-permission>
+            <role-name>Anonymous</role-name>
+            <method>
+                <ejb-name>SecuredEJB</ejb-name>
+                <method-name>create</method-name>
+            </method>
+            <method>
+                <ejb-name>SecuredEJB</ejb-name>
+                <method-name>echo</method-name>
+            </method>
+        </method-permission>
+        <!-- The methods an AuthorizedUser user can access -->
+        <method-permission>
+            <role-name>AuthorizedUser</role-name>
+            <method>
+                <ejb-name>SecuredEJB</ejb-name>
+                <method-intf>Home</method-intf>
+                <method-name>*</method-name>
+            </method>
+            <method>
+                <ejb-name>SecuredEJB</ejb-name>
+                <method-intf>LocalHome</method-intf>
+                <method-name>*</method-name>
+            </method>
+            <method>
+                <ejb-name>SecuredEJB</ejb-name>
+                <method-name>echo</method-name>
+                <method-params>
+                    <method-param>java.lang.String</method-param>
+                </method-params>
+            </method>
+            <method>
+                <ejb-name>SecuredEJB</ejb-name>
+                <method-name>noop</method-name>
+            </method>
+            <method>
+                <ejb-name>SecuredEJB</ejb-name>
+                <method-intf>Local</method-intf>
+                <method-name>unchecked</method-name>
+            </method>
+            <method>
+                <ejb-name>SecuredEJB</ejb-name>
+                <method-intf>Remote</method-intf>
+                <method-name>getData</method-name>
+            </method>
+            <method>
+                <ejb-name>EntityFacade</ejb-name>
+                <method-name>*</method-name>
+            </method>
+        </method-permission>
+        <!-- The methods an InternalUser user can access -->
+        <method-permission>
+            <role-name>InternalUser</role-name>
+            <method>
+                <ejb-name>SecuredEJB</ejb-name>
+                <method-intf>LocalHome</method-intf>
+                <method-name>*</method-name>
+            </method>
+            <method>
+                <ejb-name>SecuredEJB</ejb-name>
+                <method-name>checkRunAs</method-name>
+            </method>
+            <method>
+                <ejb-name>UnsecureRunAsServletWithPrincipalNameTarget</ejb-name>
+                <method-name>*</method-name>
+            </method>
+            <method>
+                <ejb-name>UnsecureRunAsServletWithPrincipalNameAndRolesTarget</ejb-name>
+                <method-name>*</method-name>
+            </method>
+            <method>
+                <ejb-name>EntityFacade</ejb-name>
+                <method-name>*</method-name>
+            </method>
+            <method>
+                <ejb-name>InternalEntity</ejb-name>
+                <method-name>*</method-name>
+            </method>
+        </method-permission>
+        <!-- The methods a user without any permission may access -->
+        <method-permission>
+            <unchecked />
+            <method>
+                <ejb-name>SecuredEJB</ejb-name>
+                <method-intf>LocalHome</method-intf>
+                <method-name>*</method-name>
+            </method>
+            <method>
+                <ejb-name>SecuredEJB</ejb-name>
+                <method-name>unchecked</method-name>
+            </method>
+        </method-permission>
+    </assembly-descriptor>
+</ejb-jar>
