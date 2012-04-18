@@ -46,7 +46,7 @@ public class BlockingQueueOperationListener<T extends TransactionalProtocolClien
     }
 
     public BlockingQueueOperationListener(final int capacity) {
-        this.queue = new ArrayBlockingQueue<TransactionalProtocolClient.PreparedOperation<T>>(capacity);
+        this(new ArrayBlockingQueue<TransactionalProtocolClient.PreparedOperation<T>>(capacity));
     }
 
     public BlockingQueueOperationListener(final BlockingQueue<TransactionalProtocolClient.PreparedOperation<T>> queue) {

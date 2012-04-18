@@ -22,16 +22,18 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import org.jboss.as.controller.remote.RemoteProxyController;
+import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import static org.jboss.as.domain.controller.DomainControllerLogger.CONTROLLER_LOGGER;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
+import static org.jboss.as.domain.controller.DomainControllerLogger.ROOT_LOGGER;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -71,44 +73,41 @@ public class DomainSlaveHandler implements OperationStepHandler {
             return;
         }
 
-        final Map<String, ProxyTask> tasks = new HashMap<String, ProxyTask>();
-        final Map<String, Future<ModelNode>> futures = new HashMap<String, Future<ModelNode>>();
-
+        final Set<String> outstanding = new HashSet<String>(hostProxies.keySet());
+        final List<TransactionalProtocolClient.PreparedOperation<NewProxyTask.ProxyOperation>> results = new ArrayList<TransactionalProtocolClient.PreparedOperation<NewProxyTask.ProxyOperation>>();
+        final Map<String, Future<ModelNode>> finalResults = new HashMap<String, Future<ModelNode>>();
+        final NewProxyTask.ProxyOperationListener listener = new NewProxyTask.ProxyOperationListener();
         for (Map.Entry<String, ProxyController> entry : hostProxies.entrySet()) {
-            String host = entry.getKey();
-            ProxyTask task = new ProxyTask(host, operation.clone(), context, entry.getValue());
-            tasks.put(host, task);
-            futures.put(host, executorService.submit(task));
+            // Create the proxy task
+            final String host = entry.getKey();
+            final TransactionalProtocolClient client = ((RemoteProxyController)entry.getValue()).getTransactionalProtocolClient();
+            final NewProxyTask task = new NewProxyTask(host, operation.clone(), context, client);
+            // Execute the operation on the remote host
+            final Future<ModelNode> finalResult = task.execute(listener);
+            finalResults.put(host, finalResult);
         }
 
+        // Wait for all hosts to reach the prepared state
         boolean interrupted = false;
         try {
-            for (Map.Entry<String, ProxyTask> entry : tasks.entrySet()) {
-                ProxyTask task = entry.getValue();
-                ModelNode result;
+            while(outstanding.size() > 0) {
                 try {
-                    // The ProxyTask will execute a request with a transaction and
-                    // publish the "prepared" result from the host when the host gets
-                    // to where it needs to either commit or rollback the tx.
-                    // We block waiting for that result.
-                    result = entry.getValue().getUncommittedResult();
-                } catch (Exception e) {
-                    result = new ModelNode();
-                    result.get(OUTCOME).set(FAILED);
-                    if (e instanceof InterruptedException) {
-                        result.get(FAILURE_DESCRIPTION).set(MESSAGES.interruptedAwaitingResultFromHost(entry.getKey()));
-                        interrupted = true;
-                    } else {
-                        result.get(FAILURE_DESCRIPTION).set(MESSAGES.exceptionAwaitingResultFromHost(entry.getKey(), e.getMessage()));
+                    final TransactionalProtocolClient.PreparedOperation<NewProxyTask.ProxyOperation> prepared = listener.retrievePreparedOperation();
+                    final String name = prepared.getOperation().getName();
+                    if( ! outstanding.remove(name)) {
+                        ROOT_LOGGER.errorf("did not expect response from host %s", name);
+                        continue;
                     }
-                    task.cancel();
-                    futures.get(entry.getKey()).cancel(true);
+                    final ModelNode preparedResult = prepared.getPreparedResult();
+                    if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
+                        HOST_CONTROLLER_LOGGER.tracef("Preliminary result for remote host %s is %s", name, preparedResult);
+                    }
+                    domainOperationContext.addHostControllerResult(name, preparedResult);
+                    results.add(prepared);
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                    // TODO fix interruption
                 }
-
-                if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
-                    HOST_CONTROLLER_LOGGER.tracef("Preliminary result for remote host %s is %s", entry.getKey(), result);
-                }
-                domainOperationContext.addHostControllerResult(entry.getKey(), result);
             }
 
             context.completeStep();
@@ -118,24 +117,28 @@ public class DomainSlaveHandler implements OperationStepHandler {
                 // Inform the remote hosts whether to commit or roll back their updates
                 // Do this in parallel
                 boolean rollback = domainOperationContext.isCompleteRollback();
-                for (ProxyTask task : tasks.values()) {
-                    task.finalizeTransaction(!rollback);
+                for(final TransactionalProtocolClient.PreparedOperation<NewProxyTask.ProxyOperation> prepared : results) {
+                    if(! rollback) {
+                        prepared.commit();
+                    } else {
+                        prepared.rollback();
+                    }
                 }
                 // Now get the final results from the hosts
-                for (Map.Entry<String, Future<ModelNode>> entry : futures.entrySet()) {
-                    Future<ModelNode> future = entry.getValue();
+                for(final TransactionalProtocolClient.PreparedOperation<NewProxyTask.ProxyOperation> prepared : results) {
+                    final String name = prepared.getOperation().getName();
                     try {
-                        ModelNode finalResult = future.isCancelled() ? getCancelledResult() : future.get();
-                        domainOperationContext.addHostControllerResult(entry.getKey(), finalResult);
+                        final ModelNode finalResult = prepared.getFinalResult().get();
+                        domainOperationContext.addHostControllerResult(name, finalResult);
 
                         if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
-                            HOST_CONTROLLER_LOGGER.tracef("Final result for remote host %s is %s", entry.getKey(), finalResult);
+                            HOST_CONTROLLER_LOGGER.tracef("Final result for remote host %s is %s", name, finalResult);
                         }
                     } catch (InterruptedException e) {
                         interrupted = true;
-                        CONTROLLER_LOGGER.interruptedAwaitingFinalResponse(entry.getKey());
+                        CONTROLLER_LOGGER.interruptedAwaitingFinalResponse(name);
                     } catch (ExecutionException e) {
-                        CONTROLLER_LOGGER.caughtExceptionAwaitingFinalResponse(e.getCause(), entry.getKey());
+                        CONTROLLER_LOGGER.caughtExceptionAwaitingFinalResponse(e.getCause(), name);
                     }
                 }
             } finally {
@@ -145,11 +148,11 @@ public class DomainSlaveHandler implements OperationStepHandler {
             }
         }
     }
-
-    private ModelNode getCancelledResult() {
-        ModelNode cancelled = new ModelNode();
-        cancelled.get(OUTCOME).set(CANCELLED);
-        return cancelled;
-    }
+//
+//    private ModelNode getCancelledResult() {
+//        ModelNode cancelled = new ModelNode();
+//        cancelled.get(OUTCOME).set(CANCELLED);
+//        return cancelled;
+//    }
 
 }
