@@ -32,7 +32,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -45,8 +44,6 @@ import org.jboss.msc.service.ServiceTarget;
 public class LdapConnectionAddHandler extends AbstractAddStepHandler {
 
     public static final LdapConnectionAddHandler INSTANCE = new LdapConnectionAddHandler();
-
-    public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         for (AttributeDefinition attr : LdapConnectionResourceDefinition.ATTRIBUTE_DEFINITIONS) {

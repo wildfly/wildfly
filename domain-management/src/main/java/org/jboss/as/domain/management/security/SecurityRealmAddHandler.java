@@ -40,10 +40,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.domain.management.ModelDescriptionConstants.ALIAS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.ALLOWED_USERS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_USER;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.KEY_PASSWORD;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PASSWORD;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PATH;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_RELATIVE_TO;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KEY_PASSWORD;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
@@ -57,7 +57,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
@@ -79,7 +78,6 @@ import org.jboss.msc.service.ServiceTarget;
 public class SecurityRealmAddHandler implements OperationStepHandler {
 
     public static final SecurityRealmAddHandler INSTANCE = new SecurityRealmAddHandler();
-    public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
