@@ -30,6 +30,7 @@ import javax.ejb.RemoteHome;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
+
 import org.jboss.ejb3.annotation.Cache;
 import org.jboss.logging.Logger;
 
@@ -89,11 +90,11 @@ public class TestPassivationBean implements SessionBean {
 
     @Override
     public void ejbRemove() throws EJBException, RemoteException {
-        log.info("Bean [" + this.identificator + "] destroyed");   
+        log.info("Bean [" + this.identificator + "] destroyed");
     }
 
     @Override
     public void setSessionContext(SessionContext arg0) throws EJBException, RemoteException {
-        
+
     }
 }
