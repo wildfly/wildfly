@@ -54,43 +54,51 @@ public interface OSGiLogger extends BasicLogger {
     @Message(id = 11900, value = "Cannot start bundle: %s")
     void errorCannotStartBundle(@Cause Throwable cause, Bundle bundle);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 11901, value = "Problem adding module: %s")
-    void errorAddingModule(@Cause Throwable cause, String moduleId);
+    //@LogMessage(level = ERROR)
+    //@Message(id = 11901, value = "Problem adding module: %s")
+    //void errorAddingModule(@Cause Throwable cause, String moduleId);
 
     @LogMessage(level = ERROR)
     @Message(id = 11902, value = "Failed to uninstall deployment: %s")
     void errorFailedToUninstallDeployment(@Cause Throwable cause, Deployment deployment);
 
+    //@LogMessage(level = ERROR)
+    //@Message(id = 11903, value = "Failed to uninstall module: %s")
+    //void failedToUninstallModule(@Cause Throwable cause, Module module);
+
     @LogMessage(level = ERROR)
-    @Message(id = 11903, value = "Cannot add module as it was not found: %s")
+    @Message(id = 11904, value = "Cannot add module as it was not found: %s")
     void errorModuleNotFound(String moduleId);
 
     @LogMessage(level = WARN)
-    @Message(id = 11904, value = "Cannot find composite annotation index in: %s")
+    @Message(id = 11920, value = "Cannot find composite annotation index in: %s")
     void warnCannotFindAnnotationIndex(DeploymentUnit deploymentUnit);
 
     @LogMessage(level = WARN)
-    @Message(id = 11905, value = "Cannot undeploy bundle: %s")
+    @Message(id = 11921, value = "Cannot undeploy bundle: %s")
     void warnCannotUndeployBundle(@Cause Throwable cause, Deployment deployment);
 
     @LogMessage(level = WARN)
-    @Message(id = 11906, value = "Cannot resolve capability: %s")
+    @Message(id = 11922, value = "Cannot resolve capability: %s")
     void warnCannotResolveCapability(String identifier);
 
     @LogMessage(level = INFO)
-    @Message(id = 11907, value = "Activating OSGi Subsystem")
+    @Message(id = 11940, value = "Activating OSGi Subsystem")
     void infoActivatingSubsystem();
 
     @LogMessage(level = INFO)
-    @Message(id = 11908, value = "Register module: %s")
+    @Message(id = 11941, value = "Register module: %s")
     void infoRegisterModule(Module module);
 
+    //@LogMessage(level = INFO)
+    //@Message(id = 11942, value = "Stopping OSGi Framework")
+    //void stoppingOsgiFramework();
+
     @LogMessage(level = INFO)
-    @Message(id = 11909, value = "Unregister module: %s")
+    @Message(id = 11943, value = "Unregister module: %s")
     void infoUnregisterModule(Module module);
 
     @LogMessage(level = ERROR)
-    @Message(id = 11910, value = "Management operation '%s' failed")
+    @Message(id = 11944, value = "Management operation '%s' failed")
     void errorInOperationHandler(@Cause Throwable cause, String opname);
 }
