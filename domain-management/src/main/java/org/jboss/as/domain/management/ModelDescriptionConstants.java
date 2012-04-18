@@ -32,6 +32,7 @@ public class ModelDescriptionConstants {
     public static final String ALIAS = "alias";
     public static final String ALLOWED_USERS = "allowed-users";
     public static final String AUTHENTICATION = "authentication";
+    public static final String AUTHORIZATION = "authorization";
     public static final String DEFAULT_USER = "default-user";
     public static final String DEFAULT_DEFAULT_USER = "$local";
     public static final String IDENTITY = "identity";
@@ -40,12 +41,16 @@ public class ModelDescriptionConstants {
     public static final String KEYSTORE_PATH = "keystore-path";
     public static final String KEYSTORE_RELATIVE_TO = "keystore-relative-to";
     public static final String LOCAL = "local";
+    public static final String NAME = "name";
     public static final String PASSWORD = "password";
     public static final String PATH = "path";
+    public static final String PLUG_IN = "plug-in";
+    public static final String PROPERTY = "property";
     public static final String REALM = "realm";
     public static final String RELATIVE_TO = "relative-to";
     public static final String ROLES = "roles";
     public static final String USERNAME = "username";
+    public static final String VALUE = "value";
     public static final String VERBOSE = "verbose";
     public static final String WHOAMI = "whoami";
 

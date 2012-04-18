@@ -34,6 +34,7 @@ import org.jboss.as.controller.registry.OperationEntry;
  * {@link ResourceDefinition} for a management security realm resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
 
@@ -48,6 +49,7 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(new PlugInResourceDefinition());
         resourceRegistration.registerSubModel(new SecretServerIdentityResourceDefinition());
         resourceRegistration.registerSubModel(new SSLServerIdentityResourceDefinition());
         resourceRegistration.registerSubModel(new TruststoreAuthenticationResourceDefinition());
@@ -56,6 +58,8 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new LdapAuthenticationResourceDefinition());
         resourceRegistration.registerSubModel(new PropertiesAuthenticationResourceDefinition());
         resourceRegistration.registerSubModel(new XmlAuthenticationResourceDefinition());
+        resourceRegistration.registerSubModel(new PlugInAuthenticationResourceDefinition());
         resourceRegistration.registerSubModel(new PropertiesAuthorizationResourceDefinition());
+        resourceRegistration.registerSubModel(new PlugInAuthorizationResourceDefinition());
     }
 }

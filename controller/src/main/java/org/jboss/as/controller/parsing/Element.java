@@ -107,6 +107,8 @@ public enum Element {
     PATH("path"),
     PATHS("paths"),
     PERMGEN("permgen"),
+    PLUG_IN("plug-in"),
+    PLUG_INS("plug-ins"),
     POINT_TO_POINT("point-to-point"),
     PROFILE("profile"),
     PROFILES("profiles"),
