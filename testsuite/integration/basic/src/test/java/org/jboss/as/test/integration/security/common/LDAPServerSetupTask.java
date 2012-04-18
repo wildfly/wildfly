@@ -25,58 +25,70 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.naming.ldap.InitialLdapContext;
-import javax.naming.ldap.LdapContext;
-
-import junit.framework.AssertionFailedError;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.directory.server.constants.ServerDNConstants;
-import org.apache.directory.server.core.CoreSession;
-import org.apache.directory.server.core.DefaultDirectoryService;
-import org.apache.directory.server.core.DirectoryService;
-import org.apache.directory.server.core.entry.DefaultServerEntry;
-import org.apache.directory.server.core.entry.ServerEntry;
-import org.apache.directory.server.core.jndi.CoreContextFactory;
+import org.apache.directory.server.config.ConfigPartitionReader;
+import org.apache.directory.server.config.LdifConfigExtractor;
+import org.apache.directory.server.config.beans.ConfigBean;
+import org.apache.directory.server.config.beans.DirectoryServiceBean;
+import org.apache.directory.server.config.beans.LdapServerBean;
+import org.apache.directory.server.config.beans.TcpTransportBean;
+import org.apache.directory.server.core.api.CoreSession;
+import org.apache.directory.server.core.api.DirectoryService;
+import org.apache.directory.server.core.api.InstanceLayout;
+import org.apache.directory.server.core.api.filtering.EntryFilteringCursor;
+import org.apache.directory.server.core.api.interceptor.context.ModifyOperationContext;
+import org.apache.directory.server.core.api.partition.Partition;
+import org.apache.directory.server.core.api.schema.SchemaPartition;
 import org.apache.directory.server.core.partition.impl.btree.jdbm.JdbmIndex;
 import org.apache.directory.server.core.partition.impl.btree.jdbm.JdbmPartition;
+import org.apache.directory.server.core.partition.ldif.LdifPartition;
+import org.apache.directory.server.core.partition.ldif.SingleFileLdifPartition;
+import org.apache.directory.server.i18n.I18n;
 import org.apache.directory.server.ldap.LdapServer;
-import org.apache.directory.server.ldap.handlers.bind.MechanismHandler;
-import org.apache.directory.server.ldap.handlers.bind.cramMD5.CramMd5MechanismHandler;
-import org.apache.directory.server.ldap.handlers.bind.digestMD5.DigestMd5MechanismHandler;
-import org.apache.directory.server.ldap.handlers.bind.gssapi.GssapiMechanismHandler;
-import org.apache.directory.server.ldap.handlers.bind.ntlm.NtlmMechanismHandler;
-import org.apache.directory.server.ldap.handlers.bind.plain.PlainMechanismHandler;
-import org.apache.directory.server.ldap.handlers.extended.StartTlsHandler;
-import org.apache.directory.server.ldap.handlers.extended.StoredProcedureExtendedOperationHandler;
-import org.apache.directory.server.protocol.shared.transport.TcpTransport;
 import org.apache.directory.server.xdbm.Index;
-import org.apache.directory.shared.ldap.constants.SupportedSaslMechanisms;
-import org.apache.directory.shared.ldap.entry.Entry;
-import org.apache.directory.shared.ldap.entry.EntryAttribute;
-import org.apache.directory.shared.ldap.entry.Value;
-import org.apache.directory.shared.ldap.exception.LdapConfigurationException;
-import org.apache.directory.shared.ldap.ldif.LdifEntry;
-import org.apache.directory.shared.ldap.ldif.LdifReader;
+import org.apache.directory.shared.ldap.model.constants.SchemaConstants;
+import org.apache.directory.shared.ldap.model.entry.Attribute;
+import org.apache.directory.shared.ldap.model.entry.DefaultAttribute;
+import org.apache.directory.shared.ldap.model.entry.DefaultEntry;
+import org.apache.directory.shared.ldap.model.entry.DefaultModification;
+import org.apache.directory.shared.ldap.model.entry.Entry;
+import org.apache.directory.shared.ldap.model.entry.Modification;
+import org.apache.directory.shared.ldap.model.entry.ModificationOperation;
+import org.apache.directory.shared.ldap.model.exception.LdapConfigurationException;
+import org.apache.directory.shared.ldap.model.filter.ExprNode;
+import org.apache.directory.shared.ldap.model.filter.PresenceNode;
+import org.apache.directory.shared.ldap.model.ldif.LdifEntry;
+import org.apache.directory.shared.ldap.model.ldif.LdifReader;
+import org.apache.directory.shared.ldap.model.message.AliasDerefMode;
+import org.apache.directory.shared.ldap.model.message.SearchScope;
+import org.apache.directory.shared.ldap.model.name.Dn;
+import org.apache.directory.shared.ldap.model.schema.AttributeType;
+import org.apache.directory.shared.ldap.model.schema.AttributeTypeOptions;
+import org.apache.directory.shared.ldap.model.schema.SchemaManager;
+import org.apache.directory.shared.ldap.model.schema.registries.SchemaLoader;
+import org.apache.directory.shared.ldap.model.schema.syntaxCheckers.CsnSyntaxChecker;
+import org.apache.directory.shared.ldap.model.schema.syntaxCheckers.GeneralizedTimeSyntaxChecker;
+import org.apache.directory.shared.ldap.model.schema.syntaxCheckers.UuidSyntaxChecker;
+import org.apache.directory.shared.ldap.schemaextractor.SchemaLdifExtractor;
+import org.apache.directory.shared.ldap.schemaextractor.impl.DefaultSchemaLdifExtractor;
+import org.apache.directory.shared.ldap.schemaloader.LdifSchemaLoader;
+import org.apache.directory.shared.ldap.schemamanager.impl.DefaultSchemaManager;
+import org.apache.directory.shared.util.DateUtils;
+import org.apache.directory.shared.util.exception.Exceptions;
 import org.apache.mina.util.AvailablePortFinder;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.logging.Logger;
 
 /**
- * {@link ServerSetupTask} implementation, which starts embedded LDAP server (ApacheDS). The implementation is based on
- * AbstractServerTestcase class from the ApacheDS.
+ * {@link ServerSetupTask} implementation, which starts embedded LDAP server (ApacheDS).
  * 
  * @author Josef Cacek
  * @see #configureDirectoryService()
@@ -85,26 +97,43 @@ import org.jboss.logging.Logger;
  */
 public class LDAPServerSetupTask implements ServerSetupTask {
     private static final Logger LOGGER = Logger.getLogger(LDAPServerSetupTask.class);
-    private static final List<LdifEntry> EMPTY_LIST = Collections.unmodifiableList(new ArrayList<LdifEntry>(0));
-
-    /** the context root for the rootDSE */
-    protected CoreSession rootDSE;
-
-    /** the context root for the system partition */
-    protected LdapContext sysRoot;
-
-    /** the context root for the schema */
-    protected LdapContext schemaRoot;
-
-    /** flag whether to delete database files for each test or not */
-    protected boolean doDelete = true;
 
     protected int port = -1;
 
-    protected DirectoryService directoryService;
-    protected LdapServer ldapServer;
+    private DirectoryService directoryService;
 
-    private Locale origLocale;
+    /** The LDAP server instance */
+    private LdapServer ldapServer;
+
+    /** The Schema partition */
+    private LdifPartition schemaLdifPartition;
+
+    /** The SchemaManager instance */
+    private SchemaManager schemaManager;
+
+    /** The configuration partition */
+    private SingleFileLdifPartition configPartition;
+
+    /** The configuration reader instance */
+    private ConfigPartitionReader cpReader;
+
+    // variables used during the initial startup to update the mandatory operational
+    // attributes
+    /** The UUID syntax checker instance */
+    private UuidSyntaxChecker uuidChecker = new UuidSyntaxChecker();
+
+    /** The CSN syntax checker instance */
+    private CsnSyntaxChecker csnChecker = new CsnSyntaxChecker();
+
+    private GeneralizedTimeSyntaxChecker timeChecker = new GeneralizedTimeSyntaxChecker();
+
+    private static final Map<String, AttributeTypeOptions> MANDATORY_ENTRY_ATOP_MAP = new HashMap<String, AttributeTypeOptions>();
+
+    private boolean isConfigPartitionFirstExtraction = false;
+
+    private boolean isSchemaPartitionFirstExtraction = false;
+
+    private InstanceLayout instanceLayout = new InstanceLayout("workDir");
 
     // Public methods --------------------------------------------------------
 
@@ -118,38 +147,35 @@ public class LDAPServerSetupTask implements ServerSetupTask {
      *      java.lang.String)
      */
     public final void setup(ManagementClient managementClient, String containerId) throws Exception {
-        // AS7-4450 workaround - switch to the en_US locale, because of the bugs in the ApacheDS
-        LOGGER.info("Setting the default locale: en_US");
-        origLocale = Locale.getDefault();
-        Locale.setDefault(Locale.US);
+        FileUtils.deleteDirectory(instanceLayout.getInstanceDirectory());
 
-        directoryService = new DefaultDirectoryService();
-        directoryService.setShutdownHookEnabled(false);
-        port = getPort();
-        LOGGER.info("Creating LDAP server on port " + port);
+        File partitionsDir = instanceLayout.getPartitionsDirectory();
+        if (!partitionsDir.exists()) {
+            if (!partitionsDir.mkdirs()) {
+                throw new IOException(I18n.err(I18n.ERR_112_COULD_NOT_CREATE_DIRECORY, partitionsDir));
+            }
+        }
 
-        ldapServer = new LdapServer();
-        ldapServer.setTransports(new TcpTransport(port));
-        ldapServer.setDirectoryService(directoryService);
+        initSchemaManager();
+        initSchemaLdifPartition();
+        initConfigPartition();
 
-        setupSaslMechanisms();
+        // Read the configuration
+        cpReader = new ConfigPartitionReader(configPartition);
 
-        doDelete(directoryService.getWorkingDirectory());
-        configureDirectoryService();
-        LOGGER.debug("Starting directory service");
-        directoryService.startup();
+        ConfigBean configBean = cpReader.readConfig();
 
-        rootDSE = directoryService.getAdminSession();
+        DirectoryServiceBean directoryServiceBean = configBean.getDirectoryServiceBean();
 
-        configureLdapServer();
+        // Initialize the DirectoryService now
+        initDirectoryService(directoryServiceBean);
 
-        ldapServer.addExtendedOperationHandler(new StartTlsHandler());
-        ldapServer.addExtendedOperationHandler(new StoredProcedureExtendedOperationHandler());
-
-        LOGGER.debug("Starting LDAP server");
-        ldapServer.start();
-
-        setContexts(ServerDNConstants.ADMIN_SYSTEM_DN, "secret");
+        // start the LDAP server
+        final LdapServerBean ldapServerBean = directoryServiceBean.getLdapServerBean();
+        final TcpTransportBean tcpTransportBean = new TcpTransportBean();
+        tcpTransportBean.setSystemPort(getPort());
+        ldapServerBean.setTransports(tcpTransportBean);
+        startLdap(ldapServerBean);
     }
 
     /**
@@ -162,16 +188,15 @@ public class LDAPServerSetupTask implements ServerSetupTask {
      *      java.lang.String)
      */
     public final void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        LOGGER.info("Stopping LDAP server");
-        ldapServer.stop();
-        LOGGER.info("Shutting down DirectoryService");
-        directoryService.shutdown();
-        sysRoot = null;
+        // Stops the server
+        if (ldapServer != null) {
+            ldapServer.stop();
+        }
 
-        // AS7-4450 workaround
-        LOGGER.info("Setting back the default locale: " + origLocale);
-        Locale.setDefault(origLocale);
-        origLocale = null;
+        // We now have to stop the underlaying DirectoryService
+        directoryService.shutdown();
+
+        FileUtils.deleteDirectory(instanceLayout.getInstanceDirectory());
     }
 
     // Protected methods -----------------------------------------------------
@@ -207,76 +232,6 @@ public class LDAPServerSetupTask implements ServerSetupTask {
     }
 
     /**
-     * If there is an LDIF file with the same name as the test class but with the .ldif extension then it is read and the
-     * entries it contains are added to the server. It appears as though the administrator adds these entries to the server.
-     * 
-     * @param verifyEntries whether or not all entry additions are checked to see if they were in fact correctly added to the
-     *        server
-     * @return a list of entries added to the server in the order they were added
-     * @throws NamingException of the load fails
-     */
-    protected final List<LdifEntry> loadTestLdif(boolean verifyEntries) throws Exception {
-        return loadLdif(getClass().getResourceAsStream(getClass().getSimpleName() + ".ldif"), verifyEntries);
-    }
-
-    /**
-     * Loads an LDIF from an input stream and adds the entries it contains to the server. It appears as though the administrator
-     * added these entries to the server.
-     * 
-     * @param in the input stream containing the LDIF entries to load
-     * @param verifyEntries whether or not all entry additions are checked to see if they were in fact correctly added to the
-     *        server
-     * @return a list of entries added to the server in the order they were added
-     * @throws NamingException of the load fails
-     */
-    protected final List<LdifEntry> loadLdif(InputStream in, boolean verifyEntries) throws Exception {
-        if (in == null) {
-            return EMPTY_LIST;
-        }
-
-        LdifReader ldifReader = new LdifReader(in);
-        List<LdifEntry> entries = new ArrayList<LdifEntry>();
-
-        for (LdifEntry entry : ldifReader) {
-            rootDSE.add(new DefaultServerEntry(directoryService.getRegistries(), entry.getEntry()));
-
-            if (verifyEntries) {
-                verify(entry);
-                LOGGER.info("Successfully verified addition of entry " + entry.getDn());
-            } else {
-                LOGGER.info("Added entry without verification " + entry.getDn());
-            }
-
-            entries.add(entry);
-        }
-
-        return entries;
-    }
-
-    /**
-     * Verifies that an entry exists in the directory with the specified attributes.
-     * 
-     * @param entry the entry to verify
-     * @throws NamingException if there are problems accessing the entry
-     */
-    protected final void verify(LdifEntry entry) throws Exception {
-        Entry readEntry = rootDSE.lookup(entry.getDn());
-
-        for (EntryAttribute readAttribute : readEntry) {
-            String id = readAttribute.getId();
-            EntryAttribute origAttribute = entry.getEntry().get(id);
-
-            for (Value<?> value : origAttribute) {
-                if (!readAttribute.contains(value)) {
-                    LOGGER.error("Failed to verify entry addition of " + entry.getDn() + ". " + id + " attribute in original "
-                            + "entry missing from read entry.");
-                    throw new AssertionFailedError("Failed to verify entry addition of " + entry.getDn());
-                }
-            }
-        }
-    }
-
-    /**
      * Adds a partition with given ID and suffix to the directory.
      * 
      * @param id partition ID, e.g. "jboss"
@@ -284,60 +239,21 @@ public class LDAPServerSetupTask implements ServerSetupTask {
      * @throws Exception
      */
     protected final void addPartition(final String id, final String suffix) throws Exception {
-        final JdbmPartition tcPartition = new JdbmPartition();
+        final JdbmPartition tcPartition = new JdbmPartition(schemaManager);
         tcPartition.setId(id);
         tcPartition.setCacheSize(1000);
+        tcPartition.setPartitionPath(new File(instanceLayout.getPartitionsDirectory(), id).toURI());
 
-        // Create some indices
-        Set<Index<?, ServerEntry>> indexedAttrs = new HashSet<Index<?, ServerEntry>>();
-        indexedAttrs.add(new JdbmIndex<Object, ServerEntry>("objectClass"));
-        indexedAttrs.add(new JdbmIndex<Object, ServerEntry>("o"));
+        Set<Index<?, Entry, Long>> indexedAttrs = new HashSet<Index<?, Entry, Long>>();
+        indexedAttrs.add(new JdbmIndex<Object, Entry>("objectClass"));
+        indexedAttrs.add(new JdbmIndex<Object, Entry>("o"));
         tcPartition.setIndexedAttributes(indexedAttrs);
 
         //Add suffix
-        tcPartition.setSuffix(suffix);
-        tcPartition.init(directoryService);
+        tcPartition.setSuffixDn(new Dn(suffix));
+        tcPartition.initialize();
+
         directoryService.addPartition(tcPartition);
-    }
-
-    /**
-     * Deletes the Eve working directory.
-     * 
-     * @param wkdir the directory to delete
-     * @throws IOException if the directory cannot be deleted
-     */
-    protected final void doDelete(File wkdir) throws IOException {
-        if (doDelete) {
-            if (wkdir.exists()) {
-                FileUtils.deleteDirectory(wkdir);
-            }
-
-            if (wkdir.exists()) {
-                throw new IOException("Failed to delete: " + wkdir);
-            }
-        }
-    }
-
-    /**
-     * Sets the contexts for this base class. Values of user and password used to set the respective JNDI properties. These
-     * values can be overriden by the overrides properties.
-     * 
-     * @param user the username for authenticating as this user
-     * @param passwd the password of the user
-     * @throws NamingException if there is a failure of any kind
-     */
-    protected final void setContexts(String user, String passwd) throws Exception {
-        final Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put(DirectoryService.JNDI_KEY, directoryService);
-        env.put(Context.SECURITY_PRINCIPAL, user);
-        env.put(Context.SECURITY_CREDENTIALS, passwd);
-        env.put(Context.SECURITY_AUTHENTICATION, "simple");
-        env.put(Context.INITIAL_CONTEXT_FACTORY, CoreContextFactory.class.getName());
-
-        env.put(Context.PROVIDER_URL, ServerDNConstants.SYSTEM_DN);
-        sysRoot = new InitialLdapContext(env, null);
-        env.put(Context.PROVIDER_URL, ServerDNConstants.OU_SCHEMA_DN);
-        schemaRoot = new InitialLdapContext(env, null);
     }
 
     /**
@@ -345,65 +261,270 @@ public class LDAPServerSetupTask implements ServerSetupTask {
      * for operation. Note that only ou=system entries will be added - entries for other partitions cannot be imported and will
      * blow chunks.
      * 
-     * @throws NamingException if there are problems reading the ldif file and adding those entries to the system partition
+     * @throws LdapConfigurationException if there are problems reading the ldif file and adding those entries to the system
+     *         partition
      * @param in the input stream with the ldif
      */
-    protected final void importLdif(InputStream in) throws NamingException {
+    protected final void importLdif(InputStream in) throws LdapConfigurationException {
         try {
             for (LdifEntry ldifEntry : new LdifReader(in)) {
-                rootDSE.add(new DefaultServerEntry(rootDSE.getDirectoryService().getRegistries(), ldifEntry.getEntry()));
+                directoryService.getAdminSession().add(new DefaultEntry(schemaManager, ldifEntry.getEntry()));
             }
         } catch (Exception e) {
+            LOGGER.error(e);
             String msg = "failed while trying to parse system ldif file";
-            NamingException ne = new LdapConfigurationException(msg);
-            ne.setRootCause(e);
+            LdapConfigurationException ne = new LdapConfigurationException(msg, e);
             throw ne;
-        }
-    }
-
-    /**
-     * Inject an ldif String into the server. DN must be relative to the root.
-     * 
-     * @param ldif the entries to inject
-     * @throws NamingException if the entries cannot be added
-     */
-    protected final void injectEntries(String ldif) throws Exception {
-        LdifReader reader = new LdifReader();
-        List<LdifEntry> entries = reader.parseLdif(ldif);
-
-        for (LdifEntry entry : entries) {
-            rootDSE.add(new DefaultServerEntry(rootDSE.getDirectoryService().getRegistries(), entry.getEntry()));
         }
     }
 
     // Private methods -------------------------------------------------------
 
     /**
-     * Configures supported SASL mechanisms handlers for the LDAP.
+     * Initialize the schema Manager by loading the schema LDIF files
+     * 
+     * @throws Exception in case of any problems while extracting and writing the schema files
      */
-    private void setupSaslMechanisms() {
-        Map<String, MechanismHandler> mechanismHandlerMap = new HashMap<String, MechanismHandler>();
+    private void initSchemaManager() throws Exception {
+        File schemaPartitionDirectory = new File(instanceLayout.getPartitionsDirectory(), "schema");
 
-        mechanismHandlerMap.put(SupportedSaslMechanisms.PLAIN, new PlainMechanismHandler());
+        // Extract the schema on disk (a brand new one) and load the registries
+        if (schemaPartitionDirectory.exists()) {
+            LOGGER.info("schema partition already exists, skipping schema extraction");
+        } else {
+            SchemaLdifExtractor extractor = new DefaultSchemaLdifExtractor(instanceLayout.getPartitionsDirectory());
+            extractor.extractOrCopy();
+            isSchemaPartitionFirstExtraction = true;
+        }
 
-        CramMd5MechanismHandler cramMd5MechanismHandler = new CramMd5MechanismHandler();
-        mechanismHandlerMap.put(SupportedSaslMechanisms.CRAM_MD5, cramMd5MechanismHandler);
+        SchemaLoader loader = new LdifSchemaLoader(schemaPartitionDirectory);
+        schemaManager = new DefaultSchemaManager(loader);
 
-        DigestMd5MechanismHandler digestMd5MechanismHandler = new DigestMd5MechanismHandler();
-        mechanismHandlerMap.put(SupportedSaslMechanisms.DIGEST_MD5, digestMd5MechanismHandler);
+        // We have to load the schema now, otherwise we won't be able
+        // to initialize the Partitions, as we won't be able to parse
+        // and normalize their suffix Dn
+        schemaManager.loadAllEnabled();
 
-        GssapiMechanismHandler gssapiMechanismHandler = new GssapiMechanismHandler();
-        mechanismHandlerMap.put(SupportedSaslMechanisms.GSSAPI, gssapiMechanismHandler);
+        List<Throwable> errors = schemaManager.getErrors();
 
-        NtlmMechanismHandler ntlmMechanismHandler = new NtlmMechanismHandler();
-        // TODO - set some sort of default NtlmProvider implementation here
-        // ntlmMechanismHandler.setNtlmProvider( provider );
-        // TODO - or set FQCN of some sort of default NtlmProvider implementation here
-        // ntlmMechanismHandler.setNtlmProviderFqcn( "com.foo.BarNtlmProvider" );
-        mechanismHandlerMap.put(SupportedSaslMechanisms.NTLM, ntlmMechanismHandler);
-        mechanismHandlerMap.put(SupportedSaslMechanisms.GSS_SPNEGO, ntlmMechanismHandler);
+        if (errors.size() != 0) {
+            throw new Exception(I18n.err(I18n.ERR_317, Exceptions.printErrors(errors)));
+        }
+    }
 
-        ldapServer.setSaslMechanismHandlers(mechanismHandlerMap);
+    /**
+     * Initialize the schema partition
+     * 
+     * @throws Exception in case of any problems while initializing the SchemaPartition
+     */
+    private void initSchemaLdifPartition() throws Exception {
+        File schemaPartitionDirectory = new File(instanceLayout.getPartitionsDirectory(), "schema");
+
+        // Init the LdifPartition
+        schemaLdifPartition = new LdifPartition(schemaManager);
+        schemaLdifPartition.setPartitionPath(schemaPartitionDirectory.toURI());
+    }
+
+    /**
+     * 
+     * initializes a LDIF partition for configuration
+     * 
+     * @throws Exception in case of any issues while extracting the schema
+     */
+    private void initConfigPartition() throws Exception {
+        File confFile = new File(instanceLayout.getConfDirectory(), LdifConfigExtractor.LDIF_CONFIG_FILE);
+
+        if (confFile.exists()) {
+            LOGGER.info("config partition already exists, skipping default config extraction");
+        } else {
+            LdifConfigExtractor.extractSingleFileConfig(instanceLayout.getConfDirectory(),
+                    LdifConfigExtractor.LDIF_CONFIG_FILE, true);
+            isConfigPartitionFirstExtraction = true;
+        }
+
+        configPartition = new SingleFileLdifPartition(schemaManager);
+        configPartition.setId("config");
+        configPartition.setPartitionPath(confFile.toURI());
+        configPartition.setSuffixDn(new Dn(schemaManager, "ou=config"));
+        configPartition.setSchemaManager(schemaManager);
+
+        configPartition.initialize();
+    }
+
+    /**
+     * Creates and initializes a {@link DirectoryService} instance.
+     * 
+     * @param directoryServiceBean
+     * @throws Exception
+     */
+    private void initDirectoryService(DirectoryServiceBean directoryServiceBean) throws Exception {
+        LOGGER.info("Initializing the DirectoryService...");
+
+        directoryService = ApacheDirectoryServiceBuilder.createDirectoryService(directoryServiceBean, instanceLayout, schemaManager);
+
+        // The schema partition
+        SchemaPartition schemaPartition = new SchemaPartition(schemaManager);
+        schemaPartition.setWrappedPartition(schemaLdifPartition);
+        directoryService.setSchemaPartition(schemaPartition);
+
+        directoryService.addPartition(configPartition);
+
+        // Store the default directories
+        directoryService.setInstanceLayout(instanceLayout);
+
+        configureDirectoryService();
+
+        directoryService.startup();
+
+        AttributeType ocAt = schemaManager.lookupAttributeTypeRegistry(SchemaConstants.OBJECT_CLASS_AT);
+        MANDATORY_ENTRY_ATOP_MAP.put(ocAt.getName(), new AttributeTypeOptions(ocAt));
+
+        AttributeType uuidAt = schemaManager.lookupAttributeTypeRegistry(SchemaConstants.ENTRY_UUID_AT);
+        MANDATORY_ENTRY_ATOP_MAP.put(uuidAt.getName(), new AttributeTypeOptions(uuidAt));
+
+        AttributeType csnAt = schemaManager.lookupAttributeTypeRegistry(SchemaConstants.ENTRY_CSN_AT);
+        MANDATORY_ENTRY_ATOP_MAP.put(csnAt.getName(), new AttributeTypeOptions(csnAt));
+
+        AttributeType creatorAt = schemaManager.lookupAttributeTypeRegistry(SchemaConstants.CREATORS_NAME_AT);
+        MANDATORY_ENTRY_ATOP_MAP.put(creatorAt.getName(), new AttributeTypeOptions(creatorAt));
+
+        AttributeType createdTimeAt = schemaManager.lookupAttributeTypeRegistry(SchemaConstants.CREATE_TIMESTAMP_AT);
+        MANDATORY_ENTRY_ATOP_MAP.put(createdTimeAt.getName(), new AttributeTypeOptions(createdTimeAt));
+
+        if (isConfigPartitionFirstExtraction) {
+            LOGGER.info("begining to update config partition LDIF files after modifying manadatory attributes");
+
+            // disable writes to the disk upon every modification to improve performance
+            configPartition.setEnableRewriting(false);
+
+            // perform updates
+            updateMandatoryOpAttributes(configPartition);
+
+            // enable writes to disk, this will save the partition data first if found dirty
+            configPartition.setEnableRewriting(true);
+
+            LOGGER.info("config partition data was successfully updated");
+        }
+
+        if (isSchemaPartitionFirstExtraction) {
+            LOGGER.info("begining to update schema partition LDIF files after modifying manadatory attributes");
+
+            updateMandatoryOpAttributes(schemaLdifPartition);
+
+            LOGGER.info("schema partition data was successfully updated");
+        }
+
+        LOGGER.info("DirectoryService initialized");
+
+    }
+
+    /**
+     * Start the LDAP server
+     */
+    private void startLdap(LdapServerBean ldapServerBean) throws Exception {
+        LOGGER.info("Starting the LDAP server");
+        ldapServer = ApacheDirectoryServiceBuilder.createLdapServer(ldapServerBean, directoryService);
+
+        if (ldapServer == null) {
+            LOGGER.info("Cannot find any reference to the LDAP Server in the configuration : the server won't be started");
+            return;
+        }
+
+        ldapServer.setDirectoryService(directoryService);
+
+        configureLdapServer();
+
+        // And start the server now
+        ldapServer.start();
+        LOGGER.info("LDAP server started");
+    }
+
+    /**
+     * Adds mandatory operational attributes {@link #MANDATORY_ENTRY_ATOP_MAP} and updates all the LDIF files. WARN: this method
+     * is only called for the first time when schema and config files are bootstrapped afterwards it is the responsibility of
+     * the user to ensure correctness of LDIF files if modified by hand
+     * 
+     * Note: we do these modifications explicitly cause we have no idea if each entry's LDIF file has the correct values for all
+     * these mandatory attributes
+     * 
+     * @param partition instance of the partition Note: should only be those which are loaded before starting the
+     *        DirectoryService
+     * @param dirService the DirectoryService instance
+     * @throws Exception
+     */
+    private void updateMandatoryOpAttributes(Partition partition) throws Exception {
+        CoreSession session = directoryService.getAdminSession();
+
+        String adminDn = session.getEffectivePrincipal().getName();
+
+        ExprNode filter = new PresenceNode(SchemaConstants.OBJECT_CLASS_AT);
+
+        EntryFilteringCursor cursor = session.search(partition.getSuffixDn(), SearchScope.SUBTREE, filter,
+                AliasDerefMode.NEVER_DEREF_ALIASES, new HashSet<AttributeTypeOptions>(MANDATORY_ENTRY_ATOP_MAP.values()));
+        cursor.beforeFirst();
+
+        List<Modification> mods = new ArrayList<Modification>();
+
+        while (cursor.next()) {
+            Entry entry = cursor.get();
+
+            AttributeType atType = MANDATORY_ENTRY_ATOP_MAP.get(SchemaConstants.ENTRY_UUID_AT).getAttributeType();
+
+            Attribute uuidAt = entry.get(atType);
+            String uuid = (uuidAt == null ? null : uuidAt.getString());
+
+            if (!uuidChecker.isValidSyntax(uuid)) {
+                uuidAt = new DefaultAttribute(atType, UUID.randomUUID().toString());
+            }
+
+            Modification uuidMod = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, uuidAt);
+            mods.add(uuidMod);
+
+            atType = MANDATORY_ENTRY_ATOP_MAP.get(SchemaConstants.ENTRY_CSN_AT).getAttributeType();
+            Attribute csnAt = entry.get(atType);
+            String csn = (csnAt == null ? null : csnAt.getString());
+
+            if (!csnChecker.isValidSyntax(csn)) {
+                csnAt = new DefaultAttribute(atType, directoryService.getCSN().toString());
+            }
+
+            Modification csnMod = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, csnAt);
+            mods.add(csnMod);
+
+            atType = MANDATORY_ENTRY_ATOP_MAP.get(SchemaConstants.CREATORS_NAME_AT).getAttributeType();
+            Attribute creatorAt = entry.get(atType);
+            String creator = (creatorAt == null ? "" : creatorAt.getString().trim());
+
+            if ((creator.length() == 0) || (!Dn.isValid(creator))) {
+                creatorAt = new DefaultAttribute(atType, adminDn);
+            }
+
+            Modification creatorMod = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, creatorAt);
+            mods.add(creatorMod);
+
+            atType = MANDATORY_ENTRY_ATOP_MAP.get(SchemaConstants.CREATE_TIMESTAMP_AT).getAttributeType();
+            Attribute createdTimeAt = entry.get(atType);
+            String createdTime = (createdTimeAt == null ? null : createdTimeAt.getString());
+
+            if (!timeChecker.isValidSyntax(createdTime)) {
+                createdTimeAt = new DefaultAttribute(atType, DateUtils.getGeneralizedTime());
+            }
+
+            Modification createdMod = new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, createdTimeAt);
+            mods.add(createdMod);
+
+            if (!mods.isEmpty()) {
+                ModifyOperationContext modifyContext = new ModifyOperationContext(session);
+                modifyContext.setEntry(entry);
+                modifyContext.setDn(entry.getDn());
+                modifyContext.setModItems(mods);
+                partition.modify(modifyContext);
+            }
+
+            mods.clear();
+        }
+
+        cursor.close();
     }
 
 }
