@@ -21,6 +21,14 @@
  */
 package org.jboss.as.test.integration.security.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -37,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -50,22 +59,16 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.security.loginmodules.common.Coding;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.Base64;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Jan Lanik
@@ -387,4 +390,20 @@ public class Utils {
       return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()), TestSuiteEnvironment.getServerPort(),
          org.jboss.as.arquillian.container.Authentication.getCallbackHandler());
    }
+
+    /**
+     * Returns "secondary.test.address" system property if such exists. If not found, then there is a fallback to
+     * {@link ManagementClient#getMgmtAddress()}. Returned value is formatted to use in URLs (i.e. if it's IPv6 address, then
+     * square brackets are placed around - e.g. "[::1]")
+     * 
+     * @param mgmtClient management client instance (may be <code>null</code>)
+     * @return
+     */
+    public static String getSecondaryTestAddress(final ManagementClient mgmtClient) {
+        String address = System.getProperty("secondary.test.address");
+        if (StringUtils.isBlank(address) && mgmtClient != null) {
+            address = mgmtClient.getMgmtAddress();
+        }
+        return NetworkUtils.formatPossibleIpv6Address(address);
+    }
 }
