@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.ejb.EJBAccessException;
 import javax.naming.Context;
+import javax.naming.NamingException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -76,16 +77,30 @@ public abstract class AnnSBTest {
     public static Archive<JavaArchive> testAppDeployment(final Logger LOG, final String MODULE, final Class SB_TO_TEST) {
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE + ".jar")
-                .addClass(SB_TO_TEST)
-                .addClass(SimpleAuthorizationRemote.class)
-                .addClass(ParentAnnOnlyCheck.class)
-                .addClass(AnnOnlyCheckSLSBForInjection.class)
-                .addClass(AnnOnlyCheckSFSBForInjection.class)
-                        //.addClass(Util.class)
-                        //.addClass(SecurityTest.class)
-                .addAsManifestResource("ejb3/security/EMPTY_MANIFEST.MF", "MANIFEST.MF");
+           .addClass(SB_TO_TEST)
+           .addClass(SimpleAuthorizationRemote.class)
+           .addClass(ParentAnnOnlyCheck.class)
+           .addClass(AnnOnlyCheckSLSBForInjection.class)
+           .addClass(AnnOnlyCheckSFSBForInjection.class)
+              //.addClass(Util.class)
+              //.addClass(SecurityTest.class)
+           .addAsManifestResource("ejb3/security/EMPTY_MANIFEST.MF", "MANIFEST.MF");
         LOG.info(jar.toString(true));
         return jar;
+    }
+
+    private SimpleAuthorizationRemote getBean(final String MODULE, final Logger log, final Class SB_CLASS, Context ctx) throws NamingException {
+        String myContext = Util.createRemoteEjbJndiContext(
+           "",
+           MODULE,
+           "",
+           SB_CLASS.getSimpleName(),
+           SimpleAuthorizationRemote.class.getName(),
+           isBeanClassStatefull(SB_CLASS));
+
+        log.info("JNDI name=" + myContext);
+
+        return (SimpleAuthorizationRemote) ctx.lookup(myContext);
     }
 
 
@@ -104,23 +119,11 @@ public abstract class AnnSBTest {
         ContextSelector<EJBClientContext> old = setupEJBClientContextSelector("$local", null);
         try {
 
-            String myContext = Util.createRemoteEjbJndiContext(
-                    "",
-                    MODULE,
-                    "",
-                    SB_CLASS.getSimpleName(),
-                    SimpleAuthorizationRemote.class.getName(),
-                    isBeanClassStatefull(SB_CLASS));
-
-            log.info("JNDI name=" + myContext);
-
-            final SimpleAuthorizationRemote singleMethodsAnnOnlyBean = (SimpleAuthorizationRemote) ctx.lookup(myContext);
-
-            String echoValue = singleMethodsAnnOnlyBean.defaultAccess("alohomora");
+            String echoValue = getBean(MODULE, log, SB_CLASS, ctx).defaultAccess("alohomora");
             Assert.assertEquals(echoValue, "alohomora");
 
             try {
-                echoValue = singleMethodsAnnOnlyBean.roleBasedAccessOne("alohomora");
+                echoValue = getBean(MODULE, log, SB_CLASS, ctx).roleBasedAccessOne("alohomora");
                 Assert.fail("Method cannot be successfully called without logged in user");
             } catch (Exception e) {
                 // expected
@@ -128,21 +131,21 @@ public abstract class AnnSBTest {
             }
 
             try {
-                echoValue = singleMethodsAnnOnlyBean.roleBasedAccessMore("alohomora");
+                echoValue = getBean(MODULE, log, SB_CLASS, ctx).roleBasedAccessMore("alohomora");
                 Assert.fail("Method cannot be successfully called without logged in user");
             } catch (EJBAccessException e) {
                 // expected
             }
 
             try {
-                echoValue = singleMethodsAnnOnlyBean.permitAll("alohomora");
+                echoValue = getBean(MODULE, log, SB_CLASS, ctx).permitAll("alohomora");
                 Assert.assertEquals(echoValue, "alohomora");
             } catch (Exception e) {
                 Assert.fail("@PermitAll annotation must allow all users and no users to call the method");
             }
 
             try {
-                echoValue = singleMethodsAnnOnlyBean.denyAll("alohomora");
+                echoValue = getBean(MODULE, log, SB_CLASS, ctx).denyAll("alohomora");
                 Assert.fail("@DenyAll annotation must allow all users and no users to call the method");
             } catch (Exception e) {
                 // expected
@@ -171,20 +174,8 @@ public abstract class AnnSBTest {
         ContextSelector<EJBClientContext> old = setupEJBClientContextSelector("user1", "password1");
         try {
 
-            String myContext = Util.createRemoteEjbJndiContext(
-                    "",
-                    MODULE,
-                    "",
-                    SB_CLASS.getSimpleName(),
-                    SimpleAuthorizationRemote.class.getName(),
-                    isBeanClassStatefull(SB_CLASS));
-            log.info("JNDI name=" + myContext);
-
-            final SimpleAuthorizationRemote singleMethodsAnnOnlyBean = (SimpleAuthorizationRemote)
-                    ctx.lookup(myContext);
-
             try {
-                String echoValue = singleMethodsAnnOnlyBean.defaultAccess("alohomora");
+                String echoValue = getBean(MODULE, log, SB_CLASS, ctx).defaultAccess("alohomora");
                 Assert.assertEquals(echoValue, "alohomora");
             } catch (EJBAccessException e) {
                 Assert.fail("EJBAccessException not expected");
@@ -192,14 +183,14 @@ public abstract class AnnSBTest {
 
 
             try {
-                String echoValue = singleMethodsAnnOnlyBean.roleBasedAccessOne("alohomora");
+                String echoValue = getBean(MODULE, log, SB_CLASS, ctx).roleBasedAccessOne("alohomora");
                 Assert.assertEquals(echoValue, "alohomora");
             } catch (EJBAccessException e) {
                 Assert.fail("EJBAccessException not expected");
             }
 
             try {
-                String echoValue = singleMethodsAnnOnlyBean.roleBasedAccessMore("alohomora");
+                String echoValue = getBean(MODULE, log, SB_CLASS, ctx).roleBasedAccessMore("alohomora");
                 Assert.fail("Method cannot be successfully called with logged in principal.");
             } catch (Exception e) {
                 // expected
@@ -207,14 +198,14 @@ public abstract class AnnSBTest {
             }
 
             try {
-                String echoValue = singleMethodsAnnOnlyBean.permitAll("alohomora");
+                String echoValue = getBean(MODULE, log, SB_CLASS, ctx).permitAll("alohomora");
                 Assert.assertEquals(echoValue, "alohomora");
             } catch (Exception e) {
                 Assert.fail("@PermitAll annotation must allow all users and no users to call the method - principal.");
             }
 
             try {
-                String echoValue = singleMethodsAnnOnlyBean.denyAll("alohomora");
+                String echoValue = getBean(MODULE, log, SB_CLASS, ctx).denyAll("alohomora");
                 Assert.fail("@DenyAll annotation must allow all users and no users to call the method");
             } catch (Exception e) {
                 // expected
@@ -244,28 +235,15 @@ public abstract class AnnSBTest {
         ContextSelector<EJBClientContext> old = setupEJBClientContextSelector("user2", "password2");
         try {
 
-            String myContext = Util.createRemoteEjbJndiContext(
-                    "",
-                    MODULE,
-                    "",
-                    SB_CLASS.getSimpleName(),
-                    SimpleAuthorizationRemote.class.getName(),
-                    isBeanClassStatefull(SB_CLASS));
-            log.info("JNDI name=" + myContext);
-
-
-            final SimpleAuthorizationRemote singleMethodsAnnOnlyBean = (SimpleAuthorizationRemote)
-                    ctx.lookup(myContext);
-
             try {
-                String echoValue = singleMethodsAnnOnlyBean.defaultAccess("alohomora");
+                String echoValue = getBean(MODULE, log, SB_CLASS, ctx).defaultAccess("alohomora");
                 Assert.assertEquals(echoValue, "alohomora");
             } catch (EJBAccessException e) {
                 Assert.fail("EJBAccessException not expected");
             }
 
             try {
-                String echoValue = singleMethodsAnnOnlyBean.roleBasedAccessOne("alohomora");
+                String echoValue = getBean(MODULE, log, SB_CLASS, ctx).roleBasedAccessOne("alohomora");
                 Assert.fail("Method cannot be successfully called with logged in user2");
             } catch (Exception e) {
                 // expected
@@ -274,32 +252,32 @@ public abstract class AnnSBTest {
 
 
             try {
-                String echoValue = singleMethodsAnnOnlyBean.roleBasedAccessMore("alohomora");
+                String echoValue = getBean(MODULE, log, SB_CLASS, ctx).roleBasedAccessMore("alohomora");
                 Assert.assertEquals(echoValue, "alohomora");
             } catch (EJBAccessException e) {
                 Assert.fail("EJBAccessException not expected");
             }
 
             try {
-                String echoValue = singleMethodsAnnOnlyBean.permitAll("alohomora");
+                String echoValue = getBean(MODULE, log, SB_CLASS, ctx).permitAll("alohomora");
                 Assert.assertEquals(echoValue, "alohomora");
             } catch (Exception e) {
                 Assert.fail("@PermitAll annotation must allow all users and no users to call the method - principal.");
             }
 
             try {
-                String echoValue = singleMethodsAnnOnlyBean.denyAll("alohomora");
+                String echoValue = getBean(MODULE, log, SB_CLASS, ctx).denyAll("alohomora");
                 Assert.fail("@DenyAll annotation must allow all users and no users to call the method");
             } catch (Exception e) {
                 // expected
                 Assert.assertTrue("Thrown exception must be EJBAccessException, but was different", e instanceof EJBAccessException);
             }
-
         } finally {
             safeClose((Closeable) EJBClientContext.setSelector(old));
         }
 
     }
+
 
     protected ContextSelector<EJBClientContext> setupEJBClientContextSelector(String username, String password) throws IOException {
         // create the endpoint
@@ -339,12 +317,10 @@ public abstract class AnnSBTest {
             this.reciever = receiver;
         }
 
-        @Override
         public EJBClientContext getCurrent() {
             return context;
         }
 
-        @Override
         public void close() throws IOException {
             context.unregisterEJBReceiver(reciever);
             safeClose(connection);
@@ -392,6 +368,7 @@ public abstract class AnnSBTest {
         }
     }
 
+
     protected static boolean isBeanClassStatefull(Class bean) {
         if (bean.getName().contains("toSLSB")) {
             return false;
@@ -407,4 +384,5 @@ public abstract class AnnSBTest {
     }
 
 }
+
 
