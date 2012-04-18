@@ -69,8 +69,8 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
             if (frameworkActivated.compareAndSet(false, true)) {
                 activateFramework(context);
             }
-            ServiceName frameworkDependency = deploymentTracker.isClosed() ? FRAMEWORK_ACTIVE : AUTOINSTALL_PROVIDER_COMPLETE;
-            ServiceName serviceName = BundleInstallService.addService(deploymentTracker, context, deployment, frameworkDependency);
+            ServiceName dependency = deploymentTracker.isClosed() ? FRAMEWORK_ACTIVE : AUTOINSTALL_PROVIDER_COMPLETE;
+            ServiceName serviceName = BundleInstallService.addService(deploymentTracker, context, deployment, dependency);
             deploymentTracker.registerBundleInstallService(serviceName);
         }
     }

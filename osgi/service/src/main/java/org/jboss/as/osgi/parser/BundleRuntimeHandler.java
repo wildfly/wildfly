@@ -22,8 +22,8 @@
 package org.jboss.as.osgi.parser;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -41,26 +41,34 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.osgi.OSGiMessages;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.service.startlevel.StartLevel;
 
 /**
  * @author David Bosschaert
+ * @author Thomas.Diesler@jboss.com
  */
 public class BundleRuntimeHandler extends AbstractRuntimeOnlyHandler {
 
     static final BundleRuntimeHandler INSTANCE = new BundleRuntimeHandler();
 
-    static final String [] ATTRIBUTES = { ModelConstants.ID, ModelConstants.STARTLEVEL,
-        ModelConstants.STATE, ModelConstants.SYMBOLIC_NAME, ModelConstants.TYPE, ModelConstants.VERSION };
+    static final String [] ATTRIBUTES = {
+        ModelConstants.ID,
+        ModelConstants.STARTLEVEL,
+        ModelConstants.STATE,
+        ModelConstants.SYMBOLIC_NAME,
+        ModelConstants.TYPE,
+        ModelConstants.VERSION
+        };
 
-    static final String START_OPERATION = "start";
-    static final String STOP_OPERATION = "stop";
-    static final String [] OPERATIONS = { START_OPERATION, STOP_OPERATION };
+    static final String [] OPERATIONS = {
+        ModelConstants.START,
+        ModelConstants.STOP
+        };
 
     private BundleRuntimeHandler() {
     }
@@ -85,21 +93,20 @@ public class BundleRuntimeHandler extends AbstractRuntimeOnlyHandler {
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
         final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
         if (ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION.equals(operationName)) {
-            handleReadAttribute(context, operation);
-        } else if (Arrays.asList(OPERATIONS).contains(operationName)) {
+            handleReadAttributeOperation(context, operation);
+        } else {
             handleOperation(operationName, context, operation);
         }
     }
 
-    private void handleReadAttribute(OperationContext context, ModelNode operation) {
+    private void handleReadAttributeOperation(OperationContext context, ModelNode operation) {
         String name = operation.require(ModelDescriptionConstants.NAME).asString();
-        Long id = Long.parseLong(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue());
-        BundleContext systemContext = getSystemContext(context);
-        Bundle bundle = systemContext.getBundle(id);
         if (ModelConstants.ID.equals(name)) {
-            context.getResult().set(id);
+            Bundle bundle = getTargetBundle(context, operation);
+            context.getResult().set(bundle.getBundleId());
         } else if (ModelConstants.STARTLEVEL.equals(name)) {
             StartLevel startLevel = getStartLevel(context);
+            Bundle bundle = getTargetBundle(context, operation);
             Integer level = startLevel != null ? startLevel.getBundleStartLevel(bundle) : null;
             if (level != null) {
                 context.getResult().set(level);
@@ -108,36 +115,57 @@ public class BundleRuntimeHandler extends AbstractRuntimeOnlyHandler {
                 failureDescription.set(OSGiMessages.MESSAGES.startLevelSrviceNotAvailable());
             }
         } else if (ModelConstants.STATE.equals(name)) {
+            Bundle bundle = getTargetBundle(context, operation);
             context.getResult().set(getBundleState(bundle));
         } else if (ModelConstants.SYMBOLIC_NAME.equals(name)) {
+            Bundle bundle = getTargetBundle(context, operation);
             context.getResult().set(bundle.getSymbolicName());
         } else if (ModelConstants.TYPE.equals(name)) {
+            Bundle bundle = getTargetBundle(context, operation);
             if (bundle.getHeaders().get(Constants.FRAGMENT_HOST) != null) {
                 context.getResult().set(ModelConstants.FRAGMENT);
             } else {
                 context.getResult().set(ModelConstants.BUNDLE);
             }
         } else if (ModelConstants.VERSION.equals(name)) {
+            Bundle bundle = getTargetBundle(context, operation);
             context.getResult().set(bundle.getVersion().toString());
         }
         context.completeStep();
     }
 
     private void handleOperation(String operationName, OperationContext context, ModelNode operation) {
-        Long id = Long.parseLong(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue());
-        BundleContext systemContext = getSystemContext(context);
-        Bundle bundle = systemContext.getBundle(id);
         try {
-            if (START_OPERATION.equals(operationName)) {
+            if (ModelConstants.START.equals(operationName)) {
+                Bundle bundle = getTargetBundle(context, operation);
                 bundle.start();
-            } else if (STOP_OPERATION.equals(operationName)) {
+            } else if (ModelConstants.STOP.equals(operationName)) {
+                Bundle bundle = getTargetBundle(context, operation);
                 bundle.stop();
+            } else  {
+                throw new UnsupportedOperationException(operationName);
             }
-        } catch (BundleException ex) {
+        } catch (Exception ex) {
             LOGGER.errorInOperationHandler(ex, operationName);
             context.getFailureDescription().set(ex.getLocalizedMessage());
         }
         context.completeStep();
+    }
+
+    private Bundle getTargetBundle(OperationContext context, ModelNode operation) {
+        ModelNode addr = operation.require(ModelDescriptionConstants.OP_ADDR);
+        PathAddress pathAddress = PathAddress.pathAddress(addr);
+        String value = pathAddress.getLastElement().getValue();
+        Bundle bundle = null;
+        try {
+            Long bundleId = Long.parseLong(value);
+            bundle = getSystemContext(context).getBundle(bundleId);
+        } catch (NumberFormatException ex) {
+            bundle = getBundleManager(context).getBundleByLocation(value);
+        }
+        if (bundle == null)
+            throw MESSAGES.illegalArgumentCannotObtainBundleResource(value);
+        return bundle;
     }
 
     static String getBundleState(Bundle bundle) {
@@ -156,6 +184,11 @@ public class BundleRuntimeHandler extends AbstractRuntimeOnlyHandler {
             return "ACTIVE";
         }
         return null;
+    }
+
+    private BundleManager getBundleManager(OperationContext context) {
+        ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.BUNDLE_MANAGER);
+        return controller != null ? (BundleManager)controller.getValue() : null;
     }
 
     private BundleContext getSystemContext(OperationContext context) {

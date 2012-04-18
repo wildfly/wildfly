@@ -90,6 +90,7 @@ final class ModuleIdentityArtifactProvider extends AbstractService<Void> impleme
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void start(StartContext context) throws StartException {
         BundleContext syscontext = injectedSystemContext.getValue();
         Dictionary<String, Object> props = new Hashtable<String, Object>();

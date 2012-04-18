@@ -17,6 +17,7 @@
 package org.jboss.as.test.smoke.osgi;
 
 import java.io.InputStream;
+import java.util.Map;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -54,18 +55,35 @@ public class SimpleRunAsClientTestCase extends OSGiManagementTest {
     public void testClientDeploymentAsArchive() throws Exception {
 
         deployer.deploy(DEPLOYMENT_NAME);
-        Long bundleId = getBundleId(DEPLOYMENT_NAME, null);
-        Assert.assertNotNull("Bundle found", bundleId);
-        Assert.assertEquals("INSTALLED", getBundleState(bundleId));
+        try {
+            Long bundleId = getBundleId(DEPLOYMENT_NAME, null);
+            Assert.assertNotNull("Bundle found", bundleId);
+            Assert.assertEquals("INSTALLED", getBundleState(bundleId));
 
-        Assert.assertTrue("Bundle started", bundleStart(bundleId));
-        Assert.assertEquals("ACTIVE", getBundleState(bundleId));
+            Assert.assertTrue("Bundle started", bundleStart(bundleId));
+            Assert.assertEquals("ACTIVE", getBundleState(bundleId));
 
-        Assert.assertTrue("Bundle stopped", bundleStop(bundleId));
-        Assert.assertEquals("RESOLVED", getBundleState(bundleId));
+            Map<String, Object> info = getBundleInfo(bundleId);
+            Assert.assertEquals(6, info.size());
+            Assert.assertEquals(bundleId + "L", info.get("id"));
+            Assert.assertEquals("1", info.get("startlevel"));
+            Assert.assertEquals("ACTIVE", info.get("state"));
+            Assert.assertEquals(DEPLOYMENT_NAME, info.get("symbolic-name"));
+            Assert.assertEquals("bundle", info.get("type"));
+            Assert.assertEquals("0.0.0", info.get("version"));
 
-        deployer.undeploy(DEPLOYMENT_NAME);
-        Assert.assertNull("UNINSTALLED", getBundleState(bundleId));
+            Assert.assertTrue("Bundle stopped", bundleStop(bundleId));
+            Assert.assertEquals("RESOLVED", getBundleState(bundleId));
+
+            Assert.assertTrue("Bundle started", bundleStart(DEPLOYMENT_NAME));
+            Assert.assertEquals("ACTIVE", getBundleState(DEPLOYMENT_NAME));
+
+            Assert.assertTrue("Bundle stopped", bundleStop(DEPLOYMENT_NAME));
+            Assert.assertEquals("RESOLVED", getBundleState(DEPLOYMENT_NAME));
+        } finally {
+            deployer.undeploy(DEPLOYMENT_NAME);
+            Assert.assertNull("UNINSTALLED", getBundleState(DEPLOYMENT_NAME));
+        }
     }
 
     @Deployment(name = DEPLOYMENT_NAME, managed = false, testable = false)

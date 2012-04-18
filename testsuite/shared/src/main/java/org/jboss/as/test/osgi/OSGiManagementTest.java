@@ -107,24 +107,25 @@ public abstract class OSGiManagementTest {
         return result;
     }
 
-    public static boolean bundleStart(Long bundleId) throws IOException {
-        cli.sendLine("/subsystem=osgi/bundle=" + bundleId + ":start");
+    public static boolean bundleStart(Object resId) throws IOException {
+        cli.sendLine("/subsystem=osgi/bundle=" + resId + ":start");
         CLIOpResult cliresult = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         return cliresult.isIsOutcomeSuccess();
     }
 
-    public static boolean bundleStop(Long bundleId) throws IOException {
-        cli.sendLine("/subsystem=osgi/bundle=" + bundleId + ":stop");
+    public static boolean bundleStop(Object resId) throws IOException {
+        cli.sendLine("/subsystem=osgi/bundle=" + resId + ":stop");
         CLIOpResult cliresult = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         return cliresult.isIsOutcomeSuccess();
     }
 
-    public static String getBundleState(Long bundleId) throws IOException {
-        Map<String, Object> runtimeState = getBundleRuntimeState(bundleId);
-        return runtimeState != null ? (String) runtimeState.get("state") : null;
+    public static String getBundleState(Object resId) throws IOException {
+        cli.sendLine("/subsystem=osgi/bundle=" + resId + ":read-attribute(name=state)");
+        CLIOpResult cliresult = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        return (String) cliresult.getResult();
     }
 
-    public static Map<String, Object> getBundleRuntimeState(Long bundleId) throws IOException {
+    public static Map<String, Object> getBundleInfo(Long bundleId) throws IOException {
         cli.sendLine("/subsystem=osgi/bundle=" + bundleId + ":read-resource(include-runtime=true,recursive=true)");
         CLIOpResult cliresult = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         return cliresult.getResultAsMap();

@@ -41,7 +41,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.BundleManagerIntegration;
+import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.framework.StorageState;
 import org.jboss.osgi.framework.StorageStateProvider;
@@ -56,7 +56,7 @@ public class BundleInstallService extends AbstractService<Void> {
 
     public static final ServiceName SERVICE_NAME_BASE = SERVICE_BASE_NAME.append("bundle", "deployment");
 
-    private final InjectedValue<BundleManagerIntegration> injectedBundleManager = new InjectedValue<BundleManagerIntegration>();
+    private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private final InjectedValue<StorageStateProvider> injectedStorageProvider = new InjectedValue<StorageStateProvider>();
     private final InitialDeploymentTracker deploymentTracker;
     private final Deployment deployment;
@@ -73,7 +73,7 @@ public class BundleInstallService extends AbstractService<Void> {
         final ServiceName serviceName = getServiceName(depUnit);
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         ServiceBuilder<Void> builder = serviceTarget.addService(serviceName, service);
-        builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerIntegration.class, service.injectedBundleManager);
+        builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, service.injectedBundleManager);
         builder.addDependency(Services.STORAGE_STATE_PROVIDER, StorageStateProvider.class, service.injectedStorageProvider);
         builder.addDependency(deploymentUnitName(contextName));
         builder.addDependency(frameworkDependency);
@@ -99,7 +99,7 @@ public class BundleInstallService extends AbstractService<Void> {
         LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         try {
             ServiceTarget serviceTarget = context.getChildTarget();
-            BundleManagerIntegration bundleManager = injectedBundleManager.getValue();
+            BundleManager bundleManager = injectedBundleManager.getValue();
             StorageStateProvider storageStateProvider = injectedStorageProvider.getValue();
             StorageState storageState = storageStateProvider.getByLocation(deployment.getLocation());
             ServiceName serviceName = bundleManager.installBundle(serviceTarget, deployment);
@@ -115,7 +115,7 @@ public class BundleInstallService extends AbstractService<Void> {
         ServiceController<?> controller = context.getController();
         LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
         try {
-            BundleManagerIntegration bundleManager = injectedBundleManager.getValue();
+            BundleManager bundleManager = injectedBundleManager.getValue();
             bundleManager.uninstallBundle(deployment);
         } catch (Throwable t) {
             LOGGER.errorFailedToUninstallDeployment(t, deployment);

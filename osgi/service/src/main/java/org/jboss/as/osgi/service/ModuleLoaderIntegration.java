@@ -48,7 +48,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.BundleManagerIntegration;
+import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.ModuleLoaderProvider;
 import org.jboss.osgi.resolver.XIdentityCapability;
@@ -56,7 +56,7 @@ import org.jboss.osgi.resolver.XResource;
 
 /**
  * This is the single {@link ModuleLoader} that the OSGi layer uses for the modules that are associated with the bundles that
- * are registered with the {@link BundleManagerIntegration}.
+ * are registered with the {@link BundleManager}.
  * <p/>
  * Plain AS7 modules can create dependencies on OSGi deployments, because OSGi modules can also be loaded from the
  * {@link ServiceModuleLoader}
@@ -130,7 +130,7 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
 
     /**
      * Add an already loaded {@link Module} to the OSGi {@link ModuleLoader}. This happens when AS registers an existing
-     * {@link Module} with the {@link BundleManagerIntegration}.
+     * {@link Module} with the {@link BundleManager}.
      * <p/>
      * The {@link Module} may not necessarily result from a user deployment. We use the same {@link ServiceName} convention as
      * in {@link ServiceModuleLoader#moduleServiceName(ModuleIdentifier)}

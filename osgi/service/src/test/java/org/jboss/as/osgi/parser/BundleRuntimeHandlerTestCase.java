@@ -73,6 +73,7 @@ public class BundleRuntimeHandlerTestCase {
 
         Bundle testBundle = Mockito.mock(Bundle.class);
         Mockito.when(bundleContext.getBundle(17)).thenReturn(testBundle);
+        Mockito.when(testBundle.getBundleId()).thenReturn(new Long(17));
 
         BundleRuntimeHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
         Assert.assertEquals(17L, contextResult.asLong());
@@ -176,7 +177,7 @@ public class BundleRuntimeHandlerTestCase {
         ModelNode startOp = new ModelNode();
         startOp.get(ModelDescriptionConstants.OP_ADDR).add("subsystem", "osgi");
         startOp.get(ModelDescriptionConstants.OP_ADDR).add("bundle", "" + Long.MAX_VALUE);
-        startOp.get(ModelDescriptionConstants.OP).set(BundleRuntimeHandler.START_OPERATION);
+        startOp.get(ModelDescriptionConstants.OP).set(ModelConstants.START);
 
         Bundle testBundle = Mockito.mock(Bundle.class);
         Mockito.when(bundleContext.getBundle(Long.MAX_VALUE)).thenReturn(testBundle);
@@ -192,7 +193,7 @@ public class BundleRuntimeHandlerTestCase {
         ModelNode startOp = new ModelNode();
         startOp.get(ModelDescriptionConstants.OP_ADDR).add("subsystem", "osgi");
         startOp.get(ModelDescriptionConstants.OP_ADDR).add("bundle", "" + Long.MAX_VALUE);
-        startOp.get(ModelDescriptionConstants.OP).set(BundleRuntimeHandler.STOP_OPERATION);
+        startOp.get(ModelDescriptionConstants.OP).set(ModelConstants.STOP);
 
         Bundle testBundle = Mockito.mock(Bundle.class);
         Mockito.when(bundleContext.getBundle(Long.MAX_VALUE)).thenReturn(testBundle);

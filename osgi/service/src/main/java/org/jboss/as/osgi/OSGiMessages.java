@@ -84,4 +84,7 @@ public interface OSGiMessages {
 
     @Message(id = 11971, value = "StartLevel service not available")
     String startLevelSrviceNotAvailable();
+
+    @Message(id = 11972, value = "Cannot obtain bundle resource for: %s")
+    IllegalArgumentException illegalArgumentCannotObtainBundleResource(String name);
 }

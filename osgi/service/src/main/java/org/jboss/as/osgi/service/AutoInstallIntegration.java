@@ -63,7 +63,7 @@ import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
 import org.jboss.osgi.framework.AutoInstallProvider;
 import org.jboss.osgi.framework.AutoInstallProviderComplete;
-import org.jboss.osgi.framework.BundleManagerIntegration;
+import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.Constants;
 import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.Services;
@@ -95,7 +95,7 @@ import org.osgi.service.startlevel.StartLevel;
  */
 class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implements AutoInstallProvider {
 
-    private final InjectedValue<BundleManagerIntegration> injectedBundleManager = new InjectedValue<BundleManagerIntegration>();
+    private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private final InjectedValue<StorageStateProvider> injectedStorageProvider = new InjectedValue<StorageStateProvider>();
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<Repository> injectedRepository = new InjectedValue<Repository>();
@@ -112,13 +112,13 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
         builder.addDependency(RepositoryProvider.SERVICE_NAME, Repository.class, service.injectedRepository);
-        builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerIntegration.class, service.injectedBundleManager);
+        builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, service.injectedBundleManager);
         builder.addDependency(Services.PACKAGE_ADMIN, PackageAdmin.class, service.injectedPackageAdmin);
         builder.addDependency(Services.STORAGE_STATE_PROVIDER, StorageStateProvider.class, service.injectedStorageProvider);
         builder.addDependency(Services.SYSTEM_BUNDLE, Bundle.class, service.injectedSystemBundle);
         builder.addDependency(Services.START_LEVEL, StartLevel.class, service.injectedStartLevel);
         builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, service.injectedEnvironment);
-        builder.addDependency(Services.FRAMEWORK_INIT);
+        builder.addDependency(Services.FRAMEWORK_CREATE);
         builder.setInitialMode(Mode.ON_DEMAND);
         return builder.install();
     }
@@ -252,7 +252,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
     }
 
     private ServiceName installBundleFromURL(ServiceTarget serviceTarget, URL bundleURL, Integer startLevel, Map<ServiceName, Deployment> installedBundles) throws Exception {
-        BundleManagerIntegration bundleManager = injectedBundleManager.getValue();
+        BundleManager bundleManager = injectedBundleManager.getValue();
         BundleInfo info = BundleInfo.createBundleInfo(bundleURL);
         Deployment dep = DeploymentFactory.createDeployment(info);
         if (startLevel != null) {
