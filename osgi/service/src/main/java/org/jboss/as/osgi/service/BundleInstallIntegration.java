@@ -40,7 +40,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleInstallProvider;
-import org.jboss.osgi.framework.BundleManagerService;
+import org.jboss.osgi.framework.BundleManagerIntegration;
+import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.BundleException;
 
@@ -49,7 +50,7 @@ import java.io.InputStream;
 import java.util.concurrent.Future;
 
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 
 /**
@@ -58,36 +59,36 @@ import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
  * @author thomas.diesler@jboss.com
  * @since 24-Nov-2010
  */
-public class BundleInstallProviderIntegration implements BundleInstallProvider {
+public class BundleInstallIntegration implements BundleInstallProvider {
 
     private final InjectedValue<ModelController> injectedController = new InjectedValue<ModelController>();
-    private final InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
+    private final InjectedValue<BundleManagerIntegration> injectedBundleManager = new InjectedValue<BundleManagerIntegration>();
     private volatile ServerDeploymentManager deploymentManager;
 
     public static ServiceController<?> addService(final ServiceTarget target) {
-        BundleInstallProviderIntegration service = new BundleInstallProviderIntegration();
-        ServiceBuilder<BundleInstallProvider> builder = target.addService(Services.BUNDLE_INSTALL_PROVIDER, service);
+        BundleInstallIntegration service = new BundleInstallIntegration();
+        ServiceBuilder<BundleInstallProvider> builder = target.addService(IntegrationServices.BUNDLE_INSTALL_PROVIDER, service);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, service.injectedController);
-        builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
+        builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerIntegration.class, service.injectedBundleManager);
         builder.addDependency(Services.FRAMEWORK_CREATE);
         builder.setInitialMode(Mode.ON_DEMAND);
         return builder.install();
     }
 
-    private BundleInstallProviderIntegration() {
+    private BundleInstallIntegration() {
     }
 
     @Override
     public void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
-        ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         deploymentManager = new ModelControllerServerDeploymentManager(injectedController.getValue());
     }
 
     @Override
     public void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
-        ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
     }
 
     @Override
@@ -97,7 +98,7 @@ public class BundleInstallProviderIntegration implements BundleInstallProvider {
 
     @Override
     public void installBundle(ServiceTarget serviceTarget, Deployment dep) throws BundleException {
-        ROOT_LOGGER.tracef("Install deployment: %s", dep);
+        LOGGER.tracef("Install deployment: %s", dep);
         try {
 
             // Install the {@link Deployment} holder service
@@ -116,7 +117,7 @@ public class BundleInstallProviderIntegration implements BundleInstallProvider {
                 if(inputStream != null) try {
                     inputStream.close();
                 } catch (IOException e) {
-                    ROOT_LOGGER.debugf(e, "Failed to close resource %s", inputStream);
+                    LOGGER.debugf(e, "Failed to close resource %s", inputStream);
                 }
             }
         } catch (RuntimeException rte) {
@@ -124,13 +125,13 @@ public class BundleInstallProviderIntegration implements BundleInstallProvider {
         } catch (BundleException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new BundleException(MESSAGES.cannotDeployBundle(dep), ex);
+            throw MESSAGES.cannotDeployBundle(ex, dep);
         }
     }
 
     @Override
     public void uninstallBundle(Deployment dep) {
-        ROOT_LOGGER.tracef("Uninstall deployment: %s", dep);
+        LOGGER.tracef("Uninstall deployment: %s", dep);
 
         try {
             // Undeploy through the deployment manager
@@ -141,7 +142,7 @@ public class BundleInstallProviderIntegration implements BundleInstallProvider {
             DeploymentAction removeAction = builder.getLastAction();
             executeDeploymentPlan(plan, removeAction);
         } catch (Exception ex) {
-            ROOT_LOGGER.cannotUndeployBundle(ex, dep);
+            LOGGER.warnCannotUndeployBundle(ex, dep);
         }
     }
 

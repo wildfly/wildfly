@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.management.util;
 
+import java.util.Map;
+
+
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
@@ -31,44 +34,51 @@ public class CLIOpResult {
     private Object result;
     private Object serverGroups;
 
-    /**
-     * @return the isOutcomeSuccess
-     */
     public boolean isIsOutcomeSuccess() {
         return isOutcomeSuccess;
     }
 
-    /**
-     * @param isOutcomeSuccess the isOutcomeSuccess to set
-     */
     public void setIsOutcomeSuccess(boolean isOutcomeSuccess) {
         this.isOutcomeSuccess = isOutcomeSuccess;
     }
 
-    /**
-     * @return the result
-     */
     public Object getResult() {
         return result;
     }
 
     /**
-     * @param result the result to set
+     * Get the result as map or null if the result is not a map
      */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getResultAsMap() {
+        return (Map<String, Object>) (result instanceof Map ? result : null);
+    }
+
+    /**
+     * Get a named entry from the result map or null
+     */
+    public Object getNamedResult(String key) {
+        Map<String, Object> map = getResultAsMap();
+        return map != null ? map.get(key) : null;
+    }
+
+    /**
+     * Get the named result as map or null if the named result value is not a map
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getNamedResultAsMap(String key) {
+        Object value = getNamedResult(key);
+        return (Map<String, Object>) (value instanceof Map ? value : null);
+    }
+
     public void setResult(Object result) {
         this.result = result;
     }
 
-    /**
-     * @return the serverGroups
-     */
     public Object getServerGroups() {
         return serverGroups;
     }
 
-    /**
-     * @param serverGroups the serverGroups to set
-     */
     public void setServerGroups(Object serverGroups) {
         this.serverGroups = serverGroups;
     }

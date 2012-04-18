@@ -25,15 +25,19 @@ package org.jboss.as.osgi;
 import java.io.File;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.StartException;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.vfs.VirtualFile;
+import org.osgi.framework.BundleException;
 
 /**
- * Logging Id ranges: 11960-11999
+ * Logging Id ranges: 11950-11999
  *
  * https://community.jboss.org/wiki/LoggingIds
  *
@@ -46,38 +50,38 @@ public interface OSGiMessages {
     OSGiMessages MESSAGES = Messages.getBundle(OSGiMessages.class);
 
     @Message(id = 11960, value = "Cannot create bundle deployment from: %s")
-    String cannotCreateBundleDeployment(DeploymentUnit deploymentUnit);
+    DeploymentUnitProcessingException cannotCreateBundleDeployment(@Cause Throwable th, DeploymentUnit deploymentUnit);
 
     @Message(id = 11961, value = "Cannot deploy bundle: %s")
-    String cannotDeployBundle(Deployment deployment);
+    BundleException cannotDeployBundle(@Cause Throwable th, Deployment deployment);
 
     @Message(id = 11962, value = "Cannot find bundles directory: %s")
-    IllegalArgumentException cannotFindBundleDir(File dir);
+    IllegalStateException illegalStateCannotFindBundleDir(File dir);
 
-    @Message(id = 11963, value = "Cannot parse: %s")
-    String cannotParse(VirtualFile file);
+    @Message(id = 11963, value = "Cannot parse OSGi metadata: %s")
+    DeploymentUnitProcessingException cannotParseOSGiMetadata(@Cause Throwable th, VirtualFile file);
 
-    @Message(id = 11964, value = "Failed to create auto install list")
-    String failedToCreateAutoInstallList();
+    @Message(id = 11964, value = "Failed to process initial capabilities")
+    StartException startFailedToProcessInitialCapabilites(@Cause Throwable th);
 
     @Message(id = 11965, value = "Failed to create Framework services")
-    String failedToCreateFrameworkServices();
+    StartException startFailedToCreateFrameworkServices(@Cause Throwable th);
 
     @Message(id = 11966, value = "Failed to install deployment: %s")
-    String failedToInstallDeployment(Deployment deployment);
+    StartException startFailedToInstallDeployment(@Cause Throwable th, Deployment deployment);
 
     @Message(id = 11967, value = "Failed to register module: %s")
-    String failedToRegisterModule(Module module);
+    StartException startFailedToRegisterModule(@Cause Throwable th, Module module);
 
     @Message(id = 11968, value = "%s is null")
-    IllegalArgumentException nullVar(String varName);
+    IllegalArgumentException illegalArgumentNull(String name);
 
-    @Message(id = 11969, value = "OSGi subsystem not active")
-    String osgiSubsystemNotActive();
+    //@Message(id = 11969, value = "OSGi subsystem not active")
+    //String osgiSubsystemNotActive();
 
-    @Message(id = 11970, value = "Property %s already exists")
-    String propertyAlreadyExists(String name);
+    //@Message(id = 11970, value = "Property %s already exists")
+    //String propertyAlreadyExists(String name);
 
-    @Message(id = 11971, value = "Service not available")
-    String serviceNotAvailable();
+    @Message(id = 11971, value = "StartLevel service not available")
+    String startLevelSrviceNotAvailable();
 }

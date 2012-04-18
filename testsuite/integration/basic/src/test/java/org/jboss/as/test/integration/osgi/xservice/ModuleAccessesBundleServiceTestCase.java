@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.osgi.xservice;
 
+import static org.jboss.as.test.osgi.OSGiTestUtil.getDeployedBundle;
+
 import java.io.InputStream;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -35,6 +35,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.osgi.xservice.api.Echo;
 import org.jboss.as.test.integration.osgi.xservice.bundle.TargetBundleActivator;
 import org.jboss.as.test.integration.osgi.xservice.module.ClientModuleTwoActivator;
+import org.jboss.as.test.osgi.OSGiTestUtil;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
@@ -46,19 +47,12 @@ import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleEvent;
-import org.osgi.framework.BundleListener;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * A test that shows how a module can access another module's service.
@@ -75,7 +69,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "xservice-module-access");
-        archive.addClasses(AbstractXServiceTestCase.class);
+        archive.addClasses(OSGiTestUtil.class, AbstractXServiceTestCase.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
@@ -95,7 +89,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
     public Deployer deployer;
 
     @Inject
-    public BundleContext systemContext;
+    public BundleContext context;
 
     @Test
     public void moduleInvokesBundleService() throws Exception {
@@ -104,27 +98,8 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
         deployer.deploy(TARGET_BUNDLE_NAME);
         try {
             // Find the installed bundle using PackageAdmin
-            ServiceReference sref = systemContext.getServiceReference(PackageAdmin.class.getName());
-            PackageAdmin packageAdmin = (PackageAdmin) systemContext.getService(sref);
-            Bundle[] bundles = packageAdmin.getBundles(TARGET_BUNDLE_NAME, null);
-            assertNotNull("Bundles not null", bundles);
-            assertEquals("One Bundle", 1, bundles.length);
-
-            // Verify that the bundle got started automatically
-            final Bundle targetBundle = bundles[0];
-            if (targetBundle.getState() != Bundle.ACTIVE) {
-                final CountDownLatch startedLatch = new CountDownLatch(1);
-                systemContext.addBundleListener(new BundleListener() {
-                    public void bundleChanged(BundleEvent event) {
-                        Bundle auxBundle = event.getBundle();
-                        if (targetBundle.equals(auxBundle) && BundleEvent.STARTED == event.getType()) {
-                            startedLatch.countDown();
-                        }
-                    }
-                });
-                startedLatch.await(5, TimeUnit.SECONDS);
-            }
-            Assert.assertEquals(Bundle.ACTIVE, targetBundle.getState());
+            Bundle targetBundle = getDeployedBundle(context, TARGET_BUNDLE_NAME, null);
+            targetBundle.start();
 
             // Install the client module
             deployer.deploy(CLIENT_MODULE_NAME);

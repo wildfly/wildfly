@@ -19,28 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.management.util;
+
+package org.jboss.as.osgi;
+
+import org.jboss.msc.service.ServiceName;
+
 
 /**
+ * OSGi Subsystem constants
  *
- * @author Dominik Pospisil <dpospisi@redhat.com>
+ * @author Thomas.Diesler@jboss.com
  */
-public class CLIException extends RuntimeException {
+public interface OSGiConstants {
 
-    /**
-     * Creates a new instance of
-     * <code>CLIException</code> without detail message.
-     */
-    public CLIException() {
-    }
-
-    /**
-     * Constructs an instance of
-     * <code>CLIException</code> with the specified detail message.
-     *
-     * @param msg the detail message.
-     */
-    public CLIException(String msg) {
-        super(msg);
-    }
+    ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("osgi", "as");
+    ServiceName FRAMEWORK_BASE_NAME = SERVICE_BASE_NAME.append("framework");
 }
