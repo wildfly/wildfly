@@ -618,6 +618,7 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
+    @Ignore("AS7-3697")
     public void testRemoveDependentService() throws Exception {
         ModelNode result = controller.execute(getOperation("dependent-service", "attr1", 5), null, null, null);
         System.out.println(result);
