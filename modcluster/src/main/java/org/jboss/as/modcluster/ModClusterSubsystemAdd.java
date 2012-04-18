@@ -220,6 +220,13 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
                 load = loader;
             }
         }
+        if (load == null) {
+            // Use a default one...
+            ROOT_LOGGER.useDefaultLoadBalancer();
+            SimpleLoadBalanceFactorProvider myload = new SimpleLoadBalanceFactorProvider();
+            myload.setLoadBalanceFactor(1);
+            load = myload;
+        }
         return load;
     }
 
