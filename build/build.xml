@@ -489,14 +489,6 @@
             <maven-resource group="net.jcip" artifact="jcip-annotations"/>
         </module-def>
 
-        <module-def name="net.sourceforge.cssparser">
-            <maven-resource group="net.sourceforge.cssparser" artifact="cssparser"/>
-        </module-def>
-
-        <module-def name="net.sourceforge.nekohtml">
-            <maven-resource group="net.sourceforge.nekohtml" artifact="nekohtml"/>
-        </module-def>
-
         <module-def name="org.apache.avro">
             <maven-resource group="org.apache.avro" artifact="avro"/>
         </module-def>

@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -481,6 +503,10 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
             }
             case REMOTE_STORE: {
                 this.parseRemoteStore(reader, cache, operations);
+                break;
+            }
+            case INDEXING_PROPERTIES: {
+                this.parseIndexingProperties(reader, cache);
                 break;
             }
             default: {
@@ -1042,6 +1068,41 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
                 }
                 default:
                     throw ParseUtils.unexpectedElement(reader);
+            }
+        }
+    }
+
+    private void parseIndexingProperties(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROPERTY: {
+                    int attributes = reader.getAttributeCount();
+                    String property = null;
+                    for (int i = 0; i < attributes; i++) {
+                        String value = reader.getAttributeValue(i);
+                        Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                        switch (attribute) {
+                            case NAME: {
+                                property = value;
+                                break;
+                            }
+                            default: {
+                                throw ParseUtils.unexpectedAttribute(reader, i);
+                            }
+                        }
+                    }
+                    if (property == null) {
+                        throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+                    }
+                    String value = reader.getElementText();
+                    CommonAttributes.INDEXING_PROPERTIES.parseAndAddParameterElement(property, value, node, reader);
+                    //node.get(ModelKeys.INDEXING_PROPERTIES).add(property, ParseUtils.parsePossibleExpression(value));
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
             }
         }
     }

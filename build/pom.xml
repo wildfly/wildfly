@@ -194,11 +194,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.w3c.css</groupId>
-            <artifactId>sac</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-dmr</artifactId>
         </dependency>
