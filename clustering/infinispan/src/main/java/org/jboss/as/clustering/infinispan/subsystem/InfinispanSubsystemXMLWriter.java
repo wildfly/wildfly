@@ -22,8 +22,9 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import javax.xml.stream.XMLStreamException;
 import java.util.List;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
@@ -225,7 +226,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             this.writeStoreProperties(writer, store);
             writer.writeEndElement();
         }
-        else if (cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME).isDefined()) {
+
+        if (cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME).isDefined()) {
             ModelNode store = cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
             writer.writeStartElement(Element.FILE_STORE.getLocalName());
             this.writeOptional(writer, Attribute.RELATIVE_TO, store, ModelKeys.RELATIVE_TO);
@@ -235,7 +237,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             this.writeStoreProperties(writer, store);
             writer.writeEndElement();
         }
-        else if (cache.get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME).isDefined()) {
+
+        if (cache.get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME).isDefined()) {
             ModelNode store = cache.get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
             writer.writeStartElement(Element.STRING_KEYED_JDBC_STORE.getLocalName());
             this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
@@ -245,7 +248,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             this.writeJDBCStoreTable(writer, Element.STRING_KEYED_TABLE, store, ModelKeys.STRING_KEYED_TABLE);
             writer.writeEndElement();
         }
-        else if (cache.get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME).isDefined()) {
+
+        if (cache.get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME).isDefined()) {
             ModelNode store = cache.get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
             writer.writeStartElement(Element.BINARY_KEYED_JDBC_STORE.getLocalName());
             this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
@@ -255,7 +259,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             this.writeJDBCStoreTable(writer, Element.BINARY_KEYED_TABLE, store, ModelKeys.BINARY_KEYED_TABLE);
             writer.writeEndElement();
         }
-        else if (cache.get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME).isDefined()) {
+
+        if (cache.get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME).isDefined()) {
             ModelNode store = cache.get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
             writer.writeStartElement(Element.MIXED_KEYED_JDBC_STORE.getLocalName());
             this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
@@ -266,7 +271,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             this.writeJDBCStoreTable(writer, Element.BINARY_KEYED_TABLE, store, ModelKeys.BINARY_KEYED_TABLE);
             writer.writeEndElement();
         }
-        else if (cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME).isDefined()) {
+
+        if (cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME).isDefined()) {
             ModelNode store = cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
             writer.writeStartElement(Element.REMOTE_STORE.getLocalName());
             this.writeOptional(writer, Attribute.CACHE, store, ModelKeys.CACHE);
@@ -281,7 +287,9 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                 writer.writeEndElement();
             }
             writer.writeEndElement();
-        } else if (cache.get(ModelKeys.INDEXING_PROPERTIES).isDefined()){
+        }
+
+        if (cache.get(ModelKeys.INDEXING_PROPERTIES).isDefined()){
             writer.writeStartElement(ModelKeys.INDEXING_PROPERTIES);
             for (Property property:cache.get(ModelKeys.INDEXING_PROPERTIES).asPropertyList()){
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
