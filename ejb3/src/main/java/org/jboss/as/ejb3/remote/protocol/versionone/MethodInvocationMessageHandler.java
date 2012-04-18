@@ -22,6 +22,16 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectStreamException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.InvocationType;
@@ -48,15 +58,6 @@ import org.jboss.marshalling.Unmarshaller;
 import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
 import org.xnio.IoUtils;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
 
 
 /**
@@ -207,8 +208,12 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                             // now log why we couldn't send back the method invocation failure message
                             logger.error("Could not write method invocation failure for method " + invokedMethod + " on bean named " + beanName
                                     + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName + " due to ", ioe);
-                            // close the channel
-                            IoUtils.safeClose(channelAssociation.getChannel());
+                            // close the channel unless this is a NotSerializableException
+                            //as this does not represent a problem with the channel there is no
+                            //need to close it (see AS7-3402)
+                            if(!(ioe instanceof ObjectStreamException)) {
+                                IoUtils.safeClose(channelAssociation.getChannel());
+                            }
                             return;
                         }
                     } finally {
@@ -228,8 +233,12 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                     } catch (IOException ioe) {
                         logger.error("Could not write method invocation result for method " + invokedMethod + " on bean named " + beanName
                                 + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName + " due to ", ioe);
-                        // close the channel
-                        IoUtils.safeClose(channelAssociation.getChannel());
+                        // close the channel unless this is a NotSerializableException
+                        //as this does not represent a problem with the channel there is no
+                        //need to close it (see AS7-3402)
+                        if(!(ioe instanceof ObjectStreamException)) {
+                            IoUtils.safeClose(channelAssociation.getChannel());
+                        }
                         return;
                     }
                 }
