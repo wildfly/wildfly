@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
+<web-app>
+    <description>WebApp Integration Tests</description>
+    <servlet>
+        <servlet-name>LogoutServlet</servlet-name>
+        <servlet-class>org.jboss.as.test.integration.web.sso.LogoutServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>EJBServlet</servlet-name>
+        <servlet-class>org.jboss.as.test.integration.web.sso.EJBServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LogoutServlet</servlet-name>
+        <url-pattern>/Logout</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>EJBServlet</servlet-name>
+        <url-pattern>/EJBServlet</url-pattern>
+    </servlet-mapping>
+    <session-config>
+        <session-timeout>1</session-timeout>
+    </session-config>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Restricted</web-resource-name>
+            <description>Single SignOn Tests</description>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <description>Only authenticated users can access secure content</description>
+            <role-name>Users</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <form-login-config>
+            <form-login-page>/login.html</form-login-page>
+            <form-error-page>/error.html</form-error-page>
+        </form-login-config>
+    </login-config>
+    <security-role>
+        <role-name>Users</role-name>
+    </security-role>
+    <ejb-ref>
+        <ejb-ref-name>ejb/OptimizedEJB</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <home>org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionHome</home>
+        <remote>org.jboss.as.test.integration.web.sso.interfaces.StatelessSession</remote>
+        <ejb-link>jbosstest-web-ejbs.jar#SecuredEJB</ejb-link>
+    </ejb-ref>
+    <ejb-local-ref>
+        <ejb-ref-name>ejb/local/OptimizedEJB</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionLocalHome</local-home>
+        <local>org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionLocal</local>
+        <ejb-link>jbosstest-web-ejbs.jar#SecuredEJB</ejb-link>
+    </ejb-local-ref>
+</web-app>
