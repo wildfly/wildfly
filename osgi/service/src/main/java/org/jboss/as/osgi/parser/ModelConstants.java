@@ -41,8 +41,10 @@ public interface ModelConstants {
     String ID = "id";
     String NAME = "name";
     String PROPERTY = "property";
+    String START = "start";
     String STARTLEVEL = "startlevel";
     String STATE = "state";
+    String STOP = "stop";
     String SYMBOLIC_NAME = "symbolic-name";
     String TYPE = "type";
     String VALUE = "value";

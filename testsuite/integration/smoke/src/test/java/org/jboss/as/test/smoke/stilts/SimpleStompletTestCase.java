@@ -100,14 +100,10 @@ public class SimpleStompletTestCase extends OSGiManagementTest {
 
         // Provide the stomplet server
         deployer.deploy(STOMPLET_SERVER_PROVIDER);
-        Long providerId = getBundleId(STOMPLET_SERVER_PROVIDER, null);
-        Assert.assertNotNull("Bundle installed", providerId);
-        Assert.assertTrue("Bundle started", bundleStart(providerId));
+        Assert.assertTrue("Bundle started", bundleStart(STOMPLET_SERVER_PROVIDER));
 
         // Find the stomplet bundle and start it
-        Long stompletId = getBundleId(STOMPLET_NAME, null);
-        Assert.assertNotNull("Bundle installed", stompletId);
-        Assert.assertTrue("Bundle started", bundleStart(stompletId));
+        Assert.assertTrue("Bundle started", bundleStart(STOMPLET_NAME));
 
         StompClient client = new StompClient("stomp://" + url.getHost());
         client.connect();
