@@ -146,14 +146,14 @@ public class FrameworkBootstrapService implements Service<Void> {
             SystemServicesIntegration.addService(serviceTarget);
 
             // Configure the {@link Framework} builder
-            FrameworkBuilder builder = new FrameworkBuilder(props);
+            Activation activation = subsystemState.getActivationPolicy();
+            Mode initialMode = (activation == Activation.EAGER ? Mode.ACTIVE : Mode.ON_DEMAND);
+            FrameworkBuilder builder = new FrameworkBuilder(props, initialMode);
             builder.setServiceContainer(serviceContainer);
             builder.setServiceTarget(serviceTarget);
 
             // Create the {@link Framework} services
-            Activation activation = subsystemState.getActivationPolicy();
-            Mode initialMode = (activation == Activation.EAGER ? Mode.ACTIVE : Mode.ON_DEMAND);
-            builder.createFrameworkServices(initialMode, true);
+            builder.createFrameworkServices(true);
 
         } catch (Throwable th) {
             throw MESSAGES.startFailedToCreateFrameworkServices(th);
