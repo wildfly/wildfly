@@ -61,8 +61,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
-import org.jboss.osgi.framework.AutoInstallProvider;
-import org.jboss.osgi.framework.AutoInstallProviderComplete;
+import org.jboss.osgi.framework.AutoInstallHandler;
+import org.jboss.osgi.framework.AutoInstallHandlerComplete;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.Constants;
 import org.jboss.osgi.framework.IntegrationServices;
@@ -93,7 +93,7 @@ import org.osgi.service.startlevel.StartLevel;
  * @author Thomas.Diesler@jboss.com
  * @since 11-Sep-2010
  */
-class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implements AutoInstallProvider {
+class AutoInstallIntegration extends AbstractService<AutoInstallHandler> implements AutoInstallHandler {
 
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private final InjectedValue<StorageStateProvider> injectedStorageProvider = new InjectedValue<StorageStateProvider>();
@@ -108,7 +108,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
 
     static ServiceController<?> addService(final ServiceTarget target) {
         AutoInstallIntegration service = new AutoInstallIntegration();
-        ServiceBuilder<?> builder = target.addService(IntegrationServices.AUTOINSTALL_PROVIDER, service);
+        ServiceBuilder<?> builder = target.addService(IntegrationServices.AUTOINSTALL_HANDLER, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
         builder.addDependency(RepositoryProvider.SERVICE_NAME, Repository.class, service.injectedRepository);
@@ -157,7 +157,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
                 }
             }
 
-            AutoInstallProviderComplete installComplete = new AutoInstallProviderComplete(installedBundles) {
+            AutoInstallHandlerComplete installComplete = new AutoInstallHandlerComplete(installedBundles) {
                 @Override
                 public void start(StartContext context) throws StartException {
                     // Resolve all bundles up until and including the Framework beginning start level

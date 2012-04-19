@@ -23,12 +23,11 @@
 package org.jboss.as.osgi.deployment;
 
 import static org.jboss.as.osgi.OSGiConstants.FRAMEWORK_BASE_NAME;
-import static org.jboss.osgi.framework.IntegrationServices.AUTOINSTALL_PROVIDER_COMPLETE;
-import static org.jboss.osgi.framework.Services.FRAMEWORK_ACTIVE;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -37,6 +36,7 @@ import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -54,6 +54,8 @@ import org.jboss.osgi.framework.Services;
  */
 public class BundleInstallProcessor implements DeploymentUnitProcessor {
 
+    static final AttachmentKey<ServiceName> INSTALL_SERVICE_NAME_KEY = AttachmentKey.create(ServiceName.class);
+
     private final InitialDeploymentTracker deploymentTracker;
     private final AtomicBoolean frameworkActivated = new AtomicBoolean();
 
@@ -69,17 +71,25 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
             if (frameworkActivated.compareAndSet(false, true)) {
                 activateFramework(context);
             }
-            ServiceName dependency = deploymentTracker.isClosed() ? FRAMEWORK_ACTIVE : AUTOINSTALL_PROVIDER_COMPLETE;
-            ServiceName serviceName = BundleInstallService.addService(deploymentTracker, context, deployment, dependency);
-            deploymentTracker.registerBundleInstallService(serviceName);
+            ServiceName serviceName;
+            if (deploymentTracker.isClosed() == false && deploymentTracker.removeDeploymentName(depUnit.getName())) {
+                serviceName = PersistentBundleInstallService.addService(deploymentTracker, context, deployment);
+                deploymentTracker.registerPersistentBundleInstallService(serviceName);
+            } else {
+                serviceName = BundleInstallService.addService(context, deployment);
+            }
+            depUnit.putAttachment(INSTALL_SERVICE_NAME_KEY, serviceName);
         }
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        final Deployment deployment = OSGiDeploymentAttachment.getDeployment(depUnit);
-        if (deployment != null) {
-            BundleInstallService.removeService(depUnit);
+        final ServiceName serviceName = depUnit.getAttachment(INSTALL_SERVICE_NAME_KEY);
+        if (serviceName != null) {
+            final ServiceController<?> serviceController = depUnit.getServiceRegistry().getService(serviceName);
+            if (serviceController != null) {
+                serviceController.setMode(Mode.REMOVE);
+            }
         }
     }
 

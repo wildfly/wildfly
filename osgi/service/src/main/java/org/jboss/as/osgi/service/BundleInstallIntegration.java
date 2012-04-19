@@ -39,7 +39,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.BundleInstallProvider;
+import org.jboss.osgi.framework.BundleInstallHandler;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.Services;
@@ -59,7 +59,7 @@ import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
  * @author thomas.diesler@jboss.com
  * @since 24-Nov-2010
  */
-public class BundleInstallIntegration implements BundleInstallProvider {
+public class BundleInstallIntegration implements BundleInstallHandler {
 
     private final InjectedValue<ModelController> injectedController = new InjectedValue<ModelController>();
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
@@ -67,7 +67,7 @@ public class BundleInstallIntegration implements BundleInstallProvider {
 
     public static ServiceController<?> addService(final ServiceTarget target) {
         BundleInstallIntegration service = new BundleInstallIntegration();
-        ServiceBuilder<BundleInstallProvider> builder = target.addService(IntegrationServices.BUNDLE_INSTALL_PROVIDER, service);
+        ServiceBuilder<BundleInstallHandler> builder = target.addService(IntegrationServices.BUNDLE_INSTALL_HANDLER, service);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, service.injectedController);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, service.injectedBundleManager);
         builder.addDependency(Services.FRAMEWORK_CREATE);
@@ -92,7 +92,7 @@ public class BundleInstallIntegration implements BundleInstallProvider {
     }
 
     @Override
-    public BundleInstallProvider getValue() throws IllegalStateException, IllegalArgumentException {
+    public BundleInstallHandler getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 

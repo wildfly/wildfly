@@ -25,6 +25,7 @@ import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -54,8 +55,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.IntegrationServices;
-import org.jboss.osgi.framework.PersistentBundlesProvider;
-import org.jboss.osgi.framework.PersistentBundlesProviderComplete;
+import org.jboss.osgi.framework.PersistentBundlesHandler;
+import org.jboss.osgi.framework.PersistentBundlesHandlerComplete;
 
 /**
  * A service that provides persistent bundles on framework startup.
@@ -63,14 +64,14 @@ import org.jboss.osgi.framework.PersistentBundlesProviderComplete;
  * @author thomas.diesler@jboss.com
  * @since 12-Apr-2012
  */
-public class PersistentBundlesIntegration implements PersistentBundlesProvider {
+public class PersistentBundlesIntegration implements PersistentBundlesHandler {
 
     private final InitialDeploymentTracker deploymentTracker;
 
     public static ServiceController<?> addService(ServiceTarget serviceTarget, InitialDeploymentTracker deploymentTracker) {
         PersistentBundlesIntegration service = new PersistentBundlesIntegration(deploymentTracker);
-        ServiceBuilder<PersistentBundlesProvider> builder = serviceTarget.addService(IntegrationServices.PERSISTENT_BUNDLES_PROVIDER, service);
-        builder.addDependencies(IntegrationServices.AUTOINSTALL_PROVIDER_COMPLETE, InitialDeploymentTracker.INITIAL_DEPLOYMENTS_COMPLETE);
+        ServiceBuilder<PersistentBundlesHandler> builder = serviceTarget.addService(IntegrationServices.PERSISTENT_BUNDLES_HANDLER, service);
+        builder.addDependencies(IntegrationServices.AUTOINSTALL_HANDLER_COMPLETE, InitialDeploymentTracker.INITIAL_DEPLOYMENTS_COMPLETE);
         builder.setInitialMode(Mode.ON_DEMAND);
         return builder.install();
     }
@@ -82,16 +83,16 @@ public class PersistentBundlesIntegration implements PersistentBundlesProvider {
     @Override
     public void start(StartContext context) throws StartException {
         final ServiceController<?> controller = context.getController();
-        LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.infof("Starting: %s in mode %s", controller.getName(), controller.getMode());
         Map<ServiceName, Deployment> installedBundles = deploymentTracker.getInstalledBundles();
-        PersistentBundlesProviderComplete installComplete = new PersistentBundlesProviderComplete(installedBundles);
+        PersistentBundlesHandlerComplete installComplete = new PersistentBundlesHandlerComplete(installedBundles);
         installComplete.install(context.getChildTarget());
     }
 
     @Override
     public void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
-        LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.infof("Stopping: %s in mode %s", controller.getName(), controller.getMode());
     }
 
     @Override
@@ -103,61 +104,70 @@ public class PersistentBundlesIntegration implements PersistentBundlesProvider {
 
         static final ServiceName INITIAL_DEPLOYMENTS_COMPLETE = SERVICE_BASE_NAME.append("initial", "deployments", "COMPLETE");
 
-        private final Map<ServiceName, Deployment> installedBundles = new LinkedHashMap<ServiceName, Deployment>();
-        private final Set<ServiceName> bundleInstallServices = new HashSet<ServiceName>();
-        private final Set<ServiceName> deploymentServiceNames;
+        private final Set<String> deploymentNames;
         private final AtomicInteger deploymentCount;
         private final ServiceTarget serviceTarget;
+
+        private Map<ServiceName, Deployment> installedBundles;
+        private Set<ServiceName> bundleInstallServices;
+        private Set<ServiceName> deploymentServiceNames;
         private ServiceTarget listenerTarget;
 
         public InitialDeploymentTracker(OperationContext context) {
             serviceTarget = context.getServiceTarget();
+            deploymentNames = getDeploymentNames(context);
+            deploymentCount = new AtomicInteger(deploymentNames.size());
+            if (deploymentCount.get() == 0) {
+                initialDeploymentsComplete();
+                return;
+            }
+
+            bundleInstallServices = new HashSet<ServiceName>();
             deploymentServiceNames = new HashSet<ServiceName>();
-            Set<String> deploymentNames = getDeploymentNames(context);
+            installedBundles = new LinkedHashMap<ServiceName, Deployment>();
+
             for (String deploymentName : deploymentNames) {
                 ServiceName serviceName = Services.deploymentUnitName(deploymentName);
                 deploymentServiceNames.add(serviceName.append(Phase.INSTALL.toString()));
             }
-            deploymentCount = new AtomicInteger(deploymentNames.size());
-            if (deploymentCount.get() > 0) {
-                ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-                listenerTarget = serviceRegistry.getService(JBOSS_SERVER_CONTROLLER).getServiceContainer();
-                listenerTarget.addListener(Inheritance.ALL, this);
-            } else {
-                initialDeploymentsComplete();
-            }
+            ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+            listenerTarget = serviceRegistry.getService(JBOSS_SERVER_CONTROLLER).getServiceContainer();
+            listenerTarget.addListener(Inheritance.ALL, this);
         }
 
         @Override
         public void transition(ServiceController<? extends Object> controller, Transition transition) {
             if (isClosed() == false) {
                 ServiceName serviceName = controller.getName();
-                if (deploymentServiceNames.contains(serviceName)) {
-                    switch (transition) {
-                        case STARTING_to_UP:
-                        case STARTING_to_START_FAILED:
-                            synchronized (deploymentCount) {
+                synchronized (deploymentServiceNames) {
+                    if (deploymentServiceNames.contains(serviceName)) {
+                        switch (transition) {
+                            case STARTING_to_UP:
+                            case STARTING_to_START_FAILED:
+                                deploymentServiceNames.remove(serviceName);
                                 int remaining = deploymentCount.decrementAndGet();
-                                LOGGER.debugf("Deployment tracked: %s (remaining=%d)", serviceName.getCanonicalName(), remaining);
+                                LOGGER.infof("Deployment tracked: %s (remaining=%d)", serviceName.getCanonicalName(), remaining);
                                 if (deploymentCount.get() == 0) {
                                     listenerTarget.removeListener(this);
                                     initialDeploymentsComplete();
                                 }
-                            }
+                        }
                     }
                 }
             }
         }
 
         private void initialDeploymentsComplete() {
-            LOGGER.debugf("Initial deployments complete");
+            LOGGER.infof("Initial deployments complete");
             final ServiceBuilder<Void> builder = serviceTarget.addService(INITIAL_DEPLOYMENTS_COMPLETE, new AbstractService<Void>() {
                 public void start(StartContext context) throws StartException {
                     final ServiceController<?> controller = context.getController();
-                    LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+                    LOGGER.infof("Starting: %s in mode %s", controller.getName(), controller.getMode());
                 }
             });
-            builder.addDependencies(bundleInstallServices);
+            if (bundleInstallServices != null) {
+                builder.addDependencies(bundleInstallServices);
+            }
             builder.install();
         }
 
@@ -165,22 +175,27 @@ public class PersistentBundlesIntegration implements PersistentBundlesProvider {
             return deploymentCount.get() == 0;
         }
 
-        public void registerBundleInstallService(ServiceName serviceName) {
+        public boolean removeDeploymentName(String depname) {
+            return deploymentNames.remove(depname);
+        }
+
+        public void registerPersistentBundleInstallService(ServiceName serviceName) {
             if (isClosed() == false) {
-                LOGGER.debugf("Add bundle install dependency: %s", serviceName);
+                LOGGER.infof("Add bundle install dependency: %s", serviceName);
                 bundleInstallServices.add(serviceName);
             }
         }
 
         public void addInstalledBundle(ServiceName serviceName, Deployment deployment) {
             if (isClosed() == false) {
-                LOGGER.debugf("Add installed bundle dependency: %s", serviceName);
+                LOGGER.infof("Add installed bundle dependency: %s", serviceName);
                 installedBundles.put(serviceName, deployment);
             }
         }
 
+        @SuppressWarnings("unchecked")
         private Map<ServiceName, Deployment> getInstalledBundles() {
-            return installedBundles;
+            return installedBundles != null ? installedBundles : Collections.EMPTY_MAP;
         }
 
         private Set<String> getDeploymentNames(OperationContext context) {
@@ -193,7 +208,7 @@ public class PersistentBundlesIntegration implements PersistentBundlesProvider {
                     Property property = node.asProperty();
                     result.add(property.getName());
                 }
-                LOGGER.debugf("Expecting initial deployments: %s", result);
+                LOGGER.infof("Expecting initial deployments: %s", result);
             }
             return result;
         }
