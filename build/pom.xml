@@ -1782,11 +1782,112 @@
                                 </goals>
                                 <phase>validate</phase>
                                 <configuration>
-                                   <includeDependencySources>true</includeDependencySources>
-                                   <dependencySourceIncludes>
-                                       <include>org.jboss.spec.javax.servlet:*</include>
-                                       <include>org.jboss.spec.javax.ejb:*</include>
-                                   </dependencySourceIncludes>
+                                    <debug>true</debug>
+                                    <verbose>true</verbose>
+                                    <maxmemory>1024m</maxmemory>
+                                    
+                                    <includeDependencySources>true</includeDependencySources>
+                                    <dependencySourceIncludes>
+                                        <include>com.h2database:*</include>
+                                        <include>commons-configuration:commons-configuration</include>
+                                        <include>dom4j:dom4j</include>
+                                        <include>javax.activation:activation</include>
+                                        <include>javax.enterprise:cdi-api</include>
+                                        <include>javax.faces:jsf-api</include>
+                                        <include>javax.inject:javax.inject</include>
+                                        <include>javax.jws:jsr181-api</include>
+                                        <include>javax.mail:mail</include>
+                                        <include>javax.validation:validation-api</include>
+                                        <include>joda-time:joda-time</include>
+                                        
+                                        <include>org.apache.juddi:juddi-client</include>
+                                        <include>org.apache.juddi.scout:scout</include>
+                                        <include>org.apache.juddi:uddi-ws</include>
+                                        <include>org.hibernate.common:hibernate-commons-annotations</include>
+                                        <include>org.hibernate:hibernate-core</include>
+                                        <include>org.hibernate:hibernate-entitymanager</include>
+                                        <include>org.hibernate:hibernate-envers</include>
+                                        <include>org.hibernate:hibernate-infinispan</include>
+                                        <include>org.hibernate:hibernate-validator</include>
+                                        <include>org.hibernate.javax.persistence:hibernate-jpa-2.0-api</include>
+                                        <include>org.hornetq:hornetq-core</include>
+                                        <include>org.hornetq:hornetq-jms</include>
+                                        <!-- Causes [ERROR] java.lang.ClassCastException: com.sun.tools.javadoc.ClassDocImpl cannot be cast to com.sun.javadoc.AnnotationTypeDoc
+                                        <include>org.infinispan:infinispan-core</include>
+                                        <include>org.jboss.as:jboss-as-controller-client</include>
+                                        -->
+                                        <include>org.jboss.com.sun.httpserver:httpserver</include>
+                                        <include>org.jboss.invocation:jboss-invocation</include>
+                                        <!-- Causes [ERROR] java.lang.ClassCastException: com.sun.tools.javadoc.ClassDocImpl cannot be cast to com.sun.javadoc.AnnotationTypeDoc
+                                        <include>org.jboss:jboss-dmr</include>
+                                        -->
+
+                                        <include>org.jboss:jboss-ejb-client</include>
+                                        <include>org.jboss:jboss-remote-naming</include>
+                                        <include>org.jboss.jbossts:jbosstxbridge</include>
+                                        <include>org.jboss.jbossts:jbossxts</include>
+                                        <include>org.jboss.jbossts:jbossxts-api</include>
+                                        <include>org.jboss:jboss-vfs</include>
+                                        <include>org.jboss.logging:jboss-logging</include>
+                                        <include>org.jboss.logging:jul-to-slf4j-stub</include>
+                                        <include>org.jboss.logmanager:jboss-logmanager</include>
+                                        <include>org.jboss.marshalling:jboss-marshalling</include>
+                                        <include>org.jboss.msc:jboss-msc</include>
+                                        <include>org.jboss.remotingjmx:remoting-jmx</include>
+                                        <include>org.jboss.remoting3:jboss-remoting</include>
+                                        <include>org.jboss.sasl:jboss-sasl</include>
+                                        
+                                        <include>org.jboss.spec.javax.annotation:jboss-annotations-api_1.1_spec</include>
+                                        <include>org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec</include>
+                                        <include>org.jboss.spec.javax.el:jboss-el-api_2.2_spec</include>
+                                        <include>org.jboss.spec.javax.enterprise.deploy:jboss-jad-api_1.2_spec</include>
+                                        <include>org.jboss.spec.javax.faces:jboss-jsf-api_2.1_spec</include>
+                                        <include>org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.1_spec</include>
+                                        <include>org.jboss.spec.javax.jms:jboss-jms-api_1.1_spec</include>
+                                        <include>org.jboss.spec.javax.management.j2ee:jboss-j2eemgmt-api_1.1_spec</include>
+                                        <include>org.jboss.spec.javax.resource:jboss-connector-api_1.6_spec</include>
+                                        <include>org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec</include>
+                                        <include>org.jboss.spec.javax.security.auth.message:jboss-jaspi-api_1.0_spec</include>
+                                        <include>org.jboss.spec.javax.security.jacc:jboss-jacc-api_1.4_spec</include>
+                                        <include>org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec</include>
+                                        <include>org.jboss.spec.javax.servlet.jsp:jboss-jsp-api_2.2_spec</include>
+                                        <include>org.jboss.spec.javax.servlet.jstl:jboss-jstl-api_1.2_spec</include>
+                                        <include>org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec</include>
+                                        <include>org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_1.1_spec</include>
+                                        <include>org.jboss.spec.javax.xml.bind:jboss-jaxb-api_2.2_spec</include>
+                                        <include>org.jboss.spec.javax.xml.registry:jboss-jaxr-api_1.0_spec</include>
+                                        <include>org.jboss.spec.javax.xml.rpc:jboss-jaxrpc-api_1.1_spec</include>
+                                        <include>org.jboss.spec.javax.xml.soap:jboss-saaj-api_1.3_spec</include>
+                                        <include>org.jboss.spec.javax.xml.ws:jboss-jaxws-api_2.2_spec</include>
+
+                                        <include>org.jboss.threads:jboss-threads</include>
+                                        <include>org.jboss.weld:weld-api</include>
+                                        <include>org.jboss.ws:jbossws-api</include>
+                                        <include>org.jboss.xnio:xnio-api</include>
+                                        <include>org.jdom:jdom</include>
+                                        <include>org.jgroups:jgroups</include>
+                                        <include>org.osgi:org.osgi.core</include>
+                                        <include>org.picketbox:picketbox</include>
+                                        <!-- 
+                                        <include>org.picketbox:picketbox-commons</include>
+                                        -->
+                                        <include>org.picketbox:picketbox-infinispan</include>
+                                        <include>org.picketlink:picketlink-bindings</include>
+                                        <include>org.picketlink:picketlink-bindings-jboss</include>
+                                        <include>org.picketlink:picketlink-fed</include>
+                                        <include>org.slf4j:jcl-over-slf4j</include>
+                                        <include>org.slf4j:slf4j-api</include>
+                                        <include>org.slf4j:slf4j-ext</include>
+                                        <include>wsdl4j:wsdl4j</include>
+                                        <!--
+                                            [ERROR] 1) org.jboss.as:jboss-as-build:pom:7.1.0.CR1-SNAPSHOT
+                                            [ERROR] 2) xalan:xalan:jar:sources:2.7.1.jbossorg-1
+                                            [ERROR] 3) xalan:serializer:jar:2.7.1-jbossorg-1
+                                        <include>xalan:serializer</include>
+                                        -->
+                                        <include>xalan:xalan</include>
+                                        <include>xerces:xercesImpl</include>
+                                    </dependencySourceIncludes>
                                 </configuration>
                             </execution>
                         </executions>
@@ -1794,6 +1895,8 @@
                 </plugins>
             </build>
         </profile>
+        
+        
     </profiles>
 
 </project>
