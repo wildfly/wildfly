@@ -21,27 +21,28 @@
  */
 package org.jboss.as.weld.deployment;
 
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.weld.bootstrap.spi.BeansXml;
-import org.jboss.weld.bootstrap.spi.Filter;
-import org.jboss.weld.bootstrap.spi.Metadata;
-import org.jboss.weld.metadata.BeansXmlImpl;
-import org.jboss.weld.metadata.ScanningImpl;
-import org.jboss.weld.xml.BeansXmlHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-
-import javax.enterprise.inject.spi.BeanManager;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.enterprise.inject.spi.BeanManager;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.metadata.property.PropertyReplacer;
+import org.jboss.weld.bootstrap.spi.BeansXml;
+import org.jboss.weld.bootstrap.spi.Filter;
+import org.jboss.weld.bootstrap.spi.Metadata;
+import org.jboss.weld.metadata.BeansXmlImpl;
+import org.jboss.weld.metadata.ScanningImpl;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 
 import static org.jboss.weld.bootstrap.spi.BeansXml.EMPTY_BEANS_XML;
 import static org.jboss.weld.logging.messages.XmlMessage.LOAD_ERROR;
@@ -57,7 +58,7 @@ public class BeansXmlParser {
 
     private static final InputSource[] EMPTY_INPUT_SOURCE_ARRAY = new InputSource[0];
 
-    public BeansXml parse(final URL beansXml) throws DeploymentUnitProcessingException {
+    public BeansXml parse(final URL beansXml, final PropertyReplacer propertyReplacer) throws DeploymentUnitProcessingException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setValidating(true);
         factory.setNamespaceAware(true);
@@ -80,7 +81,7 @@ public class BeansXmlParser {
                 // The file is just acting as a marker file
                 return EMPTY_BEANS_XML;
             }
-            BeansXmlHandler handler = new BeansXmlHandler(beansXml);
+            BeansXmlHandler handler = new BeansXmlHandler(beansXml, propertyReplacer);
 
             try {
                 parser.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
@@ -108,7 +109,7 @@ public class BeansXmlParser {
         }
     }
 
-    public BeansXml parse(Iterable<URL> urls) throws DeploymentUnitProcessingException {
+    public BeansXml parse(Iterable<URL> urls, final PropertyReplacer propertyReplacer) throws DeploymentUnitProcessingException {
         List<Metadata<String>> alternativeStereotypes = new ArrayList<Metadata<String>>();
         List<Metadata<String>> alternativeClasses = new ArrayList<Metadata<String>>();
         List<Metadata<String>> decorators = new ArrayList<Metadata<String>>();
@@ -116,7 +117,7 @@ public class BeansXmlParser {
         List<Metadata<Filter>> includes = new ArrayList<Metadata<Filter>>();
         List<Metadata<Filter>> excludes = new ArrayList<Metadata<Filter>>();
         for (URL url : urls) {
-            BeansXml beansXml = parse(url);
+            BeansXml beansXml = parse(url, propertyReplacer);
             alternativeStereotypes.addAll(beansXml.getEnabledAlternativeStereotypes());
             alternativeClasses.addAll(beansXml.getEnabledAlternativeClasses());
             decorators.addAll(beansXml.getEnabledDecorators());

@@ -23,6 +23,7 @@
 package org.jboss.as.weld;
 
 import java.lang.reflect.Member;
+import java.net.URL;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -92,4 +93,12 @@ public interface WeldLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.INFO)
     @Message(value = "Stopping weld service for deployment %s", id = 16009)
     void stoppingWeldService(String deploymentName);
+
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(value = "Warning while parsing %s:%s %s", id = 16010)
+    void beansXmlValidationWarning(URL file, int line , String message);
+
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(value = "Warning while parsing %s:%s %s", id = 16011)
+    void beansXmlValidationError(URL file, int line , String message);
 }
