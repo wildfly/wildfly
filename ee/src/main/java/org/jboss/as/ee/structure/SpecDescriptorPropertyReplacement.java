@@ -12,7 +12,7 @@ public class SpecDescriptorPropertyReplacement {
 
     public static PropertyReplacer propertyReplacer(final DeploymentUnit deploymentUnit) {
         Boolean replacement = deploymentUnit.getAttachment(Attachments.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT);
-        if (replacement != null && replacement) {
+        if (replacement == null || replacement) {
             final PropertyResolver propertyResolver = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_RESOLVER);
             return PropertyReplacers.resolvingReplacer(propertyResolver);
         } else {

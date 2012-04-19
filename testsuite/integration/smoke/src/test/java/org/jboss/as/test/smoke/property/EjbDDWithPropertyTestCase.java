@@ -27,55 +27,21 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author John Bailey
  */
 @RunWith(Arquillian.class)
-@ServerSetup(EjbDDWithPropertyTestCase.EjbDDWithPropertyTestCaseSeverSetup.class)
 public class EjbDDWithPropertyTestCase {
     private static final String MODULE_NAME = "dd-based";
 
     private static final String JAR_NAME = MODULE_NAME + ".jar";
-
-    public static class EjbDDWithPropertyTestCaseSeverSetup implements ServerSetupTask {
-
-        @Override
-        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            final ModelNode op = new ModelNode();
-            op.get(OP_ADDR).set(SUBSYSTEM, "ee");
-            op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-            op.get(NAME).set("spec-descriptor-property-replacement");
-            op.get(VALUE).set(true);
-            managementClient.getControllerClient().execute(op);
-        }
-
-        @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            final ModelNode op = new ModelNode();
-            op.get(OP_ADDR).set(SUBSYSTEM, "ee");
-            op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-            op.get(NAME).set("spec-descriptor-property-replacement");
-            op.get(VALUE).set(false);
-            managementClient.getControllerClient().execute(op);
-        }
-    }
 
     @Deployment
     public static JavaArchive getDeployment() throws Exception {
