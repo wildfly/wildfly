@@ -23,7 +23,7 @@ package org.jboss.as.test.clustering.cluster.web.concurrent;
 
 import java.net.URL;
 import java.util.Random;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.CountDownLatch;
 import junit.framework.Assert;
 import org.apache.http.client.HttpClient;
 import org.jboss.arquillian.container.test.api.ContainerController;
@@ -51,8 +51,9 @@ import org.junit.runner.RunWith;
 public abstract class ConcurrentAbstractCase {
 
     private Throwable exceptionThrown = null;
-    private final int PERMITS = 100;
-    private Semaphore semaphore = new Semaphore(PERMITS);
+    private static final int REQUEST_COUNT = 10;
+    private static final int THREAD_COUNT = 10;
+    private CountDownLatch latch = new CountDownLatch(2 * THREAD_COUNT);
     private final String SET_URL = "testsessionreplication.jsp";
     private final String GET_URL = "getattribute.jsp";
     @ArquillianResource
@@ -76,31 +77,21 @@ public abstract class ConcurrentAbstractCase {
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws Exception {
-        int TIMES = 10;
-        String baseURL0_ = baseURL1.toString();
-        String baseURL1_ = baseURL2.toString();
-        String servers_[] = {CONTAINER_1, CONTAINER_2};
 
-        for (int i = 0; i < 10; i++) {
-            String threadName = "startWithServer_1_ " + i;
-            Thread t1 = runThread(threadName, baseURL0_, baseURL1_, servers_[1], TIMES, i);
-            threadName = "startWithServer_2_ " + i;
-            Thread t2 = runThread(threadName, baseURL1_, baseURL0_, servers_[0], TIMES, i);
+        String url1 = baseURL1.toString();
+        String url2 = baseURL2.toString();
+
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            Thread t1 = runThread(CONTAINER_1 + " Test Thread " + i, url1, url2, CONTAINER_2, REQUEST_COUNT, i);
+            Thread t2 = runThread(CONTAINER_2 + " Test Thread " + i, url2, url1, CONTAINER_1, REQUEST_COUNT, i);
             t1.start();
             t2.start();
         }
 
         Thread.sleep(1000);
 
-        // Man this is just nasty, ouch. --Rado
-        while (true) {
-            if (semaphore.availablePermits() == PERMITS) {
-                Thread.sleep(1000);
-                continue;
-            } else {
-                break;
-            }
-        }
+        // Wait for all threads to finish their tests with their session set.
+        latch.await();
 
         if (exceptionThrown != null) {
             Assert.fail("Test fail, exception occured." + exceptionThrown);
@@ -121,29 +112,23 @@ public abstract class ConcurrentAbstractCase {
             @Override
             public void run() {
                 try {
-                    semaphore.acquire();
-                } catch (InterruptedException ie) {
-                    ie.printStackTrace();
-                    exceptionThrown = ie;
-                    return;
-                }
-
-                try {
                     for (int i = 0; i < TIMES; i++) {
-                        work();
-                        // Random numbder between [0, 200].
+                        doTestingWork();
+
+                        // Random number between [0, 200].
                         long msecs = rand.nextInt(200);
                         try {
                             Thread.sleep(msecs);
                         } catch (InterruptedException ex) {
+                            exceptionThrown = ex;
                         }
                     }
                 } finally {
-                    semaphore.release();
+                    latch.countDown();
                 }
             }
 
-            protected void work() {
+            private void doTestingWork() {
                 System.out.println("Enter runThread");
 
                 System.out.println("URLs to query: /" + SET_URL + ", /" + GET_URL);
@@ -162,13 +147,14 @@ public abstract class ConcurrentAbstractCase {
                     // Let's switch to server 2 to retrieve the session attribute.
                     System.out.println("Switching to server: " + server2);
 
+                    // Would be interesting to run in SYNC mode where no wait would be necessary.
                     Thread.sleep(GRACE_TIME_TO_REPLICATE);
 
                     String attrs2 = ClusterHttpClientUtil.tryGetAndConsume(client, baseURL1 + GET_URL);
                     System.out.println(attrs2);
 
                     // Check the result
-                    Assert.assertEquals("HTTP session replication attributes retrieved from both servers", attrs1, attrs2);
+                    Assert.assertEquals("HTTP session replication attributes retrieved from both servers do not match", attrs1, attrs2);
                 } catch (Throwable ex) {
                     exceptionThrown = ex;
                 }
