@@ -55,7 +55,7 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
                     new ModelNode().set(false), ModelType.BOOLEAN, true, true, null);
 
     public static final SimpleAttributeDefinition SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT = new SimpleAttributeDefinition("spec-descriptor-property-replacement",
-            "spec-descriptor-property-replacement",  new ModelNode().set(false), ModelType.BOOLEAN, true, true, null);
+            "spec-descriptor-property-replacement",  new ModelNode().set(true), ModelType.BOOLEAN, true, true, null);
 
     public static final EeSubsystemRootResource INSTANCE = new EeSubsystemRootResource();
 

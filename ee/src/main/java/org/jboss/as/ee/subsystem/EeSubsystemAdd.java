@@ -119,12 +119,14 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // see if the ear subdeployment isolation flag is set. By default, we don't isolate subdeployments, so that
         // they can see each other's classes.
         final boolean earSubDeploymentsIsolated = EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.resolveModelAttribute(context, model).asBoolean();
+        final boolean spedDescriptorPropertyReplacement = EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.resolveModelAttribute(context, model).asBoolean();
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
                 moduleDependencyProcessor.setGlobalModules(globalModules);
                 isolationProcessor.setEarSubDeploymentsIsolated(earSubDeploymentsIsolated);
+                specDescriptorPropertyReplacementProcessor.setSpecDescriptorPropertyReplacement(spedDescriptorPropertyReplacement);
 
                 ROOT_LOGGER.debug("Activating EE subsystem");
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EE_SPEC_DESC_PROPERTY_REPLACEMENT, specDescriptorPropertyReplacementProcessor);

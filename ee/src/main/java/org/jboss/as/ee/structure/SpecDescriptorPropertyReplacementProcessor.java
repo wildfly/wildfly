@@ -34,7 +34,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
  */
 public class SpecDescriptorPropertyReplacementProcessor implements DeploymentUnitProcessor {
 
-    private volatile boolean specDescriptorPropertyReplacement;
+    private volatile boolean specDescriptorPropertyReplacement = true;
 
     public SpecDescriptorPropertyReplacementProcessor() {
     }
