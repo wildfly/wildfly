@@ -45,6 +45,7 @@ import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -74,6 +75,9 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
     private final InjectedValue<LocalEjbReceiver> localEjbReceiverInjectedValue = new InjectedValue<LocalEjbReceiver>();
 
     private final EJBClientConfiguration ejbClientConfiguration;
+
+    private final Map<String, OptionMap> channelCreationOpts = Collections.synchronizedMap(new HashMap<String, OptionMap>());
+    private final Map<String, Long> connectionTimeouts = Collections.synchronizedMap(new HashMap<String, Long>());
 
     /**
      * The client context
@@ -116,6 +120,14 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
         remotingOutboundConnections.put(serviceName, value);
     }
 
+    public void setChannelCreationOptions(final String outboundConnectionName, final OptionMap options) {
+        this.channelCreationOpts.put(outboundConnectionName, options);
+    }
+
+    public void setConnectionCreationTimeout(final String outboundConnectionName, final long timeoutInMillis) {
+        this.connectionTimeouts.put(outboundConnectionName, timeoutInMillis);
+    }
+
     public Injector<LocalEjbReceiver> getLocalEjbReceiverInjector() {
         return this.localEjbReceiverInjectedValue;
     }
@@ -128,12 +140,14 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
             final AbstractOutboundConnectionService outboundConnectionService = injectedValue.getValue();
             final String connectionName = outboundConnectionService.getConnectionName();
             logger.debug("Creating remoting EJB receiver for connection " + connectionName);
+            final long connectionTimeout = this.connectionTimeouts.get(connectionName) <= 0 ? DEFAULT_CONNECTION_TIMEOUT : this.connectionTimeouts.get(connectionName);
+            final OptionMap options = this.channelCreationOpts.get(connectionName) == null ? OptionMap.EMPTY : this.channelCreationOpts.get(connectionName);
+
             Connection connection = null;
-            final ReconnectHandler reconnectHandler = new OutboundConnectionReconnectHandler(serviceRegistry, entry.getKey(), context);
+            final ReconnectHandler reconnectHandler = new OutboundConnectionReconnectHandler(serviceRegistry, entry.getKey(), context, connectionTimeout, options);
             try {
                 final IoFuture<Connection> futureConnection = outboundConnectionService.connect();
-                // TODO: Make the timeout configurable
-                connection = IoFutureHelper.get(futureConnection, DEFAULT_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
+                connection = IoFutureHelper.get(futureConnection, connectionTimeout, TimeUnit.MILLISECONDS);
 
             } catch (Exception e) {
                 // just log a message and register a reconnect handler
@@ -141,7 +155,7 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
                 context.registerReconnectHandler(reconnectHandler);
                 continue;
             }
-            final RemotingConnectionEJBReceiver ejbReceiver = new RemotingConnectionEJBReceiver(connection, reconnectHandler, OptionMap.EMPTY);
+            final RemotingConnectionEJBReceiver ejbReceiver = new RemotingConnectionEJBReceiver(connection, reconnectHandler, options);
             context.registerEJBReceiver(ejbReceiver);
             numRemotingReceivers++;
         }
@@ -158,12 +172,16 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
         private final ServiceName outboundConnectionServiceName;
         private final EJBClientContext clientContext;
         private volatile int reconnectAttemptCount;
+        private final long connectionTimeout;
+        private final OptionMap channelCreationOpts;
 
         OutboundConnectionReconnectHandler(final ServiceRegistry serviceRegistry, final ServiceName outboundConnectionServiceName,
-                                           final EJBClientContext clientContext) {
+                                           final EJBClientContext clientContext, final long connectionTimeout, final OptionMap channelCreationOpts) {
             this.outboundConnectionServiceName = outboundConnectionServiceName;
             this.serviceRegistry = serviceRegistry;
             this.clientContext = clientContext;
+            this.connectionTimeout = connectionTimeout;
+            this.channelCreationOpts = channelCreationOpts;
         }
 
         @Override
@@ -180,13 +198,12 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
             final AbstractOutboundConnectionService outboundConnectionService = (AbstractOutboundConnectionService) serviceController.getValue();
             try {
                 final IoFuture<Connection> futureConnection = outboundConnectionService.connect();
-                // TODO: Make the timeout configurable
-                final Connection connection = IoFutureHelper.get(futureConnection, DEFAULT_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
+                final Connection connection = IoFutureHelper.get(futureConnection, connectionTimeout, TimeUnit.MILLISECONDS);
                 logger.debug("Successful reconnect attempt#" + this.reconnectAttemptCount + " to outbound connection " + this.outboundConnectionServiceName);
                 // successfully reconnected so unregister this reconnect handler
                 this.clientContext.unregisterReconnectHandler(this);
                 // register the newly reconnected connection
-                final EJBReceiver receiver = new RemotingConnectionEJBReceiver(connection, this, OptionMap.EMPTY);
+                final EJBReceiver receiver = new RemotingConnectionEJBReceiver(connection, this, channelCreationOpts);
                 this.clientContext.registerEJBReceiver(receiver);
             } catch (Exception e) {
                 logger.debug("Reconnect attempt#" + this.reconnectAttemptCount + " failed for outbound connection " + this.outboundConnectionServiceName, e);

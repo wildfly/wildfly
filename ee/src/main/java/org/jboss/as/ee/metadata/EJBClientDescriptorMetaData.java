@@ -24,7 +24,9 @@ package org.jboss.as.ee.metadata;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -37,8 +39,9 @@ public class EJBClientDescriptorMetaData {
 
     private boolean excludeLocalReceiver;
     private Boolean localReceiverPassByValue;
+    private long invocationTimeout;
 
-    private Set<String> remotingReceiverConnectionRefs = new HashSet<String>();
+    private Map<String, RemotingReceiverConfiguration> remotingReceiverConfigurations = new HashMap<String, RemotingReceiverConfiguration>();
     private Set<ClusterConfig> clusterConfigs = new HashSet<ClusterConfig>();
 
 
@@ -48,11 +51,13 @@ public class EJBClientDescriptorMetaData {
      *
      * @param outboundConnectionRef The name of the outbound connection. Cannot be null or empty string.
      */
-    public void addRemotingReceiverConnectionRef(final String outboundConnectionRef) {
+    public RemotingReceiverConfiguration addRemotingReceiverConnectionRef(final String outboundConnectionRef) {
         if (outboundConnectionRef == null || outboundConnectionRef.trim().isEmpty()) {
             throw new IllegalArgumentException("Cannot add a remoting receiver which references a null/empty outbound connection");
         }
-        this.remotingReceiverConnectionRefs.add(outboundConnectionRef);
+        final RemotingReceiverConfiguration remotingReceiverConfiguration = new RemotingReceiverConfiguration(outboundConnectionRef);
+        this.remotingReceiverConfigurations.put(outboundConnectionRef, remotingReceiverConfiguration);
+        return remotingReceiverConfiguration;
     }
 
     /**
@@ -61,8 +66,8 @@ public class EJBClientDescriptorMetaData {
      *
      * @return
      */
-    public Collection<String> getRemotingReceiverConnectionRefs() {
-        return this.remotingReceiverConnectionRefs;
+    public Collection<RemotingReceiverConfiguration> getRemotingReceiverConfigurations() {
+        return this.remotingReceiverConfigurations.values();
     }
 
     /**
@@ -112,6 +117,14 @@ public class EJBClientDescriptorMetaData {
         final ClusterConfig clusterConfig = new ClusterConfig(clusterName);
         this.clusterConfigs.add(clusterConfig);
         return clusterConfig;
+    }
+
+    public long getInvocationTimeout() {
+        return this.invocationTimeout;
+    }
+
+    public void setInvocationTimeout(final long invocationTimeout) {
+        this.invocationTimeout = invocationTimeout;
     }
 
     public class ClusterConfig extends CommonConnectionConfig {
@@ -249,6 +262,60 @@ public class EJBClientDescriptorMetaData {
 
         public String getSecurityRealm() {
             return this.securityRealm;
+        }
+    }
+
+    public class RemotingReceiverConfiguration {
+        private final String outboundConnectionRef;
+
+        private Properties channelCreationOptions;
+        private long connectionTimeout;
+
+        RemotingReceiverConfiguration(final String outboundConnectionRef) {
+            this.outboundConnectionRef = outboundConnectionRef;
+        }
+
+        /**
+         * Sets the channel creation options for this remoting receiver configuration
+         *
+         * @param channelCreationOpts The channel creation options
+         */
+        public void setChannelCreationOptions(final Properties channelCreationOpts) {
+            this.channelCreationOptions = channelCreationOpts;
+        }
+
+        public Properties getChannelCreationOptions() {
+            return this.channelCreationOptions;
+        }
+
+        public void setConnectionTimeout(final long timeout) {
+            this.connectionTimeout = timeout;
+        }
+
+        public long getConnectionTimeout() {
+            return this.connectionTimeout;
+        }
+
+        public String getOutboundConnectionRef() {
+            return this.outboundConnectionRef;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            RemotingReceiverConfiguration that = (RemotingReceiverConfiguration) o;
+
+            if (outboundConnectionRef != null ? !outboundConnectionRef.equals(that.outboundConnectionRef) : that.outboundConnectionRef != null)
+                return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return outboundConnectionRef != null ? outboundConnectionRef.hashCode() : 0;
         }
     }
 }

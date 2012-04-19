@@ -36,4 +36,14 @@ public class DelegateEchoBean implements RemoteEcho {
     public String echo(String moduleName, String msg) {
         return msg;
     }
+
+    @Override
+    public String twoSecondEcho(String moduleName, String msg) {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return msg;
+    }
 }
