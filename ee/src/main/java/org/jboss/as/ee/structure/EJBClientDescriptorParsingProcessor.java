@@ -22,17 +22,6 @@
 
 package org.jboss.as.ee.structure;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.jboss.as.ee.EeMessages;
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -45,6 +34,17 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VirtualFile;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * A deployment unit processor which parses jboss-ejb-client.xml in top level deployments.
@@ -62,6 +62,7 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
 
     private static final QName ROOT_1_0 = new QName(EJBClientDescriptor10Parser.NAMESPACE_1_0, "jboss-ejb-client");
     private static final QName ROOT_1_1 = new QName(EJBClientDescriptor11Parser.NAMESPACE_1_1, "jboss-ejb-client");
+    private static final QName ROOT_1_2 = new QName(EJBClientDescriptor12Parser.NAMESPACE_1_2, "jboss-ejb-client");
     private static final QName ROOT_NO_NAMESPACE = new QName("jboss-ejb-client");
 
 
@@ -73,7 +74,8 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
         mapper = XMLMapper.Factory.create();
         mapper.registerRootElement(ROOT_1_0, EJBClientDescriptor10Parser.INSTANCE);
         mapper.registerRootElement(ROOT_1_1, EJBClientDescriptor11Parser.INSTANCE);
-        mapper.registerRootElement(ROOT_NO_NAMESPACE, EJBClientDescriptor11Parser.INSTANCE);
+        mapper.registerRootElement(ROOT_1_2, EJBClientDescriptor12Parser.INSTANCE);
+        mapper.registerRootElement(ROOT_NO_NAMESPACE, EJBClientDescriptor12Parser.INSTANCE);
     }
 
     @Override

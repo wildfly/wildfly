@@ -22,12 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.client.descriptor;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.ejb.EJBException;
-import javax.naming.Context;
-
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -47,6 +41,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.ejb.EJBException;
+import javax.naming.Context;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
+
 /**
  * Tests that deployments containing a jboss-ejb-client.xml are processed correctly for EJB client context
  *
@@ -65,6 +66,7 @@ public class EJBClientDescriptorTestCase {
     private static final String MODULE_NAME_ONE = "ejb-client-descriptor-test";
     private static final String MODULE_NAME_TWO = "ejb-client-descriptor-with-no-receiver-test";
     private static final String MODULE_NAME_THREE = "ejb-client-descriptor-with-local-and-remote-receivers-test";
+    private static final String JBOSS_EJB_CLIENT_1_2_MODULE_NAME = "ejb-client-descriptor-test-with-jboss-ejb-client_1_2_xml";
 
 
     private static final String outboundSocketName = "ejb-client-descriptor-test-outbound-socket";
@@ -111,6 +113,15 @@ public class EJBClientDescriptorTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_ONE + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
         jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        return jar;
+    }
+
+    @Deployment(name = "jboss-ejb-client_1_2_version", testable = false, managed = false)
+    public static Archive createJBossEJBClient12VersionDeployment() throws Exception {
+
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JBOSS_EJB_CLIENT_1_2_MODULE_NAME + ".jar");
+        jar.addPackage(EchoBean.class.getPackage());
+        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client_1_2.xml", "jboss-ejb-client.xml");
         return jar;
     }
 
@@ -203,6 +214,39 @@ public class EJBClientDescriptorTestCase {
             Assert.assertEquals("Unexpected echo returned from remote bean", msg, echo);
         } finally {
             deployer.undeploy("local-and-remote-receviers-config");
+        }
+    }
+
+    /**
+     * Invokes a method which takes longer than the configured invocation timeout. The client is expected
+     * to a receive a timeout exception
+     *
+     * @throws Exception
+     */
+    @Test
+    @OperateOnDeployment("jboss-ejb-client_1_2_version")
+    public void testClientInvocationTimeout() throws Exception {
+        deployer.deploy("jboss-ejb-client_1_2_version");
+        try {
+            final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + JBOSS_EJB_CLIENT_1_2_MODULE_NAME + "/" + DISTINCT_NAME
+                    + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
+            Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
+            final String msg = "Hello world from a EJB client descriptor test!!!";
+            try {
+                final String echo = remoteEcho.twoSecondEcho(JBOSS_EJB_CLIENT_1_2_MODULE_NAME, msg);
+                Assert.fail("Expected to receive a timeout for the invocation");
+            } catch (Exception e) {
+                // this will be thrown a UndeclaredThrowableException for reasons explained in the javadoc
+                // of that exception http://docs.oracle.com/javase/6/docs/api/java/lang/reflect/UndeclaredThrowableException.html
+                if (e instanceof EJBException && e.getCause() instanceof UndeclaredThrowableException && e.getCause().getCause() instanceof TimeoutException) {
+                    logger.info("Got the expected timeout exception", e.getCause());
+                    return;
+                }
+                throw e;
+            }
+
+        } finally {
+            deployer.undeploy("jboss-ejb-client_1_2_version");
         }
     }
 

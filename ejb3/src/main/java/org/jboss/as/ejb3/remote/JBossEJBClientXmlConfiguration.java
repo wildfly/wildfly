@@ -37,6 +37,7 @@ import java.util.Map;
 public class JBossEJBClientXmlConfiguration implements EJBClientConfiguration {
 
     private final Map<String, ClusterConfiguration> clusterConfigs = new HashMap<String, ClusterConfiguration>();
+    private long invocationTimeout;
 
     @Override
     public String getEndpointName() {
@@ -82,11 +83,15 @@ public class JBossEJBClientXmlConfiguration implements EJBClientConfiguration {
 
     @Override
     public long getInvocationTimeout() {
-        return 0;
+        return this.invocationTimeout;
     }
 
     public void addClusterConfiguration(final EJBClientClusterConfig clusterConfig) {
         this.clusterConfigs.put(clusterConfig.getClusterName(), clusterConfig);
+    }
+
+    public void setInvocationTimeout(final long invocationTimeout) {
+        this.invocationTimeout = invocationTimeout;
     }
 
 }

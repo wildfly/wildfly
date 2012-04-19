@@ -28,4 +28,6 @@ package org.jboss.as.test.integration.ejb.client.descriptor;
 public interface RemoteEcho {
 
     String echo(String moduleName, String msg);
+
+    String twoSecondEcho(final String moduleName, final String msg);
 }

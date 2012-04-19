@@ -37,21 +37,35 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import static javax.xml.stream.XMLStreamConstants.*;
+import static javax.xml.stream.XMLStreamConstants.ATTRIBUTE;
+import static javax.xml.stream.XMLStreamConstants.CDATA;
+import static javax.xml.stream.XMLStreamConstants.CHARACTERS;
+import static javax.xml.stream.XMLStreamConstants.COMMENT;
+import static javax.xml.stream.XMLStreamConstants.DTD;
+import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static javax.xml.stream.XMLStreamConstants.ENTITY_DECLARATION;
+import static javax.xml.stream.XMLStreamConstants.ENTITY_REFERENCE;
+import static javax.xml.stream.XMLStreamConstants.NAMESPACE;
+import static javax.xml.stream.XMLStreamConstants.NOTATION_DECLARATION;
+import static javax.xml.stream.XMLStreamConstants.PROCESSING_INSTRUCTION;
+import static javax.xml.stream.XMLStreamConstants.SPACE;
+import static javax.xml.stream.XMLStreamConstants.START_DOCUMENT;
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
 /**
- * Parser for urn:jboss:ejb-client:1.1:jboss-ejb-client
+ * Parser for urn:jboss:ejb-client:1.2:jboss-ejb-client
  *
  * @author Jaikiran Pai
  */
-class EJBClientDescriptor11Parser implements XMLElementReader<EJBClientDescriptorMetaData> {
+class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescriptorMetaData> {
 
-    public static final String NAMESPACE_1_1 = "urn:jboss:ejb-client:1.1";
+    public static final String NAMESPACE_1_2 = "urn:jboss:ejb-client:1.2";
 
-    public static final EJBClientDescriptor11Parser INSTANCE = new EJBClientDescriptor11Parser();
+    public static final EJBClientDescriptor12Parser INSTANCE = new EJBClientDescriptor12Parser();
 
 
-    private EJBClientDescriptor11Parser() {
+    private EJBClientDescriptor12Parser() {
     }
 
 
@@ -73,23 +87,23 @@ class EJBClientDescriptor11Parser implements XMLElementReader<EJBClientDescripto
 
         static {
             Map<QName, Element> elementsMap = new HashMap<QName, Element>();
-            elementsMap.put(new QName(NAMESPACE_1_1, "jboss-ejb-client"), Element.JBOSS_EJB_CLIENT);
-            elementsMap.put(new QName(NAMESPACE_1_1, "client-context"), Element.CLIENT_CONTEXT);
-            elementsMap.put(new QName(NAMESPACE_1_1, "ejb-receivers"), Element.EJB_RECEIVERS);
-            elementsMap.put(new QName(NAMESPACE_1_1, "remoting-ejb-receiver"), Element.REMOTING_EJB_RECEIVER);
-            elementsMap.put(new QName(NAMESPACE_1_1, "clusters"), Element.CLUSTERS);
-            elementsMap.put(new QName(NAMESPACE_1_1, "cluster"), Element.CLUSTER);
-            elementsMap.put(new QName(NAMESPACE_1_1, "node"), Element.NODE);
-            elementsMap.put(new QName(NAMESPACE_1_1, "channel-creation-options"), Element.CHANNEL_CREATION_OPTIONS);
-            elementsMap.put(new QName(NAMESPACE_1_1, "connection-creation-options"), Element.CONNECTION_CREATION_OPTIONS);
-            elementsMap.put(new QName(NAMESPACE_1_1, "property"), Element.PROPERTY);
+            elementsMap.put(new QName(NAMESPACE_1_2, "jboss-ejb-client"), Element.JBOSS_EJB_CLIENT);
+            elementsMap.put(new QName(NAMESPACE_1_2, "client-context"), Element.CLIENT_CONTEXT);
+            elementsMap.put(new QName(NAMESPACE_1_2, "ejb-receivers"), Element.EJB_RECEIVERS);
+            elementsMap.put(new QName(NAMESPACE_1_2, "remoting-ejb-receiver"), Element.REMOTING_EJB_RECEIVER);
+            elementsMap.put(new QName(NAMESPACE_1_2, "clusters"), Element.CLUSTERS);
+            elementsMap.put(new QName(NAMESPACE_1_2, "cluster"), Element.CLUSTER);
+            elementsMap.put(new QName(NAMESPACE_1_2, "node"), Element.NODE);
+            elementsMap.put(new QName(NAMESPACE_1_2, "channel-creation-options"), Element.CHANNEL_CREATION_OPTIONS);
+            elementsMap.put(new QName(NAMESPACE_1_2, "connection-creation-options"), Element.CONNECTION_CREATION_OPTIONS);
+            elementsMap.put(new QName(NAMESPACE_1_2, "property"), Element.PROPERTY);
             elements = elementsMap;
         }
 
         static Element of(QName qName) {
             QName name;
             if (qName.getNamespaceURI().equals("")) {
-                name = new QName(NAMESPACE_1_1, qName.getLocalPart());
+                name = new QName(NAMESPACE_1_2, qName.getLocalPart());
             } else {
                 name = qName;
             }
@@ -109,6 +123,7 @@ class EJBClientDescriptor11Parser implements XMLElementReader<EJBClientDescripto
         CLUSTER_NODE_SELECTOR,
         USERNAME,
         SECURITY_REALM,
+        INVOCATION_TIMEOUT,
         // default unknown attribute
         UNKNOWN;
 
@@ -126,6 +141,7 @@ class EJBClientDescriptor11Parser implements XMLElementReader<EJBClientDescripto
             attributesMap.put(new QName("cluster-node-selector"), CLUSTER_NODE_SELECTOR);
             attributesMap.put(new QName("username"), USERNAME);
             attributesMap.put(new QName("security-realm"), SECURITY_REALM);
+            attributesMap.put(new QName("invocation-timeout"), INVOCATION_TIMEOUT);
             attributes = attributesMap;
         }
 
@@ -163,6 +179,20 @@ class EJBClientDescriptor11Parser implements XMLElementReader<EJBClientDescripto
     }
 
     private void parseClientContext(final XMLExtendedStreamReader reader, final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final String val = reader.getAttributeValue(i);
+            switch (attribute) {
+                case INVOCATION_TIMEOUT:
+                    final Long invocationTimeout = Long.parseLong(val.trim());
+                    ejbClientDescriptorMetaData.setInvocationTimeout(invocationTimeout);
+                    break;
+                default:
+                    unexpectedContent(reader);
+            }
+        }
+
         final Set<Element> visited = EnumSet.noneOf(Element.class);
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -246,13 +276,18 @@ class EJBClientDescriptor11Parser implements XMLElementReader<EJBClientDescripto
         String outboundConnectionRef = null;
         final Set<Attribute> required = EnumSet.of(Attribute.OUTBOUND_CONNECTION_REF);
         final int count = reader.getAttributeCount();
+        EJBClientDescriptorMetaData.RemotingReceiverConfiguration remotingReceiverConfiguration = null;
+        long connectTimeout = 5000;
         for (int i = 0; i < count; i++) {
             final Attribute attribute = Attribute.of(reader.getAttributeName(i));
             required.remove(attribute);
             switch (attribute) {
                 case OUTBOUND_CONNECTION_REF:
                     outboundConnectionRef = reader.getAttributeValue(i).trim();
-                    ejbClientDescriptorMetaData.addRemotingReceiverConnectionRef(outboundConnectionRef);
+                    remotingReceiverConfiguration = ejbClientDescriptorMetaData.addRemotingReceiverConnectionRef(outboundConnectionRef);
+                    break;
+                case CONNECT_TIMEOUT:
+                    connectTimeout = reader.getLongAttributeValue(i);
                     break;
                 default:
                     unexpectedContent(reader);
@@ -261,11 +296,32 @@ class EJBClientDescriptor11Parser implements XMLElementReader<EJBClientDescripto
         if (!required.isEmpty()) {
             missingAttributes(reader.getLocation(), required);
         }
-        // This element is just composed of attributes which we already processed, so no more content
-        // is expected
-        if (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            unexpectedContent(reader);
+        // set the timeout
+        remotingReceiverConfiguration.setConnectionTimeout(connectTimeout);
+
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    return;
+                }
+                case START_ELEMENT: {
+                    final Element element = Element.of(reader.getName());
+                    switch (element) {
+                        case CHANNEL_CREATION_OPTIONS:
+                            final Properties channelCreationOptions = this.parseChannelCreationOptions(reader);
+                            remotingReceiverConfiguration.setChannelCreationOptions(channelCreationOptions);
+                            break;
+                        default:
+                            this.unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default: {
+                    unexpectedContent(reader);
+                }
+            }
         }
+        unexpectedEndOfDocument(reader.getLocation());
     }
 
     private void parseClusters(final XMLExtendedStreamReader reader, final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) throws XMLStreamException {
@@ -538,8 +594,10 @@ class EJBClientDescriptor11Parser implements XMLElementReader<EJBClientDescripto
      * Consumes the remainder of the current element, throwing an
      * {@link javax.xml.stream.XMLStreamException} if it contains any child
      * elements.
+     *
      * @param reader the reader
-     * @throws javax.xml.stream.XMLStreamException if an error occurs
+     * @throws javax.xml.stream.XMLStreamException
+     *          if an error occurs
      */
     public static void requireNoContent(final XMLExtendedStreamReader reader) throws XMLStreamException {
         if (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
