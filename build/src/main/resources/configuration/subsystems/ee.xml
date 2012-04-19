@@ -2,5 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
    <extension-module>org.jboss.as.ee</extension-module>
-   <subsystem xmlns="urn:jboss:domain:ee:1.1"/>
+   <subsystem xmlns="urn:jboss:domain:ee:1.1">
+        <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
+   </subsystem>
 </config>
