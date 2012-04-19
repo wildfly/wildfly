@@ -27,7 +27,6 @@ import java.util.List;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ee.beanvalidation.BeanValidationFactoryDeployer;
 import org.jboss.as.ee.component.deployers.ApplicationClassesAggregationProcessor;
@@ -49,6 +48,7 @@ import org.jboss.as.ee.component.deployers.ModuleJndiBindingProcessor;
 import org.jboss.as.ee.component.deployers.ResourceInjectionAnnotationParsingProcessor;
 import org.jboss.as.ee.component.deployers.ResourceReferenceProcessor;
 import org.jboss.as.ee.component.deployers.ResourceReferenceRegistrySetupProcessor;
+import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacementProcessor;
 import org.jboss.as.ee.datasource.DataSourceDefinitionAnnotationParser;
 import org.jboss.as.ee.datasource.DataSourceDefinitionDeploymentDescriptorParser;
 import org.jboss.as.ee.managedbean.processors.JavaEEDependencyProcessor;
@@ -90,23 +90,25 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor;
     private final GlobalModuleDependencyProcessor moduleDependencyProcessor;
+    private final SpecDescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor;
 
 
     public EeSubsystemAdd(final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor,
-                          final GlobalModuleDependencyProcessor moduleDependencyProcessor) {
+                          final GlobalModuleDependencyProcessor moduleDependencyProcessor, final SpecDescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor) {
         this.isolationProcessor = isolationProcessor;
         this.moduleDependencyProcessor = moduleDependencyProcessor;
+        this.specDescriptorPropertyReplacementProcessor = specDescriptorPropertyReplacementProcessor;
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
         GlobalModulesDefinition.INSTANCE.validateAndSet(operation, model);
         EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.validateAndSet(operation, model);
+        EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.validateAndSet(operation, model);
     }
 
     protected void performBoottime(OperationContext context, final ModelNode operation, final ModelNode model,
                                    final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
         final EEJndiViewExtension extension = new EEJndiViewExtension();
         context.getServiceTarget().addService(EEJndiViewExtension.SERVICE_NAME, extension)
                 .addDependency(JndiViewExtensionRegistry.SERVICE_NAME, JndiViewExtensionRegistry.class, extension.getRegistryInjector())
@@ -125,6 +127,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 isolationProcessor.setEarSubDeploymentsIsolated(earSubDeploymentsIsolated);
 
                 ROOT_LOGGER.debug("Activating EE subsystem");
+                processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EE_SPEC_DESC_PROPERTY_REPLACEMENT, specDescriptorPropertyReplacementProcessor);
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT_INIT, new EarInitializationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_APP_XML_PARSE, new EarMetaDataParsingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_JBOSS_EJB_CLIENT_XML_PARSE, new EJBClientDescriptorParsingProcessor());

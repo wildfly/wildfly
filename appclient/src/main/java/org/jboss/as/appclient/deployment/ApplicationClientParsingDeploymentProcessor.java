@@ -33,6 +33,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -69,7 +70,7 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
         final PropertyResolver propertyResolver = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_RESOLVER);
         final PropertyReplacer propertyReplacer = PropertyReplacers.resolvingReplacer(propertyResolver);
 
-        final ApplicationClientMetaData appClientMD = parseAppClient(deploymentUnit, propertyReplacer);
+        final ApplicationClientMetaData appClientMD = parseAppClient(deploymentUnit, SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
         final JBossClientMetaData jbossClientMD = parseJBossClient(deploymentUnit, propertyReplacer);
         final JBossClientMetaData merged;
         if (appClientMD == null && jbossClientMD == null) {

@@ -226,11 +226,6 @@ public final class Attachments {
     public static final AttachmentKey<Module> MODULE = AttachmentKey.create(Module.class);
 
     /**
-     * Information about a modules dependencies used to setup transitive deps
-     */
-    public static final AttachmentKey<AttachmentList<ModuleSpecification>> MODULE_DEPENDENCY_INFORMATION = AttachmentKey.createList(ModuleSpecification.class);
-
-    /**
      * The module loader for the deployment
      */
     public static final AttachmentKey<ServiceModuleLoader> SERVICE_MODULE_LOADER  = AttachmentKey.create(ServiceModuleLoader.class);

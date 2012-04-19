@@ -177,6 +177,7 @@ public enum Phase {
     public static final int STRUCTURE_EXPLODED_MOUNT                    = 0x0200;
     public static final int STRUCTURE_MOUNT                             = 0x0300;
     public static final int STRUCTURE_MANIFEST                          = 0x0400;
+    public static final int STRUCTURE_EE_SPEC_DESC_PROPERTY_REPLACEMENT = 0x0450;
     // must be before osgi
     public static final int STRUCTURE_JDBC_DRIVER                       = 0x0500;
     public static final int STRUCTURE_OSGI_MANIFEST                     = 0x0600;

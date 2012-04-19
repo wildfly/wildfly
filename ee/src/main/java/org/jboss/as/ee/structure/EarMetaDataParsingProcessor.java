@@ -68,7 +68,7 @@ public class EarMetaDataParsingProcessor implements DeploymentUnitProcessor {
         final PropertyResolver propertyResolver = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_RESOLVER);
         final PropertyReplacer propertyReplacer = PropertyReplacers.resolvingReplacer(propertyResolver);
 
-        EarMetaData earMetaData = handleSpecMetadata(deploymentFile, propertyReplacer);
+        EarMetaData earMetaData = handleSpecMetadata(deploymentFile, SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
         JBossAppMetaData jbossMetaData = handleJbossMetadata(deploymentFile ,propertyReplacer);
         if (earMetaData == null && jbossMetaData == null) {
             return;
