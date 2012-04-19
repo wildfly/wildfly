@@ -377,7 +377,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
 
             String name = null;
-            String value = null;
+            ModelNode value = null;
             Boolean boottime = null;
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
@@ -399,7 +399,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             if (value != null) {
                                 throw ParseUtils.duplicateAttribute(reader, VALUE);
                             }
-                            value = val;
+                            value = ParseUtils.parsePossibleExpression(val);
                             break;
                         }
                         case BOOT_TIME: {

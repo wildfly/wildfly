@@ -18,6 +18,11 @@
  */
 package org.jboss.as.controller.operations.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+
 import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
@@ -31,11 +36,6 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 /**
  * Operation handler for adding domain/host and server system properties.
@@ -81,7 +81,7 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
     public SystemPropertyAddHandler(ProcessEnvironment processEnvironment, boolean useBoottime) {
         this.processEnvironment = processEnvironment;
         this.useBoottime = useBoottime;
-        validator.registerValidator(VALUE, new StringLengthValidator(0, true));
+        validator.registerValidator(VALUE, new StringLengthValidator(0, true, true));
         if (useBoottime) {
             validator.registerValidator(BOOT_TIME, new ModelTypeValidator(ModelType.BOOLEAN, true));
         }
@@ -109,10 +109,10 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
         }
 
         if (applyToRuntime) {
-
-            SecurityActions.setSystemProperty(name, value);
+            final String setValue = value != null ? context.resolveExpressions(operation.require(VALUE)).asString() : null;
+            SecurityActions.setSystemProperty(name, setValue);
             if (processEnvironment != null) {
-                processEnvironment.systemPropertyUpdated(name, value);
+                processEnvironment.systemPropertyUpdated(name, setValue);
             }
         } else if (reload) {
             context.reloadRequired();
@@ -124,9 +124,11 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
                 if (reload) {
                     context.revertReloadRequired();
                 }
-                SecurityActions.clearSystemProperty(name);
                 if (processEnvironment != null) {
-                    processEnvironment.systemPropertyUpdated(name, null);
+                    SecurityActions.clearSystemProperty(name);
+                    if (processEnvironment != null) {
+                        processEnvironment.systemPropertyUpdated(name, null);
+                    }
                 }
             }
         });

@@ -25,8 +25,8 @@ package org.jboss.as.controller.operations.common;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.dmr.ModelNode;
@@ -57,13 +57,14 @@ public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHand
 
         if (applyToRuntime) {
             context.addStep(new OperationStepHandler() {
-                public void execute(OperationContext context, ModelNode operation) {
-                    SecurityActions.setSystemProperty(name, value);
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    String setValue = value == null ? null : context.resolveExpressions(newValue).asString();
+                    SecurityActions.setSystemProperty(name, setValue);
                     if (processEnvironment != null) {
-                        processEnvironment.systemPropertyUpdated(name, value);
+                        processEnvironment.systemPropertyUpdated(name, setValue);
                     }
                     if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        final String oldValue = currentValue.isDefined() ? currentValue.asString() : null;
+                        final String oldValue = currentValue.isDefined() ? context.resolveExpressions(currentValue).asString() : null;
                         if (oldValue != null) {
                             SecurityActions.setSystemProperty(name, oldValue);
                         } else {
