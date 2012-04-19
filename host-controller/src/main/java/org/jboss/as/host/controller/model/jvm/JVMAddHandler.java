@@ -20,36 +20,36 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.operations.common;
+package org.jboss.as.host.controller.model.jvm;
 
-import java.util.Locale;
-import org.jboss.as.controller.AbstractRemoveStepHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import org.jboss.as.controller.descriptions.common.JVMDescriptions;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@code OperationHandler} for the jvm resource remove operation.
+ * {@code OperationHandler} for the jvm resource add operation.
  *
  * @author Emanuel Muckenhuber
  */
-public final class JVMRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
+final class JVMAddHandler extends AbstractAddStepHandler {
+    public static final String OPERATION_NAME = ADD;
 
-    public static final String OPERATION_NAME = REMOVE;
-    public static final JVMRemoveHandler INSTANCE = new JVMRemoveHandler();
+    private final AttributeDefinition[] attrs;
+    JVMAddHandler(AttributeDefinition[] attrs) {
+        this.attrs = attrs;
+    }
 
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        for (AttributeDefinition attr : attrs) {
+            attr.validateAndSet(operation, model);
+        }
+    }
 
     protected boolean requiresRuntime(OperationContext context) {
         return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ModelNode getModelDescription(final Locale locale) {
-        return JVMDescriptions.getJVMRemoveDescription(locale);
     }
 }

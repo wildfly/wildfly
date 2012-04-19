@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,14 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.host.controller;
+
+package org.jboss.as.ee.metadata.property;
+
+import java.util.Properties;
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
+import org.jboss.metadata.property.PropertyResolver;
 
 /**
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author John Bailey
  */
-public enum JvmType {
-    SUN,
-    IBM,
-    OTHER
+public class Attachments {
+    public static final AttachmentKey<Properties> DEPLOYMENT_PROPERTIES = AttachmentKey.create(Properties.class);
+
+    public static final AttachmentKey<AttachmentList<PropertyResolver>> DEPLOYMENT_PROPERTY_RESOLVERS = AttachmentKey.createList(PropertyResolver.class);
+
+    public static final AttachmentKey<PropertyResolver> FINAL_PROPERTY_RESOLVER = AttachmentKey.create(PropertyResolver.class);
 }

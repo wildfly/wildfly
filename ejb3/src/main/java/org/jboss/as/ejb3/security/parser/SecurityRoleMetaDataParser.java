@@ -31,6 +31,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.jboss.metadata.ejb.parser.spec.AbstractMetaDataParser;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.parser.ee.Element;
+import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * Parser for security-role elements
@@ -40,30 +41,30 @@ import org.jboss.metadata.parser.ee.Element;
 public class SecurityRoleMetaDataParser extends AbstractMetaDataParser<SecurityRoleMetaData> {
 
     @Override
-    public SecurityRoleMetaData parse(XMLStreamReader reader) throws XMLStreamException {
+    public SecurityRoleMetaData parse(XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
         SecurityRoleMetaData metaData = new SecurityRoleMetaData();
-        processElements(metaData, reader);
+        processElements(metaData, reader, propertyReplacer);
         return metaData;
     }
 
     @Override
-    protected void processElement(SecurityRoleMetaData metaData, XMLStreamReader reader) throws XMLStreamException {
+    protected void processElement(SecurityRoleMetaData metaData, XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
         if (reader.getNamespaceURI().equals("urn:security-role")) {
             final String localName = reader.getLocalName();
             if (localName.equals(Element.ROLE_NAME.getLocalName()))
-                metaData.setRoleName(getElementText(reader));
+                metaData.setRoleName(getElementText(reader, propertyReplacer));
             else if (localName.equals(Element.PRINCIPAL_NAME.getLocalName())) {
                 Set<String> principalNames = metaData.getPrincipals();
                 if (principalNames == null) {
                     principalNames = new HashSet<String>();
                     metaData.setPrincipals(principalNames);
                 }
-                principalNames.add(getElementText(reader));
+                principalNames.add(getElementText(reader, propertyReplacer));
             }
             else
                 throw unexpectedElement(reader);
         } else
-            super.processElement(metaData, reader);
+            super.processElement(metaData, reader, propertyReplacer);
     }
 
 }

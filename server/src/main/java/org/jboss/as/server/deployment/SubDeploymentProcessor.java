@@ -29,6 +29,7 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -56,7 +57,8 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
                 final Resource resource = DeploymentModelUtils.createSubDeployment(childRoot.getRootName(), deploymentUnit);
                 final ImmutableManagementResourceRegistration registration = deploymentUnit.getAttachment(DeploymentModelUtils.REGISTRATION_ATTACHMENT);
                 final ManagementResourceRegistration mutableRegistration =  deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
-                final SubDeploymentUnitService service = new SubDeploymentUnitService(childRoot, deploymentUnit, registration, mutableRegistration, resource, serviceVerificationHandler);
+                final AbstractVaultReader vaultReader = deploymentUnit.getAttachment(Attachments.VAULT_READER_ATTACHMENT_KEY);
+                final SubDeploymentUnitService service = new SubDeploymentUnitService(childRoot, deploymentUnit, registration, mutableRegistration, resource, serviceVerificationHandler, vaultReader);
 
                 final ResourceRoot parentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
                 final String relativePath = childRoot.getRoot().getPathNameRelativeTo(parentRoot.getRoot());

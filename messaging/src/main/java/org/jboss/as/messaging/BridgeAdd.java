@@ -143,12 +143,15 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
         final String filterString = filterNode.isDefined() ? filterNode.asString() : null;
         final ModelNode transformerNode = CommonAttributes.TRANSFORMER_CLASS_NAME.resolveModelAttribute(context, model);
         final String transformerClassName = transformerNode.isDefined() ? transformerNode.asString() : null;
+        final int minLargeMessageSize = CommonAttributes.MIN_LARGE_MESSAGE_SIZE.resolveModelAttribute(context, model).asInt();
         final long retryInterval = CommonAttributes.RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
         final double retryIntervalMultiplier = CommonAttributes.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, model).asDouble();
+        final long maxRetryInterval = CommonAttributes.MAX_RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
         final int reconnectAttempts = CommonAttributes.BRIDGE_RECONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt();
         final boolean useDuplicateDetection = CommonAttributes.BRIDGE_USE_DUPLICATE_DETECTION.resolveModelAttribute(context, model).asBoolean();
         final int confirmationWindowSize = CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
-        final long clientFailureCheckPeriod = HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
+        final long clientFailureCheckPeriod = CommonAttributes.CHECK_PERIOD.resolveModelAttribute(context, model).asLong();
+        final long connectionTTL = CommonAttributes.CONNECTION_TTL.resolveModelAttribute(context, model).asLong();
         final ModelNode discoveryNode = CommonAttributes.DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
         final String discoveryGroupName = discoveryNode.isDefined() ? discoveryNode.asString() : null;
         List<String> staticConnectors = discoveryGroupName == null ? getStaticConnectors(model) : null;
@@ -158,13 +161,19 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
 
         if (discoveryGroupName != null) {
             return new BridgeConfiguration(name, queueName, forwardingAddress, filterString, transformerClassName,
-                              retryInterval, retryIntervalMultiplier, reconnectAttempts, useDuplicateDetection,
-                              confirmationWindowSize, clientFailureCheckPeriod, discoveryGroupName, ha,
+                              minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
+                              retryInterval, maxRetryInterval, retryIntervalMultiplier, reconnectAttempts,
+                              useDuplicateDetection, confirmationWindowSize,
+                              discoveryGroupName,
+                              ha,
                               user, password);
         } else {
             return new BridgeConfiguration(name, queueName, forwardingAddress, filterString, transformerClassName,
-                              retryInterval, retryIntervalMultiplier, reconnectAttempts, useDuplicateDetection,
-                              confirmationWindowSize, clientFailureCheckPeriod, staticConnectors, ha,
+                              minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
+                              retryInterval, maxRetryInterval, retryIntervalMultiplier, reconnectAttempts,
+                              useDuplicateDetection, confirmationWindowSize,
+                              staticConnectors,
+                              ha,
                               user, password);
         }
     }

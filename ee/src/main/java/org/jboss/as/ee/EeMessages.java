@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Set;
@@ -865,4 +866,6 @@ public interface EeMessages {
     @Message(id = 11099, value = "More than one message destination with name %s for binding %s destinations: %s")
     String moreThanOneMessageDestination(String name, String binding, Set<String> jndiNames);
 
+    @Message(id = 11100, value = "Failed to load jboss.properties")
+    DeploymentUnitProcessingException failedToLoadJbossProperties(@Cause IOException e);
 }

@@ -24,6 +24,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
+import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 
 import java.util.Locale;
@@ -41,9 +42,10 @@ public class DeploymentRedeployHandler implements OperationStepHandler, Descript
 
     public static final String OPERATION_NAME = REDEPLOY;
 
-    public static final DeploymentRedeployHandler INSTANCE = new DeploymentRedeployHandler();
+    private final AbstractVaultReader vaultReader;
 
-    private DeploymentRedeployHandler() {
+    public DeploymentRedeployHandler(final AbstractVaultReader vaultReader) {
+        this.vaultReader = vaultReader;
     }
 
     @Override
@@ -61,6 +63,6 @@ public class DeploymentRedeployHandler implements OperationStepHandler, Descript
         final String name = model.require(NAME).asString();
         final String runtimeName = model.require(RUNTIME_NAME).asString();
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
-        redeploy(context, runtimeName, name, contents);
+        redeploy(context, runtimeName, name, vaultReader, contents);
     }
 }

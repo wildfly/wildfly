@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_STATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -59,7 +58,6 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
-import org.jboss.as.controller.operations.common.JVMHandlers;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
 import org.jboss.as.controller.operations.common.ProcessReloadHandler;
@@ -94,6 +92,7 @@ import org.jboss.as.host.controller.descriptions.HostControllerResourceDescripti
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
+import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.host.controller.operations.HostShutdownHandler;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandler;
@@ -268,8 +267,7 @@ public class HostModelUtil {
         hostRegistration.registerOperationHandler(SnapshotTakeHandler.OPERATION_NAME, snapshotTake, snapshotTake, false);
 
         // Jvms
-        final ManagementResourceRegistration jvms = hostRegistration.registerSubModel(PathElement.pathElement(JVM), CommonProviders.JVM_PROVIDER);
-        JVMHandlers.register(jvms);
+        final ManagementResourceRegistration jvms = hostRegistration.registerSubModel(JvmResourceDefinition.GLOBAL);
 
         //Paths
         hostRegistration.registerSubModel(PathResourceDefinition.createSpecified(pathManager));
@@ -320,7 +318,6 @@ public class HostModelUtil {
         serverSysProps.registerReadWriteAttribute(BOOT_TIME, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
 
         // Server jvm
-        final ManagementResourceRegistration serverVMs = servers.registerSubModel(PathElement.pathElement(JVM), JVMHandlers.SERVER_MODEL_PROVIDER);
-        JVMHandlers.register(serverVMs, true);
+        final ManagementResourceRegistration serverVMs = servers.registerSubModel(JvmResourceDefinition.SERVER);
     }
 }

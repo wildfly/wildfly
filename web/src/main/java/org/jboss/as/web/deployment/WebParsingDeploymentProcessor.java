@@ -42,6 +42,9 @@ import org.jboss.metadata.parser.servlet.WebMetaDataParser;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
 import org.jboss.metadata.parser.util.XMLResourceResolver;
 import org.jboss.metadata.parser.util.XMLSchemaValidator;
+import org.jboss.metadata.property.PropertyReplacer;
+import org.jboss.metadata.property.PropertyReplacers;
+import org.jboss.metadata.property.PropertyResolver;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
 import org.xml.sax.SAXException;
@@ -86,7 +89,10 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
                 MetaDataElementParser.DTDInfo dtdInfo = new MetaDataElementParser.DTDInfo();
                 inputFactory.setXMLResolver(dtdInfo);
                 final XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
-                WebMetaData webMetaData = WebMetaDataParser.parse(xmlReader, dtdInfo);
+                final PropertyResolver propertyResolver = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_RESOLVER);
+                final PropertyReplacer propertyReplacer = PropertyReplacers.resolvingReplacer(propertyResolver);
+
+                WebMetaData webMetaData = WebMetaDataParser.parse(xmlReader, dtdInfo, propertyReplacer);
 
                 if (schemaValidation && webMetaData.getSchemaLocation() != null) {
                     XMLSchemaValidator validator = new XMLSchemaValidator(new XMLResourceResolver());

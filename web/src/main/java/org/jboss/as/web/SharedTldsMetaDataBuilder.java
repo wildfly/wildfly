@@ -111,7 +111,7 @@ public class SharedTldsMetaDataBuilder {
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
             inputFactory.setXMLResolver(NoopXMLResolver.create());
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
-            return TldMetaDataParser.parse(xmlReader);
+            return TldMetaDataParser.parse(xmlReader    );
         } finally {
             try {
                 if (is != null) {

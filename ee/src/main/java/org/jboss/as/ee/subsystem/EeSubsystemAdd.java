@@ -54,6 +54,11 @@ import org.jboss.as.ee.datasource.DataSourceDefinitionDeploymentDescriptorParser
 import org.jboss.as.ee.managedbean.processors.JavaEEDependencyProcessor;
 import org.jboss.as.ee.managedbean.processors.ManagedBeanAnnotationProcessor;
 import org.jboss.as.ee.managedbean.processors.ManagedBeanSubDeploymentMarkingProcessor;
+import org.jboss.as.ee.metadata.property.DeploymentPropertiesProcessor;
+import org.jboss.as.ee.metadata.property.DeploymentPropertyResolverProcessor;
+import org.jboss.as.ee.metadata.property.PropertyResolverProcessor;
+import org.jboss.as.ee.metadata.property.SystemPropertyResolverProcessor;
+import org.jboss.as.ee.metadata.property.VaultPropertyResolverProcessor;
 import org.jboss.as.ee.naming.ApplicationContextProcessor;
 import org.jboss.as.ee.naming.ModuleContextProcessor;
 import org.jboss.as.ee.structure.ApplicationClientDeploymentProcessor;
@@ -130,6 +135,12 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MANAGED_BEAN_JAR_IN_EAR, new ManagedBeanSubDeploymentMarkingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EE_MODULE_INIT, new EEModuleInitialProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EE_RESOURCE_INJECTION_REGISTRY, new ResourceReferenceRegistrySetupProcessor());
+
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EE_DEPLOYMENT_PROPERTIES, new DeploymentPropertiesProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EE_DEPLOYMENT_PROPERTY_RESOLVER, new DeploymentPropertyResolverProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EE_VAULT_PROPERTY_RESOLVER, new VaultPropertyResolverProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EE_SYSTEM_PROPERTY_RESOLVER, new SystemPropertyResolverProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EE_PROPERTY_RESOLVER, new PropertyResolverProcessor());
 
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EE_MODULE_NAME, new EEModuleNameProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EE_ANNOTATIONS, new EEAnnotationProcessor());

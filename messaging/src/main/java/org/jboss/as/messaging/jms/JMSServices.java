@@ -166,7 +166,7 @@ public class JMSServices {
         CONSUMER_MAX_RATE,
         CONSUMER_WINDOW_SIZE,
         DISCOVERY_GROUP_NAME,
-        DISCOVERY_INITIAL_WAIT_TIMEOUT, // TODO not used in ConnectionFactoryConfiguration
+        DISCOVERY_INITIAL_WAIT_TIMEOUT, // Not used since messaging 1.2, we keep it for compatibility sake
         DUPS_OK_BATCH_SIZE,
         FAILOVER_ON_INITIAL_CONNECTION,
         FAILOVER_ON_SERVER_SHUTDOWN, // TODO not used in ConnectionFactoryConfiguration
@@ -238,7 +238,7 @@ public class JMSServices {
         CONSUMER_MAX_RATE,
         CONSUMER_WINDOW_SIZE,
         DISCOVERY_GROUP_NAME,
-        DISCOVERY_INITIAL_WAIT_TIMEOUT,
+        DISCOVERY_INITIAL_WAIT_TIMEOUT, // Not used since messaging 1.2, we keep it for compatibility sake
         DUPS_OK_BATCH_SIZE,
         FAILOVER_ON_INITIAL_CONNECTION,  // TODO HornetQResourceAdapter does not have this method
         FAILOVER_ON_SERVER_SHUTDOWN,   // TODO HornetQResourceAdapter does not have this method
@@ -285,7 +285,7 @@ public class JMSServices {
         new PooledCFAttribute(CONSUMER_MAX_RATE, CONSUMER_MAX_RATE_METHOD),
         new PooledCFAttribute(CONSUMER_WINDOW_SIZE, CONSUMER_WINDOW_SIZE_METHOD),
         new PooledCFAttribute(DISCOVERY_GROUP_NAME, DISCOVERY_GROUP_NAME_METHOD),
-        new PooledCFAttribute(DISCOVERY_INITIAL_WAIT_TIMEOUT, DISCOVERY_INITIAL_WAIT_TIMEOUT_METHOD),
+        new PooledCFAttribute(DISCOVERY_INITIAL_WAIT_TIMEOUT, DISCOVERY_INITIAL_WAIT_TIMEOUT_METHOD), // Not used since messaging 1.2, we keep it for compatibility sake
         new PooledCFAttribute(DUPS_OK_BATCH_SIZE, DUPS_OK_BATCH_SIZE_METHOD),
         // TODO HornetQResourceAdapter does not have this method
         //new PooledCFAttribute(FAILOVER_ON_INITIAL_CONNECTION, FAILOVER_ON_INITIAL_CONNECTION_METHOD),

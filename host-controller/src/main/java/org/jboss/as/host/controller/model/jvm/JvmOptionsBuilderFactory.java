@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.host.controller;
+package org.jboss.as.host.controller.model.jvm;
 
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
@@ -37,7 +37,7 @@ import org.jboss.as.controller.parsing.Element;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-class JvmOptionsBuilderFactory {
+public class JvmOptionsBuilderFactory {
 
     private static final JvmOptionsBuilderFactory INSTANCE = new JvmOptionsBuilderFactory();
 
@@ -52,11 +52,11 @@ class JvmOptionsBuilderFactory {
     private JvmOptionsBuilderFactory() {
     }
 
-    static JvmOptionsBuilderFactory getInstance() {
+    public static JvmOptionsBuilderFactory getInstance() {
         return INSTANCE;
     }
 
-    void addOptions(JvmElement jvmElement, List<String> command){
+    public void addOptions(JvmElement jvmElement, List<String> command){
         if (jvmElement == null) {
             throw MESSAGES.nullVar("jvm");
         }

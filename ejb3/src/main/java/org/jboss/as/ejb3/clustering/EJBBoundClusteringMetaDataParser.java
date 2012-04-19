@@ -26,6 +26,7 @@ import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaDataParser;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * Parses the urn:clustering namespace elements for clustering related metadata on EJBs.
@@ -38,23 +39,23 @@ public class EJBBoundClusteringMetaDataParser extends AbstractEJBBoundMetaDataPa
     private static final String ROOT_ELEMENT_CLUSTERING = "clustering";
 
     @Override
-    public EJBBoundClusteringMetaData parse(final XMLStreamReader xmlStreamReader) throws XMLStreamException {
+    public EJBBoundClusteringMetaData parse(final XMLStreamReader xmlStreamReader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
         final String element = xmlStreamReader.getLocalName();
         // we only parse <clustering> (root) element
         if (!ROOT_ELEMENT_CLUSTERING.equals(element)) {
             throw unexpectedElement(xmlStreamReader);
         }
         final EJBBoundClusteringMetaData clusteringMetaData = new EJBBoundClusteringMetaData();
-        this.processElements(clusteringMetaData, xmlStreamReader);
+        this.processElements(clusteringMetaData, xmlStreamReader, propertyReplacer);
         return clusteringMetaData;
     }
 
     @Override
-    protected void processElement(final EJBBoundClusteringMetaData clusteringMetaData, final XMLStreamReader reader) throws XMLStreamException {
+    protected void processElement(final EJBBoundClusteringMetaData clusteringMetaData, final XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
         if (NAMESPACE_URI.equals(reader.getNamespaceURI())) {
             final String localName = reader.getLocalName();
             if (localName.equals("clustered")) {
-                final String text = getElementText(reader);
+                final String text = getElementText(reader, propertyReplacer);
                 if (text != null) {
                     final boolean isClustered = Boolean.parseBoolean(text.trim());
                     clusteringMetaData.setClustered(isClustered);
@@ -63,7 +64,7 @@ public class EJBBoundClusteringMetaDataParser extends AbstractEJBBoundMetaDataPa
                 throw unexpectedElement(reader);
             }
         } else {
-            super.processElement(clusteringMetaData, reader);
+            super.processElement(clusteringMetaData, reader, propertyReplacer);
         }
 
     }

@@ -22,34 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerMessages;
-import org.jboss.as.controller.ListAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.messaging.jms.JndiEntriesAttribute;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -89,11 +61,11 @@ import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
 import static org.jboss.as.messaging.CommonAttributes.LIVE_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
-import static org.jboss.as.messaging.CommonAttributes.MAX_POOL_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.MIN_POOL_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.PARAMS;
 import static org.jboss.as.messaging.CommonAttributes.PATH;
+import static org.jboss.as.messaging.CommonAttributes.PCF_PASSWORD;
+import static org.jboss.as.messaging.CommonAttributes.PCF_USER;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.RELATIVE_TO;
@@ -109,6 +81,34 @@ import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.as.messaging.CommonAttributes.SUBSYSTEM;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.messaging.jms.JndiEntriesAttribute;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * The messaging subsystem domain parser
@@ -400,7 +400,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
     }
 
-    private static void processClusterConnections(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+    private void processClusterConnections(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
         requireNoAttributes(reader);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -415,12 +415,12 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
-    private static void processClusterConnection(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+    protected void processClusterConnection(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
 
         requireSingleAttribute(reader, CommonAttributes.NAME);
         String name = reader.getAttributeValue(0);
 
-        ModelNode bridgeAdd = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.CLUSTER_CONNECTION, name));
+        ModelNode clusterConnectionAdd = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.CLUSTER_CONNECTION, name));
 
         EnumSet<Element> required = EnumSet.of(Element.ADDRESS, Element.CONNECTOR_REF);
         Set<Element> seen = EnumSet.noneOf(Element.class);
@@ -434,34 +434,34 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case FORWARD_WHEN_NO_CONSUMERS:
                 case MAX_HOPS:
                 case CONFIRMATION_WINDOW_SIZE:
-                    handleElementText(reader, element, bridgeAdd);
+                    handleElementText(reader, element, clusterConnectionAdd);
                     break;
                 case ADDRESS:  {
-                    handleElementText(reader, element, CommonAttributes.CLUSTER_CONNECTION_ADDRESS.getName(), bridgeAdd);
+                    handleElementText(reader, element, CommonAttributes.CLUSTER_CONNECTION_ADDRESS.getName(), clusterConnectionAdd);
                     break;
                 }
                 case CONNECTOR_REF:  {
                     // Use the "simple" variant
-                    handleElementText(reader, element, "simple", bridgeAdd);
+                    handleElementText(reader, element, "simple", clusterConnectionAdd);
                     break;
                 }
                 case USE_DUPLICATE_DETECTION:
                 case RETRY_INTERVAL:
                     // Use the "cluster" variant
-                    handleElementText(reader, element, "cluster", bridgeAdd);
+                    handleElementText(reader, element, "cluster", clusterConnectionAdd);
                     break;
                 case STATIC_CONNECTORS:
                     if (seen.contains(Element.DISCOVERY_GROUP_REF)) {
                         throw new XMLStreamException(MESSAGES.illegalElement(STATIC_CONNECTORS, DISCOVERY_GROUP_REF), reader.getLocation());
                     }
-                    processStaticConnectors(reader, bridgeAdd, true);
+                    processStaticConnectors(reader, clusterConnectionAdd, true);
                     break;
                 case DISCOVERY_GROUP_REF: {
                     if (seen.contains(Element.STATIC_CONNECTORS)) {
                         throw new XMLStreamException(MESSAGES.illegalElement(DISCOVERY_GROUP_REF, STATIC_CONNECTORS), reader.getLocation());
                     }
                     final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
-                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, bridgeAdd, reader);
+                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, clusterConnectionAdd, reader);
                     break;
                 }
                 default: {
@@ -474,10 +474,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             missingRequired(reader, required);
         }
 
-        updates.add(bridgeAdd);
+        updates.add(clusterConnectionAdd);
     }
 
-    private static void processBridges(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+    private void processBridges(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
         requireNoAttributes(reader);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -492,7 +492,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
-    private static void processBridge(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+    protected void processBridge(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
 
         requireSingleAttribute(reader, CommonAttributes.NAME);
         String name = reader.getAttributeValue(0);
@@ -513,7 +513,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case TRANSFORMER_CLASS_NAME:
                 case RETRY_INTERVAL_MULTIPLIER:
                 case FAILOVER_ON_SERVER_SHUTDOWN:
-                case USE_DUPLICATE_DETECTION:
                 case CONFIRMATION_WINDOW_SIZE:
                 case USER:
                 case PASSWORD:
@@ -530,6 +529,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 case FORWARDING_ADDRESS:
                 case RECONNECT_ATTEMPTS:
+                case USE_DUPLICATE_DETECTION:
                     handleElementText(reader, element, "bridge", bridgeAdd);
                     break;
                 case STATIC_CONNECTORS:
@@ -564,7 +564,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         updates.add(bridgeAdd);
     }
 
-    private static void processStaticConnectors(XMLExtendedStreamReader reader, ModelNode addOperation, boolean cluster) throws XMLStreamException {
+    protected void processStaticConnectors(XMLExtendedStreamReader reader, ModelNode addOperation, boolean cluster) throws XMLStreamException {
 
         if (cluster) {
 
@@ -1335,6 +1335,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
+    static void skipElementText(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        reader.getElementText();
+    }
+
     /** @deprecated use AttributeDefinition */
     @Deprecated
     static void handleElementText(final XMLExtendedStreamReader reader, final Element element, final ModelNode node, final ModelType expectedType,
@@ -1917,13 +1921,15 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 if (factory.isDefined()) {
                    writer.writeStartElement(Element.CONNECTION_FACTORY.getLocalName());
                    writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-                   writeConnectionFactory(writer, name, factory);
+
+                   writeRegularConnectionFactoryAttributes(writer, name, factory);
+                   writeCommonConnectionFactoryAttributes(writer, name, factory);
                 }
             }
         }
     }
 
-    protected void writePooledConnectionFactories(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+    private void writePooledConnectionFactories(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
         List<Property> properties = node.asPropertyList();
         if (!properties.isEmpty()) {
             for (Property prop : properties) {
@@ -1931,17 +1937,23 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 final ModelNode factory = prop.getValue();
                 if (factory.isDefined()) {
                    writer.writeStartElement(Element.POOLED_CONNECTION_FACTORY.getLocalName());
+
                    writer.writeAttribute(Attribute.NAME.getLocalName(), name);
 
-                   writeConnectionFactory(writer, name, factory);
+                   writePooledConnectionFactoryAttributes(writer, name, factory);
+                   writeCommonConnectionFactoryAttributes(writer, name, factory);
                 }
             }
         }
     }
 
-    protected void writeConnectionFactory(XMLExtendedStreamWriter writer, String name, ModelNode factory) throws XMLStreamException
-    {
+    protected void writeRegularConnectionFactoryAttributes(XMLExtendedStreamWriter writer, String name, ModelNode factory) throws XMLStreamException {
         CommonAttributes.CONNECTION_FACTORY_TYPE.marshallAsElement(factory, writer);
+    }
+
+    protected void writePooledConnectionFactoryAttributes(XMLExtendedStreamWriter writer, String name, ModelNode factory) throws XMLStreamException {
+        PCF_USER.marshallAsElement(factory, writer);
+        PCF_PASSWORD.marshallAsElement(factory, writer);
 
         if(factory.hasDefined(INBOUND_CONFIG)) {
             final ModelNode inboundConfigs = factory.get(INBOUND_CONFIG);
@@ -1965,13 +1977,16 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             writeTransactionTypeAttribute(writer, Element.MODE, factory.get(TRANSACTION));
             writer.writeEndElement();
         }
+    }
 
+    protected void writeCommonConnectionFactoryAttributes(XMLExtendedStreamWriter writer, String name, ModelNode factory) throws XMLStreamException {
         if (CommonAttributes.DISCOVERY_GROUP_NAME.isMarshallable(factory)) {
             writer.writeStartElement(Element.DISCOVERY_GROUP_REF.getLocalName());
             CommonAttributes.DISCOVERY_GROUP_NAME.marshallAsAttribute(factory, writer);
             writer.writeEndElement();
         }
 
+        // write the element for compatibility sake but it is deprecated
         CommonAttributes.DISCOVERY_INITIAL_WAIT_TIMEOUT.marshallAsElement(factory, writer);
 
         if (factory.hasDefined(CONNECTOR)) {
@@ -2208,6 +2223,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch(element) {
+                // =========================================================
+                // elements common to regular & pooled connection factories
                 case DISCOVERY_GROUP_REF: {
                     final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
                     DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, connectionFactory, reader);
@@ -2225,36 +2242,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         JndiEntriesAttribute.CONNECTION_FACTORY.parseAndAddParameterElement(entry, connectionFactory, reader);
                     }
                     break;
-                } case INBOUND_CONFIG: {
-                    while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                        final Element local = Element.forName(reader.getLocalName());
-                        switch (local) {
-                            case USE_JNDI:
-                            case JNDI_PARAMS:
-                            case USE_LOCAL_TX:
-                            case SETUP_ATTEMPTS:
-                            case SETUP_INTERVAL:
-                                handleElementText(reader, local, connectionFactory);
-                                break;
-                            default:
-                                throw ParseUtils.unexpectedElement(reader);
-                        }
-                    }
-                    break;
-                } case TRANSACTION: {
-                    if(!pooled) {
-                        throw ParseUtils.unexpectedElement(reader);
-                    }
-                    final String txType = reader.getAttributeValue(0);
-                    if( txType != null) {
-                        connectionFactory.get(TRANSACTION).set(txType);
-                    }
-                    ParseUtils.requireNoContent(reader);
-                    break;
                 }
                 case HA:
-                case CONNECTION_FACTORY_TYPE:
-                case DISCOVERY_INITIAL_WAIT_TIMEOUT:
                 case CLIENT_FAILURE_CHECK_PERIOD:
                 case CONNECTION_TTL:
                 case CALL_TIMEOUT:
@@ -2292,14 +2281,72 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     // Use the "connection" variant
                     handleElementText(reader, element, "connection", connectionFactory);
                     break;
+                case DISCOVERY_INITIAL_WAIT_TIMEOUT:
+                    MessagingLogger.ROOT_LOGGER.deprecatedXMLElement(element.toString());
+                    skipElementText(reader);
+                    break;
+                // end of common elements
+                // =========================================================
+
+                // =========================================================
+                // elements specific to regular (non-pooled) connection factories
+                case CONNECTION_FACTORY_TYPE:
+                    if(pooled) {
+                        throw unexpectedElement(reader);
+                    }
+                    handleElementText(reader, element, connectionFactory);
+                    break;
+                // end of regular CF elements
+                // =========================================================
+
+                // =========================================================
+                // elements specific to pooled connection factories
+                case INBOUND_CONFIG: {
+                    if(!pooled) {
+                        throw unexpectedElement(reader);
+                    }
+                    while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                        final Element local = Element.forName(reader.getLocalName());
+                        switch (local) {
+                            case USE_JNDI:
+                            case JNDI_PARAMS:
+                            case USE_LOCAL_TX:
+                            case SETUP_ATTEMPTS:
+                            case SETUP_INTERVAL:
+                                handleElementText(reader, local, connectionFactory);
+                                break;
+                            default:
+                                throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                } case TRANSACTION: {
+                    if(!pooled) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
+                    final String txType = reader.getAttributeValue(0);
+                    if( txType != null) {
+                        connectionFactory.get(TRANSACTION).set(txType);
+                    }
+                    ParseUtils.requireNoContent(reader);
+                    break;
+                }
                 case USER:
+                    if(!pooled) {
+                        throw unexpectedElement(reader);
+                    }
                     // Element name is overloaded, handleElementText can not be used, we must use the correct attribute
                     CommonAttributes.PCF_USER.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
                     break;
                 case PASSWORD:
+                    if(!pooled) {
+                        throw unexpectedElement(reader);
+                    }
                     // Element name is overloaded, handleElementText can not be used, we must use the correct attribute
                     CommonAttributes.PCF_PASSWORD.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
                     break;
+                // end of pooled CF elements
+                // =========================================================
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
                 }

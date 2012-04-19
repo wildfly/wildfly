@@ -44,24 +44,19 @@ import org.jboss.as.controller.registry.Resource;
 class ObjectNameAddressUtil {
 
     private static final EscapedCharacter[] ESCAPED_KEY_CHARACTERS;
-    private static final EscapedCharacter[] ESCAPED_VALUE_CHARACTERS;
     static {
         List<EscapedCharacter> keys = new ArrayList<EscapedCharacter>();
-        List<EscapedCharacter> values = new ArrayList<EscapedCharacter>();
 
+        //From ObjectName javadoc:
+        //Each key is a nonempty string of characters which may not contain any of the characters
+        //comma (,), equals (=), colon, asterisk, or question mark. The same key may not occur twice in a given ObjectName.
         keys.add(new EscapedCharacter('*'));
         keys.add(new EscapedCharacter('?'));
-        keys.add(new EscapedCharacter('+'));
         keys.add(new EscapedCharacter(':'));
         keys.add(new EscapedCharacter('='));
         keys.add(new EscapedCharacter(','));
 
-        values.add(new EscapedCharacter(':'));
-        values.add(new EscapedCharacter('='));
-        values.add(new EscapedCharacter(','));
-
         ESCAPED_KEY_CHARACTERS = keys.toArray(new EscapedCharacter[keys.size()]);
-        ESCAPED_VALUE_CHARACTERS = keys.toArray(new EscapedCharacter[values.size()]);
     }
 
     static ObjectName createObjectName(final PathAddress pathAddress) {
@@ -78,9 +73,9 @@ class ObjectNameAddressUtil {
             } else {
                 sb.append(",");
             }
-            appendEscapedCharacter(ESCAPED_KEY_CHARACTERS, sb, element.getKey());
+            escapeKey(ESCAPED_KEY_CHARACTERS, sb, element.getKey());
             sb.append("=");
-            appendEscapedCharacter(ESCAPED_VALUE_CHARACTERS, sb, element.getValue());
+            escapeValue(sb, element.getValue());
         }
         try {
             return ObjectName.getInstance(sb.toString());
@@ -93,7 +88,7 @@ class ObjectNameAddressUtil {
      * Converts the ObjectName to a PathAddress.
      *
      * @param name the ObjectName
-     * @return the PathAddress if it exists in the model, {@code false} otherwise
+     * @return the PathAddress if it exists in the model, {@code null} otherwise
      */
     static PathAddress resolvePathAddress(final Resource rootResource, final ObjectName name) {
         if (!name.getDomain().equals(Constants.DOMAIN)) {
@@ -112,8 +107,8 @@ class ObjectNameAddressUtil {
         }
         for (Map.Entry<String, String> entry : properties.entrySet()) {
             PathElement childElement = PathElement.pathElement(
-                    replaceEscapedCharacters(entry.getKey()),
-                    replaceEscapedCharacters(entry.getValue()));
+                    replaceEscapedCharactersInKey(entry.getKey()),
+                    replaceEscapedCharactersInValue(entry.getValue()));
             Resource child = resource.getChild(childElement);
             if (child != null) {
                 Map<String, String> childProps = new HashMap<String, String>(properties);
@@ -131,20 +126,75 @@ class ObjectNameAddressUtil {
         return name.getDomain().equals(Constants.DOMAIN);
     }
 
-    private static void appendEscapedCharacter(EscapedCharacter[] escapedCharacters, StringBuilder sb, String value) {
+    private static void escapeKey(EscapedCharacter[] escapedCharacters, StringBuilder sb, String value) {
         for (EscapedCharacter escapedCharacter : escapedCharacters) {
             value = value.replace(escapedCharacter.getChar().toString(), escapedCharacter.getEscaped());
         }
         sb.append(value);
     }
 
-    private static String replaceEscapedCharacters(String escaped) {
+    private static void escapeValue(final StringBuilder sb, final String value) {
+        final boolean containsAsterix = value.contains("*");
+        final boolean containsBackslash = value.contains("\\");
+        final boolean containsColon = value.contains(":");
+        final boolean containsEquals = value.contains("=");
+        final boolean containsNewLine = value.contains("\n");
+        final boolean containsQuestionMark = value.contains("?");
+        final boolean containsQuote = value.contains("\"");
+
+        boolean quoted = containsAsterix || containsBackslash || containsColon || containsEquals || containsNewLine || containsQuestionMark || containsQuote;
+        if (quoted) {
+            String replaced = value;
+            sb.append("\"");
+
+            replaced = checkAndReplace(containsAsterix, replaced, "*", "\\*");
+            replaced = checkAndReplace(containsBackslash, replaced, "\\", "\\\\");
+            //colon and equals do not need escaping
+            replaced = checkAndReplace(containsNewLine, replaced, "\n", "\\n");
+            replaced = checkAndReplace(containsQuestionMark, replaced, "?", "\\?");
+            replaced = checkAndReplace(containsQuote, replaced, "\"", "\\\"");
+            sb.append(replaced);
+
+            sb.append("\"");
+        } else {
+            sb.append(value);
+        }
+    }
+
+    private static String checkAndReplace(boolean condition, String original, String search, String replacement) {
+        if (condition) {
+            return original.replace(search, replacement);
+        }
+        return original;
+    }
+
+    private static String replaceEscapedCharactersInKey(String escaped) {
         if (escaped.contains("%x")) {
             for (EscapedCharacter escapedCharacter : ESCAPED_KEY_CHARACTERS) {
                 escaped = escaped.replace(escapedCharacter.getEscaped(), escapedCharacter.getChar());
             }
         }
         return escaped;
+    }
+
+    private static String replaceEscapedCharactersInValue(final String escaped) {
+        if (escaped.startsWith("\"") && escaped.endsWith("\"")) {
+            final boolean containsAsterix = escaped.contains("\\*");
+            final boolean containsBackslash = escaped.contains("\\\\");
+            final boolean containsNewLine = escaped.contains("\\n");
+            final boolean containsQuestionMark = escaped.contains("\\?");
+            final boolean containsQuote = escaped.contains("\\\"");
+
+            String replaced = escaped.substring(1, escaped.length() - 1);
+            replaced = checkAndReplace(containsAsterix, replaced, "\\*", "*");
+            replaced = checkAndReplace(containsBackslash, replaced, "\\\\", "\\");
+            replaced = checkAndReplace(containsNewLine, replaced, "\\n", "\n");
+            replaced = checkAndReplace(containsQuestionMark, replaced, "\\?", "?");
+            replaced = checkAndReplace(containsQuote, replaced, "\\\"", "\"");
+            return replaced;
+        } else {
+            return escaped;
+        }
     }
 
     private static class EscapedCharacter {

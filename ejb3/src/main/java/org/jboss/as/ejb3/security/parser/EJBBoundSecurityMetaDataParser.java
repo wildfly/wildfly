@@ -27,6 +27,7 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.ejb3.security.metadata.EJBBoundSecurityMetaData;
 import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaDataParser;
+import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * Parser for EJBBoundSecurityMetaData components.
@@ -36,24 +37,24 @@ import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaDataParser;
 public class EJBBoundSecurityMetaDataParser extends AbstractEJBBoundMetaDataParser<EJBBoundSecurityMetaData> {
 
     @Override
-    public EJBBoundSecurityMetaData parse(XMLStreamReader reader) throws XMLStreamException {
+    public EJBBoundSecurityMetaData parse(XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
         EJBBoundSecurityMetaData metaData = new EJBBoundSecurityMetaData();
-        processElements(metaData, reader);
+        processElements(metaData, reader, propertyReplacer);
         return metaData;
     }
 
     @Override
-    protected void processElement(EJBBoundSecurityMetaData metaData, XMLStreamReader reader) throws XMLStreamException {
+    protected void processElement(EJBBoundSecurityMetaData metaData, XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
         if (reader.getNamespaceURI().equals("urn:security")) {
             final String localName = reader.getLocalName();
             if (localName.equals("security-domain"))
-                metaData.setSecurityDomain(getElementText(reader));
+                metaData.setSecurityDomain(getElementText(reader, propertyReplacer));
             else if (localName.equals("run-as-principal"))
-                metaData.setRunAsPrincipal(getElementText(reader));
+                metaData.setRunAsPrincipal(getElementText(reader, propertyReplacer));
             else
                 throw unexpectedElement(reader);
         } else
-            super.processElement(metaData, reader);
+            super.processElement(metaData, reader, propertyReplacer);
     }
 
 }

@@ -213,6 +213,8 @@
                  </entries>
               </connection-factory>
               <pooled-connection-factory name="hornetq-ra">
+                 <user>alice</user>
+                 <password>alicepassword</password>
                  <transaction mode="xa"/>
                  <connectors>
                     <connector-ref connector-name="in-vm"/>

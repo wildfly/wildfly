@@ -58,8 +58,6 @@ public class SubsystemDescriptionsUnitTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
         final ModelNode description = result.get("result");
 
-        System.out.println(description.toString());
-
         servicesA.shutdown();
     }
 
