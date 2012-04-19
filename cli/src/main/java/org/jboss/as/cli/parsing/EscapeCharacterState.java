@@ -45,7 +45,9 @@ public final class EscapeCharacterState extends BaseParsingState {
             @Override
             public void handle(ParsingContext ctx)
                     throws CommandFormatException {
-                ctx.getCallbackHandler().character(ctx);
+                if(ctx.getCharacter() != '\n') {
+                    ctx.getCallbackHandler().character(ctx);
+                }
                 ctx.leaveState();
             }
         };

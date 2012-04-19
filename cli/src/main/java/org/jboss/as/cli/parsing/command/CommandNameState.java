@@ -25,6 +25,7 @@ package org.jboss.as.cli.parsing.command;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
+import org.jboss.as.cli.parsing.EscapeCharacterState;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 import org.jboss.as.cli.parsing.OutputTargetState;
 import org.jboss.as.cli.parsing.ParsingContext;
@@ -41,7 +42,15 @@ public class CommandNameState extends DefaultParsingState {
 
     CommandNameState() {
         super(ID);
-        setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        setEnterHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(ctx.getCharacter() == '\\') {
+                    ctx.enterState(EscapeCharacterState.INSTANCE);
+                } else {
+                    ctx.getCallbackHandler().character(ctx);
+                }
+            }});
         setDefaultHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
@@ -52,5 +61,13 @@ public class CommandNameState extends DefaultParsingState {
                 }
             }});
         putHandler(OutputTargetState.OUTPUT_REDIRECT_CHAR, GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        enterState('\\', EscapeCharacterState.INSTANCE);
+        setReturnHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(ctx.isEndOfContent() || Character.isWhitespace(ctx.getCharacter())) {
+                    ctx.leaveState();
+                }
+            }});
     }
 }

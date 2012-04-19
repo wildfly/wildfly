@@ -21,9 +21,13 @@
  */
 package org.jboss.as.cli.parsing.operation;
 
+import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
+import org.jboss.as.cli.parsing.EscapeCharacterState;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
+import org.jboss.as.cli.parsing.ParsingContext;
 
 
 /**
@@ -49,13 +53,32 @@ public class PropertyState extends DefaultParsingState {
 
     PropertyState(char propSeparator, PropertyValueState valueState, char...listEnd) {
         super(ID);
-        setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        setEnterHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(ctx.getCharacter() == '\\') {
+                    ctx.enterState(EscapeCharacterState.INSTANCE);
+                } else {
+                    ctx.getCallbackHandler().character(ctx);
+                }
+            }});
         for(int i = 0; i < listEnd.length; ++i) {
             putHandler(listEnd[i], GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         }
         enterState('=', new NameValueSeparatorState(valueState));
+        enterState('\\', EscapeCharacterState.INSTANCE);
         setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-        setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        setReturnHandler(new CharacterHandler() {
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(ctx.isEndOfContent()) {
+                    ctx.leaveState();
+                    return;
+                }
+                if(ctx.getInput().charAt(ctx.getLocation() - 1) != '\\') {
+                    ctx.leaveState();
+                }
+            }});
     }
 
     private static class NameValueSeparatorState extends DefaultParsingState {

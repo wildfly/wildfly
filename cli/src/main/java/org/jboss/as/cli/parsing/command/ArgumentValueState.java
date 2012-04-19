@@ -61,5 +61,12 @@ public class ArgumentValueState extends DefaultParsingState {
             enterState('"', new QuotesState(true, false));
         }
         setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        setReturnHandler(new CharacterHandler() {
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(ctx.isEndOfContent() || ctx.getCharacter() == '\n' && ctx.getInput().charAt(ctx.getLocation() - 1) == '\\') {
+                    ctx.leaveState();
+                }
+            }});
     }
 }
