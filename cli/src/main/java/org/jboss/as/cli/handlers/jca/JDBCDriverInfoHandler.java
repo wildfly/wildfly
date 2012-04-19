@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli.handlers.jca;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.util.SimpleTable;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -43,11 +45,81 @@ import org.jboss.dmr.ModelNode;
  */
 public class JDBCDriverInfoHandler extends BaseOperationCommand {
 
+    private final ArgumentWithValue host;
+    private final ArgumentWithValue server;
     private final ArgumentWithValue name;
 
     public JDBCDriverInfoHandler(CommandContext ctx) {
         super(ctx, "jdbc-driver-info", true);
         addRequiredPath("/subsystem=datasources");
+
+        host = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
+            @Override
+            public Collection<String> getAllCandidates(CommandContext ctx) {
+                final ModelControllerClient client = ctx.getModelControllerClient();
+                if(client == null) {
+                    return Collections.emptyList();
+                }
+                final ModelNode req = new ModelNode();
+                req.get(Util.ADDRESS).setEmptyList();
+                req.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
+                req.get(Util.CHILD_TYPE).set(Util.HOST);
+                final ModelNode response;
+                try {
+                    response = client.execute(req);
+                } catch (IOException e) {
+                    return Collections.emptyList();
+                }
+                final ModelNode result = response.get(Util.RESULT);
+                if(!result.isDefined()) {
+                    return Collections.emptyList();
+                }
+                final List<ModelNode> list = result.asList();
+                final List<String> names = new ArrayList<String>(list.size());
+                for(ModelNode node : list) {
+                    names.add(node.asString());
+                }
+                return names;
+            }}), "--host") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                return ctx.isDomainMode() && super.canAppearNext(ctx);
+            }
+        };
+
+        server = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
+            @Override
+            public Collection<String> getAllCandidates(CommandContext ctx) {
+                final ModelControllerClient client = ctx.getModelControllerClient();
+                if(client == null) {
+                    return Collections.emptyList();
+                }
+                final ModelNode req = new ModelNode();
+                req.get(Util.ADDRESS).add(Util.HOST, host.getValue(ctx.getParsedCommandLine()));
+                req.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
+                req.get(Util.CHILD_TYPE).set(Util.SERVER);
+                final ModelNode response;
+                try {
+                    response = client.execute(req);
+                } catch (IOException e) {
+                    return Collections.emptyList();
+                }
+                final ModelNode result = response.get(Util.RESULT);
+                if(!result.isDefined()) {
+                    return Collections.emptyList();
+                }
+                final List<ModelNode> list = result.asList();
+                final List<String> names = new ArrayList<String>(list.size());
+                for(ModelNode node : list) {
+                    names.add(node.asString());
+                }
+                return names;
+            }}), "--server") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                return host.isPresent(ctx.getParsedCommandLine()) && super.canAppearNext(ctx);
+            }
+        };
 
         name = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
@@ -70,18 +142,27 @@ public class JDBCDriverInfoHandler extends BaseOperationCommand {
                 } catch (Exception e) {
                     return Collections.emptyList();
                 }
-            }}), 0, "--name");
+            }}), 0, "--name") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if(ctx.isDomainMode()) {
+                    return host.isPresent(ctx.getParsedCommandLine()) &&
+                            server.isPresent(ctx.getParsedCommandLine()) &&
+                            super.canAppearNext(ctx);
+                }
+                return super.canAppearNext(ctx);
+            }
+        };
     }
 
-    @Override
-    public boolean isAvailable(CommandContext ctx) {
-        return !ctx.isDomainMode();
-    }
     @Override
     protected ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
-
         final ModelNode req = new ModelNode();
         final ModelNode address = req.get(Util.ADDRESS);
+        if(ctx.isDomainMode()) {
+            address.add(Util.HOST, host.getValue(ctx.getParsedCommandLine(), true));
+            address.add(Util.SERVER, server.getValue(ctx.getParsedCommandLine(), true));
+        }
         address.add(Util.SUBSYSTEM, Util.DATASOURCES);
         req.get(Util.OPERATION).set(Util.INSTALLED_DRIVERS_LIST);
         return req;

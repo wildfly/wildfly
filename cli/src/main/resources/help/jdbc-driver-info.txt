@@ -1,27 +1,36 @@
 SYNOPSIS
 
+  Standalone mode:
+  
     jdbc-driver-info [driver_name]
 
+  Domain mode:
+  
+    jdbc-driver-info --host=host_name --server=server_name [driver_name]
+    
+    
 DESCRIPTION
 
     Displays the information about the installed (via modules or deployments)
     JDBC drivers.
-    If the command is executed without arguments, it will list all the installed JDBC
-    drivers in a table with two columns:
+    If the command is executed without the driver name as the argument,
+    it will list all the installed JDBC drivers in a table with two columns:
     
     - NAME    - the name assigned to the JDBC driver;
 
     - SOURCE  - can be either a deployment name or a module name with a slot
                 in the following format: module_name/slot.
 
-    If the driver name is specified as the argument, the command will display
+    If the driver name is specified, the command will display
     all the available information about the driver.
-
-    NOTE: in the current version, the command works only in the standalone mode,
-    since the domain the drivers are installed per server and there is no
-    centralized registry for the drivers.
 
 
 ARGUMENTS
 
  driver_name         - optional, the name of an installed JDBC driver.
+ 
+ --host              - can appear only and is required in the domain mode,
+                       specifies the target host for the command.
+
+ --server            - can appear only and is required in the domain mode,
+                       specifies the target server for the command.
