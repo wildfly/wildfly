@@ -17,4 +17,8 @@ public interface DeploymentOperations extends Closeable {
 
     Set<String> getDeploymentNames();
 
+    static interface Factory {
+        DeploymentOperations create();
+    }
+
 }
