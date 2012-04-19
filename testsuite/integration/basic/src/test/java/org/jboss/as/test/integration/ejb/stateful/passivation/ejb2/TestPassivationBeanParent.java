@@ -23,59 +23,39 @@
 package org.jboss.as.test.integration.ejb.stateful.passivation.ejb2;
 
 import java.rmi.RemoteException;
-import java.util.Random;
-
 import javax.ejb.EJBException;
-import javax.ejb.RemoteHome;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateful;
-
-import org.jboss.ejb3.annotation.Cache;
 import org.jboss.logging.Logger;
 
 /**
  * @author Ondrej Chaloupka
  */
-@Stateful
-@Cache("passivating")
-@RemoteHome(TestPassivationRemoteHome.class)
-public class TestPassivationBean extends TestPassivationBeanParent implements SessionBean {
-    private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(TestPassivationBean.class);
-
+public abstract class TestPassivationBeanParent {
+    private static final Logger log = Logger.getLogger(TestPassivationBeanParent.class);
+    
+    protected String identificator;
+    protected boolean beenPassivated = false;
+    protected boolean beenActivated = false;
+    
     /**
-     * Returns the expected result
+     * Overriding the ejbPassivate method of SessionBean on child class 
      */
-    public String returnTrueString() {
-        return TestPassivationRemote.EXPECTED_RESULT;
+    public void ejbPassivate() throws EJBException, RemoteException {
+        log.info(this.toString() + " ejbPassivate [" + this.identificator + "]");
+        this.beenPassivated = true;
+    }
+    
+    /**
+     * Overriding the ejbActivate method of SessionBean on child class 
+     */
+    public void ejbActivate() throws EJBException, RemoteException {
+        log.info(this.toString() + " ejbActivate [" + this.identificator + "]");
+        this.beenActivated = true;
     }
 
     /**
-     * Returns whether or not this instance has been passivated
+     * Overriding the ejbRemove method of SessionBean on child class 
      */
-    public boolean hasBeenPassivated() {
-        return this.beenPassivated;
-    }
-
-    /**
-     * Returns whether or not this instance has been activated
-     */
-    public boolean hasBeenActivated() {
-        return this.beenActivated;
-    }
-
-    /**
-     * "Called" by create() method of home interface. 
-     */
-    public void ejbCreate() {
-        Random r = new Random();
-        this.identificator = new Integer(r.nextInt(999)).toString();
-        log.info("Bean [" + this.identificator + "] created");
-    }
-
-    @Override
-    public void setSessionContext(SessionContext arg0) throws EJBException, RemoteException {
-
+    public void ejbRemove() throws EJBException, RemoteException {
+        log.info("Bean [" + this.identificator + "] destroyed");
     }
 }
