@@ -72,6 +72,11 @@ public final class Attachments {
      */
     public static final AttachmentKey<AttachmentList<ServiceName>> INITIALISE_IN_ORDER_SERVICES = AttachmentKey.createList(ServiceName.class);
 
+    /**
+     * If this is set to true property replacement will be enabled for spec descriptors
+     */
+    public static final AttachmentKey<Boolean> SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT = AttachmentKey.create(Boolean.class);
+
     private Attachments() {
     }
 }

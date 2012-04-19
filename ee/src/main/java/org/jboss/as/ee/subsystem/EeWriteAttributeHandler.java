@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.ee.component.deployers.DefaultEarSubDeploymentsIsolationProcessor;
+import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacementProcessor;
 import org.jboss.as.ee.structure.GlobalModuleDependencyProcessor;
 import org.jboss.dmr.ModelNode;
 
@@ -39,24 +40,27 @@ public class EeWriteAttributeHandler extends AbstractWriteAttributeHandler<Void>
 
     private final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor;
     private final GlobalModuleDependencyProcessor moduleDependencyProcessor;
+    private final SpecDescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor;
 
     public EeWriteAttributeHandler(final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor,
-                          final GlobalModuleDependencyProcessor moduleDependencyProcessor) {
+                                   final GlobalModuleDependencyProcessor moduleDependencyProcessor, final SpecDescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor) {
         super(GlobalModulesDefinition.INSTANCE, EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED);
         this.isolationProcessor = isolationProcessor;
         this.moduleDependencyProcessor = moduleDependencyProcessor;
+        this.specDescriptorPropertyReplacementProcessor = specDescriptorPropertyReplacementProcessor;
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
         registry.registerReadWriteAttribute(GlobalModulesDefinition.INSTANCE, null, this);
         registry.registerReadWriteAttribute(EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED, null, this);
+        registry.registerReadWriteAttribute(EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT, null, this);
     }
 
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                            ModelNode newValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
 
-        applyUpdateToDeploymentUnitProcessor(context, operation, attributeName);
+        applyUpdateToDeploymentUnitProcessor(context, newValue, attributeName);
 
         return false;
     }
@@ -64,19 +68,18 @@ public class EeWriteAttributeHandler extends AbstractWriteAttributeHandler<Void>
     @Override
     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                          ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
-
-        final ModelNode revertOp = operation.clone();
-        revertOp.get(attributeName).set(valueToRestore);
-        applyUpdateToDeploymentUnitProcessor(context, revertOp, attributeName);
+        applyUpdateToDeploymentUnitProcessor(context, valueToRestore, attributeName);
     }
 
-    private void applyUpdateToDeploymentUnitProcessor(final OperationContext context, ModelNode operation, String attributeName) throws OperationFailedException {
+    private void applyUpdateToDeploymentUnitProcessor(final OperationContext context, ModelNode newValue, String attributeName) throws OperationFailedException {
         if (GlobalModulesDefinition.INSTANCE.getName().equals(attributeName)) {
-            final ModelNode globalMods = GlobalModulesDefinition.INSTANCE.resolveModelAttribute(context, operation);
-            moduleDependencyProcessor.setGlobalModules(globalMods);
+            moduleDependencyProcessor.setGlobalModules(newValue);
         } else if (EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getName().equals(attributeName)) {
-            boolean isolate = EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.resolveModelAttribute(context, operation).asBoolean();
+            boolean isolate = newValue.asBoolean();
             isolationProcessor.setEarSubDeploymentsIsolated(isolate);
+        }else if (EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.getName().equals(attributeName)) {
+            boolean enabled = newValue.asBoolean();
+            specDescriptorPropertyReplacementProcessor.setSpecDescriptorPropertyReplacement(enabled);
         }
     }
 }

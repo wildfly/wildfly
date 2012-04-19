@@ -2,5 +2,5 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
    <extension-module>org.jboss.as.ee</extension-module>
-   <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
+   <subsystem xmlns="urn:jboss:domain:ee:1.1"/>
 </config>

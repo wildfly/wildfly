@@ -34,6 +34,7 @@ enum Element {
     GLOBAL_MODULES(GlobalModulesDefinition.GLOBAL_MODULES),
     MODULE("module"),
     EAR_SUBDEPLOYMENTS_ISOLATED(EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getXmlName()),
+    SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT(EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.getXmlName()),
     UNKNOWN(null);
 
     private final String name;

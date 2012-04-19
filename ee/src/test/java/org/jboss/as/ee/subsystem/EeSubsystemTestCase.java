@@ -38,7 +38,10 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         //TODO: This is copied from standalone.xml you may want to try more combinations
-        return "<subsystem xmlns=\"urn:jboss:domain:ee:1.0\" />";
+        return "<subsystem xmlns=\"urn:jboss:domain:ee:1.1\" > " +
+                "<ear-subdeployments-isolated>true</ear-subdeployments-isolated>" +
+                "<spec-descriptor-property-replacement>true</spec-descriptor-property-replacement>" +
+                "</subsystem>";
     }
 
 }

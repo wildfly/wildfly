@@ -31,13 +31,14 @@ enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    EE_1_0("urn:jboss:domain:ee:1.0")
+    EE_1_0("urn:jboss:domain:ee:1.0"),
+    EE_1_1("urn:jboss:domain:ee:1.1")
     ;
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = EE_1_0;
+    public static final Namespace CURRENT = EE_1_1;
 
     private final String name;
 
