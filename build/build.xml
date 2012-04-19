@@ -199,6 +199,10 @@
             <maven-resource group="org.jboss.com.sun.httpserver" artifact="httpserver"/>
         </module-def>
 
+        <module-def name="org.jboss.common-beans">
+            <maven-resource group="org.jboss.common" artifact="jboss-common-beans"/>
+        </module-def>
+    	
         <module-def name="org.jboss.common-core">
             <maven-resource group="org.jboss" artifact="jboss-common-core"/>
         </module-def>
