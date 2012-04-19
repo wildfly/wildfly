@@ -113,7 +113,7 @@
                    </indexing-properties>
                </distributed-cache>
            </cache-container>
-           <cache-container name="HibernateSearch">
+           <cache-container name="HibernateSearch" default-cache="LuceneIndexesMetadata">
 					<transport lock-timeout="60000"/>
 					<replicated-cache name="LuceneIndexesMetadata" mode="SYNC" batching="true">
 					    <transaction mode="NONE"/>
