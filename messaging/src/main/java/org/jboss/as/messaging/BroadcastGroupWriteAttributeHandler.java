@@ -76,6 +76,7 @@ public class BroadcastGroupWriteAttributeHandler extends WriteAttributeHandlers.
                     context.setRollbackOnly();
                     throw new OperationFailedException(new ModelNode().set(MESSAGES.altAttributeAlreadyDefined(attributeName)));
                 }
+                context.completeStep();
             }
         }, OperationContext.Stage.VERIFY);
 
