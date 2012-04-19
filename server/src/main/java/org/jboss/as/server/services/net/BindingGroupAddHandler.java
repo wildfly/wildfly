@@ -20,15 +20,12 @@ package org.jboss.as.server.services.net;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 
 import java.util.List;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.common.AbstractSocketBindingGroupAddHandler;
 import org.jboss.as.controller.operations.common.Util;
@@ -36,9 +33,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBindingManager;
-import org.jboss.as.server.ServerMessages;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -82,17 +77,20 @@ public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        if (context.isBooting()) {
+            int portOffset = SocketBindingGroupResourceDefinition.PORT_OFFSET.resolveModelAttribute(context, model).asInt();
+            String defaultInterface = SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.resolveModelAttribute(context, model).asString();
 
-        int portOffset = SocketBindingGroupResourceDefinition.PORT_OFFSET.resolveModelAttribute(context, model).asInt();
-        String defaultInterface = SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.resolveModelAttribute(context, model).asString();
-
-        SocketBindingManagerService service = new SocketBindingManagerService(portOffset);
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-        newControllers.add(serviceTarget.addService(SocketBindingManager.SOCKET_BINDING_MANAGER, service)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(defaultInterface), NetworkInterfaceBinding.class, service.getDefaultInterfaceBindingInjector())
-                .addListener(verificationHandler)
-                .install());
-
+            SocketBindingManagerService service = new SocketBindingManagerService(portOffset);
+            final ServiceTarget serviceTarget = context.getServiceTarget();
+            newControllers.add(serviceTarget.addService(SocketBindingManager.SOCKET_BINDING_MANAGER, service)
+                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                    .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(defaultInterface), NetworkInterfaceBinding.class, service.getDefaultInterfaceBindingInjector())
+                    .addListener(verificationHandler)
+                    .install());
+        } else {
+            //If we try to add the service again it will fail, so put the server in reload-required
+            context.reloadRequired();
+        }
     }
 }
