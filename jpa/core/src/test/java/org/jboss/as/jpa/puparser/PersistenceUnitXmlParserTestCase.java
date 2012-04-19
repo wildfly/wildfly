@@ -21,8 +21,6 @@
  */
 package org.jboss.as.jpa.puparser;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.StringReader;
 
 import javax.xml.stream.XMLInputFactory;
@@ -30,7 +28,10 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jboss.metadata.property.PropertyReplacers;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -53,7 +54,7 @@ public class PersistenceUnitXmlParserTestCase {
                 "  </persistence-unit>" +
                 "</persistence>";
         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(persistence_xml));
-        PersistenceUnitMetadataHolder metadataHolder = PersistenceUnitXmlParser.parse(reader);
+        PersistenceUnitMetadataHolder metadataHolder = PersistenceUnitXmlParser.parse(reader, PropertyReplacers.noop());
         PersistenceUnitMetadata metadata = metadataHolder.getPersistenceUnits().get(0);
         String version = metadata.getPersistenceXMLSchemaVersion();
         assertEquals("1.0", version);

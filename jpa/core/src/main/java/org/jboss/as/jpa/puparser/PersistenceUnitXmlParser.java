@@ -22,9 +22,6 @@
 
 package org.jboss.as.jpa.puparser;
 
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -32,15 +29,16 @@ import java.util.Properties;
 import javax.persistence.SharedCacheMode;
 import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceUnitTransactionType;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import org.jboss.as.jpa.config.PersistenceUnit;
 
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
+import org.jboss.metadata.property.PropertyReplacer;
+
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 
 /**
  * Parse a persistence.xml into a list of persistence unit definitions.
@@ -51,7 +49,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
     // cache the trace enabled flag
     private static final boolean traceEnabled = JPA_LOGGER.isTraceEnabled();
 
-    public static PersistenceUnitMetadataHolder parse(final XMLStreamReader reader) throws XMLStreamException {
+    public static PersistenceUnitMetadataHolder parse(final XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
 
         reader.require(START_DOCUMENT, null, null);  // check for a bogus document and throw error
 
@@ -119,7 +117,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case PERSISTENCEUNIT:
-                    PersistenceUnitMetadata pu = parsePU(reader, version);
+                    PersistenceUnitMetadata pu = parsePU(reader, version, propertyReplacer);
                     PUs.add(pu);
                     JPA_LOGGER.readingPersistenceXml(pu.getPersistenceUnitName());
                     break;
@@ -138,11 +136,13 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
     /**
      * Parse the persistence unit definitions based on persistence_2_0.xsd.
      *
+     *
      * @param reader
+     * @param propertyReplacer
      * @return
      * @throws XMLStreamException
      */
-    private static PersistenceUnitMetadata parsePU(XMLStreamReader reader, Version version) throws XMLStreamException {
+    private static PersistenceUnitMetadata parsePU(XMLStreamReader reader, Version version, final PropertyReplacer propertyReplacer) throws XMLStreamException {
         PersistenceUnitMetadata pu = new PersistenceUnitMetadataImpl();
         List<String> classes = new ArrayList<String>(1);
         List<String> jarFiles = new ArrayList<String>(1);
@@ -192,15 +192,15 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
             }
             switch (element) {
                 case CLASS:
-                    classes.add(PersistenceUnit.CLASS.resolve(reader.getElementText()));
+                    classes.add(getElement(reader, propertyReplacer));
                     break;
 
                 case DESCRIPTION:
-                    final String description = PersistenceUnit.DESCRIPTION.resolve(reader.getElementText());
+                    final String description = getElement(reader, propertyReplacer);
                     break;
 
                 case EXCLUDEUNLISTEDCLASSES:
-                    String text = PersistenceUnit.EXCLUDEUNLISTEDCLASSES.resolve(reader.getElementText());
+                    String text = getElement(reader, propertyReplacer);
                     if (text == null || text.isEmpty()) {
                         //the spec has examples where an empty
                         //exclude-unlisted-classes element has the same
@@ -212,37 +212,37 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                     break;
 
                 case JARFILE:
-                    String file = PersistenceUnit.JARFILE.resolve(reader.getElementText());
+                    String file = getElement(reader, propertyReplacer);
                     jarFiles.add(file);
                     break;
 
                 case JTADATASOURCE:
-                    pu.setJtaDataSourceName(PersistenceUnit.JTADATASOURCE.resolve(reader.getElementText()));
+                    pu.setJtaDataSourceName(getElement(reader, propertyReplacer));
                     break;
 
                 case NONJTADATASOURCE:
-                    pu.setNonJtaDataSourceName(PersistenceUnit.NONJTADATASOURCE.resolve(reader.getElementText()));
+                    pu.setNonJtaDataSourceName(getElement(reader, propertyReplacer));
                     break;
 
                 case MAPPINGFILE:
-                    mappingFiles.add(PersistenceUnit.MAPPINGFILE.resolve(reader.getElementText()));
+                    mappingFiles.add(getElement(reader, propertyReplacer));
                     break;
 
                 case PROPERTIES:
-                    parseProperties(reader, properties);
+                    parseProperties(reader, properties, propertyReplacer);
                     break;
 
                 case PROVIDER:
-                    pu.setPersistenceProviderClassName(PersistenceUnit.PROVIDER.resolve(reader.getElementText()));
+                    pu.setPersistenceProviderClassName(getElement(reader, propertyReplacer));
                     break;
 
                 case SHAREDCACHEMODE:
-                    String cm = PersistenceUnit.SHAREDCACHEMODE.resolve(reader.getElementText());
+                    String cm = getElement(reader, propertyReplacer);
                     pu.setSharedCacheMode(SharedCacheMode.valueOf(cm));
                     break;
 
                 case VALIDATIONMODE:
-                    String validationMode = PersistenceUnit.VALIDATIONMODE.resolve(reader.getElementText());
+                    String validationMode = getElement(reader, propertyReplacer);
                     pu.setValidationMode(ValidationMode.valueOf(validationMode));
                     break;
 
@@ -260,7 +260,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
         return pu;
     }
 
-    private static void parseProperties(XMLStreamReader reader, Properties properties) throws XMLStreamException {
+    private static void parseProperties(XMLStreamReader reader, Properties properties, final PropertyReplacer propertyReplacer) throws XMLStreamException {
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -269,7 +269,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                     final int count = reader.getAttributeCount();
                     String name = null, value = null;
                     for (int i = 0; i < count; i++) {
-                        final String attributeValue = reader.getAttributeValue(i);
+                        final String attributeValue = getAttribute(reader, i, propertyReplacer);
                         final String attributeNamespace = reader.getAttributeNamespace(i);
                         if (attributeNamespace != null && !attributeNamespace.isEmpty()) {
                             continue;
@@ -280,7 +280,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                                 name = attributeValue;
                                 break;
                             case VALUE:
-                                value = PersistenceUnit.PROPERTY.resolve(attributeValue);
+                                value = attributeValue;
                                 if (name != null && value != null) {
                                     properties.put(name, value);
                                 }
@@ -300,30 +300,11 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
         }
     }
 
-    /**
-     * Simple test driver for parsing the specified persistence.xml file
-     *
-     * @param args
-     */
-    public static void main(String[] args) {
-        try {
-            String filename;
-            if (args.length < 1) {
-                filename = "persistence.xml";
-            } else
-                filename = args[0];
-            System.out.println("will parse " + filename);
-            XMLInputFactory xmlif = XMLInputFactory.newInstance();
-
-            XMLStreamReader reader =
-                xmlif.createXMLStreamReader(filename, new
-                    FileInputStream(filename));
-
-            PersistenceUnitMetadataHolder h = parse(reader);
-            System.out.println("result = " + h.getPersistenceUnits());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private static String getElement(final XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
+        return propertyReplacer.replaceProperties(reader.getElementText());
     }
 
+    private static String getAttribute(final XMLStreamReader reader, int i, final PropertyReplacer propertyReplacer) throws XMLStreamException {
+        return propertyReplacer.replaceProperties(reader.getAttributeValue(i));
+    }
 }
