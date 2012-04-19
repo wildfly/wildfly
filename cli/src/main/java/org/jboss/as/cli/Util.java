@@ -67,6 +67,7 @@ public class Util {
     public static final String FULL_REPLACE_DEPLOYMENT = "full-replace-deployment";
     public static final String FALSE = "false";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
+    public static final String HOST = "host";
     public static final String ID = "id";
     public static final String IN_SERIES = "in-series";
     public static final String INCLUDE_DEFAULTS = "include-defaults";
@@ -111,6 +112,7 @@ public class Util {
     public static final String ROLLOUT_PLAN = "rollout-plan";
     public static final String ROLLOUT_PLANS = "rollout-plans";
     public static final String RUNTIME_NAME = "runtime-name";
+    public static final String SERVER = "server";
     public static final String SERVER_GROUP = "server-group";
     public static final String STATUS = "status";
     public static final String STEP_1 = "step-1";
@@ -268,7 +270,7 @@ public class Util {
             try {
                 builder.setOperationName(Util.READ_CHILDREN_NAMES);
                 builder.addNode(Util.SERVER_GROUP, serverGroup);
-                builder.addProperty("child-type", Util.DEPLOYMENT);
+                builder.addProperty(Util.CHILD_TYPE, Util.DEPLOYMENT);
                 request = builder.buildRequest();
             } catch (OperationFormatException e) {
                 throw new IllegalStateException("Failed to build operation", e);
