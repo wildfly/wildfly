@@ -124,6 +124,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private final Map<File, IncompleteDeploymentStatus> incompleteDeployments = new HashMap<File, IncompleteDeploymentStatus>();
 
     private final ScheduledExecutorService scheduledExecutor;
+    private volatile DeploymentOperations.Factory deploymentOperationsFactory;
     private volatile DeploymentOperations deploymentOperations;
 
     private FileFilter filter = new ExtensibleFilter();
@@ -151,7 +152,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private final DeploymentScanRunnable scanRunnable = new DeploymentScanRunnable();
 
-    FileSystemDeploymentService(final String relativeTo, final File deploymentDir, final File relativeToDir, final ScheduledExecutorService scheduledExecutor)
+    FileSystemDeploymentService(final String relativeTo, final File deploymentDir, final File relativeToDir,
+                                final DeploymentOperations.Factory deploymentOperationsFactory, final ScheduledExecutorService scheduledExecutor)
             throws OperationFailedException {
         if (scheduledExecutor == null) {
             throw MESSAGES.nullVar("scheduledExecutor");
@@ -170,6 +172,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
         this.relativeTo = relativeTo;
         this.deploymentDir = deploymentDir;
+        this.deploymentOperationsFactory = deploymentOperationsFactory;
         this.scheduledExecutor = scheduledExecutor;
 
         if (relativeToDir != null) {
@@ -247,6 +250,12 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     }
 
+    @Override
+    public synchronized void startScanner() {
+        assert deploymentOperationsFactory != null : "deploymentOperationsFactory is null";
+        startScanner(deploymentOperationsFactory.create());
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -272,6 +281,12 @@ class FileSystemDeploymentService implements DeploymentScanner {
         cancelScan();
         safeClose(deploymentOperations);
         this.deploymentOperations = null;
+    }
+
+    /** Allow DeploymentScannerService to set the factory on the boot-time scanner */
+    void setDeploymentOperationsFactory(final DeploymentOperations.Factory factory) {
+        assert factory != null : "factory is null";
+        this.deploymentOperationsFactory = factory;
     }
 
     /**

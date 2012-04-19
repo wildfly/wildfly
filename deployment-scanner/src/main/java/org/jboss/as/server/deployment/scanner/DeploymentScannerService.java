@@ -23,23 +23,15 @@
 package org.jboss.as.server.deployment.scanner;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -51,11 +43,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 /**
  * Service responsible creating a {@code DeploymentScanner}
@@ -78,7 +65,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     /**
      * The created scanner.
      */
-    private DeploymentScanner scanner;
+    private FileSystemDeploymentService scanner;
 
     private final InjectedValue<PathManager> pathManagerValue = new InjectedValue<PathManager>();
     private final InjectedValue<ModelController> controllerValue = new InjectedValue<ModelController>();
@@ -107,7 +94,8 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
                                                                   final Boolean autoDeployExploded, final Boolean autoDeployXml, final Boolean scanEnabled, final Long deploymentTimeout,
                                                                   final List<ServiceController<?>> newControllers, final FileSystemDeploymentService bootTimeService, final ScheduledExecutorService scheduledExecutorService,
                                                                   final ServiceListener<Object>... listeners) {
-        final DeploymentScannerService service = new DeploymentScannerService(relativeTo, path, scanInterval, unit, autoDeployZip, autoDeployExploded, autoDeployXml, scanEnabled, deploymentTimeout, bootTimeService);
+        final DeploymentScannerService service = new DeploymentScannerService(relativeTo, path, scanInterval, unit, autoDeployZip,
+                autoDeployExploded, autoDeployXml, scanEnabled, deploymentTimeout, bootTimeService);
         final ServiceName serviceName = getServiceName(name);
 
         ServiceBuilder<DeploymentScanner> builder = serviceTarget.addService(serviceName, service)
@@ -124,7 +112,8 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     }
 
     DeploymentScannerService(final String relativeTo, final String path, final Integer interval, final TimeUnit unit, final Boolean autoDeployZipped,
-                             final Boolean autoDeployExploded, final Boolean autoDeployXml, final Boolean enabled, final Long deploymentTimeout, final FileSystemDeploymentService bootTimeService) {
+                             final Boolean autoDeployExploded, final Boolean autoDeployXml, final Boolean enabled, final Long deploymentTimeout,
+                             final FileSystemDeploymentService bootTimeService) {
         this.relativeTo = relativeTo;
         this.path = path;
         this.interval = interval == null ? DEFAULT_INTERVAL : interval.longValue();
@@ -144,6 +133,14 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     @Override
     public synchronized void start(StartContext context) throws StartException {
         try {
+
+            final DeploymentOperations.Factory factory = new DeploymentOperations.Factory() {
+                @Override
+                public DeploymentOperations create() {
+                    return new DefaultDeploymentOperations(controllerValue.getValue().createClient(scheduledExecutorValue.getValue()));
+                }
+            };
+
             //if this is the first start we want to use the same scanner that was used at boot time
             if (scanner == null) {
                 final PathManager pathManager = pathManagerValue.getValue();
@@ -154,8 +151,8 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
                     callbackHandle = pathManager.registerCallback(pathName, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
                 }
 
-
-                final FileSystemDeploymentService scanner = new FileSystemDeploymentService(relativeTo, new File(pathName), relativePath, scheduledExecutorValue.getValue());
+                final FileSystemDeploymentService scanner = new FileSystemDeploymentService(relativeTo, new File(pathName),
+                        relativePath, factory, scheduledExecutorValue.getValue());
 
                 scanner.setScanInterval(unit.toMillis(interval));
                 scanner.setAutoDeployExplodedContent(autoDeployExploded);
@@ -165,9 +162,13 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
                     scanner.setDeploymentTimeout(deploymentTimeout);
                 }
                 this.scanner = scanner;
+            } else {
+                // The boot-time scanner should use our DeploymentOperations.Factory
+                this.scanner.setDeploymentOperationsFactory(factory);
             }
+
             if (enabled) {
-                scanner.startScanner(new DefaultDeploymentOperations(controllerValue.getValue().createClient(scheduledExecutorValue.getValue())));
+                scanner.startScanner();
             }
         } catch (Exception e) {
             throw new StartException(e);
@@ -198,51 +199,6 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
             throw new IllegalStateException();
         }
         return scanner;
-    }
-
-    static class DefaultDeploymentOperations implements DeploymentOperations {
-
-        private final ModelControllerClient controllerClient;
-
-        DefaultDeploymentOperations(final ModelControllerClient controllerClient) {
-            this.controllerClient = controllerClient;
-        }
-
-        @Override
-        public Future<ModelNode> deploy(final ModelNode operation, final ScheduledExecutorService scheduledExecutor) {
-            return scheduledExecutor.submit(new Callable<ModelNode>() {
-                @Override
-                public ModelNode call() throws Exception {
-                    return controllerClient.execute(operation);
-                }
-            });
-        }
-
-        @Override
-        public Set<String> getDeploymentNames() {
-            final ModelNode op = Util.getEmptyOperation(READ_CHILDREN_NAMES_OPERATION, new ModelNode());
-            op.get(CHILD_TYPE).set(DEPLOYMENT);
-            ModelNode response;
-            try {
-                response = controllerClient.execute(op);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            final ModelNode result = response.get(RESULT);
-            final Set<String> deploymentNames = new HashSet<String>();
-            if (result.isDefined()) {
-                final List<ModelNode> deploymentNodes = result.asList();
-                for (ModelNode node : deploymentNodes) {
-                    deploymentNames.add(node.asString());
-                }
-            }
-            return deploymentNames;
-        }
-
-        @Override
-        public void close() throws IOException {
-            controllerClient.close();
-        }
     }
 
 }

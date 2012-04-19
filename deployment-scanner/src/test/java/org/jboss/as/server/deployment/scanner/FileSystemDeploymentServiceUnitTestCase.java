@@ -1390,8 +1390,8 @@ public class FileSystemDeploymentServiceUnitTestCase {
     }
 
     private TesteeSet createTestee(final MockServerController sc, final ScheduledExecutorService executor) throws OperationFailedException {
-        final FileSystemDeploymentService testee = new FileSystemDeploymentService(null, tmpDir, null, executor);
-        testee.startScanner(new DeploymentScannerService.DefaultDeploymentOperations(sc));
+        final FileSystemDeploymentService testee = new FileSystemDeploymentService(null, tmpDir, null, sc, executor);
+        testee.startScanner(new DefaultDeploymentOperations(sc));
         return new TesteeSet(testee, sc);
     }
 
@@ -1460,7 +1460,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
     }
 
-    private static class MockServerController implements ModelControllerClient {
+    private static class MockServerController implements ModelControllerClient, DeploymentOperations.Factory {
 
         private final List<ModelNode> requests = new ArrayList<ModelNode>(1);
         private final List<Response> responses = new ArrayList<Response>(1);
@@ -1501,6 +1501,11 @@ public class FileSystemDeploymentServiceUnitTestCase {
         @Override
         public void close() throws IOException {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public DeploymentOperations create() {
+            return new DefaultDeploymentOperations(this);
         }
 
         private static class Response {

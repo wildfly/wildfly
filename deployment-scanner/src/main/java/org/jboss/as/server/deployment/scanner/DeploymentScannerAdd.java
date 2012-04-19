@@ -96,7 +96,8 @@ class DeploymentScannerAdd implements OperationStepHandler {
 
 
             final String path = DeploymentScannerDefinition.PATH.resolveModelAttribute(context, operation).asString();
-            final String relativeTo = operation.hasDefined(CommonAttributes.RELATIVE_TO) ? RELATIVE_TO.resolveModelAttribute(context, operation).asString() : null;
+            final ModelNode relativeToNode = RELATIVE_TO.resolveModelAttribute(context, operation);
+            final String relativeTo = relativeToNode.isDefined() ?  relativeToNode.asString() : null;
             final Boolean autoDeployZip = AUTO_DEPLOY_ZIPPED.resolveModelAttribute(context, operation).asBoolean();
             final Boolean autoDeployExp = AUTO_DEPLOY_EXPLODED.resolveModelAttribute(context, operation).asBoolean();
             final Boolean autoDeployXml = AUTO_DEPLOY_XML.resolveModelAttribute(context, operation).asBoolean();
@@ -113,7 +114,7 @@ class DeploymentScannerAdd implements OperationStepHandler {
                     relativePath = new File(pathManager.getPathEntry(relativeTo).resolvePath());
                 }
 
-                bootTimeScanner = new FileSystemDeploymentService(relativeTo, new File(pathName), relativePath, scheduledExecutorService);
+                bootTimeScanner = new FileSystemDeploymentService(relativeTo, new File(pathName), relativePath, null, scheduledExecutorService);
                 bootTimeScanner.setAutoDeployExplodedContent(autoDeployExp);
                 bootTimeScanner.setAutoDeployZippedContent(autoDeployZip);
                 bootTimeScanner.setAutoDeployXMLContent(autoDeployXml);
@@ -158,6 +159,7 @@ class DeploymentScannerAdd implements OperationStepHandler {
                         }
                     }
                 });
+                boolean interrupted = false;
                 try {
                     scanDoneLatch.await();
 
@@ -179,9 +181,13 @@ class DeploymentScannerAdd implements OperationStepHandler {
                         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                     }
                 } catch (InterruptedException e) {
+                    interrupted = true;
                     throw new RuntimeException(e);
                 } finally {
                     deploymentDoneLatch.countDown();
+                    if (interrupted) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
             }
         }
@@ -197,7 +203,9 @@ class DeploymentScannerAdd implements OperationStepHandler {
         }
     }
 
-    protected void performRuntime(final OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, final ScheduledExecutorService executorService, final FileSystemDeploymentService bootTimeScanner) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,
+                                  List<ServiceController<?>> newControllers, final ScheduledExecutorService executorService,
+                                  final FileSystemDeploymentService bootTimeScanner) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final String path = DeploymentScannerDefinition.PATH.resolveModelAttribute(context, operation).asString();

@@ -61,6 +61,13 @@ public interface DeploymentScanner {
     void setScanInterval(long scanInterval);
 
     /**
+     * Start the scanner, if not already started, using a default {@link DeploymentOperations}.
+     *
+     * @see #startScanner(DeploymentOperations)
+     */
+    void startScanner();
+
+    /**
      * Start the scanner, if not already started.
      */
     void startScanner(final DeploymentOperations deploymentOperations);
