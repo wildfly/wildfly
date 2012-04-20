@@ -74,14 +74,14 @@ public class DomainSlaveHandler implements OperationStepHandler {
         }
 
         final Set<String> outstanding = new HashSet<String>(hostProxies.keySet());
-        final List<TransactionalProtocolClient.PreparedOperation<NewProxyTask.ProxyOperation>> results = new ArrayList<TransactionalProtocolClient.PreparedOperation<NewProxyTask.ProxyOperation>>();
+        final List<TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation>> results = new ArrayList<TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation>>();
         final Map<String, Future<ModelNode>> finalResults = new HashMap<String, Future<ModelNode>>();
-        final NewProxyTask.ProxyOperationListener listener = new NewProxyTask.ProxyOperationListener();
+        final HostControllerUpdateTask.ProxyOperationListener listener = new HostControllerUpdateTask.ProxyOperationListener();
         for (Map.Entry<String, ProxyController> entry : hostProxies.entrySet()) {
             // Create the proxy task
             final String host = entry.getKey();
             final TransactionalProtocolClient client = ((RemoteProxyController)entry.getValue()).getTransactionalProtocolClient();
-            final NewProxyTask task = new NewProxyTask(host, operation.clone(), context, client);
+            final HostControllerUpdateTask task = new HostControllerUpdateTask(host, operation.clone(), context, client);
             // Execute the operation on the remote host
             final Future<ModelNode> finalResult = task.execute(listener);
             finalResults.put(host, finalResult);
@@ -92,10 +92,9 @@ public class DomainSlaveHandler implements OperationStepHandler {
         try {
             while(outstanding.size() > 0) {
                 try {
-                    final TransactionalProtocolClient.PreparedOperation<NewProxyTask.ProxyOperation> prepared = listener.retrievePreparedOperation();
+                    final TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation> prepared = listener.retrievePreparedOperation();
                     final String name = prepared.getOperation().getName();
                     if( ! outstanding.remove(name)) {
-                        ROOT_LOGGER.errorf("did not expect response from host %s", name);
                         continue;
                     }
                     final ModelNode preparedResult = prepared.getPreparedResult();
@@ -117,7 +116,10 @@ public class DomainSlaveHandler implements OperationStepHandler {
                 // Inform the remote hosts whether to commit or roll back their updates
                 // Do this in parallel
                 boolean rollback = domainOperationContext.isCompleteRollback();
-                for(final TransactionalProtocolClient.PreparedOperation<NewProxyTask.ProxyOperation> prepared : results) {
+                for(final TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation> prepared : results) {
+                    if(prepared.isFailed()) {
+                        continue;
+                    }
                     if(! rollback) {
                         prepared.commit();
                     } else {
@@ -125,7 +127,7 @@ public class DomainSlaveHandler implements OperationStepHandler {
                     }
                 }
                 // Now get the final results from the hosts
-                for(final TransactionalProtocolClient.PreparedOperation<NewProxyTask.ProxyOperation> prepared : results) {
+                for(final TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation> prepared : results) {
                     final String name = prepared.getOperation().getName();
                     try {
                         final ModelNode finalResult = prepared.getFinalResult().get();

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,34 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller.operations.coordination;
+package org.jboss.as.domain.controller.plan;
 
-import java.util.concurrent.Callable;
-
-import org.jboss.as.controller.ModelController;
+import org.jboss.as.domain.controller.ServerIdentity;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Task to asynchronously commit or roll back a remote proxy's transaction.
- *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author Emanuel Muckenhuber
  */
-public class ProxyCommitRollbackTask implements Callable<Void> {
+public interface ServerTask {
 
-    private final ModelController.OperationTransaction transaction;
-    private final boolean rollback;
+    ServerIdentity getServerIdentity();
+    ModelNode getOperation();
 
-    public ProxyCommitRollbackTask(ModelController.OperationTransaction transaction, boolean rollback) {
-        this.transaction = transaction;
-        this.rollback = rollback;
-    }
-
-    @Override
-    public Void call() {
-        if (rollback) {
-            transaction.rollback();
-        } else {
-            transaction.commit();
-        }
-        return null;
-    }
 }

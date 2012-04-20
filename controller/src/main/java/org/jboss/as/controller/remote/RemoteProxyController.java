@@ -123,7 +123,7 @@ public class RemoteProxyController implements ProxyController {
         Future<ModelNode> futureResult = null;
         try {
             // Translate the operation
-            final ModelNode translated = getOperationForProxy(original);
+            final ModelNode translated = translateOperationForProxy(original);
             // Execute the operation
             futureResult = client.execute(operationListener, translated, messageHandler, attachments);
             // Wait for the prepared response
@@ -179,7 +179,7 @@ public class RemoteProxyController implements ProxyController {
      * @param op the operation
      * @return the new operation
      */
-    private ModelNode getOperationForProxy(final ModelNode op) {
+    public ModelNode translateOperationForProxy(final ModelNode op) {
         final PathAddress addr = PathAddress.pathAddress(op.get(OP_ADDR));
         final PathAddress translated = addressTranslator.translateAddress(addr);
         if (addr.equals(translated)) {
