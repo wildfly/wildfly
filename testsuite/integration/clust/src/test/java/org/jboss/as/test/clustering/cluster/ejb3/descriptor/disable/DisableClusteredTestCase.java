@@ -32,11 +32,13 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.ejb.client.ContextSelector;
@@ -66,7 +68,9 @@ public class DisableClusteredTestCase {
     private static boolean node2Running = false;
 
     private static InitialContext context;
-    private static ContextSelector<EJBClientContext> previousSelector; 
+    private static ContextSelector<EJBClientContext> previousSelector;
+    
+    private static final String PROPERTIES_FILENAME = "cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties";
     
     @ArquillianResource
     private ContainerController container;
@@ -119,7 +123,7 @@ public class DisableClusteredTestCase {
     @InSequence(1)
     public void testStatefulBean() throws Exception {
         previousSelector = EJBClientContextSelector
-                .setup("cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties");
+                .setup(PROPERTIES_FILENAME);
         DisableClusteredRemote stateful = (DisableClusteredRemote) context.lookup("ejb:/" + ARCHIVE_NAME +
                 "//DisableClusteredAnnotationStateful!" + DisableClusteredRemote.class.getName() + "?stateful");
 
@@ -148,8 +152,16 @@ public class DisableClusteredTestCase {
      */
     @Test
     @InSequence(2)
-    public void testStatelessBean() throws Exception {
-        EJBClientContextSelector.setup("cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties");
+    public void testStatelessBean(
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
+        
+        String hostName = node1Running ? client1.getRemoteEjbURL().getHost() : client2.getRemoteEjbURL().getHost();
+        int port = node1Running ? client1.getRemoteEjbURL().getPort() : client2.getRemoteEjbURL().getPort();
+        Properties property = new Properties();
+        property.setProperty("remote.connection.default.host", hostName);
+        property.setProperty("remote.connection.default.port", Integer.toString(port));
+        EJBClientContextSelector.setup(PROPERTIES_FILENAME, property);
         
         DisableClusteredRemote stateless = (DisableClusteredRemote) context.lookup("ejb:/" + ARCHIVE_NAME +
                 "//DisableClusteredAnnotationStateless!" + DisableClusteredRemote.class.getName());
