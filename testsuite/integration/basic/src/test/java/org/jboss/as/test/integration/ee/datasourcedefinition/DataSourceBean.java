@@ -32,7 +32,7 @@ import java.sql.SQLException;
  * @author Stuart Douglas
  */
 @DataSourceDefinition(
-        name = "java:app/DataSource",
+        name = "java:comp/ds",
         user = "sa",
         password = "sa",
         className = "org.h2.jdbcx.JdbcDataSource",
@@ -41,7 +41,7 @@ import java.sql.SQLException;
 @Stateless
 public class DataSourceBean {
 
-    @Resource(lookup = "java:app/DataSource", name="java:comp/ds")
+    @Resource(lookup = "java:comp/ds", name="java:app/DataSource")
     private DataSource dataSource;
 
     /**

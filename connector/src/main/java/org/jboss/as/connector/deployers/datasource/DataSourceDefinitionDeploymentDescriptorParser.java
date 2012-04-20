@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.datasource;
+package org.jboss.as.connector.deployers.datasource;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -97,7 +97,7 @@ public class DataSourceDefinitionDeploymentDescriptorParser extends AbstractDepl
         }
 
 
-        final DirectDataSourceInjectionSource directDataSourceInjectionSource = new DirectDataSourceInjectionSource();
+        final DirectDataSourceInjectionSource directDataSourceInjectionSource = new DirectDataSourceInjectionSource(name);
         directDataSourceInjectionSource.setClassName(className);
         directDataSourceInjectionSource.setDatabaseName(dataSource.getDatabaseName());
         if (dataSource.getDescriptions() != null) {

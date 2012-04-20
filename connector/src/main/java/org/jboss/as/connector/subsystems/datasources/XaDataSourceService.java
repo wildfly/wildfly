@@ -38,10 +38,13 @@ public class XaDataSourceService extends AbstractDataSourceService {
 
     private final InjectedValue<ModifiableXaDataSource> dataSourceConfig = new InjectedValue<ModifiableXaDataSource>();
 
-    public XaDataSourceService(final String jndiName) {
-        super(jndiName);
+    public XaDataSourceService(final String jndiName, final ClassLoader classLoader) {
+        super(jndiName, classLoader);
     }
 
+    public XaDataSourceService(final String jndiName) {
+        this(jndiName, null);
+    }
     @Override
     public synchronized void stop(StopContext stopContext) {
         if (deploymentMD != null) {
