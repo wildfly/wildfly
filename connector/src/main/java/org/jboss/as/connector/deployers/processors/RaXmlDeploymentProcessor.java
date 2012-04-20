@@ -30,6 +30,8 @@ import org.jboss.as.connector.metadata.deployment.InactiveResourceAdapterDeploym
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersService;
 import org.jboss.as.connector.util.RaServicesFactory;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.Attachments;
@@ -38,6 +40,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.modules.Module;
@@ -73,7 +76,8 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ManagementResourceRegistration registration = deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
+        final ManagementResourceRegistration baseRegistration = deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
+        final ManagementResourceRegistration registration;
         final Resource deploymentResource = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
 
 
@@ -82,7 +86,11 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
         if (connectorXmlDescriptor == null) {
             return; // Skip non ra deployments
         }
-
+        if (deploymentUnit.getParent() != null) {
+            registration = baseRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement("subdeployment")));
+        } else {
+            registration = baseRegistration;
+        }
         ResourceAdaptersService.ModifiableResourceAdaptors raxmls = null;
         final ServiceController<?> raService = phaseContext.getServiceRegistry().getService(
                 ConnectorServices.RESOURCEADAPTERS_SERVICE);

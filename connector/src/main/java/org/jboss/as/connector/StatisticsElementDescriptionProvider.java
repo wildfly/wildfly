@@ -25,30 +25,20 @@
     import org.jboss.as.connector.subsystems.resourceadapters.Constants;
     import org.jboss.as.controller.descriptions.DescriptionProvider;
     import org.jboss.dmr.ModelNode;
-    import org.jboss.dmr.ModelType;
-    import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 
-    import java.util.Arrays;
-    import java.util.HashMap;
-    import java.util.List;
     import java.util.Locale;
-    import java.util.Map;
     import java.util.ResourceBundle;
 
-    import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
     import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
     import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
     import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
-    import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ONLY;
-    import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
-    import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
 
     /**
      *
      * @author Stefano Maestri (c) 2011 Red Hat Inc.
      */
-    public class SubSystemExtensionDescriptionProvider implements DescriptionProvider {
+    public class StatisticsElementDescriptionProvider implements DescriptionProvider {
 
         private final String bundleName;
         private final String resourceDescriptionKey;
@@ -62,7 +52,7 @@
          * @param resourceDescriptionKey key to use for looking up the resource's description in the bundle
          *
          */
-        public SubSystemExtensionDescriptionProvider(final String bundleName, final String resourceDescriptionKey) {
+        public StatisticsElementDescriptionProvider(final String bundleName, final String resourceDescriptionKey) {
             this.bundleName = bundleName;
             this.resourceDescriptionKey = resourceDescriptionKey;
 
@@ -77,8 +67,7 @@
 
             subsystem.get(OPERATIONS); // placeholder
 
-            subsystem.get(CHILDREN, Constants.STATISTICS_NAME, DESCRIPTION).set(bundle.getString(Constants.STATISTICS_NAME));
-            subsystem.get(CHILDREN, Constants.IRONJACAMAR_NAME, DESCRIPTION).set(bundle.getString(Constants.IRONJACAMAR_NAME));
+            subsystem.get(CHILDREN, Constants.CONNECTIONDEFINITIONS_NAME, DESCRIPTION).set(bundle.getString(Constants.CONNECTIONDEFINITIONS_NAME));
 
 
             return subsystem;

@@ -125,11 +125,11 @@ public class IronJacamarResource implements Resource {
         return this;
     }
 
-    static class IronJacamarRuntimeResource extends AbstractModelResource {
+    public static class IronJacamarRuntimeResource extends AbstractModelResource {
 
         private volatile ModelNode model = new ModelNode();
 
-        IronJacamarRuntimeResource() {
+        public IronJacamarRuntimeResource() {
         }
 
 

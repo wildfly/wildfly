@@ -2,6 +2,7 @@ package org.jboss.as.connector.util;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.StatisticsDescriptionProvider;
+import org.jboss.as.connector.StatisticsElementDescriptionProvider;
 import org.jboss.as.connector.SubSystemExtensionDescriptionProvider;
 import org.jboss.as.connector.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterXmlDeploymentService;
@@ -79,60 +80,68 @@ public class RaServicesFactory {
                 switch (transition) {
                     case STARTING_to_UP: {
 
-                        synchronized(registration) {
+                        synchronized (registration) {
                             CommonDeployment deploymentMD = ((ResourceAdapterXmlDeploymentService) controller.getService()).getRaxmlDeployment();
 
 
                             if (deploymentMD.getConnectionManagers() != null) {
-                                for (ConnectionManager cm : deploymentMD.getConnectionManagers())  {
-                                                                if(cm.getPool() != null) {
-                                                                    StatisticsPlugin poolStats = cm.getPool().getStatistics();
+                                for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
+                                    if (cm.getPool() != null) {
+                                        StatisticsPlugin poolStats = cm.getPool().getStatistics();
 
-                                if (poolStats.getNames().size() != 0) {
-                                    DescriptionProvider statsResourceDescriptionProvider = new StatisticsDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics", poolStats);
-                                    PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
-                                    PathElement peCD = PathElement.pathElement(Constants.CONNECTIONDEFINITIONS_NAME, cm.getJndiName());
+                                        if (poolStats.getNames().size() != 0) {
+                                            DescriptionProvider statsResourceDescriptionProvider = new StatisticsDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics", poolStats);
+                                            PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
+                                            PathElement peStats = PathElement.pathElement(Constants.STATISTICS_NAME, Constants.STATISTICS_NAME);
+                                            PathElement peCD = PathElement.pathElement(Constants.CONNECTIONDEFINITIONS_NAME, cm.getJndiName());
 
-                                    ManagementResourceRegistration overrideRegistration = registration;
-                                    //when you are in deploy you have a registration pointing to deployment=*
-                                    //when you are in re-deploy it points to specific deploymentUnit
-                                    if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnitName) == null) {
-                                        overrideRegistration = registration.registerOverrideModel(deploymentUnitName, new OverrideDescriptionProvider() {
-                                            @Override
-                                            public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
-                                                return Collections.emptyMap();
+                                            ManagementResourceRegistration overrideRegistration = registration;
+                                            //when you are in deploy you have a registration pointing to deployment=*
+                                            //when you are in re-deploy it points to specific deploymentUnit
+                                            if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnitName) == null) {
+                                                overrideRegistration = registration.registerOverrideModel(deploymentUnitName, new OverrideDescriptionProvider() {
+                                                    @Override
+                                                    public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
+                                                        return Collections.emptyMap();
+                                                    }
+
+                                                    @Override
+                                                    public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
+                                                        return Collections.emptyMap();
+                                                    }
+                                                });
                                             }
 
-                                            @Override
-                                            public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                                                return Collections.emptyMap();
+                                            ManagementResourceRegistration subRegistration = overrideRegistration.getSubModel(PathAddress.pathAddress(pe));
+                                            if (subRegistration == null) {
+                                                subRegistration = overrideRegistration.registerSubModel(pe, new SubSystemExtensionDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "deployment-subsystem"));
                                             }
-                                        });
-                                    }
+                                            final Resource subsystemResource = new IronJacamarResource.IronJacamarRuntimeResource();
 
-                                    ManagementResourceRegistration subRegistration = overrideRegistration.getSubModel(PathAddress.pathAddress(pe));
-                                    if (subRegistration == null) {
-                                        subRegistration = overrideRegistration.registerSubModel(pe, new SubSystemExtensionDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics"));
-                                    }
+                                            deploymentResource.registerChild(pe, subsystemResource);
 
-                                    final IronJacamarResource subsystemResource = new IronJacamarResource();
+                                            ManagementResourceRegistration statsRegistration = subRegistration.getSubModel(PathAddress.pathAddress(peStats));
+                                            if (statsRegistration == null) {
+                                                statsRegistration = subRegistration.registerSubModel(peStats, new StatisticsElementDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics"));
+                                            }
+                                            final Resource statisticsResource = new IronJacamarResource.IronJacamarRuntimeResource();
 
-                                    deploymentResource.registerChild(pe, subsystemResource);
+                                            subsystemResource.registerChild(peStats, statisticsResource);
 
-                                    if (subRegistration.getSubModel(PathAddress.pathAddress(peCD)) == null) {
-                                        ManagementResourceRegistration cdSubRegistration = subRegistration.registerSubModel(peCD, statsResourceDescriptionProvider);
-                                        final IronJacamarResource cdResource = new IronJacamarResource();
+                                            if (statsRegistration.getSubModel(PathAddress.pathAddress(peCD)) == null) {
+                                                ManagementResourceRegistration cdSubRegistration = statsRegistration.registerSubModel(peCD, statsResourceDescriptionProvider);
+                                                final Resource cdResource = new IronJacamarResource.IronJacamarRuntimeResource();
 
-                                        subsystemResource.registerChild(peCD, cdResource);
-                                        for (String statName : poolStats.getNames()) {
-                                            cdSubRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                                                statisticsResource.registerChild(peCD, cdResource);
+
+                                                for (String statName : poolStats.getNames()) {
+                                                    cdSubRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                                                }
+                                                cdSubRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_STATISTICS_DESC, false);
+                                            }
                                         }
-                                        cdSubRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_STATISTICS_DESC, false);
                                     }
-
                                 }
-                            }
-                        }
                             }
                         }
                         break;
