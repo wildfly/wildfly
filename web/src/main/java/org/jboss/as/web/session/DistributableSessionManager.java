@@ -635,6 +635,11 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     }
 
     @Override
+    protected String generateSessionId(Random random) {
+        return this.distributedCacheManager.createSessionId();
+    }
+
+    @Override
     protected boolean appendJVMRoute() {
         return this.getUseJK();
     }
@@ -808,6 +813,11 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     @Override
     public String locate(String sessionId) {
         return this.distributedCacheManager.locate(sessionId);
+    }
+
+    @Override
+    public String createSessionId() {
+        return super.generateSessionId(this.getEngine().getService().getRandom());
     }
 
     @Override

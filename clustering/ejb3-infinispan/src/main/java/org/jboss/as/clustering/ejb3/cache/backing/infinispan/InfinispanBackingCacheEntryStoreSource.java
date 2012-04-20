@@ -24,6 +24,7 @@ package org.jboss.as.clustering.ejb3.cache.backing.infinispan;
 
 import java.io.Serializable;
 import java.util.AbstractMap;
+import java.util.concurrent.Executors;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
@@ -34,6 +35,8 @@ import org.jboss.as.clustering.MarshalledValue;
 import org.jboss.as.clustering.MarshalledValueFactory;
 import org.jboss.as.clustering.MarshallingContext;
 import org.jboss.as.clustering.SimpleMarshalledValueFactory;
+import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
+import org.jboss.as.clustering.infinispan.affinity.LocalKeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
@@ -42,6 +45,7 @@ import org.jboss.as.clustering.lock.impl.SharedLocalYieldingClusterLockManagerSe
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.clustering.registry.RegistryService;
 import org.jboss.as.ejb3.cache.Cacheable;
+import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreConfig;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSource;
@@ -73,6 +77,7 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
     private String clientMappingsCacheName = DEFAULT_CLIENT_MAPPING_CACHE;
     private int maxSize = ClusteredBackingCacheEntryStoreConfig.DEFAULT_MAX_SIZE;
     private boolean passivateEventsOnReplicate = DEFAULT_PASSIVATE_EVENTS_ON_REPLICATE;
+    private KeyAffinityServiceFactory affinityFactory = new LocalKeyAffinityServiceFactory(Executors.newSingleThreadExecutor(), 10);
 
     private final MarshallerFactory factory = Marshalling.getMarshallerFactory("river", MarshallerFactory.class.getClassLoader());
     private CacheInvoker invoker = new RetryingCacheInvoker(0, 0);
@@ -102,18 +107,18 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
     }
 
     @Override
-    public <E extends SerializationGroup<K, V, G>> BackingCacheEntryStore<G, Cacheable<G>, E> createGroupIntegratedObjectStore(PassivationManager<G, E> passivationManager, StatefulTimeoutInfo timeout) {
+    public <E extends SerializationGroup<K, V, G>> BackingCacheEntryStore<G, Cacheable<G>, E> createGroupIntegratedObjectStore(IdentifierFactory<G> identifierFactory, PassivationManager<G, E> passivationManager, StatefulTimeoutInfo timeout) {
         @SuppressWarnings("unchecked")
         Cache<G, MarshalledValue<E, MarshallingContext>> cache = this.groupCache.getValue();
         MarshallingContext context = new MarshallingContext(this.factory, passivationManager.getMarshallingConfiguration());
         MarshalledValueFactory<MarshallingContext> valueFactory = new SimpleMarshalledValueFactory(context);
         @SuppressWarnings("unchecked")
         Registry<String, ?> registry = this.registry.getValue();
-        return new InfinispanBackingCacheEntryStore<G, Cacheable<G>, E, MarshallingContext>(cache, this.invoker, null, timeout, this, false, valueFactory, context, null, null, registry);
+        return new InfinispanBackingCacheEntryStore<G, Cacheable<G>, E, MarshallingContext>(cache, this.invoker, identifierFactory, this.affinityFactory, null, timeout, this, false, valueFactory, context, null, null, registry);
     }
 
     @Override
-    public <E extends SerializationGroupMember<K, V, G>> BackingCacheEntryStore<K, V, E> createIntegratedObjectStore(final String beanName, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout) {
+    public <E extends SerializationGroupMember<K, V, G>> BackingCacheEntryStore<K, V, E> createIntegratedObjectStore(final String beanName, IdentifierFactory<K> identifierFactory, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout) {
         Cache<?, ?> groupCache = this.groupCache.getValue();
         Configuration groupCacheConfiguration = groupCache.getCacheConfiguration();
         EmbeddedCacheManager container = groupCache.getCacheManager();
@@ -136,7 +141,11 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
         };
         @SuppressWarnings("unchecked")
         Registry<String, ?> registry = this.registry.getValue();
-        return new InfinispanBackingCacheEntryStore<K, V, E, MarshallingContext>(cache, this.invoker, this.passivateEventsOnReplicate ? passivationManager : null, timeout, this, true, valueFactory, context, this.lockManager.getValue(), lockKeyFactory, registry);
+        return new InfinispanBackingCacheEntryStore<K, V, E, MarshallingContext>(cache, this.invoker, identifierFactory, this.affinityFactory, this.passivateEventsOnReplicate ? passivationManager : null, timeout, this, true, valueFactory, context, this.lockManager.getValue(), lockKeyFactory, registry);
+    }
+
+    public void setKeyAffinityServiceFactory(KeyAffinityServiceFactory affinityFactory) {
+        this.affinityFactory = affinityFactory;
     }
 
     @Override

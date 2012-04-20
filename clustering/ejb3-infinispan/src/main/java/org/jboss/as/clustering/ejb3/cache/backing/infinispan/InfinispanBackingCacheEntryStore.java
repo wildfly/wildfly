@@ -31,6 +31,8 @@ import java.util.Random;
 import java.util.Set;
 
 import org.infinispan.Cache;
+import org.infinispan.affinity.KeyAffinityService;
+import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DataLocality;
 import org.infinispan.distribution.DistributionManager;
@@ -42,6 +44,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEven
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.MarshalledValue;
 import org.jboss.as.clustering.MarshalledValueFactory;
+import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.invoker.BatchOperation;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
@@ -49,6 +52,7 @@ import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager.LockRe
 import org.jboss.as.clustering.lock.TimeoutException;
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.ejb3.cache.Cacheable;
+import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreConfig;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntry;
@@ -65,7 +69,7 @@ import org.jboss.logging.Logger;
  * @author Paul Ferraro
  */
 @Listener
-public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends Cacheable<K>, E extends BackingCacheEntry<K, V>, C> extends AbstractBackingCacheEntryStore<K, V, E>{
+public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends Cacheable<K>, E extends BackingCacheEntry<K, V>, C> extends AbstractBackingCacheEntryStore<K, V, E> implements KeyGenerator<K> {
     private final Logger log = Logger.getLogger(getClass());
 
     private final SharedLocalYieldingClusterLockManager lockManager;
@@ -79,11 +83,14 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
     private final boolean clustered;
     private final Random random = new Random(System.currentTimeMillis());
     private final Registry<String, ?> registry;
+    private final IdentifierFactory<K> identifierFactory;
+    private final KeyAffinityService<K> affinity;
 
-    public InfinispanBackingCacheEntryStore(Cache<K, MarshalledValue<E, C>> cache, CacheInvoker invoker, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout, ClusteredBackingCacheEntryStoreConfig config, boolean controlCacheLifecycle, MarshalledValueFactory<C> valueFactory, C context, SharedLocalYieldingClusterLockManager lockManager, LockKeyFactory<K> lockKeyFactory, Registry<String, ?> registry) {
+    public InfinispanBackingCacheEntryStore(Cache<K, MarshalledValue<E, C>> cache, CacheInvoker invoker, IdentifierFactory<K> identifierFactory, KeyAffinityServiceFactory affinityFactory, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout, ClusteredBackingCacheEntryStoreConfig config, boolean controlCacheLifecycle, MarshalledValueFactory<C> valueFactory, C context, SharedLocalYieldingClusterLockManager lockManager, LockKeyFactory<K> lockKeyFactory, Registry<String, ?> registry) {
         super(timeout, config);
         this.cache = cache;
         this.invoker = invoker;
+        this.identifierFactory = identifierFactory;
         this.passivationManager = passivationManager;
         this.controlCacheLifecycle = controlCacheLifecycle;
         this.clustered = cache.getCacheConfiguration().clustering().cacheMode().isClustered();
@@ -92,6 +99,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
         this.lockManager = this.clustered ? lockManager : null;
         this.lockKeyFactory = lockKeyFactory;
         this.registry = registry;
+        this.affinity = affinityFactory.createService(cache, this);
     }
 
     @Override
@@ -99,13 +107,25 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
         if (this.controlCacheLifecycle) {
             this.cache.start();
         }
+        this.affinity.start();
     }
 
     @Override
     public void stop() {
+        this.affinity.stop();
         if (this.controlCacheLifecycle) {
             this.cache.stop();
         }
+    }
+
+    @Override
+    public K createIdentifier() {
+        return this.affinity.getKeyForAddress(this.cache.getCacheManager().getAddress());
+    }
+
+    @Override
+    public K getKey() {
+        return this.identifierFactory.createIdentifier();
     }
 
     @Override

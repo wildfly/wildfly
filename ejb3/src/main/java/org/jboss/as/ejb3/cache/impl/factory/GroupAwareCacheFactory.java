@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.Cacheable;
+import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.as.ejb3.cache.impl.GroupAwareCache;
@@ -54,7 +55,7 @@ import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
  * @author Brian Stansberry
  * @author Paul Ferraro
  */
-public class GroupAwareCacheFactory<K extends Serializable, V extends Cacheable<K>> implements CacheFactory<K, V>, BackingCacheLifecycleListener {
+public class GroupAwareCacheFactory<K extends Serializable, V extends Cacheable<K>> implements CacheFactory<K, V>, BackingCacheLifecycleListener, IdentifierFactory<UUID> {
 
     private final AtomicReference<SerializationGroupContainer<K, V>> groupContainerRef = new AtomicReference<SerializationGroupContainer<K, V>>();
     private final AtomicInteger memberCounter = new AtomicInteger();
@@ -67,7 +68,7 @@ public class GroupAwareCacheFactory<K extends Serializable, V extends Cacheable<
     // --------------------------------------------------- StatefulCacheFactory
 
     @Override
-    public Cache<K, V> createCache(String beanName, StatefulObjectFactory<V> factory, PassivationManager<K, V> passivationManager, StatefulTimeoutInfo timeout) {
+    public Cache<K, V> createCache(String beanName, IdentifierFactory<K> identifierFactory, StatefulObjectFactory<V> factory, PassivationManager<K, V> passivationManager, StatefulTimeoutInfo timeout) {
 
         // Create/find the cache for SerializationGroup that the container
         // may be associated with
@@ -84,7 +85,7 @@ public class GroupAwareCacheFactory<K extends Serializable, V extends Cacheable<
         SerializationGroupMemberContainer<K, V, UUID> container = new SerializationGroupMemberContainer<K, V, UUID>(passivationManager, groupCache, this.storeSource);
 
         // Create the store for SerializationGroupMembers from the container
-        BackingCacheEntryStore<K, V, SerializationGroupMember<K, V, UUID>> store = storeSource.createIntegratedObjectStore(beanName, container, timeout);
+        BackingCacheEntryStore<K, V, SerializationGroupMember<K, V, UUID>> store = storeSource.createIntegratedObjectStore(beanName, identifierFactory, container, timeout);
         container.setBackingCacheEntryStore(store);
 
         // Set up the backing cache with the store and group cache
@@ -100,13 +101,18 @@ public class GroupAwareCacheFactory<K extends Serializable, V extends Cacheable<
     private SerializationGroupContainer<K, V> createGroupContainer(PassivationManager<K, V> passivationManager, StatefulTimeoutInfo timeout) {
         SerializationGroupContainer<K, V> container = new SerializationGroupContainer<K, V>(passivationManager);
 
-        BackingCacheEntryStore<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> store = storeSource.createGroupIntegratedObjectStore(container, timeout);
+        BackingCacheEntryStore<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> store = storeSource.createGroupIntegratedObjectStore(this, container, timeout);
 
         PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> groupCache = new PassivatingBackingCacheImpl<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>>(container, container, container, store);
 
         container.setGroupCache(groupCache);
 
         return container;
+    }
+
+    @Override
+    public UUID createIdentifier() {
+        return UUID.randomUUID();
     }
 
     // TODO Make the group cache a service

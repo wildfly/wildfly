@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.Cacheable;
+import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntry;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStore;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreConfig;
@@ -53,9 +54,9 @@ import org.jboss.ejb.client.NodeAffinity;
  * @author Paul Ferraro
  */
 public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cacheable<K>, E extends BackingCacheEntry<K, V>> extends AbstractBackingCacheEntryStore<K, V, E> {
+    private final IdentifierFactory<K> identifierFactory;
     private final PersistentObjectStore<K, E> store;
     private final Map<K, EntryHolder> cache = new ConcurrentHashMap<K, EntryHolder>();
-
 
     /**
      * SORTED SETS COMPARE FOR EQUALITY USING Comparable
@@ -70,10 +71,16 @@ public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cach
     /**
      * Create a new SimpleIntegratedObjectStore.
      */
-    public SimpleBackingCacheEntryStore(PersistentObjectStore<K, E> store, ServerEnvironment environment, StatefulTimeoutInfo timeout, BackingCacheEntryStoreConfig config) {
+    public SimpleBackingCacheEntryStore(IdentifierFactory<K> identifierFactory, PersistentObjectStore<K, E> store, ServerEnvironment environment, StatefulTimeoutInfo timeout, BackingCacheEntryStoreConfig config) {
         super(timeout, config);
+        this.identifierFactory = identifierFactory;
         this.store = store;
         this.environment = environment;
+    }
+
+    @Override
+    public K createIdentifier() {
+        return this.identifierFactory.createIdentifier();
     }
 
     @Override

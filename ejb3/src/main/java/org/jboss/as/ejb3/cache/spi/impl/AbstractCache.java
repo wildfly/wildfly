@@ -44,6 +44,11 @@ public abstract class AbstractCache<K extends Serializable, V extends Cacheable<
     }
 
     @Override
+    public K createIdentifier() {
+        return this.backingCache.createIdentifier();
+    }
+
+    @Override
     public V create() {
         return this.backingCache.create().getUnderlyingItem();
     }

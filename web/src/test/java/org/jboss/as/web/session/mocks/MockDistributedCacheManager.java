@@ -152,6 +152,11 @@ public class MockDistributedCacheManager implements DistributedCacheManager<Outg
         return null;
     }
 
+    @Override
+    public String createSessionId() {
+        return null;
+    }
+
     private static class MockBatchingManager implements BatchingManager {
         private static final MockBatchingManager INSTANCE = new MockBatchingManager();
 
