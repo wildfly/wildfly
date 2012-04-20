@@ -1825,9 +1825,13 @@
                                         <include>org.jboss:jboss-ejb-client</include>
                                         <include>org.jboss:jboss-remote-naming</include>
                                         <include>org.jboss.jbossts:jbosstxbridge</include>
+
+                                        <!--                                        
                                         <include>org.jboss.jbossts:jbossxts</include>
                                         <include>org.jboss.jbossts:jbossxts-api</include>
+                                        -->
                                         <include>org.jboss:jboss-vfs</include>
+
                                         <include>org.jboss.logging:jboss-logging</include>
                                         <include>org.jboss.logging:jul-to-slf4j-stub</include>
                                         <include>org.jboss.logmanager:jboss-logmanager</include>
@@ -1887,6 +1891,7 @@
                                         -->
                                         <include>xalan:xalan</include>
                                         <include>xerces:xercesImpl</include>
+
                                     </dependencySourceIncludes>
                                 </configuration>
                             </execution>
@@ -1900,4 +1905,3 @@
     </profiles>
 
 </project>
-
