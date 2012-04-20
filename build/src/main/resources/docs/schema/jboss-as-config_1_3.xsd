@@ -51,6 +51,13 @@
                 <xs:element name="server-groups" type="server-groupsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="management-client-content" type="management-client-contentType" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="optional" default="Unnamed Domain">
+               <xs:annotation>
+                  <xs:documentation>
+                     The name to use for the domain controller. Useful for administrators who need to work with multiple domains.
+                  </xs:documentation>
+               </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 

@@ -82,7 +82,7 @@ public class DomainRootDescription {
     }
 
     public static ModelNode getDescription(final Locale locale) {
-
+        final ResourceDescriptionResolver resolver = getResourceDescriptionResolver("domain");
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("domain"));
@@ -91,6 +91,9 @@ public class DomainRootDescription {
         root.get(ATTRIBUTES, NAMESPACES).set(CommonDescriptions.getNamespacePrefixAttribute(locale));
         root.get(ATTRIBUTES, SCHEMA_LOCATIONS).set(CommonDescriptions.getSchemaLocationAttribute(locale));
 
+        DomainAttributes.NAME.addResourceAttributeDescription(root, resolver, locale, bundle);
+
+        //TODO Convert these to use AttributeDefinition
         root.get(ATTRIBUTES, PROCESS_TYPE, DESCRIPTION).set(bundle.getString("domain.process-type"));
         root.get(ATTRIBUTES, PROCESS_TYPE, TYPE).set(ModelType.STRING);
         root.get(ATTRIBUTES, PROCESS_TYPE, REQUIRED).set(true);
