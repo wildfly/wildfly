@@ -26,6 +26,7 @@ import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.services.ResourceAdapterActivatorService;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
@@ -75,7 +76,6 @@ import org.jboss.jca.common.metadata.ra.ra15.Activationspec15Impl;
 import org.jboss.jca.common.metadata.ra.ra15.Connector15Impl;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.msc.inject.Injector;
@@ -263,7 +263,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
             serviceTarget
                     .addService(ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(name), activator)
-                    .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class,
+                    .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class,
                             activator.getMdrInjector())
                     .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class,
                             activator.getRaRepositoryInjector())
