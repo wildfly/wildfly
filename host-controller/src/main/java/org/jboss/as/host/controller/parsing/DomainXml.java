@@ -36,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -47,6 +48,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
@@ -72,8 +75,8 @@ import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.CommonXml;
@@ -84,6 +87,7 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
+import org.jboss.as.domain.controller.descriptions.DomainAttributes;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -120,8 +124,10 @@ public class DomainXml extends CommonXml {
             }
             case DOMAIN_1_1:
             case DOMAIN_1_2:
-            case DOMAIN_1_3:{
                 readDomainElement1_1(reader, new ModelNode(), readerNS, nodes);
+                break;
+            case DOMAIN_1_3:{
+                readDomainElement1_3(reader, new ModelNode(), readerNS, nodes);
                 break;
             }
             default: {
@@ -140,6 +146,8 @@ public class DomainXml extends CommonXml {
         writer.writeDefaultNamespace(Namespace.CURRENT.getUriString());
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
+
+        DomainAttributes.NAME.marshallAsAttribute(modelNode, false, writer);
 
         writeNewLine(writer);
 
@@ -202,7 +210,7 @@ public class DomainXml extends CommonXml {
         parseNamespaces(reader, address, list);
 
         // attributes
-        readDomainElementAttributes(reader, address, list);
+        readDomainElementAttributes_1_0(reader, address, list);
 
         // Content
         // Handle elements: sequence
@@ -254,7 +262,7 @@ public class DomainXml extends CommonXml {
         parseNamespaces(reader, address, list);
 
         // attributes
-        readDomainElementAttributes(reader, address, list);
+        readDomainElementAttributes_1_1(reader, address, list);
 
         // Content
         // Handle elements: sequence
@@ -305,7 +313,62 @@ public class DomainXml extends CommonXml {
         }
     }
 
-    protected void readDomainElementAttributes(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> list) throws XMLStreamException {
+    void readDomainElement1_3(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+
+        parseNamespaces(reader, address, list);
+
+        // attributes
+        readDomainElementAttributes_1_3(reader, expectedNs, address, list);
+
+        // Content
+        // Handle elements: sequence
+
+        Element element = nextElement(reader, expectedNs);
+        if (element == Element.EXTENSIONS) {
+            extensionXml.parseExtensions(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.SYSTEM_PROPERTIES) {
+            parseSystemProperties(reader, address, expectedNs, list, false);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.PATHS) {
+            parsePaths(reader, address, expectedNs, list, false);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.PROFILES) {
+            parseProfiles(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        }
+        final Set<String> interfaceNames = new HashSet<String>();
+        if (element == Element.INTERFACES) {
+            parseInterfaces(reader, interfaceNames, address, expectedNs, list, false);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.SOCKET_BINDING_GROUPS) {
+            parseDomainSocketBindingGroups(reader, address, expectedNs, list, interfaceNames);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.DEPLOYMENTS) {
+            parseDeployments(reader, address, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME),
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.SERVER_GROUPS) {
+            parseServerGroups(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.MANAGEMENT_CLIENT_CONTENT) {
+            parseManagementClientContent(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        } else if (element == null) {
+            // Always add op(s) to set up management-client-content resources
+            initializeRolloutPlans(address, list);
+        } else {
+            throw unexpectedElement(reader);
+        }
+    }
+    protected void readDomainElementAttributes_1_0(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> list) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             switch (Namespace.forUri(reader.getAttributeNamespace(i))) {
@@ -327,6 +390,47 @@ public class DomainXml extends CommonXml {
                 }
                 default:
                     throw unexpectedAttribute(reader, i);
+            }
+        }
+    }
+
+    protected void readDomainElementAttributes_1_1(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> list) throws XMLStreamException {
+        readDomainElementAttributes_1_0(reader, address, list);
+    }
+
+    protected void readDomainElementAttributes_1_3(XMLExtendedStreamReader reader, Namespace expectedNs, ModelNode address, List<ModelNode> list) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            Namespace ns = Namespace.forUri(reader.getAttributeNamespace(i));
+            switch (ns) {
+                case XML_SCHEMA_INSTANCE: {
+                    switch (Attribute.forName(reader.getAttributeLocalName(i))) {
+                        case SCHEMA_LOCATION: {
+                            parseSchemaLocations(reader, address, list, i);
+                            break;
+                        }
+                        case NO_NAMESPACE_SCHEMA_LOCATION: {
+                            // todo, jeez
+                            break;
+                        }
+                        default: {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                    }
+                    break;
+                }
+                default:
+                    switch (Attribute.forName(reader.getAttributeLocalName(i))) {
+                        case NAME:
+                            ModelNode op = new ModelNode();
+                            op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+                            op.get(NAME).set(NAME);
+                            op.get(VALUE).set(ParseUtils.parsePossibleExpression(reader.getAttributeValue(i)));
+                            list.add(op);
+                        break;
+                        default:
+                            throw unexpectedAttribute(reader, i);
+                    }
             }
         }
     }
