@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.domain.suites;
 
-import java.io.File;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
@@ -49,7 +48,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
@@ -60,7 +58,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
@@ -73,7 +70,7 @@ import static org.jboss.as.test.integration.domain.DomainTestSupport.validateFai
 import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
 
 import java.io.IOException;
-import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -119,7 +116,7 @@ public class CoreResourceManagementTestCase {
     private static final ModelNode OTHER_RUNNING_SERVER_ADDRESS = new ModelNode();
     private static final ModelNode OTHER_RUNNING_SERVER_PROP_ADDRESS = new ModelNode();
     private static final ModelNode OTHER_RUNNING_SERVER_CLASSLOADING_ADDRESS = new ModelNode();
-    
+
     private static final String fileSeparator = System.getProperty("file.separator");
 
     static {
@@ -602,14 +599,20 @@ public class CoreResourceManagementTestCase {
         validateFailedResponse(response);
 
         String errorCode = getNotAuthorizedErrorCode();
-        List<Property> steps = response.get(SERVER_GROUPS, "main-server-group").asPropertyList();
-        Assert.assertEquals(2, steps.size());
-        int i = 0;
-        for (Property property : steps) {
-            ModelNode stepResult = property.getValue().get("response");
+        Assert.assertEquals(1, response.get(SERVER_GROUPS, "main-server-group", HOST, "master").keys().size());
+        Assert.assertEquals(1, response.get(SERVER_GROUPS, "main-server-group", HOST, "slave").keys().size());
+        ModelNode mainOneResult = response.get(SERVER_GROUPS, "main-server-group", HOST, "master", "main-one");
+        ModelNode mainThreeResult = response.get(SERVER_GROUPS, "main-server-group", HOST, "slave", "main-three");
+        Assert.assertTrue(mainOneResult.isDefined());
+        Assert.assertTrue(mainThreeResult.isDefined());
+
+        List<ModelNode> steps = new ArrayList<ModelNode>();
+        steps.add(mainOneResult);
+        steps.add(mainThreeResult);
+        for (ModelNode stepResponse : steps) {
+            ModelNode stepResult = stepResponse.get("response");
             ModelNode desc = validateFailedResponse(stepResult);
             Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
-            i++;
         }
     }
 
@@ -640,7 +643,7 @@ public class CoreResourceManagementTestCase {
 
         validateFailedResponse(masterClient.execute(read));
     }
-    
+
     @Test
     public void testAddRemoveSocketBindingGroup() throws Exception {
         final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
@@ -652,35 +655,35 @@ public class CoreResourceManagementTestCase {
         add.get(OP).set(ADD);
         add.get(OP_ADDR).add(SOCKET_BINDING_GROUP, bindingGroupName);
         add.get(DEFAULT_INTERFACE).set("public");
-        validateResponse(masterClient.execute(add));         
-        
+        validateResponse(masterClient.execute(add));
+
         // add server group using new binding group
         add = new ModelNode();
         add.get(OP).set(ADD);
         add.get(OP_ADDR).add(SERVER_GROUP, serverGroupName);
         add.get(PROFILE).set("default");
-        validateResponse(masterClient.execute(add));        
-        
+        validateResponse(masterClient.execute(add));
+
         // remove server group
         ModelNode remove = new ModelNode();
         remove.get(OP).set(REMOVE);
         remove.get(OP_ADDR).add(SERVER_GROUP, serverGroupName);
-        validateResponse(masterClient.execute(remove));        
-        
+        validateResponse(masterClient.execute(remove));
+
         // remove binding group
         remove = new ModelNode();
         remove.get(OP).set(REMOVE);
         remove.get(OP_ADDR).add(SOCKET_BINDING_GROUP, bindingGroupName);
-        validateResponse(masterClient.execute(remove));        
-        
+        validateResponse(masterClient.execute(remove));
+
         // check the binding group is gone
         ModelNode read = new ModelNode();
         add.get(OP).set(READ_RESOURCE_OPERATION);
         add.get(OP_ADDR).add(SOCKET_BINDING_GROUP, bindingGroupName);
-        validateFailedResponse(masterClient.execute(read));         
-        
-    }    
-    
+        validateFailedResponse(masterClient.execute(read));
+
+    }
+
     /**
      * Test for AS7-3643
      */
@@ -705,8 +708,8 @@ public class CoreResourceManagementTestCase {
         validateResponse(response);
 
         final String mainServerGroup = "main-server-group";
-        Assert.assertEquals(SUCCESS, response.get(SERVER_GROUPS, mainServerGroup, "main-one", RESPONSE, OUTCOME).asString());
-        ModelNode headers = response.get(SERVER_GROUPS, mainServerGroup, "main-one", RESPONSE, RESPONSE_HEADERS);
+        Assert.assertEquals(SUCCESS, response.get(SERVER_GROUPS, mainServerGroup, HOST, "master", "main-one", RESPONSE, OUTCOME).asString());
+        ModelNode headers = response.get(SERVER_GROUPS, mainServerGroup, HOST, "master", "main-one", RESPONSE, RESPONSE_HEADERS);
         Assert.assertEquals(RESTART_REQUIRED, headers.get(PROCESS_STATE).asString());
         Assert.assertTrue(RESTART_REQUIRED, headers.get(OPERATION_REQUIRES_RESTART).asBoolean());
 

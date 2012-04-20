@@ -434,22 +434,19 @@ public class ManagementReadsTestCase {
 
     private static void validateResolveExpressionOnMaster(final ModelNode result) {
         System.out.println(result);
-        ModelNode serverResult = result.get("server-groups", "main-server-group", "main-one");
+        ModelNode serverResult = result.get("server-groups", "main-server-group", "host", "master", "main-one");
         Assert.assertTrue(serverResult.isDefined());
-        Assert.assertEquals("master", serverResult.get("host").asString());
         validateResolveExpressionOnServer(serverResult);
     }
 
     private static void validateResolveExpressionOnSlave(final ModelNode result) {
         System.out.println(result);
-        ModelNode serverResult = result.get("server-groups", "main-server-group", "main-three");
+        ModelNode serverResult = result.get("server-groups", "main-server-group", "host", "slave", "main-three");
         Assert.assertTrue(serverResult.isDefined());
-        Assert.assertEquals("slave", serverResult.get("host").asString());
         validateResolveExpressionOnServer(serverResult);
 
-        serverResult = result.get("server-groups", "other-server-group", "other-two");
+        serverResult = result.get("server-groups", "other-server-group", "host", "slave", "other-two");
         Assert.assertTrue(serverResult.isDefined());
-        Assert.assertEquals("slave", serverResult.get("host").asString());
         validateResolveExpressionOnServer(serverResult);
     }
 
