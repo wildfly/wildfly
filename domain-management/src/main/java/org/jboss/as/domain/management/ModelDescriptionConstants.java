@@ -33,6 +33,7 @@ public class ModelDescriptionConstants {
     public static final String ALLOWED_USERS = "allowed-users";
     public static final String AUTHENTICATION = "authentication";
     public static final String DEFAULT_USER = "default-user";
+    public static final String DEFAULT_DEFAULT_USER = "$local";
     public static final String IDENTITY = "identity";
     public static final String KEY_PASSWORD = "key-password";
     public static final String KEYSTORE_PASSWORD = "keystore-password";
