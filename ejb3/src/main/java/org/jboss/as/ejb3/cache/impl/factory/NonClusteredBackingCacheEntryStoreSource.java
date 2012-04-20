@@ -27,6 +27,7 @@ import java.io.Serializable;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.ejb3.cache.Cacheable;
+import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.impl.backing.SimpleBackingCacheEntryStore;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStore;
@@ -72,19 +73,19 @@ public class NonClusteredBackingCacheEntryStoreSource<K extends Serializable, V 
     private volatile PathManager.Callback.Handle callbackHandle;
 
     @Override
-    public <E extends SerializationGroup<K, V, G>> BackingCacheEntryStore<G, Cacheable<G>, E> createGroupIntegratedObjectStore(PassivationManager<G, E> passivationManager, StatefulTimeoutInfo timeout) {
+    public <E extends SerializationGroup<K, V, G>> BackingCacheEntryStore<G, Cacheable<G>, E> createGroupIntegratedObjectStore(IdentifierFactory<G> identifierFactory, PassivationManager<G, E> passivationManager, StatefulTimeoutInfo timeout) {
         FilePersistentObjectStore<G, E> objectStore = new FilePersistentObjectStore<G, E>(passivationManager.getMarshallingConfiguration(), this.getStoragePath(null, this.groupDirectoryName), subdirectoryCount);
 
-        SimpleBackingCacheEntryStore<G, Cacheable<G>, E> store = new SimpleBackingCacheEntryStore<G, Cacheable<G>, E>(objectStore, this.environment.getValue(), timeout, this);
+        SimpleBackingCacheEntryStore<G, Cacheable<G>, E> store = new SimpleBackingCacheEntryStore<G, Cacheable<G>, E>(identifierFactory, objectStore, this.environment.getValue(), timeout, this);
 
         return store;
     }
 
     @Override
-    public <E extends SerializationGroupMember<K, V, G>> BackingCacheEntryStore<K, V, E> createIntegratedObjectStore(String beanName, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout) {
+    public <E extends SerializationGroupMember<K, V, G>> BackingCacheEntryStore<K, V, E> createIntegratedObjectStore(String beanName, IdentifierFactory<K> identifierFactory, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout) {
         FilePersistentObjectStore<K, E> objectStore = new FilePersistentObjectStore<K, E>(passivationManager.getMarshallingConfiguration(), this.getStoragePath(beanName, this.sessionDirectoryName), subdirectoryCount);
 
-        SimpleBackingCacheEntryStore<K, V, E> store = new SimpleBackingCacheEntryStore<K, V, E>(objectStore, this.environment.getValue(), timeout, this);
+        SimpleBackingCacheEntryStore<K, V, E> store = new SimpleBackingCacheEntryStore<K, V, E>(identifierFactory, objectStore, this.environment.getValue(), timeout, this);
 
         return store;
     }

@@ -21,22 +21,33 @@
  */
 package org.jboss.as.clustering.web.infinispan;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.AbstractMap;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.affinity.KeyAffinityService;
+import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.Flag;
-import org.infinispan.distribution.DataLocality;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -44,6 +55,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.registry.Registry;
@@ -75,17 +87,25 @@ public class DistributedCacheManagerTest {
     private BatchingManager batchingManager = mock(BatchingManager.class);
     private CacheInvoker invoker = mock(CacheInvoker.class);
     private DistributedCacheManager<OutgoingDistributableSessionData> manager;
-
+    @SuppressWarnings("unchecked")
+    private KeyAffinityService<String> affinity = mock(KeyAffinityService.class);
+    
     @SuppressWarnings("unchecked")
     @Before
     public void before() {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.clustering().cacheMode(CacheMode.DIST_SYNC);
+        KeyAffinityServiceFactory affinityFactory = mock(KeyAffinityServiceFactory.class);
+        @SuppressWarnings("rawtypes")
+        ArgumentCaptor<KeyGenerator> capturedKeyGenerator = ArgumentCaptor.forClass(KeyGenerator.class);
 
         when(this.cache.getCacheConfiguration()).thenReturn(builder.build());
+        when(affinityFactory.createService(same(this.cache), capturedKeyGenerator.capture())).thenReturn(this.affinity);
 
-        this.manager = new DistributedCacheManager<OutgoingDistributableSessionData>(this.sessionManager, this.cache, this.registry, this.lockManager, this.storage, this.batchingManager, this.invoker);
+        this.manager = new DistributedCacheManager<OutgoingDistributableSessionData>(this.sessionManager, this.cache, this.registry, this.lockManager, this.storage, this.batchingManager, this.invoker, affinityFactory);
 
+        assertSame(this.manager, capturedKeyGenerator.getValue());
+        
         reset(this.cache);
     }
 
@@ -568,92 +588,57 @@ public class DistributedCacheManagerTest {
 
     @Test
     public void isLocal() {
-        this.isLocal(null, true);
-        this.isLocal(DataLocality.LOCAL, true);
-        this.isLocal(DataLocality.LOCAL_UNCERTAIN, true);
-        this.isLocal(DataLocality.NOT_LOCAL, false);
-        this.isLocal(DataLocality.NOT_LOCAL_UNCERTAIN, true);
-    }
-
-    private void isLocal(DataLocality locality, boolean local) {
+        EmbeddedCacheManager container = mock(EmbeddedCacheManager.class);
         DistributionManager distManager = mock(DistributionManager.class);
-        String sessionId = "ABC123";
+        Address localAddress = mock(Address.class);
+        Address remoteAddress = mock(Address.class);
+        String localSessionId = "ABC123";
+        String remoteSessionId = "CBA321";
 
         when(this.cache.getAdvancedCache()).thenReturn(this.cache);
+        when(this.cache.getDistributionManager()).thenReturn(distManager);
+        when(this.cache.getCacheManager()).thenReturn(container);
+        when(container.getAddress()).thenReturn(localAddress);
+        when(distManager.getPrimaryLocation(localSessionId)).thenReturn(localAddress);
+        when(distManager.getPrimaryLocation(remoteSessionId)).thenReturn(remoteAddress);
 
-        if (locality != null) {
-            when(this.cache.getDistributionManager()).thenReturn(distManager);
-            when(distManager.getLocality(sessionId)).thenReturn(locality);
-        } else {
-            when(this.cache.getDistributionManager()).thenReturn(null);
-        }
-
-        boolean result = this.manager.isLocal(sessionId);
-
-        assertEquals(local, result);
+        assertTrue(this.manager.isLocal(localSessionId));
+        assertFalse(this.manager.isLocal(remoteSessionId));
     }
 
     @Test
     public void locate() {
-        String sessionId = "ABC123";
-        String expected = "node1";
-
-        // Test non-DIST
-        when(this.cache.getAdvancedCache()).thenReturn(this.cache);
-        when(this.cache.getDistributionManager()).thenReturn(null);
-        when(this.sessionManager.getJvmRoute()).thenReturn(expected);
-
-        String result = this.manager.locate(sessionId);
-
-        assertSame(expected, result);
-
-        // Test rehash in progress
-        DistributionManager distManager = mock(DistributionManager.class);
-
-        when(this.cache.getAdvancedCache()).thenReturn(this.cache);
-        when(this.cache.getDistributionManager()).thenReturn(distManager);
-        when(distManager.getLocality(sessionId)).thenReturn(DataLocality.NOT_LOCAL_UNCERTAIN);
-        when(this.sessionManager.getJvmRoute()).thenReturn(expected);
-
-        result = this.manager.locate(sessionId);
-
-        assertSame(expected, result);
-
-        // Test session hashes locally
         EmbeddedCacheManager container = mock(EmbeddedCacheManager.class);
-        Address address1 = mock(Address.class);
-        Address address2 = mock(Address.class);
+        DistributionManager distManager = mock(DistributionManager.class);
         Address localAddress = mock(Address.class);
-        List<Address> addresses = Arrays.asList(address1, address2, localAddress);
-
+        Address remoteAddress = mock(Address.class);
+        Address remoteUnknownAddress = mock(Address.class);
+        String localSessionId = "ABC123";
+        String localJvmRoute = "local";
+        String remoteSessionId = "CBA321";
+        String remoteJvmRoute = "remote";
+        String remoteUnknownSessionId = "unknown";
+        
         when(this.cache.getAdvancedCache()).thenReturn(this.cache);
         when(this.cache.getDistributionManager()).thenReturn(distManager);
-        when(distManager.getLocality(sessionId)).thenReturn(DataLocality.LOCAL);
-        when(distManager.locate(same(sessionId))).thenReturn(addresses);
-        when(this.cache.getCacheManager()).thenReturn(container);
-        when(container.getAddress()).thenReturn(address2);
-        when(this.sessionManager.getJvmRoute()).thenReturn(expected);
-
-        result = this.manager.locate(sessionId);
-
-        assertSame(expected, result);
-
-        // Test session does not hash locally
-        addresses = Arrays.asList(address1, address2);
-        ArgumentCaptor<Address> capturedAddress = ArgumentCaptor.forClass(Address.class);
-
-        when(this.cache.getAdvancedCache()).thenReturn(this.cache);
-        when(this.cache.getDistributionManager()).thenReturn(distManager);
-        when(distManager.getLocality(sessionId)).thenReturn(DataLocality.NOT_LOCAL);
-        when(distManager.locate(same(sessionId))).thenReturn(addresses);
         when(this.cache.getCacheManager()).thenReturn(container);
         when(container.getAddress()).thenReturn(localAddress);
-        when(this.registry.getRemoteEntry(capturedAddress.capture())).thenReturn(new AbstractMap.SimpleImmutableEntry<String, Void>(expected, null));
-        when(this.cache.withFlags(Flag.FORCE_SYNCHRONOUS)).thenReturn(this.cache);
+        when(distManager.getPrimaryLocation(localSessionId)).thenReturn(localAddress);
+        when(distManager.getPrimaryLocation(remoteSessionId)).thenReturn(remoteAddress);
+        when(distManager.getPrimaryLocation(remoteUnknownSessionId)).thenReturn(remoteUnknownAddress);
+        when(this.registry.getLocalEntry()).thenReturn(new AbstractMap.SimpleImmutableEntry<String, Void>(localJvmRoute, null));
+        when(this.registry.getRemoteEntry(remoteAddress)).thenReturn(new AbstractMap.SimpleImmutableEntry<String, Void>(remoteJvmRoute, null));
+        when(this.registry.getRemoteEntry(remoteUnknownAddress)).thenReturn(null);
 
-        result = this.manager.locate(sessionId);
-
-        assertSame(expected, result);
-        assertTrue(addresses.contains(capturedAddress.getValue()));
+        assertSame(localJvmRoute, this.manager.locate(localSessionId));
+        assertSame(remoteJvmRoute, this.manager.locate(remoteSessionId));
+        assertSame(localJvmRoute, this.manager.locate(remoteUnknownSessionId));
+        
+        // Test non-DIST
+        when(this.cache.getDistributionManager()).thenReturn(null);
+        
+        assertSame(localJvmRoute, this.manager.locate(localSessionId));
+        assertSame(localJvmRoute, this.manager.locate(remoteSessionId));
+        assertSame(localJvmRoute, this.manager.locate(remoteUnknownSessionId));
     }
 }

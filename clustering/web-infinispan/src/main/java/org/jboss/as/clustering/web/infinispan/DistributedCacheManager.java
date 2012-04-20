@@ -24,15 +24,14 @@ package org.jboss.as.clustering.web.infinispan;
 import java.io.IOException;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
 import org.infinispan.Cache;
+import org.infinispan.affinity.KeyAffinityService;
+import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
-import org.infinispan.distribution.DataLocality;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
@@ -42,6 +41,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.registry.Registry;
@@ -62,7 +62,7 @@ import static org.jboss.as.clustering.web.infinispan.InfinispanWebMessages.MESSA
  * @author Paul Ferraro
  */
 @Listener
-public class DistributedCacheManager<T extends OutgoingDistributableSessionData> implements org.jboss.as.clustering.web.DistributedCacheManager<T>, SessionOwnershipSupport {
+public class DistributedCacheManager<T extends OutgoingDistributableSessionData> implements org.jboss.as.clustering.web.DistributedCacheManager<T>, SessionOwnershipSupport, KeyGenerator<String> {
 
     private static Map<SharedLocalYieldingClusterLockManager.LockResult, LockResult> results = lockResultMap();
 
@@ -75,7 +75,6 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     }
 
     final SessionAttributeStorage<T> attributeStorage;
-    private final Random random = new Random(System.currentTimeMillis());
     private final LocalDistributableSessionManager manager;
     private final SharedLocalYieldingClusterLockManager lockManager;
     private final Cache<String, Map<Object, Object>> cache;
@@ -84,11 +83,12 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     private final boolean passivationEnabled;
     private final Registry<String, Void> registry;
     private final long lockTimeout;
+    private final KeyAffinityService<String> affinity;
 
     public DistributedCacheManager(LocalDistributableSessionManager manager,
             Cache<String, Map<Object, Object>> cache, Registry<String, Void> registry,
             SharedLocalYieldingClusterLockManager lockManager, SessionAttributeStorage<T> attributeStorage,
-            BatchingManager batchingManager, CacheInvoker invoker) {
+            BatchingManager batchingManager, CacheInvoker invoker, KeyAffinityServiceFactory affinityFactory) {
         this.manager = manager;
         this.lockManager = lockManager;
         this.cache = cache;
@@ -100,6 +100,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
         Configuration configuration = this.cache.getCacheConfiguration();
         this.passivationEnabled = configuration.loaders().passivation() && !configuration.loaders().shared() && !configuration.loaders().cacheLoaders().isEmpty();
         this.registry = registry;
+        this.affinity = affinityFactory.createService(cache, this);
     }
 
     /**
@@ -113,6 +114,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
         this.cache.addListener(this);
 
         this.registry.refreshLocalEntry();
+        this.affinity.start();
     }
 
     /**
@@ -122,6 +124,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
      */
     @Override
     public void stop() {
+        this.affinity.stop();
         this.cache.removeListener(this);
         this.cache.stop();
     }
@@ -393,12 +396,8 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
      */
     @Override
     public boolean isLocal(String sessionId) {
-        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        if (dist != null) {
-            DataLocality locality = dist.getLocality(sessionId);
-            return locality.isLocal() || locality.isUncertain();
-        }
-        return true;
+        Address location = this.locatePrimaryOwner(sessionId);
+        return location.equals(this.cache.getCacheManager().getAddress());
     }
 
     /**
@@ -408,21 +407,32 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
      */
     @Override
     public String locate(String sessionId) {
-        if (!this.isLocal(sessionId)) {
-            // Locate nodes on which the cache entry will reside
-            List<Address> addresses = this.cache.getAdvancedCache().getDistributionManager().locate(sessionId);
-            if (!addresses.contains(this.cache.getCacheManager().getAddress())) {
-                // We need to force synchronous invocations to guarantee
-                // session replicates before subsequent request.
-                this.invoker.forceThreadSynchronous();
-                // Otherwise choose random node from hash targets
-                Map.Entry<String, Void> entry = this.registry.getRemoteEntry(addresses.get(this.random.nextInt(addresses.size())));
-                if (entry != null) {
-                    return entry.getKey();
-                }
+        Address location = this.locatePrimaryOwner(sessionId);
+        if (!location.equals(this.cache.getCacheManager().getAddress())) {
+            // We need to force synchronous invocations to guarantee session replicates before subsequent request.
+            this.invoker.forceThreadSynchronous();
+            // Lookup jvm route for address
+            Map.Entry<String, Void> entry = this.registry.getRemoteEntry(location);
+            if (entry != null) {
+                return entry.getKey();
             }
         }
-        return this.manager.getJvmRoute();
+        return this.registry.getLocalEntry().getKey();
+    }
+
+    private Address locatePrimaryOwner(String sessionId) {
+        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
+        return (dist != null) ? dist.getPrimaryLocation(sessionId) : this.cache.getCacheManager().getAddress();
+    }
+
+    @Override
+    public String createSessionId() {
+        return this.affinity.getKeyForAddress(this.cache.getCacheManager().getAddress());
+    }
+
+    @Override
+    public String getKey() {
+        return this.manager.createSessionId();
     }
 
     @CacheEntryRemoved

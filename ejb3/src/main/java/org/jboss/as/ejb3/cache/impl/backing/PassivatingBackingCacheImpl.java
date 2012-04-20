@@ -92,6 +92,11 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
     }
 
     @Override
+    public K createIdentifier() {
+        return this.store.createIdentifier();
+    }
+
+    @Override
     public boolean isClustered() {
         return store.isClustered();
     }

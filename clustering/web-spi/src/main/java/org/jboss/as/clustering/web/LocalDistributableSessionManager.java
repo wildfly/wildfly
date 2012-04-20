@@ -28,7 +28,7 @@ import org.jboss.metadata.web.jboss.ReplicationConfig;
  * Callback interface to allow the distributed caching layer to invoke upon the local session manager.
  * @author Brian Stansberry
  */
-public interface LocalDistributableSessionManager {
+public interface LocalDistributableSessionManager extends SessionIdFactory {
     /**
      * Gets whether the webapp is configured for passivation.
      * @return <code>true</code> if passivation is enabled

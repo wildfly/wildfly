@@ -26,6 +26,7 @@ import java.io.Serializable;
 
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.Cacheable;
+import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 import org.jboss.msc.service.ServiceBuilder;
@@ -44,14 +45,14 @@ public interface BackingCacheEntryStoreSource<K extends Serializable, V extends 
      *
      * @return the store
      */
-    <E extends SerializationGroup<K, V, G>> BackingCacheEntryStore<G, Cacheable<G>, E> createGroupIntegratedObjectStore(PassivationManager<G, E> passivationManager, StatefulTimeoutInfo timeout);
+    <E extends SerializationGroup<K, V, G>> BackingCacheEntryStore<G, Cacheable<G>, E> createGroupIntegratedObjectStore(IdentifierFactory<G> identifierFactory, PassivationManager<G, E> passivationManager, StatefulTimeoutInfo timeout);
 
     /**
      * Provide a {@link BackingCacheEntryStore} for storage of serialization group members.
      *
      * @return the store
      */
-    <E extends SerializationGroupMember<K, V, G>> BackingCacheEntryStore<K, V, E> createIntegratedObjectStore(String beanName, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout);
+    <E extends SerializationGroupMember<K, V, G>> BackingCacheEntryStore<K, V, E> createIntegratedObjectStore(String beanName, IdentifierFactory<K> identifierFactory, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout);
 
     void addDependencies(ServiceTarget target, ServiceBuilder<?> builder);
 

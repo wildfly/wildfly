@@ -34,6 +34,7 @@ import javax.ejb.NoSuchEJBException;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.Cacheable;
+import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.as.ejb3.cache.spi.BackingCache;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryFactory;
@@ -61,20 +62,28 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
     private final ThreadFactory threadFactory;
     private final Map<K, Future<?>> expirationFutures = new ConcurrentHashMap<K, Future<?>>();
     private final ServerEnvironment environment;
+    private final IdentifierFactory<K> identifierFactory;
 
-    public NonPassivatingBackingCacheImpl(StatefulObjectFactory<V> factory, ThreadFactory threadFactory, StatefulTimeoutInfo timeout, ServerEnvironment environment) {
+    public NonPassivatingBackingCacheImpl(IdentifierFactory<K> identifierFactory, StatefulObjectFactory<V> factory, ThreadFactory threadFactory, StatefulTimeoutInfo timeout, ServerEnvironment environment) {
+        this.identifierFactory = identifierFactory;
         this.factory = factory;
         this.timeout = timeout;
         this.threadFactory = threadFactory;
         this.environment = environment;
     }
 
-    public NonPassivatingBackingCacheImpl(StatefulObjectFactory<V> factory, ScheduledExecutorService executor, StatefulTimeoutInfo timeout, ServerEnvironment environment) {
+    public NonPassivatingBackingCacheImpl(IdentifierFactory<K> identifierFactory, StatefulObjectFactory<V> factory, ScheduledExecutorService executor, StatefulTimeoutInfo timeout, ServerEnvironment environment) {
+        this.identifierFactory = identifierFactory;
         this.factory = factory;
         this.timeout = timeout;
         this.executor = executor;
         this.threadFactory = null;
         this.environment = environment;
+    }
+
+    @Override
+    public K createIdentifier() {
+        return this.identifierFactory.createIdentifier();
     }
 
     @Override

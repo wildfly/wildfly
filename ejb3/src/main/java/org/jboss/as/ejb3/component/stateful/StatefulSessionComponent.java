@@ -26,6 +26,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.cache.Cache;
+import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.as.ejb3.cache.TransactionAwareObjectFactory;
@@ -52,10 +53,12 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.TimerService;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
@@ -65,7 +68,7 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatefulSessionComponent extends SessionBeanComponent implements StatefulObjectFactory<StatefulSessionComponentInstance>, PassivationManager<SessionID, StatefulSessionComponentInstance> {
+public class StatefulSessionComponent extends SessionBeanComponent implements StatefulObjectFactory<StatefulSessionComponentInstance>, PassivationManager<SessionID, StatefulSessionComponentInstance>, IdentifierFactory<SessionID> {
 
     public static final Object SESSION_ID_REFERENCE_KEY = new Object();
 
@@ -117,7 +120,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         String beanName = ejbComponentCreateService.getComponentClass().getName();
         StatefulObjectFactory<StatefulSessionComponentInstance> factory = new TransactionAwareObjectFactory<StatefulSessionComponentInstance>(this, this.getTransactionManager());
         StatefulTimeoutInfo timeout = ejbComponentCreateService.getStatefulTimeout();
-        this.cache = ejbComponentCreateService.getCacheFactory().createCache(beanName, factory, this, timeout);
+        this.cache = ejbComponentCreateService.getCacheFactory().createCache(beanName, this, factory, this, timeout);
     }
 
     @Override
@@ -129,7 +132,6 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     public StatefulSessionComponentInstance createInstance(final Object instance) {
         return (StatefulSessionComponentInstance) super.createInstance();
     }
-
 
     @Override
     protected StatefulSessionComponentInstance constructComponentInstance(ManagedReference instance, boolean invokePostConstruct, InterceptorFactoryContext context) {
@@ -225,6 +227,15 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
 
     public Cache<SessionID, StatefulSessionComponentInstance> getCache() {
         return this.cache;
+    }
+
+    @Override
+    public SessionID createIdentifier() {
+        final UUID uuid = UUID.randomUUID();
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+        return SessionID.createSessionID(bb.array());
     }
 
     @Override

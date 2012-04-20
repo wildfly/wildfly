@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2007, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,27 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.cache;
 
-import java.io.Serializable;
+package org.jboss.as.clustering.infinispan.affinity;
 
-import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.infinispan.Cache;
+import org.infinispan.affinity.KeyAffinityService;
+import org.infinispan.affinity.KeyGenerator;
 
 /**
- * Defines the contract for an EJB3 Stateful Cache Factory
- *
- * @author <a href="mailto:andrew.rubinger@redhat.com">ALR</a>
- * @author Brian Stansberry
+ * Factory for creating a key affinity service.
+ * @author Paul Ferraro
  */
-public interface CacheFactory<K extends Serializable, T extends Identifiable<K>> {
+public interface KeyAffinityServiceFactory {
     /**
-     * Creates a cache for a container.
-     *
-     * @param factory factory for creating objects managed by the cache
-     * @param passivationManager manager for invoking pre and post passivation and replication callbacks on the cached objects
-     * @param timeout the stateful timeout
-     *
-     * @return the cache
+     * Creates a key affinity service for use with the specified cache, that generates key using the specified generator.
+     * @param cache
+     * @param generator
+     * @return a key affinity service
      */
-    Cache<K, T> createCache(String beanName, IdentifierFactory<K> identifierFactory, StatefulObjectFactory<T> factory, PassivationManager<K, T> passivationManager, StatefulTimeoutInfo timeout);
+    <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator);
 }

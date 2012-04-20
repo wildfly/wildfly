@@ -28,7 +28,7 @@ import java.util.Map;
  * SPI implemented by the distributed caching layer.
  * @author Brian Stansberry
  */
-public interface DistributedCacheManager<T extends OutgoingDistributableSessionData> {
+public interface DistributedCacheManager<T extends OutgoingDistributableSessionData> extends SessionIdFactory {
     /**
      * Starts the distributed caching layer.
      */

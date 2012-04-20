@@ -79,6 +79,11 @@ public class SerializationGroupMemberContainer<K extends Serializable, V extends
     }
 
     @Override
+    public K createIdentifier() {
+        return this.store.createIdentifier();
+    }
+
+    @Override
     public Affinity getStrictAffinity() {
         return this.store.getStrictAffinity();
     }
