@@ -28,7 +28,6 @@ import java.io.Serializable;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -614,8 +613,9 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
             if (qualifiedHostName == null) {
                 // Give up
                 qualifiedHostName = "unknown-host.unknown-domain";
+            } else {
+                qualifiedHostName = qualifiedHostName.trim().toLowerCase();
             }
-            qualifiedHostName = qualifiedHostName.trim().toLowerCase(Locale.ENGLISH);
         } else {
             providedProperties.setProperty(QUALIFIED_HOST_NAME, qualifiedHostName);
         }
