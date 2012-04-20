@@ -35,7 +35,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
@@ -227,10 +226,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
                 serverGroupSuccess = true;
             }
             for (HostServer hostServer : groupToServerMap.get(groupName)) {
-                final ModelNode serverNode = new ModelNode();
-                serverNode.get(HOST).set(hostServer.hostName);
-                serverNode.get(RESPONSE).set(hostServer.result);
-                groupNode.get(hostServer.serverName).set(serverNode);
+                groupNode.get(HOST, hostServer.hostName, hostServer.serverName, RESPONSE).set(hostServer.result);
             }
             context.getServerResults().get(groupName).set(groupNode);
         }
