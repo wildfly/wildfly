@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  *
  * @author Brian Stansberry
  */
-public class NicMatchInterfaceCriteria implements InterfaceCriteria {
+public class NicMatchInterfaceCriteria extends AbstractInterfaceCriteria {
 
     private static final long serialVersionUID = 6456168020697683203L;
 
@@ -47,7 +47,7 @@ public class NicMatchInterfaceCriteria implements InterfaceCriteria {
      *          matches <code>networkInterface</code>'s {@link NetworkInterface#getName() name}.
      */
     @Override
-    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    protected InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
         if( pattern.matcher(networkInterface.getName()).matches() )
             return address;
@@ -61,10 +61,8 @@ public class NicMatchInterfaceCriteria implements InterfaceCriteria {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof NicMatchInterfaceCriteria == false) {
-            return false;
-        }
-        return pattern.toString().equals(((NicMatchInterfaceCriteria)o).pattern.toString());
+        return (o instanceof NicMatchInterfaceCriteria)
+                && pattern.toString().equals(((NicMatchInterfaceCriteria)o).pattern.toString());
     }
 
 }

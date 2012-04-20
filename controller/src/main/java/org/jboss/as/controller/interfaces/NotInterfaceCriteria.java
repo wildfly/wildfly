@@ -8,7 +8,9 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -24,7 +26,7 @@ public class NotInterfaceCriteria implements InterfaceCriteria {
     private final Set<InterfaceCriteria> criteria = new HashSet<InterfaceCriteria>();
 
     /**
-     * Creates a new AnyInterfaceCriteria
+     * Creates a new NotInterfaceCriteria
      *
      * @param criteria the criteria to check to see if none are satisfied.
      *                 Cannot be <code>null</code>
@@ -37,20 +39,16 @@ public class NotInterfaceCriteria implements InterfaceCriteria {
         this.criteria.addAll(criteria);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @return <code>address</code> if <code>networkInterface</code and
-     *         <code>address</code> satisfy <i>none</i> of a contained set of criteria.
-     */
     @Override
-    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
-
+    public Map<NetworkInterface, Set<InetAddress>> getAcceptableAddresses(final Map<NetworkInterface, Set<InetAddress>> candidates) throws SocketException {
+        Map<NetworkInterface, Set<InetAddress>> testee = AbstractInterfaceCriteria.cloneCandidates(candidates);
         for (InterfaceCriteria ic : criteria) {
-            if (ic.isAcceptable(networkInterface, address) != null)
-                return null;
+            testee = removeMatches(testee, ic.getAcceptableAddresses(AbstractInterfaceCriteria.cloneCandidates(testee)));
+            if (testee.size() == 0) {
+                break;
+            }
         }
-        return address;
+        return testee;
     }
 
     Set<InterfaceCriteria> getAllCriteria(){
@@ -68,6 +66,26 @@ public class NotInterfaceCriteria implements InterfaceCriteria {
             return false;
         }
         return criteria.equals(((NotInterfaceCriteria)o).criteria);
+    }
+
+    private Map<NetworkInterface, Set<InetAddress>> removeMatches(Map<NetworkInterface, Set<InetAddress>> candidates,
+                                                                  Map<NetworkInterface, Set<InetAddress>> toRemove) {
+
+        Map<NetworkInterface, Set<InetAddress>> result = new HashMap<NetworkInterface, Set<InetAddress>>();
+        for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : candidates.entrySet()) {
+            Set<InetAddress> retained = new HashSet<InetAddress>(entry.getValue());
+            Set<InetAddress> badAddresses = toRemove.get(entry.getKey());
+            if (badAddresses != null && badAddresses.size() > 0) {
+                retained.removeAll(badAddresses);
+                if (retained.size() > 0) {
+                    result.put(entry.getKey(), retained);
+                }
+            } else {
+                result.put(entry.getKey(), retained);
+            }
+        }
+
+        return result;
     }
 
 }

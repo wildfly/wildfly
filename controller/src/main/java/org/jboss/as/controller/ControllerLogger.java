@@ -26,6 +26,9 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.Closeable;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamWriter;
 
@@ -315,4 +318,30 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.WARN)
     @Message(id = 14620, value = "Invalid value '%s' for system property '%s' -- value must be convertible into an int")
     void invalidChannelCloseTimeout(@Cause NumberFormatException cause, String propertyName, String propValue);
+
+    /**
+     * Logs a warning message indicating multiple addresses or nics matched the selection criteria provided for
+     * an interface
+     *
+     * @param interfaceName the name of the interface configuration
+     * @param addresses the matching addresses
+     * @param nis the matching nics
+     * @param inetAddress the selected address
+     * @param networkInterface the selected nic
+     */
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 14621, value = "Multiple addresses or network interfaces matched the selection criteria for interface '%s'. Matching addresses: %s.  Matching network interfaces: %s. The interface will use address %s and network interface %s.")
+    void multipleMatchingAddresses(String interfaceName, Set<InetAddress> addresses, Set<String> nis, InetAddress inetAddress, String networkInterface);
+
+    /**
+     * Logs a warning message indicating multiple addresses or nics matched the selection criteria provided for
+     * an interface
+     *
+     * @param toMatch the name of the interface configuration
+     * @param addresses the matching addresses
+     * @param nis the matching nics
+     */
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 14622, value = "Value '%s' for interface selection criteria 'inet-address' is ambiguous, as more than one address or network interface available on the machine matches it. Because of this ambiguity, no address will be selected as a match. Matching addresses: %s.  Matching network interfaces: %s.")
+    void multipleMatchingAddresses(String toMatch, Set<InetAddress> addresses, Set<String> nis);
 }
