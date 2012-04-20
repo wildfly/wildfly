@@ -20,9 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.datasource;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+package org.jboss.as.connector.deployers.datasource;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,6 +44,8 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for processing {@link DataSourceDefinition} and {@link DataSourceDefinitions}
@@ -128,7 +128,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
         }
 
         final String type = classValue.asString();
-        final DirectDataSourceInjectionSource directDataSourceInjectionSource = new DirectDataSourceInjectionSource();
+        final DirectDataSourceInjectionSource directDataSourceInjectionSource = new DirectDataSourceInjectionSource(name);
         directDataSourceInjectionSource.setClassName(type);
         directDataSourceInjectionSource.setDatabaseName(asString(datasourceAnnotation, DirectDataSourceInjectionSource.DATABASE_NAME_PROP));
         directDataSourceInjectionSource.setDescription(asString(datasourceAnnotation, DirectDataSourceInjectionSource.DESCRIPTION_PROP));

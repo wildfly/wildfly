@@ -34,7 +34,7 @@ import javax.sql.DataSource;
         user = "sa",
         password = "sa",
         className = "org.h2.jdbcx.JdbcDataSource",
-        url = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
+        url = "jdbc:h2:mem:test",
         transactional = false
 )
 @Stateless

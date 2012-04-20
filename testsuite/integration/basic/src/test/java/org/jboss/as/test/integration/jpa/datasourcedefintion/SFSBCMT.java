@@ -20,35 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.subsystems.datasources;
+package org.jboss.as.test.integration.jpa.datasourcedefintion;
 
-import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.value.InjectedValue;
+import javax.annotation.Resource;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateful;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 /**
- * Local data-source service implementation.
- * @author John Bailey
- * @author Stefano Maestri
+ * stateful session bean
+ *
+ * @author Scott Marlow
  */
-public class LocalDataSourceService extends AbstractDataSourceService {
+@Stateful
+@TransactionManagement(TransactionManagementType.CONTAINER)
+public class SFSBCMT {
+    @PersistenceContext(unitName = "mypc")
+        EntityManager em;
 
-    private final InjectedValue<ModifiableDataSource> dataSourceConfig = new InjectedValue<ModifiableDataSource>();
+    @Resource
+    SessionContext sessionContext;
 
-    public LocalDataSourceService(final String jndiName, final ClassLoader classLoader) {
-        super(jndiName, classLoader);
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public Employee queryEmployeeNameRequireNewTX(int id) {
+        Query q = em.createQuery("SELECT e FROM Employee e where id=?");
+        q.setParameter(1,new Integer(id));
+        return (Employee)q.getSingleResult();
     }
 
-    public LocalDataSourceService(final String jndiName) {
-        super(jndiName, null);
-    }
 
-    @Override
-    public AS7DataSourceDeployer getDeployer() throws ValidateException {
-        return new AS7DataSourceDeployer(dataSourceConfig.getValue().getUnModifiableInstance());
-    }
-
-    public Injector<ModifiableDataSource> getDataSourceConfigInjector() {
-        return dataSourceConfig;
-    }
 }

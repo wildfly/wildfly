@@ -20,35 +20,47 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.subsystems.datasources;
+package org.jboss.as.test.integration.jpa.datasourcedefintion;
 
-import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.value.InjectedValue;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 /**
- * Local data-source service implementation.
- * @author John Bailey
- * @author Stefano Maestri
+ * Employee entity class
+ *
+ * @author Scott Marlow
  */
-public class LocalDataSourceService extends AbstractDataSourceService {
+@Entity
+public class Employee {
+    @Id
+    private int id;
 
-    private final InjectedValue<ModifiableDataSource> dataSourceConfig = new InjectedValue<ModifiableDataSource>();
+    private String name;
 
-    public LocalDataSourceService(final String jndiName, final ClassLoader classLoader) {
-        super(jndiName, classLoader);
+    private String address;
+
+    public String getName() {
+        return name;
     }
 
-    public LocalDataSourceService(final String jndiName) {
-        super(jndiName, null);
+    public void setName(String name) {
+        this.name = name;
     }
 
-    @Override
-    public AS7DataSourceDeployer getDeployer() throws ValidateException {
-        return new AS7DataSourceDeployer(dataSourceConfig.getValue().getUnModifiableInstance());
+    public String getAddress() {
+        return address;
     }
 
-    public Injector<ModifiableDataSource> getDataSourceConfigInjector() {
-        return dataSourceConfig;
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public int getId() {
+
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
