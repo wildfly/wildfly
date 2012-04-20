@@ -18,15 +18,15 @@
  */
 package org.jboss.as.web;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.util.Collection;
-import java.util.Enumeration;
 
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
@@ -40,8 +40,8 @@ import org.jboss.as.server.mgmt.domain.HttpManagement;
 public class WelcomeContextConsoleServlet extends HttpServlet {
 
     private static final String CONSOLE_PATH = "/console";
-    private static final String HTTP = "http://";
-    private static final String HTTPS = "https://";
+    private static final String HTTP = "http";
+    private static final String HTTPS = "https";
     private static final int DEFAULT_PORT = 80;
     private static final int SECURE_DEFAULT_PORT = 443;
 
@@ -90,16 +90,16 @@ public class WelcomeContextConsoleServlet extends HttpServlet {
         String target = noconsole;
         if (hasConsole) {
             InetAddress inboundAddress = InetAddress.getByName(req.getLocalAddr());
-            // First check that the address used to contact the JBoss Web connector is accessible over the network interfaces
-            // assigned for the HttpManagementService
-            boolean secureRedirect = secureRedirect(req.isSecure());
-            if (isAccessible(inboundAddress, secureRedirect)) {
 
-                String host = req.getServerName();
+            boolean secureRedirect = secureRedirect(req.isSecure());
+            NetworkInterfaceBinding interfaceBinding = secureRedirect ? secureConsoleNetworkInterface : consoleNetworkInterface;
+            String redirectHost = getRedirectHost(interfaceBinding, inboundAddress, req.getServerName());
+
+            if (redirectHost != null) {
                 if (secureRedirect) {
-                    target = assembleURL(HTTPS, host, consoleSecurePort, SECURE_DEFAULT_PORT, CONSOLE_PATH);
+                    target = assembleURI(HTTPS, redirectHost, consoleSecurePort, SECURE_DEFAULT_PORT, CONSOLE_PATH);
                 } else {
-                    target = assembleURL(HTTP, host, consolePort, DEFAULT_PORT, CONSOLE_PATH);
+                    target = assembleURI(HTTP, redirectHost, consolePort, DEFAULT_PORT, CONSOLE_PATH);
                 }
             } else {
                 target = noredirect;
@@ -108,16 +108,19 @@ public class WelcomeContextConsoleServlet extends HttpServlet {
         resp.sendRedirect(target);
     }
 
-    private String assembleURL(final String scheme, final String host, final int port, final int defaultPort, final String uri) {
-        StringBuilder targetBuilder = new StringBuilder(scheme);
-        targetBuilder.append(host);
-        if (port != defaultPort) {
-            targetBuilder.append(":");
-            targetBuilder.append(port);
+    private String assembleURI(final String scheme, final String host, final int port, final int defaultPort, final String uri)
+            throws IOException {
+        URI redirectUri;
+        try {
+            if (port != defaultPort) {
+                redirectUri = new URI(scheme, null, host, port, uri, null, null);
+            } else {
+                redirectUri = new URI(scheme, null, host, -1, uri, null, null);
+            }
+        } catch (URISyntaxException e) {
+            throw new IOException(e);
         }
-        targetBuilder.append(uri);
-
-        return targetBuilder.toString();
+        return redirectUri.toString();
     }
 
     /**
@@ -138,39 +141,43 @@ public class WelcomeContextConsoleServlet extends HttpServlet {
         }
     }
 
-    private boolean isAccessible(final InetAddress inboundAddress, final boolean secure) {
-        final NetworkInterfaceBinding interfaceBinding = secure ? secureConsoleNetworkInterface : consoleNetworkInterface;
-        Collection<NetworkInterface> nics = interfaceBinding.getNetworkInterfaces();
-
-        for (NetworkInterface current : nics) {
-            boolean matched = matches(current, inboundAddress);
-            if (matched) {
-                return true;
-            }
-
-        }
-        return false;
-    }
-
-    private boolean matches(NetworkInterface nic, InetAddress match) {
-        Enumeration<InetAddress> addresses = nic.getInetAddresses();
-        while (addresses.hasMoreElements()) {
-            InetAddress address = addresses.nextElement();
-            if (match.equals(address)) {
-                return true;
-            }
+    /**
+     * Takes the chosen NetworkInterfaceBinding, inbound address and host from the HTTP header and decides what address to
+     * redirect to.
+     *
+     * @param chosenBinding - The NetworkInterfaceBinding of the http interface.
+     * @param inboundAddress - The local address the request was recieved on.
+     * @param headerHost - The host from the HTTP header.
+     * @return - The host name to redirect to or null of no valid host could be identified.
+     */
+    private String getRedirectHost(final NetworkInterfaceBinding chosenBinding, final InetAddress inboundAddress,
+            final String headerHost) {
+        InetAddress managementAddress = chosenBinding.getAddress();
+        if (managementAddress.equals(inboundAddress) || managementAddress.isAnyLocalAddress()) {
+            // Here we know that either there is a direct match between the address being listened on
+            // by the management interface OR the management interface is listening on all addresses.
+            //
+            // In this case the host references in the header should be useable.
+            return headerHost;
         }
 
-        Enumeration<NetworkInterface> nics = nic.getSubInterfaces();
-        while (nics.hasMoreElements()) {
-            NetworkInterface next = nics.nextElement();
-            boolean matches = matches(next, match);
-            if (matches) {
-                return true;
-            }
+        if (managementAddress.isLoopbackAddress() && inboundAddress.isLoopbackAddress()) {
+            // If they are both loopback addresses the comparison above failed to match them
+            // so they must be different loopback bindings e.g. 127.0.0.1 and ::1 as this is a
+            // loopback to loopback redirection we will allow the other address to be passed to
+            // the remote client.
+
+            return managementAddress.getHostAddress();
         }
 
-        return false;
+        // To reach this point there was no correlation identified between the inbound address and the address the
+        // management interface is listening on - we do not know if this client should even know about the management
+        // console so do not redirect.
+        //
+        // Once network configurations become complex administrators should be connecting directly to the management
+        // console and not relying on a redirect from the connector serving up their deployed web applications.
+
+        return null;
     }
 
 }
