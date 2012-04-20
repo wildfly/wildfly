@@ -122,7 +122,7 @@ public class CLITestSuite {
         portOffsets.put(serverName, portOffset);
         serverStatus.put(serverName, status);
     }
-    
+
     public static String getServerHost(String serverName) {
         for(Map.Entry<String,String[]> entry : hostServers.entrySet()) {
             if (Arrays.asList(entry.getValue()).contains(serverName)) return entry.getKey();

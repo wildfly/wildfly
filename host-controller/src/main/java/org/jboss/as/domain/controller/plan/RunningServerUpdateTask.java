@@ -39,40 +39,27 @@ import org.jboss.dmr.Property;
  */
 class RunningServerUpdateTask extends AbstractServerUpdateTask {
 
-    private final ServerOperationExecutor serverOperationExecutor;
     private final ModelNode serverUpdate;
 
     /**
      * Constructor.
      *
-     * @param serverOperationExecutor the domain controller. Cannot be <code>null</code>
      * @param serverId the id of the server being updated. Cannot be <code>null</code>
      * @param serverUpdate the actual rollback updates to apply to this server. Cannot be <code>null</code>
      * @param updatePolicy the policy that controls whether the updates should be applied. Cannot be <code>null</code>
      * @param resultHandler handler for the result of the update. Cannot be <code>null</code>
      */
-    RunningServerUpdateTask(final ServerOperationExecutor serverOperationExecutor,
-                            final ServerIdentity serverId,
+    RunningServerUpdateTask(final ServerIdentity serverId,
                             final ModelNode serverUpdate,
                             final ServerUpdatePolicy updatePolicy,
                             final ServerUpdateResultHandler resultHandler) {
         super(serverId, updatePolicy, resultHandler);
-        this.serverOperationExecutor = serverOperationExecutor;
         this.serverUpdate = serverUpdate;
     }
 
     @Override
-    protected void processUpdates() {
-
-        HOST_CONTROLLER_LOGGER.tracef("Applying operation to  %s", serverId);
-        ModelNode op = getServerOp();
-        ModelNode rsp =
-            serverOperationExecutor.executeServerOperation(serverId, op);
-
-        if (rsp != null) {
-            updatePolicy.recordServerResult(serverId, rsp);
-            resultHandler.handleServerUpdateResult(serverId, rsp);
-        }
+    public ModelNode getOperation() {
+        return getServerOp();
     }
 
     private ModelNode getServerOp() {

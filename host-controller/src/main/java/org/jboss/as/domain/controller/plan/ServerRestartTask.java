@@ -38,28 +38,19 @@ import org.jboss.dmr.ModelNode;
  */
 class ServerRestartTask extends AbstractServerUpdateTask {
 
-    private final ServerOperationExecutor serverOperationExecutor;
     private final long gracefulTimeout;
 
-    ServerRestartTask(final ServerOperationExecutor serverOperationExecutor,
-                      final ServerIdentity serverId,
+    ServerRestartTask(final ServerIdentity serverId,
                       final ServerUpdatePolicy updatePolicy,
                       final ServerUpdateResultHandler resultHandler,
                       final long gracefulTimeout) {
         super(serverId, updatePolicy, resultHandler);
-        this.serverOperationExecutor = serverOperationExecutor;
         this.gracefulTimeout = gracefulTimeout;
     }
 
     @Override
-    protected void processUpdates() {
-
-        ModelNode restartOp = getRestartOp();
-        ModelNode rsp = serverOperationExecutor.executeServerOperation(serverId, restartOp);
-        if (rsp != null) {
-            updatePolicy.recordServerResult(serverId, rsp);
-            resultHandler.handleServerUpdateResult(serverId, rsp);
-        }
+    public ModelNode getOperation() {
+        return getRestartOp();
     }
 
     private ModelNode getRestartOp() {

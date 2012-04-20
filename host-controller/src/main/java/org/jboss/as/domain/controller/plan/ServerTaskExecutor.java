@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller.operations.coordination;
+package org.jboss.as.domain.controller.plan;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.client.MessageSeverity;
@@ -29,6 +29,7 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.BlockingQueueOperationListener;
 import org.jboss.as.controller.remote.TransactionalOperationImpl;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
+import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
 import java.io.IOException;
@@ -40,49 +41,57 @@ import java.util.concurrent.Future;
 /**
  * @author Emanuel Muckenhuber
  */
-public class NewProxyTask {
+public abstract class ServerTaskExecutor {
 
-    private final String name;
-    private final ModelNode operation;
     private final OperationContext context;
-    private final TransactionalProtocolClient client;
+    private final ServerRolloutTaskHandler rolloutHandler;
 
-    public NewProxyTask(final String name, final ModelNode operation, final OperationContext context, final TransactionalProtocolClient client) {
-        this.name = name;
-        this.client = client;
+    protected ServerTaskExecutor(OperationContext context, ServerRolloutTaskHandler rolloutHandler) {
         this.context = context;
-        this.operation = operation;
+        this.rolloutHandler = rolloutHandler;
     }
 
-    public Future<ModelNode> execute(final ProxyOperationListener listener) {
+    public boolean executeTask(final TransactionalProtocolClient.TransactionalOperationListener<ServerOperation> listener, final ServerTask task) {
+        return execute(listener, task.getServerIdentity(), task.getOperation());
+    }
+
+    protected abstract boolean execute(final TransactionalProtocolClient.TransactionalOperationListener<ServerOperation> listener, final ServerIdentity identity, final ModelNode operation);
+
+    protected boolean executeOperation(final TransactionalProtocolClient.TransactionalOperationListener<ServerOperation> listener, TransactionalProtocolClient client, final ServerIdentity identity, final ModelNode operation) {
+        if(client == null) {
+            return false;
+        }
         final OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
         final OperationAttachments operationAttachments = new DelegatingOperationAttachments(context);
-        final ProxyOperation proxyOperation = new ProxyOperation(name, operation, messageHandler, operationAttachments);
+        final ServerOperation serverOperation = new ServerOperation(identity, operation, messageHandler, operationAttachments);
         try {
-            return client.execute(listener, proxyOperation);
+            final Future<ModelNode> result = client.execute(listener, serverOperation);
+            rolloutHandler.recordExecutedRequest(new ServerRolloutTaskHandler.ServerExecutedRequest(identity, result));
         } catch (IOException e) {
-            final TransactionalProtocolClient.PreparedOperation<ProxyOperation> result = BlockingQueueOperationListener.FailedOperation.create(proxyOperation, e);
+            final TransactionalProtocolClient.PreparedOperation<ServerOperation> result = BlockingQueueOperationListener.FailedOperation.create(serverOperation, e);
             listener.operationPrepared(result);
-            return result.getFinalResult();
+            rolloutHandler.recordExecutedRequest(new ServerRolloutTaskHandler.ServerExecutedRequest(identity, result.getFinalResult()));
         }
+        return true;
     }
 
-    static class ProxyOperation extends TransactionalOperationImpl {
+    static class ServerOperationListener extends BlockingQueueOperationListener<ServerOperation> {
 
-        private final String name;
-        protected ProxyOperation(final String name, final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
+    }
+
+    public static class ServerOperation extends TransactionalOperationImpl {
+
+        private final ServerIdentity identity;
+        ServerOperation(ServerIdentity identity, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) {
             super(operation, messageHandler, attachments);
-            this.name = name;
+            this.identity = identity;
         }
 
-        public String getName() {
-            return name;
+        public ServerIdentity getIdentity() {
+            return identity;
         }
     }
 
-    static class ProxyOperationListener extends BlockingQueueOperationListener<ProxyOperation> {
-
-    }
 
     private static class DelegatingMessageHandler implements OperationMessageHandler {
 
@@ -125,6 +134,5 @@ public class NewProxyTask {
             //
         }
     }
-
 
 }

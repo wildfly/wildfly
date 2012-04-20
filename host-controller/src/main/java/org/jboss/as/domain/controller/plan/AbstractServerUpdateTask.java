@@ -21,21 +21,15 @@
  */
 package org.jboss.as.domain.controller.plan;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
 /**
  * Base class for tasks that can perform an update on a server.
  *
- * Thread-Safety: This class is immutable, but is intended to only have its
- * {@link #run()} method executed once.
- *
  * @author Brian Stansberry
  */
-abstract class AbstractServerUpdateTask implements Runnable {
+abstract class AbstractServerUpdateTask implements ServerTask {
 
     /**
      * Callback interface to allow the creator of this task to
@@ -74,30 +68,9 @@ abstract class AbstractServerUpdateTask implements Runnable {
         this.resultHandler = resultHandler;
     }
 
-    /**
-     * Checks if the {@link ServerUpdatePolicy} allows the update to proceed; if
-     * sp {@link #processUpdates() executes them}, else notifies the
-     * {@link ServerUpdateResultHandler} that they were cancelled.
-     */
     @Override
-    public void run() {
-        if (updatePolicy.canUpdateServer(serverId)) {
-            processUpdates();
-        }
-        else {
-            sendCancelledResponse();
-        }
-    }
-
-    /**
-     * Actually perform the updates.
-     */
-    protected abstract void processUpdates();
-
-    private void sendCancelledResponse() {
-        ModelNode response = new ModelNode();
-        response.get(OUTCOME).set(CANCELLED);
-        resultHandler.handleServerUpdateResult(serverId, response);
+    public ServerIdentity getServerIdentity() {
+        return serverId;
     }
 
     @Override
