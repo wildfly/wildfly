@@ -23,6 +23,7 @@ package org.jboss.as.cli.parsing.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
@@ -216,6 +217,35 @@ public class ArgumentValueParsingTestCase {
         prop = propList.get(1);
         assertEquals("f", prop.getName());
         assertEquals("g", prop.getValue().asString());
+    }
+
+    @Test
+    public void testListOfObjects() throws Exception {
+        final ModelNode value = parse("[{a=b},{c=[d=e,f={g=h}}]");
+        assertNotNull(value);
+        assertEquals(ModelType.LIST, value.getType());
+        final List<ModelNode> list = value.asList();
+        assertEquals(2, list.size());
+        ModelNode item = list.get(0);
+        assertNotNull(item);
+        assertEquals(1, item.keys().size());
+        assertEquals("b", item.get("a").asString());
+        item = list.get(1);
+        assertNotNull(item);
+        assertEquals(1, item.keys().size());
+        item = item.get("c");
+        assertTrue(item.isDefined());
+        assertEquals(ModelType.LIST, item.getType());
+        final List<Property> propList = item.asPropertyList();
+        assertEquals(2, propList.size());
+        Property prop = propList.get(0);
+        assertEquals("d", prop.getName());
+        assertEquals("e", prop.getValue().asString());
+        prop = propList.get(1);
+        assertEquals("f", prop.getName());
+        final ModelNode gh = prop.getValue();
+        assertEquals(1, gh.keys().size());
+        assertEquals("h", gh.get("g").asString());
     }
 
     @Test
