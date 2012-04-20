@@ -53,7 +53,11 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
                     stack = new ArrayDeque<ValueState>();
                 }
                 stack.push(currentState);
-                currentState = new DefaultValueState(currentState.isList());
+                if(ctx.getCharacter() == '{') {
+                    currentState = new DefaultValueState(false, true);
+                } else {
+                    currentState = new DefaultValueState(currentState.isList());
+                }
             } else {
                 currentState = new DefaultValueState(false);
             }
@@ -129,7 +133,14 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         protected StringBuilder buf;
 
         public DefaultValueState(boolean list) {
+            this(list, false);
+        }
+
+        public DefaultValueState(boolean list, boolean initWrapper) {
             this.list = list;
+            if(initWrapper) {
+                wrapper = new ModelNode();
+            }
         }
 
         @Override
@@ -194,7 +205,8 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
                     name = null;
                 }
             } else {
-                addChild(getValue(), child.getName(), child.getValue());
+                final String childName = child.getName() != null ? child.getName() : name;
+                addChild(getValue(), childName, child.getValue());
             }
         }
         @Override
@@ -232,26 +244,25 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
 
     class ListValueState implements ValueState {
 
-        private String name;
         private ModelNode list;
 
         @Override
         public void addChild(ValueState child) {
             if(list != null) {
-                throw new IllegalStateException();
-            }
-            name = child.getName();
-            list = child.getValue();
-            if(list.getType() != ModelType.LIST) {
-                ModelNode list = new ModelNode();
-                list.add(this.list);
-                this.list = list;
+                list.add(child.getValue());
+            } else {
+                list = child.getValue();
+                if(list.getType() != ModelType.LIST) {
+                    ModelNode list = new ModelNode();
+                    list.add(this.list);
+                    this.list = list;
+                }
             }
         }
 
         @Override
         public String getName() {
-            return name;
+            return null;
         }
 
         @Override
@@ -261,7 +272,7 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
 
         @Override
         public void itemSeparator() throws CommandFormatException {
-            throw new UnsupportedOperationException();
+            //throw new UnsupportedOperationException();
         }
 
         @Override

@@ -53,7 +53,7 @@ public class ListState extends DefaultParsingState {
                 if(ctx.isEndOfContent()) {
                     return;
                 }
-                if(ctx.getCharacter() == ',') {
+                if(ctx.getCharacter() == ',' || ctx.getCharacter() == '}') {
                     return;
                 }
                 getHandler(ctx.getCharacter()).handle(ctx);
