@@ -58,6 +58,8 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_DEFAULT_USER;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_USER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.LOCAL;
 
 import java.util.Collections;
@@ -550,8 +552,8 @@ public class ManagementXml {
                     throw unexpectedElement(reader);
                 }
             }
-
         }
+        addLegacyLocalAuthentication(realmAddress, list);
     }
 
     private void parseAuthentication_1_1(final XMLExtendedStreamReader reader, final Namespace expectedNs,
@@ -611,8 +613,8 @@ public class ManagementXml {
                     throw unexpectedElement(reader);
                 }
             }
-
         }
+        addLegacyLocalAuthentication(realmAddress, list);
     }
 
     private void parseAuthentication_1_3(final XMLExtendedStreamReader reader, final Namespace expectedNs,
@@ -843,6 +845,17 @@ public class ManagementXml {
         if (!choiceFound) {
             throw missingOneOf(reader, EnumSet.of(Element.ADVANCED_FILTER, Element.USERNAME_FILTER));
         }
+    }
+
+    private void addLegacyLocalAuthentication(final ModelNode realmAddress, final List<ModelNode> list) {
+        /*
+         * Before version 1.3 of the domain schema there was no configuration for the local mechanism, however it was always
+         * enabled - this adds an arbitrary add local op to recreate this behaviour in the older schema versions.
+         */
+        ModelNode addr = realmAddress.clone().add(AUTHENTICATION, LOCAL);
+        ModelNode local = Util.getEmptyOperation(ADD, addr);
+        local.get(DEFAULT_USER).set(DEFAULT_DEFAULT_USER);
+        list.add(local);
     }
 
     private void parseLocalAuthentication(final XMLExtendedStreamReader reader, final Namespace expectedNs,
