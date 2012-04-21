@@ -26,10 +26,12 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.impl.AbstractDelegatingAsyncFuture;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
@@ -44,6 +46,8 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 import org.jboss.dmr.ModelNode;
+import org.jboss.threads.AsyncFuture;
+import org.jboss.threads.AsyncFutureTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -52,6 +56,7 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -83,54 +88,29 @@ public class TransactionalProtocolClientImpl implements ManagementRequestHandler
     }
 
     @Override
-    public Future<ModelNode> execute(TransactionalOperationListener<Operation> listener, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) throws IOException {
+    public AsyncFuture<ModelNode> execute(TransactionalOperationListener<Operation> listener, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) throws IOException {
         final Operation wrapper = new TransactionalOperationImpl(operation, messageHandler, attachments);
         return execute(listener, wrapper);
     }
 
     @Override
-    public <T extends Operation> Future<ModelNode> execute(TransactionalOperationListener<T> listener, T operation) throws IOException {
+    public <T extends Operation> AsyncFuture<ModelNode> execute(TransactionalOperationListener<T> listener, T operation) throws IOException {
         final ExecuteRequestContext context = new ExecuteRequestContext(new OperationWrapper<T>(listener, operation));
-        final ActiveOperation<ModelNode, ExecuteRequestContext> op = channelAssociation.executeRequest(new ExecuteRequest(), context, context);
-        final Future<ModelNode> result = context.getResult();
-        // Propagate cancellation to the operation rather to the result
-        return new Future<ModelNode>() {
+        final ActiveOperation<ModelNode, ExecuteRequestContext> op = channelAssociation.initializeOperation(context, context);
+        final AsyncFuture<ModelNode> result = new AbstractDelegatingAsyncFuture<ModelNode>(op.getResult()) {
             @Override
-            public boolean cancel(boolean mayInterruptIfRunning) {
+            public void asyncCancel(boolean interruptionDesired) {
                 try {
                     // Execute
                     channelAssociation.executeRequest(op, new CompleteTxRequest(ModelControllerProtocol.PARAM_ROLLBACK));
-                    // Block until done...
-                    op.getResult().await();
-                } catch (InterruptedException e ){
-                    Thread.currentThread().interrupt();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-                return isCancelled();
-            }
-
-            @Override
-            public boolean isCancelled() {
-                // TODO also check the outcome?
-                return op.getResult().isCancelled();
-            }
-
-            @Override
-            public boolean isDone() {
-                return result.isDone();
-            }
-
-            @Override
-            public ModelNode get() throws InterruptedException, ExecutionException {
-                return result.get();
-            }
-
-            @Override
-            public ModelNode get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                return result.get(timeout, unit);
             }
         };
+        context.initialize(result);
+        channelAssociation.executeRequest(op, new ExecuteRequest());
+        return result;
     }
 
     /**
@@ -318,6 +298,10 @@ public class TransactionalProtocolClientImpl implements ManagementRequestHandler
             this.wrapper = operationWrapper;
         }
 
+        void initialize(final AsyncFuture<ModelNode> result) {
+            wrapper.future = result;
+        }
+
         OperationMessageHandler getMessageHandler() {
             return wrapper.getMessageHandler();
         }
@@ -336,10 +320,6 @@ public class TransactionalProtocolClientImpl implements ManagementRequestHandler
                 return Collections.emptyList();
             }
             return attachments.getInputStreams();
-        }
-
-        Future<ModelNode> getResult() {
-            return wrapper.future;
         }
 
         @Override
@@ -375,7 +355,7 @@ public class TransactionalProtocolClientImpl implements ManagementRequestHandler
 
         private final T operation;
         private final TransactionalOperationListener<T> listener;
-        private SimpleFuture<ModelNode> future = new SimpleFuture<ModelNode>();
+        private AsyncFuture<ModelNode> future;
 
         OperationWrapper(TransactionalOperationListener<T> listener, T operation) {
             this.listener = listener;
@@ -400,19 +380,11 @@ public class TransactionalProtocolClientImpl implements ManagementRequestHandler
         }
 
         void completed(final ModelNode response) {
-            try {
-                listener.operationComplete(operation, response);
-            } finally {
-                future.set(response);
-            }
+            listener.operationComplete(operation, response);
         }
 
         void failed(final ModelNode response) {
-            try {
-                listener.operationFailed(operation, response);
-            } finally {
-                future.set(response);
-            }
+            listener.operationFailed(operation, response);
         }
 
     }
@@ -421,10 +393,11 @@ public class TransactionalProtocolClientImpl implements ManagementRequestHandler
 
         private final T operation;
         private final ModelNode preparedResult;
-        private final Future<ModelNode> finalResult;
+        private final AsyncFuture<ModelNode> finalResult;
         private final ModelController.OperationTransaction transaction;
 
-        protected PreparedOperationImpl(T operation, ModelNode preparedResult, Future<ModelNode> finalResult, ModelController.OperationTransaction transaction) {
+        protected PreparedOperationImpl(T operation, ModelNode preparedResult, AsyncFuture<ModelNode> finalResult, ModelController.OperationTransaction transaction) {
+            assert finalResult != null : "null result";
             this.operation = operation;
             this.preparedResult = preparedResult;
             this.finalResult = finalResult;
@@ -452,7 +425,7 @@ public class TransactionalProtocolClientImpl implements ManagementRequestHandler
         }
 
         @Override
-        public Future<ModelNode> getFinalResult() {
+        public AsyncFuture<ModelNode> getFinalResult() {
             return finalResult;
         }
 

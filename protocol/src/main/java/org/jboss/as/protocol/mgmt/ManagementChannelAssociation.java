@@ -83,6 +83,8 @@ public interface ManagementChannelAssociation {
      */
     <T, A> AsyncFuture<T> executeRequest(final ActiveOperation<T, A> operation, final ManagementRequest<T, A> request) throws IOException;
 
+    <T, A> ActiveOperation<T, A> initializeOperation(A attachment, ActiveOperation.CompletedCallback<T> callback) throws IOException;
+
     /**
      * Get the underlying remoting channel associated with this context.
      *
