@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -158,11 +159,15 @@ public class TransactionalProtocolClientTestCase {
     public void testCancelBeforePrepared() throws Exception {
 
         final BlockingOperationListener listener = new BlockingOperationListener();
+        final CountDownLatch latch = new CountDownLatch(1);
         final TestOperationHandler handler = new TestOperationHandler() {
             @Override
             public void execute(ModelNode operation, OperationMessageHandler handler, OperationAttachments attachments) throws Exception {
                 try {
-                    wait();
+                    synchronized (this) {
+                        latch.countDown();
+                        wait();
+                    }
                 } catch (InterruptedException e) {
                     //
                 }
@@ -171,6 +176,7 @@ public class TransactionalProtocolClientTestCase {
         //
         final TestUpdateWrapper wrapper = createTestClient(0, handler);
         final Future<ModelNode> futureResult = wrapper.execute(listener);
+        latch.await();
         // Now the server side should for latch to countDown
         futureResult.cancel(false);
         //

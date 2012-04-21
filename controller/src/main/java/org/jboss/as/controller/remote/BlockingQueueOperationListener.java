@@ -24,12 +24,16 @@ package org.jboss.as.controller.remote;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.threads.AsyncFuture;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Basic operation listener backed by a blocking queue. If the limit of the queue is reached prepared operations
@@ -151,8 +155,9 @@ public class BlockingQueueOperationListener<T extends TransactionalProtocolClien
         }
 
         @Override
-        public Future<ModelNode> getFinalResult() {
-            return new Future<ModelNode>() {
+        public AsyncFuture<ModelNode> getFinalResult() {
+            return new AsyncFuture<ModelNode>() {
+
                 @Override
                 public boolean cancel(boolean mayInterruptIfRunning) {
                     return false;
@@ -176,6 +181,51 @@ public class BlockingQueueOperationListener<T extends TransactionalProtocolClien
                 @Override
                 public ModelNode get(long timeout, TimeUnit unit) {
                     return finalResult;
+                }
+
+                @Override
+                public Status await() throws InterruptedException {
+                    return Status.COMPLETE;
+                }
+
+                @Override
+                public Status await(long timeout, TimeUnit unit) throws InterruptedException {
+                    return Status.COMPLETE;
+                }
+
+                @Override
+                public ModelNode getUninterruptibly() throws CancellationException, ExecutionException {
+                    return finalResult;
+                }
+
+                @Override
+                public ModelNode getUninterruptibly(long timeout, TimeUnit unit) throws CancellationException, ExecutionException, TimeoutException {
+                    return finalResult;
+                }
+
+                @Override
+                public Status awaitUninterruptibly() {
+                    return Status.COMPLETE;
+                }
+
+                @Override
+                public Status awaitUninterruptibly(long timeout, TimeUnit unit) {
+                    return Status.COMPLETE;
+                }
+
+                @Override
+                public Status getStatus() {
+                    return Status.COMPLETE;
+                }
+
+                @Override
+                public <A> void addListener(Listener<? super ModelNode, A> aListener, A attachment) {
+                    aListener.handleComplete(this, attachment);
+                }
+
+                @Override
+                public void asyncCancel(boolean interruptionDesired) {
+                    //
                 }
             };
         }

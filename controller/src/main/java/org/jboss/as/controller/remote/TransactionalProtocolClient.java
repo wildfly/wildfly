@@ -26,6 +26,7 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.threads.AsyncFuture;
 
 import java.io.IOException;
 import java.util.concurrent.Future;
@@ -48,7 +49,7 @@ public interface TransactionalProtocolClient {
      * @return the future result
      * @throws IOException
      */
-    Future<ModelNode> execute(TransactionalOperationListener<Operation> listener, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) throws IOException;
+    AsyncFuture<ModelNode> execute(TransactionalOperationListener<Operation> listener, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) throws IOException;
 
     /**
      * Execute an operation. This returns a future for the final result, which will only available after the prepared
@@ -60,7 +61,7 @@ public interface TransactionalProtocolClient {
      * @return the future result
      * @throws IOException
      */
-    <T extends Operation> Future<ModelNode> execute(TransactionalOperationListener<T> listener, T operation) throws IOException;
+    <T extends Operation> AsyncFuture<ModelNode> execute(TransactionalOperationListener<T> listener, T operation) throws IOException;
 
     /**
      * The transactional operation listener.
@@ -137,15 +138,16 @@ public interface TransactionalProtocolClient {
         T getOperation();
 
         /**
-         * Get the prepared result
-         * @return
+         * Get the prepared result.
+         *
+         * @return the prepared result
          */
         ModelNode getPreparedResult();
 
         /**
-         * Check if prepare failed
+         * Check if prepare failed.
          *
-         * @return
+         * @return whether the operation failed
          */
         boolean isFailed();
 
@@ -159,9 +161,9 @@ public interface TransactionalProtocolClient {
         /**
          * Get the final result.
          *
-         * @return
+         * @return the final result
          */
-        Future<ModelNode> getFinalResult();
+        AsyncFuture<ModelNode> getFinalResult();
 
     }
 

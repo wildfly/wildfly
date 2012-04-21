@@ -289,10 +289,13 @@ class ActiveOperationSupport {
             @Override
             public boolean failed(Exception e) {
                 try {
-                    return ActiveOperationImpl.this.setFailed(e);
+                    boolean failed = ActiveOperationImpl.this.setFailed(e);
+                    if(failed) {
+                        ProtocolLogger.ROOT_LOGGER.debugf(e, "active-op (%d) failed %s", operationId, attachment);
+                    }
+                    return failed;
                 } finally {
                     removeActiveOperation(operationId);
-                    ProtocolLogger.ROOT_LOGGER.debugf(e, "active-op (%d) failed %s", operationId, attachment);
                 }
             }
 
@@ -378,7 +381,7 @@ class ActiveOperationSupport {
         @Override
         public void addCancellable(final Cancellable cancellable) {
             // Perhaps just use the IOFuture from XNIO...
-            synchronized (lock) {
+            synchronized (this) {
                 switch (getStatus()) {
                     case CANCELLED:
                         break;

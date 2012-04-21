@@ -33,6 +33,7 @@ import org.jboss.dmr.ModelNode;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 
 /**
@@ -101,6 +102,7 @@ public class RemoteProxyController implements ProxyController {
     @Override
     public void execute(final ModelNode original, final OperationMessageHandler messageHandler, final ProxyOperationControl control, final OperationAttachments attachments) {
         // Add blocking support to adhere to the proxy controller API contracts
+        final CountDownLatch completed = new CountDownLatch(1);
         final BlockingQueue<TransactionalProtocolClient.PreparedOperation<TransactionalProtocolClient.Operation>> queue = new ArrayBlockingQueue<TransactionalProtocolClient.PreparedOperation<TransactionalProtocolClient.Operation>>(1, true);
         final TransactionalProtocolClient.TransactionalOperationListener<TransactionalProtocolClient.Operation> operationListener = new TransactionalProtocolClient.TransactionalOperationListener<TransactionalProtocolClient.Operation>() {
             @Override
@@ -112,12 +114,22 @@ public class RemoteProxyController implements ProxyController {
 
             @Override
             public void operationFailed(TransactionalProtocolClient.Operation operation, ModelNode result) {
-                queue.offer(new BlockingQueueOperationListener.FailedOperation<TransactionalProtocolClient.Operation>(operation, result));
+                try {
+                    queue.offer(new BlockingQueueOperationListener.FailedOperation<TransactionalProtocolClient.Operation>(operation, result));
+                } finally {
+                    // This might not be needed?
+                    completed.countDown();
+                }
             }
 
             @Override
             public void operationComplete(TransactionalProtocolClient.Operation operation, ModelNode result) {
-                control.operationCompleted(result);
+                try {
+                    control.operationCompleted(result);
+                } finally {
+                    // Make sure the handler is called before commit/rollback returns
+                    completed.countDown();
+                }
             }
         };
         Future<ModelNode> futureResult = null;
@@ -139,8 +151,8 @@ public class RemoteProxyController implements ProxyController {
                 public void commit() {
                     prepared.commit();
                     try {
-                        // Await the result
-                        prepared.getFinalResult().get();
+                        // Await the completed notification
+                        completed.await();
                     } catch(InterruptedException e) {
                         Thread.currentThread().interrupt();
                     } catch (Exception e) {
@@ -152,8 +164,8 @@ public class RemoteProxyController implements ProxyController {
                 public void rollback() {
                     prepared.rollback();
                     try {
-                        // Await the result
-                        prepared.getFinalResult().get();
+                        // Await the completed notification
+                        completed.await();
                     } catch(InterruptedException e) {
                         Thread.currentThread().interrupt();
                     } catch (Exception e) {

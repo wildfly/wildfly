@@ -74,6 +74,11 @@ public final class ManagementChannelHandler extends AbstractMessageHandler imple
         return strategy.getChannel();
     }
 
+    @Override
+    public <T, A> ActiveOperation<T, A> initializeOperation(A attachment, ActiveOperation.CompletedCallback<T> callback) throws IOException {
+        return super.registerActiveOperation(attachment, callback);
+    }
+
     /** {@inheritDoc} */
     @Override
     public <T, A> ActiveOperation<T, A> executeRequest(ManagementRequest<T, A> request, A attachment, ActiveOperation.CompletedCallback<T> callback) throws IOException {
