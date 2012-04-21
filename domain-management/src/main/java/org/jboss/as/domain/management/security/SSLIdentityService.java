@@ -70,7 +70,7 @@ public class SSLIdentityService implements Service<SSLIdentityService> {
             KeyManager[] keyManagers = null;
             KeyStore theKeyStore = keystore.getOptionalValue();
             if (theKeyStore != null) {
-                KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+                KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                 keyManagerFactory.init(theKeyStore, keyPassword == null ? keystorePassword : keyPassword);
                 keyManagers = keyManagerFactory.getKeyManagers();
             }
@@ -78,7 +78,7 @@ public class SSLIdentityService implements Service<SSLIdentityService> {
             TrustManager[] trustManagers = null;
             KeyStore theTrustStore = truststore.getOptionalValue();
             if (theTrustStore != null) {
-                TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+                TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                 trustManagerFactory.init(theTrustStore);
                 trustManagers = trustManagerFactory.getTrustManagers();
             }

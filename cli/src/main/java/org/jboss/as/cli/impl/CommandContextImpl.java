@@ -379,7 +379,7 @@ class CommandContextImpl implements CommandContext {
                         theKeyStore = replacement;
                     }
 
-                    KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+                    KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                     keyManagerFactory.init(theKeyStore, keyPassword);
                     keyManagers = keyManagerFactory.getKeyManagers();
                 } catch (IOException e) {
@@ -1273,7 +1273,7 @@ class CommandContextImpl implements CommandContext {
                     for (X509Certificate current : temporarilyTrusted) {
                         theTrustStore.setCertificateEntry(current.getSubjectX500Principal().getName(), current);
                     }
-                    TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+                    TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                     trustManagerFactory.init(theTrustStore);
                     TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
                     for (TrustManager current : trustManagers) {
