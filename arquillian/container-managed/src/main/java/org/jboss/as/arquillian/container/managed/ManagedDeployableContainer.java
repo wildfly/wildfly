@@ -128,6 +128,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             cmd.add("org.jboss.as.standalone");
             cmd.add("-server-config");
             cmd.add(config.getServerConfig());
+            if (config.isAdminOnly())
+               cmd.add("--admin-only");
 
             // Wait on ports before launching; AS7-4070
             this.waitOnPorts();

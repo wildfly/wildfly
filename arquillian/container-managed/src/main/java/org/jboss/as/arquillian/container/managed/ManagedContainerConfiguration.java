@@ -58,6 +58,8 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     private boolean enableAssertions = true;
 
+    private boolean adminOnly = false;
+
     private Integer[] waitForPorts;
 
     private Integer waitForPortsTimeoutInSeconds;
@@ -220,4 +222,13 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
     public void setWaitForPortsTimeoutInSeconds(final Integer waitForPortsTimeoutInSeconds) {
         this.waitForPortsTimeoutInSeconds = waitForPortsTimeoutInSeconds;
     }
+
+    public boolean isAdminOnly() {
+        return adminOnly;
+    }
+
+    public void setAdminOnly(boolean adminOnly) {
+        this.adminOnly = adminOnly;
+    }
+
 }
