@@ -178,7 +178,6 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
         cmd.add("-Djboss.home.dir=" + jbossHomeDir);
         cmd.add("-Dorg.jboss.boot.log.file=" + jbossHomeDir + "/domain/log/host-controller.log");
         cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + CONFIG_PATH + "logging.properties");
-        cmd.add("-Djboss.modules.dir=" + modulesDir.getCanonicalPath());
         cmd.add("-Djboss.bundles.dir=" + bundlesDir.getCanonicalPath());
         cmd.add("-Djboss.domain.default.config=" + config.getDomainConfig());
         cmd.add("-Djboss.host.default.config=" + config.getHostConfig());
