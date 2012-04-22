@@ -143,7 +143,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         @Override
         public void run() {
             try {
-                scan(true, deploymentOperations);
+                scan(false, deploymentOperations);
             } catch (Exception e) {
                 ROOT_LOGGER.scanException(e, deploymentDir.getAbsolutePath());
             }
@@ -330,23 +330,17 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
 
     void oneOffScan(final DeploymentOperations deploymentOperations) {
-        boolean old = scanEnabled;
-        scanEnabled = true;
-        try {
-            scan(false, deploymentOperations);
-        } finally {
-            scanEnabled = old;
-        }
+            scan(true, deploymentOperations);
     }
 
     void scan() {
-        scan(true, deploymentOperations);
+        scan(false, deploymentOperations);
     }
 
     /**
      * This method isn't private solely to allow a unit test in the same package to call it.
      */
-    void scan(boolean allowRetry, final DeploymentOperations deploymentOperations) {
+    void scan(boolean oneOffScan, final DeploymentOperations deploymentOperations) {
 
         try {
             scanLock.lockInterruptibly();
@@ -357,7 +351,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
         boolean scheduleRescan = false;
         try {
-            if (scanEnabled) { // confirm the scan is still wanted
+            if (scanEnabled || oneOffScan) { // confirm the scan is still wanted
                 ROOT_LOGGER.tracef("Scanning directory %s for deployment content changes", deploymentDir.getAbsolutePath());
 
                 ScanContext scanContext = new ScanContext(deploymentOperations);
@@ -430,7 +424,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     }
 
                     boolean first = true;
-                    while (!updates.isEmpty() && (first || allowRetry)) {
+                    while (!updates.isEmpty() && (first || !oneOffScan)) {
                         first = false;
 
                         final Future<ModelNode> futureResults = deploymentOperations.deploy(getCompositeUpdate(updates), scheduledExecutor);
@@ -487,7 +481,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
             if (scheduleRescan) {
                 synchronized (this) {
-                    if (scanEnabled) {
+                    if (scanEnabled && !oneOffScan) {
                         rescanIncompleteTask = scheduledExecutor.schedule(scanRunnable, 200, TimeUnit.MILLISECONDS);
                     }
                 }
