@@ -21,6 +21,16 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.ee.component.Component;
@@ -61,15 +71,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * {@link EJBReceiver} for local same-VM invocations. This handles all invocations on remote interfaces
@@ -152,7 +153,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         }
 
         final ClonerConfiguration config = new ClonerConfiguration();
-        config.setClassCloner(new ClassLoaderClassCloner(invocation.getInvokedProxy().getClass().getClassLoader()));
+        config.setClassCloner(new LocalInvocationClassCloner(invocation.getInvokedProxy().getClass().getClassLoader()));
         final ObjectCloner resultCloner = ObjectCloners.getSerializingObjectClonerFactory().createCloner(config);
         if (async) {
             if (ejbComponent instanceof SessionBeanComponent) {
