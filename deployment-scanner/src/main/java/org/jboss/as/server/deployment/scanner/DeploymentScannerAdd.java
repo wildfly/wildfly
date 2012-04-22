@@ -102,6 +102,7 @@ class DeploymentScannerAdd implements OperationStepHandler {
             final Boolean autoDeployExp = AUTO_DEPLOY_EXPLODED.resolveModelAttribute(context, operation).asBoolean();
             final Boolean autoDeployXml = AUTO_DEPLOY_XML.resolveModelAttribute(context, operation).asBoolean();
             final Long deploymentTimeout = DEPLOYMENT_TIMEOUT.resolveModelAttribute(context, operation).asLong();
+            final Integer scanInterval = SCAN_INTERVAL.resolveModelAttribute(context, operation).asInt();
 
             final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("DeploymentScanner-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
             final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2, threadFactory);
@@ -120,6 +121,9 @@ class DeploymentScannerAdd implements OperationStepHandler {
                 bootTimeScanner.setAutoDeployXMLContent(autoDeployXml);
                 if (deploymentTimeout != null) {
                     bootTimeScanner.setDeploymentTimeout(deploymentTimeout);
+                }
+                if (scanInterval != null) {
+                    bootTimeScanner.setScanInterval(scanInterval);
                 }
             } else {
                 bootTimeScanner = null;
