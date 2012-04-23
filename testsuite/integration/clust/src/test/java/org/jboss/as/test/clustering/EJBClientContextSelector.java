@@ -42,7 +42,7 @@ public class EJBClientContextSelector {
     }
     
     public static ContextSelector<EJBClientContext> setup(String file, Properties propertiesToReplace) throws IOException {
-        // setup the selector
+        // setUp the selector
         final InputStream inputStream = EJBClientContextSelector.class.getClassLoader().getResourceAsStream(file);
         if (inputStream == null) {
             throw new IllegalStateException("Could not find " + file + " in classpath");
