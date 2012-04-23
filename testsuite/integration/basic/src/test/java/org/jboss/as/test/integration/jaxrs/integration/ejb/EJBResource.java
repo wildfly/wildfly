@@ -21,8 +21,12 @@
  */
 package org.jboss.as.test.integration.jaxrs.integration.ejb;
 
+import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -31,10 +35,16 @@ import javax.ws.rs.Produces;
 @Produces({"text/plain"})
 @Stateless
 @Interceptors(EjbInterceptor.class)
-public class EJBResource {
+public class EJBResource implements EjbInterface {
+
+    @Resource
+    private UserTransaction userTransaction;
 
     @GET
-    public String getMessage() {
+    public String getMessage() throws SystemException {
+        if(userTransaction.getStatus() != Status.STATUS_ACTIVE) {
+            throw new RuntimeException("Transaction not active, not an EJB invocation");
+        }
         return "Hello";
     }
 }

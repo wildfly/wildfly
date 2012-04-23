@@ -55,7 +55,7 @@ public class JaxrsEjbInterceptorsEarTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "jaxrsnoap.ear");
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejbjar.jar");
-        ejbJar.addClasses(EJBResource.class, EjbInterceptor.class);
+        ejbJar.addClasses(EJBResource.class, EjbInterceptor.class, EjbInterface.class);
         ear.addAsModule(ejbJar);
 
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsnoap.war");

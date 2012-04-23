@@ -11,7 +11,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.deployment.component.WebComponentDescription;
-import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.modules.Module;
 import org.jboss.resteasy.util.GetRestful;
 
@@ -30,12 +29,6 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
-        if (WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
-            //this is already handled by the weld integration
-            //no need to integrate twice.
-            return;
-        }
 
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         if (module == null) {

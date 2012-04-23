@@ -53,7 +53,7 @@ public class JaxrsEjbInterceptorsTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsnoap.war");
         war.addPackage(HttpRequest.class.getPackage());
         war.add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
-        war.addClasses(EJBResource.class, EjbInterceptor.class);
+        war.addClasses(EJBResource.class, EjbInterceptor.class, EjbInterface.class);
         war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
                 "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
