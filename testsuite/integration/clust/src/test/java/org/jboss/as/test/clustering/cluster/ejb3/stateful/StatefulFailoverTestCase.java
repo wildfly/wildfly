@@ -24,17 +24,20 @@ package org.jboss.as.test.clustering.cluster.ejb3.stateful;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Properties;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.jboss.arquillian.container.test.api.*;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.EJBDirectory;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.bean.CounterDecorator;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.bean.StatefulBean;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.bean.StatefulCDIInterceptor;
@@ -43,8 +46,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -57,19 +58,7 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore // AS7-5208 Intermittent failures
-public class StatefulFailoverTestCase {
-
-    @ArquillianResource
-    private ContainerController controller;
-    @ArquillianResource
-    private Deployer deployer;
-
-    @BeforeClass
-    public static void printSysProps() {
-        Properties sysprops = System.getProperties();
-        System.out.println("System properties:\n" + sysprops);
-    }
+public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -96,30 +85,21 @@ public class StatefulFailoverTestCase {
         return war;
     }
 
-    @Test
-    @InSequence(1)
-    public void testArquillianWorkaround() {
-        // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-
-        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
-        // https://community.jboss.org/thread/176096
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
+    @Override
+    protected void setUp() {
+        super.setUp();
+        deploy(DEPLOYMENTS);
     }
 
     @Test
-    @InSequence(2)
+    @InSequence(1)
     public void testRestart(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException {
 
-        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
-        // https://community.jboss.org/thread/176096
-        deployer.undeploy(DEPLOYMENT_2);
-        controller.stop(CONTAINER_2);
+        // Only needed for injection
+        stop(CONTAINER_2);
 
         DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
@@ -132,8 +112,7 @@ public class StatefulFailoverTestCase {
             assertQueryCount(20010101, client, url1);
             assertQueryCount(20020202, client, url1);
 
-            controller.start(CONTAINER_2);
-            deployer.deploy(DEPLOYMENT_2);
+            start(CONTAINER_2);
 
             assertQueryCount(20030303, client, url1);
             assertQueryCount(20040404, client, url1);
@@ -141,12 +120,12 @@ public class StatefulFailoverTestCase {
             assertQueryCount(20050505, client, url2);
             assertQueryCount(20060606, client, url2);
 
-            controller.stop(CONTAINER_2);
+            stop(CONTAINER_2);
 
             assertQueryCount(20070707, client, url1);
             assertQueryCount(20080808, client, url1);
 
-            controller.start(CONTAINER_2);
+            start(CONTAINER_2);
 
             assertQueryCount(20090909, client, url1);
             assertQueryCount(20101010, client, url1);
@@ -154,11 +133,12 @@ public class StatefulFailoverTestCase {
             assertQueryCount(20111111, client, url2);
             assertQueryCount(20121212, client, url2);
 
-            controller.stop(CONTAINER_1);
+            stop(CONTAINER_1);
+
             assertQueryCount(20131313, client, url2);
             assertQueryCount(20141414, client, url2);
 
-            controller.start(CONTAINER_1);
+            start(CONTAINER_1);
 
             assertQueryCount(20151515, client, url1);
             assertQueryCount(20161616, client, url1);
@@ -167,36 +147,17 @@ public class StatefulFailoverTestCase {
             assertQueryCount(20181818, client, url1);
         } finally {
             client.getConnectionManager().shutdown();
-
-            this.cleanup(DEPLOYMENT_1, CONTAINER_1);
-            this.cleanup(DEPLOYMENT_2, CONTAINER_2);
         }
     }
 
     @Test
-    @InSequence(10)
-    public void testArquillianWorkaroundSecond() {
-        // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-
-        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
-        // https://community.jboss.org/thread/176096
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
-    }
-
-    @Test
-    @InSequence(11)
+    @InSequence(2)
     public void testRedeploy(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException {
 
-        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
-        // https://community.jboss.org/thread/176096
-        deployer.undeploy(DEPLOYMENT_2);
-        controller.stop(CONTAINER_2);
+        stop(CONTAINER_2);
 
         DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
@@ -207,8 +168,8 @@ public class StatefulFailoverTestCase {
             assertQueryCount(20010101, client, url1);
             assertQueryCount(20020202, client, url1);
 
-            controller.start(CONTAINER_2);
-            deployer.deploy(DEPLOYMENT_2);
+            start(CONTAINER_2);
+            //deploy(DEPLOYMENT_2);
 
             assertQueryCount(20030303, client, url1);
             assertQueryCount(20040404, client, url1);
@@ -216,12 +177,12 @@ public class StatefulFailoverTestCase {
             assertQueryCount(20050505, client, url2);
             assertQueryCount(20060606, client, url2);
 
-            deployer.undeploy(DEPLOYMENT_2);
+            undeploy(DEPLOYMENT_2);
 
             assertQueryCount(20070707, client, url1);
             assertQueryCount(20080808, client, url1);
 
-            deployer.deploy(DEPLOYMENT_2);
+            deploy(DEPLOYMENT_2);
 
             assertQueryCount(20090909, client, url1);
             assertQueryCount(20101010, client, url1);
@@ -229,12 +190,12 @@ public class StatefulFailoverTestCase {
             assertQueryCount(20111111, client, url2);
             assertQueryCount(20121212, client, url2);
 
-            deployer.undeploy(DEPLOYMENT_1);
+            undeploy(DEPLOYMENT_1);
 
             assertQueryCount(20131313, client, url2);
             assertQueryCount(20141414, client, url2);
 
-            deployer.deploy(DEPLOYMENT_1);
+            deploy(DEPLOYMENT_1);
 
             assertQueryCount(20151515, client, url1);
             assertQueryCount(20161616, client, url1);
@@ -243,9 +204,6 @@ public class StatefulFailoverTestCase {
             assertQueryCount(20181818, client, url2);
         } finally {
             client.getConnectionManager().shutdown();
-
-            this.cleanup(DEPLOYMENT_1, CONTAINER_1);
-            this.cleanup(DEPLOYMENT_2, CONTAINER_2);
         }
     }
 
@@ -259,15 +217,6 @@ public class StatefulFailoverTestCase {
             return Integer.parseInt(response.getFirstHeader("count").getValue());
         } finally {
             response.getEntity().getContent().close();
-        }
-    }
-
-    private void cleanup(String deployment, String container) {
-        try {
-            this.deployer.undeploy(deployment);
-            this.controller.stop(container);
-        } catch (Throwable e) {
-            e.printStackTrace(System.err);
         }
     }
 

@@ -23,17 +23,20 @@ package org.jboss.as.test.clustering.cluster.singleton;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Properties;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.jboss.arquillian.container.test.api.*;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.ClusterHttpClientUtil;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyService;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyServiceContextListener;
 import org.jboss.as.test.http.util.HttpClientUtils;
@@ -42,8 +45,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,19 +52,7 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore // AS7-5210 - unstable test
-public class SingletonTestCase {
-
-    @ArquillianResource
-    private ContainerController controller;
-    @ArquillianResource
-    private Deployer deployer;
-
-    @BeforeClass
-    public static void printSysProps() {
-        Properties sysprops = System.getProperties();
-        System.out.println("System properties:\n" + sysprops);
-    }
+public class SingletonTestCase extends ClusterAbstractTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -84,30 +73,20 @@ public class SingletonTestCase {
         return war;
     }
 
-    @Test
-    @InSequence(1)
-    public void testArquillianWorkaround() {
-        // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-
-        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
-        // https://community.jboss.org/thread/176096
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
+    @Override
+    protected void setUp() {
+        super.setUp();
+        deploy(DEPLOYMENTS);
     }
 
     @Test
-    @InSequence(2)
     public void testSingletonService(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException {
 
-        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
-        // https://community.jboss.org/thread/176096
-        deployer.undeploy(DEPLOYMENT_2);
-        controller.stop(CONTAINER_2);
+        // Needed to be able to inject ArquillianResource
+        stop(CONTAINER_2);
 
         DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
@@ -123,73 +102,57 @@ public class SingletonTestCase {
             Assert.assertEquals(NODE_1, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
-            controller.start(CONTAINER_2);
-            deployer.deploy(DEPLOYMENT_2);
+            start(CONTAINER_2);
 
-            response = tryGet(client, url1);
+            response = ClusterHttpClientUtil.tryGet(client, url1);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(MyServiceContextListener.PREFERRED_NODE, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
-            response = tryGet(client, url2);
+            response = ClusterHttpClientUtil.tryGet(client, url2);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(MyServiceContextListener.PREFERRED_NODE, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
-            controller.stop(CONTAINER_2);
+            stop(CONTAINER_2);
 
-            response = tryGet(client, url1);
+            response = ClusterHttpClientUtil.tryGet(client, url1);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(NODE_1, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
-            controller.start(CONTAINER_2);
+            start(CONTAINER_2);
 
-            response = tryGet(client, url1);
+            response = ClusterHttpClientUtil.tryGet(client, url1);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(MyServiceContextListener.PREFERRED_NODE, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
-            response = tryGet(client, url2);
+            response = ClusterHttpClientUtil.tryGet(client, url2);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(MyServiceContextListener.PREFERRED_NODE, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
-            controller.stop(CONTAINER_1);
+            stop(CONTAINER_1);
 
-            response = tryGet(client, url2);
+            response = ClusterHttpClientUtil.tryGet(client, url2);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
-            controller.start(CONTAINER_1);
+            start(CONTAINER_1);
 
-            response = tryGet(client, url1);
+            response = ClusterHttpClientUtil.tryGet(client, url1);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(MyServiceContextListener.PREFERRED_NODE, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
-            response = tryGet(client, url2);
+            response = ClusterHttpClientUtil.tryGet(client, url2);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(MyServiceContextListener.PREFERRED_NODE, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
         } finally {
             client.getConnectionManager().shutdown();
-
-            deployer.undeploy(DEPLOYMENT_1);
-            controller.stop(CONTAINER_1);
-            deployer.undeploy(DEPLOYMENT_2);
-            controller.stop(CONTAINER_2);
         }
-    }
-
-    private HttpResponse tryGet(final DefaultHttpClient client, final String url1) throws IOException {
-        final long startTime;
-        HttpResponse response = client.execute(new HttpGet(url1));
-        startTime = System.currentTimeMillis();
-        while(response.getStatusLine().getStatusCode() != HttpServletResponse.SC_OK && startTime + GRACE_TIME_TO_MEMBERSHIP_CHANGE > System.currentTimeMillis()) {
-            response = client.execute(new HttpGet(url1));
-        }
-        return response;
     }
 }
