@@ -386,7 +386,7 @@ public class DomainLifecycleUtil {
     public synchronized DomainClient getDomainClient() {
         return DomainClient.Factory.create(internalGetOrCreateClient());
     }
-
+    
     private synchronized DomainTestClient internalGetOrCreateClient() {
         // Perhaps get rid of the shared client...
         if (domainClient == null) {
@@ -475,11 +475,11 @@ public class DomainLifecycleUtil {
         return executeForResult(new OperationBuilder(op).build());
     }
 
-    private ModelNode executeForResult(ModelNode op) {
+    public ModelNode executeForResult(ModelNode op) {
         return executeForResult(new OperationBuilder(op).build());
     }
 
-    private ModelNode executeForResult(Operation op) {
+    public ModelNode executeForResult(Operation op) {
         try {
             ModelNode result = getDomainClient().execute(op);
             if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
