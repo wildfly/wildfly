@@ -44,6 +44,8 @@ public interface Registry<K, V> {
         V getValue();
     }
 
+    String getName();
+
     void addListener(Listener<K, V> listener);
 
     void removeListener(Listener<K, V> listener);
@@ -54,7 +56,5 @@ public interface Registry<K, V> {
 
     Map.Entry<K, V> getRemoteEntry(Object address);
 
-    String getName();
-
-    void refreshLocalEntry();
+    Map.Entry<K, V> refreshLocalEntry();
 }

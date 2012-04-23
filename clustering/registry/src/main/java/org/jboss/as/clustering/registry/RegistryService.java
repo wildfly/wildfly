@@ -117,23 +117,31 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
     }
 
     @Override
-    public void refreshLocalEntry() {
-        Operation<Void> operation = new Operation<Void>() {
-            @Override
-            public Void invoke(Cache<Address, Map.Entry<K, V>> cache) {
-                RegistryService.this.addCacheEntry(cache);
-                return null;
-            }
-        };
-        this.invoke(operation);
+    public Map.Entry<K, V> refreshLocalEntry() {
+        final Map.Entry<K, V> entry = this.createLocalCacheEntry();
+        if (entry != null) {
+            Operation<Void> operation = new Operation<Void>() {
+                @Override
+                public Void invoke(Cache<Address, Map.Entry<K, V>> cache) {
+                    RegistryService.this.addLocalCacheEntry(cache, entry);
+                    return null;
+                }
+            };
+            this.invoke(operation);
+        }
+        return entry;
     }
 
-    void addCacheEntry(Cache<Address, Map.Entry<K, V>> cache) {
+    void addLocalCacheEntry(Cache<Address, Map.Entry<K, V>> cache, Map.Entry<K, V> entry) {
+        if (entry != null) {
+            cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(getLocalAddress(cache), entry);
+        }
+    }
+
+    Map.Entry<K, V> createLocalCacheEntry() {
         RegistryEntryProvider<K, V> provider = this.provider.getValue();
         K key = provider.getKey();
-        if (key != null) {
-            cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(getLocalAddress(cache), new AbstractMap.SimpleImmutableEntry<K, V>(provider.getKey(), provider.getValue()));
-        }
+        return (key != null) ? new AbstractMap.SimpleImmutableEntry<K, V>(key, provider.getValue()) : null;
     }
 
     @Override
@@ -176,7 +184,7 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
                 }
                 // Restore our entry in cache if we are joining (result of a split/merge)
                 if (event.isMergeView()) {
-                    RegistryService.this.addCacheEntry(cache);
+                    RegistryService.this.addLocalCacheEntry(cache, RegistryService.this.createLocalCacheEntry());
                 }
                 return removed;
             }
