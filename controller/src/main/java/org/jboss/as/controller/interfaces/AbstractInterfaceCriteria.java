@@ -27,6 +27,8 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -78,10 +80,10 @@ public abstract class AbstractInterfaceCriteria implements InterfaceCriteria {
     }
 
     public static Map<NetworkInterface, Set<InetAddress>> cloneCandidates(final Map<NetworkInterface, Set<InetAddress>> candidates) {
-        final Map<NetworkInterface, Set<InetAddress>> clone = new HashMap<NetworkInterface, Set<InetAddress>>();
+        final Map<NetworkInterface, Set<InetAddress>> clone = new LinkedHashMap<NetworkInterface, Set<InetAddress>>();
 
         for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : candidates.entrySet()) {
-            clone.put(entry.getKey(), new HashSet<InetAddress>(entry.getValue()));
+            clone.put(entry.getKey(), new LinkedHashSet<InetAddress>(entry.getValue()));
         }
         return clone;
     }
