@@ -73,6 +73,8 @@ public class InterfaceCriteriaTestUtil {
                 }
                 if (addresses.size() > 0) {
                     candidates.put(nic, Collections.unmodifiableSet(addresses));
+                }else{
+                    notLoop.remove(nic);
                 }
 
                 Enumeration<NetworkInterface> subs = nic.getSubInterfaces();
@@ -91,6 +93,8 @@ public class InterfaceCriteriaTestUtil {
                     }
                     if (addresses.size() > 0) {
                         candidates.put(nic, Collections.unmodifiableSet(addresses));
+                    }else{
+                        notLoop.remove(nic);
                     }
 
                 }

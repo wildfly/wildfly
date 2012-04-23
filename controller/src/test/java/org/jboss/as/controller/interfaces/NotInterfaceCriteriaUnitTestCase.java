@@ -30,6 +30,7 @@ import java.net.NetworkInterface;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,7 +55,7 @@ public class NotInterfaceCriteriaUnitTestCase {
             return;
         }
 
-        Map<NetworkInterface, Set<InetAddress>> correct = new HashMap<NetworkInterface, Set<InetAddress>>();
+        Map<NetworkInterface, Set<InetAddress>> correct = new LinkedHashMap<NetworkInterface, Set<InetAddress>>();
         for (NetworkInterface ni : nonLoopBackInterfaces) {
             correct.put(ni, getRightTypeAddresses(allCandidates.get(ni)));
         }
