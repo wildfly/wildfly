@@ -47,11 +47,13 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb3.stateless.bean.Stateless;
 import org.jboss.as.test.clustering.cluster.ejb3.stateless.bean.StatelessBean;
 import org.jboss.ejb.client.ContextSelector;
@@ -69,11 +71,11 @@ import org.junit.runner.RunWith;
 /**
  * @author Paul Ferraro
  * @author Ondrej Chaloupka
+ * @version Oct 2012
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore // AS7-5211 unstable test
-public class RemoteStatelessFailoverTestCase {
+public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
     private static final Logger log = Logger.getLogger(RemoteStatelessFailoverTestCase.class);
     private static final String MODULE_NAME = "remote-ejb-client-stateless-bean-failover-test";
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
@@ -83,12 +85,6 @@ public class RemoteStatelessFailoverTestCase {
     private static final String HOST_2 = System.getProperty("node1");
     private static final String REMOTE_PORT_PROPERTY_NAME = "remote.connection.default.port";
     private static final String REMOTE_HOST_PROPERTY_NAME = "remote.connection.default.host";
-
-    @ArquillianResource
-    private ContainerController container;
-
-    @ArquillianResource
-    private Deployer deployer;
 
     private boolean[] deployed = new boolean[] { false, false };
     private boolean[] started = new boolean[] { false, false };
@@ -118,10 +114,22 @@ public class RemoteStatelessFailoverTestCase {
         context = new RemoteEJBDirectory(MODULE_NAME);
     }
 
+    @Override
+    protected void setUp() {
+        stop(CONTAINER_2);
+
+        // Make sure only one container is running now.
+        start(CONTAINER_1);
+        deploy(DEPLOYMENT_1);
+    }
+
     @Test
+    @InSequence(1)
     public void testFailoverOnStop() throws Exception {
-        this.start(0);
-        this.deploy(0);
+
+        // In case something went wrong.
+        start(CONTAINER_1);
+        deploy(DEPLOYMENT_1);
 
         final ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
@@ -130,8 +138,8 @@ public class RemoteStatelessFailoverTestCase {
 
             assertEquals(NODES[0], bean.getNodeName());
 
-            this.start(1);
-            this.deploy(1);
+            start(CONTAINER_2);
+            deploy(DEPLOYMENT_2);
 
             // Allow ample time for topology change to propagate to client
             Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
@@ -146,7 +154,7 @@ public class RemoteStatelessFailoverTestCase {
                 Assert.assertTrue(String.valueOf(frequency), frequency > 0);
             }
 
-            this.stop(0);
+            stop(CONTAINER_1);
 
             assertEquals(NODES[1], bean.getNodeName());
         } finally {
@@ -154,19 +162,18 @@ public class RemoteStatelessFailoverTestCase {
             if (selector != null) {
                 EJBClientContext.setSelector(selector);
             }
-            // shutdown the containers
-            for (int i = 0; i < NODES.length; ++i) {
-                this.undeploy(i);
-                this.stop(i);
-            }
+            // shutdown the 2nd container
+            stop(CONTAINER_2);
         }
     }
 
     @Test
+    @InSequence(2)
     public void testFailoverOnUndeploy() throws Exception {
-        // Container is unmanaged, so start it ourselves
-        this.start(0);
-        this.deploy(0);
+
+        // In case the previous test failed.
+        start(CONTAINER_1);
+        deploy(DEPLOYMENT_1);
 
         final ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
@@ -175,8 +182,8 @@ public class RemoteStatelessFailoverTestCase {
 
             assertEquals(NODES[0], bean.getNodeName());
 
-            this.start(1);
-            this.deploy(1);
+            start(CONTAINER_2);
+            deploy(DEPLOYMENT_2); // TODO: Should be still deployed.
 
             // Allow ample time for topology change to propagate to client
             Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
@@ -191,7 +198,7 @@ public class RemoteStatelessFailoverTestCase {
                 Assert.assertTrue(String.valueOf(frequency), frequency > 0);
             }
 
-            this.undeploy(0);
+            undeploy(DEPLOYMENT_1);
 
             assertEquals(NODES[1], bean.getNodeName());
         } finally {
@@ -199,11 +206,8 @@ public class RemoteStatelessFailoverTestCase {
             if (selector != null) {
                 EJBClientContext.setSelector(selector);
             }
-            // shutdown the containers
-            for (int i = 0; i < NODES.length; ++i) {
-                this.undeploy(i);
-                this.stop(i);
-            }
+
+            // Keep containers running
         }
     }
 
@@ -211,18 +215,21 @@ public class RemoteStatelessFailoverTestCase {
      * Basic load balance testing. A random distribution is used amongst nodes for client now.
      */
     @Test
-    public void testLoadbalance() throws Exception {
-        this.start(0);
-        this.deploy(0);
-        this.start(1);
-        this.deploy(1);
+    @InSequence(3)
+    public void testLoadBalance() throws Exception {
+
+        // In case the previous test failed.
+        start(CONTAINER_1);
+        deploy(DEPLOYMENT_1);
+        start(CONTAINER_2);
+        deploy(DEPLOYMENT_2);
 
         final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         int numberOfServers = 2;
         int numberOfCalls = 50;
         // there will be at least 20% of calls processed by all servers
-        double serversProccessedAtLeast = 0.2;
+        double serversProcessedAtLeast = 0.2;
 
         try {
             Stateless bean = context.lookupStateless(StatelessBean.class, Stateless.class);
@@ -230,7 +237,7 @@ public class RemoteStatelessFailoverTestCase {
             String node = bean.getNodeName();
             log.info("Node called : " + node);
 
-            validateBalancing(bean, numberOfCalls, numberOfServers, serversProccessedAtLeast);
+            validateBalancing(bean, numberOfCalls, numberOfServers, serversProcessedAtLeast);
 
             Properties contextChangeProperties = new Properties();
             contextChangeProperties.put(REMOTE_PORT_PROPERTY_NAME, PORT_2.toString());
@@ -241,26 +248,21 @@ public class RemoteStatelessFailoverTestCase {
             node = bean.getNodeName();
             log.info("Node called : " + node);
 
-            validateBalancing(bean, numberOfCalls, numberOfServers, serversProccessedAtLeast);
+            validateBalancing(bean, numberOfCalls, numberOfServers, serversProcessedAtLeast);
 
-            this.stop(0);
+            stop(CONTAINER_1);
             node = bean.getNodeName();
             log.info("Node called : " + node);
 
-            this.start(0);
+            start(CONTAINER_1);
             node = bean.getNodeName();
             log.info("Node called : " + node);
 
-            validateBalancing(bean, numberOfCalls, numberOfServers, serversProccessedAtLeast);
+            validateBalancing(bean, numberOfCalls, numberOfServers, serversProcessedAtLeast);
         } finally {
             // reset the selector
             if (previousSelector != null) {
                 EJBClientContext.setSelector(previousSelector);
-            }
-            // shutdown the containers
-            for (int i = 0; i < NODES.length; ++i) {
-                this.undeploy(i);
-                this.stop(i);
             }
         }
     }
@@ -277,9 +279,9 @@ public class RemoteStatelessFailoverTestCase {
 
         Set<String> entries = new HashSet<String>();
         entries.addAll(results);
-        
+
         Assert.assertEquals(expectedServers, entries.size());
-        
+
         double minCalls = minPercentage * numCalls;
         for (String entry: entries) {
             int frequency = Collections.frequency(results, entry);
@@ -288,31 +290,4 @@ public class RemoteStatelessFailoverTestCase {
         System.out.println(String.format("All %d servers processed at least %f of calls", expectedServers, minCalls));
     }
 
-    private void deploy(int index) {
-        if (this.started[index] && !this.deployed[index]) {
-            this.deployer.deploy(DEPLOYMENTS[index]);
-            this.deployed[index] = true;
-        }
-    }
-
-    private void undeploy(int index) {
-        if (this.started[index] && this.deployed[index]) {
-            this.deployer.undeploy(DEPLOYMENTS[index]);
-            this.deployed[index] = false;
-        }
-    }
-
-    private void start(int index) {
-        if (!this.started[index]) {
-            this.container.start(CONTAINERS[index]);
-            this.started[index] = true;
-        }
-    }
-
-    private void stop(int index) {
-        if (this.started[index]) {
-            this.container.stop(CONTAINERS[index]);
-            this.started[index] = false;
-        }
-    }
 }

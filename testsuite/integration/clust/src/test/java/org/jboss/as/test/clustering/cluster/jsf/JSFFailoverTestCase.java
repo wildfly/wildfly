@@ -51,6 +51,7 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.web.ClusteredWebSimpleTestCase;
 import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
@@ -61,27 +62,24 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.test.clustering.ClusterHttpClientUtil.tryGet;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINERS;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENTS;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE;
+import org.jboss.as.test.clustering.NodeUtil;
 
 /**
  * Weld numberguess example converted to a test
  *
+ * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class JSFFailoverTestCase {
-
-    /**
-     * Controller for testing failover and undeploy *
-     */
-    @ArquillianResource
-    private ContainerController controller;
-    @ArquillianResource
-    private Deployer deployer;
+public class JSFFailoverTestCase extends ClusterAbstractTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -89,10 +87,9 @@ public class JSFFailoverTestCase {
         return createDeployment();
     }
 
-
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
-    public static Archive<?> DEPLOYMENT_1() {
+    public static Archive<?> deployment1() {
         return createDeployment();
     }
 
@@ -104,6 +101,12 @@ public class JSFFailoverTestCase {
         war.addAsWebInfResource(JSFFailoverTestCase.class.getPackage(), "faces-config.xml", "faces-config.xml");
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
+    }
+
+    @Override
+    protected void setUp() {
+        super.setUp();
+        deploy(DEPLOYMENTS);
     }
 
     /**
@@ -201,17 +204,6 @@ public class JSFFailoverTestCase {
         return request;
     }
 
-    @Test
-    @InSequence(1)
-    public void testStartContainersAndDeploymentsForGracefulSimpleFailover() {
-        // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
-    }
-
     /**
      * Test simple graceful shutdown failover:
      * <p/>
@@ -226,7 +218,6 @@ public class JSFFailoverTestCase {
      * @throws InterruptedException
      */
     @Test
-    @InSequence(2)
     public void testGracefulSimpleFailover(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -266,7 +257,7 @@ public class JSFFailoverTestCase {
             Assert.assertEquals("9", state.remainingGuesses);
 
             // Gracefully shutdown the 1st container.
-            controller.stop(CONTAINER_1);
+            stop(CONTAINER_1);
 
 
             // Now we do a JSF POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
@@ -291,7 +282,7 @@ public class JSFFailoverTestCase {
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("98", state.biggest);
 
-            controller.start(CONTAINER_1);
+            start(CONTAINER_1);
 
             // And now we go back to the first node, guessing 2
             response = tryGet(client, buildPostRequest(url1, state.sessionId, state.jsfViewState, "2"));
@@ -316,24 +307,7 @@ public class JSFFailoverTestCase {
             client.getConnectionManager().shutdown();
         }
 
-        // Is would be done automatically, keep for 2nd test is added
-        deployer.undeploy(DEPLOYMENT_1);
-        controller.stop(CONTAINER_1);
-        deployer.undeploy(DEPLOYMENT_2);
-        controller.stop(CONTAINER_2);
-
         // Assert.fail("Show me the logs please!");
-    }
-
-    @Test
-    @InSequence(10)
-    public void testStartContainersAndDeploymentsForGracefulUndeployFailover() {
-        // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
     }
 
     /**
@@ -350,7 +324,6 @@ public class JSFFailoverTestCase {
      * @throws InterruptedException
      */
     @Test
-    @InSequence(11)
     public void testGracefulUndeployFailover(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -388,7 +361,7 @@ public class JSFFailoverTestCase {
             Assert.assertEquals("9", state.remainingGuesses);
 
             // Gracefully undeploy from the 1st container.
-            deployer.undeploy(DEPLOYMENT_1);
+            undeploy(DEPLOYMENT_1);
 
             // Now we do a JSF POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
             response = tryGet(client, buildPostRequest(url2, state.sessionId, state.jsfViewState, "100"));
@@ -413,7 +386,7 @@ public class JSFFailoverTestCase {
             Assert.assertEquals("98", state.biggest);
 
             // Redeploy
-            deployer.deploy(DEPLOYMENT_1);
+            deploy(DEPLOYMENT_1);
 
             // And now we go back to the first node, guessing 2
             response = tryGet(client, buildPostRequest(url1, state.sessionId, state.jsfViewState, "2"));
@@ -438,12 +411,6 @@ public class JSFFailoverTestCase {
             client.getConnectionManager().shutdown();
         }
 
-        // Is would be done automatically, keep for when 3nd test is added
-        deployer.undeploy(DEPLOYMENT_1);
-        controller.stop(CONTAINER_1);
-        deployer.undeploy(DEPLOYMENT_2);
-        controller.stop(CONTAINER_2);
-
         // Assert.fail("Show me the logs please!");
     }
 
@@ -458,14 +425,4 @@ public class JSFFailoverTestCase {
         String jsfViewState;
     }
 
-
-    private HttpResponse tryGet(final DefaultHttpClient client, final HttpUriRequest r) throws IOException {
-        final long startTime;
-        HttpResponse response = client.execute(r);
-        startTime = System.currentTimeMillis();
-        while(response.getStatusLine().getStatusCode() != HttpServletResponse.SC_OK && startTime + GRACE_TIME_TO_MEMBERSHIP_CHANGE > System.currentTimeMillis()) {
-            response = client.execute(r);
-        }
-        return response;
-    }
 }

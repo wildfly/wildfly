@@ -31,6 +31,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusteringTestConstants;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
@@ -58,7 +59,7 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
  * @see https://issues.jboss.org/browse/AS7-3492
  */
 @RunWith(Arquillian.class)
-public class LocalEJBClientFailoverTestCase {
+public class LocalEJBClientFailoverTestCase extends ClusterAbstractTestCase {
 
     private static final Logger logger = Logger.getLogger(LocalEJBClientFailoverTestCase.class);
 
@@ -69,12 +70,6 @@ public class LocalEJBClientFailoverTestCase {
     private static final String NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1 = "node-name-arq-deployment-container-1";
     private static final String NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2 = "node-name-arq-deployment-container-2";
 
-    @ArquillianResource
-    private ContainerController container;
-
-    @ArquillianResource
-    private Deployer deployer;
-
     private Context jndiContext;
 
     private boolean containerOneStarted;
@@ -84,7 +79,7 @@ public class LocalEJBClientFailoverTestCase {
     private boolean nodeNameAppDeployedOnContainerTwo;
 
     @Deployment(name = CLIENT_ARQ_DEPLOYMENT, testable = false, managed = false)
-    @TargetsContainer(ClusteringTestConstants.CONTAINER_2)
+    @TargetsContainer(CONTAINER_2)
     public static Archive createClientApplication() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, CLIENT_APP_MODULE_NAME + ".jar");
         jar.addClasses(ClientSFSB.class, ClientSFSBRemote.class, NodeNameRetriever.class);
@@ -94,13 +89,13 @@ public class LocalEJBClientFailoverTestCase {
     }
 
     @Deployment(name = NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1, testable = false, managed = false)
-    @TargetsContainer(ClusteringTestConstants.CONTAINER_1)
+    @TargetsContainer(CONTAINER_1)
     public static Archive createNodeNameApplicationForContainer1() {
         return createNodeNameApplication();
     }
 
     @Deployment(name = NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2, testable = false, managed = false)
-    @TargetsContainer(ClusteringTestConstants.CONTAINER_2)
+    @TargetsContainer(CONTAINER_2)
     public static Archive createNodeNameApplicationForContainer2() {
         return createNodeNameApplication();
     }
@@ -121,44 +116,24 @@ public class LocalEJBClientFailoverTestCase {
     @After
     public void afterTest() throws Exception {
         if (clientAppDeployed) {
-            try {
-                this.deployer.undeploy(CLIENT_ARQ_DEPLOYMENT);
-            } catch (Exception e) {
-                logger.error("Could not undeploy " + CLIENT_ARQ_DEPLOYMENT, e);
-            }
+            undeploy(CLIENT_ARQ_DEPLOYMENT);
         }
+
         if (nodeNameAppDeployedOnContainerOne) {
-            try {
-                this.deployer.undeploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1);
-            } catch (Exception e) {
-                logger.error("Could not undeploy " + NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1, e);
-            }
+            undeploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1);
         }
 
         if (nodeNameAppDeployedOnContainerTwo) {
-            try {
-                this.deployer.undeploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
-            } catch (Exception e) {
-                logger.error("Could not undeploy " + NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2, e);
-            }
+            undeploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
         }
 
         if (containerOneStarted) {
-            try {
-                this.container.stop(CONTAINER_1);
-            } catch (Exception e) {
-                logger.error("Failed to stop " + CONTAINER_1, e);
-            }
+            stop(CONTAINER_1);
         }
 
         if (containerTwoStarted) {
-            try {
-                this.container.stop(CONTAINER_2);
-            } catch (Exception e) {
-                logger.error("Failed to stop " + CONTAINER_2, e);
-            }
+            stop(CONTAINER_2);
         }
-
     }
 
     /**
@@ -176,18 +151,15 @@ public class LocalEJBClientFailoverTestCase {
      */
     @Test
     public void testFailoverWhenLocalTargetApplicationIsUndeployed() throws Exception {
-        // Container is unmanaged, so start it ourselves
-        this.container.start(CONTAINER_1);
+
         containerOneStarted = true;
-        // start the other container too
-        this.container.start(CONTAINER_2);
         containerTwoStarted = true;
 
-        this.deployer.deploy(CLIENT_ARQ_DEPLOYMENT);
+        deploy(CLIENT_ARQ_DEPLOYMENT);
         clientAppDeployed = true;
-        this.deployer.deploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1);
+        deploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1);
         nodeNameAppDeployedOnContainerOne = true;
-        this.deployer.deploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
+        deploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
         nodeNameAppDeployedOnContainerTwo = true;
 
         final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup("cluster/ejb3/stateful/failover/local-ejb-sfsb-failover-jboss-ejb-client.properties");
