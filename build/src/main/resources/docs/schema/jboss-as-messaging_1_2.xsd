@@ -236,10 +236,34 @@
                   <xs:element maxOccurs="1" minOccurs="1" name="socket-binding" type="xs:string" />
                </xs:sequence>
                <xs:sequence>
-                  <xs:element maxOccurs="1" minOccurs="0" ref="local-bind-address" />
-                  <xs:element maxOccurs="1" minOccurs="0" ref="local-bind-port" />
-                  <xs:element maxOccurs="1" minOccurs="1" ref="group-address" />
-                  <xs:element maxOccurs="1" minOccurs="1" ref="group-port" />
+                  <xs:element maxOccurs="1" minOccurs="0" ref="local-bind-address">
+                      <xs:annotation>
+                          <xs:documentation>
+                              Deprecated. use socket-binding attribute instead to specify the local bind address.
+                          </xs:documentation>
+                      </xs:annotation>
+                  </xs:element>
+                  <xs:element maxOccurs="1" minOccurs="0" ref="local-bind-port">
+                      <xs:annotation>
+                          <xs:documentation>
+                              Deprecated. use socket-binding attribute instead to specify the local bind port.
+                          </xs:documentation>
+                      </xs:annotation>
+                  </xs:element>
+                  <xs:element maxOccurs="1" minOccurs="1" ref="group-address">
+                      <xs:annotation>
+                          <xs:documentation>
+                              Deprecated. use socket-binding attribute instead to specify the group address.
+                          </xs:documentation>
+                      </xs:annotation>
+                  </xs:element>
+                  <xs:element maxOccurs="1" minOccurs="1" ref="group-port">
+                      <xs:annotation>
+                          <xs:documentation>
+                              Deprecated. use socket-binding attribute instead to specify the group port.
+                          </xs:documentation>
+                      </xs:annotation>
+                  </xs:element>
                </xs:sequence>
            </xs:choice>
            <xs:element maxOccurs="1" minOccurs="0" ref="broadcast-period" />
@@ -255,9 +279,27 @@
                   <xs:element maxOccurs="1" minOccurs="1" name="socket-binding" type="xs:string" />
                </xs:sequence>
                <xs:sequence>
-                  <xs:element maxOccurs="1" minOccurs="0" ref="local-bind-address" />
-                  <xs:element maxOccurs="1" minOccurs="1" ref="group-address" />
-                  <xs:element maxOccurs="1" minOccurs="1" ref="group-port" />
+                  <xs:element maxOccurs="1" minOccurs="0" ref="local-bind-address">
+                      <xs:annotation>
+                          <xs:documentation>
+                              Deprecated. use socket-binding attribute instead to specify the local bind address.
+                          </xs:documentation>
+                      </xs:annotation>
+                  </xs:element>
+                  <xs:element maxOccurs="1" minOccurs="1" ref="group-address">
+                      <xs:annotation>
+                          <xs:documentation>
+                              Deprecated. use socket-binding attribute instead to specify the group address.
+                          </xs:documentation>
+                      </xs:annotation>
+                  </xs:element>
+                  <xs:element maxOccurs="1" minOccurs="1" ref="group-port">
+                      <xs:annotation>
+                          <xs:documentation>
+                              Deprecated. use socket-binding attribute instead to specify the group port.
+                          </xs:documentation>
+                      </xs:annotation>
+                  </xs:element>
                </xs:sequence>
             </xs:choice>
             <xs:element maxOccurs="1" minOccurs="0" name="refresh-timeout" type="xs:int" />
