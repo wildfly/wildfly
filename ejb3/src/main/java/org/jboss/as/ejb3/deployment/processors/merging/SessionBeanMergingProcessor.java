@@ -1,5 +1,7 @@
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import java.lang.reflect.Method;
+
 import javax.ejb.SessionBean;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -13,6 +15,7 @@ import org.jboss.as.ejb3.component.session.SessionBeanSetSessionContextMethodInv
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
 
@@ -47,11 +50,47 @@ public class SessionBeanMergingProcessor extends AbstractMergingProcessor<Sessio
             });
 
             //now lifecycle callbacks
-            final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
-            builder.setPreDestroy(MethodIdentifier.getIdentifier(void.class, "ejbRemove"));
-            builder.setPostActivate(MethodIdentifier.getIdentifier(void.class, "ejbActivate"));
-            builder.setPrePassivate(MethodIdentifier.getIdentifier(void.class, "ejbPassivate"));
-            description.addInterceptorMethodOverride(componentClass.getName(), builder.build());
+            final MethodIdentifier ejbRemoveIdentifier = MethodIdentifier.getIdentifier(void.class, "ejbRemove");
+            final MethodIdentifier ejbActivateIdentifier = MethodIdentifier.getIdentifier(void.class, "ejbActivate");
+            final MethodIdentifier ejbPassivateIdentifier = MethodIdentifier.getIdentifier(void.class, "ejbPassivate");
+
+            boolean ejbActivate = false, ejbPassivate = false, ejbRemove = false;
+            Class<?> c  = componentClass;
+            while (c != null && c != Object.class) {
+                final ClassReflectionIndex index = deploymentReflectionIndex.getClassIndex(c);
+
+                if(!ejbActivate) {
+                    final Method method = index.getMethod(ejbActivateIdentifier);
+                    if(method != null) {
+                        final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
+                        builder.setPostActivate(ejbActivateIdentifier);
+                        description.addInterceptorMethodOverride(c.getName(), builder.build());
+                        ejbActivate = true;
+                    }
+                }
+
+                if(!ejbPassivate) {
+                    final Method method = index.getMethod(ejbPassivateIdentifier);
+                    if(method != null) {
+                        final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
+                        builder.setPrePassivate(ejbPassivateIdentifier);
+                        description.addInterceptorMethodOverride(c.getName(), builder.build());
+                        ejbPassivate = true;
+                    }
+                }
+
+                if(!ejbRemove) {
+                    final Method method = index.getMethod(ejbRemoveIdentifier);
+                    if(method != null) {
+                        final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
+                        builder.setPreDestroy(ejbRemoveIdentifier);
+                        description.addInterceptorMethodOverride(c.getName(), builder.build());
+                        ejbRemove = true;
+                    }
+                }
+
+                c = c.getSuperclass();
+            }
 
 
         }
