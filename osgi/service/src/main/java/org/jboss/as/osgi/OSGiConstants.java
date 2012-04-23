@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,34 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.parser;
+package org.jboss.as.osgi;
+
+import org.jboss.msc.service.ServiceName;
 
 
 /**
- * An enumeration of the supported OSGi subsystem namespaces.
+ * OSGi Subsystem constants
  *
  * @author Thomas.Diesler@jboss.com
- * @author David Bosschaert
- * @since 13-Sep-2010
  */
-public interface ModelConstants {
+public interface OSGiConstants {
 
-    String ACTIVATE = "activate";
-    String ACTIVATION = "activation";
-    String BUNDLE = "bundle";
-    String CAPABILITY = "capability";
-    String ENTRIES = "entries";
-    String FRAGMENT = "fragment";
-    String ID = "id";
-    String NAME = "name";
-    String PROPERTY = "property";
-    String START = "start";
-    String STARTLEVEL = "startlevel";
-    String STATE = "state";
-    String STOP = "stop";
-    String SYMBOLIC_NAME = "symbolic-name";
-    String TYPE = "type";
-    String VALUE = "value";
-    String VERSION = "version";
-
+    ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("osgi", "as");
+    ServiceName FRAMEWORK_BASE_NAME = SERVICE_BASE_NAME.append("framework");
 }

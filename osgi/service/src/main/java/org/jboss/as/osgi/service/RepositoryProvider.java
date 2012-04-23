@@ -44,7 +44,7 @@ import org.osgi.service.repository.Repository;
 
 import java.io.File;
 
-import static org.jboss.as.osgi.service.FrameworkBootstrapService.SERVICE_BASE_NAME;
+import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 
 /**
  * An service that provides the {@link Repository} service to the OSGi system context

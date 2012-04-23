@@ -25,7 +25,7 @@ package org.jboss.as.test.integration.management.util;
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-public class CLIException extends Exception {
+public class CLIException extends RuntimeException {
 
     /**
      * Creates a new instance of

@@ -22,11 +22,27 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.as.osgi.OSGiConstants.FRAMEWORK_BASE_NAME;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.framework.Services;
 
 /**
  * Processes deployments that have OSGi metadata attached.
@@ -38,21 +54,54 @@ import org.jboss.osgi.deployment.deployer.Deployment;
  */
 public class BundleInstallProcessor implements DeploymentUnitProcessor {
 
-    @Override
-    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    static final AttachmentKey<ServiceName> INSTALL_SERVICE_NAME_KEY = AttachmentKey.create(ServiceName.class);
 
-        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+    private final InitialDeploymentTracker deploymentTracker;
+    private final AtomicBoolean frameworkActivated = new AtomicBoolean();
+
+    public BundleInstallProcessor(InitialDeploymentTracker deploymentListener) {
+        this.deploymentTracker = deploymentListener;
+    }
+
+    @Override
+    public void deploy(final DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
+        final DeploymentUnit depUnit = context.getDeploymentUnit();
         final Deployment deployment = OSGiDeploymentAttachment.getDeployment(depUnit);
         if (deployment != null) {
-            BundleInstallService.addService(phaseContext, deployment);
+            if (frameworkActivated.compareAndSet(false, true)) {
+                activateFramework(context);
+            }
+            ServiceName serviceName;
+            if (deploymentTracker.isClosed() == false && deploymentTracker.removeDeploymentName(depUnit.getName())) {
+                serviceName = PersistentBundleInstallService.addService(deploymentTracker, context, deployment);
+                deploymentTracker.registerPersistentBundleInstallService(serviceName);
+            } else {
+                serviceName = BundleInstallService.addService(context, deployment);
+            }
+            depUnit.putAttachment(INSTALL_SERVICE_NAME_KEY, serviceName);
         }
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        final Deployment deployment = OSGiDeploymentAttachment.getDeployment(depUnit);
-        if (deployment != null) {
-            BundleInstallService.removeService(depUnit);
+        final ServiceName serviceName = depUnit.getAttachment(INSTALL_SERVICE_NAME_KEY);
+        if (serviceName != null) {
+            final ServiceController<?> serviceController = depUnit.getServiceRegistry().getService(serviceName);
+            if (serviceController != null) {
+                serviceController.setMode(Mode.REMOVE);
+            }
         }
+    }
+
+    private void activateFramework(final DeploymentPhaseContext context) {
+        Service<Void> service = new AbstractService<Void>() {
+            public void start(StartContext context) throws StartException {
+                context.getController().setMode(Mode.REMOVE);
+            }
+        };
+        ServiceTarget serviceTarget = context.getServiceTarget();
+        ServiceBuilder<Void> builder = serviceTarget.addService(FRAMEWORK_BASE_NAME.append("ACTIVATE"), service);
+        builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
+        builder.install();
     }
 }

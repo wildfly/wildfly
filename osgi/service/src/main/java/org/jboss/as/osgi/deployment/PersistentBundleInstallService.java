@@ -27,12 +27,12 @@ import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.server.deployment.Services.deploymentUnitName;
 
+import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -41,35 +41,42 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
+import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.framework.StorageState;
+import org.jboss.osgi.framework.StorageStateProvider;
 
 /**
- * Service installs an OSGi deployment to the {@link BundleManager}.
+ * Service responsible for creating and managing the life-cycle of an OSGi deployment.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 20-Sep-2010
  */
-public class BundleInstallService extends AbstractService<Void> {
+public class PersistentBundleInstallService extends AbstractService<Void> {
 
-    static final ServiceName SERVICE_NAME_BASE = SERVICE_BASE_NAME.append("bundle", "install");
+    static final ServiceName SERVICE_NAME_BASE = SERVICE_BASE_NAME.append("persistent", "bundle", "install");
 
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
+    private final InjectedValue<StorageStateProvider> injectedStorageProvider = new InjectedValue<StorageStateProvider>();
+    private final InitialDeploymentTracker deploymentTracker;
     private final Deployment deployment;
 
-    private BundleInstallService(Deployment deployment) {
+    private PersistentBundleInstallService(InitialDeploymentTracker deploymentTracker, Deployment deployment) {
+        this.deploymentTracker = deploymentTracker;
         this.deployment = deployment;
     }
 
-    public static ServiceName addService(DeploymentPhaseContext phaseContext, Deployment deployment) {
+    public static ServiceName addService(InitialDeploymentTracker deploymentTracker, DeploymentPhaseContext phaseContext, Deployment deployment) {
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        final BundleInstallService service = new BundleInstallService(deployment);
+        final PersistentBundleInstallService service = new PersistentBundleInstallService(deploymentTracker, deployment);
         final String contextName = depUnit.getName();
         final ServiceName serviceName = getServiceName(depUnit);
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         ServiceBuilder<Void> builder = serviceTarget.addService(serviceName, service);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, service.injectedBundleManager);
+        builder.addDependency(Services.STORAGE_STATE_PROVIDER, StorageStateProvider.class, service.injectedStorageProvider);
         builder.addDependency(deploymentUnitName(contextName));
-        builder.addDependency(Services.FRAMEWORK_ACTIVE);
+        builder.addDependency(IntegrationServices.AUTOINSTALL_HANDLER_COMPLETE);
         builder.install();
         return serviceName;
     }
@@ -85,7 +92,13 @@ public class BundleInstallService extends AbstractService<Void> {
         try {
             ServiceTarget serviceTarget = context.getChildTarget();
             BundleManager bundleManager = injectedBundleManager.getValue();
-            bundleManager.installBundle(serviceTarget, deployment);
+            StorageStateProvider storageStateProvider = injectedStorageProvider.getValue();
+            StorageState storageState = storageStateProvider.getByLocation(deployment.getLocation());
+            if (storageState != null) {
+                deployment.addAttachment(StorageState.class, storageState);
+            }
+            ServiceName serviceName = bundleManager.installBundle(serviceTarget, deployment);
+            deploymentTracker.addInstalledBundle(serviceName, deployment);
         } catch (Throwable th) {
             throw MESSAGES.startFailedToInstallDeployment(th, deployment);
         }
