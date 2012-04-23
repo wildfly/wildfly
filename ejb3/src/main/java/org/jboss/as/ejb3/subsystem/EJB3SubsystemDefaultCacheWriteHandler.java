@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.CacheFactoryService;
+import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSourceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -44,22 +45,27 @@ import org.jboss.msc.value.InjectedValue;
 public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
     public static final EJB3SubsystemDefaultCacheWriteHandler SFSB_CACHE =
-            new EJB3SubsystemDefaultCacheWriteHandler(CacheFactoryService.DEFAULT_SFSB_CACHE_SERVICE_NAME, null,
+            new EJB3SubsystemDefaultCacheWriteHandler(CacheFactoryService.DEFAULT_SFSB_CACHE_SERVICE_NAME,
+                    null,
+                    null,
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE);
 
     public static final EJB3SubsystemDefaultCacheWriteHandler CLUSTERED_SFSB_CACHE =
             new EJB3SubsystemDefaultCacheWriteHandler(CacheFactoryService.DEFAULT_CLUSTERED_SFSB_CACHE_SERVICE_NAME,
                     CacheFactoryService.DEFAULT_SFSB_CACHE_SERVICE_NAME,
+                    ClusteredBackingCacheEntryStoreSourceService.getCacheFactoryClusterNameServiceName(null),
                     EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE);
 
     private final ServiceName serviceName;
     private final ServiceName defaultServiceName;
+    private final ServiceName clusterNameServiceName;
     private final AttributeDefinition attribute;
 
-    public EJB3SubsystemDefaultCacheWriteHandler(ServiceName serviceName, ServiceName defaultServiceName, AttributeDefinition attribute) {
+    public EJB3SubsystemDefaultCacheWriteHandler(ServiceName serviceName, ServiceName defaultServiceName, ServiceName clusterServiceName, AttributeDefinition attribute) {
         super(attribute);
         this.serviceName = serviceName;
         this.defaultServiceName = defaultServiceName;
+        this.clusterNameServiceName = clusterServiceName;
         this.attribute = attribute;
     }
 
@@ -90,23 +96,33 @@ public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttribut
         ModelNode cacheName = attribute.resolveModelAttribute(context, model);
 
         ServiceRegistry registry = context.getServiceRegistry(true);
-        ServiceController<?> existingService = registry.getService(serviceName);
-        if (existingService != null) {
-            context.removeService(existingService);
+        if (registry.getService(this.serviceName) != null) {
+            context.removeService(this.serviceName);
+        }
+        if ((this.clusterNameServiceName != null) && (registry.getService(this.clusterNameServiceName) != null)) {
+            context.removeService(this.clusterNameServiceName);
         }
         ServiceName dependency = cacheName.isDefined() ? CacheFactoryService.getServiceName(cacheName.asString()) : this.defaultServiceName;
         if (dependency != null) {
-            @SuppressWarnings("rawtypes")
-            InjectedValue<CacheFactory> factory = new InjectedValue<CacheFactory>();
-            @SuppressWarnings("rawtypes")
-            ValueService<CacheFactory> service = new ValueService<CacheFactory>(factory);
-            ServiceController<?> newController = context.getServiceTarget().addService(serviceName, service)
-                    .addDependency(dependency, CacheFactory.class, factory)
-                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                    .install();
+            ServiceController<?> controller = this.installValueService(context, this.serviceName, CacheFactory.class, dependency);
             if (newControllers != null) {
-                newControllers.add(newController);
+                newControllers.add(controller);
+            }
+            if ((this.clusterNameServiceName != null) && cacheName.isDefined()) {
+                controller = this.installValueService(context, this.clusterNameServiceName, String.class, ClusteredBackingCacheEntryStoreSourceService.getCacheFactoryClusterNameServiceName(cacheName.asString()));
+                if (newControllers != null) {
+                    newControllers.add(controller);
+                }
             }
         }
+    }
+
+    private <T> ServiceController<T> installValueService(final OperationContext context, final ServiceName serviceName, final Class<T> targetClass, final ServiceName dependencyServiceName) {
+        final InjectedValue<T> value = new InjectedValue<T>();
+        return context.getServiceTarget().addService(serviceName, new ValueService<T>(value))
+                .addDependency(dependencyServiceName, targetClass, value)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install()
+        ;
     }
 }

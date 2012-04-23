@@ -43,11 +43,26 @@ import org.jboss.msc.value.InjectedValue;
 public class ClusteredBackingCacheEntryStoreSourceService<K extends Serializable, V extends Cacheable<K>, G extends Serializable> extends BackingCacheEntryStoreSourceService<K, V, G, ClusteredBackingCacheEntryStoreSource<K, V, G>> {
     private static final ServiceName BASE_CLIENT_MAPPING_SERVICE_NAME = ServiceName.JBOSS.append("ejb", "remoting", "connector", "client-mappings");
     private static final ServiceName CLIENT_MAPPING_REGISTRY_SERVICE_NAME = BASE_CLIENT_MAPPING_SERVICE_NAME.append("registry");
+    private static final ServiceName CACHE_FACTORY_CLUSTER_NAME_SERVICE_NAME = ServiceName.JBOSS.append("ejb", "cache", "cluster");
+    private static final ServiceName PASSIVATION_STORE_CLUSTER_NAME_SERVICE_NAME = ServiceName.JBOSS.append("ejb", "store", "cluster");
+    private static final ServiceName CACHE_CONTAINER_CLUSTER_NAME_SERVICE_NAME = ServiceName.JBOSS.append("ejb", "container", "cluster");
 
     public static final ServiceName CLIENT_MAPPING_REGISTRY_COLLECTOR_SERVICE_NAME = BASE_CLIENT_MAPPING_SERVICE_NAME.append("collector");
 
     public static ServiceName getClientMappingRegistryServiceName(String name) {
         return (name != null) ? CLIENT_MAPPING_REGISTRY_SERVICE_NAME.append(name) : CLIENT_MAPPING_REGISTRY_SERVICE_NAME;
+    }
+
+    public static ServiceName getCacheFactoryClusterNameServiceName(String cacheFactoryName) {
+        return (cacheFactoryName != null) ? CACHE_FACTORY_CLUSTER_NAME_SERVICE_NAME.append(cacheFactoryName) : CACHE_FACTORY_CLUSTER_NAME_SERVICE_NAME;
+    }
+
+    public static ServiceName getPassivationStoreClusterNameServiceName(String passivationStoreName) {
+        return PASSIVATION_STORE_CLUSTER_NAME_SERVICE_NAME.append(passivationStoreName);
+    }
+
+    public static ServiceName getCacheContainerClusterNameServiceName(String containerName) {
+        return CACHE_CONTAINER_CLUSTER_NAME_SERVICE_NAME.append(containerName);
     }
 
     @SuppressWarnings("rawtypes")

@@ -23,6 +23,9 @@
 package org.jboss.as.ejb3.subsystem;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,14 +37,16 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.Cacheable;
+import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSourceService;
 import org.jboss.as.ejb3.cache.impl.factory.GroupAwareCacheFactoryService;
 import org.jboss.as.ejb3.cache.impl.factory.NonPassivatingCacheFactoryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Paul Ferraro
@@ -69,13 +74,11 @@ public class CacheFactoryAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> serviceControllers) throws OperationFailedException {
-
-        ServiceController<CacheFactory<Serializable, Cacheable<Serializable>>> serviceController = this.<Serializable, Cacheable<Serializable>>installRuntimeService(context, model, verificationHandler);
         // add this to the service controllers
-        serviceControllers.add(serviceController);
+        serviceControllers.addAll(this.installRuntimeServices(context, model, verificationHandler));
     }
 
-    <K extends Serializable, V extends Cacheable<K>> ServiceController<CacheFactory<K, V>> installRuntimeService(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+    Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
 
         String name = model.require(EJB3SubsystemModel.NAME).asString();
         String passivationStore = model.hasDefined(EJB3SubsystemModel.PASSIVATION_STORE) ? model.get(EJB3SubsystemModel.PASSIVATION_STORE).asString() : null;
@@ -88,10 +91,19 @@ public class CacheFactoryAdd extends AbstractAddStepHandler {
         }
 
         ServiceTarget target = context.getServiceTarget();
-        ServiceBuilder<CacheFactory<K, V>> builder = (passivationStore != null) ? new GroupAwareCacheFactoryService<K, V>(name, aliases).build(target, passivationStore) : new NonPassivatingCacheFactoryService<K, V>(name, aliases).build(target);
+        ServiceBuilder<?> builder = (passivationStore != null) ? new GroupAwareCacheFactoryService<Serializable, Cacheable<Serializable>>(name, aliases).build(target, passivationStore) : new NonPassivatingCacheFactoryService<Serializable, Cacheable<Serializable>>(name, aliases).build(target);
         if (verificationHandler != null) {
             builder.addListener(verificationHandler);
         }
-        return builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        ServiceController<?> controller = builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        if (passivationStore != null) {
+            InjectedValue<String> clusterName = new InjectedValue<String>();
+            ServiceController<?> clusterNameController = target.addService(ClusteredBackingCacheEntryStoreSourceService.getCacheFactoryClusterNameServiceName(name), new ValueService<String>(clusterName))
+                    .addDependency(ClusteredBackingCacheEntryStoreSourceService.getPassivationStoreClusterNameServiceName(passivationStore), String.class, clusterName)
+                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                    .install();
+            return Arrays.<ServiceController<?>>asList(controller, clusterNameController);
+        }
+        return Collections.<ServiceController<?>>singleton(controller);
     }
 }

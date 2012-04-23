@@ -20,17 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.remote.protocol.versionone;
+package org.jboss.as.clustering.ejb3.cache.backing.infinispan;
 
-import org.jboss.remoting3.MessageInputStream;
-
-import java.io.IOException;
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.value.Value;
 
 /**
- * User: jpai
+ * @author Paul Ferraro
+ *
  */
-interface MessageHandler {
+public class ClusterNameService extends AbstractService<String> {
 
-    void processMessage(final ChannelAssociation channelAssociation, final MessageInputStream messageInputStream) throws IOException;
+    private final Value<EmbeddedCacheManager> container;
 
+    public ClusterNameService(Value<EmbeddedCacheManager> container) {
+        this.container = container;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see org.jboss.msc.value.Value#getValue()
+     */
+    @Override
+    public String getValue() {
+        return this.container.getValue().getClusterName();
+    }
 }

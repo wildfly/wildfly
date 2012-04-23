@@ -30,6 +30,7 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.as.naming.ManagedReference;
+import org.jboss.ejb.client.Affinity;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.StopContext;
@@ -51,6 +52,7 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
     private final Pool<StatelessSessionComponentInstance> pool;
     private final String poolName;
     private final Method timeoutMethod;
+    private final Affinity weakAffinity;
 
     /**
      * Constructs a StatelessEJBComponent for a stateless session bean
@@ -83,12 +85,15 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
         }
 
         this.timeoutMethod = slsbComponentCreateService.getTimeoutMethod();
+        this.weakAffinity = slsbComponentCreateService.getWeakAffinity();
+/*      // Not sure what this is doing here, since deploymentName is never referenced
         final String deploymentName;
         if (slsbComponentCreateService.getDistinctName() == null || slsbComponentCreateService.getDistinctName().length() == 0) {
             deploymentName = slsbComponentCreateService.getApplicationName() + "." + slsbComponentCreateService.getModuleName();
         } else {
             deploymentName = slsbComponentCreateService.getApplicationName() + "." + slsbComponentCreateService.getModuleName() + "." + slsbComponentCreateService.getDistinctName();
         }
+*/
     }
 
 
@@ -107,8 +112,13 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
         return poolName;
     }
 
+    @Override
     public Method getTimeoutMethod() {
         return timeoutMethod;
+    }
+
+    public Affinity getWeakAffinity() {
+        return this.weakAffinity;
     }
 
     @Override

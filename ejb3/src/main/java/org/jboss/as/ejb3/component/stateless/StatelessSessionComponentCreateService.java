@@ -27,6 +27,9 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
+import org.jboss.ejb.client.Affinity;
+import org.jboss.ejb.client.ClusterAffinity;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -35,6 +38,7 @@ import org.jboss.msc.value.InjectedValue;
 public class StatelessSessionComponentCreateService extends SessionBeanComponentCreateService {
 
     private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<PoolConfig>();
+    private final InjectedValue<String> clusterName = new InjectedValue<String>();
 
     /**
      * Construct a new instance.
@@ -54,8 +58,16 @@ public class StatelessSessionComponentCreateService extends SessionBeanComponent
         return this.poolConfig.getOptionalValue();
     }
 
-    public InjectedValue<PoolConfig> getPoolConfigInjector() {
+    public Injector<PoolConfig> getPoolConfigInjector() {
         return this.poolConfig;
     }
 
+    public Affinity getWeakAffinity() {
+        String clusterName = this.clusterName.getOptionalValue();
+        return (clusterName != null) ? new ClusterAffinity(clusterName) : Affinity.NONE;
+    }
+
+    public Injector<String> getClusterNameInjector() {
+        return this.clusterName;
+    }
 }

@@ -65,8 +65,6 @@ public class GroupAwareCacheFactory<K extends Serializable, V extends Cacheable<
         this.storeSource = storeSource;
     }
 
-    // --------------------------------------------------- StatefulCacheFactory
-
     @Override
     public Cache<K, V> createCache(String beanName, IdentifierFactory<K> identifierFactory, StatefulObjectFactory<V> factory, PassivationManager<K, V> passivationManager, StatefulTimeoutInfo timeout) {
 

@@ -22,21 +22,20 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.TransactionID;
 import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.ejb.client.remoting.PackedInteger;
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
 
 /**
  * Handles a transaction message which complies with the EJB remote protocol specification
@@ -44,8 +43,6 @@ import java.util.concurrent.ExecutorService;
  * @author Jaikiran Pai
  */
 class TransactionRequestHandler extends AbstractMessageHandler {
-
-    private static final Logger logger = Logger.getLogger(TransactionRequestHandler.class);
 
     private static final byte HEADER_TX_INVOCATION_RESPONSE = 0x14;
 

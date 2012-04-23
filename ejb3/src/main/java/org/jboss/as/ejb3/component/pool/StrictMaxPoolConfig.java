@@ -54,8 +54,8 @@ public class StrictMaxPoolConfig extends PoolConfig {
     }
 
     @Override
-    public Pool<?> createPool(final StatelessObjectFactory statelessObjectFactory) {
-        return new StrictMaxPool(statelessObjectFactory, this.maxPoolSize, this.timeout, this.timeoutUnit);
+    public <T> Pool<T> createPool(final StatelessObjectFactory<T> statelessObjectFactory) {
+        return new StrictMaxPool<T>(statelessObjectFactory, this.maxPoolSize, this.timeout, this.timeoutUnit);
     }
 
     public int getMaxPoolSize() {
