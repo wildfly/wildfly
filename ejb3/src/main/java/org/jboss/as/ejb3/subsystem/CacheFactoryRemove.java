@@ -21,15 +21,12 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import java.io.Serializable;
-
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.cache.CacheFactoryService;
-import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -56,7 +53,7 @@ public class CacheFactoryRemove extends AbstractRemoveStepHandler {
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         if (context.isResourceServiceRestartAllowed()) {
-            this.addHandler.<Serializable, Cacheable<Serializable>>installRuntimeService(context, model, null);
+            this.addHandler.installRuntimeServices(context, model, null);
         } else {
             context.revertReloadRequired();
         }

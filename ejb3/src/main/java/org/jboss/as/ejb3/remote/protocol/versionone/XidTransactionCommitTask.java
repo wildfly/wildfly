@@ -27,7 +27,6 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManag
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.MarshallerFactory;
 
 import javax.transaction.HeuristicCommitException;
@@ -43,8 +42,6 @@ import javax.transaction.xa.Xid;
  * @author Jaikiran Pai
  */
 class XidTransactionCommitTask extends XidTransactionManagementTask {
-
-    private static final Logger logger = Logger.getLogger(XidTransactionCommitTask.class);
 
     private final boolean onePhaseCommit;
 

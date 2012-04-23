@@ -41,6 +41,7 @@ import org.jboss.as.ejb3.component.interceptors.AsyncInvocationTask;
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
+import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.security.remoting.RemotingContext;
@@ -131,9 +132,9 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             // correct CL for the rest of the unmarshalling of the stream
             classResolver.switchClassLoader(ejbDeploymentInformation.getDeploymentClassLoader());
             // read the Locator
-            final EJBLocator locator;
+            final EJBLocator<?> locator;
             try {
-                locator = (EJBLocator) unmarshaller.readObject();
+                locator = (EJBLocator<?>) unmarshaller.readObject();
             } catch (ClassNotFoundException e) {
                 throw EjbMessages.MESSAGES.classNotFoundException(e);
             }
@@ -201,7 +202,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                             // write out the failure
                             MethodInvocationMessageHandler.this.writeException(channelAssociation, MethodInvocationMessageHandler.this.marshallerFactory, invocationId, throwable, attachments);
                         } catch (IOException ioe) {
-                            // we couldn't write out a method invocation failure message. So let's atleast log the
+                            // we couldn't write out a method invocation failure message. So let's at least log the
                             // actual method invocation exception, for debugging/reference
                             logger.error("Error invoking method " + invokedMethod + " on bean named " + beanName
                                     + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName, throwable);
@@ -222,12 +223,16 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                     // write out the (successful) method invocation result to the channel output stream
                     try {
                         // attach any weak affinity if available
+                        Affinity weakAffinity = null;
                         if (locator instanceof StatefulEJBLocator && componentView.getComponent() instanceof StatefulSessionComponent) {
                             final StatefulSessionComponent statefulSessionComponent = (StatefulSessionComponent) componentView.getComponent();
-                            final Affinity weakAffinity = MethodInvocationMessageHandler.this.getWeakAffinity(statefulSessionComponent, (StatefulEJBLocator) locator);
-                            if (weakAffinity != null) {
-                                attachments.put(Affinity.WEAK_AFFINITY_CONTEXT_KEY, weakAffinity);
-                            }
+                            weakAffinity = MethodInvocationMessageHandler.this.getWeakAffinity(statefulSessionComponent, (StatefulEJBLocator<?>) locator);
+                        } else if (componentView.getComponent() instanceof StatelessSessionComponent) {
+                            final StatelessSessionComponent statelessSessionComponent = (StatelessSessionComponent) componentView.getComponent();
+                            weakAffinity = statelessSessionComponent.getWeakAffinity();
+                        }
+                        if (weakAffinity != null) {
+                            attachments.put(Affinity.WEAK_AFFINITY_CONTEXT_KEY, weakAffinity);
                         }
                         writeMethodInvocationResponse(channelAssociation, invocationId, result, attachments);
                     } catch (IOException ioe) {
@@ -248,16 +253,14 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         }
         // invoke the method and write out the response on a separate thread
         executorService.submit(runnable);
-
-
     }
 
-    private Affinity getWeakAffinity(final StatefulSessionComponent statefulSessionComponent, final StatefulEJBLocator statefulEJBLocator) {
+    private Affinity getWeakAffinity(final StatefulSessionComponent statefulSessionComponent, final StatefulEJBLocator<?> statefulEJBLocator) {
         final SessionID sessionID = statefulEJBLocator.getSessionId();
         return statefulSessionComponent.getCache().getWeakAffinity(sessionID);
     }
 
-    private Object invokeMethod(final ComponentView componentView, final Method method, final Object[] args, final EJBLocator ejbLocator, final Map<String, Object> attachments) throws Throwable {
+    private Object invokeMethod(final ComponentView componentView, final Method method, final Object[] args, final EJBLocator<?> ejbLocator, final Map<String, Object> attachments) throws Throwable {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(args);
         interceptorContext.setMethod(method);
@@ -279,9 +282,9 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         }
         // add the session id to the interceptor context, if it's a stateful ejb locator
         if (ejbLocator instanceof StatefulEJBLocator) {
-            interceptorContext.putPrivateData(SessionID.class, ((StatefulEJBLocator) ejbLocator).getSessionId());
+            interceptorContext.putPrivateData(SessionID.class, ((StatefulEJBLocator<?>) ejbLocator).getSessionId());
         } else if (ejbLocator instanceof EntityEJBLocator) {
-            final Object primaryKey = ((EntityEJBLocator) ejbLocator).getPrimaryKey();
+            final Object primaryKey = ((EntityEJBLocator<?>) ejbLocator).getPrimaryKey();
             interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKey);
         }
         if (componentView.isAsynchronous(method)) {

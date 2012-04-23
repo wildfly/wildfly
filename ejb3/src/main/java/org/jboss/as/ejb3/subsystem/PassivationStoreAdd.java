@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -72,12 +73,12 @@ public abstract class PassivationStoreAdd extends AbstractAddStepHandler {
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> serviceControllers) throws OperationFailedException {
         // add this to the service controllers
-        serviceControllers.add(installRuntimeService(context, model, verificationHandler));
+        serviceControllers.addAll(installRuntimeServices(context, model, verificationHandler));
     }
 
-    ServiceController<?> installRuntimeService(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+    abstract Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException;
 
-        BackingCacheEntryStoreSourceService<?, ?, ?, ?> service = this.createService(model);
+    ServiceController<?> installBackingCacheEntryStoreSourceService(BackingCacheEntryStoreSourceService<?, ?, ?, ?> service, OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         BackingCacheEntryStoreConfig config = service.getValue();
         if (model.hasDefined(EJB3SubsystemModel.IDLE_TIMEOUT)) {
             config.setIdleTimeout(model.get(EJB3SubsystemModel.IDLE_TIMEOUT).asLong());
@@ -94,6 +95,4 @@ public abstract class PassivationStoreAdd extends AbstractAddStepHandler {
         }
         return builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
     }
-
-    protected abstract BackingCacheEntryStoreSourceService<?, ?, ?, ?> createService(ModelNode model);
 }

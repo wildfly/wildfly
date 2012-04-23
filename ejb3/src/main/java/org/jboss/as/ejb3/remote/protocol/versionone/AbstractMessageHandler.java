@@ -22,7 +22,18 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import org.jboss.as.ejb3.EjbLogger;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.ejb.client.remoting.ProtocolV1ClassTable;
@@ -36,20 +47,7 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.marshalling.reflect.SunReflectiveCreator;
-import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageOutputStream;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**

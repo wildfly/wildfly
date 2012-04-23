@@ -22,9 +22,24 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateless;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINERS;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENTS;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODES;
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -49,16 +64,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINERS;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENTS;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODES;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Paul Ferraro
@@ -129,6 +134,16 @@ public class RemoteStatelessFailoverTestCase {
             // Allow ample time for topology change to propagate to client
             Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
+            List<String> results = new ArrayList<String>(10);
+            for (int i = 0; i < 10; ++i) {
+                results.add(bean.getNodeName());
+            }
+
+            for (int i = 0; i < NODES.length; ++i) {
+                int frequency = Collections.frequency(results, NODES[i]);
+                Assert.assertTrue(String.valueOf(frequency), frequency > 0);
+            }
+
             this.stop(0);
 
             assertEquals(NODES[1], bean.getNodeName());
@@ -163,6 +178,16 @@ public class RemoteStatelessFailoverTestCase {
 
             // Allow ample time for topology change to propagate to client
             Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+
+            List<String> results = new ArrayList<String>(10);
+            for (int i = 0; i < 10; ++i) {
+                results.add(bean.getNodeName());
+            }
+
+            for (int i = 0; i < NODES.length; ++i) {
+                int frequency = Collections.frequency(results, NODES[i]);
+                Assert.assertTrue(String.valueOf(frequency), frequency > 0);
+            }
 
             this.undeploy(0);
 
@@ -243,25 +268,22 @@ public class RemoteStatelessFailoverTestCase {
      * The necessary number of processed calls by each server is {minPercentage} of the number of all calls.
      */
     private void validateBalancing(Stateless bean, int numCalls, int expectedServers, double minPercentage) {
-        Map<String, Integer> callCount = new HashMap<String, Integer>();
-        int maxNumOfProcessedCalls = -1;
-        int minNumOfProcessedCalls = Integer.MAX_VALUE;
-
+        List<String> results = new ArrayList<String>(numCalls);
         for (int i = 0; i < numCalls; i++) {
-            String nodeName = bean.getNodeName();
-
-            Integer count = callCount.get(nodeName);
-            count = count == null ? 1 : ++count;
-            callCount.put(nodeName, count);
+            results.add(bean.getNodeName());
         }
-        Assert.assertEquals(expectedServers, callCount.size());
 
-        for (Integer count : callCount.values()) {
-            maxNumOfProcessedCalls = count > maxNumOfProcessedCalls ? count : maxNumOfProcessedCalls;
-            minNumOfProcessedCalls = count < minNumOfProcessedCalls ? count : minNumOfProcessedCalls;
+        Set<String> entries = new HashSet<String>();
+        entries.addAll(results);
+        
+        Assert.assertEquals(expectedServers, entries.size());
+        
+        double minCalls = minPercentage * numCalls;
+        for (String entry: entries) {
+            int frequency = Collections.frequency(results, entry);
+            Assert.assertTrue(Integer.toString(frequency), frequency >= minCalls);
         }
-        Assert.assertTrue(minPercentage * numCalls <= minNumOfProcessedCalls);
-        log.info("All " + expectedServers + " servers processed at least " + minNumOfProcessedCalls + " of calls");
+        System.out.println(String.format("All %d servers processed at least %f of calls", expectedServers, minCalls));
     }
 
     private void deploy(int index) {

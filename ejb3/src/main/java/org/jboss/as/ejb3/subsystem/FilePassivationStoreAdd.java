@@ -23,13 +23,18 @@
 package org.jboss.as.ejb3.subsystem;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.impl.factory.NonClusteredBackingCacheEntryStoreSource;
 import org.jboss.as.ejb3.cache.impl.factory.NonClusteredBackingCacheEntryStoreSourceService;
-import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreSourceService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Paul Ferraro
@@ -41,7 +46,7 @@ public class FilePassivationStoreAdd extends PassivationStoreAdd {
     }
 
     @Override
-    protected BackingCacheEntryStoreSourceService<?, ?, ?, ?> createService(ModelNode model) {
+    Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         String name = model.require(EJB3SubsystemModel.NAME).asString();
         NonClusteredBackingCacheEntryStoreSourceService<?, ?, ?> service = new NonClusteredBackingCacheEntryStoreSourceService<Serializable, Cacheable<Serializable>, Serializable>(name);
         NonClusteredBackingCacheEntryStoreSource<?, ?, ?> source = service.getValue();
@@ -57,6 +62,6 @@ public class FilePassivationStoreAdd extends PassivationStoreAdd {
         if (model.hasDefined(EJB3SubsystemModel.SUBDIRECTORY_COUNT)) {
             source.setSubdirectoryCount(model.get(EJB3SubsystemModel.SUBDIRECTORY_COUNT).asInt());
         }
-        return service;
+        return Collections.<ServiceController<?>>singleton(this.installBackingCacheEntryStoreSourceService(service, context, model, verificationHandler));
     }
 }

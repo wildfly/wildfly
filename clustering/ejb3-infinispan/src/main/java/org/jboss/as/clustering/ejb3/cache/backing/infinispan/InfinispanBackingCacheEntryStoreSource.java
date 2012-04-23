@@ -40,6 +40,7 @@ import org.jboss.as.clustering.infinispan.affinity.LocalKeyAffinityServiceFactor
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
+import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.lock.impl.SharedLocalYieldingClusterLockManagerService;
 import org.jboss.as.clustering.registry.Registry;
@@ -101,6 +102,12 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
         target.addService(ClusteredBackingCacheEntryStoreSourceService.getClientMappingRegistryServiceName(this.cacheContainerName), new RegistryService(cache, provider))
                 .addDependency(EJBRemotingConnectorClientMappingsEntryProviderService.SERVICE_NAME, Registry.RegistryEntryProvider.class, provider)
                 .addDependency(CacheService.getServiceName(this.cacheContainerName, this.clientMappingsCacheName), Cache.class, cache)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install()
+        ;
+        InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
+        target.addService(ClusteredBackingCacheEntryStoreSourceService.getCacheContainerClusterNameServiceName(this.cacheContainerName), new ClusterNameService(container))
+                .addDependency(EmbeddedCacheManagerService.getServiceName(this.cacheContainerName), EmbeddedCacheManager.class, container)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
