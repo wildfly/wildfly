@@ -31,6 +31,7 @@ import org.jboss.as.controller.remote.TransactionalOperationImpl;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 import org.jboss.dmr.ModelNode;
+import org.jboss.threads.AsyncFuture;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,7 +56,7 @@ class HostControllerUpdateTask {
         this.operation = operation;
     }
 
-    public Future<ModelNode> execute(final ProxyOperationListener listener) {
+    public AsyncFuture<ModelNode> execute(final ProxyOperationListener listener) {
         boolean trace = HOST_CONTROLLER_LOGGER.isTraceEnabled();
         if (trace) {
             HOST_CONTROLLER_LOGGER.tracef("Sending %s to %s", operation, name);
