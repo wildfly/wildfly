@@ -417,7 +417,12 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
                 return entry.getKey();
             }
         }
-        return this.registry.getLocalEntry().getKey();
+        Map.Entry<String, Void> entry = this.registry.getLocalEntry();
+        if (entry == null) {
+            // Accommodate mod_cluster's lazy jvm route auto-generation
+            entry = this.registry.refreshLocalEntry();
+        }
+        return (entry != null) ? entry.getKey() : null;
     }
 
     private Address locatePrimaryOwner(String sessionId) {
