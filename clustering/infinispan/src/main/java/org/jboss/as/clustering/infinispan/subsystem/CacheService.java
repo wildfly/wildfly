@@ -50,7 +50,7 @@ public class CacheService<K, V> extends AsynchronousService<Cache<K, V>> {
         return EmbeddedCacheManagerService.getServiceName(container).append((cache != null) ? cache : CacheContainer.DEFAULT_CACHE_NAME);
     }
 
-    interface Dependencies {
+    public interface Dependencies {
         EmbeddedCacheManager getCacheContainer();
         XAResourceRecoveryRegistry getRecoveryRegistry();
     }
@@ -65,7 +65,7 @@ public class CacheService<K, V> extends AsynchronousService<Cache<K, V>> {
      * @see org.jboss.msc.value.Value#getValue()
      */
     @Override
-    public Cache<K, V> getValue() throws IllegalStateException, IllegalArgumentException {
+    public Cache<K, V> getValue() {
         return this.cache;
     }
 

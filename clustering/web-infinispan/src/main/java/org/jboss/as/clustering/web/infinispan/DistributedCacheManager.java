@@ -110,7 +110,6 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
      */
     @Override
     public void start() {
-        this.cache.start();
         this.cache.addListener(this);
 
         this.registry.refreshLocalEntry();
@@ -126,7 +125,6 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     public void stop() {
         this.affinity.stop();
         this.cache.removeListener(this);
-        this.cache.stop();
     }
 
     /**

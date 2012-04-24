@@ -25,40 +25,19 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProvider;
-import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 
 /**
  * @author Paul Ferraro
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class CacheConfigurationService implements Service<Configuration> {
-
-    private final String name;
-    private final ConfigurationBuilder builder;
-    private final Dependencies dependencies;
-    private final ModuleIdentifier moduleId;
-    private volatile Configuration config;
-
-    private static final Logger log = Logger.getLogger(CacheConfigurationService.class.getPackage().getName());
-
-    public static ServiceName getServiceName(String container, String cache) {
-        return CacheService.getServiceName(container, cache).append("config");
-    }
+public class CacheConfigurationService extends AbstractCacheConfigurationService {
 
     interface Dependencies {
         ModuleLoader getModuleLoader();
@@ -67,37 +46,32 @@ public class CacheConfigurationService implements Service<Configuration> {
         TransactionSynchronizationRegistry getTransactionSynchronizationRegistry();
     }
 
+    private final ConfigurationBuilder builder;
+    private final ModuleIdentifier moduleId;
+    private final Dependencies dependencies;
+
     public CacheConfigurationService(String name, ConfigurationBuilder builder, ModuleIdentifier moduleId, Dependencies dependencies) {
-        this.name = name;
+        super(name);
         this.builder = builder;
         this.moduleId = moduleId;
         this.dependencies = dependencies;
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.msc.value.Value#getValue()
-     */
     @Override
-    public Configuration getValue() {
-        return this.config;
+    protected EmbeddedCacheManager getCacheContainer() {
+        return this.dependencies.getCacheContainer();
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.msc.service.Service#start(org.jboss.msc.service.StartContext)
-     */
     @Override
-    public void start(StartContext context) throws StartException {
-        EmbeddedCacheManager container = this.dependencies.getCacheContainer();
+    protected ConfigurationBuilder getConfigurationBuilder() {
         if (this.moduleId != null) {
             try {
-                this.builder.classLoader(this.dependencies.getModuleLoader().loadModule(this.moduleId).getClassLoader());
+                builder.classLoader(this.dependencies.getModuleLoader().loadModule(this.moduleId).getClassLoader());
             } catch (ModuleLoadException e) {
-                throw new StartException(e);
+                throw new IllegalArgumentException(e);
             }
         }
-        this.builder.jmxStatistics().enabled(container.getCacheManagerConfiguration().globalJmxStatistics().enabled());
+        this.builder.jmxStatistics().enabled(this.dependencies.getCacheContainer().getCacheManagerConfiguration().globalJmxStatistics().enabled());
         TransactionManager tm = this.dependencies.getTransactionManager();
         if (tm != null) {
             this.builder.transaction().transactionManagerLookup(new TransactionManagerProvider(tm));
@@ -106,25 +80,6 @@ public class CacheConfigurationService implements Service<Configuration> {
         if (tsr != null) {
             this.builder.transaction().transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(tsr));
         }
-        this.config = this.builder.build();
-
-        CacheMode mode = this.config.clustering().cacheMode();
-        if (mode.isClustered() && (container.getTransport() == null)) {
-            throw InfinispanMessages.MESSAGES.transportRequired(mode, this.name, container.getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName());
-        }
-
-        container.defineConfiguration(this.name, this.config);
-
-        log.debugf("%s cache configuration started", this.name);
-    }
-
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.msc.service.Service#stop(org.jboss.msc.service.StopContext)
-     */
-    @Override
-    public void stop(StopContext context) {
-        this.config = null;
-        log.debugf("%s cache configuration stopped", this.name);
+        return this.builder;
     }
 }

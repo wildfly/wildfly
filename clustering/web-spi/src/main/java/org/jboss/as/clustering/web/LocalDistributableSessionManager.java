@@ -36,22 +36,6 @@ public interface LocalDistributableSessionManager extends SessionIdFactory {
     boolean isPassivationEnabled();
 
     /**
-     * Returns the unique name of this session manager. Typically composed of host name and context name.
-     * @return a unique name
-     */
-    String getName();
-
-    String getHostName();
-
-    String getContextName();
-
-    /**
-     * Returns the name of the session manager's engine. The engine name should be the consistent on all nodes.
-     * @return an engine name.
-     */
-    String getEngineName();
-
-    /**
      * Get the classloader able to load application classes.
      * @return the classloader. Will not return <code>null</code>
      */

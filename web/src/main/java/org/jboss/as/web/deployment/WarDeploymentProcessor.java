@@ -230,7 +230,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                         }
                         break;
                    case SERVLET_INSTANCE:
-                       webContext.addInstanceListener(listener.getListenerClass());
+                        webContext.addInstanceListener(listener.getListenerClass());
                         break;
                     case SERVLET_CONTAINER:
                         webContext.addWrapperListener(listener.getListenerClass());
@@ -298,7 +298,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     builder.addDependency(DependencyType.OPTIONAL, factoryServiceName, DistributedCacheManagerFactory.class, config.getDistributedCacheManagerFactoryInjector());
 
                     ServiceBuilder<DistributedCacheManagerFactory> factoryBuilder = serviceTarget.addService(factoryServiceName, factoryService);
-                    boolean enabled = factory.addDeploymentDependencies(deploymentUnit.getServiceRegistry(), factoryBuilder, metaData);
+                    boolean enabled = factory.addDeploymentDependencies(deploymentServiceName, deploymentUnit.getServiceRegistry(), serviceTarget, factoryBuilder, metaData);
                     factoryBuilder.setInitialMode(enabled ? ServiceController.Mode.ON_DEMAND : ServiceController.Mode.NEVER).install();
                 }
             }

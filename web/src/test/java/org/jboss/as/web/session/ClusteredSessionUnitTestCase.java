@@ -63,7 +63,7 @@ public class ClusteredSessionUnitTestCase {
         context.setName("test");
         host.addChild(context);
         
-        DistributableSessionManager<?> mgr = new DistributableSessionManager<OutgoingDistributableSessionData>(new MockDistributedCacheManagerFactory(), context, SessionTestUtil.createWebMetaData(10), new ContextClassResolver());
+        DistributableSessionManager<?> mgr = new DistributableSessionManager<OutgoingDistributableSessionData>(new MockDistributedCacheManagerFactory(), SessionTestUtil.createWebMetaData(10), new ContextClassResolver());
         context.setManager(mgr);
         mgr.start();
 
