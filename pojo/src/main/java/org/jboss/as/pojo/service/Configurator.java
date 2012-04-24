@@ -26,7 +26,7 @@ import org.jboss.as.pojo.PojoMessages;
 import org.jboss.as.pojo.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.as.server.parsing.PropertiesValueResolver;
+import org.jboss.common.beans.property.PropertiesValueResolver;
 import org.jboss.logging.Logger;
 
 import java.beans.PropertyEditor;

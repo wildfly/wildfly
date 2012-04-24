@@ -36,6 +36,7 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.common-beans"/>
         <module name="org.jboss.dmr"/>
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.jandex"/>
