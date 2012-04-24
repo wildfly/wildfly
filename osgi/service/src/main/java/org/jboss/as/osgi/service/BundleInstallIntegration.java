@@ -63,7 +63,8 @@ public class BundleInstallIntegration implements BundleInstallHandler {
 
     private final InjectedValue<ModelController> injectedController = new InjectedValue<ModelController>();
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
-    private volatile ServerDeploymentManager deploymentManager;
+    private ServerDeploymentManager deploymentManager;
+    private ServiceTarget serviceTarget;
 
     public static ServiceController<?> addService(final ServiceTarget target) {
         BundleInstallIntegration service = new BundleInstallIntegration();
@@ -83,6 +84,7 @@ public class BundleInstallIntegration implements BundleInstallHandler {
         ServiceController<?> controller = context.getController();
         LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         deploymentManager = new ModelControllerServerDeploymentManager(injectedController.getValue());
+        serviceTarget = context.getChildTarget();
     }
 
     @Override
@@ -97,7 +99,7 @@ public class BundleInstallIntegration implements BundleInstallHandler {
     }
 
     @Override
-    public void installBundle(ServiceTarget serviceTarget, Deployment dep) throws BundleException {
+    public void installBundle(Deployment dep) throws BundleException {
         LOGGER.tracef("Install deployment: %s", dep);
         try {
 
@@ -132,7 +134,6 @@ public class BundleInstallIntegration implements BundleInstallHandler {
     @Override
     public void uninstallBundle(Deployment dep) {
         LOGGER.tracef("Uninstall deployment: %s", dep);
-
         try {
             // Undeploy through the deployment manager
             DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();

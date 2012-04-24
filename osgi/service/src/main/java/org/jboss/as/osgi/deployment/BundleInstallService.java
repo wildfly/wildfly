@@ -32,7 +32,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -85,7 +84,7 @@ public class BundleInstallService extends AbstractService<Void> {
         try {
             ServiceTarget serviceTarget = context.getChildTarget();
             BundleManager bundleManager = injectedBundleManager.getValue();
-            bundleManager.installBundle(serviceTarget, deployment);
+            bundleManager.installBundle(serviceTarget, deployment, null);
         } catch (Throwable th) {
             throw MESSAGES.startFailedToInstallDeployment(th, deployment);
         }
