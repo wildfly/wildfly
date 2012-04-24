@@ -59,8 +59,8 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
     private final InitialDeploymentTracker deploymentTracker;
     private final AtomicBoolean frameworkActivated = new AtomicBoolean();
 
-    public BundleInstallProcessor(InitialDeploymentTracker deploymentListener) {
-        this.deploymentTracker = deploymentListener;
+    public BundleInstallProcessor(InitialDeploymentTracker deploymentTracker) {
+        this.deploymentTracker = deploymentTracker;
     }
 
     @Override
@@ -72,9 +72,9 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
                 activateFramework(context);
             }
             ServiceName serviceName;
-            if (deploymentTracker.isClosed() == false && deploymentTracker.removeDeploymentName(depUnit.getName())) {
+            if (!deploymentTracker.isClosed() && deploymentTracker.hasDeploymentName(depUnit.getName())) {
                 serviceName = PersistentBundleInstallService.addService(deploymentTracker, context, deployment);
-                deploymentTracker.registerPersistentBundleInstallService(serviceName);
+                deploymentTracker.registerBundleInstallService(serviceName);
             } else {
                 serviceName = BundleInstallService.addService(context, deployment);
             }

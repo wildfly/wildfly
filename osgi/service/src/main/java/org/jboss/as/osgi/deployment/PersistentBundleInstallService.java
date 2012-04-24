@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -45,6 +46,7 @@ import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.framework.StorageState;
 import org.jboss.osgi.framework.StorageStateProvider;
+import org.osgi.framework.Bundle;
 
 /**
  * Service responsible for creating and managing the life-cycle of an OSGi deployment.
@@ -76,7 +78,7 @@ public class PersistentBundleInstallService extends AbstractService<Void> {
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, service.injectedBundleManager);
         builder.addDependency(Services.STORAGE_STATE_PROVIDER, StorageStateProvider.class, service.injectedStorageProvider);
         builder.addDependency(deploymentUnitName(contextName));
-        builder.addDependency(IntegrationServices.AUTOINSTALL_HANDLER_COMPLETE);
+        builder.addDependency(IntegrationServices.AUTOINSTALL_COMPLETE);
         builder.install();
         return serviceName;
     }
@@ -97,8 +99,8 @@ public class PersistentBundleInstallService extends AbstractService<Void> {
             if (storageState != null) {
                 deployment.addAttachment(StorageState.class, storageState);
             }
-            ServiceName serviceName = bundleManager.installBundle(serviceTarget, deployment);
-            deploymentTracker.addInstalledBundle(serviceName, deployment);
+            ServiceListener<Bundle> listener = deploymentTracker.getBundleInstallListener();
+            bundleManager.installBundle(serviceTarget, deployment, listener);
         } catch (Throwable th) {
             throw MESSAGES.startFailedToInstallDeployment(th, deployment);
         }

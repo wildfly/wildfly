@@ -191,9 +191,13 @@ public class SubsystemState  extends Observable implements Service<SubsystemStat
         public boolean equals(Object obj) {
             if (obj instanceof OSGiCapability == false)
                 return false;
+            OSGiCapability other = (OSGiCapability) obj;
+            return identifier.equals(other.identifier);
+        }
 
-            OSGiCapability om = (OSGiCapability) obj;
-            return identifier == null ? om.identifier == null : identifier.equals(om.identifier);
+        @Override
+        public String toString() {
+            return "OSGiCapability[identifier=" + identifier + ",startlevel=" + startlevel + "]";
         }
     }
 
