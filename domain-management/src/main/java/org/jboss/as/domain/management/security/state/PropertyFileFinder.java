@@ -22,12 +22,6 @@
 
 package org.jboss.as.domain.management.security.state;
 
-/**
- * Describe the purpose
- *
- * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
- */
-
 import org.jboss.as.domain.management.security.ConsoleWrapper;
 import org.jboss.as.domain.management.security.PropertiesFileLoader;
 import org.jboss.msc.service.StartException;
@@ -51,6 +45,8 @@ import static org.jboss.as.domain.management.security.AddPropertiesUser.*;
 
 /**
  * The first state executed, responsible for searching for the relevant properties files.
+ *
+ * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
  */
 public class PropertyFileFinder implements State {
 
@@ -60,7 +56,7 @@ public class PropertyFileFinder implements State {
     public PropertyFileFinder(ConsoleWrapper theConsole,final StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
-        if (theConsole.getConsole() == null) {
+        if ((stateValues != null && stateValues.isSilent() == false) && theConsole.getConsole() == null) {
             throw MESSAGES.noConsoleAvailable();
         }
     }

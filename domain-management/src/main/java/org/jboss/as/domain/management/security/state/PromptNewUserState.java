@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.as.domain.management.security.state;
 
 import org.jboss.as.domain.management.security.ConsoleWrapper;
@@ -46,7 +45,7 @@ public class PromptNewUserState implements State {
     public PromptNewUserState(ConsoleWrapper theConsole, final StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
-        if (theConsole.getConsole() == null) {
+        if ((stateValues != null && stateValues.isSilent() == false) && theConsole.getConsole() == null) {
             throw MESSAGES.noConsoleAvailable();
         }
     }

@@ -43,7 +43,7 @@ public class PromptPasswordState implements State {
     public PromptPasswordState(ConsoleWrapper theConsole, StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
-        if (theConsole.getConsole() == null) {
+        if ((stateValues != null && stateValues.isSilent() == false) && theConsole.getConsole() == null) {
             throw MESSAGES.noConsoleAvailable();
         }
     }
