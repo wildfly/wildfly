@@ -56,8 +56,6 @@ public class Constants {
 
     public static final String STATISTICS_NAME = "statistics";
 
-    static final String REFRESH_OP_NAME = "refresh";
-
     public static final String CONNECTIONDEFINITIONS_NAME = "connection-definitions";
 
     private static final String CLASS_NAME_NAME = "class-name";
