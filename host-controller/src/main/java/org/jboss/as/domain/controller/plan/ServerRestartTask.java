@@ -29,14 +29,11 @@ import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link org.jboss.as.domain.controller.plan.AbstractServerUpdateTask} that performs the update by triggering a
+ * {@link ServerUpdateTask} that performs the update by triggering a
  * restart of the server. The restart results in the server getting the current
  * model state.
- *
- * Thread-Safety: This class is immutable, but is intended to only have its
- * {@link #run()} method executed once.
  */
-class ServerRestartTask extends AbstractServerUpdateTask {
+class ServerRestartTask extends ServerUpdateTask {
 
     private final long gracefulTimeout;
 

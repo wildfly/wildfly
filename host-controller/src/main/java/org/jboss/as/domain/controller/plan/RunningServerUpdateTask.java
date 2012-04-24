@@ -24,20 +24,16 @@ package org.jboss.as.domain.controller.plan;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
-import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
- * {@link org.jboss.as.domain.controller.plan.AbstractServerUpdateTask} that performs the updates by applying them
+ * {@link ServerUpdateTask} that performs the updates by applying them
  * to a running server.
- *
- * Thread-Safety: This class is immutable, but is intended to only have its
- * {@link #run()} method executed once.
  */
-class RunningServerUpdateTask extends AbstractServerUpdateTask {
+class RunningServerUpdateTask extends ServerUpdateTask {
 
     private final ModelNode serverUpdate;
 

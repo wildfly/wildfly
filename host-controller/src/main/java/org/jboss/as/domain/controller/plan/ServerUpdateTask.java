@@ -29,7 +29,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry
  */
-abstract class AbstractServerUpdateTask implements ServerTask {
+abstract class ServerUpdateTask {
 
     /**
      * Callback interface to allow the creator of this task to
@@ -57,9 +57,9 @@ abstract class AbstractServerUpdateTask implements ServerTask {
      * @param updatePolicy the policy that controls whether the updates should be applied. Cannot be <code>null</code>
      * @param resultHandler handler for the result of the update. Cannot be <code>null</code>
      */
-    AbstractServerUpdateTask(final ServerIdentity serverId,
-            final ServerUpdatePolicy updatePolicy,
-            final ServerUpdateResultHandler resultHandler) {
+    ServerUpdateTask(final ServerIdentity serverId,
+                     final ServerUpdatePolicy updatePolicy,
+                     final ServerUpdateResultHandler resultHandler) {
         assert serverId != null : "serverId is null";
         assert updatePolicy != null : "updatePolicy is null";
         assert resultHandler != null : "resultHandler is null";
@@ -68,7 +68,8 @@ abstract class AbstractServerUpdateTask implements ServerTask {
         this.resultHandler = resultHandler;
     }
 
-    @Override
+    public abstract ModelNode getOperation();
+
     public ServerIdentity getServerIdentity() {
         return serverId;
     }

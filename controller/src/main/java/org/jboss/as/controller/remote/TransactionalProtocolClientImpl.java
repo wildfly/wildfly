@@ -82,7 +82,7 @@ public class TransactionalProtocolClientImpl implements ManagementRequestHandler
         if (operationType == ModelControllerProtocol.HANDLE_REPORT_REQUEST) {
             return new HandleReportRequestHandler();
         } else if (operationType == ModelControllerProtocol.GET_INPUTSTREAM_REQUEST) {
-            return new ReadAttachmentInputStreamRequestHandler();
+            return ReadAttachmentInputStreamRequestHandler.INSTANCE;
         }
         return handlers.resolveNext();
     }
@@ -243,7 +243,9 @@ public class TransactionalProtocolClientImpl implements ManagementRequestHandler
      * Handles reads on the inputstreams returned by {@link org.jboss.as.controller.client.OperationAttachments#getInputStreams()}
      * done in the remote target controller
      */
-    private class ReadAttachmentInputStreamRequestHandler implements ManagementRequestHandler<ModelNode, ExecuteRequestContext> {
+    private static class ReadAttachmentInputStreamRequestHandler implements ManagementRequestHandler<ModelNode, ExecuteRequestContext> {
+
+        static final ReadAttachmentInputStreamRequestHandler INSTANCE = new ReadAttachmentInputStreamRequestHandler();
 
         @Override
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler,

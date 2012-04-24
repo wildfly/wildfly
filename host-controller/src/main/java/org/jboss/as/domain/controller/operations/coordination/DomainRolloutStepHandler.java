@@ -64,7 +64,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.plan.RolloutPlanController;
-import org.jboss.as.domain.controller.plan.ServerRolloutTaskHandler;
 import org.jboss.as.domain.controller.plan.ServerTaskExecutor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -136,11 +135,10 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
             // We no longer roll back by default
             domainOperationContext.setCompleteRollback(false);
 
-            final Map<ServerIdentity, ServerRolloutTaskHandler.ServerExecutedRequest> submittedTasks = new HashMap<ServerIdentity, ServerRolloutTaskHandler.ServerExecutedRequest>();
-            final List<ServerRolloutTaskHandler.ServerPreparedResponse> preparedResults = new ArrayList<ServerRolloutTaskHandler.ServerPreparedResponse>();
-            final ServerRolloutTaskHandler rolloutHandler = new ServerRolloutTaskHandler(submittedTasks, preparedResults);
+            final Map<ServerIdentity, ServerTaskExecutor.ExecutedServerRequest> submittedTasks = new HashMap<ServerIdentity, ServerTaskExecutor.ExecutedServerRequest>();
+            final List<ServerTaskExecutor.ServerPreparedResponse> preparedResults = new ArrayList<ServerTaskExecutor.ServerPreparedResponse>();
             try {
-                pushToServers(context, rolloutHandler);
+                pushToServers(context, submittedTasks, preparedResults);
                 context.completeStep();
             } finally {
 
@@ -148,7 +146,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                 // Do them all before reading results so the commits/rollbacks can be executed in parallel
                 boolean completeRollback = domainOperationContext.isCompleteRollback();
                 final String localHostName = domainOperationContext.getLocalHostInfo().getLocalHostName();
-                for(final ServerRolloutTaskHandler.ServerPreparedResponse preparedResult : preparedResults) {
+                for(final ServerTaskExecutor.ServerPreparedResponse preparedResult : preparedResults) {
                     boolean rollback = completeRollback || domainOperationContext.isServerGroupRollback(preparedResult.getServerGroupName());
                     // Require a server reload, in case the operation failed, but the overall state was commit
                     if(! preparedResult.finalizeTransaction(! rollback)) {
@@ -171,7 +169,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                             }
                             final Future<ModelNode> future = executorService.submit(new ServerRequireRestartTask(identity, proxy, result));
                             // replace the existing future
-                            submittedTasks.put(identity, new ServerRolloutTaskHandler.ServerExecutedRequest(identity, future));
+                            submittedTasks.put(identity, new ServerTaskExecutor.ExecutedServerRequest(identity, future));
                         } catch (Exception ignore) {
                             // getUncommittedResult() won't fail here
                         }
@@ -181,7 +179,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                 // before we expose the servers to further requests
                 boolean interrupted = false;
                 try {
-                    for (Map.Entry<ServerIdentity, ServerRolloutTaskHandler.ServerExecutedRequest> entry : submittedTasks.entrySet()) {
+                    for (Map.Entry<ServerIdentity, ServerTaskExecutor.ExecutedServerRequest> entry : submittedTasks.entrySet()) {
                         Future<ModelNode> future = entry.getValue().getFinalResult();
                         try {
                             ModelNode finalResult = future.isCancelled() ? getCancelledResult() : future.get();
@@ -213,8 +211,8 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
         return cancelled;
     }
 
-    private void pushToServers(final OperationContext context, final ServerRolloutTaskHandler rolloutHandler) throws OperationFailedException {
-
+    private void pushToServers(final OperationContext context, final Map<ServerIdentity,ServerTaskExecutor.ExecutedServerRequest> submittedTasks,
+                               final List<ServerTaskExecutor.ServerPreparedResponse> preparedResults) throws OperationFailedException {
 
         final String localHostName = domainOperationContext.getLocalHostInfo().getLocalHostName();
         Map<String, ModelNode> hostResults = new HashMap<String, ModelNode>(domainOperationContext.getHostControllerResults());
@@ -229,7 +227,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                 HOST_CONTROLLER_LOGGER.tracef("Rollout plan is %s", rolloutPlan);
             }
 
-            final ServerTaskExecutor taskExecutor = new ServerTaskExecutor(context, rolloutHandler) {
+            final ServerTaskExecutor taskExecutor = new ServerTaskExecutor(context, submittedTasks, preparedResults) {
 
                 @Override
                 protected boolean execute(TransactionalProtocolClient.TransactionalOperationListener<ServerTaskExecutor.ServerOperation> listener, ServerIdentity server, ModelNode original) {
@@ -252,7 +250,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                     return executeOperation(listener, client, server, transformedOperation);
                 }
             };
-            RolloutPlanController rolloutPlanController = new RolloutPlanController(opsByGroup, rolloutPlan, domainOperationContext, taskExecutor, rolloutHandler, executorService);
+            RolloutPlanController rolloutPlanController = new RolloutPlanController(opsByGroup, rolloutPlan, domainOperationContext, taskExecutor, executorService);
             RolloutPlanController.Result planResult = rolloutPlanController.execute();
             if (trace) {
                 HOST_CONTROLLER_LOGGER.tracef("Rollout plan result is %s", planResult);

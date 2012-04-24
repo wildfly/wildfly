@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.coordination.DomainOperationContext;
-import org.jboss.as.domain.controller.plan.AbstractServerUpdateTask.ServerUpdateResultHandler;
+import org.jboss.as.domain.controller.plan.ServerUpdateTask.ServerUpdateResultHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -50,18 +50,15 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
     private final long gracefulShutdownPeriod;
     private final ServerTaskExecutor taskExecutor;
     private final DomainOperationContext domainOperationContext;
-    private final ServerRolloutTaskHandler rolloutHandler;
     private final ConcurrentMap<String, Map<ServerIdentity, ModelNode>> serverResults = new ConcurrentHashMap<String, Map<ServerIdentity, ModelNode>>();
 
     public RolloutPlanController(final Map<String, Map<ServerIdentity, ModelNode>> opsByGroup,
                                  final ModelNode rolloutPlan,
                                  final DomainOperationContext domainOperationContext,
                                  final ServerTaskExecutor taskExecutor,
-                                 final ServerRolloutTaskHandler rolloutHandler,
                                  final ExecutorService executor) {
         this.domainOperationContext = domainOperationContext;
         this.taskExecutor = taskExecutor;
-        this.rolloutHandler = rolloutHandler;
 
         this.rollbackAcrossGroups = !rolloutPlan.hasDefined(ROLLBACK_ACROSS_GROUPS) || rolloutPlan.get(ROLLBACK_ACROSS_GROUPS).asBoolean();
         this.shutdown = rolloutPlan.hasDefined(SHUTDOWN) && rolloutPlan.get(SHUTDOWN).asBoolean();
@@ -100,7 +97,7 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
                         continue;
                     }
 
-                    final List<ServerTask> groupTasks = new ArrayList<ServerTask>();
+                    final List<ServerUpdateTask> groupTasks = new ArrayList<ServerUpdateTask>();
                     final ModelNode policyNode = prop.getValue();
                     final boolean rollingGroup = policyNode.hasDefined(ROLLING_TO_SERVERS) && policyNode.get(ROLLING_TO_SERVERS).asBoolean();
 
@@ -115,8 +112,8 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
                     }
                     ServerUpdatePolicy policy = new ServerUpdatePolicy(parent, serverGroupName, servers, maxFailures);
 
-                    seriesTasks.add(rollingGroup ? new RollingGroupUpdateTask(groupTasks, policy, rolloutHandler, taskExecutor, this)
-                        : new ConcurrentGroupUpdateTask(groupTasks, policy, rolloutHandler, taskExecutor, this));
+                    seriesTasks.add(rollingGroup ? new RollingServerGroupUpdateTask(groupTasks, policy, taskExecutor, this)
+                        : new ConcurrentServerGroupUpdateTask(groupTasks, policy, taskExecutor, this));
 
                     updatePolicies.put(serverGroupName, policy);
 
@@ -165,8 +162,8 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
         groupResults.put(serverId, response);
     }
 
-    private ServerTask createServerTask(final ServerIdentity serverIdentity, final ModelNode serverOp, final ServerUpdatePolicy policy) {
-        ServerTask result;
+    private ServerUpdateTask createServerTask(final ServerIdentity serverIdentity, final ModelNode serverOp, final ServerUpdatePolicy policy) {
+        ServerUpdateTask result;
         if (shutdown) {
             result = new ServerRestartTask(serverIdentity, policy, this, gracefulShutdownPeriod);
         }

@@ -30,18 +30,18 @@ import java.util.List;
 /**
  * @author Emanuel Muckenhuber
  */
-class RollingGroupUpdateTask extends AbstractServerGroupRolloutTask implements Runnable {
+class RollingServerGroupUpdateTask extends AbstractServerGroupRolloutTask implements Runnable {
 
-    public RollingGroupUpdateTask(List<ServerTask> tasks, ServerUpdatePolicy updatePolicy, ServerRolloutTaskHandler rolloutHandler,
-                                  ServerTaskExecutor executor, AbstractServerUpdateTask.ServerUpdateResultHandler resultHandler) {
-        super(tasks, updatePolicy, rolloutHandler, executor, resultHandler);
+    public RollingServerGroupUpdateTask(List<ServerUpdateTask> tasks, ServerUpdatePolicy updatePolicy,
+                                        ServerTaskExecutor executor, ServerUpdateTask.ServerUpdateResultHandler resultHandler) {
+        super(tasks, updatePolicy, executor, resultHandler);
     }
 
     @Override
     public void execute() {
         boolean interrupted = false;
         final ServerTaskExecutor.ServerOperationListener listener = new ServerTaskExecutor.ServerOperationListener();
-        for(final ServerTask task : tasks) {
+        for(final ServerUpdateTask task : tasks) {
             final ServerIdentity identity = task.getServerIdentity();
             if(interrupted || ! updatePolicy.canUpdateServer(identity)) {
                 sendCancelledResponse(identity);
