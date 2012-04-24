@@ -131,13 +131,13 @@ public class DomainControllerMigrationTestCase {
         hostConfig.setDomainDirectory(hostDir.getAbsolutePath());
         hostConfig.setHostName("failover" + String.valueOf(host));
         hostConfig.setHostControllerManagementPort(MGMT_PORTS[host - 1]);
-        
+        hostConfig.setStartupTimeoutInSeconds(120);
         File usersFile = new File(hostConfigDir, "mgmt-users.properties");
         FileOutputStream fos = new FileOutputStream(usersFile);
         PrintWriter pw = new PrintWriter(fos);
         pw.println("slave=" + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm", "slave_user_password".toCharArray()));
         pw.close();
-        fos.close();
+        fos.close();        
 
         
         return hostConfig;
