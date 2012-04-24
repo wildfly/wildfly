@@ -28,6 +28,7 @@ import static org.junit.Assert.*;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -56,6 +57,15 @@ public class InetAddressMatchInterfaceCriteriaTestCase {
             accepted = OverallInterfaceCriteria.pruneAliasDuplicates(accepted);
             assertEquals(1, accepted.size());
             Set<InetAddress> set = accepted.get(entry.getKey());
+            if (set == null) {
+                Enumeration<NetworkInterface> subs = entry.getKey().getSubInterfaces();
+                while (subs.hasMoreElements()) {
+                    set = accepted.get(subs.nextElement());
+                    if (set != null) {
+                        break;
+                    }
+                }
+            }
             assertNotNull(set);
             assertEquals(1, set.size());
             assertTrue(set.contains(target));
