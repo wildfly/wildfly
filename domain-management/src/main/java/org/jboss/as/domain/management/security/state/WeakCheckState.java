@@ -42,10 +42,10 @@ public class WeakCheckState implements State {
     private StateValues stateValues;
     private static char[] VALID_PUNCTUATION = {'.', '@', '\\', '=', ',','/'};
 
-    public WeakCheckState(ConsoleWrapper theConsole,StateValues stateValues) {
+    public WeakCheckState(ConsoleWrapper theConsole, StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
-        if (theConsole.getConsole() == null) {
+        if ((stateValues != null && stateValues.isSilent() == false) && theConsole.getConsole() == null) {
             throw MESSAGES.noConsoleAvailable();
         }
     }

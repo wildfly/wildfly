@@ -50,7 +50,7 @@ public class ErrorState implements State {
         this.nextState = nextState;
         this.stateValues = stateValues;
         this.theConsole = theConsole;
-        if (theConsole.getConsole() == null) {
+        if ((stateValues != null && stateValues.isSilent() == false) && theConsole.getConsole() == null) {
             throw MESSAGES.noConsoleAvailable();
         }
     }
