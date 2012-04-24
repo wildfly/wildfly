@@ -91,8 +91,10 @@ public class InetAddressMatchInterfaceCriteria extends AbstractInterfaceCriteria
         Map<NetworkInterface, Set<InetAddress>> result = super.getAcceptableAddresses(candidates);
 
         // AS7-4509 Validate we only have a single match
-        if (result.size() > 1 || (result.size() == 1 && result.values().iterator().next().size() > 1)) {
-            logMultipleValidInterfaces(result);
+        Map<NetworkInterface, Set<InetAddress>> pruned = result.size() > 1 ? OverallInterfaceCriteria.pruneAliasDuplicates(result) : result;
+
+        if (pruned.size() > 1 || (pruned.size() == 1 && pruned.values().iterator().next().size() > 1)) {
+            logMultipleValidInterfaces(pruned);
             result = Collections.emptyMap();
         }
         return result;
