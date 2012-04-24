@@ -369,8 +369,10 @@ public interface CommonAttributes {
             .setMeasurementUnit(MILLISECONDS)
             .build();
 
-    SimpleAttributeDefinition MAX_SIZE_BYTES_NODE_NAME = new SimpleAttributeDefinition("max-size-bytes",
-            new ModelNode().set(AddressSettings.DEFAULT_MAX_SIZE_BYTES), ModelType.LONG, true);
+    SimpleAttributeDefinition MAX_SIZE_BYTES = new SimpleAttributeDefinitionBuilder("max-size-bytes", LONG)
+            .setDefaultValue(new ModelNode().set(AddressSettings.DEFAULT_MAX_SIZE_BYTES))
+            .setAllowNull(true)
+            .build();
 
     SimpleAttributeDefinition MEMORY_MEASURE_INTERVAL = new SimpleAttributeDefinitionBuilder("memory-measure-interval", LONG)
             .setDefaultValue(new ModelNode().set(DEFAULT_MEMORY_MEASURE_INTERVAL))
@@ -429,8 +431,10 @@ public interface CommonAttributes {
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
-    SimpleAttributeDefinition PAGE_SIZE_BYTES_NODE_NAME = new SimpleAttributeDefinition("page-size-bytes",
-            new ModelNode(AddressSettings.DEFAULT_PAGE_SIZE), ModelType.LONG, true);
+    SimpleAttributeDefinition PAGE_SIZE_BYTES = new SimpleAttributeDefinitionBuilder("page-size-bytes", LONG)
+            .setDefaultValue(new ModelNode().set(AddressSettings.DEFAULT_PAGE_SIZE))
+            .setAllowNull(true)
+            .build();
 
     SimpleAttributeDefinition PATH = new SimpleAttributeDefinition("path", ModelType.STRING, false);
 
