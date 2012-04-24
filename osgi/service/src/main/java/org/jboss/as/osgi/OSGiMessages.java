@@ -87,4 +87,7 @@ public interface OSGiMessages {
 
     @Message(id = 11972, value = "Cannot obtain bundle resource for: %s")
     IllegalArgumentException illegalArgumentCannotObtainBundleResource(String name);
+
+    @Message(id = 11973, value = "Cannot resolve capability: %s")
+    StartException startFailedCannotResolveInitialCapability(String identifier);
 }

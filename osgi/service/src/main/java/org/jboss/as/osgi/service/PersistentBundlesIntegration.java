@@ -105,7 +105,7 @@ public class PersistentBundlesIntegration implements PersistentBundlesHandler {
         private final Set<String> deploymentNames;
         private ServiceListener<Bundle> bundleInstallListener;
 
-        public InitialDeploymentTracker(final OperationContext context, Activation activationMode) {
+        public InitialDeploymentTracker(final OperationContext context, final Activation activationMode) {
 
             final ServiceTarget serviceTarget = context.getServiceTarget();
             final PersistentBundlesComplete installComplete = new PersistentBundlesComplete() {

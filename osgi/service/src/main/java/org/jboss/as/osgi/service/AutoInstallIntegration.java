@@ -181,7 +181,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
             ServiceListener<Bundle> listener = installComplete.getListener();
 
             for (OSGiCapability configcap : configcaps) {
-                ServiceName serviceName = installCapability(serviceTarget, configcap, listener);
+                ServiceName serviceName = installBundleCapability(serviceTarget, configcap, listener);
                 int startLevel = configcap.getStartLevel() != null ? configcap.getStartLevel() : 1;
                 if (serviceName != null && startLevel <= beginningStartLevel) {
                     resolvableServices.add(serviceName);
@@ -202,6 +202,9 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
             if (bundleFile != null) {
                 return false;
             }
+
+            LOGGER.debugf("Installing module capability: %s", identifier);
+
             // Attempt to load the module from the modules hierarchy
             Module module = null;
             try {
@@ -227,7 +230,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
         return false;
     }
 
-    private ServiceName installCapability(ServiceTarget serviceTarget, OSGiCapability osgicap, ServiceListener<Bundle> listener) throws Exception {
+    private ServiceName installBundleCapability(ServiceTarget serviceTarget, OSGiCapability osgicap, ServiceListener<Bundle> listener) throws Exception {
         String identifier = osgicap.getIdentifier();
         Integer level = osgicap.getStartLevel();
 
@@ -256,8 +259,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
             }
         }
 
-        LOGGER.warnCannotResolveCapability(identifier);
-        return null;
+        throw MESSAGES.startFailedCannotResolveInitialCapability(identifier);
     }
 
     private boolean isValidModuleIdentifier(String identifier) {
