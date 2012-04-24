@@ -20,9 +20,7 @@ package org.jboss.as.cli.gui;
 
 import java.awt.Window;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-import org.jboss.as.cli.gui.charts.ChartManager;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -33,10 +31,8 @@ public class CliGuiContext {
 
     private CommandExecutor executor;
     private JPanel mainPanel;
-    private JTabbedPane tabs;
     private CommandLine cmdLine;
     private boolean isStandalone;
-    private ChartManager chartManager = new ChartManager(this);
 
     CliGuiContext() {
     }
@@ -53,10 +49,6 @@ public class CliGuiContext {
 
     void setMainPanel(JPanel mainPanel) {
         this.mainPanel = mainPanel;
-    }
-
-    void setTabs(JTabbedPane tabs) {
-        this.tabs = tabs;
     }
 
     void setCommandLine(CommandLine cmdLine) {
@@ -81,14 +73,6 @@ public class CliGuiContext {
     }
 
     /**
-     * Get the tabs for CLI GUI.
-     * @return The tabs.
-     */
-    public JTabbedPane getTabs() {
-        return this.tabs;
-    }
-
-    /**
      * Get the singleton JFrame instance for the GUI
      * @return The JFrame
      */
@@ -110,9 +94,5 @@ public class CliGuiContext {
      */
     public CommandExecutor getExecutor() {
         return executor;
-    }
-
-    public ChartManager getChartManager() {
-        return this.chartManager;
     }
 }

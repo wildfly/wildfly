@@ -83,7 +83,6 @@ public class GuiMain {
         JTextPane output = new JTextPane();
         JPanel outputDisplay = makeOutputDisplay(output);
         JTabbedPane tabs = makeTabbedPane(cliGuiCtx, outputDisplay);
-        cliGuiCtx.setTabs(tabs);
 
         DoOperationActionListener opListener = new DoOperationActionListener(cliGuiCtx, output, tabs);
         CommandLine cmdLine = new CommandLine(opListener);

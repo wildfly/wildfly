@@ -1120,14 +1120,6 @@
             <maven-resource group="org.jboss.jbossts" artifact="jbosstxbridge"/>
         </module-def>
 
-        <module-def name="org.jfree.chart">
-            <maven-resource group="org.jfree" artifact="jfreechart"/>
-        </module-def>
-
-        <module-def name="org.jfree.jcommon">
-            <maven-resource group="org.jfree" artifact="jcommon"/>
-        </module-def>
-
         <module-def name="org.jgroups">
             <maven-resource group="org.jgroups" artifact="jgroups"/>
         </module-def>

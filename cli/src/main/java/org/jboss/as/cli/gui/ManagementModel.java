@@ -18,7 +18,6 @@
  */
 package org.jboss.as.cli.gui;
 
-import org.jboss.as.cli.gui.charts.ChartMenu;
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -32,7 +31,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import org.jboss.as.cli.gui.ManagementModelNode.AttributeProps;
+import org.jboss.as.cli.gui.ManagementModelNode.AttributeDescription;
 import org.jboss.as.cli.gui.ManagementModelNode.UserObject;
 
 /**
@@ -102,12 +101,12 @@ public class ManagementModel extends JPanel {
 
         private JTree tree;
         private OperationMenu operationMenu;
-        private ChartMenu graphingMenu;
+        private GraphingMenu graphingMenu;
 
         public ManagementTreeMouseListener(JTree tree) {
             this.tree = tree;
             this.operationMenu = new OperationMenu(cliGuiCtx, tree);
-            this.graphingMenu = new ChartMenu(cliGuiCtx, tree);
+            this.graphingMenu = new GraphingMenu(cliGuiCtx, tree);
         }
 
         @Override
@@ -132,9 +131,9 @@ public class ManagementModel extends JPanel {
             ManagementModelNode node = (ManagementModelNode)selPath.getLastPathComponent();
 
             UserObject usrObj = (UserObject)node.getUserObject();
-            AttributeProps attrDesc = usrObj.getAttributeProps();
+            AttributeDescription attrDesc = usrObj.getAttributeDescription();
             if ((attrDesc != null) && attrDesc.isGraphable()) {
-                graphingMenu.show(node, e.getX(), e.getY());
+        //        graphingMenu.show(node, e.getX(), e.getY());
             } else {
                 operationMenu.show(node, e.getX(), e.getY());
             }
