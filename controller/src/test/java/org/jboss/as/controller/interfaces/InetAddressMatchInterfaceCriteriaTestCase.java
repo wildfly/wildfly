@@ -48,16 +48,18 @@ public class InetAddressMatchInterfaceCriteriaTestCase {
             return;
         }
 
-        Map.Entry<NetworkInterface, Set<InetAddress>> entry = allCandidates.entrySet().iterator().next();
-        InetAddress target = entry.getValue().iterator().next();
-        InterfaceCriteria criteria = new InetAddressMatchInterfaceCriteria(target);
-        Map<NetworkInterface, Set<InetAddress>> accepted = criteria.getAcceptableAddresses(allCandidates);
-        assertNotNull(accepted);
-        assertEquals(1, accepted.size());
-        Set<InetAddress> set = accepted.get(entry.getKey());
-        assertNotNull(set);
-        assertEquals(1, set.size());
-        assertTrue(set.contains(target));
+        for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : allCandidates.entrySet()) {
+            InetAddress target = entry.getValue().iterator().next();
+            InterfaceCriteria criteria = new InetAddressMatchInterfaceCriteria(target);
+            Map<NetworkInterface, Set<InetAddress>> accepted = criteria.getAcceptableAddresses(allCandidates);
+            assertNotNull(accepted);
+            accepted = OverallInterfaceCriteria.pruneAliasDuplicates(accepted);
+            assertEquals(1, accepted.size());
+            Set<InetAddress> set = accepted.get(entry.getKey());
+            assertNotNull(set);
+            assertEquals(1, set.size());
+            assertTrue(set.contains(target));
+        }
     }
 
     @Test

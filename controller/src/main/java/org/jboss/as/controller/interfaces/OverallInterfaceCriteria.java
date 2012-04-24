@@ -30,6 +30,7 @@ import java.net.SocketException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -65,6 +66,11 @@ public final class OverallInterfaceCriteria implements InterfaceCriteria {
         }
 
         if (result.size() > 0) {
+            if (hasMultipleMatches(result)) {
+                // Multiple options matched the criteria. Eliminate the same address showing up in both
+                // a subinterface (an alias) and in the parent
+                result = pruneAliasDuplicates(result);
+            }
             if (hasMultipleMatches(result)) {
                 // Multiple options matched the criteria. Try and narrow the selection based on
                 // preferences indirectly expressed via -Djava.net.preferIPv4Stack and -Djava.net.preferIPv6Addresses
@@ -123,6 +129,30 @@ public final class OverallInterfaceCriteria implements InterfaceCriteria {
             }
         }
         return result.size() == 0 ? candidates : result;
+    }
+
+    static Map<NetworkInterface, Set<InetAddress>> pruneAliasDuplicates(Map<NetworkInterface, Set<InetAddress>> result) {
+        final Map<NetworkInterface, Set<InetAddress>> pruned = new HashMap<NetworkInterface, Set<InetAddress>>();
+        for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : result.entrySet()) {
+            NetworkInterface ni = entry.getKey();
+            if (ni.getParent() != null) {
+                pruned.put(ni, entry.getValue());
+            } else {
+                Set<InetAddress> retained = new HashSet<InetAddress>(entry.getValue());
+                Enumeration<NetworkInterface> subInterfaces = ni.getSubInterfaces();
+                while (subInterfaces.hasMoreElements()) {
+                    NetworkInterface sub = subInterfaces.nextElement();
+                    Set<InetAddress> subAddresses = result.get(sub);
+                    if (subAddresses != null) {
+                        retained.removeAll(subAddresses);
+                    }
+                }
+                if (retained.size() > 0) {
+                    pruned.put(ni, retained);
+                }
+            }
+        }
+        return pruned;
     }
 
     private static Boolean getBoolean(final String property) {
