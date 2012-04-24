@@ -264,6 +264,7 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
         }
         if (!changeReport.getFailedControllers().isEmpty()) {
             msg.append(MESSAGES.serviceStatusReportFailed());
+            msg.append('\n');
             for (Map.Entry<ServiceController<?>, String> entry : changeReport.getFailedControllers().entrySet()) {
                 msg.append("      ").append(entry.getKey().getName()).append(": ").append(entry.getValue()).append('\n');
             }

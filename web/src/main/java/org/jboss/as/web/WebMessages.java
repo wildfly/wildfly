@@ -334,4 +334,6 @@ public interface WebMessages {
     @Message(id = 18097, value = "TLD file %s not contained in root %s")
     String tldFileNotContainedInRoot(String tldPath, String rootPath);
 
+    @Message(id = 18098, value = "Error starting web connector: %s")
+    String connectorBindError(String bindMessage);
 }

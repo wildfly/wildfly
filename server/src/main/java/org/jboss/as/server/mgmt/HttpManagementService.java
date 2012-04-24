@@ -211,7 +211,9 @@ public class HttpManagementService implements Service<HttpManagement> {
                 sb.append(" ").append(bindAddress);
             if (secureBindAddress != null)
                 sb.append(" ").append(secureBindAddress);
-            throw new StartException(sb.toString(), e);
+            final StartException se = ServerMessages.MESSAGES.failedToBindHttpManagementService(sb.toString());
+            se.setStackTrace(new StackTraceElement[] {});
+            throw se;
         } catch (Exception e) {
             throw ServerMessages.MESSAGES.failedToStartHttpManagementService(e);
         }

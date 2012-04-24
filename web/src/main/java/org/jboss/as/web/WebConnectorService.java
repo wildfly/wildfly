@@ -25,11 +25,15 @@ import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.concurrent.Executor;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.ajp.AjpAprProtocol;
 import org.apache.coyote.ajp.AjpProtocol;
@@ -267,6 +271,8 @@ class WebConnectorService implements Service<Connector> {
             connector.init();
             connector.start();
             this.connector = connector;
+        } catch (LifecycleException e) {
+            handleBindException(e);
         } catch (Exception e) {
             throw new StartException(MESSAGES.connectorStartError(), e);
         }
@@ -274,7 +280,31 @@ class WebConnectorService implements Service<Connector> {
         binding.getSocketBindings().getNamedRegistry().registerBinding(new ConnectorBinding(binding));
     }
 
+    private void handleBindException(final LifecycleException e) throws StartException {
+        final String bindErrorMsg = getBindErrorMessage(e);
+        if (bindErrorMsg != null) {
+            final StartException se = new StartException(MESSAGES.connectorBindError(bindErrorMsg));
+            se.setStackTrace(new StackTraceElement[]{});
+            throw se;
+        } else {
+            throw new StartException(MESSAGES.connectorStartError(), e);
+        }
+    }
 
+    private String getBindErrorMessage(final LifecycleException e) {
+        String errorMsg = null;
+        final Throwable cause = e.getCause();
+        if (cause instanceof BindException) {
+            errorMsg = cause.getMessage();
+        } else {
+            final Pattern p = Pattern.compile(".*(Address already in use \\w*[/\\da-f.:]*).*");
+            final Matcher m = p.matcher(e.getMessage());
+            if (m.matches()) {
+                errorMsg = m.group(1);
+            }
+        }
+        return errorMsg;
+    }
 
     /** {@inheritDoc} */
     public synchronized void stop(StopContext context) {
