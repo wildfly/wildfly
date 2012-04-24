@@ -21,37 +21,15 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
+<module xmlns="urn:jboss:module:1.1" name="org.bouncycastle.bcprov">
+    <properties>
+    </properties>
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.capedwarf">
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.faces.api"/>
-        <module name="javax.inject.api"/>
-        <module name="javax.jms.api" />
-        <module name="javax.transaction.api"/>
-        <module name="javax.activation.api"/>
-        <module name="javax.mail.api"/>
-        <module name="javax.servlet.api"/>
-        <module name="org.apache.velocity"/>
-        <module name="org.bouncycastle.bcmail"/>
-        <module name="org.bouncycastle.bcpkix"/>
-        <module name="org.bouncycastle.bcprov"/>
-        <module name="org.jboss.modules"/>
-        <module name="org.jivesoftware.smack"/>
-        <module name="org.javassist"/>
-        <module name="org.jgroups" />
-        <module name="org.infinispan"/>
-        <module name="org.infinispan.query"/>
-        <module name="org.hibernate.search"/>
-        <module name="org.apache.lucene"/>
-        <module name="org.apache.httpcomponents"/>
-        <module name="org.picketlink.fed"/>
-        <module name="org.picketlink.social"/>
-        <module name="com.google.appengine"/>
     </dependencies>
 </module>
