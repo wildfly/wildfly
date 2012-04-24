@@ -31,20 +31,21 @@ import org.jboss.dmr.ModelNode;
 import java.util.List;
 
 /**
+ * Task responsible for updating a single server-group.
+ *
  * @author Emanuel Muckenhuber
  */
+// TODO cleanup ServerGroupRolloutTask vs. ServerUpdateTask vs. Concurrent/RollingUpdateTask
 abstract class AbstractServerGroupRolloutTask implements Runnable {
 
-    protected final List<ServerTask> tasks;
+    protected final List<ServerUpdateTask> tasks;
     protected final ServerUpdatePolicy updatePolicy;
-    protected final ServerRolloutTaskHandler rolloutHandler;
     protected final ServerTaskExecutor executor;
-    protected final AbstractServerUpdateTask.ServerUpdateResultHandler resultHandler;
+    protected final ServerUpdateTask.ServerUpdateResultHandler resultHandler;
 
-    public AbstractServerGroupRolloutTask(List<ServerTask> tasks, ServerUpdatePolicy updatePolicy, ServerRolloutTaskHandler rolloutHandler, ServerTaskExecutor executor, final AbstractServerUpdateTask.ServerUpdateResultHandler resultHandler) {
+    public AbstractServerGroupRolloutTask(List<ServerUpdateTask> tasks, ServerUpdatePolicy updatePolicy, ServerTaskExecutor executor, final ServerUpdateTask.ServerUpdateResultHandler resultHandler) {
         this.tasks = tasks;
         this.updatePolicy = updatePolicy;
-        this.rolloutHandler = rolloutHandler;
         this.executor = executor;
         this.resultHandler = resultHandler;
     }
@@ -67,7 +68,7 @@ abstract class AbstractServerGroupRolloutTask implements Runnable {
      */
     protected void recordPreparedOperation(final ServerIdentity identity, final TransactionalProtocolClient.PreparedOperation<ServerTaskExecutor.ServerOperation> prepared) {
         updatePolicy.recordServerResult(identity, prepared.getPreparedResult());
-        rolloutHandler.recordPreparedOperation(prepared);
+        executor.recordPreparedOperation(prepared);
         resultHandler.handleServerUpdateResult(identity, prepared.getPreparedResult());
     }
 

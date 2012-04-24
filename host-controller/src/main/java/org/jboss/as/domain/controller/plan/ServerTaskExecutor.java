@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.controller.plan;
 
+import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -35,7 +36,9 @@ import org.jboss.dmr.ModelNode;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 /**
@@ -44,19 +47,45 @@ import java.util.concurrent.Future;
 public abstract class ServerTaskExecutor {
 
     private final OperationContext context;
-    private final ServerRolloutTaskHandler rolloutHandler;
+    private final Map<ServerIdentity, ExecutedServerRequest> submittedTasks;
+    private final List<ServerTaskExecutor.ServerPreparedResponse> preparedResults;
 
-    protected ServerTaskExecutor(OperationContext context, ServerRolloutTaskHandler rolloutHandler) {
+    protected ServerTaskExecutor(OperationContext context, Map<ServerIdentity, ExecutedServerRequest> submittedTasks, List<ServerPreparedResponse> preparedResults) {
         this.context = context;
-        this.rolloutHandler = rolloutHandler;
+        this.submittedTasks = submittedTasks;
+        this.preparedResults = preparedResults;
     }
 
-    public boolean executeTask(final TransactionalProtocolClient.TransactionalOperationListener<ServerOperation> listener, final ServerTask task) {
+    /**
+     * Execute
+     *
+     * @param listener the transactional operation listener
+     * @param identity the server identity
+     * @param operation the operation
+     * @return whether the operation was executed or not
+     */
+    protected abstract boolean execute(final TransactionalProtocolClient.TransactionalOperationListener<ServerOperation> listener, final ServerIdentity identity, final ModelNode operation);
+
+    /**
+     * Execute a server task.
+     *
+     * @param listener the transactional server listener
+     * @param task the server task
+     * @return whether the task was executed or not
+     */
+    public boolean executeTask(final TransactionalProtocolClient.TransactionalOperationListener<ServerOperation> listener, final ServerUpdateTask task) {
         return execute(listener, task.getServerIdentity(), task.getOperation());
     }
 
-    protected abstract boolean execute(final TransactionalProtocolClient.TransactionalOperationListener<ServerOperation> listener, final ServerIdentity identity, final ModelNode operation);
-
+    /**
+     * Execute the operation.
+     *
+     * @param listener the transactional operation listener
+     * @param client the transactional protocol client
+     * @param identity the server identity
+     * @param operation the operation
+     * @return whether the operation was executed
+     */
     protected boolean executeOperation(final TransactionalProtocolClient.TransactionalOperationListener<ServerOperation> listener, TransactionalProtocolClient client, final ServerIdentity identity, final ModelNode operation) {
         if(client == null) {
             return false;
@@ -66,16 +95,52 @@ public abstract class ServerTaskExecutor {
         final ServerOperation serverOperation = new ServerOperation(identity, operation, messageHandler, operationAttachments);
         try {
             final Future<ModelNode> result = client.execute(listener, serverOperation);
-            rolloutHandler.recordExecutedRequest(new ServerRolloutTaskHandler.ServerExecutedRequest(identity, result));
+            recordExecutedRequest(new ExecutedServerRequest(identity, result));
         } catch (IOException e) {
             final TransactionalProtocolClient.PreparedOperation<ServerOperation> result = BlockingQueueOperationListener.FailedOperation.create(serverOperation, e);
             listener.operationPrepared(result);
-            rolloutHandler.recordExecutedRequest(new ServerRolloutTaskHandler.ServerExecutedRequest(identity, result.getFinalResult()));
+            recordExecutedRequest(new ExecutedServerRequest(identity, result.getFinalResult()));
         }
         return true;
     }
 
+    /**
+     * Record a executed request.
+     *
+     * @param task the executed task
+     */
+    void recordExecutedRequest(final ExecutedServerRequest task) {
+        synchronized (submittedTasks) {
+            submittedTasks.put(task.getIdentity(), task);
+        }
+    }
+
+    /**
+     * Record a prepare operation.
+     *
+     * @param preparedOperation the prepared operation
+     */
+    void recordPreparedOperation(final TransactionalProtocolClient.PreparedOperation<ServerTaskExecutor.ServerOperation> preparedOperation) {
+        recordPreparedTask(new ServerTaskExecutor.ServerPreparedResponse(preparedOperation));
+    }
+
+    /**
+     * Record a prepared operation.
+     *
+     * @param task the prepared operation
+     */
+    void recordPreparedTask(ServerTaskExecutor.ServerPreparedResponse task) {
+        synchronized (preparedResults) {
+            preparedResults.add(task);
+        }
+    }
+
     static class ServerOperationListener extends BlockingQueueOperationListener<ServerOperation> {
+
+        @Override
+        protected void drainTo(Collection<TransactionalProtocolClient.PreparedOperation<ServerOperation>> preparedOperations) {
+            super.drainTo(preparedOperations);
+        }
 
     }
 
@@ -92,6 +157,78 @@ public abstract class ServerTaskExecutor {
         }
     }
 
+    /**
+     * The prepared response.
+     */
+    public static class ServerPreparedResponse {
+
+        private TransactionalProtocolClient.PreparedOperation<ServerOperation> preparedOperation;
+        ServerPreparedResponse(TransactionalProtocolClient.PreparedOperation<ServerOperation> preparedOperation) {
+            this.preparedOperation = preparedOperation;
+        }
+
+        public TransactionalProtocolClient.PreparedOperation<ServerOperation> getPreparedOperation() {
+            return preparedOperation;
+        }
+
+        public ServerIdentity getServerIdentity() {
+            return preparedOperation.getOperation().getIdentity();
+        }
+
+        public String getServerGroupName() {
+            return getServerIdentity().getServerGroupName();
+        }
+
+        /**
+         * Finalize the transaction. This will return {@code false} in case the local operation failed,
+         * but the overall state of the operation is commit=true.
+         *
+         * @param commit {@code true} to commit, {@code false} to rollback
+         * @return whether the local proxy operation result is in sync with the overall operation
+         */
+        public boolean finalizeTransaction(boolean commit) {
+            final boolean failed = preparedOperation.isFailed();
+            if(commit && failed) {
+                return false;
+            }
+            if(commit) {
+                preparedOperation.commit();
+            } else {
+                if(!failed) {
+                    preparedOperation.rollback();
+                }
+            }
+            return true;
+        }
+
+    }
+
+    /**
+     * The executed request.
+     */
+    public static class ExecutedServerRequest implements Cancellable {
+
+        private final ServerIdentity identity;
+        private final Future<ModelNode> finalResult;
+
+        public ExecutedServerRequest(ServerIdentity identity, Future<ModelNode> finalResult) {
+            this.identity = identity;
+            this.finalResult = finalResult;
+        }
+
+        public ServerIdentity getIdentity() {
+            return identity;
+        }
+
+        public Future<ModelNode> getFinalResult() {
+            return finalResult;
+        }
+
+        @Override
+        public boolean cancel() {
+            return finalResult.cancel(false);
+        }
+    }
 
     private static class DelegatingMessageHandler implements OperationMessageHandler {
 

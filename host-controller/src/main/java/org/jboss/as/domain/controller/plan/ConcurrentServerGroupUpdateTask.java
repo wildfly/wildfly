@@ -32,18 +32,18 @@ import java.util.Set;
 /**
  * @author Emanuel Muckenhuber
  */
-class ConcurrentGroupUpdateTask extends AbstractServerGroupRolloutTask implements Runnable {
+class ConcurrentServerGroupUpdateTask extends AbstractServerGroupRolloutTask implements Runnable {
 
-    public ConcurrentGroupUpdateTask(List<ServerTask> tasks, ServerUpdatePolicy updatePolicy, ServerRolloutTaskHandler rolloutHandler,
-                                     ServerTaskExecutor executor, AbstractServerUpdateTask.ServerUpdateResultHandler resultHandler) {
-        super(tasks, updatePolicy, rolloutHandler, executor, resultHandler);
+    public ConcurrentServerGroupUpdateTask(List<ServerUpdateTask> tasks, ServerUpdatePolicy updatePolicy,
+                                           ServerTaskExecutor executor, ServerUpdateTask.ServerUpdateResultHandler resultHandler) {
+        super(tasks, updatePolicy, executor, resultHandler);
     }
 
     @Override
     public void execute() {
         final Set<ServerIdentity> outstanding = new HashSet<ServerIdentity>();
         final ServerTaskExecutor.ServerOperationListener listener = new ServerTaskExecutor.ServerOperationListener();
-        for(final ServerTask task : tasks) {
+        for(final ServerUpdateTask task : tasks) {
             final ServerIdentity identity = task.getServerIdentity();
             if(updatePolicy.canUpdateServer(identity)) {
                 // Execute the task

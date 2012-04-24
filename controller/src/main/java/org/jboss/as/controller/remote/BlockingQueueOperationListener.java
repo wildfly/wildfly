@@ -26,6 +26,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
 
+import java.util.Collection;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
@@ -82,6 +83,12 @@ public class BlockingQueueOperationListener<T extends TransactionalProtocolClien
      */
     public TransactionalProtocolClient.PreparedOperation<T> retrievePreparedOperation() throws InterruptedException {
         return queue.take();
+    }
+
+    protected void drainTo(final Collection<TransactionalProtocolClient.PreparedOperation<T>> collection) {
+        if(queue.size() > 0) {
+            queue.drainTo(collection);
+        }
     }
 
     /**
