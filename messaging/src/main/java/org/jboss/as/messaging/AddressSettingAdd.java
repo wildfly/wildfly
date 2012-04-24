@@ -27,10 +27,10 @@ import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.LVQ;
 import static org.jboss.as.messaging.CommonAttributes.MAX_DELIVERY_ATTEMPTS;
-import static org.jboss.as.messaging.CommonAttributes.MAX_SIZE_BYTES_NODE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.MAX_SIZE_BYTES;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
 import static org.jboss.as.messaging.CommonAttributes.PAGE_MAX_CACHE_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.PAGE_SIZE_BYTES;
 import static org.jboss.as.messaging.CommonAttributes.REDELIVERY_DELAY;
 import static org.jboss.as.messaging.CommonAttributes.REDISTRIBUTION_DELAY;
 import static org.jboss.as.messaging.CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE;
@@ -66,9 +66,9 @@ class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionPro
     static final OperationStepHandler INSTANCE = new AddressSettingAdd();
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = new SimpleAttributeDefinition[] { ADDRESS_FULL_MESSAGE_POLICY,
-                                     DEAD_LETTER_ADDRESS, LVQ, MAX_DELIVERY_ATTEMPTS, MAX_SIZE_BYTES_NODE_NAME,
+                                     DEAD_LETTER_ADDRESS, LVQ, MAX_DELIVERY_ATTEMPTS, MAX_SIZE_BYTES,
                                      MESSAGE_COUNTER_HISTORY_DAY_LIMIT, EXPIRY_ADDRESS, REDELIVERY_DELAY,
-                                     REDISTRIBUTION_DELAY, PAGE_MAX_CACHE_SIZE, PAGE_SIZE_BYTES_NODE_NAME, SEND_TO_DLA_ON_NO_ROUTE } ;
+                                     REDISTRIBUTION_DELAY, PAGE_MAX_CACHE_SIZE, PAGE_SIZE_BYTES, SEND_TO_DLA_ON_NO_ROUTE } ;
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
@@ -125,12 +125,12 @@ class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionPro
         settings.setDeadLetterAddress(asSimpleString(DEAD_LETTER_ADDRESS.resolveModelAttribute(context, config), null));
         settings.setLastValueQueue(LVQ.resolveModelAttribute(context, config).asBoolean());
         settings.setMaxDeliveryAttempts(MAX_DELIVERY_ATTEMPTS.resolveModelAttribute(context, config).asInt());
-        settings.setMaxSizeBytes(MAX_SIZE_BYTES_NODE_NAME.resolveModelAttribute(context, config).asInt());
+        settings.setMaxSizeBytes(MAX_SIZE_BYTES.resolveModelAttribute(context, config).asLong());
         settings.setMessageCounterHistoryDayLimit(MESSAGE_COUNTER_HISTORY_DAY_LIMIT.resolveModelAttribute(context, config).asInt());
         settings.setExpiryAddress(asSimpleString(EXPIRY_ADDRESS.resolveModelAttribute(context, config), null));
-        settings.setRedeliveryDelay(REDELIVERY_DELAY.resolveModelAttribute(context, config).asInt());
+        settings.setRedeliveryDelay(REDELIVERY_DELAY.resolveModelAttribute(context, config).asLong());
         settings.setRedistributionDelay(REDISTRIBUTION_DELAY.resolveModelAttribute(context, config).asLong());
-        settings.setPageSizeBytes(PAGE_SIZE_BYTES_NODE_NAME.resolveModelAttribute(context, config).asLong());
+        settings.setPageSizeBytes(PAGE_SIZE_BYTES.resolveModelAttribute(context, config).asLong());
         settings.setPageCacheMaxSize(PAGE_MAX_CACHE_SIZE.resolveModelAttribute(context, config).asInt());
         settings.setSendToDLAOnNoRoute(SEND_TO_DLA_ON_NO_ROUTE.resolveModelAttribute(context, config).asBoolean());
         return settings;

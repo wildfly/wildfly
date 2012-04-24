@@ -1149,17 +1149,17 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
             SWITCH:
             switch (element) {
-                case DEAD_LETTER_ADDRESS_NODE_NAME:
-                case EXPIRY_ADDRESS_NODE_NAME:
-                case REDELIVERY_DELAY_NODE_NAME:
-                case MAX_SIZE_BYTES_NODE_NAME:
+                case DEAD_LETTER_ADDRESS:
+                case EXPIRY_ADDRESS:
+                case REDELIVERY_DELAY:
+                case MAX_SIZE_BYTES:
                 case PAGE_MAX_CACHE_SIZE:
-                case PAGE_SIZE_BYTES_NODE_NAME:
-                case MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME:
-                case ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME:
-                case LVQ_NODE_NAME:
+                case PAGE_SIZE_BYTES:
+                case MESSAGE_COUNTER_HISTORY_DAY_LIMIT:
+                case ADDRESS_FULL_MESSAGE_POLICY:
+                case LVQ:
                 case MAX_DELIVERY_ATTEMPTS:
-                case REDISTRIBUTION_DELAY_NODE_NAME:
+                case REDISTRIBUTION_DELAY:
                 case SEND_TO_DLA_ON_NO_ROUTE: {
                     handleElementText(reader, element, addressSettingsSpec);
                     break SWITCH;
@@ -1802,8 +1802,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 CommonAttributes.EXPIRY_ADDRESS.marshallAsElement(setting, writer);
                 CommonAttributes.REDELIVERY_DELAY.marshallAsElement(setting, writer);
                 CommonAttributes.MAX_DELIVERY_ATTEMPTS.marshallAsElement(setting, writer);
-                CommonAttributes.MAX_SIZE_BYTES_NODE_NAME.marshallAsElement(setting, writer);
-                CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME.marshallAsElement(setting, writer);
+                CommonAttributes.MAX_SIZE_BYTES.marshallAsElement(setting, writer);
+                CommonAttributes.PAGE_SIZE_BYTES.marshallAsElement(setting, writer);
                 CommonAttributes.PAGE_MAX_CACHE_SIZE.marshallAsElement(setting, writer);
                 CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY.marshallAsElement(setting, writer);
                 CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT.marshallAsElement(setting, writer);
