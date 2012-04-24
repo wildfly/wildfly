@@ -38,7 +38,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
@@ -92,7 +91,6 @@ public class PersistentBundleInstallService extends AbstractService<Void> {
         ServiceController<?> controller = context.getController();
         LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         try {
-            ServiceTarget serviceTarget = context.getChildTarget();
             BundleManager bundleManager = injectedBundleManager.getValue();
             StorageStateProvider storageStateProvider = injectedStorageProvider.getValue();
             StorageState storageState = storageStateProvider.getByLocation(deployment.getLocation());
@@ -100,20 +98,9 @@ public class PersistentBundleInstallService extends AbstractService<Void> {
                 deployment.addAttachment(StorageState.class, storageState);
             }
             ServiceListener<Bundle> listener = deploymentTracker.getBundleInstallListener();
-            bundleManager.installBundle(serviceTarget, deployment, listener);
+            bundleManager.installBundle(deployment, listener);
         } catch (Throwable th) {
             throw MESSAGES.startFailedToInstallDeployment(th, deployment);
-        }
-    }
-
-    public synchronized void stop(StopContext context) {
-        ServiceController<?> controller = context.getController();
-        LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
-        try {
-            BundleManager bundleManager = injectedBundleManager.getValue();
-            bundleManager.uninstallBundle(deployment);
-        } catch (Throwable t) {
-            LOGGER.errorFailedToUninstallDeployment(t, deployment);
         }
     }
 }

@@ -82,9 +82,8 @@ public class BundleInstallService extends AbstractService<Void> {
         ServiceController<?> controller = context.getController();
         LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         try {
-            ServiceTarget serviceTarget = context.getChildTarget();
             BundleManager bundleManager = injectedBundleManager.getValue();
-            bundleManager.installBundle(serviceTarget, deployment, null);
+            bundleManager.installBundle(deployment, null);
         } catch (Throwable th) {
             throw MESSAGES.startFailedToInstallDeployment(th, deployment);
         }

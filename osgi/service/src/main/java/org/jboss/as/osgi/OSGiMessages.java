@@ -89,5 +89,5 @@ public interface OSGiMessages {
     IllegalArgumentException illegalArgumentCannotObtainBundleResource(String name);
 
     @Message(id = 11973, value = "Cannot resolve capability: %s")
-    StartException startFailedCannotResolveInitialCapability(String identifier);
+    StartException startFailedCannotResolveInitialCapability(@Cause Throwable th, String identifier);
 }
