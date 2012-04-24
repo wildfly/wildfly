@@ -48,9 +48,15 @@ import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
  */
 public class Constants {
 
-    static final String RESOURCEADAPTER_NAME = "resource-adapter";
+    public static final String RESOURCEADAPTER_NAME = "resource-adapter";
 
     static final String RESOURCEADAPTERS_NAME = "resource-adapters";
+
+    public static final String IRONJACAMAR_NAME = "ironjacamar";
+
+    public static final String STATISTICS_NAME = "statistics";
+
+    static final String REFRESH_OP_NAME = "refresh";
 
     public static final String CONNECTIONDEFINITIONS_NAME = "connection-definitions";
 
@@ -121,7 +127,7 @@ public class Constants {
 
     static SimpleAttributeDefinition JNDINAME = new SimpleAttributeDefinition(JNDINAME_NAME, CommonConnDef.Attribute.JNDI_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static final SimpleAttributeDefinition CONFIG_PROPERTIES = new SimpleAttributeDefinition(CONFIG_PROPERTIES_NAME, CommonConnDef.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    public static final SimpleAttributeDefinition CONFIG_PROPERTIES = new SimpleAttributeDefinition(CONFIG_PROPERTIES_NAME, CommonConnDef.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
     static final SimpleAttributeDefinition CONFIG_PROPERTY_VALUE = new SimpleAttributeDefinition(CONFIG_PROPERTY_VALUE_NAME, CommonConnDef.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 

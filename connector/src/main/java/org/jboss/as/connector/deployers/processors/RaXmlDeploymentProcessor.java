@@ -30,13 +30,17 @@ import org.jboss.as.connector.metadata.deployment.InactiveResourceAdapterDeploym
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersService;
 import org.jboss.as.connector.util.RaServicesFactory;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.modules.Module;
@@ -72,14 +76,21 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ManagementResourceRegistration registration = deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
+        final ManagementResourceRegistration baseRegistration = deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
+        final ManagementResourceRegistration registration;
+        final Resource deploymentResource = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
+
 
         final ConnectorXmlDescriptor connectorXmlDescriptor = deploymentUnit
                 .getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
         if (connectorXmlDescriptor == null) {
             return; // Skip non ra deployments
         }
-
+        if (deploymentUnit.getParent() != null) {
+            registration = baseRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement("subdeployment")));
+        } else {
+            registration = baseRegistration;
+        }
         ResourceAdaptersService.ModifiableResourceAdaptors raxmls = null;
         final ServiceController<?> raService = phaseContext.getServiceRegistry().getService(
                 ConnectorServices.RESOURCEADAPTERS_SERVICE);
@@ -118,7 +129,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                         rarName = rarName.substring(0, rarName.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR));
                     }
                     if (deploymentUnitName.equals(rarName)) {
-                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deployment, raxml);
+                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deployment, raxml, deploymentResource);
 
 
                     }
@@ -128,7 +139,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
             //create service pointing to rar for other future activations
             ServiceName serviceName = ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(deploymentUnitName);
 
-            InactiveResourceAdapterDeploymentService service = new InactiveResourceAdapterDeploymentService(connectorXmlDescriptor, module, deployment, deploymentUnitName, registration, serviceTarget);
+            InactiveResourceAdapterDeploymentService service = new InactiveResourceAdapterDeploymentService(connectorXmlDescriptor, module, deployment, deploymentUnitName, registration, serviceTarget, deploymentResource);
             ServiceBuilder builder = serviceTarget
                     .addService(serviceName, service);
             builder.setInitialMode(Mode.ACTIVE).install();
