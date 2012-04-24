@@ -37,11 +37,8 @@ import javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic;
 import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.catalina.Container;
-import org.apache.catalina.ContainerListener;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
-import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.Valve;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.deploy.Multipart;
@@ -74,12 +71,10 @@ import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.metadata.merge.web.jboss.JBossWebMetaDataMerger;
-import org.jboss.metadata.web.jboss.ContainerListenerMetaData;
 import org.jboss.metadata.web.jboss.JBossAnnotationsMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossServletsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.web.jboss.ValveMetaData;
 import org.jboss.metadata.web.spec.AnnotationMetaData;
 import org.jboss.metadata.web.spec.AttributeMetaData;
 import org.jboss.metadata.web.spec.AuthConstraintMetaData;
@@ -247,7 +242,7 @@ public class JBossContextConfig extends ContextConfig {
             try {
                 Module module = this.deploymentUnitContext.getAttachment(Attachments.MODULE);
                 ClassResolver resolver = ModularClassResolver.getInstance(module.getModuleLoader());
-                context.setManager(new DistributableSessionManager<OutgoingDistributableSessionData>(this.factory.getValue(), this.context, metaData, new ClassLoaderAwareClassResolver(resolver, module.getClassLoader())));
+                context.setManager(new DistributableSessionManager<OutgoingDistributableSessionData>(this.factory.getValue(), metaData, new ClassLoaderAwareClassResolver(resolver, module.getClassLoader())));
                 context.setDistributable(true);
             } catch (Exception e) {
                 WebLogger.WEB_LOGGER.clusteringNotSupported();

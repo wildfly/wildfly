@@ -47,7 +47,6 @@ import java.util.concurrent.locks.Lock;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
-import org.apache.catalina.Engine;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleException;
@@ -87,9 +86,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
     private static final int TOTAL_PERMITS = Integer.MAX_VALUE;
 
-    private final String name;
-    private final String hostName;
-    private final String contextName;
     private final DistributedCacheManager<O> distributedCacheManager;
 
     private SnapshotManager snapshotManager;
@@ -128,7 +124,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     /** Sessions that have been created but not yet loaded. Used to ensure concurrent threads trying to load the same session */
     private final ConcurrentMap<String, ClusteredSession<O>> embryonicSessions = new ConcurrentHashMap<String, ClusteredSession<O>>();
 
-    public DistributableSessionManager(DistributedCacheManagerFactory factory, Context context, JBossWebMetaData metaData, ClassResolver resolver) throws ClusteringNotSupportedException {
+    public DistributableSessionManager(DistributedCacheManagerFactory factory, JBossWebMetaData metaData, ClassResolver resolver) throws ClusteringNotSupportedException {
         super(metaData);
 
         PassivationConfig passivationConfig = metaData.getPassivationConfig();
@@ -150,28 +146,8 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         this.maxUnreplicatedInterval = (interval != null) ? interval.intValue() : -1;
 
         this.notificationPolicy = this.createClusteredSessionNotificationPolicy();
-
-        String host = context.getParent().getName();
-        this.hostName = (host == null) ? "localhost" : host;
-        this.contextName = context.getName();
-        this.name = String.format("//%s/%s", this.hostName, this.contextName.isEmpty() ? "ROOT" : this.contextName);
         this.resolver = resolver;
         this.distributedCacheManager = factory.getDistributedCacheManager(this);
-    }
-
-    @Override
-    public String getHostName() {
-        return this.hostName;
-    }
-
-    @Override
-    public String getContextName() {
-        return this.contextName;
-    }
-
-    @Override
-    public String getName() {
-        return this.name;
     }
 
     @Override
@@ -1058,12 +1034,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     }
 
     @Override
-    public String getEngineName() {
-        Engine engine = this.getEngine();
-        return (engine != null) ? engine.getName() : null;
-    }
-
-    @Override
     public ClassResolver getApplicationClassResolver() {
         return this.resolver;
     }
@@ -1166,7 +1136,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
         return updated;
     }
-
 
     @Override
     protected void processExpirationPassivation() {

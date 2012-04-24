@@ -33,6 +33,7 @@ import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -51,7 +52,7 @@ public class MockDistributedCacheManagerFactory implements DistributedCacheManag
     }
 
     @Override
-    public boolean addDeploymentDependencies(ServiceRegistry registry, ServiceBuilder<?> builder, JBossWebMetaData metaData) {
+    public boolean addDeploymentDependencies(ServiceName deploymentServiceName, ServiceRegistry registry, ServiceTarget target, ServiceBuilder<?> builder, JBossWebMetaData metaData) {
         return true;
     }
 

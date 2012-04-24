@@ -188,8 +188,7 @@ public class SessionTestUtil {
         };
         final RegistryService<String, Void> registry = new RegistryService<String, Void>(new ImmediateValue<Cache<Address, Map.Entry<String, Void>>>(jvmRouteCache), new ImmediateValue<Registry.RegistryEntryProvider<String, Void>>(provider));
         DistributedCacheManagerFactory factory = new DistributedCacheManagerFactory();
-        factory.getCacheContainerInjector().inject(cacheContainer);
-        factory.getCacheConfigurationInjector().inject(jvmRouteCache.getCacheConfiguration());
+        factory.getCacheInjector().inject(cacheContainer.getCache(warName));
         factory.getRegistryInjector().inject(registry);
         factory.getLockManagerInjector().inject(((ExtendedCacheManager) cacheContainer).getLockManager());
         
@@ -205,7 +204,7 @@ public class SessionTestUtil {
         host.addChild(context);
 
         try {
-            DistributableSessionManager<OutgoingDistributableSessionData> manager = new DistributableSessionManager<OutgoingDistributableSessionData>(factory, context, metaData, new ContextClassResolver()) {
+            DistributableSessionManager<OutgoingDistributableSessionData> manager = new DistributableSessionManager<OutgoingDistributableSessionData>(factory, metaData, new ContextClassResolver()) {
                 @Override
                 public void start() throws LifecycleException {
                     try {
