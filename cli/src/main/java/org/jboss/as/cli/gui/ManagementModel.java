@@ -42,15 +42,13 @@ import org.jboss.as.cli.gui.ManagementModelNode.UserObject;
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class ManagementModel extends JPanel {
-    private static final String SIMPLE_HELP ="<html><font size='4'>Right-click a node to choose an operation.  Close/Open a folder to refresh.  Hover for help.<br>" +
-                                             "A real-time graphable attribute is deonted with the \u2245 symbol. Right-click to monitor.</font></html>";
 
     private CliGuiContext cliGuiCtx;
 
     public ManagementModel(CliGuiContext cliGuiCtx) {
         this.cliGuiCtx = cliGuiCtx;
         setLayout(new BorderLayout(10,10));
-        add(new JLabel(SIMPLE_HELP), BorderLayout.NORTH);
+        add(new JLabel("Right-click a node to choose an operation.  Close/Open a folder to refresh.  Hover for help."), BorderLayout.NORTH);
         add(makeTree(), BorderLayout.CENTER);
     }
 

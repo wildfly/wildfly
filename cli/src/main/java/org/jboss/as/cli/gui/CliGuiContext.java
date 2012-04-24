@@ -31,8 +31,6 @@ import org.jboss.dmr.ModelNode;
  */
 public class CliGuiContext {
 
-    private boolean isEmbedded = false;
-
     private CommandExecutor executor;
     private JPanel mainPanel;
     private JTabbedPane tabs;
@@ -40,8 +38,7 @@ public class CliGuiContext {
     private boolean isStandalone;
     private ChartManager chartManager = new ChartManager(this);
 
-    CliGuiContext(boolean isEmbedded) {
-        this.isEmbedded = isEmbedded;
+    CliGuiContext() {
     }
 
     void setExecutor(CommandExecutor executor) {
@@ -66,14 +63,6 @@ public class CliGuiContext {
         this.cmdLine = cmdLine;
     }
 
-    /**
-     * Find if CLI GUI is running in its own JFrame (kicked off by jboss-cli) or
-     * embedded in another JFrame (kicked off by jconsole).
-     * @return true if embedded, false otherwise.
-     */
-    public boolean isEmbedded() {
-        return this.isEmbedded;
-    }
     /**
      * Find if we are connected to a standalone AS instances
      * or a domain controller.

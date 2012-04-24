@@ -68,15 +68,15 @@ public class GuiMain {
     private GuiMain() {} // don't allow an instance
 
     public static void start(CommandContext cmdCtx) {
-        initJFrame(makeGuiContext(cmdCtx, false));
+        initJFrame(makeGuiContext(cmdCtx));
     }
 
     public static CliGuiContext startEmbedded(CommandContext cmdCtx) {
-        return makeGuiContext(cmdCtx, true);
+        return makeGuiContext(cmdCtx);
     }
 
-    private static CliGuiContext makeGuiContext(CommandContext cmdCtx, boolean isEmbedded) {
-        CliGuiContext cliGuiCtx = new CliGuiContext(isEmbedded);
+    private static CliGuiContext makeGuiContext(CommandContext cmdCtx) {
+        CliGuiContext cliGuiCtx = new CliGuiContext();
         CommandExecutor executor = new CommandExecutor(cliGuiCtx, cmdCtx);
         cliGuiCtx.setExecutor(executor);
 
