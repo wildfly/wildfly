@@ -55,6 +55,7 @@ public interface Constants {
     String HOST = "Host";
     String LOCATION = "Location";
     String ORIGIN = "Origin";
+    String RETRY_AFTER = "Retry-After";
     String VIA = "Via";
     String WWW_AUTHENTICATE_HEADER = "WWW-Authenticate";
 

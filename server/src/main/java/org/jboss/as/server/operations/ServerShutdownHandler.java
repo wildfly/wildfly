@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 
 import java.util.Locale;
 
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -42,9 +43,11 @@ import org.jboss.dmr.ModelNode;
 public class ServerShutdownHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "shutdown";
-    public static final ServerShutdownHandler INSTANCE = new ServerShutdownHandler();
 
-    private ServerShutdownHandler() {
+    private final ControlledProcessState processState;
+
+    public ServerShutdownHandler(ControlledProcessState processState) {
+        this.processState = processState;
     }
 
     /** {@inheritDoc} */
@@ -54,6 +57,7 @@ public class ServerShutdownHandler implements OperationStepHandler, DescriptionP
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                processState.setStopping();
                 final Thread thread = new Thread(new Runnable() {
                     public void run() {
                         System.exit(restart ? ExitCodes.RESTART_PROCESS_FROM_STARTUP_SCRIPT : 0);

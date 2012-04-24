@@ -472,6 +472,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     public void stopLocalHost(int exitCode) {
         final ProcessControllerClient client = injectedProcessControllerConnection.getValue().getClient();
+        processState.setStopping();
         try {
             client.shutdown(exitCode);
         } catch (IOException e) {

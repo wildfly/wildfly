@@ -280,13 +280,15 @@ public class ServerControllerModelUtil {
         if (serverEnvironment != null) {
             // Reload op -- does not work on a domain mode server
             if (serverEnvironment.getLaunchType() != ServerEnvironment.LaunchType.DOMAIN)  {
-                ProcessReloadHandler reloadHandler = new ProcessReloadHandler<RunningModeControl>(Services.JBOSS_AS, runningModeControl, ServerDescriptions.getResourceDescriptionResolver("server"));
+                ProcessReloadHandler reloadHandler = new ProcessReloadHandler<RunningModeControl>(Services.JBOSS_AS, runningModeControl,
+                        processState, ServerDescriptions.getResourceDescriptionResolver("server"));
                 root.registerOperationHandler(ProcessReloadHandler.OPERATION_NAME, reloadHandler, reloadHandler);
             }
 
             // The System.exit() based shutdown command is only valid for a server process directly launched from the command line
             if (serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.STANDALONE) {
-                root.registerOperationHandler(ServerShutdownHandler.OPERATION_NAME, ServerShutdownHandler.INSTANCE, ServerShutdownHandler.INSTANCE, false);
+                ServerShutdownHandler serverShutdownHandler = new ServerShutdownHandler(processState);
+                root.registerOperationHandler(ServerShutdownHandler.OPERATION_NAME, serverShutdownHandler, serverShutdownHandler);
             }
             root.registerReadOnlyAttribute(ServerDescriptionConstants.LAUNCH_TYPE, new LaunchTypeHandler(serverEnvironment.getLaunchType()), Storage.RUNTIME);
 

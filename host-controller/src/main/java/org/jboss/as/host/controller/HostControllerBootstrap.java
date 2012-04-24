@@ -22,7 +22,10 @@
 
 package org.jboss.as.host.controller;
 
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Bootstrap of the HostController process.
@@ -50,8 +53,11 @@ public class HostControllerBootstrap {
     public void bootstrap() throws Exception {
 
         final HostRunningModeControl runningModeControl = new HostRunningModeControl(environment.getInitialRunningMode(), RestartMode.SERVERS);
-        final HostControllerService hcs = new HostControllerService(environment, runningModeControl, authCode);
-        serviceContainer.subTarget().addService(HostControllerService.HC_SERVICE_NAME, hcs).install();
+        final ControlledProcessState processState = new ControlledProcessState(false);
+        ServiceTarget target = serviceContainer.subTarget();
+        ControlledProcessStateService.addService(target, processState);
+        final HostControllerService hcs = new HostControllerService(environment, runningModeControl, authCode, processState);
+        target.addService(HostControllerService.HC_SERVICE_NAME, hcs).install();
     }
 
 }

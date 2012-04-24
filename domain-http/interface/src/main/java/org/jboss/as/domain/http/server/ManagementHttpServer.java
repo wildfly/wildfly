@@ -26,7 +26,6 @@ import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +35,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.security.auth.callback.Callback;
 
+import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.security.AuthenticationProvider;
 import org.jboss.as.domain.http.server.security.BasicAuthenticator;
@@ -106,7 +106,7 @@ public class ManagementHttpServer {
         }
     }
 
-    public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog, ModelControllerClient modelControllerClient, Executor executor, SecurityRealm securityRealm, ConsoleMode consoleMode, String consoleSlot)
+    public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog, ModelControllerClient modelControllerClient, Executor executor, SecurityRealm securityRealm, ControlledProcessStateService controlledProcessStateService, ConsoleMode consoleMode, String consoleSlot)
             throws IOException {
         Map<String, String> configuration = Collections.emptyMap();
 
@@ -184,7 +184,7 @@ public class ManagementHttpServer {
             HttpServerLogger.ROOT_LOGGER.consoleModuleNotFound(consoleSlot == null ? "main" : consoleSlot);
         }
         managementHttpServer.addHandler(new RootHandler(consoleHandler));
-        managementHttpServer.addHandler(new DomainApiHandler(modelControllerClient, auth));
+        managementHttpServer.addHandler(new DomainApiHandler(modelControllerClient, auth, controlledProcessStateService));
         if (consoleHandler != null) {
             managementHttpServer.addHandler(consoleHandler);
         }

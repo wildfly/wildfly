@@ -36,6 +36,7 @@ import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -217,6 +218,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         ServiceBuilder<HttpManagement> builder = serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
                 .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.getModelControllerInjector())
                 .addDependency(SocketBindingManagerImpl.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getSocketBindingManagerInjector())
+                .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, service.getControlledProcessStateServiceInjector())
                 .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool(new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext())));
 
         if (interfaceSvcName != null) {

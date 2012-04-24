@@ -22,8 +22,12 @@
 
 package org.jboss.as.controller;
 
+import java.beans.PropertyChangeSupport;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicStampedReference;
+
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * The overall state of a process that is being managed by a {@link ModelController}.
@@ -74,9 +78,11 @@ public class ControlledProcessState {
     private final AtomicInteger stamp = new AtomicInteger(0);
     private final AtomicStampedReference<State> state = new AtomicStampedReference<State>(State.STARTING, 0);
     private final boolean reloadSupported;
+    private final ControlledProcessStateService service;
 
     public ControlledProcessState(final boolean reloadSupported) {
         this.reloadSupported = reloadSupported;
+        service = new ControlledProcessStateService(State.STARTING);
     }
 
     public State getState() {
@@ -89,15 +95,24 @@ public class ControlledProcessState {
 
 
     public void setStarting() {
-        state.set(State.STARTING, stamp.incrementAndGet());
+        synchronized (service) {
+            state.set(State.STARTING, stamp.incrementAndGet());
+            service.stateChanged(State.STARTING);
+        }
     }
 
     public void setRunning() {
-        state.set(State.RUNNING, stamp.incrementAndGet());
+        synchronized (service) {
+            state.set(State.RUNNING, stamp.incrementAndGet());
+            service.stateChanged(State.RUNNING);
+        }
     }
 
     public void setStopping() {
-        state.set(State.STOPPING, stamp.incrementAndGet());
+        synchronized (service) {
+            state.set(State.STOPPING, stamp.incrementAndGet());
+            service.stateChanged(State.STOPPING);
+        }
     }
 
     public Object setReloadRequired() {
@@ -114,8 +129,11 @@ public class ControlledProcessState {
             if (was == State.STARTING || was == State.STOPPING || was == State.RESTART_REQUIRED) {
                 break;
             }
-            if (stateRef.compareAndSet(was, State.RELOAD_REQUIRED, receiver[0], newStamp)) {
-                break;
+            synchronized (service) {
+                if (stateRef.compareAndSet(was, State.RELOAD_REQUIRED, receiver[0], newStamp)) {
+                    service.stateChanged(State.RELOAD_REQUIRED);
+                    break;
+                }
             }
         }
         return Integer.valueOf(newStamp);
@@ -131,8 +149,11 @@ public class ControlledProcessState {
             if (was == State.STARTING || was == State.STOPPING) {
                 break;
             }
-            if (stateRef.compareAndSet(was, State.RESTART_REQUIRED, receiver[0], newStamp)) {
-                break;
+            synchronized (service) {
+                if (stateRef.compareAndSet(was, State.RESTART_REQUIRED, receiver[0], newStamp)) {
+                    service.stateChanged(State.RESTART_REQUIRED);
+                    break;
+                }
             }
         }
         return Integer.valueOf(newStamp);
@@ -145,15 +166,25 @@ public class ControlledProcessState {
 
         // If 'state' still has the state we last set in restartRequired(), change to RUNNING
         Integer theirStamp = Integer.class.cast(stamp);
-        state.compareAndSet(State.RELOAD_REQUIRED, State.RUNNING, theirStamp, this.stamp.incrementAndGet());
+        synchronized (service) {
+            if (state.compareAndSet(State.RELOAD_REQUIRED, State.RUNNING, theirStamp, this.stamp.incrementAndGet())) {
+                service.stateChanged(State.RUNNING);
+            }
+        }
     }
 
     public void revertRestartRequired(Object stamp) {
         // If 'state' still has the state we last set in restartRequired(), change to RUNNING
         Integer theirStamp = Integer.class.cast(stamp);
-        state.compareAndSet(State.RESTART_REQUIRED, State.RUNNING, theirStamp, this.stamp.incrementAndGet());
+        synchronized (service) {
+            if (state.compareAndSet(State.RESTART_REQUIRED, State.RUNNING, theirStamp, this.stamp.incrementAndGet())) {
+                service.stateChanged(State.RUNNING);
+            }
+        }
     }
 
-
+    ControlledProcessStateService getService() {
+        return service;
+    }
 
 }

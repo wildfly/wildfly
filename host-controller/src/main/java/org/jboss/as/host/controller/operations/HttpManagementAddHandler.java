@@ -31,6 +31,7 @@ import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -138,6 +139,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
                         NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
                         NetworkInterfaceBinding.class, service.getInterfaceInjector())
                 .addDependency(DomainModelControllerService.SERVICE_NAME, ModelController.class, service.getModelControllerInjector())
+                .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, service.getControlledProcessStateServiceInjector())
                 .addInjection(service.getPortInjector(), port)
                 .addInjection(service.getSecurePortInjector(), securePort)
                 .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool(httpMgmtThreads));
