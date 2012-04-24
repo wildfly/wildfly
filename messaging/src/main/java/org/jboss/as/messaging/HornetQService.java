@@ -133,11 +133,20 @@ class HornetQService implements Service<HornetQServer> {
                                 throw MESSAGES.failedToFindConnectorSocketBinding(tc.getName());
                             }
                             InetSocketAddress sa = socketBinding.getSocketAddress();
-                            host = sa.getAddress().getHostName();
                             port = sa.getPort();
+                            // resolve the host name of the address only if a loopback adress has been set
+                            if (sa.getAddress().isLoopbackAddress()) {
+                                host = sa.getAddress().getHostName();
+                            } else {
+                                host = sa.getAddress().getHostAddress();
+                            }
                         } else {
-                            host = binding.getDestinationAddress().getHostName();
                             port = binding.getDestinationPort();
+                            if (binding.getDestinationAddress().isLoopbackAddress()) {
+                                host = binding.getDestinationAddress().getHostName();
+                            } else {
+                                host = binding.getDestinationAddress().getHostAddress();
+                            }
                         }
                         tc.getParams().put(HOST, host);
                         tc.getParams().put(PORT, String.valueOf(port));
