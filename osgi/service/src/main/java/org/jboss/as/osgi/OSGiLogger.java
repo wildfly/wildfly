@@ -78,9 +78,9 @@ public interface OSGiLogger extends BasicLogger {
     @Message(id = 11921, value = "Cannot undeploy bundle: %s")
     void warnCannotUndeployBundle(@Cause Throwable cause, Deployment deployment);
 
-    @LogMessage(level = WARN)
-    @Message(id = 11922, value = "Cannot resolve capability: %s")
-    void warnCannotResolveCapability(String identifier);
+    //@LogMessage(level = WARN)
+    //@Message(id = 11922, value = "Cannot resolve capability: %s")
+    //void warnCannotResolveCapability(String identifier);
 
     @LogMessage(level = INFO)
     @Message(id = 11940, value = "Activating OSGi Subsystem")

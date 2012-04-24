@@ -120,13 +120,12 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         LOGGER.infoActivatingSubsystem();
 
+        final ServiceTarget serviceTarget = context.getServiceTarget();
         final Activation activationMode = getActivationMode(operation);
         final InitialDeploymentTracker deploymentTracker = new InitialDeploymentTracker(context, activationMode);
 
         context.addStep(new OperationStepHandler() {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                ServiceTarget serviceTarget = context.getServiceTarget();
-                newControllers.add(SubsystemState.addService(serviceTarget, activationMode));
                 newControllers.add(BundleInstallIntegration.addService(serviceTarget));
                 newControllers.add(FrameworkBootstrapService.addService(serviceTarget, verificationHandler));
                 newControllers.add(PersistentBundlesIntegration.addService(serviceTarget, deploymentTracker));
@@ -145,6 +144,9 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_OSGI_MODULE, new ModuleRegisterProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
+
+        // Add the subsystem state as a service
+        newControllers.add(SubsystemState.addService(serviceTarget, activationMode));
 
         // This step injects the System Bundle Service into our custom resource
         context.addStep(new OperationStepHandler() {
