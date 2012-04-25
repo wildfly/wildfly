@@ -66,12 +66,14 @@ class ResolverService extends AbstractService<Resolver> {
     @Override
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> serviceController = context.getController();
-        LOGGER.debugf("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
+        LOGGER.tracef("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
         resolver = new StatelessResolver();
     }
 
     @Override
     public synchronized void stop(StopContext context) {
+        ServiceController<?> serviceController = context.getController();
+        LOGGER.tracef("Stopping: %s in mode %s", serviceController.getName(), serviceController.getMode());
         resolver = null;
     }
 
