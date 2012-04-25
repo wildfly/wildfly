@@ -32,16 +32,16 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.ws.wsse.EJBEncryptServiceImpl;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jboss.as.test.integration.ws.wsse.KeystorePasswordCallback;
-import org.jboss.as.test.integration.ws.wsse.POJOEncryptServiceImpl;
 import org.jboss.as.test.integration.ws.wsse.ServiceIface;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
  * Test WS sign + encrypt capability
@@ -55,33 +55,33 @@ import org.jboss.as.test.integration.ws.wsse.ServiceIface;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SignEncryptTestCase {
+public class EJBSignEncryptTestCase {
 
-    private static Logger log = Logger.getLogger(SignEncryptTestCase.class.getName());
+    private static Logger log = Logger.getLogger(EJBSignEncryptTestCase.class.getName());
     @ArquillianResource
     URL baseUrl;
 
     @Deployment
     public static Archive<?> deployment() {
 
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxws-wsse-sign-encrypt.war").
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "jaxws-wsse-sign-encrypt.jar").
                 addAsManifestResource(new StringAsset("Dependencies: org.apache.ws.security\n"), "MANIFEST.MF").
-                addClasses(ServiceIface.class, POJOEncryptServiceImpl.class, KeystorePasswordCallback.class).
+                addClasses(ServiceIface.class, EJBEncryptServiceImpl.class, KeystorePasswordCallback.class).
                 addAsResource(ServiceIface.class.getPackage(), "bob.jks", "bob.jks").
                 addAsResource(ServiceIface.class.getPackage(), "bob.properties", "bob.properties").
-                addAsWebInfResource(ServiceIface.class.getPackage(), "wsdl/SecurityService-sign-encrypt.wsdl", "wsdl/SecurityService.wsdl").
-                addAsWebInfResource(ServiceIface.class.getPackage(), "wsdl/SecurityService_schema1.xsd", "wsdl/SecurityService_schema1.xsd").
-                addAsWebInfResource(SignEncryptTestCase.class.getPackage(), "jaxws-endpoint-config.xml", "jaxws-endpoint-config.xml");
+                addAsManifestResource(ServiceIface.class.getPackage(), "wsdl/SecurityService-ejb-sign-encrypt.wsdl", "wsdl/SecurityService.wsdl").
+                addAsManifestResource(ServiceIface.class.getPackage(), "wsdl/SecurityService_schema1.xsd", "wsdl/SecurityService_schema1.xsd").
+                addAsManifestResource(EJBSignEncryptTestCase.class.getPackage(), "jaxws-endpoint-config.xml", "jaxws-endpoint-config.xml");
 
-        log.info(war.toString(true));
+        log.info(jar.toString(true));
 
-        return war;
+        return jar;
     }
 
     @Test
     public void encryptedAndSignedRequest() throws Exception {
-        QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "EncryptSecurityService");
-        URL wsdlURL = new URL(baseUrl.toString() + "EncryptSecurityService?wsdl");
+        QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "EJBEncryptSecurityService");
+        URL wsdlURL = new URL(baseUrl, "/jaxws-wsse-sign-encrypt/EJBEncryptSecurityService?wsdl");
 
         Service service = Service.create(wsdlURL, serviceName);
         ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
