@@ -58,6 +58,7 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
@@ -76,6 +77,7 @@ import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceController.Transition;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.junit.Test;
 
@@ -856,7 +858,18 @@ public class PathsTestCase extends AbstractControllerTestBase {
         registration.registerOperationHandler(UNDEFINE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.UNDEFINE_ATTRIBUTE, CommonProviders.UNDEFINE_ATTRIBUTE_PROVIDER, true);
         registration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
 
-        getContainer().addService(PathManagerService.SERVICE_NAME, pathManagerService).install();
+        TestServiceListener listener = new TestServiceListener();
+        listener.reset(1);
+        getContainer().addService(PathManagerService.SERVICE_NAME, pathManagerService)
+                .addListener(listener)
+                .install();
+
+        try {
+            listener.latch.await(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
 
         registration.registerSubModel(PathResourceDefinition.createSpecified(pathManagerService));
 
