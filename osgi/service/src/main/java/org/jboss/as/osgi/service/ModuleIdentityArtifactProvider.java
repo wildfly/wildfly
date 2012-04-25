@@ -21,8 +21,9 @@
  */
 package org.jboss.as.osgi.service;
 
-import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.osgi.resolver.XResourceConstants.MODULE_IDENTITY_NAMESPACE;
 
 import java.io.File;
@@ -90,15 +91,18 @@ final class ModuleIdentityArtifactProvider extends AbstractService<Void> impleme
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void start(StartContext context) throws StartException {
         BundleContext syscontext = injectedSystemContext.getValue();
         Dictionary<String, Object> props = new Hashtable<String, Object>();
         props.put(Constants.SERVICE_RANKING, Integer.MAX_VALUE);
         registration = syscontext.registerService(ArtifactProviderPlugin.class.getName(), this, props);
         ServerEnvironment serverEnvironment = injectedEnvironment.getValue();
-        modulesDir = serverEnvironment.getModulesDir();
         bundlesDir = serverEnvironment.getBundlesDir();
+        if (bundlesDir.isDirectory() == false)
+            throw MESSAGES.illegalStateArtifactBaseLocation(bundlesDir);
+        modulesDir = new File(bundlesDir.getParent() + File.separator + "modules");
+        if (modulesDir.isDirectory() == false)
+            throw MESSAGES.illegalStateArtifactBaseLocation(modulesDir);
     }
 
     @Override

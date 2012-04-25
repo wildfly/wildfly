@@ -90,4 +90,7 @@ public interface OSGiMessages {
 
     @Message(id = 11973, value = "Cannot resolve capability: %s")
     StartException startFailedCannotResolveInitialCapability(@Cause Throwable th, String identifier);
+
+    @Message(id = 11974, value = "Illegal repository base location: %s")
+    StartException illegalStateArtifactBaseLocation(File dir);
 }
