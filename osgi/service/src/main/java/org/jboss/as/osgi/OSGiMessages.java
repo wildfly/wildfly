@@ -49,48 +49,42 @@ public interface OSGiMessages {
 
     OSGiMessages MESSAGES = Messages.getBundle(OSGiMessages.class);
 
-    @Message(id = 11960, value = "Cannot create bundle deployment from: %s")
-    DeploymentUnitProcessingException cannotCreateBundleDeployment(@Cause Throwable th, DeploymentUnit deploymentUnit);
-
-    @Message(id = 11961, value = "Cannot deploy bundle: %s")
-    BundleException cannotDeployBundle(@Cause Throwable th, Deployment deployment);
-
-    @Message(id = 11962, value = "Cannot find bundles directory: %s")
-    IllegalStateException illegalStateCannotFindBundleDir(File dir);
-
-    @Message(id = 11963, value = "Cannot parse OSGi metadata: %s")
-    DeploymentUnitProcessingException cannotParseOSGiMetadata(@Cause Throwable th, VirtualFile file);
-
-    @Message(id = 11964, value = "Failed to process initial capabilities")
-    StartException startFailedToProcessInitialCapabilites(@Cause Throwable th);
-
-    @Message(id = 11965, value = "Failed to create Framework services")
-    StartException startFailedToCreateFrameworkServices(@Cause Throwable th);
-
-    @Message(id = 11966, value = "Failed to install deployment: %s")
-    StartException startFailedToInstallDeployment(@Cause Throwable th, Deployment deployment);
-
-    @Message(id = 11967, value = "Failed to register module: %s")
-    StartException startFailedToRegisterModule(@Cause Throwable th, Module module);
-
-    @Message(id = 11968, value = "%s is null")
+    @Message(id = 11950, value = "%s is null")
     IllegalArgumentException illegalArgumentNull(String name);
 
-    //@Message(id = 11969, value = "OSGi subsystem not active")
-    //String osgiSubsystemNotActive();
+    @Message(id = 11951, value = "Cannot create bundle deployment from: %s")
+    DeploymentUnitProcessingException cannotCreateBundleDeployment(@Cause Throwable th, DeploymentUnit deploymentUnit);
 
-    //@Message(id = 11970, value = "Property %s already exists")
-    //String propertyAlreadyExists(String name);
+    @Message(id = 11952, value = "Cannot deploy bundle: %s")
+    BundleException cannotDeployBundle(@Cause Throwable th, Deployment deployment);
 
-    @Message(id = 11971, value = "StartLevel service not available")
+    @Message(id = 11953, value = "Cannot find bundles directory: %s")
+    IllegalStateException illegalStateCannotFindBundleDir(File dir);
+
+    @Message(id = 11954, value = "Cannot parse OSGi metadata: %s")
+    DeploymentUnitProcessingException cannotParseOSGiMetadata(@Cause Throwable th, VirtualFile file);
+
+    @Message(id = 11955, value = "Failed to process initial capabilities")
+    StartException startFailedToProcessInitialCapabilites(@Cause Throwable th);
+
+    @Message(id = 11956, value = "Failed to create Framework services")
+    StartException startFailedToCreateFrameworkServices(@Cause Throwable th);
+
+    @Message(id = 11957, value = "Failed to install deployment: %s")
+    StartException startFailedToInstallDeployment(@Cause Throwable th, Deployment deployment);
+
+    @Message(id = 11958, value = "Failed to register module: %s")
+    StartException startFailedToRegisterModule(@Cause Throwable th, Module module);
+
+    @Message(id = 11959, value = "StartLevel service not available")
     String startLevelSrviceNotAvailable();
 
-    @Message(id = 11972, value = "Cannot obtain bundle resource for: %s")
+    @Message(id = 11960, value = "Cannot obtain bundle resource for: %s")
     IllegalArgumentException illegalArgumentCannotObtainBundleResource(String name);
 
-    @Message(id = 11973, value = "Cannot resolve capability: %s")
+    @Message(id = 11961, value = "Cannot resolve capability: %s")
     StartException startFailedCannotResolveInitialCapability(@Cause Throwable th, String identifier);
 
-    @Message(id = 11974, value = "Illegal repository base location: %s")
+    @Message(id = 11962, value = "Illegal repository base location: %s")
     StartException illegalStateArtifactBaseLocation(File dir);
 }
