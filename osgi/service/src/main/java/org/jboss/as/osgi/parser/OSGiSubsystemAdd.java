@@ -172,8 +172,6 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 context.completeStep();
             }
         }, OperationContext.Stage.RUNTIME);
-
-        LOGGER.debugf("Activated OSGi Subsystem");
     }
 
     private Activation getActivationMode(ModelNode operation) {
