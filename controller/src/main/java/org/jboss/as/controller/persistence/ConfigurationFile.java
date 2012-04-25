@@ -21,8 +21,6 @@ package org.jboss.as.controller.persistence;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -36,7 +34,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
-import org.jboss.as.protocol.StreamUtils;
 
 /**
  * Encapsulates the configuration file and manages its history
@@ -267,7 +264,7 @@ public class ConfigurationFile {
 
             try {
                 if (!bootFile.equals(mainFile)) {
-                    copyFile(bootFile, mainFile);
+                    FileUtils.copyFile(bootFile, mainFile);
                 }
 
                 createHistoryDirectory();
@@ -278,11 +275,11 @@ public class ConfigurationFile {
                 final File initial = addSuffixToFile(historyBase, INITIAL);
 
                 if (!initial.exists()) {
-                    copyFile(mainFile, initial);
+                    FileUtils.copyFile(mainFile, initial);
                 }
 
-                copyFile(mainFile, last);
-                copyFile(mainFile, boot);
+                FileUtils.copyFile(mainFile, last);
+                FileUtils.copyFile(mainFile, boot);
             } catch (IOException e) {
                 throw MESSAGES.failedToCreateConfigurationBackup(e, bootFile);
             }
@@ -315,7 +312,7 @@ public class ConfigurationFile {
         }
         File last = addSuffixToFile(new File(historyRoot, mainFile.getName()), LAST);
         try {
-            copyFile(mainFile, last);
+            FileUtils.copyFile(mainFile, last);
         } catch (IOException e) {
             throw MESSAGES.failedToBackup(e, mainFile);
         }
@@ -324,19 +321,18 @@ public class ConfigurationFile {
 
     private void moveFile(final File file, final File backup) throws IOException {
 
-        if (backup.exists())
+        if (backup.exists()) {
             backup.delete();
-
-        if (!file.renameTo(backup) && file.exists()) {
-            copyFile(file, backup);
         }
+
+        FileUtils.rename(file, backup);
     }
 
     String snapshot() throws ConfigurationPersistenceException {
         String name = getTimeStamp(new Date()) + mainFileName;
         File snapshot = new File(snapshotsDirectory, name);
         try {
-            copyFile(mainFile, snapshot);
+            FileUtils.copyFile(mainFile, snapshot);
         } catch (IOException e) {
             throw MESSAGES.failedToTakeSnapshot(e, mainFile, snapshot);
         }
@@ -379,23 +375,6 @@ public class ConfigurationFile {
         return names.size() > 0 ? new File(snapshotsDirectory, names.get(0)) : null;
     }
 
-
-    private void copyFile(final File file, final File backup) throws IOException {
-        final FileInputStream fis = new FileInputStream(file);
-        try {
-            final FileOutputStream fos = new FileOutputStream(backup);
-            try {
-                StreamUtils.copyStream(fis, fos);
-                fos.flush();
-                fos.getFD().sync();
-                fos.close();
-            } finally {
-                StreamUtils.safeClose(fos);
-            }
-        } finally {
-            StreamUtils.safeClose(fis);
-        }
-    }
 
     private void createHistoryDirectory() throws IOException {
         mkdir(this.historyRoot);

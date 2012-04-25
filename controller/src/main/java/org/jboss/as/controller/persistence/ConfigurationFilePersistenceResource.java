@@ -22,9 +22,9 @@
 
 package org.jboss.as.controller.persistence;
 
-import org.jboss.dmr.ModelNode;
-
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
+
+import org.jboss.dmr.ModelNode;
 
 /**
  * {@link ConfigurationPersister.PersistenceResource} that persists to a configuration file upon commit, also
@@ -45,8 +45,17 @@ public class ConfigurationFilePersistenceResource extends FilePersistenceResourc
     @Override
     public void commit() {
         try {
-            configurationFile.backup();
-            super.commit();
+            try {
+                super.writeToTempFile();
+            } catch (Exception e) {
+                MGMT_OP_LOGGER.failedToStoreConfiguration(e, fileName.getName());
+                return;
+            }
+            try {
+                configurationFile.backup();
+            } finally {
+                moveTempFileToMain();
+            }
             configurationFile.fileWritten();
         } catch (ConfigurationPersistenceException e) {
            MGMT_OP_LOGGER.errorf(e, e.toString());
