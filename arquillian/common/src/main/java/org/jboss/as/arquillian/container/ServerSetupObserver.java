@@ -122,7 +122,9 @@ public class ServerSetupObserver {
     }
 
     public synchronized void handleAfterUndeploy(@Observes AfterUnDeploy afterDeploy, final Container container) throws Exception {
-
+        if(deployed == null) {
+            return;
+        }
         int count = deployed.get(container.getName());
         deployed.put(container.getName(), --count);
         if (count == 0 && afterClassRun) {
