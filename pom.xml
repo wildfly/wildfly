@@ -170,11 +170,11 @@
         <version.org.jboss.modules.jboss-modules>1.1.1.GA</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.0.2.GA</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.netty>3.2.6.Final</version.org.jboss.netty>
-        <version.org.jboss.osgi.framework>1.3.0.CR10</version.org.jboss.osgi.framework>
+        <version.org.jboss.osgi.framework>1.3.0.CR11</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.javax.servlet.api>2.5.Final</version.org.jboss.osgi.javax.servlet.api>
         <version.org.jboss.osgi.logging>1.0.0.Final</version.org.jboss.osgi.logging>
-        <version.org.jboss.osgi.metadata>2.1.0.CR1</version.org.jboss.osgi.metadata>
-        <version.org.jboss.osgi.resolver>2.1.0.CR3</version.org.jboss.osgi.resolver>
+        <version.org.jboss.osgi.metadata>2.1.0.CR2</version.org.jboss.osgi.metadata>
+        <version.org.jboss.osgi.resolver>2.1.0.CR4</version.org.jboss.osgi.resolver>
         <version.org.jboss.osgi.repository>1.2.0.CR2</version.org.jboss.osgi.repository>
         <version.org.jboss.osgi.spi>3.1.0.CR1</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>1.1.0.CR1</version.org.jboss.osgi.vfs>
