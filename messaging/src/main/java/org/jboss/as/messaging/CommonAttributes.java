@@ -40,6 +40,7 @@ import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
+import static org.jboss.dmr.ModelType.OBJECT;
 
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -109,6 +110,13 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition CALL_TIMEOUT = new SimpleAttributeDefinition("call-timeout",
             new ModelNode().set(HornetQClient.DEFAULT_CALL_TIMEOUT), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
+
+    // a <connector> used to defined (pooled/non-pooled) JMS CF.
+    // It is a map defined by connector name and undefined value.
+    // (legacy code, previously the value could be a backup-connector name but HornetQ no longer supports it)
+    SimpleAttributeDefinition CF_CONNECTOR = new SimpleAttributeDefinitionBuilder("connector", OBJECT)
+            .setAllowNull(true)
+            .build();
 
     SimpleAttributeDefinition CHECK_PERIOD = new SimpleAttributeDefinitionBuilder("check-period", LONG)
             .setDefaultValue(new ModelNode().set(DEFAULT_CLIENT_FAILURE_CHECK_PERIOD))
@@ -600,7 +608,6 @@ public interface CommonAttributes {
     String ACCEPTORS ="acceptors";
     String ADDRESS_SETTING ="address-setting";
     String ADDRESS_SETTINGS ="address-settings";
-    String BACKUP_CONNECTOR_NAME ="backup-connector-name";
     String BINDING_NAMES ="binding-names";
     String BINDINGS_DIRECTORY ="bindings-directory";
     String BRIDGE = "bridge";

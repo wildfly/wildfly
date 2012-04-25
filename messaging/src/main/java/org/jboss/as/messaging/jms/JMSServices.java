@@ -28,6 +28,7 @@ import static org.jboss.as.messaging.CommonAttributes.BLOCK_ON_DURABLE_SEND;
 import static org.jboss.as.messaging.CommonAttributes.BLOCK_ON_NON_DURABLE_SEND;
 import static org.jboss.as.messaging.CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT;
 import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
+import static org.jboss.as.messaging.CommonAttributes.CF_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.COMPRESS_LARGE_MESSAGES;
@@ -149,7 +150,7 @@ public class JMSServices {
 
     public static AttributeDefinition[] CONNECTION_FACTORY_ATTRS = new AttributeDefinition[] {
         //Do these 2 most frequently used ones out of alphabetical order
-        new SimpleAttributeDefinition(CONNECTOR, ModelType.OBJECT, true),   //<------
+        CF_CONNECTOR,
         JndiEntriesAttribute.DESTINATION,
 
         AUTO_GROUP,
@@ -222,7 +223,7 @@ public class JMSServices {
 
     public static AttributeDefinition[] POOLED_CONNECTION_FACTORY_ATTRS = new AttributeDefinition[] {
         //Do these 2 most frequently used ones out of alphabetical order
-        new SimpleAttributeDefinition(CONNECTOR, ModelType.OBJECT, true),   //<------
+        CF_CONNECTOR,
         JndiEntriesAttribute.CONNECTION_FACTORY,
 
         AUTO_GROUP,
