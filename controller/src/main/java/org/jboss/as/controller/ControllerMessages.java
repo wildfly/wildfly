@@ -2472,4 +2472,8 @@ public interface ControllerMessages {
 
     @Message(id = 14858, value="Path '%s' cannot be removed, since the following paths depend on it: %s")
     OperationFailedException cannotRemovePathWithDependencies(String pathName, Set<String> dependencies);
+
+    @Message(id = 14859, value = "Failed to rename temp file %s to %s")
+    ConfigurationPersistenceException failedToRenameTempFile(@Cause Throwable cause, File temp, File file);
+
 }
