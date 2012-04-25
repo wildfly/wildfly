@@ -81,13 +81,13 @@ public class PersistentBundlesIntegration implements PersistentBundlesHandler {
     @Override
     public void start(StartContext context) throws StartException {
         final ServiceController<?> controller = context.getController();
-        LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
     }
 
     @Override
     public void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
-        LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
     }
 
     @Override
@@ -150,7 +150,7 @@ public class PersistentBundlesIntegration implements PersistentBundlesHandler {
                                     case STARTING_to_START_FAILED:
                                         deploymentServiceNames.remove(serviceName);
                                         int remaining = deploymentCount.decrementAndGet();
-                                        LOGGER.debugf("Deployment tracked: %s (remaining=%d)", serviceName.getCanonicalName(), remaining);
+                                        LOGGER.debugf("Initial deployment tracked: %s (remaining=%d)", serviceName.getCanonicalName(), remaining);
                                         if (deploymentCount.get() == 0) {
                                             listenerTarget.removeListener(this);
                                             initialDeploymentsComplete(serviceTarget);
@@ -179,17 +179,17 @@ public class PersistentBundlesIntegration implements PersistentBundlesHandler {
 
         public void registerBundleInstallService(ServiceName serviceName) {
             synchronized (bundleInstallServices) {
-                LOGGER.debugf("Register bundle install service: %s", serviceName);
+                LOGGER.tracef("Register bundle install service: %s", serviceName);
                 bundleInstallServices.add(serviceName);
             }
         }
 
         private void initialDeploymentsComplete(ServiceTarget serviceTarget) {
-            LOGGER.debugf("Initial deployments complete");
+            LOGGER.tracef("Initial deployments complete");
             final ServiceBuilder<Void> deploymentCompleteBuilder = serviceTarget.addService(INITIAL_DEPLOYMENTS_COMPLETE, new AbstractService<Void>() {
                 public void start(StartContext context) throws StartException {
                     final ServiceController<?> controller = context.getController();
-                    LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+                    LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
                 }
             });
             deploymentInstallComplete.set(true);
@@ -206,7 +206,7 @@ public class PersistentBundlesIntegration implements PersistentBundlesHandler {
                     Property property = node.asProperty();
                     result.add(property.getName());
                 }
-                LOGGER.debugf("Expecting initial deployments: %s", result);
+                LOGGER.tracef("Expecting initial deployments: %s", result);
             }
             return result;
         }
