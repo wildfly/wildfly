@@ -1994,10 +1994,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             for (Property connProp : factory.get(CONNECTOR).asPropertyList()) {
                 writer.writeStartElement(Element.CONNECTOR_REF.getLocalName());
                 writer.writeAttribute(Attribute.CONNECTOR_NAME.getLocalName(), connProp.getName());
-                final ModelNode conn = connProp.getValue();
-                if (conn.isDefined()) {
-                    writer.writeAttribute(Attribute.BACKUP_CONNECTOR_NAME.getLocalName(), connProp.getValue().asString());
-                }
                 writer.writeEndElement();
             }
             writer.writeEndElement();
@@ -2184,7 +2180,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         final ModelNode connectors = new ModelNode();
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             String name = null;
-            String backup = null;
             int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
                 final String value = reader.getAttributeValue(i);
@@ -2194,7 +2189,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         name = value.trim();
                         break;
                     } case BACKUP_CONNECTOR_NAME: {
-                        backup = value.trim();
+                        MessagingLogger.ROOT_LOGGER.deprecatedXMLAttribute(attribute.toString());
                         break;
                     } default: {
                         throw ParseUtils.unexpectedAttribute(reader, i);
@@ -2210,10 +2205,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             }
             ParseUtils.requireNoContent(reader);
 
-            final ModelNode connector = connectors.get(name);
-            if (backup != null) {
-                connector.set(backup);
-            }
+            // create the connector node
+            connectors.get(name);
         }
         return connectors;
     }

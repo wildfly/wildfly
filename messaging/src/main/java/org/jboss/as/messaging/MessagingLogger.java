@@ -140,7 +140,7 @@ public interface MessagingLogger extends BasicLogger {
     void failedToUnbindJndiName(String jndiName, long timeout, String timeUnit);
 
     /**
-     * Logs a warning message indicating the XML element with the given {@code nam}
+     * Logs a warning message indicating the XML element with the given {@code name}
      * is deprecated and will not be used anymore.
      *
      * @param name the name of the deprecated XML element
@@ -148,5 +148,15 @@ public interface MessagingLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11608, value = "Element %s is deprecated and will not be taken into account")
     void deprecatedXMLElement(String name);
+
+    /**
+     * Logs a warning message indicating the XML attribute with the given {@code name}
+     * is deprecated and will not be used anymore.
+     *
+     * @param name the name of the deprecated XML attribute
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11609, value = "Attribute %s is deprecated and will not be taken into account")
+    void deprecatedXMLAttribute(String name);
 
 }

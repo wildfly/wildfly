@@ -12,7 +12,9 @@ public enum Attribute {
    UNKNOWN((String) null),
    /* Messaging 1.0 attributes, in alpha order */
    ALLOW_DIRECT_CONNECTIONS_ONLY(CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY),
-   BACKUP_CONNECTOR_NAME(CommonAttributes.BACKUP_CONNECTOR_NAME),
+   // backup-connector-name is no longer used by HornetQ configuration
+   @Deprecated
+   BACKUP_CONNECTOR_NAME("backup-connector-name"),
    CONNECTOR_NAME(CommonAttributes.CONNECTOR_NAME),
    DISCOVERY_GROUP_NAME(CommonAttributes.DISCOVERY_GROUP_NAME),
    KEY(CommonAttributes.KEY),
