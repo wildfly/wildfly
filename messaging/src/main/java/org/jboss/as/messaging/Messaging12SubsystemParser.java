@@ -7,6 +7,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElem
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTORS;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_REF;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
@@ -56,16 +57,22 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
 
     protected ModelNode createConnectionFactory(XMLExtendedStreamReader reader, ModelNode connectionFactory, boolean pooled) throws XMLStreamException
     {
+        Set<Element> seen = EnumSet.noneOf(Element.class);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
+            if (!seen.add(element)) {
+                throw ParseUtils.duplicateNamedElement(reader, element.getLocalName());
+            }
             switch(element) {
                 // =========================================================
                 // elements common to regular & pooled connection factories
                 case DISCOVERY_GROUP_REF: {
+                    checkOtherElementIsNotAlreadyDefined(reader, seen, Element.DISCOVERY_GROUP_REF, Element.CONNECTORS);
                     final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
                     DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, connectionFactory, reader);
                     break;
                 } case CONNECTORS: {
+                    checkOtherElementIsNotAlreadyDefined(reader, seen, Element.CONNECTORS, Element.DISCOVERY_GROUP_REF);
                     connectionFactory.get(CONNECTOR).set(processJmsConnectors(reader));
                     break;
                 } case ENTRIES: {
@@ -191,6 +198,9 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 }
             }
         }
+
+        checkOnlyOneOfElements(reader, seen, Element.CONNECTORS, Element.DISCOVERY_GROUP_REF);
+
         return connectionFactory;
     }
 
@@ -239,15 +249,11 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                     handleElementText(reader, element, "bridge", bridgeAdd);
                     break;
                 case STATIC_CONNECTORS:
-                    if (seen.contains(Element.DISCOVERY_GROUP_REF)) {
-                        throw new XMLStreamException(MESSAGES.illegalElement(STATIC_CONNECTORS, DISCOVERY_GROUP_REF), reader.getLocation());
-                    }
+                    checkOtherElementIsNotAlreadyDefined(reader, seen, Element.STATIC_CONNECTORS, Element.DISCOVERY_GROUP_REF);
                     processStaticConnectors(reader, bridgeAdd, false);
                     break;
                 case DISCOVERY_GROUP_REF: {
-                    if (seen.contains(Element.STATIC_CONNECTORS)) {
-                        throw new XMLStreamException(MESSAGES.illegalElement(DISCOVERY_GROUP_REF, STATIC_CONNECTORS), reader.getLocation());
-                    }
+                    checkOtherElementIsNotAlreadyDefined(reader, seen, Element.DISCOVERY_GROUP_REF, Element.STATIC_CONNECTORS);
                     final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
                     DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, bridgeAdd, reader);
                     break;
@@ -258,10 +264,7 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
             }
         }
 
-        if (!seen.contains(Element.STATIC_CONNECTORS) && !seen.contains(Element.DISCOVERY_GROUP_REF)) {
-            throw new XMLStreamException(MESSAGES.required(Element.STATIC_CONNECTORS.getLocalName(),
-                    Element.DISCOVERY_GROUP_REF.getLocalName()), reader.getLocation());
-        }
+        checkOnlyOneOfElements(reader, seen, Element.STATIC_CONNECTORS, Element.DISCOVERY_GROUP_REF);
 
         if(!required.isEmpty()) {
             missingRequired(reader, required);
@@ -331,6 +334,8 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 }
             }
         }
+
+        checkOnlyOneOfElements(reader, seen, Element.STATIC_CONNECTORS, Element.DISCOVERY_GROUP_REF);
 
         if(!required.isEmpty()) {
             missingRequired(reader, required);

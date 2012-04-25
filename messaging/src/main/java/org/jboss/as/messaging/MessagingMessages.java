@@ -462,4 +462,16 @@ public interface MessagingMessages {
 
     @Message(id = 11669, value = "SecurityDomainContext has not been set")
     IllegalStateException securityDomainContextNotSet();
+
+    /**
+     * A message indicating only of of {@code obj1} or {@code obj2} is allowed.
+     *
+     * @param obj1 the first option.
+     * @param obj2 the second option.
+     *
+     * @return the message.
+     */
+    @Message(id = 11670, value = "Only one of %s or %s is required")
+    String onlyOneRequired(Object obj1, Object obj2);
+
 }

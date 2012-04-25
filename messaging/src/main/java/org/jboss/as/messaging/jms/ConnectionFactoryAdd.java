@@ -40,6 +40,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.CommonAttributes;
+import org.jboss.as.messaging.MessagingMessages;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -55,6 +56,7 @@ import static org.jboss.as.messaging.CommonAttributes.BLOCK_ON_DURABLE_SEND;
 import static org.jboss.as.messaging.CommonAttributes.BLOCK_ON_NON_DURABLE_SEND;
 import static org.jboss.as.messaging.CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT;
 import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
+import static org.jboss.as.messaging.CommonAttributes.CF_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.COMPRESS_LARGE_MESSAGES;
@@ -97,6 +99,15 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
     public static final ConnectionFactoryAdd INSTANCE = new ConnectionFactoryAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+
+        boolean hasConnector = operation.hasDefined(CF_CONNECTOR.getName());
+        boolean hasDiscoveryGroup = operation.hasDefined(DISCOVERY_GROUP_NAME.getName());
+        if (!hasConnector && !hasDiscoveryGroup) {
+            throw new OperationFailedException(MessagingMessages.MESSAGES.invalidOperationParameters(CF_CONNECTOR.getName(), DISCOVERY_GROUP_NAME.getName()));
+        } else if (hasConnector && hasDiscoveryGroup) {
+            throw new OperationFailedException(MessagingMessages.MESSAGES.cannotIncludeOperationParameters(CF_CONNECTOR.getName(), DISCOVERY_GROUP_NAME.getName()));
+        }
+
         for (final AttributeDefinition attribute : JMSServices.CONNECTION_FACTORY_ATTRS) {
             attribute.validateAndSet(operation, model);
         }
@@ -143,15 +154,9 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         config.setConnectionTTL(CONNECTION_TTL.resolveModelAttribute(context, model).asLong());
         if (model.hasDefined(CONNECTOR)) {
             ModelNode connectorRefs = model.get(CONNECTOR);
-            List<String> connectorNames = new ArrayList<String>();
-            for (String connectorName : model.get(CONNECTOR).keys()) {
-                ModelNode connectorRef = connectorRefs.get(connectorName);
-                connectorNames.add(connectorName);
-            }
+            List<String> connectorNames = new ArrayList<String>(connectorRefs.keys());
             config.setConnectorNames(connectorNames);
         }
-        //config.setConnectorConfigs(connectorConfigs)
-        // config.setConnectorNames(connectors);
         config.setConsumerMaxRate(CONSUMER_MAX_RATE.resolveModelAttribute(context, model).asInt());
         config.setConsumerWindowSize(CONSUMER_WINDOW_SIZE.resolveModelAttribute(context, model).asInt());
         final ModelNode discoveryGroupName = DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);

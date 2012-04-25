@@ -153,6 +153,10 @@
                 <cluster-connection name="cc4">
                     <address>cc4-address</address>
                     <connector-ref>netty-throughput</connector-ref>
+                    <static-connectors>
+                        <connector-ref>in-vm</connector-ref>
+                        <connector-ref>netty</connector-ref>
+                    </static-connectors>
                 </cluster-connection>
             </cluster-connections>
             <grouping-handler name="grouping-handler">

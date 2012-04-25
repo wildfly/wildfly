@@ -42,6 +42,7 @@ import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTORS;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_REF;
@@ -93,6 +94,7 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControllerMessages;
@@ -451,15 +453,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     handleElementText(reader, element, "cluster", clusterConnectionAdd);
                     break;
                 case STATIC_CONNECTORS:
-                    if (seen.contains(Element.DISCOVERY_GROUP_REF)) {
-                        throw new XMLStreamException(MESSAGES.illegalElement(STATIC_CONNECTORS, DISCOVERY_GROUP_REF), reader.getLocation());
-                    }
+                    checkOtherElementIsNotAlreadyDefined(reader, seen, Element.STATIC_CONNECTORS, Element.DISCOVERY_GROUP_REF);
                     processStaticConnectors(reader, clusterConnectionAdd, true);
                     break;
                 case DISCOVERY_GROUP_REF: {
-                    if (seen.contains(Element.STATIC_CONNECTORS)) {
-                        throw new XMLStreamException(MESSAGES.illegalElement(DISCOVERY_GROUP_REF, STATIC_CONNECTORS), reader.getLocation());
-                    }
+                    checkOtherElementIsNotAlreadyDefined(reader, seen, Element.DISCOVERY_GROUP_REF, Element.STATIC_CONNECTORS);
                     final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
                     DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, clusterConnectionAdd, reader);
                     break;
@@ -533,15 +531,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     handleElementText(reader, element, "bridge", bridgeAdd);
                     break;
                 case STATIC_CONNECTORS:
-                    if (seen.contains(Element.DISCOVERY_GROUP_REF)) {
-                        throw new XMLStreamException(MESSAGES.illegalElement(STATIC_CONNECTORS, DISCOVERY_GROUP_REF), reader.getLocation());
-                    }
+                    checkOtherElementIsNotAlreadyDefined(reader, seen, Element.STATIC_CONNECTORS, Element.DISCOVERY_GROUP_REF);
                     processStaticConnectors(reader, bridgeAdd, false);
                     break;
                 case DISCOVERY_GROUP_REF: {
-                    if (seen.contains(Element.STATIC_CONNECTORS)) {
-                        throw new XMLStreamException(MESSAGES.illegalElement(DISCOVERY_GROUP_REF, STATIC_CONNECTORS), reader.getLocation());
-                    }
+                    checkOtherElementIsNotAlreadyDefined(reader, seen, Element.DISCOVERY_GROUP_REF, Element.STATIC_CONNECTORS);
                     final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
                     DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, bridgeAdd, reader);
                     break;
@@ -552,10 +546,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             }
         }
 
-        if (!seen.contains(Element.STATIC_CONNECTORS) && !seen.contains(Element.DISCOVERY_GROUP_REF)) {
-            throw new XMLStreamException(MESSAGES.required(Element.STATIC_CONNECTORS.getLocalName(),
-                    Element.DISCOVERY_GROUP_REF.getLocalName()), reader.getLocation());
-        }
+        checkOnlyOneOfElements(reader, seen, Element.STATIC_CONNECTORS, Element.DISCOVERY_GROUP_REF);
 
         if(!required.isEmpty()) {
             missingRequired(reader, required);
@@ -1994,10 +1985,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             for (Property connProp : factory.get(CONNECTOR).asPropertyList()) {
                 writer.writeStartElement(Element.CONNECTOR_REF.getLocalName());
                 writer.writeAttribute(Attribute.CONNECTOR_NAME.getLocalName(), connProp.getName());
-                final ModelNode conn = connProp.getValue();
-                if (conn.isDefined()) {
-                    writer.writeAttribute(Attribute.BACKUP_CONNECTOR_NAME.getLocalName(), connProp.getValue().asString());
-                }
                 writer.writeEndElement();
             }
             writer.writeEndElement();
@@ -2184,7 +2171,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         final ModelNode connectors = new ModelNode();
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             String name = null;
-            String backup = null;
             int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
                 final String value = reader.getAttributeValue(i);
@@ -2194,7 +2180,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         name = value.trim();
                         break;
                     } case BACKUP_CONNECTOR_NAME: {
-                        backup = value.trim();
+                        MessagingLogger.ROOT_LOGGER.deprecatedXMLAttribute(attribute.toString());
                         break;
                     } default: {
                         throw ParseUtils.unexpectedAttribute(reader, i);
@@ -2210,26 +2196,30 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             }
             ParseUtils.requireNoContent(reader);
 
-            final ModelNode connector = connectors.get(name);
-            if (backup != null) {
-                connector.set(backup);
-            }
+            // create the connector node
+            connectors.get(name);
         }
         return connectors;
     }
 
     protected ModelNode createConnectionFactory(XMLExtendedStreamReader reader, ModelNode connectionFactory, boolean pooled) throws XMLStreamException
     {
+        Set<Element> seen = EnumSet.noneOf(Element.class);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
+            if (!seen.add(element)) {
+                throw ParseUtils.duplicateNamedElement(reader, element.getLocalName());
+            }
             switch(element) {
                 // =========================================================
                 // elements common to regular & pooled connection factories
                 case DISCOVERY_GROUP_REF: {
+                    checkOtherElementIsNotAlreadyDefined(reader, seen, Element.DISCOVERY_GROUP_REF, Element.CONNECTORS);
                     final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
                     DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, connectionFactory, reader);
                     break;
                 } case CONNECTORS: {
+                    checkOtherElementIsNotAlreadyDefined(reader, seen, Element.CONNECTORS, Element.DISCOVERY_GROUP_REF);
                     connectionFactory.get(CONNECTOR).set(processJmsConnectors(reader));
                     break;
                 } case ENTRIES: {
@@ -2352,6 +2342,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 }
             }
         }
+
+        checkOnlyOneOfElements(reader, seen, Element.CONNECTORS, Element.DISCOVERY_GROUP_REF);
+
         return connectionFactory;
     }
 
@@ -2359,4 +2352,21 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         writer.writeCharacters(NEW_LINE, 0, 1);
     }
 
+    protected void checkOtherElementIsNotAlreadyDefined(XMLStreamReader reader, Set<Element> seen, Element currentElement, Element otherElement) throws XMLStreamException {
+        if (seen.contains(otherElement)) {
+            throw new XMLStreamException(MESSAGES.illegalElement(currentElement.getLocalName(), otherElement.getLocalName()), reader.getLocation());
+        }
+    }
+
+    /**
+     * Check one and only one of the 2 elements has been defined
+     */
+    protected void checkOnlyOneOfElements(XMLExtendedStreamReader reader, Set<Element> seen, Element element1, Element element2) throws XMLStreamException {
+        if (!seen.contains(element1) && !seen.contains(element2)) {
+            throw new XMLStreamException(MESSAGES.required(element1.getLocalName(), element2.getLocalName()), reader.getLocation());
+        }
+        if (seen.contains(element1) && seen.contains(element2)) {
+            throw new XMLStreamException(MESSAGES.onlyOneRequired(element1.getLocalName(), element2.getLocalName()), reader.getLocation());
+        }
+    }
 }
