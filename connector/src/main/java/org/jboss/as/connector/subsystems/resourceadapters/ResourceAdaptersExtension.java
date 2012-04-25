@@ -159,37 +159,37 @@ public class ResourceAdaptersExtension implements Extension {
         resourceadapter.registerOperationHandler("activate", RaActivate.INSTANCE, ACTIVATE_RA_DESC, false);
 
         for (final SimpleAttributeDefinition attribute : ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_ATTRIBUTE) {
-            resourceadapter.registerReadWriteAttribute(attribute.getName(), null,
-                    disabledRequiredWriteAttributeHandler, Storage.CONFIGURATION);
+            resourceadapter.registerReadWriteAttribute(attribute, null, disabledRequiredWriteAttributeHandler);
         }
 
         final ManagementResourceRegistration configAdapter = resourceadapter.registerSubModel(PathElement.pathElement(CONFIG_PROPERTIES.getName()), CONFIG_PROPERTIES_DESC);
         configAdapter.registerOperationHandler(ADD, ConfigPropertyAdd.INSTANCE, ADD_CONFIG_PROPERTIES_DESC, false);
         configAdapter.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_CONFIG_PROPERTIES_DESC, false);
+        configAdapter.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
 
         final ManagementResourceRegistration connectionDefinition = resourceadapter.registerSubModel(PathElement.pathElement(CONNECTIONDEFINITIONS_NAME), CONNECTION_DEFINITION_DESC);
         connectionDefinition.registerOperationHandler(ADD, ConnectionDefinitionAdd.INSTANCE, ADD_CONNECTION_DEFINITION_DESC, false);
         connectionDefinition.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_CONNECTION_DEFINITION_DESC, false);
+        for (final SimpleAttributeDefinition attribute : ResourceAdaptersSubsystemProviders.CONNECTIONDEFINITIONS_NODEATTRIBUTE) {
+            connectionDefinition.registerReadWriteAttribute(attribute, null, disabledRequiredWriteAttributeHandler);
+        }
 
         final ManagementResourceRegistration configCF = connectionDefinition.registerSubModel(PathElement.pathElement(CONFIG_PROPERTIES.getName()), CONFIG_PROPERTIES_DESC);
         configCF.registerOperationHandler(ADD, CDConfigPropertyAdd.INSTANCE, ADD_CONFIG_PROPERTIES_DESC, false);
         configCF.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_CONFIG_PROPERTIES_DESC, false);
-        for (final SimpleAttributeDefinition attribute : ResourceAdaptersSubsystemProviders.CONNECTIONDEFINITIONS_NODEATTRIBUTE) {
-            connectionDefinition.registerReadWriteAttribute(attribute.getName(), null,
-                    disabledRequiredWriteAttributeHandler, Storage.CONFIGURATION);
-        }
+        configCF.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
 
         final ManagementResourceRegistration adminObject = resourceadapter.registerSubModel(PathElement.pathElement(ADMIN_OBJECTS_NAME), ADMIN_OBJECT_DESC);
         adminObject.registerOperationHandler(ADD, AdminObjectAdd.INSTANCE, ADD_ADMIN_OBJECT_DESC, false);
         adminObject.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_ADMIN_OBJECT_DESC, false);
+        for (final SimpleAttributeDefinition attribute : ResourceAdaptersSubsystemProviders.ADMIN_OBJECTS_NODEATTRIBUTE) {
+            adminObject.registerReadWriteAttribute(attribute, null, disabledRequiredWriteAttributeHandler);
+        }
 
         final ManagementResourceRegistration configAO = adminObject.registerSubModel(PathElement.pathElement(CONFIG_PROPERTIES.getName()), CONFIG_PROPERTIES_DESC);
         configAO.registerOperationHandler(ADD, AOConfigPropertyAdd.INSTANCE, ADD_CONFIG_PROPERTIES_DESC, false);
         configAO.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_CONFIG_PROPERTIES_DESC, false);
-        for (final SimpleAttributeDefinition attribute : ResourceAdaptersSubsystemProviders.ADMIN_OBJECTS_NODEATTRIBUTE) {
-            adminObject.registerReadWriteAttribute(attribute.getName(), null,
-                    disabledRequiredWriteAttributeHandler, Storage.CONFIGURATION);
-        }
+        configAO.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
 
         if (context.isRuntimeOnlyRegistrationValid()) {
             connectionDefinition.registerOperationHandler("flush-idle-connection-in-pool",

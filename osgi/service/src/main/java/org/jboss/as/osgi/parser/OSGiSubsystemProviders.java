@@ -21,6 +21,7 @@
  */
 package org.jboss.as.osgi.parser;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -30,12 +31,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.osgi.parser.SubsystemState.DEFAULT_ACTIVATION;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -63,16 +67,16 @@ class OSGiSubsystemProviders {
             subsystem.get(NAMESPACE).set(Namespace.CURRENT.getUriString());
 
             subsystem.get(ATTRIBUTES, ModelConstants.ACTIVATION, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("subsystem.activation"));
-            subsystem.get(ATTRIBUTES, ModelConstants.ACTIVATION, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+            subsystem.get(ATTRIBUTES, ModelConstants.ACTIVATION, TYPE).set(ModelType.STRING);
             subsystem.get(ATTRIBUTES, ModelConstants.ACTIVATION, ModelDescriptionConstants.DEFAULT).set(DEFAULT_ACTIVATION.toString());
-            subsystem.get(ATTRIBUTES, ModelConstants.ACTIVATION, ModelDescriptionConstants.ACCESS_TYPE).set(AccessType.READ_WRITE.toString());
+            subsystem.get(ATTRIBUTES, ModelConstants.ACTIVATION, ACCESS_TYPE).set(AccessType.READ_WRITE.toString());
             subsystem.get(ATTRIBUTES, ModelConstants.ACTIVATION, ModelDescriptionConstants.RESTART_REQUIRED).set(Flag.RESTART_JVM.toString());
 
             subsystem.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("subsystem.startlevel"));
-            subsystem.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.TYPE).set(ModelType.INT);
-            subsystem.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.ACCESS_TYPE).set(AccessType.READ_WRITE.toString());
+            subsystem.get(ATTRIBUTES, ModelConstants.STARTLEVEL, TYPE).set(ModelType.INT);
+            subsystem.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ACCESS_TYPE).set(AccessType.READ_WRITE.toString());
             subsystem.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.RESTART_REQUIRED).set(Flag.RESTART_NONE.toString());
-            subsystem.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.STORAGE).set(Flag.STORAGE_RUNTIME.toString());
+            subsystem.get(ATTRIBUTES, ModelConstants.STARTLEVEL, STORAGE).set(Flag.STORAGE_RUNTIME.toString());
 
             subsystem.get(CHILDREN, ModelConstants.PROPERTY, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property"));
             subsystem.get(CHILDREN, ModelConstants.CAPABILITY, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("capability"));
@@ -101,9 +105,9 @@ class OSGiSubsystemProviders {
             ResourceBundle resbundle = getResourceBundle(locale);
             node.get(DESCRIPTION).set(resbundle.getString("framework.property"));
             node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property.value"));
-            node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, ModelConstants.VALUE, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.REQUIRED).set(true);
-            node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.ACCESS_TYPE).set(AccessType.READ_WRITE.toString());
+            node.get(ATTRIBUTES, ModelConstants.VALUE, ACCESS_TYPE).set(AccessType.READ_WRITE.toString());
             node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.RESTART_REQUIRED).set("all-services");
             return node;
         }
@@ -116,9 +120,9 @@ class OSGiSubsystemProviders {
             ResourceBundle resbundle = getResourceBundle(locale);
             node.get(DESCRIPTION).set(resbundle.getString("capability"));
             node.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("capability.startlevel"));
-            node.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.TYPE).set(ModelType.INT);
+            node.get(ATTRIBUTES, ModelConstants.STARTLEVEL, TYPE).set(ModelType.INT);
             node.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.REQUIRED).set(false);
-            node.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.ACCESS_TYPE).set(AccessType.READ_ONLY.toString());
+            node.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ACCESS_TYPE).set(AccessType.READ_ONLY.toString());
             node.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.RESTART_REQUIRED).set("all-services");
             return node;
         }
@@ -133,35 +137,48 @@ class OSGiSubsystemProviders {
             String storageRuntime = AttributeAccess.Storage.RUNTIME.toString();
 
             ModelNode idNode = new ModelNode();
-            idNode.get(ModelDescriptionConstants.TYPE).set(ModelType.LONG);
-            idNode.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("bundle.id"));
-            idNode.get(ModelDescriptionConstants.ACCESS_TYPE).set(ModelDescriptionConstants.READ_ONLY);
-            idNode.get(ModelDescriptionConstants.STORAGE).set(storageRuntime);
+            idNode.get(TYPE).set(ModelType.LONG);
+            idNode.get(DESCRIPTION).set(resbundle.getString("bundle.id"));
+            idNode.get(ACCESS_TYPE).set(ModelDescriptionConstants.READ_ONLY);
+            idNode.get(STORAGE).set(storageRuntime);
 
             ModelNode startLevelNode = new ModelNode();
-            startLevelNode.get(ModelDescriptionConstants.TYPE).set(ModelType.INT);
-            startLevelNode.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("bundle.startlevel"));
-            startLevelNode.get(ModelDescriptionConstants.ACCESS_TYPE).set(ModelDescriptionConstants.READ_ONLY);
+            startLevelNode.get(TYPE).set(ModelType.INT);
+            startLevelNode.get(DESCRIPTION).set(resbundle.getString("bundle.startlevel"));
+            startLevelNode.get(ACCESS_TYPE).set(ModelDescriptionConstants.READ_ONLY);
             startLevelNode.get(ModelDescriptionConstants.REQUIRED).set(false);
-            startLevelNode.get(ModelDescriptionConstants.STORAGE).set(storageRuntime);
+            startLevelNode.get(STORAGE).set(storageRuntime);
 
             ModelNode symbolicNameNode = new ModelNode();
-            symbolicNameNode.get(ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            symbolicNameNode.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("bundle.symbolic-name"));
-            symbolicNameNode.get(ModelDescriptionConstants.ACCESS_TYPE).set(ModelDescriptionConstants.READ_ONLY);
-            symbolicNameNode.get(ModelDescriptionConstants.STORAGE).set(storageRuntime);
+            symbolicNameNode.get(TYPE).set(ModelType.STRING);
+            symbolicNameNode.get(DESCRIPTION).set(resbundle.getString("bundle.symbolic-name"));
+            symbolicNameNode.get(ACCESS_TYPE).set(ModelDescriptionConstants.READ_ONLY);
+            symbolicNameNode.get(STORAGE).set(storageRuntime);
 
             ModelNode versionNode = new ModelNode();
-            versionNode.get(ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            versionNode.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("bundle.version"));
-            versionNode.get(ModelDescriptionConstants.ACCESS_TYPE).set(ModelDescriptionConstants.READ_ONLY);
-            versionNode.get(ModelDescriptionConstants.STORAGE).set(storageRuntime);
+            versionNode.get(TYPE).set(ModelType.STRING);
+            versionNode.get(DESCRIPTION).set(resbundle.getString("bundle.version"));
+            versionNode.get(ACCESS_TYPE).set(ModelDescriptionConstants.READ_ONLY);
+            versionNode.get(STORAGE).set(storageRuntime);
 
-            node.get(ModelDescriptionConstants.ATTRIBUTES).get(ModelConstants.ID).set(idNode);
-            node.get(ModelDescriptionConstants.ATTRIBUTES).get(ModelConstants.STARTLEVEL).set(startLevelNode);
-            node.get(ModelDescriptionConstants.ATTRIBUTES).get(ModelConstants.SYMBOLIC_NAME).set(symbolicNameNode);
-            node.get(ModelDescriptionConstants.ATTRIBUTES).get(ModelConstants.VERSION).set(versionNode);
+            ModelNode stateNode = new ModelNode();
+            stateNode.get(TYPE).set(ModelType.STRING);
+            stateNode.get(DESCRIPTION).set(resbundle.getString("bundle.state"));
+            stateNode.get(ACCESS_TYPE).set(ModelDescriptionConstants.READ_ONLY);
+            stateNode.get(STORAGE).set(storageRuntime);
 
+            ModelNode typeNode = new ModelNode();
+            typeNode.get(TYPE).set(ModelType.STRING);
+            typeNode.get(DESCRIPTION).set(resbundle.getString("bundle.type"));
+            typeNode.get(ACCESS_TYPE).set(ModelDescriptionConstants.READ_ONLY);
+            typeNode.get(STORAGE).set(storageRuntime);
+
+            node.get(ATTRIBUTES).get(ModelConstants.ID).set(idNode);
+            node.get(ATTRIBUTES).get(ModelConstants.STARTLEVEL).set(startLevelNode);
+            node.get(ATTRIBUTES).get(ModelConstants.SYMBOLIC_NAME).set(symbolicNameNode);
+            node.get(ATTRIBUTES).get(ModelConstants.VERSION).set(versionNode);
+            node.get(ATTRIBUTES).get(ModelConstants.STATE).set(stateNode);
+            node.get(ATTRIBUTES).get(ModelConstants.TYPE).set(typeNode);
             return node;
         }
     };

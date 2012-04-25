@@ -114,7 +114,7 @@ public class DataSourceCfgMetricUnitTestCase  extends DsMgmtTestBase{
     @Test
     public void testStatementDefaultProperties()throws Exception {
     	setModel("statement-properties.xml");
-        assertEquals("\"NOWARN\"",readAttribute(baseAddress,"track-statements").asString());
+        assertEquals("NOWARN",readAttribute(baseAddress,"track-statements").asString());
         assertFalse(readAttribute(baseAddress,"share-prepared-statements").asBoolean());
         removeDs();
     }

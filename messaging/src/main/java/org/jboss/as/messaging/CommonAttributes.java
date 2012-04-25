@@ -703,6 +703,7 @@ public interface CommonAttributes {
     String SUBSYSTEM ="subsystem";
     String TEMPORARY ="temporary";
     String TOPIC_ADDRESS ="topic-address";
+    String TOPOLOGY = "topology";
     String TRANSACTION = "transaction";
     String TYPE_ATTR_NAME ="type";
     String VERSION = "version";

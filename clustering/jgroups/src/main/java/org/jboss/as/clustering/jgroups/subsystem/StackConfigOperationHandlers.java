@@ -1,7 +1,9 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.CommonAttributes.PROTOCOL_ATTRIBUTES;
+import static org.jboss.as.clustering.jgroups.subsystem.CommonAttributes.PROTOCOL_PARAMETERS;
 import static org.jboss.as.clustering.jgroups.subsystem.CommonAttributes.TRANSPORT_ATTRIBUTES;
+import static org.jboss.as.clustering.jgroups.subsystem.CommonAttributes.TRANSPORT_PARAMETERS;
 import static org.jboss.as.clustering.jgroups.subsystem.CommonAttributes.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -39,10 +41,10 @@ import org.jgroups.conf.XmlConfigurator;
  */
 public class StackConfigOperationHandlers {
 
-    static final OperationStepHandler TRANSPORT_ADD = new TransportConfigAdd(TRANSPORT_ATTRIBUTES);
+    static final OperationStepHandler TRANSPORT_ADD = new TransportConfigAdd(TRANSPORT_PARAMETERS);
     static final SelfRegisteringAttributeHandler TRANSPORT_ATTR = new AttributeWriteHandler(TRANSPORT_ATTRIBUTES);
 
-    static final OperationStepHandler PROTOCOL_ADD = new ProtocolConfigAdd(PROTOCOL_ATTRIBUTES);
+    static final OperationStepHandler PROTOCOL_ADD = new ProtocolConfigAdd(PROTOCOL_PARAMETERS);
     static final SelfRegisteringAttributeHandler PROTOCOL_ATTR = new AttributeWriteHandler(PROTOCOL_ATTRIBUTES);
     static final OperationStepHandler PROTOCOL_REMOVE = new ProtocolConfigRemove();
 

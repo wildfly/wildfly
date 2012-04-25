@@ -64,22 +64,8 @@ public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testParseEmptySubsystem() throws Exception {
-        String subsystemXml =
-                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
-                "</subsystem>";
-        List<ModelNode> operations = parse(subsystemXml);
+        standardSubsystemTest(null);
 
-        // Check that we have the expected number of operations
-        Assert.assertEquals(1, operations.size());
-
-        // Check that each operation has the correct content
-        ModelNode addSubsystem = operations.get(0);
-        Assert.assertEquals(ModelDescriptionConstants.ADD, addSubsystem.get(ModelDescriptionConstants.OP).asString());
-        PathAddress addr = PathAddress.pathAddress(addSubsystem.get(ModelDescriptionConstants.OP_ADDR));
-        Assert.assertEquals(1, addr.size());
-        PathElement element = addr.getElement(0);
-        Assert.assertEquals(ModelDescriptionConstants.SUBSYSTEM, element.getKey());
-        Assert.assertEquals(ConfigAdminExtension.SUBSYSTEM_NAME, element.getValue());
     }
 
     @Test

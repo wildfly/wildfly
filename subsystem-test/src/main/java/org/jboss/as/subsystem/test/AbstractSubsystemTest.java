@@ -1,5 +1,6 @@
 package org.jboss.as.subsystem.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -34,6 +35,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
@@ -43,6 +45,7 @@ import java.util.Stack;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.smartcardio.ATR;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
@@ -358,6 +361,8 @@ public abstract class AbstractSubsystemTest {
         }
 
         validateDescriptionProviders(additionalInit, kernelServices);
+        ManagementResourceRegistration subsystemReg =  svc.rootRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM,mainSubsystemName)));
+        validateModelDescriptions(PathAddress.EMPTY_ADDRESS, subsystemReg);
 
         return kernelServices;
     }
@@ -590,6 +595,47 @@ public abstract class AbstractSubsystemTest {
         }
 
         return clone;
+    }
+
+    public static void validateModelDescriptions(PathAddress address, ManagementResourceRegistration reg) {
+        ModelNode attributes = reg.getModelDescription(PathAddress.EMPTY_ADDRESS).getModelDescription(Locale.getDefault()).get(ATTRIBUTES);
+        Set<String> regAttributeNames = reg.getAttributeNames(PathAddress.EMPTY_ADDRESS);
+        Set<String> attributeNames = new HashSet<String>();
+        if (attributes.isDefined()) {
+            if (attributes.asList().size() != regAttributeNames.size()) {
+                for (Property p : attributes.asPropertyList()) {
+                    attributeNames.add(p.getName());
+                }
+                if (regAttributeNames.size() > attributeNames.size()) {
+                    regAttributeNames.removeAll(attributeNames);
+                    Assert.fail("More attributes defined on resource registration than in description, missing: " + regAttributeNames + " for " + address);
+                } else if (regAttributeNames.size() < attributeNames.size()) {
+                    attributeNames.removeAll(regAttributeNames);
+                    Assert.fail("More attributes defined in description than on resource registration, missing: " + attributeNames + " for " + address);
+                }
+            }
+            if (!attributeNames.containsAll(regAttributeNames)) {
+                for (Property p : attributes.asPropertyList()) {
+                    attributeNames.add(p.getName());
+                }
+                Set<String> missDesc = new HashSet<String>(attributeNames);
+                missDesc.removeAll(regAttributeNames);
+
+                Set<String> missReg = new HashSet<String>(regAttributeNames);
+                missReg.removeAll(attributeNames);
+
+                if (!missReg.isEmpty()) {
+                    Assert.fail("There are different attributes defined on resource registration than in description, registered only on Resource Reg: " + missReg + " for " + address);
+                }
+                if (!missDesc.isEmpty()) {
+                    Assert.fail("There are different attributes defined on resource registration than in description, registered only int description: " + missDesc + " for " + address);
+                }
+            }
+        }
+        for (PathElement pe : reg.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
+            ManagementResourceRegistration sub = reg.getSubModel(PathAddress.pathAddress(pe));
+            validateModelDescriptions(address.append(pe), sub);
+        }
     }
 
     private void validateDescriptionProviders(AdditionalInitialization additionalInit, KernelServices kernelServices) {

@@ -79,6 +79,7 @@ public class OSGiExtension implements Extension {
         ManagementResourceRegistration capabilities = registration.registerSubModel(PathElement.pathElement(ModelConstants.CAPABILITY), OSGiSubsystemProviders.CAPABILITY_DESCRIPTION);
         capabilities.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiCapabilityAdd.INSTANCE, OSGiCapabilityAdd.DESCRIPTION, false);
         capabilities.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiCapabilityRemove.INSTANCE, OSGiCapabilityRemove.DESCRIPTION, false);
+        capabilities.registerReadOnlyAttribute(ModelConstants.STARTLEVEL, null, Storage.RUNTIME);
 
         if (registerRuntimeOnly) {
             // Bundles present at runtime, this info is not available for controllers

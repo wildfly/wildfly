@@ -36,12 +36,14 @@ public class IronJacamarRegistrator {
 
             PathElement configPath = PathElement.pathElement(CONFIG_PROPERTIES.getName());
             ManagementResourceRegistration configChild = raChild.registerSubModel(configPath, CONFIG_PROPERTIES_RO_DESC);
+            configChild.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
 
             PathElement connDefPath = PathElement.pathElement(CONNECTIONDEFINITIONS_NAME);
             ManagementResourceRegistration connChild = raChild.registerSubModel(connDefPath, CONNECTION_DEFINITION_RO_DESC);
 
             PathElement connDefConfigPath = PathElement.pathElement(CONFIG_PROPERTIES.getName());
             ManagementResourceRegistration connDefConfigChild = connChild.registerSubModel(connDefConfigPath, CONFIG_PROPERTIES_RO_DESC);
+            connDefConfigChild.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
 
 
             PathElement adminObjectPath = PathElement.pathElement(ADMIN_OBJECTS_NAME);
@@ -49,6 +51,7 @@ public class IronJacamarRegistrator {
 
             PathElement adminObjectConfigPath = PathElement.pathElement(CONFIG_PROPERTIES.getName());
             ManagementResourceRegistration adminObjectConfigChild = adminObjectChild.registerSubModel(adminObjectConfigPath, CONFIG_PROPERTIES_RO_DESC);
+            adminObjectChild.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
 
 
             connChild.registerOperationHandler("flush-idle-connection-in-pool",
