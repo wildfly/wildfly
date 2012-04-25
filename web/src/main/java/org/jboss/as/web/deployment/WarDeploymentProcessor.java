@@ -56,6 +56,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.VirtualHost;
+import org.jboss.as.web.WebDeploymentDefinition;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.as.web.ext.WebContextFactory;
@@ -327,8 +328,8 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         // Process the web related mgmt information
         final ModelNode node = deploymentUnit.getDeploymentSubsystemModel("web");
-        node.get("context-root").set("".equals(pathName) ? "/" : pathName);
-        node.get("virtual-host").set(hostName);
+        node.get(WebDeploymentDefinition.CONTEXT_ROOT.getName()).set("".equals(pathName) ? "/" : pathName);
+        node.get(WebDeploymentDefinition.VIRTUAL_HOST.getName()).set(hostName);
         processManagement(deploymentUnit, metaData);
     }
 

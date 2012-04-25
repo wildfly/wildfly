@@ -9,6 +9,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -31,6 +32,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 public class WebDeploymentDefinition extends SimpleResourceDefinition {
     public static final WebDeploymentDefinition INSTANCE = new WebDeploymentDefinition();
 
+    public static final AttributeDefinition CONTEXT_ROOT = new SimpleAttributeDefinitionBuilder("context-root", ModelType.STRING).setStorageRuntime().build();
+    public static final AttributeDefinition VIRTUAL_HOST = new SimpleAttributeDefinitionBuilder("virtual-host", ModelType.STRING).setStorageRuntime().build();
+
     private WebDeploymentDefinition() {
         super(PathElement.pathElement(SUBSYSTEM, WebExtension.SUBSYSTEM_NAME),
               WebExtension.getResourceDescriptionResolver("deployment"));
@@ -39,6 +43,8 @@ public class WebDeploymentDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerReadOnlyAttribute(CONTEXT_ROOT, null);
+        resourceRegistration.registerReadOnlyAttribute(VIRTUAL_HOST, null);
         for (SessionStat stat : SessionStat.values()) {
             resourceRegistration.registerMetric(stat.definition, SessionManagerStatsHandler.getInstance());
         }
@@ -63,8 +69,8 @@ public class WebDeploymentDefinition extends SimpleResourceDefinition {
             final Resource web = context.readResourceFromRoot(address.subAddress(0, address.size()), false);
             final ModelNode subModel = web.getModel();
 
-            final String host = subModel.require("virtual-host").asString();
-            final String path = subModel.require("context-root").asString();
+            final String host = VIRTUAL_HOST.resolveModelAttribute(context, subModel).asString();
+            final String path = CONTEXT_ROOT.resolveModelAttribute(context, subModel).asString();
 
             final ServiceController<?> controller = context.getServiceRegistry(false).getService(WebSubsystemServices.deploymentServiceName(host, path));
 
