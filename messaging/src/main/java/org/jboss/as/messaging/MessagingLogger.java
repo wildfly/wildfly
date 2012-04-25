@@ -140,7 +140,7 @@ public interface MessagingLogger extends BasicLogger {
     void failedToUnbindJndiName(String jndiName, long timeout, String timeUnit);
 
     /**
-     * Logs a warning message indicating the XML element with the given {@code nam}
+     * Logs a warning message indicating the XML element with the given {@code name}
      * is deprecated and will not be used anymore.
      *
      * @param name the name of the deprecated XML element
