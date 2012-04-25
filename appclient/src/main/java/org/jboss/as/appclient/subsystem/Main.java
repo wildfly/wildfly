@@ -90,6 +90,10 @@ public final class Main {
             Module.registerURLStreamHandlerFactoryModule(Module.getBootModuleLoader().loadModule(ModuleIdentifier.create("org.jboss.vfs")));
 
             final ParsedOptions options = determineEnvironment(args, new Properties(SecurityActions.getSystemProperties()), SecurityActions.getSystemEnvironment(), ServerEnvironment.LaunchType.APPCLIENT);
+            if(options == null) {
+                //this happens if --version was specified
+                return;
+            }
             ServerEnvironment serverEnvironment = options.environment;
             final List<String> clientArgs = options.clientArguments;
 
