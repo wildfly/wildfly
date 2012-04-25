@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.mgmt.domain;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.DataInput;
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +33,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -88,6 +92,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
     private final InjectedValue<ModelController> controller = new InjectedValue<ModelController>();
     private final InjectedValue<RemoteFileRepository> remoteFileRepositoryValue = new InjectedValue<RemoteFileRepository>();
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
+    private final InjectedValue<ControlledProcessStateService> processStateService = new InjectedValue<ControlledProcessStateService>();
 
     private final int port;
     private final String hostName;
@@ -142,8 +147,6 @@ public class HostControllerServerClient implements Service<HostControllerServerC
                     remoteFileRepositoryValue.getValue().setRemoteFileRepositoryExecutor(new RemoteFileRepositoryExecutorImpl());
                     // We finished the registration process
                     context.complete();
-                    // TODO base the started message on some useful notification
-                    started();
                 }
 
                 @Override
@@ -157,6 +160,18 @@ public class HostControllerServerClient implements Service<HostControllerServerC
                 }
             });
             handler = connection.getChannelHandler();
+            // Listen for the controlled processState to change to running to send the started notification
+            processStateService.getValue().addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(final PropertyChangeEvent evt) {
+                    final ControlledProcessState.State old = (ControlledProcessState.State) evt.getOldValue();
+                    final ControlledProcessState.State current = (ControlledProcessState.State) evt.getNewValue();
+                    if(old == ControlledProcessState.State.STARTING && current == ControlledProcessState.State.RUNNING) {
+                        // Send the started notification
+                        started();
+                    }
+                }
+            });
         } catch (Exception e) {
             throw ServerMessages.MESSAGES.failedToConnectToHC(e);
         }
@@ -235,6 +250,10 @@ public class HostControllerServerClient implements Service<HostControllerServerC
     /** {@inheritDoc} */
     public synchronized HostControllerServerClient getValue() throws IllegalStateException {
         return this;
+    }
+
+    public InjectedValue<ControlledProcessStateService> getProcessStateService() {
+        return processStateService;
     }
 
     public Injector<ModelController> getServerControllerInjector() {
