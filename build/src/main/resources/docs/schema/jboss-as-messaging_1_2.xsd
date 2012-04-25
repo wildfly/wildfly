@@ -796,7 +796,13 @@
 
    <xs:complexType name="connector-refType">
       <xs:attribute name="connector-name" type="xs:string" use="required" />
-      <xs:attribute name="backup-connector-name" type="xs:string" use="optional" />
+      <xs:attribute name="backup-connector-name" type="xs:string" use="optional">
+          <xs:annotation>
+              <xs:documentation>
+                  Deprecated. the backup-connector-name attribute is no longer taken into account when configuring a connector-ref.
+              </xs:documentation>
+          </xs:annotation>
+      </xs:attribute>
    </xs:complexType>
 
    <xs:complexType name="entryType">
