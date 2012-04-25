@@ -1,6 +1,6 @@
 SYNOPSIS
 
-    deploy (file_path [--name=deployment_name] [--runtime_name=deployment_runtime_name] [--force | --disabled] [--unmanaged]
+    deploy (file_path [--name=deployment_name] [--runtime-name=deployment_runtime_name] [--force | --disabled] [--unmanaged]
                | --name=deployment_name)
            [--server-groups=group_name (,group_name)* | --all-server-groups]
            [--headers={operation_header (;operation_header)*}]
@@ -23,7 +23,7 @@ ARGUMENTS
                        enable an already existing but disabled deployment, and in this case the
                        name argument is required.
 
- --runtime_name      - optional, the runtime name for the deployment.
+ --runtime-name      - optional, the runtime name for the deployment.
 
  --force             - if the deployment with the specified name already exists, by default,
                        deploy will be aborted and the corresponding message will printed.
