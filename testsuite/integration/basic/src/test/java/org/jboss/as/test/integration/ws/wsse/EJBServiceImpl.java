@@ -21,19 +21,26 @@
  */
 package org.jboss.as.test.integration.ws.wsse;
 
+import javax.ejb.Stateless;
 import javax.jws.WebService;
 import org.jboss.ws.api.annotation.EndpointConfig;
+import org.jboss.ws.api.annotation.WebContext;
 
+@Stateless
 @WebService
 (
-   portName = "SecurityServicePort",
-   serviceName = "SecurityService",
-   wsdlLocation = "WEB-INF/wsdl/SecurityService.wsdl",
+   portName = "EJBSecurityServicePort",
+   serviceName = "EJBSecurityService",
+   wsdlLocation = "META-INF/wsdl/SecurityService.wsdl",
    targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy",
    endpointInterface = "org.jboss.as.test.integration.ws.wsse.ServiceIface"
 )
-@EndpointConfig(configFile = "WEB-INF/jaxws-endpoint-config.xml", configName = "Custom WS-Security Endpoint")
-public class ServiceImpl implements ServiceIface {
+@WebContext(
+        urlPattern = "/EJBSecurityService",
+        contextRoot = "/jaxws-wsse-sign"
+)
+@EndpointConfig(configFile = "META-INF/jaxws-endpoint-config.xml", configName = "Custom WS-Security Endpoint")
+public class EJBServiceImpl implements ServiceIface {
 
     public String sayHello() {
         return "Secure Hello World!";

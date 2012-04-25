@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ws.wsse.signencrypt;
+package org.jboss.as.test.integration.ws.wsse.sign;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,19 +32,19 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.ws.wsse.EJBServiceImpl;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jboss.as.test.integration.ws.wsse.KeystorePasswordCallback;
-import org.jboss.as.test.integration.ws.wsse.POJOEncryptServiceImpl;
 import org.jboss.as.test.integration.ws.wsse.ServiceIface;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
- * Test WS sign + encrypt capability
+ * Test WS sign capability
  * 
  * Certificates can ge generated using keytool -genkey -keyalg RSA -storetype JKS
  * Public key can be extracted using keytool -export
@@ -55,46 +55,42 @@ import org.jboss.as.test.integration.ws.wsse.ServiceIface;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SignEncryptTestCase {
+public class EJBSignTestCase {
 
-    private static Logger log = Logger.getLogger(SignEncryptTestCase.class.getName());
+    private static Logger log = Logger.getLogger(EJBSignTestCase.class.getName());
     @ArquillianResource
     URL baseUrl;
-
-    @Deployment
+    
+    @Deployment( testable=false )
     public static Archive<?> deployment() {
-
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxws-wsse-sign-encrypt.war").
+        
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "jaxws-wsse-sign.jar").
                 addAsManifestResource(new StringAsset("Dependencies: org.apache.ws.security\n"), "MANIFEST.MF").
-                addClasses(ServiceIface.class, POJOEncryptServiceImpl.class, KeystorePasswordCallback.class).
+                addClasses(ServiceIface.class, EJBServiceImpl.class, KeystorePasswordCallback.class).
                 addAsResource(ServiceIface.class.getPackage(), "bob.jks", "bob.jks").
                 addAsResource(ServiceIface.class.getPackage(), "bob.properties", "bob.properties").
-                addAsWebInfResource(ServiceIface.class.getPackage(), "wsdl/SecurityService-sign-encrypt.wsdl", "wsdl/SecurityService.wsdl").
-                addAsWebInfResource(ServiceIface.class.getPackage(), "wsdl/SecurityService_schema1.xsd", "wsdl/SecurityService_schema1.xsd").
-                addAsWebInfResource(SignEncryptTestCase.class.getPackage(), "jaxws-endpoint-config.xml", "jaxws-endpoint-config.xml");
+                addAsManifestResource(ServiceIface.class.getPackage(), "wsdl/SecurityService-ejb-sign.wsdl", "wsdl/SecurityService.wsdl").
+                addAsManifestResource(ServiceIface.class.getPackage(), "wsdl/SecurityService_schema1.xsd", "wsdl/SecurityService_schema1.xsd").
+                addAsManifestResource(EJBSignTestCase.class.getPackage(), "jaxws-endpoint-config.xml", "jaxws-endpoint-config.xml");
+        log.info(jar.toString(true));
 
-        log.info(war.toString(true));
-
-        return war;
+        return jar;
     }
 
     @Test
-    public void encryptedAndSignedRequest() throws Exception {
-        QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "EncryptSecurityService");
-        URL wsdlURL = new URL(baseUrl.toString() + "EncryptSecurityService?wsdl");
-
+    public void signedRequest() throws Exception {
+        QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "EJBSecurityService");        
+        URL wsdlURL = new URL(baseUrl, "/jaxws-wsse-sign/EJBSecurityService?wsdl");
+        
         Service service = Service.create(wsdlURL, serviceName);
         ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
         setupWsse(proxy);
-
+        
         Assert.assertEquals("Secure Hello World!", proxy.sayHello());
     }
 
     private void setupWsse(ServiceIface proxy) throws MalformedURLException {
-        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.CALLBACK_HANDLER,      new KeystorePasswordCallback());
-        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.SIGNATURE_PROPERTIES,  "org/jboss/as/test/integration/ws/wsse/alice.properties");
-        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.ENCRYPT_PROPERTIES,    "org/jboss/as/test/integration/ws/wsse/alice.properties");
-        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.SIGNATURE_USERNAME,    "alice");
-        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.ENCRYPT_USERNAME,      "bob");
+        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.CALLBACK_HANDLER, new KeystorePasswordCallback());
+        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.SIGNATURE_PROPERTIES, "org/jboss/as/test/integration/ws/wsse/alice.properties");
     }
 }

@@ -41,7 +41,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jboss.as.test.integration.ws.wsse.KeystorePasswordCallback;
 import org.jboss.as.test.integration.ws.wsse.ServiceIface;
-import org.jboss.as.test.integration.ws.wsse.ServiceImpl;
+import org.jboss.as.test.integration.ws.wsse.POJOServiceImpl;
 
 /**
  * Test WS sign capability
@@ -66,7 +66,7 @@ public class SignTestCase {
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxws-wsse-sign.war").
                 addAsManifestResource(new StringAsset("Dependencies: org.apache.ws.security\n"), "MANIFEST.MF").
-                addClasses(ServiceIface.class, ServiceImpl.class, KeystorePasswordCallback.class).
+                addClasses(ServiceIface.class, POJOServiceImpl.class, KeystorePasswordCallback.class).
                 addAsResource(ServiceIface.class.getPackage(), "bob.jks", "bob.jks").
                 addAsResource(ServiceIface.class.getPackage(), "bob.properties", "bob.properties").
                 addAsWebInfResource(ServiceIface.class.getPackage(), "wsdl/SecurityService-sign.wsdl", "wsdl/SecurityService.wsdl").
