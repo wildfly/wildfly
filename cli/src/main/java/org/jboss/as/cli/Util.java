@@ -43,6 +43,7 @@ public class Util {
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
     public static final String ADDRESS = "address";
+    public static final String ALLOWED = "allowed";
     public static final String ALLOW_RESOURCE_SERVICE_RESTART = "allow-resource-service-restart";
     public static final String ARCHIVE = "archive";
     public static final String ATTRIBUTES = "attributes";
@@ -92,6 +93,7 @@ public class Util {
     public static final String PROFILE = "profile";
     public static final String READ_ATTRIBUTE = "read-attribute";
     public static final String READ_CHILDREN_NAMES = "read-children-names";
+    public static final String READ_CHILDREN_RESOURCES = "read-children-resources";
     public static final String READ_CHILDREN_TYPES = "read-children-types";
     public static final String READ_ONLY = "read-only";
     public static final String READ_OPERATION_DESCRIPTION = "read-operation-description";
@@ -125,6 +127,7 @@ public class Util {
     public static final String TAIL_COMMENT_ALLOWED = "tail-comment-allowed";
     public static final String TRUE = "true";
     public static final String TYPE = "type";
+    public static final String UNDEFINE_ATTRIBUTE = "undefine-attribute";
     public static final String VALID = "valid";
     public static final String VALIDATE_ADDRESS = "validate-address";
     public static final String VALUE = "value";

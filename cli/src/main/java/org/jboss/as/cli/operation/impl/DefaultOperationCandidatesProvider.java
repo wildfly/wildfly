@@ -238,6 +238,18 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
                         final ModelNode typeNode = prop.getValue().get(Util.TYPE);
                         if(typeNode.isDefined() && typeNode.asType().equals(ModelType.BOOLEAN)) {
                             completer = SimpleTabCompleter.BOOLEAN;
+                        } else if(prop.getValue().has(Util.ALLOWED)) {
+                            final ModelNode allowedNode = prop.getValue().get(Util.ALLOWED);
+                            if(allowedNode.isDefined()) {
+                                final List<ModelNode> nodeList = allowedNode.asList();
+                                final String[] values = new String[nodeList.size()];
+                                for(int i = 0; i < values.length; ++i) {
+                                    values[i] = nodeList.get(i).asString();
+                                }
+                                completer = new SimpleTabCompleter(values);
+                            } else {
+                                completer = null;
+                            }
                         } else {
                             completer = null;
                         }
@@ -330,16 +342,31 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
     }
 
     static {
-        addGlobalOpPropCompleter(Util.READ_ATTRIBUTE, Util.NAME, new CommandLineCompleterFactory(){
+        final CommandLineCompleterFactory attrNameCompleter = new CommandLineCompleterFactory(){
             @Override
             public CommandLineCompleter createCompleter(OperationRequestAddress address) {
                 return new PropertyNameCompleter(address, false);
-            }});
+            }};
+        addGlobalOpPropCompleter(Util.UNDEFINE_ATTRIBUTE, Util.NAME, attrNameCompleter);
+        addGlobalOpPropCompleter(Util.READ_ATTRIBUTE, Util.NAME, attrNameCompleter);
         addGlobalOpPropCompleter(Util.WRITE_ATTRIBUTE, Util.NAME, new CommandLineCompleterFactory(){
             @Override
             public CommandLineCompleter createCompleter(OperationRequestAddress address) {
                 return new PropertyNameCompleter(address, true);
             }});
+        addGlobalOpPropCompleter(Util.READ_OPERATION_DESCRIPTION, Util.NAME, new CommandLineCompleterFactory(){
+            @Override
+            public CommandLineCompleter createCompleter(OperationRequestAddress address) {
+                return new OperationNameCompleter(address);
+            }});
+
+        final CommandLineCompleterFactory childTypeCompleter = new CommandLineCompleterFactory(){
+            @Override
+            public CommandLineCompleter createCompleter(OperationRequestAddress address) {
+                return new ChildTypeCompleter(address);
+            }};
+        addGlobalOpPropCompleter(Util.READ_CHILDREN_NAMES, Util.CHILD_TYPE, childTypeCompleter);
+        addGlobalOpPropCompleter(Util.READ_CHILDREN_RESOURCES, Util.CHILD_TYPE, childTypeCompleter);
     }
     interface CommandLineCompleterFactory {
         CommandLineCompleter createCompleter(OperationRequestAddress address);
