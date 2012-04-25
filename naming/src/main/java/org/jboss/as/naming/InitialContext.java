@@ -34,6 +34,7 @@ import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.naming.context.NamespaceContextSelector;
@@ -104,6 +105,11 @@ public class InitialContext extends NamingContext {
                             NamingException n = new NamingException(e.getMessage());
                             n.initCause(e);
                             throw n;
+                        }
+                    }else{
+                        Context ctx = NamingManager.getURLContext(scheme, getEnvironment());
+                        if(ctx!=null){
+                            return ctx.lookup(name);
                         }
                     }
                 }
