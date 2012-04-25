@@ -396,25 +396,14 @@ public class ManagementClient {
         private MBeanServerConnection connection;
 
         /**
-         * @param connection
+         * @param connection connection to delegate to
          */
-        public MBeanConnectionProxy(MBeanServerConnection connection) {
+        private MBeanConnectionProxy(MBeanServerConnection connection) {
             super();
             this.connection = connection;
         }
 
-        /**
-         * @param className
-         * @param name
-         * @return
-         * @throws ReflectionException
-         * @throws InstanceAlreadyExistsException
-         * @throws MBeanRegistrationException
-         * @throws MBeanException
-         * @throws NotCompliantMBeanException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#createMBean(java.lang.String, javax.management.ObjectName)
-         */
+        @Override
         public ObjectInstance createMBean(String className, ObjectName name) throws ReflectionException,
                 InstanceAlreadyExistsException, MBeanException, NotCompliantMBeanException,
                 IOException {
@@ -422,20 +411,7 @@ public class ManagementClient {
             return connection.createMBean(className, name);
         }
 
-        /**
-         * @param className
-         * @param name
-         * @param loaderName
-         * @return
-         * @throws ReflectionException
-         * @throws InstanceAlreadyExistsException
-         * @throws MBeanRegistrationException
-         * @throws MBeanException
-         * @throws NotCompliantMBeanException
-         * @throws InstanceNotFoundException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#createMBean(java.lang.String, javax.management.ObjectName, javax.management.ObjectName)
-         */
+        @Override
         public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName) throws ReflectionException,
                 InstanceAlreadyExistsException, MBeanException, NotCompliantMBeanException,
                 InstanceNotFoundException, IOException {
@@ -443,20 +419,7 @@ public class ManagementClient {
             return connection.createMBean(className, name, loaderName);
         }
 
-        /**
-         * @param className
-         * @param name
-         * @param params
-         * @param signature
-         * @return
-         * @throws ReflectionException
-         * @throws InstanceAlreadyExistsException
-         * @throws MBeanRegistrationException
-         * @throws MBeanException
-         * @throws NotCompliantMBeanException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#createMBean(java.lang.String, javax.management.ObjectName, java.lang.Object[], java.lang.String[])
-         */
+        @Override
         public ObjectInstance createMBean(String className, ObjectName name, Object[] params, String[] signature)
                 throws ReflectionException, InstanceAlreadyExistsException, MBeanException,
                 NotCompliantMBeanException, IOException {
@@ -464,22 +427,7 @@ public class ManagementClient {
             return connection.createMBean(className, name, params, signature);
         }
 
-        /**
-         * @param className
-         * @param name
-         * @param loaderName
-         * @param params
-         * @param signature
-         * @return
-         * @throws ReflectionException
-         * @throws InstanceAlreadyExistsException
-         * @throws MBeanRegistrationException
-         * @throws MBeanException
-         * @throws NotCompliantMBeanException
-         * @throws InstanceNotFoundException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#createMBean(java.lang.String, javax.management.ObjectName, javax.management.ObjectName, java.lang.Object[], java.lang.String[])
-         */
+        @Override
         public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName, Object[] params,
                 String[] signature) throws ReflectionException, InstanceAlreadyExistsException,
                 MBeanException, NotCompliantMBeanException, InstanceNotFoundException, IOException {
@@ -487,308 +435,246 @@ public class ManagementClient {
             return connection.createMBean(className, name, loaderName, params, signature);
         }
 
-        /**
-         * @param name
-         * @throws InstanceNotFoundException
-         * @throws MBeanRegistrationException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#unregisterMBean(javax.management.ObjectName)
-         */
+        @Override
         public void unregisterMBean(ObjectName name) throws InstanceNotFoundException, MBeanRegistrationException, IOException {
             checkConnection();
             connection.unregisterMBean(name);
         }
 
-        /**
-         * @param name
-         * @return
-         * @throws InstanceNotFoundException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#getObjectInstance(javax.management.ObjectName)
-         */
+        @Override
         public ObjectInstance getObjectInstance(ObjectName name) throws InstanceNotFoundException, IOException {
-            checkConnection();
-            return connection.getObjectInstance(name);
+            try {
+                return connection.getObjectInstance(name);
+            } catch (IOException e) {
+                checkConnection();
+                return connection.getObjectInstance(name);
+            }
         }
 
-        /**
-         * @param name
-         * @param query
-         * @return
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#queryMBeans(javax.management.ObjectName, javax.management.QueryExp)
-         */
+        @Override
         public Set<ObjectInstance> queryMBeans(ObjectName name, QueryExp query) throws IOException {
-            checkConnection();
-            return connection.queryMBeans(name, query);
+            try {
+                return connection.queryMBeans(name, query);
+            } catch (IOException e) {
+                checkConnection();
+                return connection.queryMBeans(name, query);
+            }
         }
 
-        /**
-         * @param name
-         * @param query
-         * @return
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#queryNames(javax.management.ObjectName, javax.management.QueryExp)
-         */
+        @Override
         public Set<ObjectName> queryNames(ObjectName name, QueryExp query) throws IOException {
-            checkConnection();
-            return connection.queryNames(name, query);
+            try {
+                return connection.queryNames(name, query);
+            } catch (IOException e) {
+                checkConnection();
+                return connection.queryNames(name, query);
+            }
         }
 
-        /**
-         * @param name
-         * @return
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#isRegistered(javax.management.ObjectName)
-         */
+        @Override
         public boolean isRegistered(ObjectName name) throws IOException {
-            checkConnection();
-            return connection.isRegistered(name);
+            try {
+                return connection.isRegistered(name);
+            } catch (IOException e) {
+                checkConnection();
+                return connection.isRegistered(name);
+            }
         }
 
-        /**
-         * @return
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#getMBeanCount()
-         */
+        @Override
         public Integer getMBeanCount() throws IOException {
-            checkConnection();
-            return connection.getMBeanCount();
+            try {
+                return connection.getMBeanCount();
+            } catch (IOException e) {
+                checkConnection();
+                return connection.getMBeanCount();
+            }
         }
 
-        /**
-         * @param name
-         * @param attribute
-         * @return
-         * @throws MBeanException
-         * @throws AttributeNotFoundException
-         * @throws InstanceNotFoundException
-         * @throws ReflectionException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#getAttribute(javax.management.ObjectName, java.lang.String)
-         */
+        @Override
         public Object getAttribute(ObjectName name, String attribute) throws MBeanException, AttributeNotFoundException,
                 InstanceNotFoundException, ReflectionException, IOException {
-            checkConnection();
-            return connection.getAttribute(name, attribute);
+            try {
+                return connection.getAttribute(name, attribute);
+            } catch (IOException e) {
+                checkConnection();
+                return connection.getAttribute(name, attribute);
+            }
         }
 
-        /**
-         * @param name
-         * @param attributes
-         * @return
-         * @throws InstanceNotFoundException
-         * @throws ReflectionException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#getAttributes(javax.management.ObjectName, java.lang.String[])
-         */
+        @Override
         public AttributeList getAttributes(ObjectName name, String[] attributes) throws InstanceNotFoundException,
                 ReflectionException, IOException {
-            checkConnection();
-            return connection.getAttributes(name, attributes);
+            try {
+                return connection.getAttributes(name, attributes);
+            } catch (IOException e) {
+                checkConnection();
+                return connection.getAttributes(name, attributes);
+            }
         }
 
-        /**
-         * @param name
-         * @param attribute
-         * @throws InstanceNotFoundException
-         * @throws AttributeNotFoundException
-         * @throws InvalidAttributeValueException
-         * @throws MBeanException
-         * @throws ReflectionException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#setAttribute(javax.management.ObjectName, javax.management.Attribute)
-         */
+        @Override
         public void setAttribute(ObjectName name, Attribute attribute) throws InstanceNotFoundException,
                 AttributeNotFoundException, InvalidAttributeValueException, MBeanException, ReflectionException, IOException {
             checkConnection();
             connection.setAttribute(name, attribute);
         }
 
-        /**
-         * @param name
-         * @param attributes
-         * @return
-         * @throws InstanceNotFoundException
-         * @throws ReflectionException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#setAttributes(javax.management.ObjectName, javax.management.AttributeList)
-         */
+        @Override
         public AttributeList setAttributes(ObjectName name, AttributeList attributes) throws InstanceNotFoundException,
                 ReflectionException, IOException {
             checkConnection();
             return connection.setAttributes(name, attributes);
         }
 
-        /**
-         * @param name
-         * @param operationName
-         * @param params
-         * @param signature
-         * @return
-         * @throws InstanceNotFoundException
-         * @throws MBeanException
-         * @throws ReflectionException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#invoke(javax.management.ObjectName, java.lang.String, java.lang.Object[], java.lang.String[])
-         */
+        @Override
         public Object invoke(ObjectName name, String operationName, Object[] params, String[] signature)
                 throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
             checkConnection();
             return connection.invoke(name, operationName, params, signature);
         }
 
-        /**
-         * @return
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#getDefaultDomain()
-         */
+        @Override
         public String getDefaultDomain() throws IOException {
-            checkConnection();
-            return connection.getDefaultDomain();
+            try {
+                return connection.getDefaultDomain();
+            } catch (IOException e) {
+                checkConnection();
+                return connection.getDefaultDomain();
+            }
         }
 
-        /**
-         * @return
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#getDomains()
-         */
+        @Override
         public String[] getDomains() throws IOException {
-            checkConnection();
-            return connection.getDomains();
+            try {
+                return connection.getDomains();
+            } catch (IOException e) {
+                checkConnection();
+                return connection.getDomains();
+            }
         }
 
-        /**
-         * @param name
-         * @param listener
-         * @param filter
-         * @param handback
-         * @throws InstanceNotFoundException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#addNotificationListener(javax.management.ObjectName, javax.management.NotificationListener, javax.management.NotificationFilter, java.lang.Object)
-         */
+        @Override
         public void addNotificationListener(ObjectName name, NotificationListener listener, NotificationFilter filter,
                 Object handback) throws InstanceNotFoundException, IOException {
-            checkConnection();
-            connection.addNotificationListener(name, listener, filter, handback);
+            try {
+                connection.addNotificationListener(name, listener, filter, handback);
+            } catch (IOException e) {
+                if (!checkConnection()) {
+                    connection.addNotificationListener(name, listener, filter, handback);
+                } else {
+                    throw e;
+                }
+            }
         }
 
-        /**
-         * @param name
-         * @param listener
-         * @param filter
-         * @param handback
-         * @throws InstanceNotFoundException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#addNotificationListener(javax.management.ObjectName, javax.management.ObjectName, javax.management.NotificationFilter, java.lang.Object)
-         */
+        @Override
         public void addNotificationListener(ObjectName name, ObjectName listener, NotificationFilter filter, Object handback)
                 throws InstanceNotFoundException, IOException {
-            checkConnection();
-            connection.addNotificationListener(name, listener, filter, handback);
+            try {
+                connection.addNotificationListener(name, listener, filter, handback);
+            } catch (IOException e) {
+                if (!checkConnection()) {
+                    connection.addNotificationListener(name, listener, filter, handback);
+                } else {
+                    throw e;
+                }
+            }
         }
 
-        /**
-         * @param name
-         * @param listener
-         * @throws InstanceNotFoundException
-         * @throws ListenerNotFoundException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#removeNotificationListener(javax.management.ObjectName, javax.management.ObjectName)
-         */
+        @Override
         public void removeNotificationListener(ObjectName name, ObjectName listener) throws InstanceNotFoundException,
                 ListenerNotFoundException, IOException {
-            checkConnection();
-            connection.removeNotificationListener(name, listener);
+            try {
+                connection.removeNotificationListener(name, listener);
+            } catch (IOException e) {
+                if (!checkConnection()) {
+                    connection.removeNotificationListener(name, listener);
+                } else {
+                    throw e;
+                }
+            }
         }
 
-        /**
-         * @param name
-         * @param listener
-         * @param filter
-         * @param handback
-         * @throws InstanceNotFoundException
-         * @throws ListenerNotFoundException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#removeNotificationListener(javax.management.ObjectName, javax.management.ObjectName, javax.management.NotificationFilter, java.lang.Object)
-         */
+        @Override
         public void removeNotificationListener(ObjectName name, ObjectName listener, NotificationFilter filter, Object handback)
                 throws InstanceNotFoundException, ListenerNotFoundException, IOException {
-            checkConnection();
-            connection.removeNotificationListener(name, listener, filter, handback);
+            try {
+                connection.removeNotificationListener(name, listener, filter, handback);
+            } catch (IOException e) {
+                if (!checkConnection()) {
+                    connection.removeNotificationListener(name, listener, filter, handback);
+                } else {
+                    throw e;
+                }
+            }
         }
 
-        /**
-         * @param name
-         * @param listener
-         * @throws InstanceNotFoundException
-         * @throws ListenerNotFoundException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#removeNotificationListener(javax.management.ObjectName, javax.management.NotificationListener)
-         */
+        @Override
         public void removeNotificationListener(ObjectName name, NotificationListener listener)
                 throws InstanceNotFoundException, ListenerNotFoundException, IOException {
-            checkConnection();
-            connection.removeNotificationListener(name, listener);
+            try {
+                connection.removeNotificationListener(name, listener);
+            } catch (IOException e) {
+                if (!checkConnection()) {
+                    connection.removeNotificationListener(name, listener);
+                } else {
+                    throw e;
+                }
+            }
         }
 
-        /**
-         * @param name
-         * @param listener
-         * @param filter
-         * @param handback
-         * @throws InstanceNotFoundException
-         * @throws ListenerNotFoundException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#removeNotificationListener(javax.management.ObjectName, javax.management.NotificationListener, javax.management.NotificationFilter, java.lang.Object)
-         */
+        @Override
         public void removeNotificationListener(ObjectName name, NotificationListener listener, NotificationFilter filter,
                 Object handback) throws InstanceNotFoundException, ListenerNotFoundException, IOException {
-            checkConnection();
-            connection.removeNotificationListener(name, listener, filter, handback);
+            try {
+                connection.removeNotificationListener(name, listener, filter, handback);
+            } catch (IOException e) {
+                if (!checkConnection()) {
+                    connection.removeNotificationListener(name, listener, filter, handback);
+                } else {
+                    throw e;
+                }
+            }
         }
 
-        /**
-         * @param name
-         * @return
-         * @throws InstanceNotFoundException
-         * @throws IntrospectionException
-         * @throws ReflectionException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#getMBeanInfo(javax.management.ObjectName)
-         */
+        @Override
         public MBeanInfo getMBeanInfo(ObjectName name) throws InstanceNotFoundException, IntrospectionException,
                 ReflectionException, IOException {
-            checkConnection();
-            return connection.getMBeanInfo(name);
+            try {
+                return connection.getMBeanInfo(name);
+            } catch (IOException e) {
+                checkConnection();
+                return connection.getMBeanInfo(name);
+            }
         }
 
-        /**
-         * @param name
-         * @param className
-         * @return
-         * @throws InstanceNotFoundException
-         * @throws IOException
-         * @see javax.management.MBeanServerConnection#isInstanceOf(javax.management.ObjectName, java.lang.String)
-         */
+        @Override
         public boolean isInstanceOf(ObjectName name, String className) throws InstanceNotFoundException, IOException {
-            checkConnection();
-            return connection.isInstanceOf(name, className);
+            try {
+                return connection.isInstanceOf(name, className);
+            } catch (IOException e) {
+                checkConnection();
+                return connection.isInstanceOf(name, className);
+            }
         }
 
-        private void checkConnection(){
+        private boolean checkConnection(){
             try{
                 this.connection.getMBeanCount();
-                return;
+                return true;
             }catch(IOException ioe){
             }
             this.connection = this.getConnection();
+            return false;
         }
+
         private MBeanServerConnection getConnection() {
                 try {
                     final HashMap<String, Object> env = new HashMap<String, Object>();
                     env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
-                    connection = JMXConnectorFactory.connect(getRemoteJMXURL(), env).getMBeanServerConnection();
+                    connector = JMXConnectorFactory.connect(getRemoteJMXURL(), env);
+                    connection = connector.getMBeanServerConnection();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
