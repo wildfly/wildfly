@@ -41,7 +41,7 @@ public abstract class AsynchronousService<T> implements Service<T> {
     private final boolean stopAsynchronously;
 
     protected AsynchronousService() {
-        this(true, true);
+        this(true, false);
     }
 
     protected AsynchronousService(boolean startAsynchronously, boolean stopAsynchronously) {
