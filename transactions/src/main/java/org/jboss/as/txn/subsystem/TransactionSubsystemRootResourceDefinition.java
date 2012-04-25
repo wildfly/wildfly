@@ -22,7 +22,6 @@
 
 package org.jboss.as.txn.subsystem;
 
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
@@ -146,8 +145,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     private final boolean registerRuntimeOnly;
 
     TransactionSubsystemRootResourceDefinition(boolean registerRuntimeOnly) {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME),
-                TransactionExtension.getResourceDescriptionResolver(TransactionExtension.SUBSYSTEM_NAME),
+        super(TransactionExtension.SUBSYSTEM_PATH,
+                TransactionExtension.getResourceDescriptionResolver(),
                 TransactionSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.registerRuntimeOnly = registerRuntimeOnly;

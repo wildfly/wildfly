@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import junit.framework.Assert;
 
@@ -176,13 +175,4 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
     protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
         return Collections.<PathAddress>emptySet();
     }
-
-    public static void main(String[] args) {
-        String s = "xmlns=\"urn:jboss:domain:transactions:1.1\"";
-
-        System.out.println(Pattern.compile("xmlns=\"aaa\"").matcher("xmlns=\"aaa\"").matches());
-        System.out.println(Pattern.compile("xmlns=\".*\"").matcher("xmlns=\"xxyyy:xxx:yyy:xxx:1.1\"").matches());
-    }
-
-
 }

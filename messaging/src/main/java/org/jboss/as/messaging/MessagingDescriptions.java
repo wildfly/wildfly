@@ -93,6 +93,7 @@ import static org.jboss.as.messaging.CommonAttributes.STARTED;
 import static org.jboss.as.messaging.CommonAttributes.SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
 import static org.jboss.as.messaging.CommonAttributes.TOPIC_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.TOPOLOGY;
 
 import java.util.List;
 import java.util.Locale;
@@ -1035,6 +1036,7 @@ public class MessagingDescriptions {
 
         final ModelNode attrs = root.get(ATTRIBUTES);
         addResourceAttributeDescription(bundle, CLUSTER_CONNECTION, attrs, NODE_ID, ModelType.STRING, false, null);
+        addResourceAttributeDescription(bundle, CLUSTER_CONNECTION, attrs, TOPOLOGY, ModelType.STRING, false, null);
         addResourceAttributeDescription(bundle, CLUSTER_CONNECTION, attrs, STARTED, ModelType.BOOLEAN, false, null);
 
         root.get(OPERATIONS); // placeholder
@@ -1222,6 +1224,8 @@ public class MessagingDescriptions {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
 
+        addResourceAttributeDescription(bundle, "acceptor", root.get(ATTRIBUTES), STARTED, ModelType.BOOLEAN, false, null);
+
         getParamChildrenDescription(bundle, root, "acceptor");
 
         return root;
@@ -1251,6 +1255,8 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.IN_VM) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
+
+        addResourceAttributeDescription(bundle, "acceptor", root.get(ATTRIBUTES), STARTED, ModelType.BOOLEAN, false, null);
 
         getParamChildrenDescription(bundle, root, "acceptor");
 

@@ -22,6 +22,9 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.CommonAttributes.NODE_ID;
+import static org.jboss.as.messaging.CommonAttributes.TOPOLOGY;
+
 import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Map;
@@ -47,9 +50,6 @@ import org.jboss.dmr.ModelType;
 public class ClusterConnectionControlHandler extends AbstractHornetQComponentControlHandler<ClusterConnectionControl> {
 
     public static final ClusterConnectionControlHandler INSTANCE = new ClusterConnectionControlHandler();
-
-    public static final String NODE_ID = "node-id";
-    public static final String TOPOLOGY = "topology";
 
     // we keep the operation for backwards compatibility but it duplicates the "static-connectors" writable attribute
     @Deprecated

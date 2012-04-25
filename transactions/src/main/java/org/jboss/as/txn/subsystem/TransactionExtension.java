@@ -22,17 +22,12 @@
 
 package org.jboss.as.txn.subsystem;
 
-import javax.management.MBeanServer;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -42,6 +37,8 @@ import org.jboss.as.txn.TransactionMessages;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+
+import javax.management.MBeanServer;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
@@ -60,58 +57,54 @@ public class TransactionExtension implements Extension {
     private static final String RESOURCE_NAME = TransactionExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
+    static final PathElement LOG_STORE_PATH = PathElement.pathElement(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE);
+    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME);
+    static final PathElement PARTECIPANT_PATH = PathElement.pathElement(LogStoreConstants.PARTICIPANTS);
+    static final PathElement TRANSACTION_PATH = PathElement.pathElement(LogStoreConstants.TRANSACTIONS);
 
-    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, TransactionExtension.class.getClassLoader(), true, true);
+
+    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
+        for (String kp : keyPrefix) {
+            prefix.append('.').append(kp);
+        }
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, TransactionExtension.class.getClassLoader(), true, false);
     }
 
     static MBeanServer getMBeanServer(OperationContext context) {
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
         final ServiceController<?> serviceController = serviceRegistry.getService(MBEAN_SERVER_SERVICE_NAME);
-        if(serviceController == null) {
+        if (serviceController == null) {
             throw TransactionMessages.MESSAGES.jmxSubsystemNotInstalled();
         }
         return (MBeanServer) serviceController.getValue();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void initialize(ExtensionContext context) {
         ROOT_LOGGER.debug("Initializing Transactions Extension");
         final LogStoreResource resource = new LogStoreResource();
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 1);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new TransactionSubsystemRootResourceDefinition(registerRuntimeOnly));
         registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
-        PathElement logStorePath = PathElement.pathElement(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE);
-        ManagementResourceRegistration logStoreChild = registration.registerSubModel(logStorePath, LogStoreProviders.LOG_STORE_MODEL_CHILD);
-        logStoreChild.registerOperationHandler(ModelDescriptionConstants.ADD, new LogStoreAddHandler(resource), LogStoreProviders.ADD_LOG_STORE_MODEL_CHILD);
 
-        logStoreChild.registerOperationHandler(ModelDescriptionConstants.REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, LogStoreProviders.REMOVE_LOG_STORE_MODEL_CHILD);
-        logStoreChild.registerOperationHandler(LogStoreConstants.PROBE, LogStoreProbeHandler.INSTANCE, LogStoreProviders.PROBE_OPERATION);
-
-        if (context.isRuntimeOnlyRegistrationValid()) {
-            PathElement transactionPath = PathElement.pathElement(LogStoreConstants.TRANSACTIONS);
-            ManagementResourceRegistration transactionChild = logStoreChild.registerSubModel(transactionPath, LogStoreProviders.TRANSACTION_CHILD);
-            transactionChild.registerOperationHandler(LogStoreConstants.DELETE, new LogStoreTransactionDeleteHandler(resource), LogStoreProviders.DELETE_OPERATION);
-
-            PathElement partecipantPath = PathElement.pathElement(LogStoreConstants.PARTICIPANTS);
-            ManagementResourceRegistration partecipantChild = transactionChild.registerSubModel(partecipantPath, LogStoreProviders.PARTECIPANT_CHILD);
-
-            for (final SimpleAttributeDefinition attribute : LogStoreProviders.PARTECIPANT_RW_ATTRIBUTE) {
-                partecipantChild.registerReadWriteAttribute(attribute, null, new ParticipantWriteAttributeHandler(attribute));
-            }
-
-            final LogStoreParticipantRefreshHandler refreshHandler = LogStoreParticipantRefreshHandler.INSTANCE;
-
-            partecipantChild.registerOperationHandler(LogStoreConstants.REFRESH, refreshHandler, LogStoreProviders.REFRESH_OPERATION);
-            partecipantChild.registerOperationHandler(LogStoreConstants.RECOVER, new LogStoreParticipantRecoveryHandler(refreshHandler), LogStoreProviders.RECOVER_OPERATION);
+        ManagementResourceRegistration logStoreChild = registration.registerSubModel(new LogStoreDefinition(resource));
+        if (registerRuntimeOnly) {
+            ManagementResourceRegistration transactionChild = logStoreChild.registerSubModel(new LogStoreTransactionDefinition(resource));
+            ManagementResourceRegistration partecipantChild = transactionChild.registerSubModel(LogStoreTransactionParticipantDefinition.INSTANCE);
         }
+
         subsystem.registerXMLElementWriter(TransactionSubsystem12Parser.INSTANCE);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_0.getUriString(), TransactionSubsystem10Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_1.getUriString(), TransactionSubsystem11Parser.INSTANCE);

@@ -69,12 +69,14 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.logging.handlers.HandlerLevelChange;
 import org.jboss.as.logging.handlers.async.AsyncHandlerAssignSubhandler;
 import org.jboss.as.logging.handlers.async.AsyncHandlerUnassignSubhandler;
 import org.jboss.as.logging.handlers.async.AsyncHandlerUpdateProperties;
+import org.jboss.as.logging.handlers.async.AsyncHandlerWriteAttributeHandler;
 import org.jboss.as.logging.handlers.console.ConsoleHandlerUpdateProperties;
 import org.jboss.as.logging.handlers.custom.CustomHandlerUpdateProperties;
 import org.jboss.as.logging.handlers.file.FileHandlerUpdateProperties;
@@ -286,7 +288,6 @@ class LoggingSubsystemProviders {
 
             addCommonLoggerAttributes(node, bundle);
             USE_PARENT_HANDLERS.addResourceAttributeDescription(bundle, "logger", node);
-            CATEGORY.addResourceAttributeDescription(bundle, "logger", node);
 
             return node;
         }
@@ -393,7 +394,6 @@ class LoggingSubsystemProviders {
     }
 
     private static void addCommonHandlerAttributes(final ModelNode modelNode, final ResourceBundle bundle) {
-        NAME.addResourceAttributeDescription(bundle, "handler", modelNode);
         ENCODING.addResourceAttributeDescription(bundle, "handler", modelNode);
         LEVEL.addResourceAttributeDescription(bundle, "handler", modelNode);
         FILTER.addResourceAttributeDescription(bundle, "handler", modelNode);
@@ -426,13 +426,13 @@ class LoggingSubsystemProviders {
             final ModelNode node = new ModelNode();
             node.get(DESCRIPTION).set(bundle.getString("async.handler"));
 
-            NAME.addResourceAttributeDescription(bundle, "handler", node);
             LEVEL.addResourceAttributeDescription(bundle, "handler", node);
             FILTER.addResourceAttributeDescription(bundle, "handler", node);
             FORMATTER.addResourceAttributeDescription(bundle, "handler", node);
             QUEUE_LENGTH.addResourceAttributeDescription(bundle, "async", node);
             OVERFLOW_ACTION.addResourceAttributeDescription(bundle, "async", node);
             SUBHANDLERS.addResourceAttributeDescription(bundle, "async.handler", node);
+            ENCODING.addResourceAttributeDescription(bundle, "handler", node);
 
             return node;
         }

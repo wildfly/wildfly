@@ -598,19 +598,12 @@ class DataSourcesSubsystemProviders {
                     node.get(ATTRIBUTES, propertyType.getName(), VALUE_TYPE).set(ModelType.STRING);
                     node.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(false);
                 } else {
-                    node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
-
-                    node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getType());
-                    node.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(!propertyType.isAllowNull());
-                    if (propertyType.getDefaultValue() != null)
-                        node.get(ATTRIBUTES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
+                    propertyType.addResourceAttributeDescription(bundle,null,node);
                 }
             }
 
             for (SimpleAttributeDefinition propertyType : READONLY_DATASOURCE_ATTRIBUTE) {
-                node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
-                node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getType());
-                node.get(ATTRIBUTES, propertyType.getName(), ACCESS_TYPE, READ_ONLY).set(true);
+                propertyType.addResourceAttributeDescription(bundle,null,node);
             }
 
             node.get(CHILDREN, CONNECTION_PROPERTIES.getName(), DESCRIPTION).set(bundle.getString(CONNECTION_PROPERTIES.getName()));
@@ -636,12 +629,7 @@ class DataSourcesSubsystemProviders {
                     operation.get(REQUEST_PROPERTIES, propertyType.getName(), VALUE_TYPE).set(ModelType.STRING);
                     operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(false);
                 } else {
-                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(
-                            bundle.getString(propertyType.getName()));
-                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getType());
-                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(!propertyType.isAllowNull());
-                    if (propertyType.getDefaultValue() != null)
-                        operation.get(REQUEST_PROPERTIES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
+                    propertyType.addOperationParameterDescription(bundle, null, operation);
                 }
             }
             return operation;
@@ -748,19 +736,12 @@ class DataSourcesSubsystemProviders {
                     node.get(ATTRIBUTES, propertyType.getName(), VALUE_TYPE).set(ModelType.STRING);
                     node.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(false);
                 } else {
-                    node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
-
-                    node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getType());
-                    node.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(!propertyType.isAllowNull());
-                    if (propertyType.getDefaultValue() != null)
-                        node.get(ATTRIBUTES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
+                    propertyType.addResourceAttributeDescription(bundle,null,node);
                 }
             }
 
             for (SimpleAttributeDefinition propertyType : READONLY_XA_DATASOURCE_ATTRIBUTE) {
-                node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
-                node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getType());
-                node.get(ATTRIBUTES, propertyType.getName(), ACCESS_TYPE, READ_ONLY).set(true);
+                propertyType.addResourceAttributeDescription(bundle,null,node);
             }
 
             node.get(CHILDREN, XADATASOURCE_PROPERTIES.getName(), DESCRIPTION).set(bundle.getString(XADATASOURCE_PROPERTIES.getName()));
@@ -784,12 +765,7 @@ class DataSourcesSubsystemProviders {
                     operation.get(REQUEST_PROPERTIES, propertyType.getName(), VALUE_TYPE).set(ModelType.STRING);
                     operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(false);
                 } else {
-                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(
-                            bundle.getString(propertyType.getName()));
-                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getType());
-                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(!propertyType.isAllowNull());
-                    if (propertyType.getDefaultValue() != null)
-                        operation.get(REQUEST_PROPERTIES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
+                    propertyType.addOperationParameterDescription(bundle, null, operation);
                 }
             }
             return operation;

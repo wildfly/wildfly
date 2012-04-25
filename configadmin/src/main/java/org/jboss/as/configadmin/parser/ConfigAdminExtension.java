@@ -28,6 +28,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 
@@ -60,6 +61,7 @@ public class ConfigAdminExtension implements Extension {
         ManagementResourceRegistration configuration = registration.registerSubModel(PathElement.pathElement(ModelConstants.CONFIGURATION), ConfigAdminProviders.CONFIGURATION_DESCRIPTION);
         configuration.registerOperationHandler(ModelDescriptionConstants.ADD, ConfigurationAdd.INSTANCE, ConfigurationAdd.DESCRIPTION, false);
         configuration.registerOperationHandler(ModelDescriptionConstants.REMOVE, ConfigurationRemove.INSTANCE, ConfigurationRemove.DESCRIPTION, false);
+        configuration.registerReadOnlyAttribute(ModelConstants.ENTRIES,null, AttributeAccess.Storage.CONFIGURATION);
 
         subsystem.registerXMLElementWriter(ConfigAdminWriter.INSTANCE);
     }

@@ -60,13 +60,13 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler {
                     ModelNode transport = stack.getValue().get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
                     ModelNode transportAddress = stackAddress.clone();
                     transportAddress.add(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
-                    result.add(StackConfigOperationHandlers.createOperation(CommonAttributes.TRANSPORT_ATTRIBUTES, transportAddress, transport));
+                    result.add(StackConfigOperationHandlers.createOperation(CommonAttributes.TRANSPORT_PARAMETERS, transportAddress, transport));
                     addProtocolPropertyCommands(transport, transportAddress, result);
                 }
                 // protocol=*
                 if (stack.getValue().get(ModelKeys.PROTOCOL).isDefined()) {
                     for (Property protocol : ProtocolStackAdd.getOrderedProtocolPropertyList(stack.getValue())) {
-                        result.add(StackConfigOperationHandlers.createProtocolOperation(CommonAttributes.PROTOCOL_ATTRIBUTES, stackAddress, protocol.getValue()));
+                        result.add(StackConfigOperationHandlers.createProtocolOperation(CommonAttributes.PROTOCOL_PARAMETERS, stackAddress, protocol.getValue()));
                         ModelNode protocolAddress = stackAddress.clone();
                         protocolAddress.add(ModelKeys.PROTOCOL, protocol.getName()) ;
                         addProtocolPropertyCommands(protocol.getValue(), protocolAddress, result);

@@ -342,29 +342,16 @@ public class ResourceAdaptersSubsystemProviders {
         raNode.get(TAIL_COMMENT_ALLOWED).set(true);
         raNode.get(DESCRIPTION).set(RESOURCEADAPTER_NAME);
 
-        raNode.get(ATTRIBUTES, ARCHIVE.getName(), DESCRIPTION).set(bundle.getString(ARCHIVE.getName()));
-        raNode.get(ATTRIBUTES, ARCHIVE.getName(), TYPE).set(ModelType.STRING);
-        raNode.get(ATTRIBUTES, ARCHIVE.getName(), REQUIRED).set(true);
-        if (readOnly) {
-            raNode.get(ATTRIBUTES, ARCHIVE.getName(), ACCESS_TYPE, READ_ONLY).set(true);
-        }
-        raNode.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), DESCRIPTION).set(bundle.getString(TRANSACTIONSUPPORT.getName()));
-        raNode.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), TYPE).set(ModelType.STRING);
-        raNode.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), REQUIRED).set(true);
-        if (readOnly) {
-            raNode.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), ACCESS_TYPE, READ_ONLY).set(true);
-        }
-        raNode.get(ATTRIBUTES, BOOTSTRAPCONTEXT.getName(), DESCRIPTION).set(bundle.getString(BOOTSTRAPCONTEXT.getName()));
-        raNode.get(ATTRIBUTES, BOOTSTRAPCONTEXT.getName(), TYPE).set(ModelType.STRING);
-        raNode.get(ATTRIBUTES, BOOTSTRAPCONTEXT.getName(), REQUIRED).set(false);
-        if (readOnly) {
-            raNode.get(ATTRIBUTES, BOOTSTRAPCONTEXT.getName(), ACCESS_TYPE, READ_ONLY).set(true);
-        }
-        raNode.get(ATTRIBUTES, BEANVALIDATIONGROUPS.getName(), DESCRIPTION).set(bundle.getString(BEANVALIDATIONGROUPS.getName()));
-        raNode.get(ATTRIBUTES, BEANVALIDATIONGROUPS.getName(), TYPE).set(ModelType.STRING);
-        raNode.get(ATTRIBUTES, BEANVALIDATIONGROUPS.getName(), REQUIRED).set(false);
-        if (readOnly) {
-            raNode.get(ATTRIBUTES, BEANVALIDATIONGROUPS.getName(), ACCESS_TYPE, READ_ONLY).set(true);
+        for (SimpleAttributeDefinition propertyType : RESOURCEADAPTER_ATTRIBUTE) {
+            if (propertyType.getType() == ModelType.LIST) {
+                raNode.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
+                raNode.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getType());
+                raNode.get(ATTRIBUTES, propertyType.getName(), VALUE_TYPE).set(ModelType.STRING);
+                raNode.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(false);
+            } else {
+                propertyType.addResourceAttributeDescription(bundle, null, raNode);
+            }
+
         }
 
         raNode.get(CHILDREN, Constants.CONNECTIONDEFINITIONS_NAME, DESCRIPTION).set(bundle.getString(Constants.CONNECTIONDEFINITIONS_NAME));
@@ -387,21 +374,18 @@ public class ResourceAdaptersSubsystemProviders {
             final ModelNode adminObjectNode = new ModelNode();
             adminObjectNode.get(DESCRIPTION).set(ADMIN_OBJECTS_NAME);
 
-
-            operation.get(REQUEST_PROPERTIES, ARCHIVE.getName(), DESCRIPTION).set(bundle.getString(ARCHIVE.getName()));
-            operation.get(REQUEST_PROPERTIES, ARCHIVE.getName(), TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, ARCHIVE.getName(), REQUIRED).set(true);
-            operation.get(REQUEST_PROPERTIES, TRANSACTIONSUPPORT.getName(), DESCRIPTION).set(bundle.getString(TRANSACTIONSUPPORT.getName()));
-            operation.get(REQUEST_PROPERTIES, TRANSACTIONSUPPORT.getName(), TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, TRANSACTIONSUPPORT.getName(), REQUIRED).set(true);
-            operation.get(REQUEST_PROPERTIES, BOOTSTRAPCONTEXT.getName(), DESCRIPTION).set(bundle.getString(BOOTSTRAPCONTEXT.getName()));
-            operation.get(REQUEST_PROPERTIES, BOOTSTRAPCONTEXT.getName(), TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, BOOTSTRAPCONTEXT.getName(), REQUIRED).set(false);
-            operation.get(REQUEST_PROPERTIES, BEANVALIDATIONGROUPS.getName(), DESCRIPTION).set(bundle.getString(BEANVALIDATIONGROUPS.getName()));
-            operation.get(REQUEST_PROPERTIES, BEANVALIDATIONGROUPS.getName(), TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, BEANVALIDATIONGROUPS.getName(), REQUIRED).set(false);
-
-
+            for (SimpleAttributeDefinition propertyType : RESOURCEADAPTER_ATTRIBUTE) {
+                if (propertyType.getType() == ModelType.LIST) {
+                    if (propertyType.getType() == ModelType.LIST) {
+                        operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
+                        operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getType());
+                        operation.get(REQUEST_PROPERTIES, propertyType.getName(), VALUE_TYPE).set(ModelType.STRING);
+                        operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(false);
+                    }
+                } else {
+                    propertyType.addOperationParameterDescription(bundle, null, operation);
+                }
+            }
 
             return operation;
         }

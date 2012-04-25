@@ -23,8 +23,18 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.CommonAttributes.DEFAULT_STACK;
 import static org.jboss.as.clustering.jgroups.subsystem.CommonAttributes.VALUE;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
@@ -130,9 +140,6 @@ public class JGroupsDescriptions {
         final ModelNode transport = createDescription(resources, "jgroups.stack.transport");
         // attributes for adding a transport
         for (AttributeDefinition attr : CommonAttributes.TRANSPORT_ATTRIBUTES) {
-            // don't add PROPERTIES to the resource - just its add operation
-            if (attr.getName().equals(CommonAttributes.PROPERTIES.getName()))
-                continue ;
             attr.addResourceAttributeDescription(resources, "jgroups.stack.transport", transport);
         }
         // information about its child "property=*"
@@ -146,7 +153,7 @@ public class JGroupsDescriptions {
     static ModelNode getTransportAddDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
         final ModelNode op = createOperationDescription(ADD, resources, "jgroups.stack.transport.add");
-        for (AttributeDefinition attr : CommonAttributes.TRANSPORT_ATTRIBUTES) {
+        for (AttributeDefinition attr : CommonAttributes.TRANSPORT_PARAMETERS) {
             attr.addOperationParameterDescription(resources, "jgroups.stack.transport", op);
         }
         return op;
@@ -166,9 +173,6 @@ public class JGroupsDescriptions {
         final ModelNode protocol = createDescription(resources, "jgroups.stack.protocol");
         // attributes for adding a protocol
         for (AttributeDefinition attr : CommonAttributes.PROTOCOL_ATTRIBUTES) {
-            // don't add PROPERTIES to the resource - just its add operation
-            if (attr.getName().equals(CommonAttributes.PROPERTIES.getName()))
-                continue ;
             attr.addResourceAttributeDescription(resources, "jgroups.stack.protocol", protocol);
         }
         // information about its child "property=*"
@@ -182,7 +186,7 @@ public class JGroupsDescriptions {
     static ModelNode getProtocolAddDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
         final ModelNode op = createOperationDescription(ModelKeys.ADD_PROTOCOL, resources, "jgroups.stack.protocol.add-protocol");
-        for (AttributeDefinition attr : CommonAttributes.PROTOCOL_ATTRIBUTES) {
+        for (AttributeDefinition attr : CommonAttributes.PROTOCOL_PARAMETERS) {
             attr.addOperationParameterDescription(resources, "jgroups.stack.protocol", op);
         }
         return op;
