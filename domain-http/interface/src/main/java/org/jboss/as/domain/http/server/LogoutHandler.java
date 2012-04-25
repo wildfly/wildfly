@@ -52,7 +52,7 @@ class LogoutHandler implements ManagementHttpHandler {
         boolean opera = userAgent != null && userAgent.contains("Opera");
         boolean win = !opera && userAgent != null && userAgent.contains("MSIE");
 
-        String referrer = responseHeaders.getFirst("Referrer");
+        String referrer = responseHeaders.getFirst("Referer");
 
         // Calculate location URL
         String protocol = "http";
