@@ -89,7 +89,7 @@ public class PersistentBundleInstallService extends AbstractService<Void> {
 
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
-        LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
         try {
             BundleManager bundleManager = injectedBundleManager.getValue();
             StorageStateProvider storageStateProvider = injectedStorageProvider.getValue();

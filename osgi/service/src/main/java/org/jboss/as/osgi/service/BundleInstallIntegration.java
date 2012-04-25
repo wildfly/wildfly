@@ -82,7 +82,7 @@ public class BundleInstallIntegration implements BundleInstallHandler {
     @Override
     public void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
-        LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
         deploymentManager = new ModelControllerServerDeploymentManager(injectedController.getValue());
         serviceTarget = context.getChildTarget();
     }
@@ -90,7 +90,7 @@ public class BundleInstallIntegration implements BundleInstallHandler {
     @Override
     public void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
-        LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
     }
 
     @Override

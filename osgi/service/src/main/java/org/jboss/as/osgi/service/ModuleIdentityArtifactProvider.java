@@ -155,7 +155,7 @@ final class ModuleIdentityArtifactProvider extends AbstractService<Void> impleme
         String identifierPath = identifier.getName().replace('.', '/') + "/" + identifier.getSlot();
         File entryDir = new File(rootDir + "/" + identifierPath);
         if (entryDir.isDirectory() == false) {
-            LOGGER.debugf("Cannot obtain directory: %s", entryDir);
+            LOGGER.tracef("Cannot obtain directory: %s", entryDir);
             return null;
         }
 
@@ -165,17 +165,17 @@ final class ModuleIdentityArtifactProvider extends AbstractService<Void> impleme
             }
         });
         if (files.length == 0) {
-            LOGGER.debugf("Cannot find jar in: %s", entryDir);
+            LOGGER.tracef("Cannot find jar in: %s", entryDir);
             return null;
         }
         if (files.length > 1) {
-            LOGGER.debugf("Multiple jars in: %s", entryDir);
+            LOGGER.tracef("Multiple jars in: %s", entryDir);
             return null;
         }
 
         File entryFile = new File(entryDir + "/" + files[0]);
         if (entryFile.exists() == false) {
-            LOGGER.debugf("File does not exist: %s", entryFile);
+            LOGGER.tracef("File does not exist: %s", entryFile);
             return null;
         }
 
