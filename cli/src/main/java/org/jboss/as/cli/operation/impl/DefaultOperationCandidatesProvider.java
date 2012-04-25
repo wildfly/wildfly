@@ -168,7 +168,7 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
         ModelNode request;
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(prefix);
         try {
-            builder.setOperationName("read-operation-names");
+            builder.setOperationName(Util.READ_OPERATION_NAMES);
             request = builder.buildRequest();
         } catch (OperationFormatException e1) {
             throw new IllegalStateException("Failed to build operation", e1);
@@ -353,6 +353,11 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
             @Override
             public CommandLineCompleter createCompleter(OperationRequestAddress address) {
                 return new PropertyNameCompleter(address, true);
+            }});
+        addGlobalOpPropCompleter(Util.WRITE_ATTRIBUTE, Util.VALUE, new CommandLineCompleterFactory(){
+            @Override
+            public CommandLineCompleter createCompleter(OperationRequestAddress address) {
+                return new SimpleDependentValueCompleter(address, Util.NAME);
             }});
         addGlobalOpPropCompleter(Util.READ_OPERATION_DESCRIPTION, Util.NAME, new CommandLineCompleterFactory(){
             @Override
