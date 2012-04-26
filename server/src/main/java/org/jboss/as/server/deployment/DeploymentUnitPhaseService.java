@@ -25,6 +25,7 @@ package org.jboss.as.server.deployment;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
@@ -72,8 +73,8 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     public synchronized void start(final StartContext context) throws StartException {
         final DeployerChains chains = deployerChainsInjector.getValue();
         final DeploymentUnit deploymentUnit = this.deploymentUnit;
-        final List<DeploymentUnitProcessor> list = chains.getChain(phase);
-        final ListIterator<DeploymentUnitProcessor> iterator = list.listIterator();
+        final List<RegisteredDeploymentUnitProcessor> list = chains.getChain(phase);
+        final ListIterator<RegisteredDeploymentUnitProcessor> iterator = list.listIterator();
         final ServiceContainer container = context.getController().getServiceContainer();
         final ServiceTarget serviceTarget = context.getChildTarget().subTarget();
         final Phase nextPhase = phase.next();
@@ -109,12 +110,14 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         }
 
         while (iterator.hasNext()) {
-            final DeploymentUnitProcessor processor = iterator.next();
+            final RegisteredDeploymentUnitProcessor processor = iterator.next();
             try {
-                processor.deploy(processorContext);
+                if(shouldRun(deploymentUnit, processor)) {
+                    processor.getProcessor().deploy(processorContext);
+                }
             } catch (Throwable e) {
                 while (iterator.hasPrevious()) {
-                    final DeploymentUnitProcessor prev = iterator.previous();
+                    final RegisteredDeploymentUnitProcessor prev = iterator.previous();
                     safeUndeploy(deploymentUnit, phase, prev);
                 }
                 throw ServerMessages.MESSAGES.deploymentPhaseFailed(phase, deploymentUnit, e);
@@ -155,19 +158,21 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     public synchronized void stop(final StopContext context) {
         final DeploymentUnit deploymentUnitContext = deploymentUnit;
         final DeployerChains chains = deployerChainsInjector.getValue();
-        final List<DeploymentUnitProcessor> list = chains.getChain(phase);
-        final ListIterator<DeploymentUnitProcessor> iterator = list.listIterator(list.size());
+        final List<RegisteredDeploymentUnitProcessor> list = chains.getChain(phase);
+        final ListIterator<RegisteredDeploymentUnitProcessor> iterator = list.listIterator(list.size());
         while (iterator.hasPrevious()) {
-            final DeploymentUnitProcessor prev = iterator.previous();
+            final RegisteredDeploymentUnitProcessor prev = iterator.previous();
             safeUndeploy(deploymentUnitContext, phase, prev);
         }
     }
 
-    private static void safeUndeploy(final DeploymentUnit deploymentUnit, final Phase phase, final DeploymentUnitProcessor prev) {
+    private static void safeUndeploy(final DeploymentUnit deploymentUnit, final Phase phase, final RegisteredDeploymentUnitProcessor prev) {
         try {
-            prev.undeploy(deploymentUnit);
+            if(shouldRun(deploymentUnit, prev)) {
+                prev.getProcessor().undeploy(deploymentUnit);
+            }
         } catch (Throwable t) {
-            ServerLogger.DEPLOYMENT_LOGGER.caughtExceptionUndeploying(t, prev, phase, deploymentUnit);
+            ServerLogger.DEPLOYMENT_LOGGER.caughtExceptionUndeploying(t, prev.getProcessor(), phase, deploymentUnit);
         }
     }
 
@@ -177,5 +182,18 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
 
     InjectedValue<DeployerChains> getDeployerChainsInjector() {
         return deployerChainsInjector;
+    }
+
+    private static boolean shouldRun(final DeploymentUnit unit, final RegisteredDeploymentUnitProcessor deployer) {
+        Set<String> shouldNotRun = unit.getAttachment(Attachments.EXCLUDED_SUBSYSTEMS);
+        if(shouldNotRun == null) {
+            if(unit.getParent() != null) {
+                shouldNotRun = unit.getParent().getAttachment(Attachments.EXCLUDED_SUBSYSTEMS);
+            }
+            if(shouldNotRun == null) {
+                return true;
+            }
+        }
+        return !shouldNotRun.contains(deployer.getSubsystemName());
     }
 }

@@ -86,6 +86,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
 
     private static final QName ROOT_1_0 = new QName(JBossDeploymentStructureParser10.NAMESPACE_1_0, "jboss-deployment-structure");
     private static final QName ROOT_1_1 = new QName(JBossDeploymentStructureParser11.NAMESPACE_1_1, "jboss-deployment-structure");
+    private static final QName ROOT_1_2 = new QName(JBossDeploymentStructureParser12.NAMESPACE_1_2, "jboss-deployment-structure");
     private static final QName ROOT_NO_NAMESPACE = new QName("jboss-deployment-structure");
 
 
@@ -99,6 +100,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         mapper = XMLMapper.Factory.create();
         mapper.registerRootElement(ROOT_1_0, JBossDeploymentStructureParser10.INSTANCE);
         mapper.registerRootElement(ROOT_1_1, JBossDeploymentStructureParser11.INSTANCE);
+        mapper.registerRootElement(ROOT_1_2, JBossDeploymentStructureParser12.INSTANCE);
         mapper.registerRootElement(ROOT_NO_NAMESPACE, JBossDeploymentStructureParser11.INSTANCE);
     }
 
@@ -223,6 +225,10 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES, dependency);
         }
         moduleSpec.setLocalLast(rootDeploymentSpecification.isLocalLast());
+
+        if(rootDeploymentSpecification.getExcludedSubsystems() != null) {
+            deploymentUnit.putAttachment(Attachments.EXCLUDED_SUBSYSTEMS, rootDeploymentSpecification.getExcludedSubsystems());
+        }
     }
 
     private Map<VirtualFile, ResourceRoot> resourceRoots(final DeploymentUnit deploymentUnit) {
@@ -249,7 +255,10 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
 
     @Override
     public void undeploy(final DeploymentUnit context) {
-
+        //any processors from these subsystems that run before this DUP
+        //will have run, so we need to clear this to make sure their undeploy
+        //will be called
+        context.removeAttachment(Attachments.EXCLUDED_SUBSYSTEMS);
     }
 
     private ParseResult parse(final File file, final DeploymentUnit deploymentUnit, final ModuleLoader moduleLoader) throws DeploymentUnitProcessingException {

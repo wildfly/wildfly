@@ -64,6 +64,12 @@ public final class Attachments {
     public static final AttachmentKey<AttachmentList<AttachableDependency>> NEXT_PHASE_ATTACHABLE_DEPS = AttachmentKey.createList(AttachableDependency.class);
 
     /**
+     * A set of subsystem names that should not be processed. Any subsystem whos name is in this list will not have
+     * its deployment unit processors run.
+     */
+    public static final AttachmentKey<Set<String>> EXCLUDED_SUBSYSTEMS = AttachmentKey.create(Set.class);
+
+    /**
      * The deployments runtime name
      *
      * @deprecated use {@link org.jboss.as.server.deployment.DeploymentUnit#getName()}

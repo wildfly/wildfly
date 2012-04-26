@@ -3,6 +3,7 @@ package org.jboss.as.server.deployment.module.descriptor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.server.deployment.module.FilterSpecification;
 import org.jboss.as.server.deployment.module.ModuleDependency;
@@ -24,6 +25,16 @@ class ModuleStructureSpec {
     private final List<String> classFileTransformers = new ArrayList<String>();
     private final List<ModuleIdentifier> aliases = new ArrayList<ModuleIdentifier>();
     private final List<ModuleIdentifier> annotationModules = new ArrayList<ModuleIdentifier>();
+
+    /**
+     * Note that this being null is different to an empty list.
+     *
+     * Null means unspecified, while empty means specified but empty
+     *
+     * A sub deployment will inherit this from its parent if it is unspecified, but not if
+     * it is empty but specified.
+     */
+    private Set<String> excludedSubsystems;
 
     private boolean localLast = false;
 
@@ -93,5 +104,13 @@ class ModuleStructureSpec {
 
     public void setLocalLast(final boolean localLast) {
         this.localLast = localLast;
+    }
+
+    public Set<String> getExcludedSubsystems() {
+        return excludedSubsystems;
+    }
+
+    public void setExcludedSubsystems(final Set<String> excludedSubsystems) {
+        this.excludedSubsystems = excludedSubsystems;
     }
 }
