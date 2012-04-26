@@ -33,6 +33,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
+import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.process.protocol.StreamUtils;
@@ -190,6 +191,7 @@ public final class DomainServerMain {
         final HostControllerServerClient client = new HostControllerServerClient(serverName, serverProcessName, host, port, authKey);
                 serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
                     .addDependency(endpointName, Endpoint.class, client.getEndpointInjector())
+                    .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, client.getProcessStateService())
                     .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, client.getServerControllerInjector())
                     .addDependency(RemoteFileRepository.SERVICE_NAME, RemoteFileRepository.class, client.getRemoteFileRepositoryInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE)
