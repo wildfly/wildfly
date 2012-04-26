@@ -96,8 +96,9 @@ public class SharedTldsMetaDataBuilder {
 
     public List<TldMetaData> getSharedTlds(DeploymentUnit deploymentUnit) {
         final List<TldMetaData> metadata = new ArrayList<TldMetaData>();
+        final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
 
-        if (!JsfVersionMarker.getVersion(deploymentUnit).equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) {
+        if (!JsfVersionMarker.getVersion(topLevelDeployment).equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) {
             metadata.addAll(jsfTlds);
         }
 
