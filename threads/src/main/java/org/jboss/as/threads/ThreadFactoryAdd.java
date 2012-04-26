@@ -83,7 +83,6 @@ public class ThreadFactoryAdd extends AbstractAddStepHandler {
         service.setPriority(priority);
         service.setThreadGroupName(groupName);
         ServiceBuilder<?> serviceBuilder = target.addService(ThreadsServices.threadFactoryName(name), service)
-                .addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE);
         if (verificationHandler != null) {
             serviceBuilder.addListener(verificationHandler);
