@@ -24,7 +24,7 @@ package org.jboss.as.connector.workmanager;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.jca.core.api.workmanager.WorkManager;
-import org.jboss.jca.core.security.UsersRoles;
+import org.jboss.jca.core.security.DefaultCallback;
 import org.jboss.jca.core.spi.security.Callback;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
 import org.jboss.msc.inject.Injector;
@@ -83,18 +83,14 @@ public final class WorkManagerService implements Service<WorkManager> {
         }
         this.value.setXATerminator(new XATerminatorImpl(xaTerminator.getValue()));
 
-        // TODO - Remove and do proper integration
-        String usersProperties = System.getProperty("users.properties");
-        String rolesProperties = System.getProperty("roles.properties");
-
-        if (usersProperties != null && rolesProperties != null) {
+        // TODO - Remove and do proper integration (IronJacamar 1.1)
+        String callbackProperties = System.getProperty("callback.properties");
+        if (callbackProperties != null) {
             try {
-                UsersRoles usersRoles = new UsersRoles();
-                usersRoles.setUsersProperties(usersProperties);
-                usersRoles.setRolesProperties(rolesProperties);
-                usersRoles.start();
+                DefaultCallback defaultCallback = new DefaultCallback(callbackProperties);
+                defaultCallback.start();
 
-                this.callback = usersRoles;
+                this.callback = defaultCallback;
                 this.value.setCallbackSecurity(callback);
             } catch (Throwable t) {
                 ROOT_LOGGER.debug(t.getMessage(), t);

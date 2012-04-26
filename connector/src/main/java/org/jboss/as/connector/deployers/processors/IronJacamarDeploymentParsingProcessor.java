@@ -35,7 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
-import org.jboss.jca.common.metadata.ironjacamar.IronJacamarParser;
+import org.jboss.jca.common.metadata.ironjacamar.v10.IronJacamarParser;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 

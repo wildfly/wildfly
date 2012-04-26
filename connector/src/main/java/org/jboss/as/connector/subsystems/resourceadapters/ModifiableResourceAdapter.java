@@ -26,9 +26,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
-import org.jboss.jca.common.api.metadata.common.CommonConnDef;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.metadata.resourceadapter.ResourceAdapterImpl;
+import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
+import org.jboss.jca.common.metadata.resourceadapter.v10.ResourceAdapterImpl;
 import org.jboss.msc.service.ServiceName;
 
 

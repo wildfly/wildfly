@@ -34,6 +34,7 @@ import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOW_MULTIPLE_USERS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
@@ -92,8 +93,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.common.api.metadata.Defaults;
-import org.jboss.jca.common.api.metadata.common.CommonPool;
-import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.FlushStrategy;
@@ -103,14 +102,16 @@ import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.TransactionIsolation;
 import org.jboss.jca.common.api.metadata.ds.Validation;
+import org.jboss.jca.common.api.metadata.ds.v11.DsPool;
+import org.jboss.jca.common.api.metadata.ds.v11.DsXaPool;
 import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.jca.common.metadata.common.CommonPoolImpl;
-import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.jca.common.metadata.ds.DsSecurityImpl;
 import org.jboss.jca.common.metadata.ds.StatementImpl;
 import org.jboss.jca.common.metadata.ds.TimeOutImpl;
 import org.jboss.jca.common.metadata.ds.ValidationImpl;
+import org.jboss.jca.common.metadata.ds.v11.DsPoolImpl;
+import org.jboss.jca.common.metadata.ds.v11.DsXaPoolImpl;
 
 /**
  * Utility used to help convert between JCA spi data-source instances and model
@@ -141,8 +142,9 @@ class DataSourceModelNodeUtil {
         final boolean useStrictMin = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_USE_STRICT_MIN, Defaults.USE_STRICT_MIN);
         final FlushStrategy flushStrategy = dataSourceNode.hasDefined(POOL_FLUSH_STRATEGY.getName()) ? FlushStrategy.forName(dataSourceNode
                 .get(POOL_FLUSH_STRATEGY.getName()).asString()) : Defaults.FLUSH_STRATEGY;
+        final Boolean allowMultipleUsers = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ALLOW_MULTIPLE_USERS, Defaults.ALLOW_MULTIPLE_USERS);
 
-        final CommonPool pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy);
+           final DsPool pool = new DsPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, allowMultipleUsers);
 
         final String username =getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, USERNAME, null);
 
@@ -181,7 +183,7 @@ class DataSourceModelNodeUtil {
 
         Long backgroundValidationMillis = getLongIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATIONMILLIS, null);
         final boolean backgroundValidation = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATION, Defaults.BACKGROUND_VALIDATION);
-        boolean useFastFail = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_FAST_FAIL, Defaults.USE_FAST_FAIl);
+        boolean useFastFail = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_FAST_FAIL, Defaults.USE_FAST_FAIL);
         final boolean validateOnMatch = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, VALIDATEONMATCH, Defaults.VALIDATE_ON_MATCH);
         final boolean spy = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SPY, Defaults.SPY);
         final boolean useCcm = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_CCM, Defaults.USE_CCM);
@@ -220,8 +222,10 @@ class DataSourceModelNodeUtil {
         final FlushStrategy flushStrategy = dataSourceNode.hasDefined(POOL_FLUSH_STRATEGY.getName()) ? FlushStrategy.forName(dataSourceNode
                 .get(POOL_FLUSH_STRATEGY.getName()).asString()) : Defaults.FLUSH_STRATEGY;
 
-        final CommonXaPool xaPool = new CommonXaPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy,
-                isSameRmOverride, interleaving, padXid, wrapXaDataSource, noTxSeparatePool);
+        final Boolean allowMultipleUsers = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ALLOW_MULTIPLE_USERS, Defaults.ALLOW_MULTIPLE_USERS);
+
+        final DsXaPool xaPool = new DsXaPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy,
+                isSameRmOverride, interleaving, padXid, wrapXaDataSource, noTxSeparatePool, allowMultipleUsers);
 
         final String username = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, USERNAME, null);
         final String password = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD, null);
@@ -260,7 +264,7 @@ class DataSourceModelNodeUtil {
 
         Long backgroundValidationMillis = getLongIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATIONMILLIS, null);
         final Boolean backgroundValidation = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATION, Defaults.BACKGROUND_VALIDATION);
-        boolean useFastFail = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_FAST_FAIL, Defaults.USE_FAST_FAIl);
+        boolean useFastFail = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_FAST_FAIL, Defaults.USE_FAST_FAIL);
         final Boolean validateOnMatch = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, VALIDATEONMATCH, Defaults.VALIDATE_ON_MATCH);
         final Boolean spy = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SPY, Defaults.SPY);
         final Boolean useCcm = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_CCM, Defaults.USE_CCM);

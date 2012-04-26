@@ -30,7 +30,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
-import org.jboss.jca.common.api.metadata.common.CommonConnDef;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonSecurity;
 import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
@@ -40,7 +39,8 @@ import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.FlushStrategy;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
+import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
+import org.jboss.jca.common.api.metadata.resourceadapter.v10.ResourceAdapter;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.common.CommonPoolImpl;
 import org.jboss.jca.common.metadata.common.CommonSecurityImpl;
@@ -181,7 +181,7 @@ public class RaOperationUtil {
         }
         Long backgroundValidationMillis = getLongIfSetOrGetDefault(context, operation, BACKGROUNDVALIDATIONMILLIS, null);
         boolean backgroundValidation = getBooleanIfSetOrGetDefault(context, operation, BACKGROUNDVALIDATION, Defaults.BACKGROUND_VALIDATION);
-        boolean useFastFail = getBooleanIfSetOrGetDefault(context, operation, USE_FAST_FAIL, Defaults.USE_FAST_FAIl);
+        boolean useFastFail = getBooleanIfSetOrGetDefault(context, operation, USE_FAST_FAIL, Defaults.USE_FAST_FAIL);
         CommonValidation validation = new CommonValidationImpl(backgroundValidation, backgroundValidationMillis,
                 useFastFail);
         final String recoveryUsername = getResolvedStringIfSetOrGetDefault(context, operation, RECOVERY_USERNAME.getName(), null);

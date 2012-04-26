@@ -37,7 +37,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
-import org.jboss.jca.common.metadata.ds.DsParser;
+import org.jboss.jca.common.metadata.ds.v11.DsParser;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
