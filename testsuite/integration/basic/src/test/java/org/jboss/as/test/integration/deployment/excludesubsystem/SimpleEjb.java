@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.deployment;
+package org.jboss.as.test.integration.deployment.excludesubsystem;
 
-import java.util.EnumMap;
-import java.util.List;
+import javax.ejb.Stateless;
 
-/**
- * The deployer chains service value object.
- *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
- */
-final class DeployerChains {
-    private final EnumMap<Phase, List<RegisteredDeploymentUnitProcessor>> phases;
-
-    DeployerChains(final EnumMap<Phase, List<RegisteredDeploymentUnitProcessor>> phases) {
-        this.phases = phases;
-    }
-
-    List<RegisteredDeploymentUnitProcessor> getChain(Phase phase) {
-        return phases.get(phase);
-    }
+@Stateless
+public class SimpleEjb {
 }

@@ -23,7 +23,6 @@
 package org.jboss.as.server;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
@@ -39,6 +38,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.server.deployment.DeployerChainsService;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.RegisteredDeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.dmr.ModelNode;
 
@@ -52,8 +52,8 @@ public class DeployerChainAddHandler implements OperationStepHandler, Descriptio
     public static final DeployerChainAddHandler INSTANCE = new DeployerChainAddHandler();
 
     static void addDeploymentProcessor(final String subsystemName, Phase phase, int priority, DeploymentUnitProcessor processor) {
-        final EnumMap<Phase, Set<RegisteredProcessor>> deployerMap = INSTANCE.deployerMap;
-        deployerMap.get(phase).add(new RegisteredProcessor(priority, processor));
+        final EnumMap<Phase, Set<RegisteredDeploymentUnitProcessor>> deployerMap = INSTANCE.deployerMap;
+        deployerMap.get(phase).add(new RegisteredDeploymentUnitProcessor(priority, processor, subsystemName));
     }
 
     static ModelNode OPERATION = new ModelNode();
@@ -64,19 +64,19 @@ public class DeployerChainAddHandler implements OperationStepHandler, Descriptio
 
     // This map is concurrently read by multiple threads but will only
     // be written by a single thread, the boot thread
-    private final EnumMap<Phase, Set<RegisteredProcessor>> deployerMap;
+    private final EnumMap<Phase, Set<RegisteredDeploymentUnitProcessor>> deployerMap;
 
     private DeployerChainAddHandler() {
-        final EnumMap<Phase, Set<RegisteredProcessor>> map = new EnumMap<Phase, Set<RegisteredProcessor>>(Phase.class);
+        final EnumMap<Phase, Set<RegisteredDeploymentUnitProcessor>> map = new EnumMap<Phase, Set<RegisteredDeploymentUnitProcessor>>(Phase.class);
         for (Phase phase : Phase.values()) {
-            map.put(phase, new ConcurrentSkipListSet<RegisteredProcessor>());
+            map.put(phase, new ConcurrentSkipListSet<RegisteredDeploymentUnitProcessor>());
         }
         this.deployerMap = map;
     }
 
     /** This is only public so AbstractSubsystemTest can use it; otherwise it would be package-protected. */
     public void clearDeployerMap() {
-        for (Set<RegisteredProcessor> set : deployerMap.values()) {
+        for (Set<RegisteredDeploymentUnitProcessor> set : deployerMap.values()) {
             set.clear();
         }
     }
@@ -116,15 +116,15 @@ public class DeployerChainAddHandler implements OperationStepHandler, Descriptio
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-            final EnumMap<Phase, List<DeploymentUnitProcessor>> finalDeployers = new EnumMap<Phase, List<DeploymentUnitProcessor>>(Phase.class);
-            final List<DeploymentUnitProcessor> processorList = new ArrayList<DeploymentUnitProcessor>(256);
+            final EnumMap<Phase, List<RegisteredDeploymentUnitProcessor>> finalDeployers = new EnumMap<Phase, List<RegisteredDeploymentUnitProcessor>>(Phase.class);
+            final List<RegisteredDeploymentUnitProcessor> processorList = new ArrayList<RegisteredDeploymentUnitProcessor>(256);
             for (Phase phase : Phase.values()) {
                 processorList.clear();
-                final Set<RegisteredProcessor> processorSet = deployerMap.get(phase);
-                for (RegisteredProcessor processor : processorSet) {
-                    processorList.add(processor.getProcessor());
+                final Set<RegisteredDeploymentUnitProcessor> processorSet = deployerMap.get(phase);
+                for (RegisteredDeploymentUnitProcessor processor : processorSet) {
+                    processorList.add(processor);
                 }
-                finalDeployers.put(phase, Arrays.asList(processorList.toArray(new DeploymentUnitProcessor[processorList.size()])));
+                finalDeployers.put(phase, new ArrayList<RegisteredDeploymentUnitProcessor>(processorList));
             }
             final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
             DeployerChainsService.addService(context.getServiceTarget(), finalDeployers, verificationHandler);
@@ -140,27 +140,4 @@ public class DeployerChainAddHandler implements OperationStepHandler, Descriptio
         }
     }
 
-    static final class RegisteredProcessor implements Comparable<RegisteredProcessor> {
-        private final int priority;
-        private final DeploymentUnitProcessor processor;
-
-        RegisteredProcessor(final int priority, final DeploymentUnitProcessor processor) {
-            this.priority = priority;
-            this.processor = processor;
-        }
-
-        @Override
-        public int compareTo(final RegisteredProcessor o) {
-            final int rel = Integer.signum(priority - o.priority);
-            return rel == 0 ? processor.getClass().getName().compareTo(o.getClass().getName()) : rel;
-        }
-
-        int getPriority() {
-            return priority;
-        }
-
-        DeploymentUnitProcessor getProcessor() {
-            return processor;
-        }
-    }
 }

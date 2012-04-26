@@ -124,6 +124,8 @@ public final class ServerService extends AbstractControllerService {
     private final AbstractVaultReader vaultReader;
     private final RemoteFileRepository remoteFileRepository;
 
+    private static final String SERVER_NAME = "server";
+
     /**
      * Construct a new instance.
      *
@@ -217,7 +219,7 @@ public final class ServerService extends AbstractControllerService {
 
 
             // Activate module loader
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_SERVICE_MODULE_LOADER, new DeploymentUnitProcessor() {
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_SERVICE_MODULE_LOADER, new DeploymentUnitProcessor() {
                 @Override
                 public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
                     phaseContext.getDeploymentUnit().putAttachment(Attachments.SERVICE_MODULE_LOADER, injectedModuleLoader.getValue());
@@ -231,37 +233,37 @@ public final class ServerService extends AbstractControllerService {
             });
 
             // Activate core processors for jar deployment
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EXPLODED_MOUNT, new DeploymentRootExplodedMountProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MOUNT, new DeploymentRootMountProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MANIFEST, new ManifestAttachmentProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_ADDITIONAL_MANIFEST, new ManifestAttachmentProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_SUB_DEPLOYMENT, new SubDeploymentProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MODULE_IDENTIFIERS, new ModuleIdentifierProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_ANNOTATION_INDEX, new AnnotationIndexProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE_DESCRIPTOR, new DeploymentStructureDescriptorParser());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_CLASS_PATH, new ManifestClassPathProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DEPENDENCIES_MANIFEST, new ManifestDependencyProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_COMPOSITE_ANNOTATION_INDEX, new CompositeIndexProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EXTENSION_LIST, new ManifestExtensionListProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EXTENSION_NAME, new ManifestExtensionNameProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_SERVICE_LOADER_DEPLOYMENT, new ServiceLoaderProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MODULE, new ModuleDependencyProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_SAR_MODULE, new ServiceActivatorDependencyProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_CLASS_PATH, new ModuleClassPathProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_EXTENSION_LIST, new ModuleExtensionListProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_SUB_DEPLOYMENTS, new SubDeploymentDependencyProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JDK, new ServerDependenciesProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_VISIBLE_MODULES, new DeploymentVisibilityProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_DRIVERS, new DriverDependenciesProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.CONFIGURE_MODULE, Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_INSTALL_EXTENSION, new ModuleExtensionNameProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_REFLECTION_INDEX, new InstallReflectionIndexProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_TRANSFORMER, new ClassFileTransformerProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVICE_ACTIVATOR, new ServiceActivatorProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_EXPLODED_MOUNT, new DeploymentRootExplodedMountProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_MOUNT, new DeploymentRootMountProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_MANIFEST, new ManifestAttachmentProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_ADDITIONAL_MANIFEST, new ManifestAttachmentProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_SUB_DEPLOYMENT, new SubDeploymentProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_MODULE_IDENTIFIERS, new ModuleIdentifierProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_ANNOTATION_INDEX, new AnnotationIndexProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE_DESCRIPTOR, new DeploymentStructureDescriptorParser());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_CLASS_PATH, new ManifestClassPathProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.PARSE, Phase.PARSE_DEPENDENCIES_MANIFEST, new ManifestDependencyProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.PARSE, Phase.PARSE_COMPOSITE_ANNOTATION_INDEX, new CompositeIndexProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.PARSE, Phase.PARSE_EXTENSION_LIST, new ManifestExtensionListProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.PARSE, Phase.PARSE_EXTENSION_NAME, new ManifestExtensionNameProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.PARSE, Phase.PARSE_SERVICE_LOADER_DEPLOYMENT, new ServiceLoaderProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_MODULE, new ModuleDependencyProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_SAR_MODULE, new ServiceActivatorDependencyProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_CLASS_PATH, new ModuleClassPathProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_EXTENSION_LIST, new ModuleExtensionListProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_SUB_DEPLOYMENTS, new SubDeploymentDependencyProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JDK, new ServerDependenciesProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_VISIBLE_MODULES, new DeploymentVisibilityProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_DRIVERS, new DriverDependenciesProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.CONFIGURE_MODULE, Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.POST_MODULE, Phase.POST_MODULE_INSTALL_EXTENSION, new ModuleExtensionNameProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.POST_MODULE, Phase.POST_MODULE_REFLECTION_INDEX, new InstallReflectionIndexProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.POST_MODULE, Phase.POST_MODULE_TRANSFORMER, new ClassFileTransformerProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.INSTALL, Phase.INSTALL_SERVICE_ACTIVATOR, new ServiceActivatorProcessor());
 
             // Ext integration deployers
 
-            DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_SEAM, new Seam2Processor(serviceTarget));
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_SEAM, new Seam2Processor(serviceTarget));
 
             try {
                 // Boot but don't rollback on runtime failures
