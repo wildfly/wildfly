@@ -47,7 +47,7 @@ public interface Cache<K extends Serializable, V extends Identifiable<K>> extend
 
     /**
      * Get the specified object from cache. This will mark
-     * the object as being in use.
+     * the object as being in use, and increase its usage count.
      *
      * @param key the identifier of the object
      * @return the object, or null if it does not exist
@@ -55,7 +55,7 @@ public interface Cache<K extends Serializable, V extends Identifiable<K>> extend
     V get(K key);
 
     /**
-     * Release the object from use.
+     * Decreases the objects usage count. If the usage count hits 0 then the object will be released.
      *
      * @param obj the object
      */

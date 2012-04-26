@@ -153,7 +153,7 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
 
                     entry.setPrePassivated(false);
 
-                    entry.setInUse(true);
+                    entry.increaseUsageCount();
                     this.cancelExpirationPassivation(key);
                     return entry;
                 }
@@ -216,8 +216,7 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
         }
         entry.lock();
         try {
-            entry.setInUse(false);
-
+            entry.decreaseUsageCount();
             boolean modified = entry.isModified();
             if (modified) {
                 if (isClustered()) {
@@ -226,7 +225,9 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
             }
 
             store.update(entry, modified);
-            this.scheduleExpirationPassivation(key);
+            if (!entry.isInUse()) {
+                this.scheduleExpirationPassivation(key);
+            }
             return entry;
         } finally {
             entry.unlock();
@@ -252,7 +253,7 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
         entry.lock();
         try {
             if (entry.isInUse()) {
-                entry.setInUse(false);
+                entry.decreaseUsageCount();
             }
             entryFactory.destroyEntry(entry);
             factory.destroyInstance(entry.getUnderlyingItem());

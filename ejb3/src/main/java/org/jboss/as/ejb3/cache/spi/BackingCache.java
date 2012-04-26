@@ -63,7 +63,8 @@ public interface BackingCache<K extends Serializable, V extends Cacheable<K>, E 
     E create();
 
     /**
-     * Get the specified object from cache. This will mark the entry as being in use.
+     * Get the specified object from cache. This will mark the entry as being in use, and increase its usage count.
+     *
      *
      * @param key the identifier of the object
      * @return the object
@@ -82,6 +83,8 @@ public interface BackingCache<K extends Serializable, V extends Cacheable<K>, E 
 
     /**
      * Release the object from use.
+     *
+     * This decreases the objects usage count, it will actually be released when the usage count hits 0.
      *
      * @param key the identifier of the object
      *

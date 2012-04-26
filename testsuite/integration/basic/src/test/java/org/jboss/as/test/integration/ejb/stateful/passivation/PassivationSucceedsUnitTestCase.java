@@ -91,8 +91,8 @@ public class PassivationSucceedsUnitTestCase {
 
         remote1.remove();
         remote2.remove();
-        Assert.assertTrue(PassivationInterceptor.getPostActivateTarget() instanceof TestPassivationBean);
-        Assert.assertTrue(PassivationInterceptor.getPrePassivateTarget() instanceof TestPassivationBean);
+        Assert.assertTrue("invalid: " + PassivationInterceptor.getPrePassivateTarget(), PassivationInterceptor.getPrePassivateTarget() instanceof TestPassivationBean);
+        Assert.assertTrue("invalid: " + PassivationInterceptor.getPostActivateTarget(), PassivationInterceptor.getPostActivateTarget() instanceof TestPassivationBean);
     }
 
     @Test

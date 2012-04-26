@@ -122,7 +122,7 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
     public NonPassivatingBackingCacheEntry<K, V> get(K key) throws NoSuchEJBException {
         NonPassivatingBackingCacheEntry<K, V> entry = cache.get(key);
         if (entry == null) return null;
-        entry.setInUse(true);
+        entry.increaseUsageCount();
         this.scheduleExpiration(key, true);
         return entry;
     }
@@ -142,8 +142,10 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
         if (!entry.isInUse()) {
             throw EjbMessages.MESSAGES.cacheEntryNotInUse(key);
         }
-        entry.setInUse(false);
-        this.scheduleExpiration(key, false);
+        entry.decreaseUsageCount();
+        if(!entry.isInUse()) {
+            this.scheduleExpiration(key, false);
+        }
         return entry;
     }
 
@@ -157,7 +159,7 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
         this.scheduleExpiration(key, true);
         NonPassivatingBackingCacheEntry<K, V> entry = cache.remove(key);
         if (entry != null && entry.isInUse()) {
-            entry.setInUse(false);
+            entry.decreaseUsageCount();
         }
         if (entry != null) {
             factory.destroyInstance(entry.getUnderlyingItem());
