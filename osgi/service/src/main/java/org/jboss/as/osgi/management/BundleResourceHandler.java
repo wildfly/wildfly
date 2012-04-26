@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.osgi.parser;
+package org.jboss.as.osgi.management;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
@@ -38,7 +38,8 @@ import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.osgi.OSGiMessages;
+import org.jboss.as.osgi.parser.ModelConstants;
+import org.jboss.as.osgi.parser.OSGiDescriptionProviders;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.osgi.framework.BundleManager;
@@ -52,12 +53,13 @@ import org.osgi.service.startlevel.StartLevel;
  * @author David Bosschaert
  * @author Thomas.Diesler@jboss.com
  */
-public class BundleRuntimeHandler extends AbstractRuntimeOnlyHandler {
+public class BundleResourceHandler extends AbstractRuntimeOnlyHandler {
 
-    static final BundleRuntimeHandler INSTANCE = new BundleRuntimeHandler();
+    public static final BundleResourceHandler INSTANCE = new BundleResourceHandler();
 
     static final String [] ATTRIBUTES = {
         ModelConstants.ID,
+        ModelConstants.LOCATION,
         ModelConstants.STARTLEVEL,
         ModelConstants.STATE,
         ModelConstants.SYMBOLIC_NAME,
@@ -70,19 +72,18 @@ public class BundleRuntimeHandler extends AbstractRuntimeOnlyHandler {
         ModelConstants.STOP
         };
 
-    private BundleRuntimeHandler() {
+    private BundleResourceHandler() {
     }
 
-    void register(ManagementResourceRegistration registry) {
+    public void register(ManagementResourceRegistration registry) {
         for (String attr : ATTRIBUTES) {
             registry.registerReadOnlyAttribute(attr, this, AttributeAccess.Storage.RUNTIME);
         }
-
         for (final String op : OPERATIONS) {
             registry.registerOperationHandler(op, this, new DescriptionProvider() {
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
-                    ResourceBundle resourceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
+                    ResourceBundle resourceBundle = OSGiDescriptionProviders.getResourceBundle(locale);
                     return CommonDescriptions.getDescriptionOnlyOperation(resourceBundle, op, ModelConstants.BUNDLE);
                 }
             }, EnumSet.of(OperationEntry.Flag.RESTART_NONE));
@@ -106,13 +107,13 @@ public class BundleRuntimeHandler extends AbstractRuntimeOnlyHandler {
             context.getResult().set(bundle.getBundleId());
         } else if (ModelConstants.STARTLEVEL.equals(name)) {
             StartLevel startLevel = getStartLevel(context);
-            Bundle bundle = getTargetBundle(context, operation);
-            Integer level = startLevel != null ? startLevel.getBundleStartLevel(bundle) : null;
-            if (level != null) {
-                context.getResult().set(level);
-            } else {
+            if (startLevel == null) {
                 ModelNode failureDescription = context.getFailureDescription();
-                failureDescription.set(OSGiMessages.MESSAGES.startLevelSrviceNotAvailable());
+                failureDescription.set(MESSAGES.startLevelServiceNotAvailable());
+            } else {
+                Bundle bundle = getTargetBundle(context, operation);
+                Integer level = startLevel.getBundleStartLevel(bundle);
+                context.getResult().set(level);
             }
         } else if (ModelConstants.STATE.equals(name)) {
             Bundle bundle = getTargetBundle(context, operation);
@@ -120,6 +121,9 @@ public class BundleRuntimeHandler extends AbstractRuntimeOnlyHandler {
         } else if (ModelConstants.SYMBOLIC_NAME.equals(name)) {
             Bundle bundle = getTargetBundle(context, operation);
             context.getResult().set(bundle.getSymbolicName());
+        } else if (ModelConstants.LOCATION.equals(name)) {
+            Bundle bundle = getTargetBundle(context, operation);
+            context.getResult().set(bundle.getLocation());
         } else if (ModelConstants.TYPE.equals(name)) {
             Bundle bundle = getTargetBundle(context, operation);
             if (bundle.getHeaders().get(Constants.FRAGMENT_HOST) != null) {

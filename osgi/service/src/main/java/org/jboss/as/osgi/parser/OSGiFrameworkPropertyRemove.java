@@ -55,7 +55,7 @@ public class OSGiFrameworkPropertyRemove extends AbstractRemoveStepHandler {
         public ModelNode getModelDescription(Locale locale) {
             ModelNode node = new ModelNode();
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.REMOVE);
-            node.get(ModelDescriptionConstants.DESCRIPTION).set(OSGiSubsystemProviders.getResourceBundle(locale).getString("framework.property.remove"));
+            node.get(ModelDescriptionConstants.DESCRIPTION).set(OSGiDescriptionProviders.getResourceBundle(locale).getString("framework.property.remove"));
             node.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
             node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
             return node;

@@ -24,6 +24,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.as.test.osgi.OSGiManagementTest;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleActivator;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleService;
@@ -47,6 +48,7 @@ import org.osgi.framework.BundleActivator;
 public class SimpleRunAsClientTestCase extends OSGiManagementTest {
 
     private static final String DEPLOYMENT_NAME = "runasclient-test-bundle";
+    private static final String SYMBOLIC_NAME = "test-bundle";
 
     @ArquillianResource
     public Deployer deployer;
@@ -56,7 +58,7 @@ public class SimpleRunAsClientTestCase extends OSGiManagementTest {
 
         deployer.deploy(DEPLOYMENT_NAME);
         try {
-            Long bundleId = getBundleId(DEPLOYMENT_NAME, null);
+            Long bundleId = getBundleId(SYMBOLIC_NAME, null);
             Assert.assertNotNull("Bundle found", bundleId);
             Assert.assertEquals("INSTALLED", getBundleState(bundleId));
 
@@ -64,13 +66,14 @@ public class SimpleRunAsClientTestCase extends OSGiManagementTest {
             Assert.assertEquals("ACTIVE", getBundleState(bundleId));
 
             Map<String, Object> info = getBundleInfo(bundleId);
-            Assert.assertEquals(6, info.size());
-            Assert.assertEquals(bundleId + "L", info.get("id"));
-            Assert.assertEquals("1", info.get("startlevel"));
-            Assert.assertEquals("ACTIVE", info.get("state"));
-            Assert.assertEquals(DEPLOYMENT_NAME, info.get("symbolic-name"));
-            Assert.assertEquals("bundle", info.get("type"));
-            Assert.assertEquals("0.0.0", info.get("version"));
+            Assert.assertEquals(7, info.size());
+            Assert.assertEquals(bundleId + "L", info.get(ModelConstants.ID));
+            Assert.assertEquals("1", info.get(ModelConstants.STARTLEVEL));
+            Assert.assertEquals("ACTIVE", info.get(ModelConstants.STATE));
+            Assert.assertEquals(SYMBOLIC_NAME, info.get(ModelConstants.SYMBOLIC_NAME));
+            Assert.assertEquals(DEPLOYMENT_NAME, info.get(ModelConstants.LOCATION));
+            Assert.assertEquals("bundle", info.get(ModelConstants.TYPE));
+            Assert.assertEquals("0.0.0", info.get(ModelConstants.VERSION));
 
             Assert.assertTrue("Bundle stopped", bundleStop(bundleId));
             Assert.assertEquals("RESOLVED", getBundleState(bundleId));
@@ -82,7 +85,6 @@ public class SimpleRunAsClientTestCase extends OSGiManagementTest {
             Assert.assertEquals("RESOLVED", getBundleState(DEPLOYMENT_NAME));
         } finally {
             deployer.undeploy(DEPLOYMENT_NAME);
-            Assert.assertNull("UNINSTALLED", getBundleState(DEPLOYMENT_NAME));
         }
     }
 
@@ -94,7 +96,7 @@ public class SimpleRunAsClientTestCase extends OSGiManagementTest {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleSymbolicName(SYMBOLIC_NAME);
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivator(SimpleActivator.class);
                 builder.addImportPackages(BundleActivator.class);

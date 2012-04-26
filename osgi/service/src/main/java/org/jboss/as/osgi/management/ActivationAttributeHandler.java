@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.osgi.parser;
+package org.jboss.as.osgi.management;
 
 import java.util.Locale;
 
@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.dmr.ModelNode;
 
@@ -38,7 +39,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ActivationAttributeHandler implements OperationStepHandler {
 
-    static final ActivationAttributeHandler INSTANCE = new ActivationAttributeHandler();
+    public static final ActivationAttributeHandler INSTANCE = new ActivationAttributeHandler();
 
     private ActivationAttributeHandler() {
     }
@@ -46,10 +47,8 @@ public class ActivationAttributeHandler implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         Activation val = Activation.valueOf(operation.require(ModelDescriptionConstants.VALUE).asString().toUpperCase(Locale.ENGLISH));
-
         ModelNode node = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
         node.get(ModelConstants.ACTIVATION).set(val.toString().toLowerCase(Locale.ENGLISH));
-
         context.completeStep();
     }
 }
