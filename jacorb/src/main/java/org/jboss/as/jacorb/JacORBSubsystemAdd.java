@@ -122,8 +122,8 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JACORB, new JacORBDependencyProcessor());
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JACORB, new JacORBMarkerProcessor());
+                processorTarget.addDeploymentProcessor(JacORBExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JACORB, new JacORBDependencyProcessor());
+                processorTarget.addDeploymentProcessor(JacORBExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JACORB, new JacORBMarkerProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
 

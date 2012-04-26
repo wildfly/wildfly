@@ -21,6 +21,11 @@
  */
 package org.jboss.as.appclient.subsystem;
 
+import java.util.List;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -34,10 +39,6 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.List;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -49,7 +50,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
  * @author Stuart Douglas
  */
 public class AppClientExtension implements Extension {
-
 
     public static final String NAMESPACE_1_0 = "urn:jboss:domain:appclient:1.0";
 

@@ -27,7 +27,6 @@ import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.deployers.processors.CachedConnectionManagerSetupProcessor;
 import org.jboss.as.connector.services.CcmService;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -108,7 +107,7 @@ public class CachedConnectionManagerAdd extends AbstractAddStepHandler {
         if (install) {
             context.addStep(new AbstractDeploymentChainStep() {
                 protected void execute(DeploymentProcessorTarget processorTarget) {
-                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_CACHED_CONNECTION_MANAGER, new CachedConnectionManagerSetupProcessor());
+                    processorTarget.addDeploymentProcessor(JcaExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_CACHED_CONNECTION_MANAGER, new CachedConnectionManagerSetupProcessor());
                 }
             }, OperationContext.Stage.RUNTIME);
         }

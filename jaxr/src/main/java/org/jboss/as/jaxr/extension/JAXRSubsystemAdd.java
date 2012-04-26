@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.jaxr.JAXRConfiguration;
+import org.jboss.as.jaxr.JAXRConstants;
 import org.jboss.as.jaxr.service.JAXRConfigurationService;
 import org.jboss.as.jaxr.service.JAXRConnectionFactoryService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -69,7 +70,7 @@ class JAXRSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXR, new JAXRDependencyProcessor());
+                processorTarget.addDeploymentProcessor(JAXRConstants.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXR, new JAXRDependencyProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
 

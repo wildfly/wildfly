@@ -22,14 +22,13 @@
 
 package org.jboss.as.txn.subsystem;
 
-import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
-import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
-import static org.jboss.as.txn.subsystem.CommonAttributes.USEHORNETQSTORE;
-
 import java.util.List;
 
 import javax.transaction.TransactionSynchronizationRegistry;
 
+import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
+import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+import com.arjuna.ats.jts.common.jtsPropertyManager;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -71,9 +70,9 @@ import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
 
-import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
-import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
-import com.arjuna.ats.jts.common.jtsPropertyManager;
+import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
+import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
+import static org.jboss.as.txn.subsystem.CommonAttributes.USEHORNETQSTORE;
 
 
 /**
@@ -187,8 +186,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(final DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_TRANSACTION_ROLLBACK_ACTION, new TransactionLeakRollbackProcessor());
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_TRANSACTION_BINDINGS, new TransactionJndiBindingProcessor());
+                processorTarget.addDeploymentProcessor(TransactionExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_TRANSACTION_ROLLBACK_ACTION, new TransactionLeakRollbackProcessor());
+                processorTarget.addDeploymentProcessor(TransactionExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_TRANSACTION_BINDINGS, new TransactionJndiBindingProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
 
