@@ -36,7 +36,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -58,7 +57,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ArchiveTestCase {
+public class ArchiveDefaultScriptNamesTestCase {
 
     private static File cliArchiveFile;
 
@@ -67,7 +66,7 @@ public class ArchiveTestCase {
     @Deployment
     public static Archive<?> getDeployment() {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(DeployTestCase.class);
+        ja.addClass(ArchiveDefaultScriptNamesTestCase.class);
         return ja;
     }
 
@@ -96,18 +95,13 @@ public class ArchiveTestCase {
         EnterpriseArchive cliArchive = ShrinkWrap.create(EnterpriseArchive.class, "archive.cli");
         String deploy = "deploy deployment0.war\ndeploy deployment1.war";
         String undeploy = "undeploy deployment0.war\nundeploy deployment1.war";
-        cliArchive.add(new StringAsset(deploy), new BasicPath("/", "install.scr"));
-        // add the default script which shouldn't be picked up
-        cliArchive.add(new StringAsset("deploy deployment0.war\ndeploy deployment1.war\ndeploy deployment2.war"), new BasicPath("/", "deploy.scr"));
-        cliArchive.add(new StringAsset(undeploy), new BasicPath("/", "uninstall.scr"));
-        cliArchive.add(new StringAsset("undeploy deployment0.war\nundeploy deployment1.war\nundeploy deployment2.war"), new BasicPath("/", "undeploy.scr"));
+        cliArchive.add(new StringAsset(deploy), new BasicPath("/", "deploy.scr"));
+        cliArchive.add(new StringAsset(undeploy), new BasicPath("/", "undeploy.scr"));
         for (WebArchive war : wars) {
             cliArchive.add(war, new BasicPath("/"), ZipExporter.class);
         }
         cliArchiveFile = new File(tempDir + File.separator + "archive.cli");
         new ZipExporterImpl(cliArchive).exportTo(cliArchiveFile, true);
-
-        AbstractCliTestBase.initCLI();
     }
 
     @Test
@@ -116,7 +110,7 @@ public class ArchiveTestCase {
         final CommandContext ctx = CommandContextFactory.getInstance().newCommandContext();
         try {
             ctx.connectController();
-            ctx.handle("deploy " + cliArchiveFile.getAbsolutePath() + " --script=install.scr");
+            ctx.handle("deploy " + cliArchiveFile.getAbsolutePath());
 
             // check that now both wars are deployed
             String response = HttpRequest.get(getBaseURL(url) + "deployment0/SimpleServlet", 10, TimeUnit.SECONDS);
@@ -125,7 +119,7 @@ public class ArchiveTestCase {
             assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
             assertTrue(checkUndeployed(getBaseURL(url) + "deployment2/SimpleServlet"));
 
-            ctx.handle("deploy " + cliArchiveFile.getAbsolutePath() + " --script=uninstall.scr");
+            ctx.handle("deploy " + cliArchiveFile.getAbsolutePath() + " --script=undeploy.scr");
 
             // check that both wars are undeployed
             assertTrue(checkUndeployed(getBaseURL(url) + "deployment0/SimpleServlet"));
@@ -138,7 +132,6 @@ public class ArchiveTestCase {
     @AfterClass
     public static void after() throws Exception {
         cliArchiveFile.delete();
-        AbstractCliTestBase.closeCLI();
     }
 
     protected final String getBaseURL(URL url) throws MalformedURLException {
