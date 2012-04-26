@@ -32,45 +32,48 @@
         <expiration reaperEnabled="false"/>
     </default>
     <namedCache name="REPL_SYNC">
-        <storeAsBinary enabled="true"/>
         <clustering mode="replication">
             <stateTransfer timeout="60000" fetchInMemoryState="true"/>
             <sync replTimeout="17500"/>
         </clustering>
+        <storeAsBinary enabled="true"/>
     </namedCache>
     <namedCache name="REPL_ASYNC">
-        <storeAsBinary enabled="true"/>
         <clustering mode="replication">
             <stateTransfer timeout="60000" fetchInMemoryState="true"/>
             <async/>
         </clustering>
+        <storeAsBinary enabled="true"/>
+        <transaction syncCommitPhase="false"/>
     </namedCache>
     <namedCache name="DIST_SYNC">
-        <storeAsBinary enabled="true"/>
         <clustering mode="distribution">
             <stateTransfer timeout="60000" fetchInMemoryState="true"/>
             <sync replTimeout="17500"/>
         </clustering>
+        <storeAsBinary enabled="true"/>
     </namedCache>
     <namedCache name="DIST_ASYNC">
-        <storeAsBinary enabled="true"/>
         <clustering mode="distribution">
             <stateTransfer timeout="60000" fetchInMemoryState="true"/>
             <async/>
         </clustering>
+        <storeAsBinary enabled="true"/>
+        <transaction syncCommitPhase="false"/>
     </namedCache>
     <namedCache name="INVALIDATION_SYNC">
-        <storeAsBinary enabled="true" storeValuesAsBinary="false"/>
         <clustering mode="invalidation">
             <stateTransfer fetchInMemoryState="false"/>
             <sync replTimeout="17500"/>
         </clustering>
+        <storeAsBinary enabled="true" storeValuesAsBinary="false"/>
     </namedCache>
     <namedCache name="INVALIDATION_ASYNC">
-        <storeAsBinary enabled="true" storeValuesAsBinary="false"/>
         <clustering mode="invalidation">
             <stateTransfer fetchInMemoryState="false"/>
             <async/>
         </clustering>
+        <storeAsBinary enabled="true" storeValuesAsBinary="false"/>
+        <transaction syncCommitPhase="false"/>
     </namedCache>
 </infinispan>
