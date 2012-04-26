@@ -28,11 +28,13 @@ import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,41 +50,53 @@ import org.junit.runner.RunWith;
 public class RemoveMethodUnitTestCase {
     private static final Logger log = Logger.getLogger(RemoveMethodUnitTestCase.class);
 
+    private static final String DD_BASED_MODULE_NAME = "remove-method-dd-test";
+    private static final String ANNOTATION_BASED_MODULE_NAME = "remove-method-test";
+
     @ArquillianResource
     InitialContext ctx;
 
     @Deployment
     public static Archive<?> deployment() {
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "remove-method-test.jar").addPackage(
+        final JavaArchive ejb3Jar = ShrinkWrap.create(JavaArchive.class, ANNOTATION_BASED_MODULE_NAME + ".jar").addPackage(
                 RemoveMethodUnitTestCase.class.getPackage());
-        log.info(jar.toString(true));
-        return jar;
+        log.info(ejb3Jar.toString(true));
+
+        final JavaArchive ejb2Jar = ShrinkWrap.create(JavaArchive.class, DD_BASED_MODULE_NAME + ".jar").addClasses(Ejb21ViewDDBean.class,
+                Ejb21View.class, Ejb21ViewHome.class, RemoveMethodUnitTestCase.class)
+                .addAsManifestResource(RemoveMethodUnitTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+        log.info(ejb2Jar.toString(true));
+
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "remove-method-test.ear");
+        ear.addAsModules(ejb2Jar, ejb3Jar);
+
+        return ear;
     }
 
     @Test
     public void testRemoveStatefulRemote() throws Exception {
-        RemoveStatefulRemote session = (RemoveStatefulRemote) ctx.lookup("java:module/" + StatefulRemoveBean.class.getSimpleName() + "!" + RemoveStatefulRemote.class.getName());
+        RemoveStatefulRemote session = (RemoveStatefulRemote) ctx.lookup("java:app/" + ANNOTATION_BASED_MODULE_NAME + "/" + StatefulRemoveBean.class.getSimpleName() + "!" + RemoveStatefulRemote.class.getName());
         String result = session.remove();
         Assert.assertEquals(AbstractRemoveBean.RETURN_STRING, result);
     }
 
     @Test
     public void testRemoveStatelessRemote() throws Exception {
-        RemoveStatelessRemote session = (RemoveStatelessRemote) ctx.lookup("java:module/" + StatelessRemoveBean.class.getSimpleName() + "!" + RemoveStatelessRemote.class.getName());
+        RemoveStatelessRemote session = (RemoveStatelessRemote) ctx.lookup("java:app/" + ANNOTATION_BASED_MODULE_NAME + "/" + StatelessRemoveBean.class.getSimpleName() + "!" + RemoveStatelessRemote.class.getName());
         String result = session.remove();
         Assert.assertEquals(AbstractRemoveBean.RETURN_STRING, result);
     }
 
     @Test
     public void testRemoveStatefulLocalViaDelegate() throws Exception {
-        Delegate session = (Delegate) ctx.lookup("java:module/" + DelegateBean.class.getSimpleName() + "!" + Delegate.class.getName());
+        Delegate session = (Delegate) ctx.lookup("java:app/" + ANNOTATION_BASED_MODULE_NAME + "/" + DelegateBean.class.getSimpleName() + "!" + Delegate.class.getName());
         String result = session.invokeStatefulRemove();
         Assert.assertEquals(AbstractRemoveBean.RETURN_STRING, result);
     }
 
     @Test
     public void testRemoveStatelessLocalViaDelegate() throws Exception {
-        Delegate session = (Delegate) ctx.lookup("java:module/" + DelegateBean.class.getSimpleName() + "!" + Delegate.class.getName());
+        Delegate session = (Delegate) ctx.lookup("java:app/" + ANNOTATION_BASED_MODULE_NAME + "/" + DelegateBean.class.getSimpleName() + "!" + Delegate.class.getName());
         String result = session.invokeStatelessRemove();
         Assert.assertEquals(AbstractRemoveBean.RETURN_STRING, result);
     }
@@ -90,7 +104,7 @@ public class RemoveMethodUnitTestCase {
     @Test
     public void testExplicitExtensionEjbObjectInProxy() throws Exception {
         // Obtain stub
-        Object obj = ctx.lookup("java:module/" + Ejb21ViewBean.class.getSimpleName() + "!" + Ejb21ViewHome.class.getName());
+        Object obj = ctx.lookup("java:app/" + ANNOTATION_BASED_MODULE_NAME + "/" + Ejb21ViewBean.class.getSimpleName() + "!" + Ejb21ViewHome.class.getName());
         Ejb21ViewHome home = (Ejb21ViewHome) PortableRemoteObject.narrow(obj, Ejb21ViewHome.class);
         Ejb21View session = home.create();
 
@@ -113,5 +127,34 @@ public class RemoveMethodUnitTestCase {
         }
         Assert.assertTrue("SFSB instance was not removed as expected", removed);
 
+    }
+
+    /**
+     * Test that ejbRemove() method was invoked on the bean when the remove() is invoked on the EJBObject
+     * of a EJB2.x view of a bean
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testEjbRemoveInvokedOnRemoval() throws Exception {
+        // Obtain stub
+        Object obj = ctx.lookup("java:app/" + DD_BASED_MODULE_NAME + "/" + Ejb21ViewDDBean.class.getSimpleName() + "!" + Ejb21ViewHome.class.getName());
+        Ejb21ViewHome home = (Ejb21ViewHome) PortableRemoteObject.narrow(obj, Ejb21ViewHome.class);
+        Ejb21View bean = home.create();
+
+        // Ensure EJBObject
+        Assert.assertTrue(bean instanceof EJBObject);
+
+        String result = bean.test();
+
+        bean.remove();
+        try {
+            bean.test();
+            Assert.fail("Invocation on a removed bean was expected to fail");
+        } catch (NoSuchObjectException e) {
+            // expected
+        }
+        final RemoveMethodInvocationTracker ejbRemoveMethodInvocationTracker = (RemoveMethodInvocationTracker) ctx.lookup("java:app/" + ANNOTATION_BASED_MODULE_NAME + "/" + RemoveMethodInvocationTrackerBean.class.getSimpleName() + "!" + RemoveMethodInvocationTracker.class.getName());
+        Assert.assertTrue("ejbRemove() method was not invoked after bean removal", ejbRemoveMethodInvocationTracker.wasEjbRemoveCallbackInvoked());
     }
 }
