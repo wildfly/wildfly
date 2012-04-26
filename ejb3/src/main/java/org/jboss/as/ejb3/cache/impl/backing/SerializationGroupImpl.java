@@ -242,7 +242,7 @@ public class SerializationGroupImpl<K extends Serializable, V extends Cacheable<
     @Override
     public void addInUse(K key) {
         inUseKeys.add(key);
-        setInUse(true);
+        increaseUsageCount();
     }
 
     /**
@@ -256,9 +256,8 @@ public class SerializationGroupImpl<K extends Serializable, V extends Cacheable<
     @Override
     public void removeInUse(K key) {
         if (inUseKeys.remove(key)) {
-            if (inUseKeys.size() == 0)
-                setInUse(false);
-            else
+            decreaseUsageCount();
+            if (inUseKeys.size() != 0)
                 setLastUsed(System.currentTimeMillis());
         } else if (!this.memberObjects.containsKey(key)) {
             throw EjbMessages.MESSAGES.missingSerializationGroupMember(key, this);

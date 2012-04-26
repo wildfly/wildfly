@@ -46,11 +46,14 @@ public interface BackingCacheEntry<K extends Serializable, V extends Cacheable<K
     boolean isInUse();
 
     /**
-     * Sets whether this entry is in use by a caller.
-     *
-     * @param inUse
+     * Decreases the usage reference count
      */
-    void setInUse(boolean inUse);
+    void decreaseUsageCount();
+
+    /**
+     * Increases the usage reference count
+     */
+    void increaseUsageCount();
 
     /**
      * Gets the timestamp of the last time this entry was in use.

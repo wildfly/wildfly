@@ -52,8 +52,14 @@ public abstract class AbstractBackingCacheEntry<K extends Serializable, V extend
     }
 
     @Override
-    public synchronized void setInUse(boolean inUse) {
-        this.usageCount += (inUse ? 1 : -1);
+    public synchronized void increaseUsageCount() {
+        this.usageCount++;
+        setLastUsed(System.currentTimeMillis());
+    }
+
+    @Override
+    public synchronized void decreaseUsageCount() {
+        this.usageCount--;
         setLastUsed(System.currentTimeMillis());
     }
 

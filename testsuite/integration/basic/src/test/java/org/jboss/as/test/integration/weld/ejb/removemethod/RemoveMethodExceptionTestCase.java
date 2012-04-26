@@ -30,6 +30,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.ejb.NoSuchEJBException;
 import javax.inject.Inject;
 
 /**
@@ -66,7 +67,7 @@ public class RemoveMethodExceptionTestCase {
         }
     }
 
-    @Test
+    @Test(expected = NoSuchEJBException.class)
     public void testRemoveMethodOnDependentScopedCdiBean() {
         garage.remove();
         garage.park();

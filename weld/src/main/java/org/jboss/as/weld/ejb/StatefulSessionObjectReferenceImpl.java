@@ -147,10 +147,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
 
     @Override
     public boolean isRemoved() {
-        if (!removed) {
-            return ejbComponent.getCache().get(id) == null;
-        }
-        return true;
+        return removed;
     }
 
 

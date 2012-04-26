@@ -165,6 +165,8 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                         //if we don't release the lock here then it will be aquiared multiple times
                         //and only released once
                         releaseLock();
+                        //we also call the cache release to decrease the usage count
+                        instance.getComponent().getCache().release(instance);
                     }
                 }
             }

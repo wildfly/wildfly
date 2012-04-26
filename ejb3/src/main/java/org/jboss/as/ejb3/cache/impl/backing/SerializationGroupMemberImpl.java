@@ -237,8 +237,23 @@ public class SerializationGroupMemberImpl<K extends Serializable, V extends Cach
     }
 
     @Override
-    public void setInUse(boolean inUse) {
-        super.setInUse(inUse);
+    public synchronized void increaseUsageCount() {
+        boolean inUse = isInUse();
+        super.increaseUsageCount();
+        if(!inUse) {
+            setInUse(true);
+        }
+    }
+
+    @Override
+    public synchronized void decreaseUsageCount() {
+        super.decreaseUsageCount();
+        if(!isInUse()) {
+            setInUse(false);
+        }
+    }
+
+    private void setInUse(boolean inUse) {
 
         // Tell our group about it
         if (group != null) {
