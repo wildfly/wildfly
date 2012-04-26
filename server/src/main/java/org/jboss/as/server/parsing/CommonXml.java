@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.parsing;
+package org.jboss.as.server.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
@@ -99,9 +99,16 @@ import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.Attribute;
+import org.jboss.as.controller.parsing.Element;
+import org.jboss.as.controller.parsing.Namespace;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
+import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
+import org.jboss.as.server.services.net.OutboundSocketBindingResourceDefinition;
+import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -169,7 +176,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void parseSchemaLocations(final XMLExtendedStreamReader reader, final ModelNode address,
-            final List<ModelNode> updateList, final int idx) throws XMLStreamException {
+                                        final List<ModelNode> updateList, final int idx) throws XMLStreamException {
         final List<String> elements = reader.getListAttributeValue(idx);
         final List<String> values = new ArrayList<String>();
         for (String element : elements) {
@@ -293,7 +300,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void parsePaths(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list,
-            final boolean requirePath) throws XMLStreamException {
+                              final boolean requirePath) throws XMLStreamException {
         final Set<String> pathNames = new HashSet<String>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -312,7 +319,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void parsePath(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list,
-            final boolean requirePath, final Set<String> defined) throws XMLStreamException {
+                             final boolean requirePath, final Set<String> defined) throws XMLStreamException {
         String name = null;
         String path = null;
         String relativeTo = null;
@@ -367,7 +374,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void parseSystemProperties(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
-            final List<ModelNode> updates, boolean standalone) throws XMLStreamException {
+                                         final List<ModelNode> updates, boolean standalone) throws XMLStreamException {
 
         while (reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -614,7 +621,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void parseInterfaces(final XMLExtendedStreamReader reader, final Set<String> names, final ModelNode address,
-            final Namespace expectedNs, final List<ModelNode> list, final boolean checkSpecified) throws XMLStreamException {
+                                   final Namespace expectedNs, final List<ModelNode> list, final boolean checkSpecified) throws XMLStreamException {
         requireNoAttributes(reader);
 
         while (reader.nextTag() != END_ELEMENT) {
@@ -646,7 +653,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void parseSocketBindingGroupRef(final XMLExtendedStreamReader reader, final ModelNode address,
-            final List<ModelNode> updates) throws XMLStreamException {
+                                              final List<ModelNode> updates) throws XMLStreamException {
         // Handle attributes
         String name = null;
         int offset = -1;
@@ -703,7 +710,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected String parseSocketBinding(final XMLExtendedStreamReader reader, final Set<String> interfaces,
-            final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+                                        final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         String name = null;
@@ -730,7 +737,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case INTERFACE: {
                         AbstractSocketBindingResourceDefinition.INTERFACE.parseAndSetParameter(value, binding, reader);
                         if (binding.get(AbstractSocketBindingResourceDefinition.INTERFACE.getName()).getType() != ModelType.EXPRESSION
-                            && !interfaces.contains(value)) {
+                                && !interfaces.contains(value)) {
                             throw MESSAGES.unknownInterface(value, attribute.getLocalName(),
                                     Element.INTERFACES.getLocalName(), reader.getLocation());
                         }
@@ -822,7 +829,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected String parseOutboundSocketBinding(final XMLExtendedStreamReader reader, final Set<String> interfaces,
-                                                final String socketBindingGroupName, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+                                                final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         String outboundSocketBindingName = null;
@@ -845,19 +852,20 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         break;
                     }
                     case SOURCE_INTERFACE: {
-                        if (!interfaces.contains(value)) {
+                        OutboundSocketBindingResourceDefinition.SOURCE_INTERFACE.parseAndSetParameter(value, outboundSocketBindingAddOperation, reader);
+                        if (!interfaces.contains(value)
+                                && outboundSocketBindingAddOperation.get(OutboundSocketBindingResourceDefinition.SOURCE_INTERFACE.getName()).getType() != ModelType.EXPRESSION) {
                             throw MESSAGES.unknownValueForElement(Attribute.SOURCE_INTERFACE.getLocalName(), value,
                                     Element.INTERFACE.getLocalName(), Element.INTERFACES.getLocalName(), reader.getLocation());
                         }
-                        outboundSocketBindingAddOperation.get(SOURCE_INTERFACE).set(value);
                         break;
                     }
                     case SOURCE_PORT: {
-                        outboundSocketBindingAddOperation.get(SOURCE_PORT).set(parseBoundedIntegerAttribute(reader, i, 0, 65535, true));
+                        OutboundSocketBindingResourceDefinition.SOURCE_PORT.parseAndSetParameter(value, outboundSocketBindingAddOperation, reader);
                         break;
                     }
                     case FIXED_SOURCE_PORT: {
-                        outboundSocketBindingAddOperation.get(FIXED_SOURCE_PORT).set(parsePossibleExpression(value));
+                        OutboundSocketBindingResourceDefinition.FIXED_SOURCE_PORT.parseAndSetParameter(value, outboundSocketBindingAddOperation, reader);
                         break;
                     }
                     default:
@@ -881,7 +889,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         mutuallyExclusiveElementAlreadyFound = true;
                     }
                     // parse the local destination outbound socket binding
-                    this.parseLocalDestinationOutboundSocketBinding(reader, outboundSocketBindingName, outboundSocketBindingAddOperation);
+                    this.parseLocalDestinationOutboundSocketBinding(reader, outboundSocketBindingAddOperation);
                     // set the address of the add operation
                     // /socket-binding-group=<groupname>/local-destination-outbound-socket-binding=<outboundSocketBindingName>
                     final ModelNode addr = address.clone().add(LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName);
@@ -896,7 +904,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         mutuallyExclusiveElementAlreadyFound = true;
                     }
                     // parse the remote destination outbound socket binding
-                    this.parseRemoteDestinationOutboundSocketBinding(reader, outboundSocketBindingName, outboundSocketBindingAddOperation);
+                    this.parseRemoteDestinationOutboundSocketBinding(reader, outboundSocketBindingAddOperation);
                     // /socket-binding-group=<groupname>/remote-destination-outbound-socket-binding=<outboundSocketBindingName>
                     final ModelNode addr = address.clone().add(REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName);
                     outboundSocketBindingAddOperation.get(OP_ADDR).set(addr);
@@ -913,7 +921,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         return outboundSocketBindingName;
     }
 
-    private void parseLocalDestinationOutboundSocketBinding(final XMLExtendedStreamReader reader, final String outboundSocketBindingName,
+    private void parseLocalDestinationOutboundSocketBinding(final XMLExtendedStreamReader reader,
                                                             final ModelNode outboundSocketBindingAddOperation) throws XMLStreamException {
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.SOCKET_BINDING_REF);
@@ -929,7 +937,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 required.remove(attribute);
                 switch (attribute) {
                     case SOCKET_BINDING_REF: {
-                        outboundSocketBindingAddOperation.get(SOCKET_BINDING_REF).set(value);
+                        LocalDestinationOutboundSocketBindingResourceDefinition.SOCKET_BINDING_REF.parseAndSetParameter(value, outboundSocketBindingAddOperation, reader);
                         break;
                     }
                     default:
@@ -945,7 +953,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         requireNoContent(reader);
     }
 
-    private void parseRemoteDestinationOutboundSocketBinding(final XMLExtendedStreamReader reader, final String outboundSocketBindingName,
+    private void parseRemoteDestinationOutboundSocketBinding(final XMLExtendedStreamReader reader,
                                                              final ModelNode outboundSocketBindingAddOperation) throws XMLStreamException {
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.HOST, Attribute.PORT);
@@ -961,11 +969,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 required.remove(attribute);
                 switch (attribute) {
                     case HOST: {
-                        outboundSocketBindingAddOperation.get(HOST).set(value);
+                        RemoteDestinationOutboundSocketBindingResourceDefinition.HOST.parseAndSetParameter(value, outboundSocketBindingAddOperation, reader);
                         break;
                     }
                     case PORT: {
-                        outboundSocketBindingAddOperation.get(PORT).set(parseBoundedIntegerAttribute(reader, i, 0, 65535, true));
+                        RemoteDestinationOutboundSocketBindingResourceDefinition.PORT.parseAndSetParameter(value, outboundSocketBindingAddOperation, reader);
                         break;
                     }
                     default:
@@ -982,7 +990,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void parseDeployments(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list,
-            final Set<Attribute> allowedAttributes, final Set<Element> allowedElements) throws XMLStreamException {
+                                    final Set<Attribute> allowedAttributes, final Set<Element> allowedElements) throws XMLStreamException {
         requireNoAttributes(reader);
 
         final Set<String> names = new HashSet<String>();
@@ -1287,29 +1295,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 ModelNode binding = bindings.get(bindingName);
                 writer.writeStartElement(Element.SOCKET_BINDING.getLocalName());
                 writeAttribute(writer, Attribute.NAME, bindingName);
-                ModelNode attr = binding.get(INTERFACE);
-                if (attr.isDefined()) {
-                    writeAttribute(writer, Attribute.INTERFACE, attr.asString());
-                }
-                attr = binding.get(PORT);
-                if (attr.isDefined()) {
-                    writeAttribute(writer, Attribute.PORT, attr.asString());
-                }
-                attr = binding.get(FIXED_PORT);
-                if (attr.isDefined() && attr.asBoolean()) {
-                    writeAttribute(writer, Attribute.FIXED_PORT, attr.asString());
-                }
-                attr = binding.get(MULTICAST_ADDRESS);
-                if (attr.isDefined()) {
-                    writeAttribute(writer, Attribute.MULTICAST_ADDRESS, attr.asString());
-                }
-                attr = binding.get(MULTICAST_PORT);
-                if (attr.isDefined()) {
-                    writeAttribute(writer, Attribute.MULTICAST_PORT, attr.asString());
-                }
+                AbstractSocketBindingResourceDefinition.INTERFACE.marshallAsAttribute(binding, writer);
+                AbstractSocketBindingResourceDefinition.PORT.marshallAsAttribute(binding, writer);
+                AbstractSocketBindingResourceDefinition.FIXED_PORT.marshallAsAttribute(binding, writer);
+                AbstractSocketBindingResourceDefinition.MULTICAST_ADDRESS.marshallAsAttribute(binding, writer);
+                AbstractSocketBindingResourceDefinition.MULTICAST_PORT.marshallAsAttribute(binding, writer);
 
-
-                attr = binding.get(CLIENT_MAPPINGS);
+                // TODO do this in ClientMappingsAttributeDefinition
+                ModelNode attr = binding.get(CLIENT_MAPPINGS);
                 if (attr.isDefined()) {
                     for (ModelNode mapping : attr.asList()) {
                         writer.writeEmptyElement(Element.CLIENT_MAPPING.getLocalName());
@@ -1344,29 +1337,16 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 writer.writeStartElement(Element.OUTBOUND_SOCKET_BINDING.getLocalName());
                 // name of the outbound socket binding
                 writeAttribute(writer, Attribute.NAME, outboundSocketBindingName);
-                // (optional) source port
-                if (outboundSocketBinding.hasDefined(SOURCE_PORT)) {
-                    final String sourcePort = outboundSocketBinding.get(SOURCE_PORT).asString();
-                    writeAttribute(writer, Attribute.SOURCE_PORT, sourcePort);
-                }
                 // (optional) source interface
-                if (outboundSocketBinding.hasDefined(SOURCE_INTERFACE)) {
-                    final String sourceInterface = outboundSocketBinding.get(SOURCE_INTERFACE).asString();
-                    writeAttribute(writer, Attribute.SOURCE_INTERFACE, sourceInterface);
-                }
+                OutboundSocketBindingResourceDefinition.SOURCE_INTERFACE.marshallAsAttribute(outboundSocketBinding, writer);
+                // (optional) source port
+                OutboundSocketBindingResourceDefinition.SOURCE_PORT.marshallAsAttribute(outboundSocketBinding, writer);
                 // (optional) fixedSourcePort
-                if (outboundSocketBinding.hasDefined(FIXED_SOURCE_PORT)) {
-                    final String fixedSourcePort = outboundSocketBinding.get(FIXED_SOURCE_PORT).asString();
-                    writeAttribute(writer, Attribute.FIXED_SOURCE_PORT, fixedSourcePort);
-                }
+                OutboundSocketBindingResourceDefinition.FIXED_SOURCE_PORT.marshallAsAttribute(outboundSocketBinding, writer);
                 // write the <local-destination> element
-                writer.writeStartElement(Element.LOCAL_DESTINATION.getLocalName());
+                writer.writeEmptyElement(Element.LOCAL_DESTINATION.getLocalName());
                 // socket-binding-ref
-                final ModelNode socketBindingRef = outboundSocketBinding.get(SOCKET_BINDING_REF);
-                // write the socket-binding-ref attribute for the local-destination element
-                writeAttribute(writer, Attribute.SOCKET_BINDING_REF, socketBindingRef.asString());
-                // </local-destination>
-                writer.writeEndElement();
+                LocalDestinationOutboundSocketBindingResourceDefinition.SOCKET_BINDING_REF.marshallAsAttribute(outboundSocketBinding, writer);
                 // </outbound-socket-binding>
                 writer.writeEndElement();
             }
@@ -1380,31 +1360,18 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 writer.writeStartElement(Element.OUTBOUND_SOCKET_BINDING.getLocalName());
                 // name of the outbound socket binding
                 writeAttribute(writer, Attribute.NAME, outboundSocketBindingName);
-                // (optional) source port
-                if (outboundSocketBinding.hasDefined(SOURCE_PORT)) {
-                    final String sourcePort = outboundSocketBinding.get(SOURCE_PORT).asString();
-                    writeAttribute(writer, Attribute.SOURCE_PORT, sourcePort);
-                }
                 // (optional) source interface
-                if (outboundSocketBinding.hasDefined(SOURCE_INTERFACE)) {
-                    final String sourceInterface = outboundSocketBinding.get(SOURCE_INTERFACE).asString();
-                    writeAttribute(writer, Attribute.SOURCE_INTERFACE, sourceInterface);
-                }
+                OutboundSocketBindingResourceDefinition.SOURCE_INTERFACE.marshallAsAttribute(outboundSocketBinding, writer);
+                // (optional) source port
+                OutboundSocketBindingResourceDefinition.SOURCE_PORT.marshallAsAttribute(outboundSocketBinding, writer);
                 // (optional) fixedSourcePort
-                if (outboundSocketBinding.hasDefined(FIXED_SOURCE_PORT)) {
-                    final String fixedSourcePort = outboundSocketBinding.get(FIXED_SOURCE_PORT).asString();
-                    writeAttribute(writer, Attribute.FIXED_SOURCE_PORT, fixedSourcePort);
-                }
+                OutboundSocketBindingResourceDefinition.FIXED_SOURCE_PORT.marshallAsAttribute(outboundSocketBinding, writer);
                 // write the <remote-destination> element
-                writer.writeStartElement(Element.REMOTE_DESTINATION.getLocalName());
+                writer.writeEmptyElement(Element.REMOTE_DESTINATION.getLocalName());
                 // destination host
-                final ModelNode host = outboundSocketBinding.get(HOST);
-                writeAttribute(writer, Attribute.HOST, host.asString());
+                RemoteDestinationOutboundSocketBindingResourceDefinition.HOST.marshallAsAttribute(outboundSocketBinding, writer);
                 // destination port
-                final ModelNode destPort = outboundSocketBinding.get(PORT);
-                writeAttribute(writer, Attribute.PORT, destPort.asString());
-                // </remote-destination>
-                writer.writeEndElement();
+                RemoteDestinationOutboundSocketBindingResourceDefinition.PORT.marshallAsAttribute(outboundSocketBinding, writer);
                 // </outbound-socket-binding>
                 writer.writeEndElement();
             }
@@ -1414,7 +1381,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void writeProperties(final XMLExtendedStreamWriter writer, final ModelNode modelNode, Element element,
-            boolean standalone) throws XMLStreamException {
+                                   boolean standalone) throws XMLStreamException {
         final List<Property> properties = modelNode.asPropertyList();
         if (properties.size() > 0) {
             writer.writeStartElement(element.getLocalName());
