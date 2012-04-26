@@ -87,7 +87,7 @@ public class OSGiCapabilityAdd extends AbstractAddStepHandler {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             ModelNode node = new ModelNode();
-            ResourceBundle resourceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
+            ResourceBundle resourceBundle = OSGiDescriptionProviders.getResourceBundle(locale);
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(resourceBundle.getString("capability.add"));
             addModelProperties(resourceBundle, node, ModelDescriptionConstants.REQUEST_PROPERTIES);

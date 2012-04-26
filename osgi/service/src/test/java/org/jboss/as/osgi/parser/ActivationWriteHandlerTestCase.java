@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.osgi.management.ActivationAttributeHandler;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;

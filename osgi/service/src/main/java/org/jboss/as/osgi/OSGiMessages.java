@@ -77,7 +77,7 @@ public interface OSGiMessages {
     StartException startFailedToRegisterModule(@Cause Throwable th, Module module);
 
     @Message(id = 11959, value = "StartLevel service not available")
-    String startLevelSrviceNotAvailable();
+    String startLevelServiceNotAvailable();
 
     @Message(id = 11960, value = "Cannot obtain bundle resource for: %s")
     IllegalArgumentException illegalArgumentCannotObtainBundleResource(String name);

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.osgi.parser;
+package org.jboss.as.osgi.management;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,8 +29,9 @@ import java.util.TreeSet;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.value.InjectedValue;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
@@ -39,24 +40,21 @@ import org.osgi.framework.BundleContext;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class OSGiRuntimeResource implements Resource {
-    private final Resource delegate;
-    private SystemBundleControllerHolder systemBundleControllerHolder;
 
-    private static class SystemBundleControllerHolder {
-        ServiceController<Bundle> systemBundleController;
-    }
+    private final InjectedValue<BundleContext> injectedBundleContext;
+    private final Resource delegate;
 
     public OSGiRuntimeResource() {
-        this(Resource.Factory.create(), new SystemBundleControllerHolder());
+        this(Resource.Factory.create(), new InjectedValue<BundleContext>());
     }
 
-    public OSGiRuntimeResource(Resource delegate, SystemBundleControllerHolder holder) {
-        this.delegate = delegate;
-        this.systemBundleControllerHolder = holder;
+    private OSGiRuntimeResource(Resource resource, InjectedValue<BundleContext> injectedBundleContext) {
+        this.injectedBundleContext = injectedBundleContext;
+        this.delegate = resource;
     }
 
-    public void setBundleContextServiceController(ServiceController<Bundle> serviceController) {
-        systemBundleControllerHolder.systemBundleController = serviceController;
+    public InjectedValue<BundleContext> getInjectedBundleContext() {
+        return injectedBundleContext;
     }
 
     @Override
@@ -179,30 +177,29 @@ public class OSGiRuntimeResource implements Resource {
 
     @Override
     public Resource clone() {
-        return new OSGiRuntimeResource(delegate.clone(), systemBundleControllerHolder);
+        return new OSGiRuntimeResource(delegate.clone(), injectedBundleContext);
     }
 
     private boolean hasBundle(PathElement element) {
-        BundleContext ctx = getBundleContext();
-        if (ctx == null)
+        BundleContext context = getBundleContext();
+        if (context == null)
             return false;
 
         try {
             long id = Long.parseLong(element.getValue());
-            return ctx.getBundle(id) != null;
+            return context.getBundle(id) != null;
         } catch (NumberFormatException nfe) {
             return false;
         }
     }
 
     private Set<String> getBundleIDs() {
-        BundleContext ctx = getBundleContext();
-
-        if (ctx == null) {
+        BundleContext context = getBundleContext();
+        if (context == null) {
             return Collections.emptySet();
         } else {
             Set<String> result = new TreeSet<String>();
-            for (Bundle b : ctx.getBundles()) {
+            for (Bundle b : context.getBundles()) {
                 result.add(Long.toString(b.getBundleId()));
             }
             return result;
@@ -210,11 +207,6 @@ public class OSGiRuntimeResource implements Resource {
     }
 
     private BundleContext getBundleContext() {
-        if (systemBundleControllerHolder.systemBundleController == null ||
-            systemBundleControllerHolder.systemBundleController.getState() != ServiceController.State.UP) {
-            return null;
-        } else {
-            return systemBundleControllerHolder.systemBundleController.getValue().getBundleContext();
-        }
+        return injectedBundleContext.getOptionalValue();
     }
 }
