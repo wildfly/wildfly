@@ -28,7 +28,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.remote.RemoteProxyController;
-import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
+import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
+import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
@@ -61,7 +62,7 @@ public class RemoteChannelProxyControllerTestCase extends AbstractProxyControlle
                 @Override
                 public HandleableCloseable.Key startReceiving(Channel channel) {
                     final ManagementChannelHandler support = new ManagementChannelHandler(channel, channels.getExecutorService());
-                    support.addHandlerFactory(new TransactionalModelControllerOperationHandler(proxiedController, support));
+                    support.addHandlerFactory(new TransactionalProtocolOperationHandler(proxiedController, support));
                     channel.addCloseHandler(new CloseHandler<Channel>() {
                         @Override
                         public void handleClose(Channel closed, IOException exception) {

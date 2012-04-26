@@ -314,68 +314,12 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
      * Wraps the request execution AsyncFuture in an AsyncFuture impl that handles cancellation by sending a cancellation
      * request to the remote side.
      */
-    private class DelegatingCancellableAsyncFuture implements AsyncFuture<ModelNode>{
+    private class DelegatingCancellableAsyncFuture extends AbstractDelegatingAsyncFuture<ModelNode> {
+
         private final int batchId;
-        private final AsyncFuture<ModelNode> delegate;
-
-        public DelegatingCancellableAsyncFuture(AsyncFuture<ModelNode> delegate, int batchId) {
-            this.delegate = delegate;
+        private DelegatingCancellableAsyncFuture(final AsyncFuture<ModelNode> delegate, final int batchId) {
+            super(delegate);
             this.batchId = batchId;
-        }
-
-        public org.jboss.threads.AsyncFuture.Status await() throws InterruptedException {
-            return delegate.await();
-        }
-
-        public org.jboss.threads.AsyncFuture.Status await(long timeout, TimeUnit unit) throws InterruptedException {
-            return delegate.await(timeout, unit);
-        }
-
-        public ModelNode getUninterruptibly() throws CancellationException, ExecutionException {
-            return delegate.getUninterruptibly();
-        }
-
-        public ModelNode getUninterruptibly(long timeout, TimeUnit unit) throws CancellationException, ExecutionException, TimeoutException {
-            return delegate.getUninterruptibly(timeout, unit);
-        }
-
-        public org.jboss.threads.AsyncFuture.Status awaitUninterruptibly() {
-            return delegate.awaitUninterruptibly();
-        }
-
-        public org.jboss.threads.AsyncFuture.Status awaitUninterruptibly(long timeout, TimeUnit unit) {
-            return delegate.awaitUninterruptibly(timeout, unit);
-        }
-
-        public boolean isDone() {
-            return delegate.isDone();
-        }
-
-        public org.jboss.threads.AsyncFuture.Status getStatus() {
-            return delegate.getStatus();
-        }
-
-        public <A> void addListener(org.jboss.threads.AsyncFuture.Listener<? super ModelNode, A> listener, A attachment) {
-            delegate.addListener(listener, attachment);
-        }
-
-        public ModelNode get() throws InterruptedException, ExecutionException {
-            return delegate.get();
-        }
-
-        public ModelNode get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            return delegate.get(timeout, unit);
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return delegate.getStatus() == Status.CANCELLED;
-        }
-
-        @Override
-        public boolean cancel(boolean interruptionDesired) {
-            asyncCancel(interruptionDesired);
-            return awaitUninterruptibly() == Status.CANCELLED;
         }
 
         @Override

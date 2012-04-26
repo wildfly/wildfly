@@ -57,7 +57,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.RemoteProxyController;
-import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
+import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
@@ -83,7 +83,7 @@ public class RemoteProxyControllerProtocolTestCase {
 
     @Before
     public void start() throws Exception {
-        channels = new RemoteChannelPairSetup();
+
     }
 
     @After
@@ -555,7 +555,6 @@ public class RemoteProxyControllerProtocolTestCase {
         Assert.assertEquals(1, commitControl.txCompletionStatus.get());
     }
 
-
     private void assertArrays(byte[] expected, byte[] actual) {
         assertEquals(expected.length, actual.length);
         for (int i = 0 ; i < expected.length ; i++) {
@@ -565,11 +564,12 @@ public class RemoteProxyControllerProtocolTestCase {
 
     private RemoteProxyController setupProxyHandlers(final ModelController proxiedController) {
         try {
+            channels = new RemoteChannelPairSetup();
             channels.setupRemoting(new ManagementChannelInitialization() {
                 @Override
                 public HandleableCloseable.Key startReceiving(Channel channel) {
                     final ManagementChannelHandler support = new ManagementChannelHandler(channel, channels.getExecutorService());
-                    support.addHandlerFactory(new TransactionalModelControllerOperationHandler(proxiedController, support));
+                    support.addHandlerFactory(new TransactionalProtocolOperationHandler(proxiedController, support));
                     channel.addCloseHandler(new CloseHandler<Channel>() {
                         @Override
                         public void handleClose(Channel closed, IOException exception) {

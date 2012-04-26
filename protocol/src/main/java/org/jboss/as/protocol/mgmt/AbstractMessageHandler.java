@@ -107,8 +107,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                 ProtocolLogger.CONNECTION_LOGGER.noSuchRequest(response.getResponseId(), channel);
                 safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(response.getResponseId()));
             } else if(response.getError() != null) {
-                // Actually we could move this in the response handler
-                request.context.getResultHandler().failed(new IOException(response.getError()));
+                request.handleFailed(response);
             } else {
                 handleRequest(channel, input, header, request);
             }
@@ -435,7 +434,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
         return new ManagementRequestHandler<T, A>() {
             @Override
             public void handleRequest(final DataInput input, ActiveOperation.ResultHandler<T> resultHandler, ManagementRequestContext<A> context) throws IOException {
-                final Exception error = new IOException("no handler registered");
+                final Exception error = ProtocolMessages.MESSAGES.noSuchResponseHandler(Integer.toHexString(header.getRequestId()));
                 if(resultHandler.failed(error)) {
                     safeWriteErrorResponse(context.getChannel(), context.getRequestHeader(), error);
                 }
@@ -447,13 +446,18 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
 
         private final Channel channel;
         private final ActiveOperation<T, A> context;
-        private final ManagementRequestHandler<T, A> handler;
+        private final ManagementResponseHandler<T, A> handler;
 
-        ActiveRequest(ActiveOperation<T, A> context, ManagementRequestHandler<T, A> handler, Channel channel) {
+        ActiveRequest(ActiveOperation<T, A> context, ManagementResponseHandler<T, A> handler, Channel channel) {
             this.context = context;
             this.handler = handler;
             this.channel = channel;
         }
+
+        protected void handleFailed(final ManagementResponseHeader header) {
+            handler.handleFailed(header, context.getResultHandler());
+        }
+
     }
 
     private abstract static class AsyncTaskRunner implements Runnable, Cancellable {

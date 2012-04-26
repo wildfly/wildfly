@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.coordination.DomainOperationContext;
-import org.jboss.as.domain.controller.plan.AbstractServerUpdateTask.ServerUpdateResultHandler;
+import org.jboss.as.domain.controller.plan.ServerUpdateTask.ServerUpdateResultHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -48,17 +48,17 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
     private final Map<String, ServerUpdatePolicy> updatePolicies = new HashMap<String, ServerUpdatePolicy>();
     private final boolean shutdown;
     private final long gracefulShutdownPeriod;
-    private final ServerOperationExecutor serverOperationExecutor;
+    private final ServerTaskExecutor taskExecutor;
     private final DomainOperationContext domainOperationContext;
     private final ConcurrentMap<String, Map<ServerIdentity, ModelNode>> serverResults = new ConcurrentHashMap<String, Map<ServerIdentity, ModelNode>>();
 
     public RolloutPlanController(final Map<String, Map<ServerIdentity, ModelNode>> opsByGroup,
                                  final ModelNode rolloutPlan,
                                  final DomainOperationContext domainOperationContext,
-                                 final ServerOperationExecutor serverOperationExecutor,
+                                 final ServerTaskExecutor taskExecutor,
                                  final ExecutorService executor) {
         this.domainOperationContext = domainOperationContext;
-        this.serverOperationExecutor = serverOperationExecutor;
+        this.taskExecutor = taskExecutor;
 
         this.rollbackAcrossGroups = !rolloutPlan.hasDefined(ROLLBACK_ACROSS_GROUPS) || rolloutPlan.get(ROLLBACK_ACROSS_GROUPS).asBoolean();
         this.shutdown = rolloutPlan.hasDefined(SHUTDOWN) && rolloutPlan.get(SHUTDOWN).asBoolean();
@@ -97,10 +97,9 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
                         continue;
                     }
 
-                    final List<Runnable> groupTasks = new ArrayList<Runnable>();
+                    final List<ServerUpdateTask> groupTasks = new ArrayList<ServerUpdateTask>();
                     final ModelNode policyNode = prop.getValue();
                     final boolean rollingGroup = policyNode.hasDefined(ROLLING_TO_SERVERS) && policyNode.get(ROLLING_TO_SERVERS).asBoolean();
-                    seriesTasks.add(rollingGroup ? new RollingUpdateTask(groupTasks) : new ConcurrentUpdateTask(groupTasks, executor));
 
                     final Set<ServerIdentity> servers = groupEntry.keySet();
                     int maxFailures = 0;
@@ -112,6 +111,9 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
                         maxFailures = policyNode.get(MAX_FAILED_SERVERS).asInt();
                     }
                     ServerUpdatePolicy policy = new ServerUpdatePolicy(parent, serverGroupName, servers, maxFailures);
+
+                    seriesTasks.add(rollingGroup ? new RollingServerGroupUpdateTask(groupTasks, policy, taskExecutor, this)
+                        : new ConcurrentServerGroupUpdateTask(groupTasks, policy, taskExecutor, this));
 
                     updatePolicies.put(serverGroupName, policy);
 
@@ -160,13 +162,13 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
         groupResults.put(serverId, response);
     }
 
-    private Runnable createServerTask(final ServerIdentity serverIdentity, final ModelNode serverOp, final ServerUpdatePolicy policy) {
-        Runnable result;
+    private ServerUpdateTask createServerTask(final ServerIdentity serverIdentity, final ModelNode serverOp, final ServerUpdatePolicy policy) {
+        ServerUpdateTask result;
         if (shutdown) {
-            result = new ServerRestartTask(serverOperationExecutor, serverIdentity, policy, this, gracefulShutdownPeriod);
+            result = new ServerRestartTask(serverIdentity, policy, this, gracefulShutdownPeriod);
         }
         else {
-            result = new RunningServerUpdateTask(serverOperationExecutor, serverIdentity, serverOp, policy, this);
+            result = new RunningServerUpdateTask(serverIdentity, serverOp, policy, this);
         }
         return result;
     }

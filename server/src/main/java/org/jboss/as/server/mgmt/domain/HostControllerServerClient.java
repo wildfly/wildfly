@@ -35,7 +35,7 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
+import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
@@ -137,7 +137,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
                 public void completed(Void result) {
                     // Once registered setup all the required channel handlers
                     final ManagementChannelHandler handler = connection.getChannelHandler();
-                    handler.addHandlerFactory(new TransactionalModelControllerOperationHandler(controller, handler));
+                    handler.addHandlerFactory(new TransactionalProtocolOperationHandler(controller, handler));
                     // Set the remote repository once registered
                     remoteFileRepositoryValue.getValue().setRemoteFileRepositoryExecutor(new RemoteFileRepositoryExecutorImpl());
                     // We finished the registration process

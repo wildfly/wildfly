@@ -30,4 +30,12 @@ package org.jboss.as.protocol.mgmt;
  */
 public interface ManagementResponseHandler<T, A> extends ManagementRequestHandler<T, A> {
 
+    /**
+     * Handle a failed response.
+     *
+     * @param header the header
+     * @param resultHandler the result handler
+     */
+    void handleFailed(ManagementResponseHeader header, ActiveOperation.ResultHandler<T> resultHandler);
+
 }

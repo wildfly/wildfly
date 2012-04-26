@@ -21,21 +21,15 @@
  */
 package org.jboss.as.domain.controller.plan;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
 /**
  * Base class for tasks that can perform an update on a server.
  *
- * Thread-Safety: This class is immutable, but is intended to only have its
- * {@link #run()} method executed once.
- *
  * @author Brian Stansberry
  */
-abstract class AbstractServerUpdateTask implements Runnable {
+abstract class ServerUpdateTask {
 
     /**
      * Callback interface to allow the creator of this task to
@@ -63,9 +57,9 @@ abstract class AbstractServerUpdateTask implements Runnable {
      * @param updatePolicy the policy that controls whether the updates should be applied. Cannot be <code>null</code>
      * @param resultHandler handler for the result of the update. Cannot be <code>null</code>
      */
-    AbstractServerUpdateTask(final ServerIdentity serverId,
-            final ServerUpdatePolicy updatePolicy,
-            final ServerUpdateResultHandler resultHandler) {
+    ServerUpdateTask(final ServerIdentity serverId,
+                     final ServerUpdatePolicy updatePolicy,
+                     final ServerUpdateResultHandler resultHandler) {
         assert serverId != null : "serverId is null";
         assert updatePolicy != null : "updatePolicy is null";
         assert resultHandler != null : "resultHandler is null";
@@ -74,30 +68,10 @@ abstract class AbstractServerUpdateTask implements Runnable {
         this.resultHandler = resultHandler;
     }
 
-    /**
-     * Checks if the {@link ServerUpdatePolicy} allows the update to proceed; if
-     * sp {@link #processUpdates() executes them}, else notifies the
-     * {@link ServerUpdateResultHandler} that they were cancelled.
-     */
-    @Override
-    public void run() {
-        if (updatePolicy.canUpdateServer(serverId)) {
-            processUpdates();
-        }
-        else {
-            sendCancelledResponse();
-        }
-    }
+    public abstract ModelNode getOperation();
 
-    /**
-     * Actually perform the updates.
-     */
-    protected abstract void processUpdates();
-
-    private void sendCancelledResponse() {
-        ModelNode response = new ModelNode();
-        response.get(OUTCOME).set(CANCELLED);
-        resultHandler.handleServerUpdateResult(serverId, response);
+    public ServerIdentity getServerIdentity() {
+        return serverId;
     }
 
     @Override
