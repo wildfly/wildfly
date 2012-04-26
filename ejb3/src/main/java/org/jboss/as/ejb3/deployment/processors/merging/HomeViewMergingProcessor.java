@@ -112,19 +112,8 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
                             //If the local home is specified via annotation then the corresponding business interface is implied
                             //by the signature of the create method
                             //See EJB 3.1 21.4.5
-
-                            final Class localHomeClass = module.getClassLoader().loadClass(localHome);
-                            final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(localHomeClass);
-                            Class<?> localClass = null;
-                            for (final Method method : index.getMethods()) {
-                                if (method.getName().startsWith("create")) {
-                                    if (localClass != null && localClass != method.getReturnType()) {
-                                        throw MESSAGES.multipleCreateMethod(localHomeClass);
-                                    }
-                                    localClass = method.getReturnType();
-                                }
-                            }
-                            description.addEjbLocalObjectView(localClass.getName());
+                            final String localClassName = this.inferLocalInterfaceFromLocalHome(localHome, module, deploymentReflectionIndex, description);
+                            description.addEjbLocalObjectView(localClassName);
                         }
                     }
                 }
@@ -136,22 +125,8 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
                             //If the remote home is specified via annotation then the corresponding business interface is implied
                             //by the signature of the create method
                             //See EJB 3.1 21.4.5
-
-                            final Class homeClass = module.getClassLoader().loadClass(home);
-                            final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(homeClass);
-                            Class<?> remote = null;
-                            for (final Method method : index.getMethods()) {
-                                if (method.getName().startsWith("create")) {
-                                    if (remote != null && remote != method.getReturnType()) {
-                                        throw MESSAGES.multipleCreateMethod(homeClass);
-                                    }
-                                    remote = method.getReturnType();
-                                }
-                            }
-                            if(remote == null) {
-                                throw new DeploymentUnitProcessingException("Could not determine remove interface type from home " + homeClass + " for bean " + description.getEJBName());
-                            }
-                            description.addEjbObjectView(remote.getName());
+                            final String remoteClassName = this.inferRemoteInterfaceFromHome(home, module, deploymentReflectionIndex, description);
+                            description.addEjbObjectView(remoteClassName);
                         }
                     }
                 }
@@ -174,8 +149,53 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
         if (home != null) {
             description.addRemoteHome(home);
         }
+        // finally see if we have to infer the remote or local interface from the home/local home views, respectively
+        if (description.getEjbHomeView() != null && description.getEjbRemoteView() == null) {
+            final String remoteClassName = this.inferRemoteInterfaceFromHome(description.getEjbHomeView().getViewClassName(), module, deploymentReflectionIndex, description);
+            description.addEjbObjectView(remoteClassName);
+        }
+        if (description.getEjbLocalHomeView() != null && description.getEjbLocalView() == null) {
+            final String localClassName = this.inferLocalInterfaceFromLocalHome(description.getEjbLocalHomeView().getViewClassName(), module, deploymentReflectionIndex, description);
+            description.addEjbLocalObjectView(localClassName);
+        }
     }
 
+
+    private String inferRemoteInterfaceFromHome(final String homeClassName, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final SessionBeanComponentDescription description) throws ClassNotFoundException, DeploymentUnitProcessingException {
+        final Class homeClass = module.getClassLoader().loadClass(homeClassName);
+        final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(homeClass);
+        Class<?> remote = null;
+        for (final Method method : index.getMethods()) {
+            if (method.getName().startsWith("create")) {
+                if (remote != null && remote != method.getReturnType()) {
+                    throw MESSAGES.multipleCreateMethod(homeClass);
+                }
+                remote = method.getReturnType();
+            }
+        }
+        if(remote == null) {
+            throw MESSAGES.couldNotDetermineRemoteInterfaceFromHome(homeClassName, description.getEJBName());
+        }
+        return remote.getName();
+    }
+
+    private String inferLocalInterfaceFromLocalHome(final String localHomeClassName, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final SessionBeanComponentDescription description) throws ClassNotFoundException, DeploymentUnitProcessingException {
+        final Class localHomeClass = module.getClassLoader().loadClass(localHomeClassName);
+        final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(localHomeClass);
+        Class<?> localClass = null;
+        for (final Method method : index.getMethods()) {
+            if (method.getName().startsWith("create")) {
+                if (localClass != null && localClass != method.getReturnType()) {
+                    throw MESSAGES.multipleCreateMethod(localHomeClass);
+                }
+                localClass = method.getReturnType();
+            }
+        }
+        if (localClass == null) {
+            throw MESSAGES.couldNotDetermineLocalInterfaceFromLocalHome(localHomeClassName, description.getEJBName());
+        }
+        return localClass.getName();
+    }
 
     @Override
     public void undeploy(final DeploymentUnit context) {
