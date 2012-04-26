@@ -39,6 +39,11 @@ public abstract class AbstractDeploymentChainStep implements OperationStepHandle
         public void addDeploymentProcessor(final String subsystemName, final Phase phase, final int priority, final DeploymentUnitProcessor processor) {
             DeployerChainAddHandler.addDeploymentProcessor(subsystemName, phase, priority, processor);
         }
+
+        @Override
+        public void addDeploymentProcessor(final Phase phase, final int priority, final DeploymentUnitProcessor processor) {
+            addDeploymentProcessor("", phase, priority, processor);
+        }
     };
 
     public final void execute(final OperationContext context, final ModelNode operation) {

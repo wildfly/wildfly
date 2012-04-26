@@ -39,4 +39,18 @@ public interface DeploymentProcessorTarget {
      * @param processor the processor to install
      */
     void addDeploymentProcessor(String subsystemName, Phase phase, int priority, DeploymentUnitProcessor processor);
+
+
+    /**
+     * Add a deployment processor.
+     *
+     * This is a legacy method that does not take a subsystem name. A subsystem name
+     * of the empty string is assumed.
+     *
+     * @param phase the processor phase install into (must not be {@code null})
+     * @param priority the priority within the selected phase
+     * @param processor the processor to install
+     */
+    @Deprecated
+    void addDeploymentProcessor(Phase phase, int priority, DeploymentUnitProcessor processor);
 }
