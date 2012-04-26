@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.osgi.parser;
+package org.jboss.as.osgi.management;
 
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -30,6 +30,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.osgi.management.BundleResourceHandler;
+import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
@@ -46,7 +48,7 @@ import org.osgi.service.startlevel.StartLevel;
  * @author David Bosschaert
  * @author Thomas.Diesler@jboss.com
  */
-public class BundleRuntimeHandlerTestCase {
+public class BundleResourceHandlerTestCase {
 
     private BundleContext bundleContext;
     private ModelNode contextResult;
@@ -57,7 +59,7 @@ public class BundleRuntimeHandlerTestCase {
     public void testRegister() throws Exception {
         ManagementResourceRegistration mrr = Mockito.mock(ManagementResourceRegistration.class);
 
-        BundleRuntimeHandler handler = BundleRuntimeHandler.INSTANCE;
+        BundleResourceHandler handler = BundleResourceHandler.INSTANCE;
         handler.register(mrr);
 
         Mockito.verify(mrr).registerReadOnlyAttribute(ModelConstants.ID, handler, AttributeAccess.Storage.RUNTIME);
@@ -75,7 +77,7 @@ public class BundleRuntimeHandlerTestCase {
         Mockito.when(bundleContext.getBundle(17)).thenReturn(testBundle);
         Mockito.when(testBundle.getBundleId()).thenReturn(new Long(17));
 
-        BundleRuntimeHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
+        BundleResourceHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
         Assert.assertEquals(17L, contextResult.asLong());
     }
 
@@ -88,7 +90,7 @@ public class BundleRuntimeHandlerTestCase {
         Mockito.when(bundleContext.getBundle(1)).thenReturn(testBundle);
         Mockito.when(testBundle.getSymbolicName()).thenReturn("myTestBundle");
 
-        BundleRuntimeHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
+        BundleResourceHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
         Assert.assertEquals("myTestBundle", contextResult.asString());
     }
 
@@ -101,7 +103,7 @@ public class BundleRuntimeHandlerTestCase {
         Mockito.when(bundleContext.getBundle(1)).thenReturn(testBundle);
         Mockito.when(startLevelService.getBundleStartLevel(testBundle)).thenReturn(7);
 
-        BundleRuntimeHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
+        BundleResourceHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
         Assert.assertEquals(7, contextResult.asInt());
     }
 
@@ -114,7 +116,7 @@ public class BundleRuntimeHandlerTestCase {
         Mockito.when(bundleContext.getBundle(1)).thenReturn(testBundle);
         Mockito.when(testBundle.getState()).thenReturn(Bundle.ACTIVE);
 
-        BundleRuntimeHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
+        BundleResourceHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
         Assert.assertEquals("ACTIVE", contextResult.asString());
     }
 
@@ -129,7 +131,7 @@ public class BundleRuntimeHandlerTestCase {
         Mockito.when(bundleContext.getBundle(1)).thenReturn(testBundle);
         Mockito.when(testBundle.getHeaders()).thenReturn(headers);
 
-        BundleRuntimeHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
+        BundleResourceHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
         Assert.assertEquals(ModelConstants.FRAGMENT, contextResult.asString());
     }
 
@@ -144,7 +146,7 @@ public class BundleRuntimeHandlerTestCase {
         Mockito.when(bundleContext.getBundle(1)).thenReturn(testBundle);
         Mockito.when(testBundle.getHeaders()).thenReturn(headers);
 
-        BundleRuntimeHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
+        BundleResourceHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
         Assert.assertEquals(ModelConstants.BUNDLE, contextResult.asString());
     }
 
@@ -157,18 +159,18 @@ public class BundleRuntimeHandlerTestCase {
         Mockito.when(bundleContext.getBundle(1)).thenReturn(testBundle);
         Mockito.when(testBundle.getVersion()).thenReturn(new Version(1, 2, 3, "qual"));
 
-        BundleRuntimeHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
+        BundleResourceHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
         Assert.assertEquals("1.2.3.qual", contextResult.asString());
     }
 
     @Test
     public void testBundleStateString() {
-        Assert.assertEquals("UNINSTALLED", BundleRuntimeHandler.getBundleState(mockBundle(Bundle.UNINSTALLED)));
-        Assert.assertEquals("INSTALLED", BundleRuntimeHandler.getBundleState(mockBundle(Bundle.INSTALLED)));
-        Assert.assertEquals("RESOLVED", BundleRuntimeHandler.getBundleState(mockBundle(Bundle.RESOLVED)));
-        Assert.assertEquals("STARTING", BundleRuntimeHandler.getBundleState(mockBundle(Bundle.STARTING)));
-        Assert.assertEquals("STOPPING", BundleRuntimeHandler.getBundleState(mockBundle(Bundle.STOPPING)));
-        Assert.assertEquals("ACTIVE", BundleRuntimeHandler.getBundleState(mockBundle(Bundle.ACTIVE)));
+        Assert.assertEquals("UNINSTALLED", BundleResourceHandler.getBundleState(mockBundle(Bundle.UNINSTALLED)));
+        Assert.assertEquals("INSTALLED", BundleResourceHandler.getBundleState(mockBundle(Bundle.INSTALLED)));
+        Assert.assertEquals("RESOLVED", BundleResourceHandler.getBundleState(mockBundle(Bundle.RESOLVED)));
+        Assert.assertEquals("STARTING", BundleResourceHandler.getBundleState(mockBundle(Bundle.STARTING)));
+        Assert.assertEquals("STOPPING", BundleResourceHandler.getBundleState(mockBundle(Bundle.STOPPING)));
+        Assert.assertEquals("ACTIVE", BundleResourceHandler.getBundleState(mockBundle(Bundle.ACTIVE)));
     }
 
     @Test
@@ -183,7 +185,7 @@ public class BundleRuntimeHandlerTestCase {
         Mockito.when(bundleContext.getBundle(Long.MAX_VALUE)).thenReturn(testBundle);
 
         Mockito.verifyZeroInteractions(testBundle);
-        BundleRuntimeHandler.INSTANCE.executeRuntimeStep(operationContext, startOp);
+        BundleResourceHandler.INSTANCE.executeRuntimeStep(operationContext, startOp);
         Mockito.verify(testBundle).start();
     }
 
@@ -199,7 +201,7 @@ public class BundleRuntimeHandlerTestCase {
         Mockito.when(bundleContext.getBundle(Long.MAX_VALUE)).thenReturn(testBundle);
 
         Mockito.verifyZeroInteractions(testBundle);
-        BundleRuntimeHandler.INSTANCE.executeRuntimeStep(operationContext, startOp);
+        BundleResourceHandler.INSTANCE.executeRuntimeStep(operationContext, startOp);
         Mockito.verify(testBundle).stop();
     }
 
