@@ -2057,6 +2057,11 @@ public interface EjbMessages {
     @Message(id = 14574, value = "Unknown channel creation option type %s")
     IllegalArgumentException unknownChannelCreationOptionType(String optionType);
 
+    @Message(id = 14575, value = "Could not determine remote interface from home interface %s for bean %s")
+    DeploymentUnitProcessingException couldNotDetermineRemoteInterfaceFromHome(final String homeClass, final String beanName);
+
+    @Message(id = 14576, value = "Could not determine local interface from local home interface %s for bean %s")
+    DeploymentUnitProcessingException couldNotDetermineLocalInterfaceFromLocalHome(final String localHomeClass, final String beanName);
 
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
