@@ -636,12 +636,15 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
     @Override
     protected String generateSessionId(Random random) {
-        return this.distributedCacheManager.createSessionId();
+        return this.createSessionId(this.distributedCacheManager.createSessionId(), this.getJvmRoute());
     }
 
     @Override
     protected boolean appendJVMRoute() {
-        return this.getUseJK();
+        // Controls whether super.generateSessionId(Random) should append the jvm route to the session ID
+        // Don't do it then - so that the KeyAffinityService uses the real id (i.e. the value to be store in the Cache)
+        // We'll append the jvm route ourselves in this.generateSessionId(Random)
+        return false;
     }
 
     @Override
