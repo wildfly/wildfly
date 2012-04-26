@@ -38,7 +38,7 @@ public abstract class AbstractAddStepHandler implements OperationStepHandler {
 
     /** {@inheritDoc */
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
+        final Resource resource = createResource(context);
         populateModel(context, operation, resource);
         final ModelNode model = resource.getModel();
 
@@ -63,6 +63,16 @@ public abstract class AbstractAddStepHandler implements OperationStepHandler {
             }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+    }
+
+    /**
+     * Create the {@link Resource} that the {@link AbstractAddStepHandler#execute(OperationContext, ModelNode)}
+     * method operates on.
+     *
+     * @param context the operation context
+     */
+    protected Resource createResource(final OperationContext context) {
+        return context.createResource(PathAddress.EMPTY_ADDRESS);
     }
 
     /**
