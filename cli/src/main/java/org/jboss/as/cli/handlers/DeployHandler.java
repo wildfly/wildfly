@@ -266,6 +266,23 @@ public class DeployHandler extends BatchModeCommandHandler {
             f = null;
         }
 
+        if (isCliArchive(f)) {
+            final ModelNode request = buildRequest(ctx);
+            if(request == null) {
+                throw new CommandFormatException("Operation request wasn't built.");
+            }
+            try {
+                final ModelNode result = client.execute(request);
+                if(Util.isSuccess(result)) {
+                    return;
+                } else {
+                    throw new CommandFormatException("Failed to execute archive script: " + Util.getFailureDescription(result));
+                }
+            } catch (IOException e) {
+                throw new CommandFormatException("Failed to execute archive script: " + e.getLocalizedMessage(), e);
+            }
+        }
+
         String name = this.name.getValue(args);
         if(name == null) {
             if(f == null) {
@@ -280,7 +297,6 @@ public class DeployHandler extends BatchModeCommandHandler {
         final boolean disabled = this.disabled.isPresent(args);
         final String serverGroups = this.serverGroups.getValue(args);
         final boolean allServerGroups = this.allServerGroups.isPresent(args);
-        final boolean archive = isCliArchive(f);
 
         if(force) {
             if(f == null) {
@@ -290,10 +306,6 @@ public class DeployHandler extends BatchModeCommandHandler {
                 throw new CommandFormatException(this.force.getFullName() +
                         " only replaces the content in the deployment repository and can't be used in combination with any of " +
                         this.disabled.getFullName() + ", " + this.serverGroups.getFullName() + " or " + this.allServerGroups.getFullName() + '.');
-            }
-
-            if (archive) {
-                throw new OperationFormatException(this.force.getFullName() + " can't be used in combination with a CLI archive.");
             }
 
             if(Util.isDeploymentInRepository(name, client)) {
@@ -318,10 +330,6 @@ public class DeployHandler extends BatchModeCommandHandler {
                         " can't be used in combination with " + this.disabled.getFullName() + '.');
             }
 
-            if (archive) {
-                throw new OperationFormatException(this.disabled.getFullName() + " can't be used in combination with a CLI archive.");
-            }
-
             if(Util.isDeploymentInRepository(name, client)) {
                 throw new CommandFormatException("'" + name + "' already exists in the deployment repository (use " +
                 this.force.getFullName() + " to replace the existing content in the repository).");
@@ -331,30 +339,6 @@ public class DeployHandler extends BatchModeCommandHandler {
             final ModelNode request = buildAddRequest(ctx, f, name, runtimeName, unmanaged);
             execute(ctx, request, f, unmanaged);
             return;
-        }
-
-        if (archive) {
-
-            ModelNode request;
-            try {
-                request = buildRequest(ctx);
-            } catch (CommandFormatException e1) {
-                throw new CommandFormatException(e1.getLocalizedMessage());
-            }
-
-            if(request == null) {
-                throw new CommandFormatException("Operation request wasn't built.");
-            }
-            try {
-                ModelNode result = client.execute(request);
-                if(Util.isSuccess(result)) {
-                    return;
-                } else {
-                    throw new CommandFormatException("Failed to execute archive script: " + Util.getFailureDescription(result));
-                }
-            } catch (Exception e) {
-                throw new CommandFormatException("Failed to execute archive script: " + e.getLocalizedMessage());
-            }
         }
 
         // actually, the deployment is added before it is deployed
@@ -427,8 +411,8 @@ public class DeployHandler extends BatchModeCommandHandler {
             if (!Util.isSuccess(result)) {
                 throw new CommandFormatException(Util.getFailureDescription(result));
             }
-        } catch (Exception e) {
-            throw new CommandFormatException("Failed to deploy: " + e.getLocalizedMessage());
+        } catch (IOException e) {
+            throw new CommandFormatException("Failed to deploy: " + e.getLocalizedMessage(), e);
         }
     }
 
@@ -533,6 +517,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                 throw new OperationFormatException("Unable to extract archive '" + f.getAbsolutePath() + "' to temporary location");
             }
 
+            final File currentDir = ctx.getCurrentDir();
             ctx.setCurrentDir(root.getMountSource());
             String holdbackBatch = activateNewBatch(ctx);
 
@@ -544,7 +529,7 @@ public class DeployHandler extends BatchModeCommandHandler {
 
                 File scriptFile = new File(ctx.getCurrentDir(),script);
                 if (!scriptFile.exists()) {
-                    throw new CommandFormatException("ERROR: script " + script + "' not found.");
+                    throw new CommandFormatException("ERROR: script '" + script + "' not found.");
                 }
 
                 try {
@@ -555,19 +540,17 @@ public class DeployHandler extends BatchModeCommandHandler {
                         line = reader.readLine();
                     }
                 } catch (FileNotFoundException e) {
-                    throw new CommandFormatException("ERROR: script " + script + "' not found.");
+                    throw new CommandFormatException("ERROR: script '" + script + "' not found.");
                 } catch (IOException e) {
-                    throw new CommandFormatException(e.getMessage());
+                    throw new CommandFormatException("Failed to read the next command from " + scriptFile.getName() + ": " + e.getMessage(), e);
                 } catch (CommandLineException e) {
-                    throw new CommandFormatException(e.getMessage());
+                    throw new CommandFormatException(e.getMessage(), e);
                 }
 
-                ModelNode composite = ctx.getBatchManager().getActiveBatch().toRequest();
-
-                return composite;
+                return ctx.getBatchManager().getActiveBatch().toRequest();
             } finally {
                 // reset current dir in context
-                ctx.setCurrentDir(new File(""));
+                ctx.setCurrentDir(currentDir);
                 discardBatch(ctx, holdbackBatch);
                 try {
                     root.close();
