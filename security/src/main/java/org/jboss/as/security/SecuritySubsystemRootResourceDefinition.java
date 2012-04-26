@@ -179,9 +179,9 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
 
             context.addStep(new AbstractDeploymentChainStep() {
                 protected void execute(DeploymentProcessorTarget processorTarget) {
-                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JACC_POLICY,
+                    processorTarget.addDeploymentProcessor(SecurityExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JACC_POLICY,
                             new JaccEarDeploymentProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_SECURITY,
+                    processorTarget.addDeploymentProcessor(SecurityExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_SECURITY,
                             new SecurityDependencyProcessor());
                 }
             }, OperationContext.Stage.RUNTIME);

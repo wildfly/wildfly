@@ -137,8 +137,8 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCY_SETUP, new JndiNamingDependencySetupProcessor());
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCIES, new JndiNamingDependencyProcessor());
+                processorTarget.addDeploymentProcessor(NamingExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCY_SETUP, new JndiNamingDependencySetupProcessor());
+                processorTarget.addDeploymentProcessor(NamingExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCIES, new JndiNamingDependencyProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
 

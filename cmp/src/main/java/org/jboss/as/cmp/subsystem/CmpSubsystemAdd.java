@@ -63,12 +63,12 @@ public class CmpSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_CMP_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS, new CmpEntityBeanComponentDescriptionFactory(appclient));
+                processorTarget.addDeploymentProcessor(CmpExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_CMP_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS, new CmpEntityBeanComponentDescriptionFactory(appclient));
                 if (!appclient) {
-                    processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_CMP, new CmpDependencyProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_CMP_PARSE, new CmpParsingProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_CMP_ENTITY_METADATA, new CmpEntityMetaDataProcessor(CmpEntityBeanComponentDescription.class));
-                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_CMP_STORE_MANAGER, new CmpStoreManagerProcessor());
+                    processorTarget.addDeploymentProcessor(CmpExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_CMP, new CmpDependencyProcessor());
+                    processorTarget.addDeploymentProcessor(CmpExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_CMP_PARSE, new CmpParsingProcessor());
+                    processorTarget.addDeploymentProcessor(CmpExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_CMP_ENTITY_METADATA, new CmpEntityMetaDataProcessor(CmpEntityBeanComponentDescription.class));
+                    processorTarget.addDeploymentProcessor(CmpExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_CMP_STORE_MANAGER, new CmpStoreManagerProcessor());
                 }
             }
         }, OperationContext.Stage.RUNTIME);

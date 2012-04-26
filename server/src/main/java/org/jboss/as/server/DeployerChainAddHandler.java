@@ -31,17 +31,18 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import org.jboss.as.server.deployment.DeployerChainsService;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.dmr.ModelNode;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 
 /**
  * @author John Bailey
@@ -50,7 +51,7 @@ public class DeployerChainAddHandler implements OperationStepHandler, Descriptio
     static final String NAME = "add-deployer-chains";
     public static final DeployerChainAddHandler INSTANCE = new DeployerChainAddHandler();
 
-    static void addDeploymentProcessor(Phase phase, int priority, DeploymentUnitProcessor processor) {
+    static void addDeploymentProcessor(final String subsystemName, Phase phase, int priority, DeploymentUnitProcessor processor) {
         final EnumMap<Phase, Set<RegisteredProcessor>> deployerMap = INSTANCE.deployerMap;
         deployerMap.get(phase).add(new RegisteredProcessor(priority, processor));
     }

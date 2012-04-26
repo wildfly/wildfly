@@ -27,6 +27,7 @@ import java.util.Collection;
 
 import org.jboss.as.connector.deployers.processors.DsXmlDeploymentInstallProcessor;
 import org.jboss.as.connector.deployers.processors.DsXmlDeploymentParsingProcessor;
+import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.msc.service.ServiceController;
@@ -50,7 +51,7 @@ public class DsDeploymentActivator {
     }
 
     public void activateProcessors(final DeploymentProcessorTarget updateContext) {
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DSXML_DEPLOYMENT, new DsXmlDeploymentParsingProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DSXML_DEPLOYMENT, new DsXmlDeploymentInstallProcessor());
+        updateContext.addDeploymentProcessor(DataSourcesExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_DSXML_DEPLOYMENT, new DsXmlDeploymentParsingProcessor());
+        updateContext.addDeploymentProcessor(DataSourcesExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_DSXML_DEPLOYMENT, new DsXmlDeploymentInstallProcessor());
     }
 }

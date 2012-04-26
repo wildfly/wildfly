@@ -43,7 +43,7 @@ class SimpleSubsystemAdd extends AbstractBoottimeAddStepHandler {
         //see SubDeploymentProcessor for explanation of the phases
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(SimpleSubsystemDeploymentProcessor.PHASE, SimpleSubsystemDeploymentProcessor.PRIORITY, new SimpleSubsystemDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(SimpleSubsystemExtension.SUBSYSTEM_NAME, SimpleSubsystemDeploymentProcessor.PHASE, SimpleSubsystemDeploymentProcessor.PRIORITY, new SimpleSubsystemDeploymentProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
 

@@ -40,6 +40,7 @@ import org.jboss.as.connector.mdr.MdrService;
 import org.jboss.as.connector.rarepository.RaRepositoryService;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistryService;
 import org.jboss.as.connector.services.ManagementRepositoryService;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
@@ -86,16 +87,16 @@ public class RaDeploymentActivator {
 
 
     public void activateProcessors(final DeploymentProcessorTarget updateContext) {
-        updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_RAR_CONFIG, new RarDependencyProcessor());
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RA_DEPLOYMENT, new RaDeploymentParsingProcessor());
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_IRON_JACAMAR_DEPLOYMENT,
+        updateContext.addDeploymentProcessor(ResourceAdaptersExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_RAR_CONFIG, new RarDependencyProcessor());
+        updateContext.addDeploymentProcessor(ResourceAdaptersExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_RA_DEPLOYMENT, new RaDeploymentParsingProcessor());
+        updateContext.addDeploymentProcessor(ResourceAdaptersExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_IRON_JACAMAR_DEPLOYMENT,
                 new IronJacamarDeploymentParsingProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RA_NATIVE, new RaNativeProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RA_DEPLOYMENT, new ParsedRaDeploymentProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RA_XML_DEPLOYMENT, new RaXmlDeploymentProcessor(
+        updateContext.addDeploymentProcessor(ResourceAdaptersExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_RA_NATIVE, new RaNativeProcessor());
+        updateContext.addDeploymentProcessor(ResourceAdaptersExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_RA_DEPLOYMENT, new ParsedRaDeploymentProcessor());
+        updateContext.addDeploymentProcessor(ResourceAdaptersExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_RA_XML_DEPLOYMENT, new RaXmlDeploymentProcessor(
                 mdrService.getValue()));
-        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_RAR, new RaStructureProcessor());
-        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_JDBC_DRIVER, new StructureDriverProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JDBC_DRIVER, new DriverProcessor());
+        updateContext.addDeploymentProcessor(ResourceAdaptersExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_RAR, new RaStructureProcessor());
+        updateContext.addDeploymentProcessor(ResourceAdaptersExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_JDBC_DRIVER, new StructureDriverProcessor());
+        updateContext.addDeploymentProcessor(ResourceAdaptersExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JDBC_DRIVER, new DriverProcessor());
     }
 }
