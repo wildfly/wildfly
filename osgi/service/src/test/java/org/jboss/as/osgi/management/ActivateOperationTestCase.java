@@ -19,43 +19,44 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.osgi.parser;
+package org.jboss.as.osgi.management;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.osgi.management.ActivateOperationHandler;
+import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.framework.Services;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
- * Operation to activate the OSGi subsystem.
- *
  * @author David Bosschaert
+ * @author Thomas.Diesler@jboss.com
  */
-public class ActivateOperationHandler extends AbstractRuntimeOnlyHandler implements DescriptionProvider {
-    static ActivateOperationHandler INSTANCE = new ActivateOperationHandler();
+public class ActivateOperationTestCase {
 
-    private ActivateOperationHandler() {
-    }
+    @Test
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public void testActivateOperation() throws Exception {
+        ModelNode activateOp = new ModelNode();
+        activateOp.get(ModelDescriptionConstants.OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, "osgi");
+        activateOp.get(ModelDescriptionConstants.OP).set(ModelConstants.ACTIVATE);
 
-    @Override
-    protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-        ServiceController<?> svc = context.getServiceRegistry(false).getRequiredService(Services.FRAMEWORK_ACTIVE);
-        svc.setMode(Mode.ACTIVE);
-        context.completeStep();
-    }
+        ServiceController sc = Mockito.mock(ServiceController.class);
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        ResourceBundle resourceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
-        return CommonDescriptions.getDescriptionOnlyOperation(resourceBundle, ModelConstants.ACTIVATE, ModelDescriptionConstants.SUBSYSTEM);
+        ServiceRegistry sr = Mockito.mock(ServiceRegistry.class);
+        Mockito.when(sr.getRequiredService(Services.FRAMEWORK_ACTIVE)).thenReturn(sc);
+
+        OperationContext context = Mockito.mock(OperationContext.class);
+        Mockito.when(context.getServiceRegistry(false)).thenReturn(sr);
+
+        ActivateOperationHandler.INSTANCE.executeRuntimeStep(context, activateOp);
+
+        Mockito.verify(sc).setMode(Mode.ACTIVE);
+        Mockito.verify(context).completeStep();
     }
 }

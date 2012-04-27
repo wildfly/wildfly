@@ -131,7 +131,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
     @Override
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> serviceController = context.getController();
-        LOGGER.debugf("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
+        LOGGER.tracef("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
 
         final BundleContext syscontext = injectedSystemBundle.getValue().getBundleContext();
         final String startLevelProp = syscontext.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL);
@@ -199,7 +199,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
             // Find the module in the bundles hierarchy
             File bundleFile = ModuleIdentityArtifactProvider.getRepositoryEntry(bundlesDir, moduleId);
             if (bundleFile == null) {
-                LOGGER.debugf("Installing initial module capability: %s", identifier);
+                LOGGER.tracef("Installing initial module capability: %s", identifier);
 
                 // Attempt to load the module from the modules hierarchy
                 Module module = null;
@@ -240,7 +240,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
             // Attempt to install the bundle from the bundles hierarchy
             File bundleFile = ModuleIdentityArtifactProvider.getRepositoryEntry(bundlesDir, moduleId);
             if (bundleFile != null) {
-                LOGGER.debugf("Installing initial bundle capability: %s", identifier);
+                LOGGER.tracef("Installing initial bundle capability: %s", identifier);
                 URL bundleURL = bundleFile.toURI().toURL();
                 result = installBundleFromURL(bundleURL, identifier, level, listener);
             }
@@ -248,7 +248,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
 
         // Try the identifier as MavenCoordinates
         else if (isValidMavenIdentifier(identifier)) {
-            LOGGER.debugf("Installing initial maven capability: %s", identifier);
+            LOGGER.tracef("Installing initial maven capability: %s", identifier);
             Repository repository = injectedRepository.getValue();
             MavenCoordinates mavenId = MavenCoordinates.parse(identifier);
             Requirement req = XRequirementBuilder.createArtifactRequirement(mavenId);

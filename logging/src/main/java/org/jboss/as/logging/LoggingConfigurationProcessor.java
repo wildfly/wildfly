@@ -63,12 +63,17 @@ public class LoggingConfigurationProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
+        // OSGi bundles deployments may not have a module attached
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        if (module == null)
+            return;
+
         if (Boolean.valueOf(SecurityActions.getSystemProperty(PER_DEPLOYMENT_LOGGING, Boolean.toString(true)))) {
             LoggingLogger.ROOT_LOGGER.trace("Scanning for logging configuration files.");
-            final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
             if (deploymentUnit.hasAttachment(Attachments.RESOURCE_ROOTS)) {
                 final List<ResourceRoot> deploymentRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-                final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
                 final VirtualFile configFile = findConfigFile(deploymentRoots);
                 if (configFile != null) {
                     InputStream configStream = null;
@@ -113,10 +118,15 @@ public class LoggingConfigurationProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit context) {
-        // Unregister the log context
+
+        // OSGi bundles deployments may not have a module attached
         final Module module = context.getAttachment(Attachments.MODULE);
+        if (module == null)
+            return;
+
         final ClassLoader current = SecurityActions.getThreadContextClassLoader();
         try {
+            // Unregister the log context
             SecurityActions.setThreadContextClassLoader(module.getClassLoader());
             LoggingExtension.CONTEXT_SELECTOR.unregisterLogContext(module.getClassLoader(), LogContext.getLogContext());
         } finally {

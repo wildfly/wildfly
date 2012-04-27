@@ -77,7 +77,7 @@ public class OSGiFrameworkPropertyAdd extends AbstractAddStepHandler {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             ModelNode node = new ModelNode();
-            ResourceBundle resbundle = OSGiSubsystemProviders.getResourceBundle(locale);
+            ResourceBundle resbundle = OSGiDescriptionProviders.getResourceBundle(locale);
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property.add"));
             node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.VALUE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property.value"));

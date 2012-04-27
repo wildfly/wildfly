@@ -73,7 +73,7 @@ public class OSGiFrameworkPropertyWrite extends AbstractWriteAttributeHandler<Ob
         @Override
         public ModelNode getModelDescription(Locale locale) {
             ModelNode node = new ModelNode();
-            ResourceBundle resbundle = OSGiSubsystemProviders.getResourceBundle(locale);
+            ResourceBundle resbundle = OSGiDescriptionProviders.getResourceBundle(locale);
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property.write"));
             node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.VALUE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property.value"));
