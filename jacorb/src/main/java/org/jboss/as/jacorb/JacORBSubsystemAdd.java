@@ -73,10 +73,6 @@ import org.omg.PortableServer.POA;
  */
 public class JacORBSubsystemAdd extends AbstractAddStepHandler {
 
-    private static final String JACORB_SOCKET_BINDING = "jacorb";
-
-    private static final String JACORB_SSL_SOCKET_BINDING = "jacorb-ssl";
-
     static final JacORBSubsystemAdd INSTANCE = new JacORBSubsystemAdd();
 
     private static final ServiceName SECURITY_DOMAIN_SERVICE_NAME = ServiceName.JBOSS.append("security").append("security-domain");
@@ -151,9 +147,11 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
             builder.addDependency(SECURITY_DOMAIN_SERVICE_NAME.append(securityDomain));
 
         // inject the socket bindings that specify the JacORB IIOP and IIOP/SSL ports.
-        builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(JACORB_SOCKET_BINDING), SocketBinding.class,
+        String socketBinding = props.getProperty(JacORBSubsystemConstants.ORB_SOCKET_BINDING);
+        builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBinding), SocketBinding.class,
                 orbService.getJacORBSocketBindingInjector());
-        builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(JACORB_SSL_SOCKET_BINDING), SocketBinding.class,
+        String sslSocketBinding = props.getProperty(JacORBSubsystemConstants.ORB_SSL_SOCKET_BINDING);
+        builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(sslSocketBinding), SocketBinding.class,
                 orbService.getJacORBSSLSocketBindingInjector());
         builder.addListener(verificationHandler);
         // set the initial mode and install the service.

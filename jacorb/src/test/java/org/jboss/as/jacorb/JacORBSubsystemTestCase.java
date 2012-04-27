@@ -60,9 +60,9 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml() throws IOException {
         // for the standard subsystem test we use a complete configuration XML.
         return
-        "<subsystem xmlns=\"urn:jboss:domain:jacorb:1.1\">" +
+        "<subsystem xmlns=\"urn:jboss:domain:jacorb:1.2\">" +
         "    <orb name=\"JBoss\" print-version=\"off\" use-imr=\"off\" use-bom=\"off\"  cache-typecodes=\"off\" " +
-        "        cache-poa-names=\"off\" giop-minor-version =\"2\">" +
+        "        cache-poa-names=\"off\" giop-minor-version =\"2\" socket-binding=\"jacorb\" ssl-socket-binding=\"jacorb-ssl\">" +
         "        <connection retries=\"5\" retry-interval=\"500\" client-timeout=\"0\" server-timeout=\"0\" " +
         "            max-server-connections=\"500\" max-managed-buf-size=\"24\" outbuf-size=\"2048\" " +
         "            outbuf-cache-timeout=\"-1\"/>" +
@@ -238,9 +238,8 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testParseSubsystemWithBadInitializer_1_0() throws Exception {
-        // try parsing a XML with an invalid element.
         String subsystemXml =
-                "<subsystem xmlns=\"" + JacORBSubsystemParser.Namespace.CURRENT.getUriString() + "\">" +
+                "<subsystem xmlns=\"" + JacORBSubsystemParser.Namespace.JacORB_1_0.getUriString() + "\">" +
                 "   <initializers>invalid</initializers>" +
                 "</subsystem>";
         try {

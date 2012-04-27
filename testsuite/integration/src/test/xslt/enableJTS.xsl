@@ -1,7 +1,7 @@
 <xsl:stylesheet version="2.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:t="urn:jboss:domain:transactions:1.2"
-                xmlns:j="urn:jboss:domain:jacorb:1.1">
+                xmlns:j="urn:jboss:domain:jacorb:1.2">
 
     <!--
         An XSLT style sheet which will enable JTS,

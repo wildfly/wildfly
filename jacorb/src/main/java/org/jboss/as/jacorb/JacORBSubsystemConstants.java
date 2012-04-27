@@ -57,6 +57,8 @@ public final class JacORBSubsystemConstants {
     public static final String ORB_CONN_MAX_MANAGED_BUF_SIZE = "max-managed-buf-size";
     public static final String ORB_CONN_OUTBUF_SIZE = "outbuf-size";
     public static final String ORB_CONN_OUTBUF_CACHE_TIMEOUT = "outbuf-cache-timeout";
+    public static final String ORB_SOCKET_BINDING = "socket-binding";
+    public static final String ORB_SSL_SOCKET_BINDING = "ssl-socket-binding";
     public static final String ORB_INIT = "initializers";
     public static final String ORB_INIT_SECURITY = "security";
     public static final String ORB_INIT_TRANSACTIONS = "transactions";

@@ -84,11 +84,12 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
         switch (readerNS) {
             case JacORB_1_0: {
-                this.readElement_1_0(reader, subsystem);
+                this.readElement_1_0(readerNS, reader, subsystem);
                 break;
             }
-            case JacORB_1_1: {
-                this.readElement_1_1(reader, subsystem);
+            case JacORB_1_1:
+            case JacORB_1_2: {
+                this.readElement(readerNS, reader, subsystem);
                 break;
             }
             default: {
@@ -104,12 +105,13 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
      * Parses the JacORB subsystem configuration according to the XSD version 1.0.
      * </p>
      *
+     * @param namespace the expected {@code Namespace} of the parsed elements.
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
      * @param node   the {@code ModelNode} that will hold the parsed subsystem configuration.
      * @throws javax.xml.stream.XMLStreamException
      *          if an error occurs while parsing the XML.
      */
-    private void readElement_1_0(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+    private void readElement_1_0(Namespace namespace, XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
 
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -128,7 +130,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                     break;
                 }
                 case POA: {
-                    this.parsePOAConfig(reader, node);
+                    this.parsePOAConfig(namespace, reader, node);
                     break;
                 }
                 case INTEROP: {
@@ -157,19 +159,20 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
     /**
      * <p>
-     * Parses the JacORB subsystem configuration according to the XSD version 1.1.
+     * Parses the JacORB subsystem configuration according to the XSD version 1.1 or higher.
      * </p>
      *
+     * @param namespace the expected {@code Namespace} of the parsed elements.
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
      * @param node   the {@code ModelNode} that will hold the parsed subsystem configuration.
      * @throws javax.xml.stream.XMLStreamException
      *          if an error occurs while parsing the XML.
      */
-    private void readElement_1_1(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+    private void readElement(Namespace namespace, XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             // check the element namespace.
-            if (Namespace.JacORB_1_1 != Namespace.forUri(reader.getNamespaceURI()))
+            if (namespace != Namespace.forUri(reader.getNamespaceURI()))
                 throw unexpectedElement(reader);
 
             final Element element = Element.forName(reader.getLocalName());
@@ -178,11 +181,11 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
             }
             switch (element) {
                 case ORB: {
-                    this.parseORBConfig_1_1(reader, node);
+                    this.parseORBConfig(namespace, reader, node);
                     break;
                 }
                 case POA: {
-                    this.parsePOAConfig(reader, node);
+                    this.parsePOAConfig(namespace, reader, node);
                     break;
                 }
                 case NAMING: {
@@ -194,11 +197,11 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                     break;
                 }
                 case SECURITY: {
-                    this.parseSecurityConfig_1_1(reader, node);
+                    this.parseSecurityConfig(reader, node);
                     break;
                 }
                 case PROPERTIES: {
-                    this.parsePropertiesConfig(reader, node);
+                    this.parsePropertiesConfig(namespace, reader, node);
                     break;
                 }
                 default: {
@@ -256,27 +259,34 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
     /**
      * <p>
-     * Parses the {@code orb} section of the JacORB subsystem configuration according to the XSD version 1.1.
+     * Parses the {@code orb} section of the JacORB subsystem configuration according to the XSD version 1.1 or higher.
      * </p>
      *
+     * @param namespace the expected {@code Namespace} of the parsed elements.
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
      * @param node   the {@code ModelNode} that will hold the parsed ORB configuration.
      * @throws javax.xml.stream.XMLStreamException
      *          if an error occurs while parsing the XML.
      */
-    private void parseORBConfig_1_1(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+    private void parseORBConfig(Namespace namespace, XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
 
         // parse the orb config attributes.
         EnumSet<Attribute> expectedAttributes = EnumSet.of(Attribute.NAME, Attribute.ORB_PRINT_VERSION,
                 Attribute.ORB_GIOP_MINOR_VERSION, Attribute.ORB_USE_BOM, Attribute.ORB_USE_IMR,
                 Attribute.ORB_CACHE_POA_NAMES, Attribute.ORB_CACHE_TYPECODES);
+        // version 1.2 of the schema allows for the configuration of the ORB socket bindings.
+        if (namespace == Namespace.JacORB_1_2) {
+            expectedAttributes.add(Attribute.ORB_SOCKET_BINDING);
+            expectedAttributes.add(Attribute.ORB_SSL_SOCKET_BINDING);
+        }
+
         this.parseAttributes(reader, node, expectedAttributes, null);
 
         // parse the orb config elements.
         EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             // check the element namespace.
-            if (Namespace.JacORB_1_1 != Namespace.forUri(reader.getNamespaceURI()))
+            if (namespace != Namespace.forUri(reader.getNamespaceURI()))
                 throw unexpectedElement(reader);
 
             final Element element = Element.forName(reader.getLocalName());
@@ -290,7 +300,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                     break;
                 }
                 case ORB_INITIALIZERS: {
-                    this.parseORBInitializersConfig_1_1(reader, node);
+                    this.parseORBInitializersConfig(reader, node);
                     break;
                 }
                 default: {
@@ -350,7 +360,8 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
     /**
      * <p>
-     * Parses the ORB {@code initializers} section of the JacORB subsystem configuration according to the XSD version 1.1.
+     * Parses the ORB {@code initializers} section of the JacORB subsystem configuration according to the XSD version 1.1
+     * or higher.
      * </p>
      *
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
@@ -358,7 +369,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
      * @throws javax.xml.stream.XMLStreamException
      *          if an error occurs while parsing the XML.
      */
-    private void parseORBInitializersConfig_1_1(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+    private void parseORBInitializersConfig(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
         // parse the initializers config attributes.
         EnumSet<Attribute> attributes = EnumSet.of(Attribute.ORB_INIT_SECURITY, Attribute.ORB_INIT_TRANSACTIONS);
         this.parseAttributes(reader, node, attributes, null);
@@ -371,12 +382,13 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
      * Parses the {@code poa} section of the JacORB subsystem configuration.
      * </p>
      *
+     * @param namespace the expected {@code Namespace} of the parsed elements.
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
      * @param node   the {@code ModelNode} that will hold the parsed POA configuration.
      * @throws javax.xml.stream.XMLStreamException
      *          if an error occurs while parsing the XML.
      */
-    private void parsePOAConfig(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+    private void parsePOAConfig(Namespace namespace, XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
 
         // parse the poa config attributes.
         EnumSet<Attribute> expectedAttributes = EnumSet.of(Attribute.POA_MONITORING, Attribute.POA_QUEUE_WAIT,
@@ -386,6 +398,10 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         // parse the poa config elements.
         EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            // check the element namespace.
+            if (namespace != Namespace.forUri(reader.getNamespaceURI()))
+                throw unexpectedElement(reader);
+
             final Element element = Element.forName(reader.getLocalName());
             // check for duplicate elements.
             if (!encountered.add(element)) {
@@ -502,7 +518,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
     /**
      * <p>
-     * Parses the {@code security} section of the JacORB subsystem configuration according to the XSD version 1.1.
+     * Parses the {@code security} section of the JacORB subsystem configuration according to the XSD version 1.1 or higher.
      * </p>
      *
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
@@ -510,7 +526,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
      * @throws javax.xml.stream.XMLStreamException
      *          if an error occurs while parsing the XML.
      */
-    private void parseSecurityConfig_1_1(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+    private void parseSecurityConfig(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
         // parse all security attributes.
         EnumSet<Attribute> expectedAttributes = EnumSet.of(Attribute.SECURITY_SUPPORT_SSL, Attribute.SECURITY_SECURITY_DOMAIN,
                 Attribute.SECURITY_ADD_COMPONENT_INTERCEPTOR, Attribute.SECURITY_CLIENT_SUPPORTS,
@@ -525,28 +541,26 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
      * Parses the {@code properties} section of the JacORB subsystem configuration.
      * </p>
      *
+     * @param namespace the expected {@code Namespace} of the parsed elements.
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
      * @param node   the {@code ModelNode} that will hold the parsed properties.
      * @throws XMLStreamException if an error occurs while parsing the XML.
      */
-    private void parsePropertiesConfig(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+    private void parsePropertiesConfig(Namespace namespace, XMLExtendedStreamReader reader, ModelNode node)
+            throws XMLStreamException {
         // the properties element doesn't define any attributes, just sub-elements.
         requireNoAttributes(reader);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case JacORB_1_1: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case PROPERTY: {
-                            // parse the property element.
-                            this.parseGenericProperty_1_1(reader, node.get(JacORBSubsystemConstants.PROPERTIES));
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            // check the element namespace.
+            if (namespace != Namespace.forUri(reader.getNamespaceURI()))
+                throw unexpectedElement(reader);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROPERTY: {
+                    // parse the property element.
+                    this.parseGenericProperty(reader, node.get(JacORBSubsystemConstants.PROPERTIES));
                     break;
                 }
                 default: {
@@ -558,7 +572,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
     /**
      * <p>
-     * Parses a {@code property} element according to the XSD version 1.1 and adds the name/value pair to the specified
+     * Parses a {@code property} element according to the XSD version 1.0 and adds the key/value pair to the specified
      * {@code ModelNode}.
      * </p>
      *
@@ -600,8 +614,8 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
     /**
      * <p>
-     * Parses a {@code property} element according to the XSD version 1.1 and adds the name/value pair to the specified
-     * {@code ModelNode}.
+     * Parses a {@code property} element according to the XSD version 1.1 or higher and adds the name/value pair to the
+     * specified {@code ModelNode}.
      * </p>
      *
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
@@ -609,7 +623,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
      * @throws javax.xml.stream.XMLStreamException
      *          if an error occurs while parsing the XML.
      */
-    private void parseGenericProperty_1_1(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+    private void parseGenericProperty(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
         String name = null;
         String val = null;
         EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.PROP_VALUE);
@@ -908,9 +922,10 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
         UNKNOWN(null),
         JacORB_1_0("urn:jboss:domain:jacorb:1.0"),
-        JacORB_1_1("urn:jboss:domain:jacorb:1.1");
+        JacORB_1_1("urn:jboss:domain:jacorb:1.1"),
+        JacORB_1_2("urn:jboss:domain:jacorb:1.2");
 
-        static final Namespace CURRENT = JacORB_1_1;
+        static final Namespace CURRENT = JacORB_1_2;
 
         private final String namespaceURI;
 
@@ -1067,6 +1082,8 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         ORB_CACHE_TYPECODES(JacORBSubsystemConstants.ORB_CACHE_TYPECODES),
         ORB_CACHE_POA_NAMES(JacORBSubsystemConstants.ORB_CACHE_POA_NAMES),
         ORB_GIOP_MINOR_VERSION(JacORBSubsystemConstants.ORB_GIOP_MINOR_VERSION),
+        ORB_SOCKET_BINDING(JacORBSubsystemConstants.ORB_SOCKET_BINDING),
+        ORB_SSL_SOCKET_BINDING(JacORBSubsystemConstants.ORB_SSL_SOCKET_BINDING),
 
         // attributes of the connection element.
         ORB_CONN_RETRIES(JacORBSubsystemConstants.ORB_CONN_RETRIES),
