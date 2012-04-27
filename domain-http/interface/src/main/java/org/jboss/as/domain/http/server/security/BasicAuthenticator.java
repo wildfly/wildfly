@@ -21,6 +21,7 @@
  */
 package org.jboss.as.domain.http.server.security;
 
+import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 import static org.jboss.as.domain.http.server.Constants.INTERNAL_SERVER_ERROR;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
@@ -28,6 +29,9 @@ import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
@@ -39,6 +43,9 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jboss.as.controller.security.SubjectUserInfo;
+import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.AuthorizingCallbackHandler;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
@@ -51,15 +58,21 @@ import org.jboss.sasl.callback.VerifyPasswordCallback;
  */
 public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAuthenticator {
 
-    private final AuthenticationProvider authenticationProvider;
+    private final SecurityRealm securityRealm;
 
     private final boolean verifyPasswordCallback;
     private final ThreadLocal<AuthorizingCallbackHandler> callbackHandler = new ThreadLocal<AuthorizingCallbackHandler>();
 
-    public BasicAuthenticator(AuthenticationProvider authenticationProvider, String realm) {
-        super(realm);
-        this.authenticationProvider = authenticationProvider;
-        verifyPasswordCallback = contains(VerifyPasswordCallback.class, authenticationProvider.getCallbackHandler().getSupportedCallbacks());
+    public BasicAuthenticator(SecurityRealm realm) {
+        super(realm.getName());
+        this.securityRealm = realm;
+
+        Map<String, String> mechanismConfig = securityRealm.getMechanismConfig(AuthenticationMechanism.PLAIN);
+        if (mechanismConfig.containsKey(VERIFY_PASSWORD_CALLBACK_SUPPORTED)) {
+            verifyPasswordCallback = Boolean.parseBoolean(mechanismConfig.get(VERIFY_PASSWORD_CALLBACK_SUPPORTED));
+        } else {
+            verifyPasswordCallback = false;
+        }
     }
 
     @Override
@@ -74,7 +87,7 @@ public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAu
             }
         }
 
-        callbackHandler.set(authenticationProvider.getCallbackHandler());
+        callbackHandler.set(securityRealm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN));
         try {
             return _authenticate(httpExchange);
         } finally {
@@ -108,7 +121,9 @@ public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAu
             HttpPrincipal principal = ((Success) response).getPrincipal();
 
             try {
-                SubjectUserInfo userInfo = callbackHandler.get().createSubjectUserInfo(principal);
+                Collection<Principal> principalCol = new HashSet<Principal>();
+                principalCol.add(principal);
+                SubjectUserInfo userInfo = callbackHandler.get().createSubjectUserInfo(principalCol);
                 httpExchange.setAttribute(Subject.class.getName(), userInfo.getSubject(), AttributeScope.CONNECTION);
 
             } catch (IOException e) {

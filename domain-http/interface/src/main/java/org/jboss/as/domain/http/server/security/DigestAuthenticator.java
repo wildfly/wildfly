@@ -22,13 +22,23 @@
 
 package org.jboss.as.domain.http.server.security;
 
-import static org.jboss.as.domain.http.server.Constants.INTERNAL_SERVER_ERROR;
 import static org.jboss.as.domain.http.server.Constants.AUTHORIZATION_HEADER;
+import static org.jboss.as.domain.http.server.Constants.INTERNAL_SERVER_ERROR;
 import static org.jboss.as.domain.http.server.Constants.UNAUTHORIZED;
 import static org.jboss.as.domain.http.server.Constants.VIA;
 import static org.jboss.as.domain.http.server.Constants.WWW_AUTHENTICATE_HEADER;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
@@ -36,24 +46,18 @@ import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.Principal;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.controller.security.SubjectUserInfo;
-import org.jboss.as.domain.management.security.UserNotFoundException;
+import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.AuthorizingCallbackHandler;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
+import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
 import org.jboss.com.sun.net.httpserver.HttpPrincipal;
 import org.jboss.com.sun.net.httpserver.HttpsExchange;
-import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.util.HexConverter;
 
@@ -70,10 +74,10 @@ public class DigestAuthenticator extends Authenticator {
 
     private final NonceFactory theNonceFactory = new NonceFactory();
 
-    private final AuthenticationProvider authenticationProvider;
+    private final SecurityRealm securityRealm;
+    private final String realmName;
     private final ThreadLocal<AuthorizingCallbackHandler> callbackHandler = new ThreadLocal<AuthorizingCallbackHandler>();
 
-    private final String realm;
     private final boolean preDigested;
 
     private static final byte COLON = ':';
@@ -85,9 +89,9 @@ public class DigestAuthenticator extends Authenticator {
     private static final String USERNAME = "username";
     private static final String URI = "uri";
 
-    public DigestAuthenticator(AuthenticationProvider authenticationProvider, String realm, boolean preDigested) {
-        this.authenticationProvider = authenticationProvider;
-        this.realm = realm;
+    public DigestAuthenticator(SecurityRealm securityRealm, boolean preDigested) {
+        this.securityRealm = securityRealm;
+        this.realmName = securityRealm.getName();
         this.preDigested = preDigested;
     }
 
@@ -103,7 +107,7 @@ public class DigestAuthenticator extends Authenticator {
             }
         }
 
-        callbackHandler.set(authenticationProvider.getCallbackHandler());
+        callbackHandler.set(securityRealm.getAuthorizingCallbackHandler(AuthenticationMechanism.DIGEST));
         try {
             return _authenticate(httpExchange);
         } finally {
@@ -122,7 +126,7 @@ public class DigestAuthenticator extends Authenticator {
                 try {
                     Principal p = session.getPeerPrincipal();
 
-                    response = new Success(new HttpPrincipal(p.getName(), realm));
+                    response = new Success(new HttpPrincipal(p.getName(), realmName));
                 } catch (SSLPeerUnverifiedException e) {
                 }
             }
@@ -138,7 +142,9 @@ public class DigestAuthenticator extends Authenticator {
             HttpPrincipal principal = ((Success) response).getPrincipal();
 
             try {
-                SubjectUserInfo userInfo = callbackHandler.get().createSubjectUserInfo(principal);
+                Collection<Principal> principalCol = new HashSet<Principal>();
+                principalCol.add(principal);
+                SubjectUserInfo userInfo = callbackHandler.get().createSubjectUserInfo(principalCol);
                 httpExchange.setAttribute(Subject.class.getName(), userInfo.getSubject(), AttributeScope.CONNECTION);
 
             } catch (IOException e) {
@@ -163,7 +169,7 @@ public class DigestAuthenticator extends Authenticator {
         if (requestHeaders.containsKey(AUTHORIZATION_HEADER) == false) {
             Headers responseHeaders = httpExchange.getResponseHeaders();
 
-            responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(context, realm, false));
+            responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(context, realmName, false));
 
             return new Authenticator.Retry(UNAUTHORIZED);
         }
@@ -185,7 +191,7 @@ public class DigestAuthenticator extends Authenticator {
             }
 
             Headers responseHeaders = httpExchange.getResponseHeaders();
-            responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(context, realm, false));
+            responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(context, realmName, false));
             return new Authenticator.Retry(UNAUTHORIZED);
         }
 
@@ -198,7 +204,7 @@ public class DigestAuthenticator extends Authenticator {
 
         // STALE - Verification of username and password succeeded but Nonce now stale.
         Headers responseHeaders = httpExchange.getResponseHeaders();
-        responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(context, realm, true));
+        responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(context, realmName, true));
         return new Authenticator.Retry(UNAUTHORIZED);
     }
 
@@ -480,32 +486,6 @@ public class DigestAuthenticator extends Authenticator {
                 return theNonceFactory.useNonce(nonceToUse);
             }
         }
-    }
-
-    // TODO - Will do something cleaner with collections.
-    public static boolean requiredCallbacksSupported(Class[] callbacks) {
-        if (contains(NameCallback.class, callbacks) == false) {
-            return false;
-        }
-        if (contains(RealmCallback.class, callbacks) == false) {
-            return false;
-        }
-
-        if (contains(PasswordCallback.class, callbacks) == false &&
-                contains(DigestHashCallback.class, callbacks) == false) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private static boolean contains(Class clazz, Class[] classes) {
-        for (Class current : classes) {
-            if (current.equals(clazz)) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }

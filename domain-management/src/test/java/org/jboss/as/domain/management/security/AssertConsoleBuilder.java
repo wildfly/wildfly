@@ -55,19 +55,19 @@ import static org.junit.Assert.*;
 */
 public class AssertConsoleBuilder {
     private static String NEW_LINE = "\n";
-    
+
     private enum Type {
         DISPLAY, INPUT
     }
-    
+
     private class AssertConsole {
-        
+
         private String text;
         private Type type;
-        
-        private AssertConsole() {    
+
+        private AssertConsole() {
         }
-        
+
         private AssertConsole(String text, Type type) {
             this.text = text;
             this.type = type;

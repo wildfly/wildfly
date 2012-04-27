@@ -38,7 +38,7 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
  * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
  */
 public class DuplicateUserCheckStateTestCase extends PropertyTestHelper {
-    
+
     @Test
     public void newUser() throws IOException {
         values.setExistingUser(false);

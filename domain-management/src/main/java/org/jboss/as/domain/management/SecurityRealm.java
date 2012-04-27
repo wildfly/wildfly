@@ -21,11 +21,10 @@
  */
 package org.jboss.as.domain.management;
 
-import javax.net.ssl.SSLContext;
+import java.util.Map;
+import java.util.Set;
 
-import org.jboss.as.domain.management.security.DomainCallbackHandler;
-import org.jboss.as.domain.management.security.LocalCallbackHandler;
-import org.jboss.as.domain.management.security.SubjectSupplemental;
+import javax.net.ssl.SSLContext;
 
 /**
  * Interface to the security realm.
@@ -40,19 +39,28 @@ public interface SecurityRealm {
     String getName();
 
     /**
-     * @return The LocalCallbackHandler if defined, null if not.
+     * @return The set of authentication mechanisms supported by this realm.
      */
-    LocalCallbackHandler getLocalCallbackHandler();
+    Set<AuthenticationMechanism> getSupportedAuthenticationMechanisms();
 
     /**
-     * @return The CallbackHandler for the realm
+     * @return A Map containing the combined configuration options for the specified mechanisms.
      */
-    DomainCallbackHandler getCallbackHandler();
+    Map<String, String> getMechanismConfig(final AuthenticationMechanism mechanism);
 
     /**
-     * @return The associated SubjectSupplemental (if set) to supplement the contents of the Subject.
+     * @param mechanism - The mechanism being used for authentication.
+     * @return The {@link AuthorizingCallbackHandler} for the specified mechanism.
+     * @throws IllegalArgumentException If the mechanism is not supported by this realm.
      */
-    SubjectSupplemental getSubjectSupplemental();
+    AuthorizingCallbackHandler getAuthorizingCallbackHandler(final AuthenticationMechanism mechanism);
+
+    /**
+     * Indicate that all supported mechanisms are ready.
+     *
+     * @return true if all mechanisms are ready to handle requests.
+     */
+    boolean isReady();
 
     /**
      * Used to obtain the SSLContext as configured for this security realm.
@@ -61,14 +69,6 @@ public interface SecurityRealm {
      * @throws IllegalStateException - If no SSL server-identity has been defined.
      */
     SSLContext getSSLContext();
-
-    /**
-     * Identify if a trust store has been configured for authentication, if defined it means CLIENT-CERT type authentication can
-     * occur.
-     *
-     * @return true if a trust store has been configured for authentication.
-     */
-    boolean hasTrustStore();
 
     /**
      * @return A CallbackHandlerFactory for a pre-configured secret.

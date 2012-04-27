@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,28 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.management.security;
+package org.jboss.as.domain.management;
 
-import java.security.SecureRandom;
-import java.util.Random;
+import org.jboss.as.domain.management.security.CallbackHandlerService;
 
 /**
- * A utility to generate a random 32 character 'hash'
+ * Interface of a registry of CallbackHandlers registered based on their preferred mechanism.
+ *
+ * Only one CallbackHandler can be registered per mechanism.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class RandomHexGenerator {
+public interface CallbackHandlerServiceRegistry {
 
-    private static final String CHARS = "0123456789abcdef";
+    void register(AuthenticationMechanism mechanism, CallbackHandlerService callbackHandler);
 
-    static String generateHash() {
-        StringBuffer sb = new StringBuffer();
-        Random rand = new SecureRandom();
-        for (int i = 0; i < 32; i++) {
-            sb.append(CHARS.charAt(Math.abs(rand.nextInt()) % CHARS.length()));
-        }
-
-        return sb.toString();
-    }
+    void unregister(AuthenticationMechanism mechanism, CallbackHandlerService callbackHandler);
 
 }

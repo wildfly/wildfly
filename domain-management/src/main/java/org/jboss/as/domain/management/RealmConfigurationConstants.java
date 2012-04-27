@@ -20,22 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.http.server.security;
-
-import java.io.IOException;
-import java.security.Principal;
-
-import org.jboss.as.controller.security.SubjectUserInfo;
-import org.jboss.as.domain.management.security.DomainCallbackHandler;
+package org.jboss.as.domain.management;
 
 /**
- * An extension to the CallbackHandler interface to allow additional use info to be loaded
- * after authentication is complete.
+ * Constants used by the security realms to report the details of the configuration for passing to the transport specific
+ * configuration.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-interface AuthorizingCallbackHandler extends DomainCallbackHandler {
+public interface RealmConfigurationConstants {
 
-    SubjectUserInfo createSubjectUserInfo(Principal userPrincipal) throws IOException;
+    String DIGEST_PLAIN_TEXT = "org.jboss.as.domain.management.digest.plain_text";
+    String LOCAL_DEFAULT_USER = "org.jboss.as.domain.management.local.default_user";
+    String SUBJECT_CALLBACK_SUPPORTED = "org.jboss.as.domain.management.subject_callback_supported";
+    String VERIFY_PASSWORD_CALLBACK_SUPPORTED = "org.jboss.as.domain.management.verify_password_callback_supported";
 
 }

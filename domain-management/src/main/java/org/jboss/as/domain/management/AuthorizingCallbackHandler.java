@@ -20,21 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.management.security;
+package org.jboss.as.domain.management;
+
+import java.io.IOException;
+import java.security.Principal;
+import java.util.Collection;
 
 import javax.security.auth.callback.CallbackHandler;
 
+import org.jboss.as.controller.security.SubjectUserInfo;
+
 /**
- * An extension to the CallbackHandler interface for use when configuring the JBOSS-LOCAL-USER authentication mechanism.
+ * An extension to the CallbackHandler interface to allow additional use info to be loaded
+ * after authentication is complete.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface LocalCallbackHandler extends CallbackHandler {
+public interface AuthorizingCallbackHandler extends CallbackHandler {
 
-    /**
-     * @return The default user that should be assumed if the remote client does not send a user or null if no default should be
-     *         used.
-     */
-    String getDefaultUser();
+    SubjectUserInfo createSubjectUserInfo(final Collection<Principal> principals) throws IOException;
 
 }

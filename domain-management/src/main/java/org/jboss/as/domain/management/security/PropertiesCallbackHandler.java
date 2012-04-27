@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
 import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
@@ -29,17 +31,24 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
+import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.CallbackHandlerServiceRegistry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -54,27 +63,18 @@ import org.jboss.sasl.util.UsernamePasswordHashUtil;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class PropertiesCallbackHandler extends PropertiesFileLoader implements Service<DomainCallbackHandler>,
-        DomainCallbackHandler {
+public class PropertiesCallbackHandler extends PropertiesFileLoader implements Service<CallbackHandlerService>,
+CallbackHandlerService, CallbackHandler {
 
     public static final String SERVICE_SUFFIX = "properties_authentication";
 
-    // Technically this CallbackHandler could also support the VerifyCallback callback, however at the moment
-    // this is only likely to be used with the Digest mechanism so no need to add that support.
-    private static final Class[] PLAIN_CALLBACKS = { AuthorizeCallback.class, RealmCallback.class, NameCallback.class,
-            PasswordCallback.class, VerifyPasswordCallback.class };
-    private static final Class[] DIGEST_CALLBACKS = { AuthorizeCallback.class, RealmCallback.class, NameCallback.class,
-            DigestHashCallback.class, VerifyPasswordCallback.class };
-
-    private static final String DOLLAR_LOCAL = "$local";
     private static UsernamePasswordHashUtil hashUtil = null;
-
-    private final Class[] supportedCallbacks;
 
     private final String realm;
     private final boolean plainText;
+    private final CallbackHandlerServiceRegistry registry;
 
-    public PropertiesCallbackHandler(String realm, ModelNode properties) {
+    public PropertiesCallbackHandler(String realm, ModelNode properties, final CallbackHandlerServiceRegistry registry) {
         super(properties.require(PATH).asString());
         this.realm = realm;
         if (properties.hasDefined(PLAIN_TEXT)) {
@@ -82,7 +82,40 @@ public class PropertiesCallbackHandler extends PropertiesFileLoader implements S
         } else {
             plainText = false;
         }
-        supportedCallbacks = plainText ? PLAIN_CALLBACKS : DIGEST_CALLBACKS;
+        this.registry = registry;
+    }
+
+    /*
+     * CallbackHandlerService Methods
+     */
+
+    public AuthenticationMechanism getPreferredMechanism() {
+        return AuthenticationMechanism.DIGEST;
+    }
+
+    public Set<AuthenticationMechanism> getSupplementaryMechanisms() {
+        return Collections.singleton(AuthenticationMechanism.PLAIN);
+    }
+
+    public Map<String, String> getConfigurationOptions() {
+        Map<String, String> response = new HashMap<String, String>(2);
+        response.put(DIGEST_PLAIN_TEXT, Boolean.toString(plainText));
+        response.put(VERIFY_PASSWORD_CALLBACK_SUPPORTED, Boolean.TRUE.toString());
+        return response;
+    }
+
+    public boolean isReady() {
+        Properties users;
+        try {
+            users = getProperties();
+        } catch (IOException e) {
+            return false;
+        }
+        return (users.size() > 0);
+    }
+
+    public CallbackHandler getCallbackHandler() {
+        return this;
     }
 
     /*
@@ -91,6 +124,7 @@ public class PropertiesCallbackHandler extends PropertiesFileLoader implements S
 
     public void start(StartContext context) throws StartException {
         super.start(context);
+        registry.register(getPreferredMechanism(), this);
     }
 
     @Override
@@ -102,31 +136,17 @@ public class PropertiesCallbackHandler extends PropertiesFileLoader implements S
     }
 
     public void stop(StopContext context) {
+        registry.unregister(getPreferredMechanism(), this);
         super.stop(context);
     }
 
-    public DomainCallbackHandler getValue() throws IllegalStateException, IllegalArgumentException {
+    public CallbackHandlerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
     /*
-     * DomainCallbackHandler Methods
+     * CallbackHandler Methods
      */
-
-    public Class[] getSupportedCallbacks() {
-        return supportedCallbacks;
-    }
-
-    @Override
-    public boolean isReady() {
-        Properties users;
-        try {
-            users = getProperties();
-        } catch (IOException e) {
-            return false;
-        }
-        return (users.size() > 0);
-    }
 
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         List<Callback> toRespondTo = new LinkedList<Callback>();

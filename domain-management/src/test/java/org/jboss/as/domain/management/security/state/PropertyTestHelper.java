@@ -67,9 +67,9 @@ public class PropertyTestHelper {
         values.setUserName(USER_NAME);
         values.setPassword("******".toCharArray());
         values.setRealm("Management");
-        consoleMock = new ConsoleMock(); 
+        consoleMock = new ConsoleMock();
     }
-    
+
     protected Properties loadProperties(String filePath) throws StartException, IOException {
         UserPropertiesFileHandler propertiesLoad = new UserPropertiesFileHandler(filePath);
         propertiesLoad.start(null);

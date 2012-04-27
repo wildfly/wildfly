@@ -46,7 +46,7 @@ public class WeakCheckStateTestCase extends PropertyTestHelper {
         consoleMock.setResponses(consoleBuilder);
 
         State duplicateUserCheckState = weakCheckState.execute();
-        
+
         assertTrue("Expected the next state to be DuplicateUserCheckState", duplicateUserCheckState instanceof DuplicateUserCheckState);
         consoleBuilder.validate();
     }

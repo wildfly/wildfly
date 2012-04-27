@@ -22,18 +22,13 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.RealmConfigurationConstants.LOCAL_DEFAULT_USER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 
@@ -45,24 +40,35 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * The Service providing the LocalCallbackHandler implementation.
+ * A CallbackHandler for Client Cert authentication. Currently no Callbacks are supported but later this may be expanded for
+ * additional verification.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class LocalCallbackHandlerService implements Service<CallbackHandlerService>, CallbackHandlerService, CallbackHandler {
+public class ClientCertCallbackHandler implements Service<CallbackHandlerService>, CallbackHandlerService, CallbackHandler {
 
-    public static final String SERVICE_SUFFIX = "local";
+    public static final String SERVICE_SUFFIX = "client_cert";
 
-    private final String defaultUser;
-    private final String allowedUsers;
-    private boolean allowAll;
-    private final Set<String> allowedUsersSet = new HashSet<String>();
     private final CallbackHandlerServiceRegistry registry;
 
-    LocalCallbackHandlerService(final String defaultUser, final String allowedUsers, final CallbackHandlerServiceRegistry registry) {
-        this.defaultUser = defaultUser;
-        this.allowedUsers = allowedUsers;
+    ClientCertCallbackHandler(final CallbackHandlerServiceRegistry registry) {
         this.registry = registry;
+    }
+
+    /*
+     * Service Methods
+     */
+
+    public CallbackHandlerService getValue() throws IllegalStateException, IllegalArgumentException {
+        return this;
+    }
+
+    public void start(StartContext context) throws StartException {
+        registry.register(AuthenticationMechanism.CLIENT_CERT, this);
+    }
+
+    public void stop(StopContext context) {
+        registry.unregister(AuthenticationMechanism.CLIENT_CERT, this);
     }
 
     /*
@@ -70,7 +76,7 @@ class LocalCallbackHandlerService implements Service<CallbackHandlerService>, Ca
      */
 
     public AuthenticationMechanism getPreferredMechanism() {
-        return AuthenticationMechanism.LOCAL;
+        return AuthenticationMechanism.CLIENT_CERT;
     }
 
     public Set<AuthenticationMechanism> getSupplementaryMechanisms() {
@@ -78,11 +84,7 @@ class LocalCallbackHandlerService implements Service<CallbackHandlerService>, Ca
     }
 
     public Map<String, String> getConfigurationOptions() {
-        if (defaultUser != null) {
-            return Collections.singletonMap(LOCAL_DEFAULT_USER, defaultUser);
-        } else {
-            return Collections.emptyMap();
-        }
+        return Collections.emptyMap();
     }
 
     public boolean isReady() {
@@ -93,54 +95,9 @@ class LocalCallbackHandlerService implements Service<CallbackHandlerService>, Ca
         return this;
     }
 
-    /*
-     * Service Methods
-     */
-
-
-    public CallbackHandlerService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
-
-    public void start(StartContext context) throws StartException {
-        if (defaultUser != null) {
-            allowedUsersSet.add(defaultUser);
-        }
-        if (allowedUsers != null) {
-            if ("*".equals(allowedUsers)) {
-                allowAll = true;
-            } else {
-                String[] users = allowedUsers.split(",");
-                for (String current : users) {
-                    allowedUsersSet.add(current);
-                }
-            }
-        }
-        registry.register(getPreferredMechanism(), this);
-    }
-
-    public void stop(StopContext context) {
-        registry.unregister(getPreferredMechanism(), this);
-        allowAll = false;
-        allowedUsersSet.clear(); // Effectively disables this CBH
-    }
-
-    /*
-     * CallbackHandler Method
-     */
-
-    /**
-     * @see javax.security.auth.callback.CallbackHandler#handle(javax.security.auth.callback.Callback[])
-     */
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         for (Callback current : callbacks) {
-            if (current instanceof NameCallback) {
-                NameCallback ncb = (NameCallback) current;
-                String userName = ncb.getDefaultName();
-                if ((allowAll || allowedUsersSet.contains(userName)) == false) {
-                    throw MESSAGES.invalidLocalUser(userName);
-                }
-            } else if (current instanceof AuthorizeCallback) {
+            if (current instanceof AuthorizeCallback) {
                 AuthorizeCallback acb = (AuthorizeCallback) current;
                 acb.setAuthorized(acb.getAuthenticationID().equals(acb.getAuthorizationID()));
             } else {
@@ -148,5 +105,4 @@ class LocalCallbackHandlerService implements Service<CallbackHandlerService>, Ca
             }
         }
     }
-
 }

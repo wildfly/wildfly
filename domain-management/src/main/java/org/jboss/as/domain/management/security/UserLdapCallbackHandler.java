@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BASE_DN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
@@ -37,12 +38,18 @@ import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
+import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.CallbackHandlerServiceRegistry;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -57,11 +64,10 @@ import org.jboss.sasl.callback.VerifyPasswordCallback;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>, DomainCallbackHandler {
+public class UserLdapCallbackHandler implements Service<CallbackHandlerService>, CallbackHandlerService, CallbackHandler {
 
     public static final String SERVICE_SUFFIX = "ldap";
 
-    private static final Class[] supportedCallbacks = {RealmCallback.class, NameCallback.class, VerifyPasswordCallback.class, AuthorizeCallback.class};
     private static final String DEFAULT_USER_DN = "dn";
 
     private final InjectedValue<ConnectionManager> connectionManager = new InjectedValue<ConnectionManager>();
@@ -72,8 +78,9 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
     private final boolean recursive;
     private final String userDn;
     protected final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
+    private final CallbackHandlerServiceRegistry registry;
 
-    public UserLdapCallbackHandler(ModelNode userLdap) {
+    public UserLdapCallbackHandler(ModelNode userLdap, final CallbackHandlerServiceRegistry registry) {
         baseDn = userLdap.require(BASE_DN).asString();
         if (userLdap.hasDefined(USERNAME_ATTRIBUTE)) {
             usernameAttribute = userLdap.require(USERNAME_ATTRIBUTE).asString();
@@ -95,6 +102,33 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
         } else {
             userDn = DEFAULT_USER_DN;
         }
+        this.registry = registry;
+    }
+
+
+
+    /*
+     * CallbackHandlerService Methods
+     */
+
+    public AuthenticationMechanism getPreferredMechanism() {
+        return AuthenticationMechanism.PLAIN;
+    }
+
+    public Set<AuthenticationMechanism> getSupplementaryMechanisms() {
+        return Collections.emptySet();
+    }
+
+    public Map<String, String> getConfigurationOptions() {
+        return Collections.singletonMap(VERIFY_PASSWORD_CALLBACK_SUPPORTED, Boolean.TRUE.toString());
+    }
+
+    public boolean isReady() {
+        return true;
+    }
+
+    public CallbackHandler getCallbackHandler() {
+        return this;
     }
 
     /*
@@ -102,12 +136,14 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
      */
 
     public void start(StartContext context) throws StartException {
+        registry.register(getPreferredMechanism(), this);
     }
 
     public void stop(StopContext context) {
+        registry.unregister(getPreferredMechanism(), this);
     }
 
-    public UserLdapCallbackHandler getValue() throws IllegalStateException, IllegalArgumentException {
+    public CallbackHandlerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
@@ -121,19 +157,8 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
 
 
     /*
-     *  DomainCallbackHandler Methods
+     *  CallbackHandler Method
      */
-
-    public Class[] getSupportedCallbacks() {
-        // TODO - For safety this Array should be cloned or should use an unmodifiable collection to ensure
-        // TODO - caller can not modify.
-        return supportedCallbacks;
-    }
-
-    @Override
-    public boolean isReady() {
-        return true;
-    }
 
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         if (callbacks.length == 1 && callbacks[0] instanceof AuthorizeCallback) {

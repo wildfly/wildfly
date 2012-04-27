@@ -21,22 +21,26 @@
  */
 package org.jboss.as.remoting;
 
+import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.LOCAL_DEFAULT_USER;
 import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 import static org.xnio.Options.SASL_MECHANISMS;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
 import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
 import static org.xnio.Options.SASL_PROPERTIES;
+import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
 import static org.xnio.Options.SSL_ENABLED;
 import static org.xnio.Options.SSL_STARTTLS;
-import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
 import static org.xnio.SslClientAuthMode.REQUESTED;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -44,20 +48,14 @@ import javax.net.ssl.SSLContext;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.AuthorizeCallback;
-import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.controller.security.UniqueIdUserInfo;
+import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.security.DomainCallbackHandler;
-import org.jboss.as.domain.management.security.LocalCallbackHandler;
 import org.jboss.as.domain.management.security.RealmUser;
-import org.jboss.as.domain.management.security.SubjectCallback;
-import org.jboss.as.domain.management.security.SubjectSupplemental;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.security.AuthorizingCallbackHandler;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
@@ -86,10 +84,10 @@ import org.xnio.ssl.XnioSsl;
  */
 class RealmSecurityProvider implements RemotingSecurityProvider {
 
-    static final String REALM_PROPERTY = "com.sun.security.sasl.digest.realm";
-    static final String PRE_DIGESTED_PROPERTY = "org.jboss.sasl.digest.pre_digested";
-    static final String LOCAL_DEFAULT_USER = "jboss.sasl.local-user.default-user";
-    static final String LOCAL_USER_CHALLENGE_PATH = "jboss.sasl.local-user.challenge-path";
+    static final String SASL_OPT_REALM_PROPERTY = "com.sun.security.sasl.digest.realm";
+    static final String SASL_OPT_PRE_DIGESTED_PROPERTY = "org.jboss.sasl.digest.pre_digested";
+    static final String SASL_OPT_LOCAL_DEFAULT_USER = "jboss.sasl.local-user.default-user";
+    static final String SASL_OPT_LOCAL_USER_CHALLENGE_PATH = "jboss.sasl.local-user.challenge-path";
 
     static final String ANONYMOUS = "ANONYMOUS";
     static final String DIGEST_MD5 = "DIGEST-MD5";
@@ -117,50 +115,57 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
         Set<Property> properties = new HashSet<Property>();
         Builder builder = OptionMap.builder();
 
-        LocalCallbackHandler localHandler = realm != null ? realm.getLocalCallbackHandler() : null;
-        if (localHandler != null) {
-            mechanisms.add(JBOSS_LOCAL_USER);
-
-            String defaultUser = localHandler.getDefaultUser();
-            if (defaultUser != null) {
-                properties.add(Property.of(LOCAL_DEFAULT_USER, defaultUser));
-            }
-            if (tokensDir != null) {
-                properties.add(Property.of(LOCAL_USER_CHALLENGE_PATH, tokensDir));
-            }
-        }
-
-        builder.set(SASL_POLICY_NOPLAINTEXT, false);
-        if (digestMd5Supported()) {
-            mechanisms.add(DIGEST_MD5);
-            properties.add(Property.of(REALM_PROPERTY, realm.getName()));
-            if (contains(DigestHashCallback.class, realm.getCallbackHandler().getSupportedCallbacks())) {
-                properties.add(Property.of(PRE_DIGESTED_PROPERTY, Boolean.TRUE.toString()));
-            }
-        } else if (plainSupported()) {
-            mechanisms.add(PLAIN);
-        } else if (realm == null) {
+        if (realm == null) {
             mechanisms.add(ANONYMOUS);
             builder.set(SASL_POLICY_NOANONYMOUS, false);
-        }
+            builder.set(SSL_ENABLED, false);
+        } else {
+            Set<AuthenticationMechanism> authMechs = realm.getSupportedAuthenticationMechanisms();
+            if (authMechs.contains(AuthenticationMechanism.LOCAL)) {
+                mechanisms.add(JBOSS_LOCAL_USER);
+                Map<String, String> mechConfig = realm.getMechanismConfig(AuthenticationMechanism.LOCAL);
+                if (mechConfig.containsKey(LOCAL_DEFAULT_USER)) {
+                    properties.add(Property.of(SASL_OPT_LOCAL_DEFAULT_USER, mechConfig.get(LOCAL_DEFAULT_USER)));
+                }
+                if (tokensDir != null) {
+                    properties.add(Property.of(SASL_OPT_LOCAL_USER_CHALLENGE_PATH, tokensDir));
+                }
+            }
 
-        SslMode sslMode = getSslMode();
-        switch (sslMode) {
-            case OFF:
+            if (authMechs.contains(AuthenticationMechanism.DIGEST)) {
+                mechanisms.add(DIGEST_MD5);
+                properties.add(Property.of(SASL_OPT_REALM_PROPERTY, realm.getName()));
+                Map<String, String> mechConfig = realm.getMechanismConfig(AuthenticationMechanism.DIGEST);
+                boolean plainTextDigest = true;
+                if (mechConfig.containsKey(DIGEST_PLAIN_TEXT)) {
+                    plainTextDigest = Boolean.parseBoolean(mechConfig.get(DIGEST_PLAIN_TEXT));
+                }
+
+                if (plainTextDigest == false) {
+                    properties.add(Property.of(SASL_OPT_PRE_DIGESTED_PROPERTY, Boolean.TRUE.toString()));
+                }
+            }
+
+            if (authMechs.contains(AuthenticationMechanism.PLAIN)) {
+                mechanisms.add(PLAIN);
+                builder.set(SASL_POLICY_NOPLAINTEXT, false);
+            }
+
+            if (realm.getSSLContext() == null) {
                 builder.set(SSL_ENABLED, false);
-                break;
-            case TRANSPORT_ONLY:
-                builder.set(SSL_ENABLED, true);
-                builder.set(SSL_STARTTLS, true);
-                break;
-            case CLIENT_AUTH_REQUESTED:
-                builder.set(SSL_ENABLED, true);
-                builder.set(SSL_STARTTLS, true);
-                mechanisms.add(0, EXTERNAL);
-                builder.set(SSL_CLIENT_AUTH_MODE, REQUESTED);
-                break;
-        // We do not currently support the SSL_CLIENT_AUTH_MODE of REQUIRED as there is always
-        // the possibility that the local mechanism will still be needed.
+            } else {
+                if (authMechs.contains(AuthenticationMechanism.CLIENT_CERT)) {
+                    builder.set(SSL_ENABLED, true);
+                    builder.set(SSL_STARTTLS, true);
+                    mechanisms.add(0, EXTERNAL);
+                    // TODO - If no other mechanisms are available we can use REQUIRED.
+                    builder.set(SSL_CLIENT_AUTH_MODE, REQUESTED);
+                } else {
+                    builder.set(SSL_ENABLED, true);
+                    builder.set(SSL_STARTTLS, true);
+                }
+            }
+
         }
 
         if (mechanisms.size() == 0) {
@@ -218,51 +223,61 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
 
         // If the mechanism is ANONYMOUS and we don't have a realm we return quickly.
         if (ANONYMOUS.equals(mechanismName) && realm == null) {
-            return new RealmCallbackHandler(new CallbackHandler() {
+            return new RealmCallbackHandler(new org.jboss.as.domain.management.AuthorizingCallbackHandler() {
 
                 public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                     for (Callback current : callbacks) {
                         throw MESSAGES.anonymousMechanismNotExpected(current);
                     }
                 }
-            }, null);
+
+                public SubjectUserInfo createSubjectUserInfo(Collection<Principal> remotingPrincipals) throws IOException {
+                    final Subject subject = new Subject();
+                    Collection<Principal> allPrincipals = subject.getPrincipals();
+                    for (Principal userPrincipal : remotingPrincipals) {
+                        allPrincipals.add(userPrincipal);
+                        if (userPrincipal instanceof UserPrincipal) {
+                            allPrincipals.add(new RealmUser(userPrincipal.getName()));
+                        }
+                    }
+
+                    final String userName = subject.getPrincipals(RealmUser.class).iterator().next().getName();
+
+                    return new SubjectUserInfo() {
+
+                        public String getUserName() {
+                            return userName;
+                        }
+
+                        public Subject getSubject() {
+                            return subject;
+                        }
+
+                        public Collection<Principal> getPrincipals() {
+                            return subject.getPrincipals();
+                        }
+                    };
+                }
+            });
         }
 
-        // For now for the JBOSS_LOCAL_USER we are only supporting the $local user and not allowing for
-        // an alternative authorizationID.
         if (JBOSS_LOCAL_USER.equals(mechanismName)) {
             // We now only enable this mechanism is configured in the realm so the realm can not be null.
-            return new RealmCallbackHandler(realm.getLocalCallbackHandler(), realm.getSubjectSupplemental());
+            return new RealmCallbackHandler(realm.getAuthorizingCallbackHandler(AuthenticationMechanism.LOCAL));
         }
 
         // In this calls only the AuthorizeCallback is needed, we are not making use if an authorization ID just yet
         // so don't need to be linked back to the realms.
         if (EXTERNAL.equals(mechanismName)) {
-            return new RealmCallbackHandler(new CallbackHandler() {
-
-                @Override
-                public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                    for (Callback current : callbacks) {
-                        if (current instanceof AuthorizeCallback) {
-                            AuthorizeCallback acb = (AuthorizeCallback) current;
-                            acb.setAuthorized(acb.getAuthenticationID().equals(acb.getAuthorizationID()));
-                        } else {
-                            throw MESSAGES.unsupportedCallback(current);
-                        }
-                    }
-
-                }
-            }, realm.getSubjectSupplemental());
+            return new RealmCallbackHandler(realm.getAuthorizingCallbackHandler(AuthenticationMechanism.CLIENT_CERT));
         }
 
         final RealmCallbackHandler realmCallbackHandler; // Referenced later by an inner-class so needs to be final.
 
-        // TODO - Although we recommend Digest auth in the default config if the subsytem is overriden then we may get PLAIN so
-        //        double check it still works.
-
-        // We must have a match in this block or throw an IllegalStateException.
-        if (DIGEST_MD5.equals(mechanismName) && digestMd5Supported() || PLAIN.equals(mechanismName) && plainSupported()) {
-            realmCallbackHandler = new RealmCallbackHandler(realm.getCallbackHandler(), realm.getSubjectSupplemental());
+        if (DIGEST_MD5.equals(mechanismName)) {
+            realmCallbackHandler = new RealmCallbackHandler(realm.getAuthorizingCallbackHandler(AuthenticationMechanism.DIGEST));
+        } else if (PLAIN.equals(mechanismName)) {
+            realmCallbackHandler = new RealmCallbackHandler(realm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN));
         } else {
             return null;
         }
@@ -311,154 +326,59 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
         };
     }
 
-    private SslMode getSslMode() {
-        if (realm == null || realm.getSSLContext() == null) {
-            // No SSL Context to no way can we enable SSL.
-            return SslMode.OFF;
-        }
-
-        if (realm.hasTrustStore()) {
-            return SslMode.CLIENT_AUTH_REQUESTED;
-        }
-
-        return SslMode.TRANSPORT_ONLY;
-    }
-
-    private enum SslMode {
-        OFF, TRANSPORT_ONLY, CLIENT_AUTH_REQUESTED
-    }
-
-    private boolean digestMd5Supported() {
-        if (realm == null) {
-            return false;
-        }
-
-        Class<Callback>[] callbacks = realm.getCallbackHandler().getSupportedCallbacks();
-        if (contains(NameCallback.class, callbacks) == false) {
-            return false;
-        }
-        if (contains(RealmCallback.class, callbacks) == false) {
-            return false;
-        }
-        if (contains(PasswordCallback.class, callbacks) == false && contains(DigestHashCallback.class, callbacks) == false) {
-            return false;
-        }
-        if (contains(AuthorizeCallback.class, callbacks) == false) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private boolean plainSupported() {
-        if (realm == null) {
-            return false;
-        }
-
-        Class<Callback>[] callbacks = realm.getCallbackHandler().getSupportedCallbacks();
-        if (contains(NameCallback.class, callbacks) == false) {
-            return false;
-        }
-        if (contains(VerifyPasswordCallback.class, callbacks) == false) {
-            return false;
-        }
-        if (contains(AuthorizeCallback.class, callbacks) == false) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private static boolean contains(Class clazz, Class<Callback>[] classes) {
-        for (Class<Callback> current : classes) {
-            if (current.equals(clazz)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private class RealmCallbackHandler implements AuthorizingCallbackHandler {
 
-        private final CallbackHandler callbackHandler;
-        private final SubjectSupplemental subjectSupplemental;
-        private final boolean subjectCallbackSupported;
+        private final org.jboss.as.domain.management.AuthorizingCallbackHandler innerHandler;
 
-        /** The Subject returned from the authentication process. */
-        private Subject subject = null;
-
-        private RealmCallbackHandler(CallbackHandler callbackHandler, SubjectSupplemental subjectSupplemental) {
-            this.callbackHandler = callbackHandler;
-            this.subjectSupplemental = subjectSupplemental;
-            subjectCallbackSupported = false;
+        RealmCallbackHandler(org.jboss.as.domain.management.AuthorizingCallbackHandler innerHandler) {
+            this.innerHandler = innerHandler;
         }
 
-        private RealmCallbackHandler(DomainCallbackHandler callbackHandler, SubjectSupplemental subjectSupplemental) {
-            this.callbackHandler = callbackHandler;
-            this.subjectSupplemental = subjectSupplemental;
-            subjectCallbackSupported = contains(SubjectCallback.class, callbackHandler.getSupportedCallbacks());
-        }
-
-        @Override
         public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-            if (subjectCallbackSupported && callbacks.length != 1 && callbacks[0] instanceof AuthorizeCallback == false) {
-                Callback[] newCallbacks = new Callback[callbacks.length + 1];
-                System.arraycopy(callbacks, 0, newCallbacks, 0, callbacks.length);
-                SubjectCallback subjectCallBack = new SubjectCallback();
-                newCallbacks[newCallbacks.length - 1] = subjectCallBack;
-                callbackHandler.handle(newCallbacks);
-                subject = subjectCallBack.getSubject();
-            } else {
-                callbackHandler.handle(callbacks);
-            }
+            innerHandler.handle(callbacks);
         }
 
-        @Override
         public UserInfo createUserInfo(Collection<Principal> remotingPrincipals) throws IOException {
-            Subject subject = this.subject == null ? new Subject() : this.subject;
-            subject.getPrincipals().addAll(remotingPrincipals);
-            Set<UserPrincipal> remotingUsers = subject.getPrincipals(UserPrincipal.class);
-            Set<RealmUser> realmUsers = new HashSet<RealmUser>(remotingUsers.size());
-            for (UserPrincipal current : remotingUsers) {
-                if (realm != null) {
-                    realmUsers.add(new RealmUser(realm.getName(), current.getName()));
-                } else {
-                    realmUsers.add(new RealmUser(current.getName()));
+            Collection<Principal> converted = new ArrayList<Principal>(remotingPrincipals.size());
+            for (Principal current : remotingPrincipals) {
+                // Just convert the Remoting UserPrincipal to a RealmUser.
+                // The remaining principals will be added to the Subject later.
+                if (current instanceof UserPrincipal) {
+                    if (realm != null) {
+                        converted.add(new RealmUser(realm.getName(), current.getName()));
+                    } else {
+                        converted.add(new RealmUser(current.getName()));
+                    }
                 }
             }
-            subject.getPrincipals().addAll(realmUsers);
+            SubjectUserInfo sui = innerHandler.createSubjectUserInfo(converted);
+            Subject subject = sui.getSubject();
+            subject.getPrincipals().addAll(remotingPrincipals);
 
-            if (subjectSupplemental != null) {
-                subjectSupplemental.supplementSubject(subject);
-            }
-
-            return new RealmSubjectUserInfo(subject);
+            return new RealmSubjectUserInfo(sui);
         }
     }
 
     private static class RealmSubjectUserInfo implements SubjectUserInfo, UserInfo, UniqueIdUserInfo {
 
-        private final String userName;
-        private final Subject subject;
+        private final SubjectUserInfo subjectUserInfo;
         private final String id;
 
-        private RealmSubjectUserInfo(Subject subject) {
-            this.subject = subject;
-            Set<RealmUser> userPrinc = subject.getPrincipals(RealmUser.class);
-            userName = userPrinc.isEmpty() ? null : userPrinc.iterator().next().getName();
+        private RealmSubjectUserInfo(SubjectUserInfo subjectUserInfo) {
+            this.subjectUserInfo = subjectUserInfo;
             id = UUID.randomUUID().toString();
         }
 
         public String getUserName() {
-            return userName;
+            return subjectUserInfo.getUserName();
         }
 
         public Collection<Principal> getPrincipals() {
-            return subject.getPrincipals();
+            return subjectUserInfo.getPrincipals();
         }
 
         public Subject getSubject() {
-            return subject;
+            return subjectUserInfo.getSubject();
         }
 
         public String getId() {
