@@ -71,4 +71,10 @@ interface ClusteringWebMessages {
      */
     @Message(id = 10312, value = "Not configured to provide session attributes")
     IllegalStateException sessionAttributesNotConfigured();
+
+    @Message(id = 10313, value = "Unsupported marshalling version: %d")
+    IllegalArgumentException unsupportedMarshallingVersion(int version);
+
+    @Message(id = 10314, value = "ClassTable %s cannot find a class for class index %d")
+    ClassNotFoundException classIndexNotFoundInClassTable(String className, int index);
 }

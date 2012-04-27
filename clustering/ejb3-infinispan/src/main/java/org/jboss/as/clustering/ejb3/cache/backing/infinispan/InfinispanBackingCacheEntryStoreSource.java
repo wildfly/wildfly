@@ -117,7 +117,7 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
     public <E extends SerializationGroup<K, V, G>> BackingCacheEntryStore<G, Cacheable<G>, E> createGroupIntegratedObjectStore(IdentifierFactory<G> identifierFactory, PassivationManager<G, E> passivationManager, StatefulTimeoutInfo timeout) {
         @SuppressWarnings("unchecked")
         Cache<G, MarshalledValue<E, MarshallingContext>> cache = this.groupCache.getValue();
-        MarshallingContext context = new MarshallingContext(this.factory, passivationManager.getMarshallingConfiguration());
+        MarshallingContext context = new MarshallingContext(this.factory, passivationManager);
         MarshalledValueFactory<MarshallingContext> valueFactory = new SimpleMarshalledValueFactory(context);
         @SuppressWarnings("unchecked")
         Registry<String, ?> registry = this.registry.getValue();
@@ -138,7 +138,7 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
         }
         groupCache.getCacheManager().defineConfiguration(beanName, builder.build());
         Cache<K, MarshalledValue<E, MarshallingContext>> cache = container.<K, MarshalledValue<E, MarshallingContext>>getCache(beanName);
-        MarshallingContext context = new MarshallingContext(this.factory, passivationManager.getMarshallingConfiguration());
+        MarshallingContext context = new MarshallingContext(this.factory, passivationManager);
         MarshalledValueFactory<MarshallingContext> valueFactory = new SimpleMarshalledValueFactory(context);
         LockKeyFactory<K> lockKeyFactory = new LockKeyFactory<K>() {
             @Override

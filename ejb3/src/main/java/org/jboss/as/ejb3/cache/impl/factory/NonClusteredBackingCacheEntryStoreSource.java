@@ -74,7 +74,7 @@ public class NonClusteredBackingCacheEntryStoreSource<K extends Serializable, V 
 
     @Override
     public <E extends SerializationGroup<K, V, G>> BackingCacheEntryStore<G, Cacheable<G>, E> createGroupIntegratedObjectStore(IdentifierFactory<G> identifierFactory, PassivationManager<G, E> passivationManager, StatefulTimeoutInfo timeout) {
-        FilePersistentObjectStore<G, E> objectStore = new FilePersistentObjectStore<G, E>(passivationManager.getMarshallingConfiguration(), this.getStoragePath(null, this.groupDirectoryName), subdirectoryCount);
+        FilePersistentObjectStore<G, E> objectStore = new FilePersistentObjectStore<G, E>(passivationManager, this.getStoragePath(null, this.groupDirectoryName), subdirectoryCount);
 
         SimpleBackingCacheEntryStore<G, Cacheable<G>, E> store = new SimpleBackingCacheEntryStore<G, Cacheable<G>, E>(identifierFactory, objectStore, this.environment.getValue(), timeout, this);
 
@@ -83,7 +83,7 @@ public class NonClusteredBackingCacheEntryStoreSource<K extends Serializable, V 
 
     @Override
     public <E extends SerializationGroupMember<K, V, G>> BackingCacheEntryStore<K, V, E> createIntegratedObjectStore(String beanName, IdentifierFactory<K> identifierFactory, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout) {
-        FilePersistentObjectStore<K, E> objectStore = new FilePersistentObjectStore<K, E>(passivationManager.getMarshallingConfiguration(), this.getStoragePath(beanName, this.sessionDirectoryName), subdirectoryCount);
+        FilePersistentObjectStore<K, E> objectStore = new FilePersistentObjectStore<K, E>(passivationManager, this.getStoragePath(beanName, this.sessionDirectoryName), subdirectoryCount);
 
         SimpleBackingCacheEntryStore<K, V, E> store = new SimpleBackingCacheEntryStore<K, V, E>(identifierFactory, objectStore, this.environment.getValue(), timeout, this);
 

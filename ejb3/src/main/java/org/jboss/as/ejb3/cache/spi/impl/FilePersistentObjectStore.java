@@ -35,12 +35,15 @@ import java.security.PrivilegedExceptionAction;
 
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.Cacheable;
+import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.spi.PersistentObjectStore;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.SimpleDataInput;
+import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.marshalling.Unmarshaller;
 
 /**
@@ -53,7 +56,7 @@ public class FilePersistentObjectStore<K extends Serializable, V extends Cacheab
     private static final Logger log = Logger.getLogger(FilePersistentObjectStore.class);
 
     private final MarshallerFactory marshallerFactory = Marshalling.getMarshallerFactory("river", MarshallerFactory.class.getClassLoader());
-    private final MarshallingConfiguration configuration;
+    private final PassivationManager<K, V> passivationManager;
     private final int subdirectoryCount;
     private final File baseDirectory;
     private File[] storageDirectories;
@@ -144,8 +147,8 @@ public class FilePersistentObjectStore<K extends Serializable, V extends Cacheab
         }
     }
 
-    public FilePersistentObjectStore(MarshallingConfiguration configuration, String directoryName, int subDirectoryCount) {
-        this.configuration = configuration;
+    public FilePersistentObjectStore(PassivationManager<K, V> passivationManager, String directoryName, int subDirectoryCount) {
+        this.passivationManager = passivationManager;
         this.baseDirectory = new File(directoryName);
         this.subdirectoryCount = subDirectoryCount;
     }
@@ -171,11 +174,14 @@ public class FilePersistentObjectStore<K extends Serializable, V extends Cacheab
 
         log.tracef("Loading state from %s", file);
         try {
-            Unmarshaller unmarshaller = this.marshallerFactory.createUnmarshaller(this.configuration);
             FileInputStream inputStream = null;
             try {
                 inputStream = FISAction.open(file);
-                unmarshaller.start(Marshalling.createByteInput(inputStream));
+                SimpleDataInput input = new SimpleDataInput(Marshalling.createByteInput(inputStream));
+                int version = input.readInt();
+                MarshallingConfiguration config = this.passivationManager.getMarshallingConfiguration(version);
+                Unmarshaller unmarshaller = this.marshallerFactory.createUnmarshaller(config);
+                unmarshaller.start(input);
                 try {
                     V value = (V) unmarshaller.readObject();
                     unmarshaller.finish();
@@ -231,11 +237,15 @@ public class FilePersistentObjectStore<K extends Serializable, V extends Cacheab
         file.deleteOnExit();
         log.tracef("Storing state to %s", file);
         try {
-            Marshaller marshaller = this.marshallerFactory.createMarshaller(this.configuration);
             FileOutputStream outputStream = null;
             try {
                 outputStream = FOSAction.open(file);
-                marshaller.start(Marshalling.createByteOutput(outputStream));
+                SimpleDataOutput output = new SimpleDataOutput(Marshalling.createByteOutput(outputStream));
+                int version = this.passivationManager.getCurrentMarshallingVersion();
+                output.writeInt(version);
+                MarshallingConfiguration config = this.passivationManager.getMarshallingConfiguration(version);
+                Marshaller marshaller = this.marshallerFactory.createMarshaller(config);
+                marshaller.start(output);
                 try {
                     marshaller.writeObject(obj);
                     marshaller.finish();

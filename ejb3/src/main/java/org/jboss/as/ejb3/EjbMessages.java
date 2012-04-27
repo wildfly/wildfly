@@ -2063,6 +2063,9 @@ public interface EjbMessages {
     @Message(id = 14576, value = "Could not determine local interface from local home interface %s for bean %s")
     DeploymentUnitProcessingException couldNotDetermineLocalInterfaceFromLocalHome(final String localHomeClass, final String beanName);
 
+    @Message(id = 14577, value = "Unsupported marshalling version: %d")
+    IllegalArgumentException unsupportedMarshallingVersion(int version);
+
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
     // all used, go to https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem

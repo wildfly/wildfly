@@ -21,13 +21,24 @@
  */
 package org.jboss.as.clustering.web.impl;
 
+import java.io.IOException;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.jboss.as.clustering.MarshallingContext;
+import org.jboss.as.clustering.SimpleMarshalledValue;
+import org.jboss.as.clustering.VersionedMarshallingConfiguration;
+import org.jboss.as.clustering.web.DistributableSessionMetadata;
 import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.SessionAttributeMarshaller;
 import org.jboss.as.clustering.web.SessionAttributeMarshallerFactory;
+import org.jboss.marshalling.ClassTable;
+import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.Unmarshaller;
 import org.jboss.marshalling.reflect.ReflectiveCreator;
 import org.jboss.marshalling.reflect.SunReflectiveCreator;
 
@@ -36,8 +47,10 @@ import org.jboss.marshalling.reflect.SunReflectiveCreator;
  *
  * @author Paul Ferraro
  */
-public class SessionAttributeMarshallerFactoryImpl implements SessionAttributeMarshallerFactory {
+public class SessionAttributeMarshallerFactoryImpl implements SessionAttributeMarshallerFactory, ClassTable, VersionedMarshallingConfiguration {
+    private static final int CURRENT_VERSION = 1;
     private final MarshallerFactory factory;
+    private final Map<Integer, MarshallingConfiguration> configurations = new ConcurrentHashMap<Integer, MarshallingConfiguration>();
 
     public SessionAttributeMarshallerFactoryImpl() {
         this(Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader()));
@@ -58,6 +71,63 @@ public class SessionAttributeMarshallerFactoryImpl implements SessionAttributeMa
         configuration.setClassResolver(manager.getApplicationClassResolver());
         configuration.setSerializedCreator(new SunReflectiveCreator());
         configuration.setExternalizerCreator(new ReflectiveCreator());
-        return new SessionAttributeMarshallerImpl(new MarshallingContext(this.factory, configuration));
+        configuration.setClassTable(this);
+        this.configurations.put(CURRENT_VERSION, configuration);
+        return new SessionAttributeMarshallerImpl(new MarshallingContext(this.factory, this));
+    }
+
+    @Override
+    public int getCurrentMarshallingVersion() {
+        return CURRENT_VERSION;
+    }
+
+    @Override
+    public MarshallingConfiguration getMarshallingConfiguration(int version) {
+        MarshallingConfiguration config = this.configurations.get(version);
+        if (config == null) {
+            throw ClusteringWebMessages.MESSAGES.unsupportedMarshallingVersion(version);
+        }
+        return config;
+    }
+
+    private static final Class<?>[] classes = new Class<?>[] {
+        DistributableSessionMetadata.class,
+        SimpleMarshalledValue.class,
+    };
+
+    private static final Map<Class<?>, Writer> writers = createWriters();
+    private static Map<Class<?>, Writer> createWriters() {
+        Map<Class<?>, Writer> writers = new IdentityHashMap<Class<?>, Writer>();
+        for (int i = 0; i < classes.length; i++) {
+            writers.put(classes[i], new ByteWriter((byte) i));
+        }
+        return writers;
+    }
+
+    @Override
+    public Writer getClassWriter(Class<?> targetClass) throws IOException {
+        return writers.get(targetClass);
+    }
+
+    @Override
+    public Class<?> readClass(Unmarshaller unmarshaller) throws IOException, ClassNotFoundException {
+        int index = unmarshaller.readUnsignedByte();
+        if (index >= classes.length) {
+            throw ClusteringWebMessages.MESSAGES.classIndexNotFoundInClassTable(this.getClass().getName(), index);
+        }
+        return classes[index];
+    }
+
+    private static final class ByteWriter implements Writer {
+        final byte[] bytes;
+
+        ByteWriter(final byte... bytes) {
+            this.bytes = bytes;
+        }
+
+        @Override
+        public void writeClass(final Marshaller marshaller, final Class<?> clazz) throws IOException {
+            marshaller.write(bytes);
+        }
     }
 }
