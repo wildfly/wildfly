@@ -270,5 +270,4 @@ public class AsyncMethodTestCase {
         Future<Boolean> future = bean.futureMethod();
         Assert.assertTrue("Supposing that future.get() method returns TRUE but it returned FALSE", future.get());
     }
-
 }
