@@ -22,16 +22,16 @@
 
 package org.jboss.as.logging.loggers;
 
+import static org.jboss.as.logging.LoggingLogger.ROOT_LOGGER;
+
+import java.util.logging.Handler;
+import java.util.logging.Level;
+
 import org.jboss.as.logging.CommonAttributes;
 import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import java.util.logging.Handler;
-import java.util.logging.Level;
-
-import static org.jboss.as.logging.LoggingLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

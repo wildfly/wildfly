@@ -22,25 +22,135 @@
 
 package org.jboss.as.logging.handlers;
 
-import org.jboss.msc.service.Service;
-
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Filter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
  * Date: 23.09.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public interface HandlerService extends Service<Handler> {
+public abstract class HandlerService<T extends Handler> implements Service<T> {
 
-    void setLevel(Level level);
+    private FormatterSpec formatterSpec;
+    private Level level;
+    private String encoding;
+    private Filter filter;
+    private T value;
 
-    void setEncoding(String encoding) throws UnsupportedEncodingException;
+    @Override
+    public final synchronized void start(final StartContext context) throws StartException {
+        final T handler = createHandler();
+        value = handler;
+        getFormatterSpec().apply(handler);
+        final Filter filter = getFilter();
+        if (filter != null) handler.setFilter(filter);
+        try {
+            handler.setEncoding(getEncoding());
+        } catch (UnsupportedEncodingException e) {
+            throw new StartException(e);
+        }
+        final Level level = getLevel();
+        if (level != null) handler.setLevel(level);
+        start(context, handler);
+    }
 
-    void setFormatterSpec(FormatterSpec formatterSpec);
+    @Override
+    public final synchronized void stop(final StopContext context) {
+        final T handler = value;
+        handler.close();
+        handler.setLevel(Level.OFF);
+        stop(context, handler);
+        value = null;
+    }
 
-    void setFilter(Filter filter);
+    @Override
+    public final synchronized T getValue() {
+        return value;
+    }
+
+    /**
+     * Creates the handler.
+     *
+     * @return the handler
+     */
+    protected abstract T createHandler() throws StartException;
+
+    /**
+     * Starts the handler service.
+     *
+     * @param context the start context.
+     * @param handler the handler.
+     */
+    protected abstract void start(StartContext context, T handler) throws StartException;
+
+    /**
+     * Stops the handler service.
+     *
+     * @param context the start context.
+     * @param handler the handler.
+     */
+    protected void stop(StopContext context, T handler) {
+        // no-op
+    }
+
+    /**
+     * Returns the level the handler is set to.
+     *
+     * @return the log level.
+     */
+    public final synchronized Level getLevel() {
+        return level;
+    }
+
+    public final synchronized void setLevel(final Level level) {
+        this.level = level;
+        final T handler = getValue();
+        if (handler != null) {
+            handler.setLevel(level);
+        }
+    }
+
+    public final synchronized String getEncoding() {
+        return encoding;
+    }
+
+    public final synchronized void setEncoding(String encoding) throws UnsupportedEncodingException {
+        this.encoding = encoding;
+        final T handler = getValue();
+        if (handler != null) {
+            handler.setEncoding(encoding);
+        }
+    }
+
+    public final synchronized FormatterSpec getFormatterSpec() {
+        return formatterSpec;
+    }
+
+    public final synchronized void setFormatterSpec(FormatterSpec formatterSpec) {
+        this.formatterSpec = formatterSpec;
+        final T handler = getValue();
+        if (handler != null && formatterSpec != null) {
+            formatterSpec.apply(handler);
+        }
+    }
+
+    public final synchronized Filter getFilter() {
+        return filter;
+    }
+
+    public final synchronized void setFilter(Filter filter) {
+        this.filter = filter;
+        final T handler = getValue();
+        if (handler != null) {
+            handler.setFilter(filter);
+        }
+    }
 }

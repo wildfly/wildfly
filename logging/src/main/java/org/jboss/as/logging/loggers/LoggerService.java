@@ -22,13 +22,13 @@
 
 package org.jboss.as.logging.loggers;
 
+import java.util.logging.Handler;
+import java.util.logging.Level;
+
 import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import java.util.logging.Handler;
-import java.util.logging.Level;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
