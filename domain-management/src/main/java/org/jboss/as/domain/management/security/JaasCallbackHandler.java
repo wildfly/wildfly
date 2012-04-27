@@ -23,8 +23,14 @@
 package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.SUBJECT_CALLBACK_SUPPORTED;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -38,6 +44,8 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.controller.security.ServerSecurityManager;
+import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.CallbackHandlerServiceRegistry;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -50,23 +58,55 @@ import org.jboss.sasl.callback.VerifyPasswordCallback;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class JaasCallbackHandler implements Service<DomainCallbackHandler>, DomainCallbackHandler {
+public class JaasCallbackHandler implements Service<CallbackHandlerService>, CallbackHandlerService, CallbackHandler {
 
     public static final String SERVICE_SUFFIX = "jaas";
 
-    private static final Class[] CALLBACKS = { AuthorizeCallback.class, RealmCallback.class, NameCallback.class,
-            VerifyPasswordCallback.class, SubjectCallback.class };
+    private static final Map<String, String> configurationOptions;
+
+    static {
+        Map<String, String> temp = new HashMap<String, String>(2);
+        temp.put(SUBJECT_CALLBACK_SUPPORTED, Boolean.TRUE.toString());
+        temp.put(VERIFY_PASSWORD_CALLBACK_SUPPORTED, Boolean.TRUE.toString());
+        configurationOptions = Collections.unmodifiableMap(temp);
+    }
 
     private final String name;
+    private final CallbackHandlerServiceRegistry registry;
 
     private final InjectedValue<ServerSecurityManager> securityManagerValue = new InjectedValue<ServerSecurityManager>();
 
-    public JaasCallbackHandler(final String name) {
+    public JaasCallbackHandler(final String name, final CallbackHandlerServiceRegistry registry) {
         this.name = name;
+        this.registry = registry;
     }
 
     /*
-     * DomainCallbackHandler Methods
+     * CallbackHandlerService Methods
+     */
+
+    public AuthenticationMechanism getPreferredMechanism() {
+        return AuthenticationMechanism.PLAIN;
+    }
+
+    public Set<AuthenticationMechanism> getSupplementaryMechanisms() {
+        return Collections.emptySet();
+    }
+
+    public Map<String, String> getConfigurationOptions() {
+        return configurationOptions;
+    }
+
+    public CallbackHandler getCallbackHandler() {
+        return this;
+    }
+
+    public boolean isReady() {
+        return true;
+    }
+
+    /*
+     * CallbackHandler Method
      */
 
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
@@ -158,29 +198,23 @@ public class JaasCallbackHandler implements Service<DomainCallbackHandler>, Doma
         }
     }
 
-    public Class[] getSupportedCallbacks() {
-        return CALLBACKS;
-    }
-
-    public boolean isReady() {
-        return true;
-    }
-
     /*
      * Service Methods
      */
 
     public void start(final StartContext context) throws StartException {
+        registry.register(getPreferredMechanism(), this);
     }
 
     public void stop(final StopContext context) {
+        registry.unregister(getPreferredMechanism(), this);
     }
 
     public InjectedValue<ServerSecurityManager> getSecurityManagerValue() {
         return securityManagerValue;
     }
 
-    public DomainCallbackHandler getValue() throws IllegalStateException, IllegalArgumentException {
+    public CallbackHandlerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 

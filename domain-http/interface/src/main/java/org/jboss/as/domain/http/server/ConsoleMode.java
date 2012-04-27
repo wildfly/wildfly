@@ -21,8 +21,8 @@
 */
 package org.jboss.as.domain.http.server;
 
+import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.security.DomainCallbackHandler;
 import org.jboss.com.sun.net.httpserver.HttpContext;
 import org.jboss.com.sun.net.httpserver.HttpServer;
 import org.jboss.modules.ModuleLoadException;
@@ -112,9 +112,9 @@ public enum ConsoleMode {
         @Override
         public void start(HttpServer httpServer, SecurityRealm securityRealm) {
             HttpContext httpContext = httpServer.createContext(getContext(), this);
-            if (securityRealm != null) {
-                DomainCallbackHandler domainCBH = securityRealm.getCallbackHandler();
-                httpContext.getFilters().add(new RealmReadinessFilter(domainCBH, ErrorHandler.getRealmRedirect()));
+            if (securityRealm != null
+                    && securityRealm.getSupportedAuthenticationMechanisms().contains(AuthenticationMechanism.CLIENT_CERT) == false) {
+                httpContext.getFilters().add(new RealmReadinessFilter(securityRealm, ErrorHandler.getRealmRedirect()));
             }
         }
     }

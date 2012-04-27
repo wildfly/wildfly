@@ -36,7 +36,7 @@ public class ConsoleMock implements ConsoleWrapper {
 
     public ConsoleMock() {
     }
-    
+
     public void setResponses(AssertConsoleBuilder responses) {
         this.responses = responses;
     }

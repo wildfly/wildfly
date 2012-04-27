@@ -28,7 +28,7 @@ import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 
 import java.io.IOException;
 
-import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Filter;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
@@ -40,17 +40,17 @@ import org.jboss.com.sun.net.httpserver.HttpExchange;
  */
 class RealmReadinessFilter extends Filter {
 
-    private final DomainCallbackHandler domainCBH;
+    private final SecurityRealm securityRealm;
     private final String redirectTo;
 
-    RealmReadinessFilter(final DomainCallbackHandler domainCBH, final String redirectTo) {
-        this.domainCBH = domainCBH;
+    RealmReadinessFilter(final SecurityRealm securityRealm, final String redirectTo) {
+        this.securityRealm = securityRealm;
         this.redirectTo = redirectTo;
     }
 
     @Override
     public void doFilter(HttpExchange exchange, Chain chain) throws IOException {
-        if (domainCBH.isReady()) {
+        if (securityRealm.isReady()) {
             chain.doFilter(exchange);
         } else {
             Headers responseHeaders = exchange.getResponseHeaders();

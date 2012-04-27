@@ -396,16 +396,6 @@ public interface DomainManagementMessages {
     OperationFailedException multipleAuthenticationMechanismsDefined(String realmName, Set<String> mechanisms);
 
     /**
-     * Creates an exception indicating no authentication mechanism was defined in the security realm.
-     *
-     * @param realmName the security realm name
-     *
-     * @return an {@link OperationFailedException} for the error.
-     */
-    @Message(id = 15245, value = "No authentication mechanism defined in security realm '%s'.")
-    OperationFailedException noAuthenticationDefined(String realmName);
-
-    /**
      * Creates an exception indicating that one of {@code attr1} or {@code attr2} is required.
      *
      * @param attr1 the first attribute.
@@ -543,8 +533,43 @@ public interface DomainManagementMessages {
     @Message(id = 15255, value = "The user '%s' is not allowed in a local authentication.")
     IOException invalidLocalUser(final String userName);
 
+    /**
+     * IllegalArgumentException to indicate that a CallbackHandler is already registered for the specified mechanism.
+     *
+     * @param mechanismName - the name of the mechanism being registered.
+     * @return an {@link IllegalArgumentException} for the failure.
+     */
+    @Message(id = 15256, value = "A CallbackHandlerService has already been registered for the %s mechanism.")
+    IllegalArgumentException callbackHandlerAlreadyRegistered(final String mechanismName);
+
+    /**
+     * IllegalArgumentException to indicate an invalid attempt to unregister a CallbackHandlerService registration.
+     *
+     * @return an {@link IllegalArgumentException} for the failure.
+     */
+    @Message(id = 15257, value = "An invalid attempt to unregister a CallbackHandlerService has occurred.")
+    IllegalArgumentException callbackHandlerRegistrationMisMatch();
+
+    /**
+     * IllegalStateException to indicate an invalid attempt to update the registry after the security realm has started.
+     *
+     * @return an {@link IllegalStateException} for the failure.
+     */
+    @Message(id = 15258, value = "Unexpected registry update after service started.")
+    IllegalStateException registryUpdateAfterStarted();
+
+    /**
+     * IllegalStateException to indicate a CallbackHandler has been requested for an unsupported mechanism.
+     *
+     * @param mechanism - The name of the mechanism requested.
+     * @param realmName - The name of the realm the mechanism was requested from.
+     * @return an {@link IllegalStateException} for the failure.
+     */
+    @Message(id = 15259, value = "No CallbackHandler available for mechanism %s in realm %s")
+    IllegalStateException noCallbackHandlerForMechanism(final String mechanism, final String realmName);
+
     /*
-    * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
-    * this range commencing 15200.
-    */
+     * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
+     * this range commencing 15200.
+     */
 }

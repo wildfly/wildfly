@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,29 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.management.security;
-
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
+package org.jboss.as.domain.management;
 
 /**
- * An extension of CallbackHandler to allow the supported callbacks to be identified.
+ * An enumeration of the authentication mechanisms that can be supported by a security realm.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface DomainCallbackHandler extends CallbackHandler {
-
-    // TODO - Switch to collections to clean up how these are checked and to introduce safety to prevent the 'set' from being modified.
-    Class<Callback>[] getSupportedCallbacks();
-
-    /**
-     * Is this DomainCallbackHandler ready for handling remote requests.
-     *
-     * To be used by the HTTP interface to display an error if the administrator
-     * has not completed the set-up of their AS installation.
-     *
-     * @return indication of if this is ready for remote requests.
+public enum AuthenticationMechanism {
+    /*
+     * Values are ordered in priority order, do not re-order unless deliberately changing priority order.
      */
-    boolean isReady();
+
+    LOCAL, CLIENT_CERT, DIGEST, PLAIN;
 
 }

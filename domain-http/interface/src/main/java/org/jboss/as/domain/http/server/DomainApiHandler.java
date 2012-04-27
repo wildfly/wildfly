@@ -74,8 +74,8 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
 import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
 import org.jboss.as.domain.http.server.security.SubjectAssociationHandler;
+import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.security.DomainCallbackHandler;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.Filter;
 import org.jboss.com.sun.net.httpserver.Headers;
@@ -574,9 +574,8 @@ class DomainApiHandler implements ManagementHttpHandler {
         if (authenticator != null) {
             context.setAuthenticator(authenticator);
             List<Filter> filters = context.getFilters();
-            if (securityRealm.hasTrustStore() == false) {
-                DomainCallbackHandler callbackHandler = securityRealm.getCallbackHandler();
-                filters.add(new RealmReadinessFilter(callbackHandler, ErrorHandler.getRealmRedirect()));
+            if (securityRealm.getSupportedAuthenticationMechanisms().contains(AuthenticationMechanism.CLIENT_CERT) == false) {
+                filters.add(new RealmReadinessFilter(securityRealm, ErrorHandler.getRealmRedirect()));
             }
         }
     }

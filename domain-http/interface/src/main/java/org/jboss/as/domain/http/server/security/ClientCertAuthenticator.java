@@ -28,6 +28,8 @@ import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
@@ -35,6 +37,8 @@ import javax.net.ssl.SSLSession;
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.security.SubjectUserInfo;
+import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpPrincipal;
@@ -50,12 +54,12 @@ import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
  */
 public class ClientCertAuthenticator extends Authenticator {
 
-    private final AuthenticationProvider authenticationProvider;
+    private final SecurityRealm securityRealm;
     private final String realm;
 
-    public ClientCertAuthenticator(final AuthenticationProvider authenticationProvider, final String realm) {
-        this.authenticationProvider = authenticationProvider;
-        this.realm = realm;
+    public ClientCertAuthenticator(final SecurityRealm securityRealm) {
+        this.securityRealm = securityRealm;
+        this.realm = securityRealm.getName();
     }
 
     /**
@@ -95,7 +99,10 @@ public class ClientCertAuthenticator extends Authenticator {
                 HttpPrincipal principal = ((Success) response).getPrincipal();
 
                 try {
-                    SubjectUserInfo userInfo = authenticationProvider.getCallbackHandler().createSubjectUserInfo(principal);
+                    Collection<Principal> principalCol = new HashSet<Principal>();
+                    principalCol.add(principal);
+                    SubjectUserInfo userInfo = securityRealm.getAuthorizingCallbackHandler(AuthenticationMechanism.CLIENT_CERT)
+                            .createSubjectUserInfo(principalCol);
                     exchange.setAttribute(Subject.class.getName(), userInfo.getSubject(), AttributeScope.CONNECTION);
 
                 } catch (IOException e) {

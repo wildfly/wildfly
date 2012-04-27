@@ -22,11 +22,17 @@
 
 package org.jboss.as.security;
 
+import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
+
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.acl.Group;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,11 +45,13 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.RealmCallback;
 
+import org.jboss.as.controller.security.SubjectUserInfo;
+import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.RealmRole;
 import org.jboss.as.domain.management.security.RealmUser;
 import org.jboss.as.domain.management.security.SecurityRealmRegistry;
-import org.jboss.as.domain.management.security.SubjectSupplemental;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
@@ -64,8 +72,10 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
     private static final String REALM_OPTION = "realm";
 
     private SecurityRealm securityRealm;
+    private AuthenticationMechanism chosenMech;
     private ValidationMode validationMode;
     private UsernamePasswordHashUtil hashUtil;
+    private AuthorizingCallbackHandler callbackHandler;
 
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
@@ -79,22 +89,38 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
         if (securityRealm == null) {
             throw SecurityMessages.MESSAGES.realmNotFound(realm);
         }
-        Class[] supportedCallbacks = securityRealm.getCallbackHandler().getSupportedCallbacks();
-        if (contains(VerifyPasswordCallback.class, supportedCallbacks)) {
+        Set<AuthenticationMechanism> authMechs = securityRealm.getSupportedAuthenticationMechanisms();
+
+        if (authMechs.contains(AuthenticationMechanism.DIGEST)) {
+            chosenMech = AuthenticationMechanism.DIGEST;
+        } else if (authMechs.contains(AuthenticationMechanism.PLAIN)) {
+            chosenMech = AuthenticationMechanism.PLAIN;
+        } else {
+            throw SecurityMessages.MESSAGES.noPasswordValidationAvailable(realm);
+        }
+
+        Map<String, String> mechOpts = securityRealm.getMechanismConfig(chosenMech);
+
+        if (mechOpts.containsKey(VERIFY_PASSWORD_CALLBACK_SUPPORTED) && Boolean.parseBoolean(mechOpts.get(VERIFY_PASSWORD_CALLBACK_SUPPORTED))) {
             // We give this mode priority as even if digest is supported the realm supplied
             // callback handler can handle the conversion comparison itself.
             validationMode = ValidationMode.VALIDATION;
-        } else if (contains(DigestHashCallback.class, supportedCallbacks)) {
-            validationMode = ValidationMode.DIGEST;
-            try {
-                hashUtil = new UsernamePasswordHashUtil();
-            } catch (NoSuchAlgorithmException e) {
-                throw new IllegalStateException(e);
-            }
-        } else if (contains(PasswordCallback.class, supportedCallbacks)) {
-            validationMode = ValidationMode.PASSWORD;
         } else {
-            throw SecurityMessages.MESSAGES.noPasswordValidationAvailable(realm);
+            if (chosenMech == AuthenticationMechanism.DIGEST) {
+                boolean plainTextDigest = true;
+                if (mechOpts.containsKey(DIGEST_PLAIN_TEXT) && Boolean.parseBoolean(mechOpts.get(DIGEST_PLAIN_TEXT))) {
+                    validationMode = ValidationMode.PASSWORD;
+                } else {
+                    validationMode = ValidationMode.DIGEST;
+                    try {
+                        hashUtil = new UsernamePasswordHashUtil();
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+            } else {
+                validationMode = ValidationMode.PASSWORD;
+            }
         }
     }
 
@@ -137,12 +163,20 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
 
     private void handle(final Callback[] callbacks) throws LoginException {
         try {
-            securityRealm.getCallbackHandler().handle(callbacks);
+            AuthorizingCallbackHandler callbackHandler = getCallbackHandler();
+            callbackHandler.handle(callbacks);
         } catch (IOException e) {
             throw SecurityMessages.MESSAGES.failureCallingSecurityRealm(e.getMessage());
         } catch (UnsupportedCallbackException e) {
             throw SecurityMessages.MESSAGES.failureCallingSecurityRealm(e.getMessage());
         }
+    }
+
+    private AuthorizingCallbackHandler getCallbackHandler() {
+        if (callbackHandler == null) {
+            callbackHandler = securityRealm.getAuthorizingCallbackHandler(chosenMech);
+        }
+        return callbackHandler;
     }
 
     @Override
@@ -174,38 +208,26 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
 
     @Override
     protected Group[] getRoleSets() throws LoginException {
-        SubjectSupplemental ss = securityRealm.getSubjectSupplemental();
-        if (ss != null) {
-            Subject tempSubject = new Subject();
-            tempSubject.getPrincipals().add(new RealmUser(getUsername()));
-            try {
-                ss.supplementSubject(tempSubject);
-                SimpleGroup sg = new SimpleGroup("Roles");
+        Collection<Principal> principalCol = new HashSet<Principal>();
+        principalCol.add(new RealmUser(getUsername()));
+        try {
+            AuthorizingCallbackHandler callbackHandler = getCallbackHandler();
+            SubjectUserInfo sui = callbackHandler.createSubjectUserInfo(principalCol);
 
-                Set<RealmRole> roles = tempSubject.getPrincipals(RealmRole.class);
-                for (RealmRole current : roles) {
-                    sg.addMember(createIdentity(current.getName()));
-                }
+            SimpleGroup sg = new SimpleGroup("Roles");
 
-                return new Group[] { sg };
-            } catch (Exception e) {
-                throw SecurityMessages.MESSAGES.failureCallingSecurityRealm(e.getMessage());
+            Set<RealmRole> roles = sui.getSubject().getPrincipals(RealmRole.class);
+            for (RealmRole current : roles) {
+                sg.addMember(createIdentity(current.getName()));
             }
 
+            return new Group[] { sg };
+        } catch (Exception e) {
+            throw SecurityMessages.MESSAGES.failureCallingSecurityRealm(e.getMessage());
         }
-        return new Group[0];
     }
 
     private enum ValidationMode {
         DIGEST, PASSWORD, VALIDATION
     };
-
-    private static boolean contains(Class clazz, Class<Callback>[] classes) {
-        for (Class<Callback> current : classes) {
-            if (current.equals(clazz)) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

@@ -22,6 +22,7 @@
 package org.jboss.as.domain.http.server;
 
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -29,27 +30,25 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
-import javax.security.auth.callback.Callback;
 
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.domain.http.server.security.AuthenticationProvider;
 import org.jboss.as.domain.http.server.security.BasicAuthenticator;
 import org.jboss.as.domain.http.server.security.ClientCertAuthenticator;
 import org.jboss.as.domain.http.server.security.DigestAuthenticator;
+import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.security.DomainCallbackHandler;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.HttpServer;
 import org.jboss.com.sun.net.httpserver.HttpsConfigurator;
 import org.jboss.com.sun.net.httpserver.HttpsParameters;
 import org.jboss.com.sun.net.httpserver.HttpsServer;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.sasl.callback.DigestHashCallback;
 
 /**
  * The general HTTP server for handling management API requests.
@@ -114,20 +113,23 @@ public class ManagementHttpServer {
         final CertAuth certAuthMode;
 
         if (securityRealm != null) {
-            DomainCallbackHandler callbackHandler = securityRealm.getCallbackHandler();
-            Class<Callback>[] supportedCallbacks = callbackHandler.getSupportedCallbacks();
-            if (DigestAuthenticator.requiredCallbacksSupported(supportedCallbacks)) {
-                auth = new DigestAuthenticator(new AuthenticationProvider(securityRealm), securityRealm.getName(), contains(DigestHashCallback.class,
-                        supportedCallbacks));
-            } else if (BasicAuthenticator.requiredCallbacksSupported(supportedCallbacks)) {
-                auth = new BasicAuthenticator(new AuthenticationProvider(securityRealm), securityRealm.getName());
+            Set<AuthenticationMechanism> authenticationMechanisms = securityRealm.getSupportedAuthenticationMechanisms();
+            if (authenticationMechanisms.contains(AuthenticationMechanism.DIGEST)) {
+                Map<String, String> mechConfig = securityRealm.getMechanismConfig(AuthenticationMechanism.DIGEST);
+                boolean plainTextDigest = true;
+                if (mechConfig.containsKey(DIGEST_PLAIN_TEXT)) {
+                    plainTextDigest = Boolean.parseBoolean(mechConfig.get(DIGEST_PLAIN_TEXT));
+                }
+                // TODO - Let the authenticator pull it's own config?
+                auth = new DigestAuthenticator(securityRealm, plainTextDigest == false);
+            } else if (authenticationMechanisms.contains(AuthenticationMechanism.PLAIN)) {
+                auth = new BasicAuthenticator(securityRealm);
             }
 
-            if (securityRealm.hasTrustStore()) {
-                // For this to return true we know we have a trust store to use to verify client certificates.
+            if (authenticationMechanisms.contains(AuthenticationMechanism.CLIENT_CERT)) {
                 if (auth == null) {
                     certAuthMode = CertAuth.NEED;
-                    auth = new ClientCertAuthenticator(new AuthenticationProvider(securityRealm), securityRealm.getName());
+                    auth = new ClientCertAuthenticator(securityRealm);
                 } else {
                     // We have the possibility to use Client Cert but also Username/Password authentication so don't
                     // need to force clients into presenting a Cert.
@@ -198,16 +200,6 @@ public class ManagementHttpServer {
         managementHttpServer.addHandler(new LogoutHandler());
 
         return managementHttpServer;
-    }
-
-    // TODO - This still needs cleaning up to use collections so we can remove the array iteration.
-    private static boolean contains(Class clazz, Class[] classes) {
-        for (Class current : classes) {
-            if (current.equals(clazz)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private enum CertAuth {
