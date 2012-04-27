@@ -17,7 +17,6 @@
 
 package org.jboss.as.weld.ejb;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +31,7 @@ import javax.interceptor.InvocationContext;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
+import org.jboss.as.ejb3.component.stateful.SerializedCdiInterceptorsKey;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.weld.WeldContainer;
@@ -58,7 +58,7 @@ import org.jboss.weld.serialization.spi.helpers.SerializableContextualInstance;
  * @author Marius Bogoevici
  * @author Stuart Douglas
  */
-public class Jsr299BindingsInterceptor implements Serializable, org.jboss.invocation.Interceptor {
+public class Jsr299BindingsInterceptor implements org.jboss.invocation.Interceptor {
 
     private final Map<String, SerializableContextualInstance<Interceptor<Object>, Object>> interceptorInstances;
     private final CreationalContext<Object> creationalContext;
@@ -78,9 +78,10 @@ public class Jsr299BindingsInterceptor implements Serializable, org.jboss.invoca
             this.interceptionType = interceptionType;
             EjbDescriptor<Object> descriptor = beanManager.getEjbDescriptor(this.ejbName);
             SessionBean<Object> bean = beanManager.getBean(descriptor);
-            InterceptorInstances instances = (InterceptorInstances) context.getContextData().get(InterceptorInstances.class);
 
-            if (instances == null) {
+            final AtomicReference<ManagedReference> reference = (AtomicReference<ManagedReference>) context.getContextData().get(SerializedCdiInterceptorsKey.class);
+
+            if (reference == null) {
                 creationalContext = beanManager.createCreationalContext(bean);
                 interceptorInstances = new HashMap<String, SerializableContextualInstance<Interceptor<Object>, Object>>();
                 InterceptorBindings interceptorBindings = getInterceptorBindings(this.ejbName);
@@ -89,11 +90,12 @@ public class Jsr299BindingsInterceptor implements Serializable, org.jboss.invoca
                         addInterceptorInstance((Interceptor<Object>) interceptor, beanManager, interceptorInstances);
                     }
                 }
-                instances = new InterceptorInstances(creationalContext, interceptorInstances);
-                context.getContextData().put(InterceptorInstances.class, instances);
+                WeldInterceptorInstances instances = new WeldInterceptorInstances(creationalContext, interceptorInstances);
+                context.getContextData().put(SerializedCdiInterceptorsKey.class, new AtomicReference<ManagedReference>(new ValueManagedReference(new ImmediateValue<Object>(instances))));
             } else {
-                creationalContext = instances.creationalContext;
-                interceptorInstances = instances.interceptorInstances;
+                final WeldInterceptorInstances instances = (WeldInterceptorInstances) reference.get().getInstance();
+                creationalContext = instances.getCreationalContext();
+                interceptorInstances = instances.getInterceptorInstances();
             }
         } finally {
             SecurityActions.setContextClassLoader(tccl);
@@ -203,14 +205,8 @@ public class Jsr299BindingsInterceptor implements Serializable, org.jboss.invoca
 
             //we use the interception type as the context key
             //as there are potentially up to six instances of this interceptor for every component
-            final AtomicReference<ManagedReference> reference = (AtomicReference<ManagedReference>) context.getContextData().get(interceptionType);
-            if (reference != null) {
-                return (org.jboss.invocation.Interceptor) reference.get().getInstance();
-            } else {
-                final Jsr299BindingsInterceptor interceptor =  new Jsr299BindingsInterceptor((BeanManagerImpl) weldContainer.getValue().getBeanManager(beanArchiveId), ejbName, context, interceptionType, classLoader);
-                context.getContextData().put(interceptionType, new AtomicReference<ManagedReference>(new ValueManagedReference(new ImmediateValue<Object>(interceptor))));
-                return interceptor;
-            }
+            final Jsr299BindingsInterceptor interceptor = new Jsr299BindingsInterceptor((BeanManagerImpl) weldContainer.getValue().getBeanManager(beanArchiveId), ejbName, context, interceptionType, classLoader);
+            return interceptor;
         }
 
         public InjectedValue<WeldContainer> getWeldContainer() {
@@ -218,13 +214,4 @@ public class Jsr299BindingsInterceptor implements Serializable, org.jboss.invoca
         }
     }
 
-    private static class InterceptorInstances {
-        protected final CreationalContext<Object> creationalContext;
-        protected final Map<String, SerializableContextualInstance<Interceptor<Object>, Object>> interceptorInstances;
-
-        public InterceptorInstances(final CreationalContext<Object> creationalContext, final Map<String, SerializableContextualInstance<Interceptor<Object>, Object>> interceptorInstances) {
-            this.creationalContext = creationalContext;
-            this.interceptorInstances = interceptorInstances;
-        }
-    }
 }

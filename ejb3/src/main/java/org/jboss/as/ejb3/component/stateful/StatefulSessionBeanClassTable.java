@@ -84,6 +84,7 @@ public class StatefulSessionBeanClassTable implements ClassTable {
         StatefulSerializedProxy.class,
         ManagedReference.class,
         ValueManagedReferenceFactory.ValueManagedReference.class,
+        SerializedCdiInterceptorsKey.class
     };
 
     private static final Map<Class<?>, Writer> writers = createWriters();
