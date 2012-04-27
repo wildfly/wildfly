@@ -236,7 +236,7 @@
         <version.org.mockito>1.8.5</version.org.mockito>
         <version.org.picketbox>4.0.8.Final</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
-        <version.org.picketlink>2.0.2.Final</version.org.picketlink>
+        <version.org.picketlink>2.1.0.Final</version.org.picketlink>
         <version.org.powermock>1.4.11</version.org.powermock>
         <version.org.projectodd.stilts>0.1.26</version.org.projectodd.stilts>
         <version.org.python.jython.standalone>2.5.2</version.org.python.jython.standalone>
@@ -5680,60 +5680,20 @@
 
             <dependency>
                 <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-fed</artifactId>
-                <version>${version.org.picketlink}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-bindings</artifactId>
+                <artifactId>picketlink-core</artifactId>
                 <version>${version.org.picketlink}</version>
                 <exclusions>
-                    <exclusion>
-                        <groupId>javax.servlet</groupId>
-                        <artifactId>servlet-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.picketlink</groupId>
-                        <artifactId>picketlink-fed-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.picketlink</groupId>
-                        <artifactId>picketlink-fed-model</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.picketlink</groupId>
-                        <artifactId>picketlink-web</artifactId>
-                    </exclusion>
+                  <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging-api</artifactId>
+                  </exclusion>
                 </exclusions>
             </dependency>
 
             <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-bindings-jboss</artifactId>
+                <groupId>org.picketlink.distribution</groupId>
+                <artifactId>picketlink-jbas7</artifactId>
                 <version>${version.org.picketlink}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.security</groupId>
-                        <artifactId>jboss-security-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.security</groupId>
-                        <artifactId>jbosssx</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.picketlink</groupId>
-                        <artifactId>picketlink-fed-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.picketlink</groupId>
-                        <artifactId>picketlink-fed-model</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.picketlink</groupId>
-                        <artifactId>picketlink-web</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>

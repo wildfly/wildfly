@@ -1616,17 +1616,12 @@
 
                 <dependency>
                     <groupId>org.picketlink</groupId>
-                    <artifactId>picketlink-fed</artifactId>
+                    <artifactId>picketlink-core</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.picketlink</groupId>
-                    <artifactId>picketlink-bindings</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.picketlink</groupId>
-                    <artifactId>picketlink-bindings-jboss</artifactId>
+                    <groupId>org.picketlink.distribution</groupId>
+                    <artifactId>picketlink-jbas7</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1871,9 +1866,8 @@
                                         <include>org.picketbox:picketbox-commons</include>
                                         -->
                                         <include>org.picketbox:picketbox-infinispan</include>
-                                        <include>org.picketlink:picketlink-bindings</include>
-                                        <include>org.picketlink:picketlink-bindings-jboss</include>
-                                        <include>org.picketlink:picketlink-fed</include>
+                                        <include>org.picketlink.distribution:picketlink-jbas7</include>
+                                        <include>org.picketlink:picketlink-core</include>
                                         <include>org.slf4j:jcl-over-slf4j</include>
                                         <include>org.slf4j:slf4j-api</include>
                                         <include>org.slf4j:slf4j-ext</include>

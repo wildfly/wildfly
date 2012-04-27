@@ -28,7 +28,6 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
         <module name="javax.security.auth.message.api"/>
         <module name="javax.security.jacc.api"/>
         <module name="javax.transaction.api"/>
@@ -43,5 +42,6 @@
         <module name="javax.xml.ws.api"/>
         <module name="org.apache.log4j"/>
         <module name="org.apache.santuario.xmlsec"/>
+        <module name="javax.api"/>
     </dependencies>
 </module>
