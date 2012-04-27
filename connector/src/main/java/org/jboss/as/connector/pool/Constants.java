@@ -96,7 +96,7 @@ public class Constants {
             public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
                 validateParameter(parameterName, value.resolve());
             }
-        });;
+        });
 
 
 }

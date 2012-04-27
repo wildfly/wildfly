@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:datasources:1.0">
+<subsystem xmlns="urn:jboss:domain:datasources:1.1">
 	<datasources>
             <drivers>
                 <driver name="" module="com.h2database.h2" major-version="1" >

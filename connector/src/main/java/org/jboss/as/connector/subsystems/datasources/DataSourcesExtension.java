@@ -35,6 +35,7 @@ import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.datasources.AbstractDataSourceAdd.populateAddModel;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOW_MULTIPLE_USERS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
@@ -448,7 +449,9 @@ public class DataSourcesExtension implements Extension {
                     POOL_PREFILL.marshallAsElement(dataSourceNode, writer);
                     POOL_USE_STRICT_MIN.marshallAsElement(dataSourceNode, writer);
                     POOL_FLUSH_STRATEGY.marshallAsElement(dataSourceNode, writer);
-
+                    if (dataSourceNode.get(ALLOW_MULTIPLE_USERS.getName()).asBoolean(false)) {
+                        writer.writeEmptyElement(ALLOW_MULTIPLE_USERS.getXmlName());
+                    }
                     if (isXADataSource) {
                         SAME_RM_OVERRIDE.marshallAsElement(dataSourceNode, writer);
                         INTERLEAVING.marshallAsElement(dataSourceNode, writer);

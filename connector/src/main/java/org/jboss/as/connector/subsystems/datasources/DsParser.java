@@ -35,6 +35,7 @@ import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOW_MULTIPLE_USERS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTY_VALUE;
@@ -731,8 +732,9 @@ public class DsParser extends AbstractParser {
                         return;
                         //it's fine. Do nothing
 
-                    } else {
-                        if (CommonPool.Tag.forName(reader.getLocalName()) == CommonPool.Tag.UNKNOWN) {
+                    } else if (CommonPool.Tag.forName(reader.getLocalName()) == CommonPool.Tag.UNKNOWN) {
+                        // FIXME CommonPool.Tag is missing ALLOW_MULTIPLE_USERS
+                        if (!ALLOW_MULTIPLE_USERS.getXmlName().equals(reader.getLocalName())) {
                             throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
                         }
                     }
@@ -766,8 +768,18 @@ public class DsParser extends AbstractParser {
                             POOL_FLUSH_STRATEGY.parseAndSetParameter(value, operation, reader);
                             break;
                         }
-                        default:
+                        case UNKNOWN: {
+                            // FIXME CommonPool.Tag is missing ALLOW_MULTIPLE_USERS
+                            if (ALLOW_MULTIPLE_USERS.getXmlName().equals(reader.getLocalName())) {
+                                ALLOW_MULTIPLE_USERS.parseAndSetParameter("true", operation, reader);
+                            } else {
+                                throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
+                            }
+                            break;
+                        }
+                        default: {
                             throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
+                        }
                     }
                     break;
                 }

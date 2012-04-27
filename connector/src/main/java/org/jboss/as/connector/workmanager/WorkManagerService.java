@@ -36,6 +36,8 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.BlockingExecutor;
 import org.jboss.tm.JBossXATerminator;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.concurrent.Executor;
 
 import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
@@ -57,7 +59,9 @@ public final class WorkManagerService implements Service<WorkManager> {
 
     private volatile Callback callback;
 
-    /** create an instance **/
+    /** create an instance
+     * @param value the work manager
+     */
     public WorkManagerService(WorkManager value) {
         super();
         ROOT_LOGGER.debugf("Building WorkManager");
@@ -84,7 +88,12 @@ public final class WorkManagerService implements Service<WorkManager> {
         this.value.setXATerminator(new XATerminatorImpl(xaTerminator.getValue()));
 
         // TODO - Remove and do proper integration (IronJacamar 1.1)
-        String callbackProperties = System.getProperty("callback.properties");
+        String callbackProperties = AccessController.doPrivileged(new PrivilegedAction<String>() {
+            @Override
+            public String run() {
+                return System.getProperty("callback.properties");
+            }
+        });
         if (callbackProperties != null) {
             try {
                 DefaultCallback defaultCallback = new DefaultCallback(callbackProperties);

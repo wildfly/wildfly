@@ -2,7 +2,7 @@
 <!-- Edited by XMLSpy® -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:do="urn:jboss:domain:1.3"
-                xmlns:ds="urn:jboss:domain:datasources:1.0"
+                xmlns:ds="urn:jboss:domain:datasources:1.1"
                 xmlns="urn:jboss:domain:1.3"
         >
     <xsl:output indent="yes"/>
@@ -41,7 +41,7 @@
         </xsl:element>
     </xsl:template>
 
-    <xsl:template match="ds:subsystem/ds:datasources" priority="100" xmlns="urn:jboss:domain:datasources:1.0">
+    <xsl:template match="ds:subsystem/ds:datasources" priority="100" xmlns="urn:jboss:domain:datasources:1.1">
         <xsl:copy>
             <xsl:element name="datasource" >
                 <xsl:attribute name="jndi-name">java:jboss/datasources/MaskedDS</xsl:attribute>
