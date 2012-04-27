@@ -25,16 +25,59 @@ package org.jboss.as.logging.handlers.file;
 import java.io.FileNotFoundException;
 
 import org.jboss.as.logging.handlers.FlushingHandlerService;
+import org.jboss.logmanager.handlers.FileHandler;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Values;
 
 /**
  * Date: 23.11.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-abstract class AbstractFileHandlerService implements FlushingHandlerService {
+abstract class AbstractFileHandlerService<T extends FileHandler> extends FlushingHandlerService<T> {
 
-    public abstract void setFile(String path) throws FileNotFoundException;
+    private final InjectedValue<String> fileName = new InjectedValue<String>();
+    private boolean append;
 
-    public abstract Injector<String> getFileNameInjector();
+    @Override
+    protected void start(final StartContext context, final T handler) throws StartException {
+        handler.setAutoFlush(isAutoflush());
+        handler.setAppend(append);
+        try {
+            handler.setFileName(getFileName());
+        } catch (FileNotFoundException e) {
+            throw new StartException(e);
+        }
+    }
+
+    public final synchronized boolean isAppend() {
+        return append;
+    }
+
+    public final synchronized void setAppend(final boolean append) {
+        this.append = append;
+        final T handler = getValue();
+        if (handler != null) {
+            handler.setAppend(append);
+        }
+    }
+
+    public final synchronized void setFile(final String path) throws FileNotFoundException {
+        fileName.setValue(Values.immediateValue(path));
+        final T handler = getValue();
+        if (handler != null) {
+            handler.setFileName(path);
+        }
+    }
+
+    public final synchronized String getFileName() {
+        return fileName.getValue();
+    }
+
+    public final synchronized Injector<String> getFileNameInjector() {
+        return fileName;
+    }
 }

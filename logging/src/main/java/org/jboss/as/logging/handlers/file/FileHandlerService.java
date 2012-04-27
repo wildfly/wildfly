@@ -22,134 +22,16 @@
 
 package org.jboss.as.logging.handlers.file;
 
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
-import java.util.logging.Filter;
-import java.util.logging.Level;
-
-import org.jboss.as.logging.handlers.FormatterSpec;
 import org.jboss.logmanager.handlers.FileHandler;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Values;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class FileHandlerService extends AbstractFileHandlerService {
-
-    private final InjectedValue<String> fileName = new InjectedValue<String>();
-
-    private Filter filter;
-    private FormatterSpec formatterSpec;
-    private Level level;
-    private boolean autoflush;
-    private String encoding;
-    private boolean append;
-    private FileHandler value;
-
-    public synchronized void start(final StartContext context) throws StartException {
-        final FileHandler handler = new FileHandler();
-        value = handler;
-        if (filter != null) handler.setFilter(filter);
-        formatterSpec.apply(handler);
-        if (level != null) handler.setLevel(level);
-        handler.setAutoFlush(autoflush);
-        try {
-            handler.setEncoding(encoding);
-        } catch (UnsupportedEncodingException e) {
-            throw new StartException(e);
-        }
-        handler.setAppend(append);
-        try {
-            handler.setFileName(fileName.getValue());
-        } catch (FileNotFoundException e) {
-            throw new StartException(e);
-        }
-        value = handler;
-    }
-
-    public synchronized void stop(final StopContext context) {
-        final FileHandler handler = value;
-        handler.close();
-        value = null;
-    }
-
-    public synchronized FileHandler getValue() throws IllegalStateException {
-        return value;
-    }
-
-    public synchronized Level getLevel() {
-        return level;
-    }
-
-    public synchronized void setLevel(final Level level) {
-        this.level = level;
-        final FileHandler handler = value;
-        if (handler != null) handler.setLevel(level);
-    }
-
-    public synchronized FormatterSpec getFormatterSpec() {
-        return formatterSpec;
-    }
-
-    public synchronized void setFormatterSpec(final FormatterSpec formatterSpec) {
-        this.formatterSpec = formatterSpec;
-        final FileHandler handler = value;
-        if (handler != null) formatterSpec.apply(handler);
-    }
+public final class FileHandlerService extends AbstractFileHandlerService<FileHandler> {
 
     @Override
-    public synchronized void setFilter(final Filter filter) {
-        this.filter = filter;
-        final FileHandler handler = value;
-        if (handler != null) {
-            handler.setFilter(filter);
-        }
-    }
-
-    public synchronized boolean isAutoflush() {
-        return autoflush;
-    }
-
-    public synchronized void setAutoflush(final boolean autoflush) {
-        this.autoflush = autoflush;
-        final FileHandler handler = value;
-        if (handler != null) handler.setAutoFlush(autoflush);
-    }
-
-    public synchronized String getEncoding() {
-        return encoding;
-    }
-
-    public synchronized void setEncoding(final String encoding) throws UnsupportedEncodingException {
-        final FileHandler handler = value;
-        if (handler != null) handler.setEncoding(encoding);
-        this.encoding = encoding;
-    }
-
-    public synchronized boolean isAppend() {
-        return append;
-    }
-
-    public synchronized void setAppend(final boolean append) {
-        this.append = append;
-        final FileHandler handler = value;
-        if (handler != null) handler.setAppend(append);
-    }
-
-    @Override
-    public Injector<String> getFileNameInjector() {
-        return fileName;
-    }
-
-    @Override
-    public synchronized void setFile(final String path) throws FileNotFoundException {
-        fileName.setValue(Values.immediateValue(path));
-        final FileHandler handler = value;
-        if (handler != null) handler.setFileName(path);
+    protected FileHandler createHandler() throws StartException {
+        return new FileHandler();
     }
 }

@@ -105,7 +105,6 @@ public abstract class HandlerUpdateProperties<T extends Handler> implements Oper
                         final ModelNode formatter = FORMATTER.resolveModelAttribute(context, model);
                         final ModelNode encoding = ENCODING.resolveModelAttribute(context, model);
                         final ModelNode filter = FILTER.resolveModelAttribute(context, model);
-
                         if (level.isDefined()) {
                             handler.setLevel(ModelParser.parseLevel(level));
                         }

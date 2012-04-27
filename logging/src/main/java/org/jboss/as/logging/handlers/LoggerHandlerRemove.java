@@ -22,7 +22,6 @@
 
 package org.jboss.as.logging.handlers;
 
-import org.jboss.as.controller.PathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
@@ -34,6 +33,7 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.Tools;
@@ -111,7 +111,8 @@ public abstract class LoggerHandlerRemove extends AbstractRemoveStepHandler {
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
         @SuppressWarnings("unchecked")
         final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(serviceName);
-        controller.getValue().close();
+        final Handler handler = controller.getValue();
+        handler.close();
         context.removeService(serviceName);
         removeAdditionalServices(context, name);
     }
@@ -197,7 +198,6 @@ public abstract class LoggerHandlerRemove extends AbstractRemoveStepHandler {
             throw new OperationFailedException(LoggingMessages.MESSAGES.handlerAttachedToHandlers(handlerName, attached));
         }
     }
-
 
 
     private abstract static class LoggerFileHandlerRemove extends LoggerHandlerRemove {

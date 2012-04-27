@@ -28,6 +28,7 @@ import java.util.logging.Filter;
 import java.util.logging.Handler;
 
 import org.jboss.as.logging.CommonAttributes;
+import org.jboss.logmanager.ExtHandler;
 import org.jboss.logmanager.Logger;
 import org.jboss.logmanager.Logger.AttachmentKey;
 import org.jboss.logmanager.filters.DenyAllFilter;
@@ -35,7 +36,7 @@ import org.jboss.logmanager.filters.DenyAllFilter;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class Handlers {
+public class Handlers {
 
     public static final Logger ROOT = Logger.getLogger(CommonAttributes.ROOT_LOGGER_NAME);
 
@@ -52,12 +53,17 @@ class Handlers {
      * @param handlerName the name of the handler to enable.
      */
     static void enableHandler(final Handler handler, final String handlerName) {
-        final Map<String, Filter> disableHandlers = ROOT.getAttachment(DISABLED_HANDLERS_KEY);
-        if (disableHandlers != null && disableHandlers.containsKey(handlerName)) {
-            synchronized (HANDLER_LOCK) {
-                final Filter filter = disableHandlers.get(handlerName);
-                handler.setFilter(filter);
-                disableHandlers.remove(handlerName);
+        if (handler instanceof ExtHandler) {
+            final ExtHandler extHandler = (ExtHandler) handler;
+            extHandler.setEnabled(true);
+        } else {
+            final Map<String, Filter> disableHandlers = ROOT.getAttachment(DISABLED_HANDLERS_KEY);
+            if (disableHandlers != null && disableHandlers.containsKey(handlerName)) {
+                synchronized (HANDLER_LOCK) {
+                    final Filter filter = disableHandlers.get(handlerName);
+                    handler.setFilter(filter);
+                    disableHandlers.remove(handlerName);
+                }
             }
         }
     }
@@ -71,18 +77,23 @@ class Handlers {
      * @param handlerName the handler name to disable.
      */
     static void disableHandler(final Handler handler, final String handlerName) {
-        Map<String, Filter> disableHandlers = ROOT.getAttachment(DISABLED_HANDLERS_KEY);
-        if (disableHandlers == null) {
-            disableHandlers = new HashMap<String, Filter>();
-            final Map<String, Filter> current = ROOT.attachIfAbsent(DISABLED_HANDLERS_KEY, disableHandlers);
-            if (current != null) {
-                disableHandlers = current;
+        if (handler instanceof ExtHandler) {
+            final ExtHandler extHandler = (ExtHandler) handler;
+            extHandler.setEnabled(false);
+        } else {
+            Map<String, Filter> disableHandlers = ROOT.getAttachment(DISABLED_HANDLERS_KEY);
+            if (disableHandlers == null) {
+                disableHandlers = new HashMap<String, Filter>();
+                final Map<String, Filter> current = ROOT.attachIfAbsent(DISABLED_HANDLERS_KEY, disableHandlers);
+                if (current != null) {
+                    disableHandlers = current;
+                }
             }
-        }
-        synchronized (HANDLER_LOCK) {
-            if (!disableHandlers.containsKey(handlerName)) {
-                disableHandlers.put(handlerName, handler.getFilter());
-                handler.setFilter(DenyAllFilter.getInstance());
+            synchronized (HANDLER_LOCK) {
+                if (!disableHandlers.containsKey(handlerName)) {
+                    disableHandlers.put(handlerName, handler.getFilter());
+                    handler.setFilter(DenyAllFilter.getInstance());
+                }
             }
         }
     }
