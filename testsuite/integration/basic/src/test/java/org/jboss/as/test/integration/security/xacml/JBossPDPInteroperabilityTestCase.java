@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -60,7 +62,6 @@ import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -70,7 +71,7 @@ import org.junit.runner.RunWith;
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-public class JBossPDPInteroperabilityTestCase extends AbstractJBossPDPTest {
+public class JBossPDPInteroperabilityTestCase {
 
     private static Logger LOGGER = Logger.getLogger(JBossPDPInteroperabilityTestCase.class);
 
@@ -88,16 +89,16 @@ public class JBossPDPInteroperabilityTestCase extends AbstractJBossPDPTest {
     public static JavaArchive deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "pdp-service-bean.jar");
         jar.addAsManifestResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
-        addCommonClassesToArchive(jar);
-        addJBossDeploymentStructureToArchive(jar);
-        addXACMLPoliciesToArchive(jar);
+        XACMLTestUtils.addCommonClassesToArchive(jar);
+        XACMLTestUtils.addJBossDeploymentStructureToArchive(jar);
+        XACMLTestUtils.addXACMLPoliciesToArchive(jar);
 
         //we need this because of "in-container" testing
         for (int i = 1; i <= 7; i++) {
-            jar.addAsResources(JBossPDPServletInitializationTestCase.class.getPackage(), JBossPDPTestUtils.TESTOBJECTS_REQUESTS
+            jar.addAsResources(JBossPDPServletInitializationTestCase.class.getPackage(), XACMLTestUtils.TESTOBJECTS_REQUESTS
                     + "/scenario2-testcase" + i + "-request.xml");
         }
-        jar.addAsResource(JBossPDPServletInitializationTestCase.class.getPackage(), JBossPDPTestUtils.TESTOBJECTS_REQUESTS
+        jar.addAsResource(JBossPDPServletInitializationTestCase.class.getPackage(), XACMLTestUtils.TESTOBJECTS_REQUESTS
                 + "/med-example-request.xml");
 
         LOGGER.info(jar.toString(true));
@@ -110,7 +111,6 @@ public class JBossPDPInteroperabilityTestCase extends AbstractJBossPDPTest {
      * @throws Exception
      */
     @Test
-    @Ignore("JBPAPP-8462 - Cannot instantiate JBossPDP when the policies are located within an archive")
     public void testInteropTestWithXMLRequests() throws Exception {
         assertNotNull("PDPServiceBean should be injected.", pdpServiceBean);
         final PolicyDecisionPoint pdp = pdpServiceBean.getJBossPDP();
@@ -133,7 +133,6 @@ public class JBossPDPInteroperabilityTestCase extends AbstractJBossPDPTest {
      * @throws Exception
      */
     @Test
-    @Ignore("JBPAPP-8462 - Cannot instantiate JBossPDP when the policies are located within an archive")
     public void testInteropTestWithObjects() throws Exception {
         assertNotNull("PDPServiceBean should be injected.", pdpServiceBean);
         final PolicyDecisionPoint pdp = pdpServiceBean.getJBossPDP();
@@ -160,32 +159,43 @@ public class JBossPDPInteroperabilityTestCase extends AbstractJBossPDPTest {
      * @throws Exception
      */
     @Test
-    @Ignore("SECURITY-653")
     public void testPoliciesLoadedFromDir() throws Exception {
         //create temporary folder for policies
         final File policyDir = new File((File) null, "test-JBossPDP-Med-" + System.currentTimeMillis());
-
+        final InputStream requestIS = getClass().getResourceAsStream(
+                XACMLTestUtils.TESTOBJECTS_REQUESTS + "/med-example-request.xml");
         try {
             policyDir.mkdirs();
             final JBossPDP pdp = createPDPForMed(policyDir);
-            final String requestTemplate = IOUtils.toString(
-                    getClass().getResourceAsStream(JBossPDPTestUtils.TESTOBJECTS_REQUESTS + "/med-example-request.xml"),
-                    "UTF-8");
+            final String requestTemplate = IOUtils.toString(requestIS, "UTF-8");
+            LOGGER.info("REQUEST template: " + requestTemplate);
             final Map<String, Object> substitutionMap = new HashMap<String, Object>();
 
-            substitutionMap.put(JBossPDPTestUtils.SUBST_SUBJECT_ID, "bs@simpsons.com");
-            assertEquals("bs@simpsons.com should be INDETERMINATE", XACMLConstants.DECISION_INDETERMINATE,
+            substitutionMap.put(XACMLTestUtils.SUBST_SUBJECT_ID, "josef@med.example.com");
+            assertEquals("Decision for josef@med.example.com should be DECISION_PERMIT", XACMLConstants.DECISION_PERMIT,
                     getDecisionForStr(pdp, StrSubstitutor.replace(requestTemplate, substitutionMap)));
 
-            substitutionMap.put(JBossPDPTestUtils.SUBST_SUBJECT_ID, "guest@med.example.com");
-            assertEquals("guest@med.example.com should be DENY", XACMLConstants.DECISION_DENY,
+            substitutionMap.put(XACMLTestUtils.SUBST_SUBJECT_ID, "guest@med.example.com");
+            assertEquals("Decision for guest@med.example.com should be DECISION_DENY", XACMLConstants.DECISION_DENY,
                     getDecisionForStr(pdp, StrSubstitutor.replace(requestTemplate, substitutionMap)));
 
-            substitutionMap.put(JBossPDPTestUtils.SUBST_SUBJECT_ID, "josef@med.example.com");
-            assertEquals("josef@med.example.com should be PERMIT", XACMLConstants.DECISION_PERMIT,
+            substitutionMap.put(XACMLTestUtils.SUBST_SUBJECT_ID, "hs@simpsons.com");
+            assertEquals("Decision for hs@simpsons.com should be DECISION_DENY", XACMLConstants.DECISION_DENY,
                     getDecisionForStr(pdp, StrSubstitutor.replace(requestTemplate, substitutionMap)));
+
+            substitutionMap.put(XACMLTestUtils.SUBST_SUBJECT_ID, "bs@simpsons.com");
+            assertEquals("Decision for bs@simpsons.com should be DECISION_NOT_APPLICABLE",
+                    XACMLConstants.DECISION_NOT_APPLICABLE,
+                    getDecisionForStr(pdp, StrSubstitutor.replace(requestTemplate, substitutionMap)));
+
+            substitutionMap.put(XACMLTestUtils.SUBST_SUBJECT_ID, "admin@acme.com");
+            assertEquals("Decision for admin@acme.com should be DECISION_NOT_APPLICABLE",
+                    XACMLConstants.DECISION_NOT_APPLICABLE,
+                    getDecisionForStr(pdp, StrSubstitutor.replace(requestTemplate, substitutionMap)));
+
         } finally {
             FileUtils.deleteDirectory(policyDir);
+            requestIS.close();
         }
     }
 
@@ -200,24 +210,25 @@ public class JBossPDPInteroperabilityTestCase extends AbstractJBossPDPTest {
      * @throws IOException
      */
     private JBossPDP createPDPForMed(final File policyDir) throws IOException {
-        final File policySetFile = new File(policyDir, JBossPDPTestUtils.MED_EXAMPLE_POLICY_SET);
-        final File policyFile = new File(policyDir, JBossPDPTestUtils.MED_EXAMPLE_POLICY);
+        final File policySetFile = new File(policyDir, XACMLTestUtils.MED_EXAMPLE_POLICY_SET);
+        final File policySetFile2 = new File(policyDir, XACMLTestUtils.MED_EXAMPLE_POLICY_SET2);
 
         //copy policy files to the temporary folder
-        FileUtils
-                .copyInputStreamToFile(
-                        getClass().getResourceAsStream(
-                                JBossPDPTestUtils.TESTOBJECTS_POLICIES + "/" + JBossPDPTestUtils.MED_EXAMPLE_POLICY_SET),
-                        policySetFile);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Copying policies to the " + policyDir.getAbsolutePath());
+        }
         FileUtils.copyInputStreamToFile(
                 getClass().getResourceAsStream(
-                        JBossPDPTestUtils.TESTOBJECTS_POLICIES + "/" + JBossPDPTestUtils.MED_EXAMPLE_POLICY), policyFile);
+                        XACMLTestUtils.TESTOBJECTS_POLICIES + "/" + XACMLTestUtils.MED_EXAMPLE_POLICY_SET), policySetFile);
+        FileUtils.copyInputStreamToFile(
+                getClass().getResourceAsStream(
+                        XACMLTestUtils.TESTOBJECTS_POLICIES + "/" + XACMLTestUtils.MED_EXAMPLE_POLICY_SET2), policySetFile2);
 
         //create XML configuration for the PDP
         final PDP pdp = new PDP();
         final PoliciesType policies = new PoliciesType();
         final PolicySetType policySet = new PolicySetType();
-        policySet.setLocation(policyDir.getPath());
+        policySet.setLocation(policyDir.getAbsolutePath());
         policies.getPolicySet().add(policySet);
         pdp.setPolicies(policies);
         final LocatorType locator = new LocatorType();
@@ -226,7 +237,7 @@ public class JBossPDPInteroperabilityTestCase extends AbstractJBossPDPTest {
         locators.getLocator().add(locator);
         pdp.setLocators(locators);
 
-        return new JBossPDP(JBossPDPTestUtils.createJAXBElementPDP(pdp));
+        return new JBossPDP(new JAXBElement<PDP>(new QName("urn:jboss:xacml:2.0", "jbosspdp"), PDP.class, pdp));
     }
 
     /**
@@ -239,7 +250,7 @@ public class JBossPDPInteroperabilityTestCase extends AbstractJBossPDPTest {
      */
     private int getDecisionForStr(PolicyDecisionPoint pdp, String requestStr) throws Exception {
         final RequestContext request = RequestResponseContextFactory.createRequestCtx();
-        request.readRequest(IOUtils.toInputStream(requestStr, "UTF-8"));
+        request.readRequest(IOUtils.toInputStream(requestStr, null));
         return getDecision(pdp, request);
     }
 
@@ -255,7 +266,7 @@ public class JBossPDPInteroperabilityTestCase extends AbstractJBossPDPTest {
         final RequestContext request = RequestResponseContextFactory.createRequestCtx();
         LOGGER.info("Creating request from " + requestFileLoc);
         final InputStream requestStream = JBossPDPInteroperabilityTestCase.class
-                .getResourceAsStream(JBossPDPTestUtils.TESTOBJECTS_REQUESTS + "/" + requestFileLoc);
+                .getResourceAsStream(XACMLTestUtils.TESTOBJECTS_REQUESTS + "/" + requestFileLoc);
         if (requestStream == null) {
             LOGGER.warn("INPUT IS NULL");
         }

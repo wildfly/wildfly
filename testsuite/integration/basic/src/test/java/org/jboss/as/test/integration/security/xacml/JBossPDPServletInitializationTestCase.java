@@ -33,7 +33,6 @@ import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,7 +42,7 @@ import org.junit.runner.RunWith;
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-public class JBossPDPServletInitializationTestCase extends AbstractJBossPDPTest {
+public class JBossPDPServletInitializationTestCase {
 
     private static Logger LOGGER = Logger.getLogger(JBossPDPServletInitializationTestCase.class);
 
@@ -58,9 +57,9 @@ public class JBossPDPServletInitializationTestCase extends AbstractJBossPDPTest 
     public static WebArchive deploymentWar() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "pdp-service-bean.war");
         war.addClass(JBossPDPInitServlet.class);
-        addCommonClassesToArchive(war);
-        addJBossDeploymentStructureToArchive(war);
-        addXACMLPoliciesToArchive(war);
+        XACMLTestUtils.addCommonClassesToArchive(war);
+        XACMLTestUtils.addJBossDeploymentStructureToArchive(war);
+        XACMLTestUtils.addXACMLPoliciesToArchive(war);
         LOGGER.info(war.toString(true));
         return war;
     }
@@ -71,9 +70,8 @@ public class JBossPDPServletInitializationTestCase extends AbstractJBossPDPTest 
      * @throws Exception
      */
     @Test
-    @Ignore("JBPAPP-8462 - Cannot instantiate JBossPDP when the policies are located within an archive")
     public void testPdpServlet(final @ArquillianResource URL webAppURL) throws Exception {
         assertEquals(JBossPDPInitServlet.RESPONSE_OK,
-                HttpRequest.get(webAppURL.toExternalForm() + JBossPDPInitServlet.SERVLET_PATH, 10, SECONDS));
+                HttpRequest.get(webAppURL.toExternalForm() + JBossPDPInitServlet.SERVLET_PATH.substring(1), 10, SECONDS));
     }
 }
