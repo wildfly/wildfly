@@ -12,6 +12,7 @@ import org.jboss.weld.serialization.spi.helpers.SerializableContextualInstance;
 * @author Stuart Douglas
 */
 public class WeldInterceptorInstances implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final CreationalContext<Object> creationalContext;
     private final Map<String, SerializableContextualInstance<Interceptor<Object>, Object>> interceptorInstances;
 
