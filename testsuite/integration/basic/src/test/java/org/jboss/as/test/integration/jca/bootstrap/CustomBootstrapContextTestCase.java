@@ -50,6 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(CustomBootstrapContextTestCase.CustomBootstrapDeploymentTestCaseSetup.class)
+@Ignore("AS7-4185")
 public class CustomBootstrapContextTestCase extends JcaMgmtBase {
 
     public static String ctx = "customContext";
