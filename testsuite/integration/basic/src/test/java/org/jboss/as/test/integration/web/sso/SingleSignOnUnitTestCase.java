@@ -32,6 +32,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,7 +45,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(SingleSignOnUnitTestCase.SingleSignOnUnitTestCaseSetup.class)
-//@Ignore(value="ARQ-791 Arquillian is unable to reconnect to JMX server if the connection is lost")
+@Ignore(value="ARQ-791 Arquillian is unable to reconnect to JMX server if the connection is lost")
 public class SingleSignOnUnitTestCase {
 
     private static Logger log = Logger.getLogger(SingleSignOnUnitTestCase.class);
