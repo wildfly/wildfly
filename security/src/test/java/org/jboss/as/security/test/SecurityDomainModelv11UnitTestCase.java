@@ -21,16 +21,14 @@
  */
 package org.jboss.as.security.test;
 
-import java.io.IOException;
-
 import org.jboss.as.security.SecurityExtension;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
-public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemBaseTest {
+public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemTest {
 
     public SecurityDomainModelv11UnitTestCase() {
         super(SecurityExtension.SUBSYSTEM_NAME, new SecurityExtension());
@@ -59,9 +57,33 @@ public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemBaseTes
         assertRemoveSubsystemResources(servicesA);
     }
 
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("securitysubsystemv11.xml");
+
+    @Test
+    public void testParseAndMarshalModelWithJASPI() throws Exception {
+        //Parse the subsystem xml and install into the first controller
+        String subsystemXml = readResource("securitysubsystemJASPIv11.xml");
+
+        KernelServices servicesA = super.installInController(AdditionalInitialization.MANAGEMENT, subsystemXml);
+        //Get the model and the persisted xml from the first controller
+        ModelNode modelA = servicesA.readWholeModel();
+        String marshalled = servicesA.getPersistedSubsystemXml();
+        servicesA.shutdown();
+
+        System.out.println(marshalled);
+
+        //Install the persisted xml from the first controller into a second controller
+        KernelServices servicesB = super.installInController(AdditionalInitialization.MANAGEMENT, marshalled);
+        ModelNode modelB = servicesB.readWholeModel();
+
+        //Make sure the models from the two controllers are identical
+        super.compare(modelA, modelB);
+
+        assertRemoveSubsystemResources(servicesA);
+    }
+
+//    @Override
+//    protected String getSubsystemXml() throws IOException {
+//        return readResource("securitysubsystemv11.xml");
         /*return "<subsystem xmlns=\"urn:jboss:domain:security:1.1\">" +
                 " <security-domains> " +
                   " <security-domain name=\"other\" cache-type=\"default\">" +
@@ -98,5 +120,5 @@ public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemBaseTes
                 "</security-domain>" +
             "</security-domains>" +
         "</subsystem>";*/
-    }
+//    }
 }

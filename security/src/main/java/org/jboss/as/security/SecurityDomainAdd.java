@@ -382,6 +382,9 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
                 loginStackRef = authModule.get(LOGIN_MODULE_STACK_REF).asString();
             Map<String, Object> options = extractOptions(authModule) ;
             AuthModuleEntry entry = new AuthModuleEntry(code, options, loginStackRef);
+            if (authModule.hasDefined(FLAG)) {
+                entry.setControlFlag(ControlFlag.valueOf(authModule.get(FLAG).asString()));
+            }
             if (loginStackRef != null) {
                 if (!holders.containsKey(loginStackRef)) {
                     throw SecurityMessages.MESSAGES.loginModuleStackIllegalArgument(loginStackRef);
@@ -389,6 +392,11 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
                 entry.setLoginModuleStackHolder(holders.get(loginStackRef));
             }
             authenticationInfo.add(entry);
+
+            String moduleName = authModule.get(MODULE).asString();
+            if(authModule.hasDefined(MODULE) && moduleName != null &&  moduleName.length() > 0 ) {
+                authenticationInfo.setJBossModuleName(moduleName);
+            }
         }
         applicationPolicy.setAuthenticationInfo(authenticationInfo);
         return true;
