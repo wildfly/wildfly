@@ -23,16 +23,9 @@
 package org.jboss.as.controller.remote;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.client.OperationAttachments;
-import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
-import org.jboss.dmr.ModelNode;
-
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Emanuel Muckenhuber
@@ -41,6 +34,18 @@ public final class TransactionalProtocolHandlers {
 
     private TransactionalProtocolHandlers() {
         //
+    }
+
+    /**
+     * Create a transactional protocol client.
+     *
+     * @param channelAssociation the channel handler
+     * @return the transactional protocol client
+     */
+    public static TransactionalProtocolClient createClient(final ManagementChannelHandler channelAssociation) {
+        final TransactionalProtocolClientImpl client = new TransactionalProtocolClientImpl(channelAssociation);
+        channelAssociation.addHandlerFactory(client);
+        return client;
     }
 
     /**

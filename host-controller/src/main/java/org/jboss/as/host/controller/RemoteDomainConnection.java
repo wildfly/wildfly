@@ -206,7 +206,7 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
                 result = channelHandler.executeRequest(new RegisterHostControllerRequest(), null).getResult().get();
             } catch (Exception e) {
                 if(e.getCause() instanceof IOException) {
-                    throw (IOException) e;
+                    throw (IOException) e.getCause();
                 }
                 throw new IOException(e);
             }

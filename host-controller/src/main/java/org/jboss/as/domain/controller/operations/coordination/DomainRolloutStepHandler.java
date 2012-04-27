@@ -44,6 +44,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
+import org.jboss.as.controller.transform.Transformers;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
@@ -65,6 +66,7 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.plan.RolloutPlanController;
 import org.jboss.as.domain.controller.plan.ServerTaskExecutor;
+import org.jboss.as.host.controller.mgmt.TransformingProxyController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -244,9 +246,9 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                             return false;
                         }
                     }
-                    final RemoteProxyController remoteProxyController = (RemoteProxyController) proxy;
-                    final ModelNode transformedOperation = remoteProxyController.translateOperationForProxy(original);
-                    final TransactionalProtocolClient client = remoteProxyController.getTransactionalProtocolClient();
+                    final TransformingProxyController remoteProxyController = (TransformingProxyController) proxy;
+                    final ModelNode transformedOperation = remoteProxyController.getTransformers().transformOperation(Transformers.Factory.getTransformationContext(context), original);
+                    final TransactionalProtocolClient client = remoteProxyController.getProtocolClient();
                     return executeOperation(listener, client, server, transformedOperation);
                 }
             };

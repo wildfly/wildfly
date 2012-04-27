@@ -25,6 +25,7 @@ package org.jboss.as.domain.controller.plan;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
+import org.jboss.as.domain.controller.DomainControllerLogger;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
@@ -52,7 +53,11 @@ abstract class AbstractServerGroupRolloutTask implements Runnable {
 
     @Override
     public void run() {
-        execute();
+        try {
+            execute();
+        } catch (Throwable t) {
+            DomainControllerLogger.ROOT_LOGGER.debugf(t, "failed to process task %s", tasks.iterator().next().getOperation());
+        }
     }
 
     /**

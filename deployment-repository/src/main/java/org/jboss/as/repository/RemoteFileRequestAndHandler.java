@@ -199,7 +199,6 @@ public abstract class RemoteFileRequestAndHandler {
             }
         }
         output.writeByte(protocol.fileEnd());
-        output.flush();
     }
 
     /**

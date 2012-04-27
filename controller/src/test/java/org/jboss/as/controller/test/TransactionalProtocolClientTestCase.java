@@ -321,10 +321,9 @@ public class TransactionalProtocolClientTestCase {
     TransactionalProtocolClient createClient(final Channel channel) {
         channels.add(channel);
         final ManagementChannelHandler channelAssociation = new ManagementChannelHandler(channel, clientExecutor);
-        final TransactionalProtocolClientImpl handler = new TransactionalProtocolClientImpl(channelAssociation);
-        channelAssociation.addHandlerFactory(handler);
+        final TransactionalProtocolClient client = TransactionalProtocolHandlers.createClient(channelAssociation);
         channel.receiveMessage(channelAssociation.getReceiver());
-        return handler;
+        return client;
     }
 
     /**

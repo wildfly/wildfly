@@ -312,7 +312,6 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     protected static void writeHeader(final ManagementProtocolHeader header, final OutputStream os) throws IOException {
         final FlushableDataOutput output = ProtocolUtils.wrapAsDataOutput(os);
         header.write(output);
-        output.flush();
     }
 
 }

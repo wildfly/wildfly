@@ -40,9 +40,9 @@ import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 
-import org.jboss.as.controller.remote.RemoteProxyController;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 
+import org.jboss.as.host.controller.mgmt.TransformingProxyController;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -111,7 +111,7 @@ class ManagedServer {
     private final ProcessControllerClient processControllerClient;
     private final ManagedServer.ManagedServerBootConfiguration bootConfiguration;
 
-    private volatile RemoteProxyController proxyController;
+    private volatile TransformingProxyController proxyController;
 
     private volatile InternalState requiredState = InternalState.STOPPED;
     private volatile InternalState internalState = InternalState.STOPPED;
@@ -267,22 +267,16 @@ class ManagedServer {
         finishTransition(InternalState.PROCESS_STARTING, InternalState.PROCESS_STARTED);
     }
 
-    /**
-     *
-     * @param channelAssociation
-     * @return
-     */
-    protected synchronized RemoteProxyController channelRegistered(final ManagementChannelHandler channelAssociation) {
+    protected synchronized void channelRegistered(final ManagementChannelHandler channelAssociation) {
         internalSetState(new TransitionTask() {
             @Override
             public void execute(final ManagedServer server) throws Exception {
-                server.proxyController = RemoteProxyController.create(channelAssociation,
+                server.proxyController = TransformingProxyController.Factory.create(channelAssociation,
                         PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerName), serverPath),
                         ProxyOperationAddressTranslator.SERVER);
             }
         // TODO we just check that we are in the correct state, perhaps introduce a new state
         }, InternalState.SERVER_STARTING, InternalState.SERVER_STARTING);
-        return proxyController;
     }
 
     protected synchronized void serverStarted(final TransitionTask task) {

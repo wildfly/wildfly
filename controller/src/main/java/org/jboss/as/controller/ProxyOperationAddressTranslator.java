@@ -33,6 +33,13 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 public interface ProxyOperationAddressTranslator {
         PathAddress translateAddress(PathAddress address);
 
+        ProxyOperationAddressTranslator NOOP = new ProxyOperationAddressTranslator() {
+            @Override
+            public PathAddress translateAddress(PathAddress address) {
+                return address;
+            }
+        };
+
         ProxyOperationAddressTranslator SERVER = new ProxyOperationAddressTranslator() {
             public PathAddress translateAddress(PathAddress address) {
                 PathAddress translated = address;
