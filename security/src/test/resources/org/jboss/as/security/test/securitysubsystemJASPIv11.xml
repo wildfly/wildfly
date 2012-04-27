@@ -1,0 +1,51 @@
+<subsystem xmlns="urn:jboss:domain:security:1.1">
+	<security-domains>
+		<security-domain name="other" cache-type="default">
+             <authentication>
+                <login-module code="Remoting" flag="optional">
+                  <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+                <login-module code="RealmUsersRoles" flag="required">
+                  <module-option name="usersProperties" value="${jboss.server.config.dir}/application-users.properties"/>
+                  <module-option name="rolesProperties" value="${jboss.server.config.dir}/application-roles.properties"/>
+                  <module-option name="realm" value="ApplicationRealm"/>
+                  <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+              </authentication>
+			<authorization>
+			   <policy-module code="DenyAll" flag="required">
+                 <module-option name="a" value="c"/>
+               </policy-module>
+			</authorization>
+			<mapping>
+			  <mapping-module code="SimpleRoles" type="role">
+                 <module-option name="d" value="e"/>
+              </mapping-module>
+            </mapping>
+            <audit>
+                 <provider-module code="customModule">
+                   <module-option name="d" value="r"/>
+                 </provider-module>
+            </audit> 
+			<jsse truststore-url="../standalone/configuration/keystores/tomcat.keystore"
+                  truststore-password="rmi+ssl"
+                  keystore-url="../standalone/configuration/keystores/clientcert.jks"
+                  keystore-password="changeit"/> 
+		</security-domain>
+		<security-domain name="jaspi-test" cache-type="default">
+             <authentication-jaspi>
+                 <login-module-stack name="lm-stack">
+                     <login-module code="UsersRoles" flag="required">
+                         <module-option name="usersProperties" value="${jboss.server.config.dir}/application-users.properties"/>
+                         <module-option name="rolesProperties" value="${jboss.server.config.dir}/application-roles.properties"/>
+                     </login-module>
+                  </login-module-stack>
+                  <auth-module code="org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule" login-module-stack-ref="lm-stack"/>
+              </authentication-jaspi>
+        </security-domain>
+	</security-domains>
+	<vault code="somevault">
+	  <vault-option name="xyz" value="zxc"/>
+	  <vault-option name="abc" value="def"/>
+    </vault>
+</subsystem>

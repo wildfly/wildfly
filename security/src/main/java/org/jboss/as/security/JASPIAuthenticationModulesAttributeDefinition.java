@@ -33,6 +33,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.ParametersOfValidator;
@@ -54,6 +55,8 @@ public class JASPIAuthenticationModulesAttributeDefinition extends ListAttribute
     static {
         final ParametersValidator delegate = new ParametersValidator();
         delegate.registerValidator(CODE, new StringLengthValidator(1));
+        delegate.registerValidator(Constants.FLAG, new EnumValidator<ModuleFlag>(ModuleFlag.class, true, false));
+        delegate.registerValidator(Constants.MODULE, new StringLengthValidator(1,true));
         delegate.registerValidator(Constants.MODULE_OPTIONS, new ModelTypeValidator(ModelType.OBJECT, true));
         delegate.registerValidator(Constants.LOGIN_MODULE_STACK_REF, new StringLengthValidator(1, true));
 
@@ -76,6 +79,8 @@ public class JASPIAuthenticationModulesAttributeDefinition extends ListAttribute
     protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
         final ModelNode valueType = getNoTextValueTypeDescription(node);
         valueType.get(CODE, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, CODE));
+        valueType.get(Constants.FLAG, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, Constants.FLAG));
+        valueType.get(Constants.MODULE, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, Constants.MODULE));
         valueType.get(Constants.MODULE_OPTIONS, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, Constants.MODULE_OPTIONS));
         valueType.get(Constants.LOGIN_MODULE_STACK_REF, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, Constants.LOGIN_MODULE_STACK_REF));
     }
@@ -84,6 +89,8 @@ public class JASPIAuthenticationModulesAttributeDefinition extends ListAttribute
     protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
         final ModelNode valueType = getNoTextValueTypeDescription(node);
         valueType.get(CODE, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, CODE));
+        valueType.get(Constants.FLAG, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.FLAG));
+        valueType.get(Constants.MODULE, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.MODULE));
         valueType.get(Constants.MODULE_OPTIONS, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.MODULE_OPTIONS));
         valueType.get(Constants.LOGIN_MODULE_STACK_REF, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.LOGIN_MODULE_STACK_REF));
     }
@@ -95,6 +102,15 @@ public class JASPIAuthenticationModulesAttributeDefinition extends ListAttribute
             for (ModelNode module : modules.asList()) {
                 writer.writeStartElement(getXmlName());
                 writer.writeAttribute(Attribute.CODE.getLocalName(), module.get(CODE).asString());
+
+                if (module.hasDefined(Constants.FLAG)) {
+                    writer.writeAttribute(Attribute.FLAG.getLocalName(), module.get(Constants.FLAG).asString().toLowerCase(Locale.ENGLISH));
+                }
+
+                if (module.hasDefined(Constants.MODULE)){
+                    writer.writeAttribute(Attribute.MODULE.getLocalName(), module.get(Constants.MODULE).asString());
+                }
+
                 if (module.hasDefined(Constants.LOGIN_MODULE_STACK_REF)) {
                     writer.writeAttribute(Attribute.LOGIN_MODULE_STACK_REF.getLocalName(), module.get(Constants.LOGIN_MODULE_STACK_REF).asString());
                 }
@@ -136,6 +152,17 @@ public class JASPIAuthenticationModulesAttributeDefinition extends ListAttribute
         code.get(TYPE).set(ModelType.STRING);
         code.get(NILLABLE).set(false);
         code.get(MIN_LENGTH).set(1);
+
+        final ModelNode flag = valueType.get(Constants.FLAG);
+        flag.get(DESCRIPTION);  // placeholder
+        flag.get(TYPE).set(ModelType.STRING);
+        flag.get(NILLABLE).set(true);
+        for (ModuleFlag value : ModuleFlag.values())
+            flag.get(ALLOWED).add(value.toString());
+
+        final ModelNode module = valueType.get(Constants.MODULE);
+        module.get(TYPE).set(ModelType.STRING);
+        module.get(NILLABLE).set(true);
 
         final ModelNode moduleOptions = valueType.get(Constants.MODULE_OPTIONS);
         moduleOptions.get(DESCRIPTION);  // placeholder

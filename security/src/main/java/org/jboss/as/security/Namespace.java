@@ -35,12 +35,13 @@ public enum Namespace {
     UNKNOWN(null),
 
     SECURITY_1_0("urn:jboss:domain:security:1.0"),
-    SECURITY_1_1("urn:jboss:domain:security:1.1");
+    SECURITY_1_1("urn:jboss:domain:security:1.1"),
+    SECURITY_1_2("urn:jboss:domain:security:1.2");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = SECURITY_1_1;
+    public static final Namespace CURRENT = SECURITY_1_2;
 
     private final String name;
 
