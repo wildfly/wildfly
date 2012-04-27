@@ -116,6 +116,18 @@ class JacORBSubsystemDefinitions {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
+    public static final SimpleAttributeDefinition ORB_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(
+            JacORBSubsystemConstants.ORB_SOCKET_BINDING, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode().set("jacorb"))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
+
+    public static final SimpleAttributeDefinition ORB_SSL_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(
+            JacORBSubsystemConstants.ORB_SSL_SOCKET_BINDING, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode().set("jacorb-ssl"))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
+
     // connection attribute definitions.
     public static final SimpleAttributeDefinition ORB_CONN_RETRIES = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_CONN_RETRIES, ModelType.INT, true)
@@ -351,7 +363,8 @@ class JacORBSubsystemDefinitions {
 
     // list that contains the orb attribute definitions.
     static final List<SimpleAttributeDefinition> ORB_ATTRIBUTES = Arrays.asList(ORB_NAME, ORB_PRINT_VERSION,
-            ORB_USE_IMR, ORB_USE_BOM, ORB_CACHE_TYPECODES, ORB_CACHE_POA_NAMES, ORB_GIOP_MINOR_VERSION);
+            ORB_USE_IMR, ORB_USE_BOM, ORB_CACHE_TYPECODES, ORB_CACHE_POA_NAMES, ORB_GIOP_MINOR_VERSION,
+            ORB_SOCKET_BINDING, ORB_SSL_SOCKET_BINDING);
 
     // list that contains the orb connection attribute definitions.
     static final List<SimpleAttributeDefinition> ORB_CONN_ATTRIBUTES = Arrays.asList(ORB_CONN_RETRIES,
