@@ -22,7 +22,14 @@
 
 package org.jboss.as.logging.handlers.custom;
 
-import org.jboss.as.logging.handlers.FormatterSpec;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+import static org.jboss.as.logging.handlers.custom.PropertiesConfigurator.setProperties;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.logging.Handler;
+
 import org.jboss.as.logging.handlers.HandlerService;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
@@ -33,17 +40,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.logging.Filter;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
-import static org.jboss.as.logging.handlers.custom.PropertiesConfigurator.setProperties;
-
 /**
  * Service for custom handlers.
  * <p/>
@@ -51,16 +47,10 @@ import static org.jboss.as.logging.handlers.custom.PropertiesConfigurator.setPro
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public final class CustomHandlerService implements HandlerService {
+public final class CustomHandlerService extends HandlerService<Handler> {
     private final String className;
     private final String moduleName;
     private final List<Property> properties;
-
-    private Filter filter;
-    private FormatterSpec formatterSpec;
-    private Level level;
-    private String encoding;
-    private Handler value;
 
     /**
      * Creates a new custom handler service.
@@ -75,7 +65,7 @@ public final class CustomHandlerService implements HandlerService {
     }
 
     @Override
-    public synchronized void start(final StartContext context) throws StartException {
+    protected Handler createHandler() throws StartException {
         final Handler handler;
         final ModuleLoader moduleLoader = Module.forClass(CustomHandlerService.class).getModuleLoader();
         final ModuleIdentifier id = ModuleIdentifier.create(moduleName);
@@ -95,30 +85,23 @@ public final class CustomHandlerService implements HandlerService {
         } catch (IllegalAccessException e) {
             throw MESSAGES.cannotAccessClass(e, className);
         }
-        if (filter != null) handler.setFilter(filter);
-        if (formatterSpec != null) formatterSpec.apply(handler);
-        if (level != null) handler.setLevel(level);
-        try {
-            handler.setEncoding(encoding);
-        } catch (UnsupportedEncodingException e) {
-            throw new StartException(e);
-        }
-        // Set the properties
-        setProperties(handler, properties);
-        value = handler;
+        return handler;
     }
 
     @Override
-    public synchronized void stop(final StopContext context) {
-        final Handler handler = value;
-        handler.close();
+    protected void start(final StartContext context, final Handler handler) throws StartException {
+        // Set the properties
+        setProperties(handler, properties);
+    }
+
+    @Override
+    protected void stop(final StopContext context, final Handler handler) {
         properties.clear();
-        value = null;
     }
 
     public synchronized void addProperty(final Property property) {
         properties.add(property);
-        final Handler handler = value;
+        final Handler handler = getValue();
         if (handler != null) {
             setProperties(handler, this.properties);
         }
@@ -127,54 +110,9 @@ public final class CustomHandlerService implements HandlerService {
 
     public synchronized void addProperties(final Collection<Property> properties) {
         this.properties.addAll(properties);
-        final Handler handler = value;
+        final Handler handler = getValue();
         if (handler != null) {
             setProperties(handler, this.properties);
         }
-    }
-
-    @Override
-    public synchronized Handler getValue() throws IllegalStateException {
-        return value;
-    }
-
-    public synchronized Level getLevel() {
-        return level;
-    }
-
-    public synchronized void setLevel(final Level level) {
-        this.level = level;
-        final Handler handler = value;
-        if (handler != null) handler.setLevel(level);
-    }
-
-
-    public synchronized FormatterSpec getFormatterSpec() {
-        return formatterSpec;
-    }
-
-    public synchronized void setFormatterSpec(final FormatterSpec formatterSpec) {
-        this.formatterSpec = formatterSpec;
-        final Handler handler = value;
-        if (handler != null) formatterSpec.apply(handler);
-    }
-
-    @Override
-    public synchronized void setFilter(final Filter filter) {
-        this.filter = filter;
-        final Handler handler = value;
-        if (handler != null) {
-            handler.setFilter(filter);
-        }
-    }
-
-    public synchronized String getEncoding() {
-        return encoding;
-    }
-
-    public synchronized void setEncoding(final String encoding) throws UnsupportedEncodingException {
-        final Handler handler = value;
-        if (handler != null) handler.setEncoding(encoding);
-        this.encoding = encoding;
     }
 }

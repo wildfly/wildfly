@@ -23,7 +23,6 @@
 package org.jboss.as.logging.loggers;
 
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
 
 import java.util.List;
 

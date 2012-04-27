@@ -22,133 +22,28 @@
 
 package org.jboss.as.logging.handlers.file;
 
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
-import java.util.logging.Filter;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-
-import org.jboss.as.logging.handlers.FormatterSpec;
 import org.jboss.logmanager.handlers.SizeRotatingFileHandler;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Values;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class SizeRotatingFileHandlerService extends AbstractFileHandlerService {
-
-    private final InjectedValue<String> fileName = new InjectedValue<String>();
-
-    private Filter filter;
-
-    private FormatterSpec formatterSpec;
-
-    private Level level;
-
-    private boolean autoflush;
-
-    private String encoding;
-
-    private boolean append;
+public final class SizeRotatingFileHandlerService extends AbstractFileHandlerService<SizeRotatingFileHandler> {
 
     private int maxBackupIndex;
-
     private long rotateSize;
 
-    private SizeRotatingFileHandler value;
-
-    public synchronized void start(final StartContext context) throws StartException {
-        final SizeRotatingFileHandler handler = new SizeRotatingFileHandler();
-        value = handler;
-        if (filter != null) handler.setFilter(filter);
-        formatterSpec.apply(handler);
-        if (level != null) handler.setLevel(level);
-        handler.setAutoFlush(autoflush);
-        try {
-            handler.setEncoding(encoding);
-        } catch (UnsupportedEncodingException e) {
-            throw new StartException(e);
-        }
-        handler.setAppend(append);
-        try {
-            handler.setFileName(fileName.getValue());
-        } catch (FileNotFoundException e) {
-            throw new StartException(e);
-        }
-        handler.setMaxBackupIndex(maxBackupIndex);
-        handler.setRotateSize(rotateSize);
-    }
-
-    public synchronized void stop(final StopContext context) {
-        final SizeRotatingFileHandler handler = value;
-        handler.close();
-        value = null;
-    }
-
-    public synchronized Handler getValue() throws IllegalStateException {
-        return value;
-    }
-
-    public synchronized Level getLevel() {
-        return level;
-    }
-
-    public synchronized void setLevel(final Level level) {
-        this.level = level;
-        final SizeRotatingFileHandler handler = value;
-        if (handler != null) handler.setLevel(level);
-    }
-
-    public synchronized FormatterSpec getFormatterSpec() {
-        return formatterSpec;
-    }
-
-    public synchronized void setFormatterSpec(final FormatterSpec formatterSpec) {
-        this.formatterSpec = formatterSpec;
-        final SizeRotatingFileHandler handler = value;
-        if (handler != null) formatterSpec.apply(handler);
+    @Override
+    protected SizeRotatingFileHandler createHandler() throws StartException {
+        return new SizeRotatingFileHandler();
     }
 
     @Override
-    public synchronized void setFilter(final Filter filter) {
-        this.filter = filter;
-        final SizeRotatingFileHandler handler = value;
-        if (handler != null) handler.setFilter(filter);
-    }
-
-    public synchronized boolean isAutoflush() {
-        return autoflush;
-    }
-
-    public synchronized void setAutoflush(final boolean autoflush) {
-        this.autoflush = autoflush;
-        final SizeRotatingFileHandler handler = value;
-        if (handler != null) handler.setAutoFlush(autoflush);
-    }
-
-    public synchronized String getEncoding() {
-        return encoding;
-    }
-
-    public synchronized void setEncoding(final String encoding) throws UnsupportedEncodingException {
-        final SizeRotatingFileHandler handler = value;
-        if (handler != null) handler.setEncoding(encoding);
-        this.encoding = encoding;
-    }
-
-    public synchronized boolean isAppend() {
-        return append;
-    }
-
-    public synchronized void setAppend(final boolean append) {
-        this.append = append;
-        final SizeRotatingFileHandler handler = value;
-        if (handler != null) handler.setAppend(append);
+    protected void start(final StartContext context, final SizeRotatingFileHandler handler) throws StartException {
+        super.start(context, handler);
+        handler.setMaxBackupIndex(maxBackupIndex);
+        handler.setRotateSize(rotateSize);
     }
 
     public synchronized int getMaxBackupIndex() {
@@ -157,7 +52,7 @@ public class SizeRotatingFileHandlerService extends AbstractFileHandlerService {
 
     public synchronized void setMaxBackupIndex(final int maxBackupIndex) {
         this.maxBackupIndex = maxBackupIndex;
-        final SizeRotatingFileHandler handler = value;
+        final SizeRotatingFileHandler handler = getValue();
         if (handler != null) handler.setMaxBackupIndex(maxBackupIndex);
     }
 
@@ -167,19 +62,7 @@ public class SizeRotatingFileHandlerService extends AbstractFileHandlerService {
 
     public synchronized void setRotateSize(final long rotateSize) {
         this.rotateSize = rotateSize;
-        final SizeRotatingFileHandler handler = value;
+        final SizeRotatingFileHandler handler = getValue();
         if (handler != null) handler.setRotateSize(rotateSize);
-    }
-
-    @Override
-    public synchronized void setFile(final String path) throws FileNotFoundException {
-        fileName.setValue(Values.immediateValue(path));
-        final SizeRotatingFileHandler handler = value;
-        if (handler != null) handler.setFileName(path);
-    }
-
-    @Override
-    public Injector<String> getFileNameInjector() {
-        return fileName;
     }
 }

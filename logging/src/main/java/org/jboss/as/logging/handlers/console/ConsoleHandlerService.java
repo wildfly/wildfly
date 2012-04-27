@@ -22,54 +22,30 @@
 
 package org.jboss.as.logging.handlers.console;
 
-import java.io.UnsupportedEncodingException;
-
-import org.jboss.as.logging.handlers.FormatterSpec;
 import org.jboss.as.logging.handlers.FlushingHandlerService;
 import org.jboss.logmanager.handlers.ConsoleHandler;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-
-import java.util.logging.Filter;
-import java.util.logging.Handler;
-import java.util.logging.Level;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ConsoleHandlerService implements FlushingHandlerService {
-
-    private FormatterSpec formatterSpec;
-
-    private Level level;
+public final class ConsoleHandlerService extends FlushingHandlerService<ConsoleHandler> {
 
     private Target target;
 
-    private boolean autoflush;
-
-    private String encoding;
-
-    private Filter filter;
-
-    private ConsoleHandler value;
-
-    public synchronized void start(final StartContext context) throws StartException {
-        final ConsoleHandler handler = new ConsoleHandler();
-        value = handler;
-        formatterSpec.apply(handler);
-        setTarget(handler, target);
-        if (level != null) handler.setLevel(level);
-        if (filter != null) handler.setFilter(filter);
-        handler.setAutoFlush(autoflush);
-        try {
-            handler.setEncoding(encoding);
-        } catch (UnsupportedEncodingException e) {
-            throw new StartException(e);
-        }
+    @Override
+    protected ConsoleHandler createHandler() {
+        return new ConsoleHandler();
     }
 
-    private static void setTarget(final ConsoleHandler handler, final Target target) {
+    @Override
+    protected void start(final StartContext context, final ConsoleHandler handler) throws StartException {
+        handler.setAutoFlush(isAutoflush());
+        setTarget(handler, target);
+    }
+
+    private void setTarget(final ConsoleHandler handler, final Target target) {
         if (handler == null || target == null) return;
         switch (target) {
             case SYSTEM_ERR: {
@@ -83,69 +59,13 @@ public final class ConsoleHandlerService implements FlushingHandlerService {
         }
     }
 
-    public synchronized void stop(final StopContext context) {
-        final ConsoleHandler handler = value;
-        handler.close();
-        value = null;
-    }
-
-    public synchronized Handler getValue() throws IllegalStateException {
-        return value;
-    }
-
-    public synchronized Level getLevel() {
-        return level;
-    }
-
-    public synchronized void setLevel(final Level level) {
-        this.level = level;
-        final ConsoleHandler handler = value;
-        if (handler != null) handler.setLevel(level);
-    }
-
-    public synchronized FormatterSpec getFormatterSpec() {
-        return formatterSpec;
-    }
-
-    public synchronized void setFormatterSpec(final FormatterSpec formatterSpec) {
-        this.formatterSpec = formatterSpec;
-        final ConsoleHandler handler = value;
-        if (handler != null) formatterSpec.apply(handler);
-    }
-
-    @Override
-    public synchronized void setFilter(final Filter filter) {
-        this.filter = filter;
-        final ConsoleHandler handler = value;
-        if (handler != null) handler.setFilter(filter);
-    }
-
     public synchronized Target getTarget() {
         return target;
     }
 
     public synchronized void setTarget(final Target target) {
         this.target = target;
-        setTarget(value, target);
-    }
-
-    public synchronized boolean isAutoflush() {
-        return autoflush;
-    }
-
-    public synchronized void setAutoflush(final boolean autoflush) {
-        this.autoflush = autoflush;
-        final ConsoleHandler handler = value;
-        if (handler != null) handler.setAutoFlush(autoflush);
-    }
-
-    public synchronized String getEncoding() {
-        return encoding;
-    }
-
-    public synchronized void setEncoding(final String encoding) throws UnsupportedEncodingException {
-        final ConsoleHandler handler = value;
-        if (handler != null) handler.setEncoding(encoding);
-        this.encoding = encoding;
+        final ConsoleHandler handler = getValue();
+        setTarget(handler, target);
     }
 }

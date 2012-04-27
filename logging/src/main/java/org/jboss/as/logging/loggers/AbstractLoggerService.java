@@ -22,6 +22,10 @@
 
 package org.jboss.as.logging.loggers;
 
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+
+import java.util.logging.Filter;
+
 import org.jboss.as.logging.CommonAttributes;
 import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.Service;
@@ -29,14 +33,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
-
-import java.util.logging.Filter;
-
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractLoggerService implements Service<Logger> {
+abstract class AbstractLoggerService implements Service<Logger> {
 
     private final String name;
 
@@ -71,7 +71,7 @@ public abstract class AbstractLoggerService implements Service<Logger> {
 
     protected abstract void stop(final StopContext context, final Logger logger);
 
-    protected Logger getLogger() {
+    protected synchronized Logger getLogger() {
         return logger;
     }
 
