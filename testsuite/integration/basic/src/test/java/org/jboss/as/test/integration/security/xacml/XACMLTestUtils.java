@@ -21,7 +21,8 @@
  */
 package org.jboss.as.test.integration.security.xacml;
 
-import org.apache.log4j.Logger;
+import org.jboss.logging.Logger;
+import org.jboss.security.xacml.core.JBossPDP;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
@@ -29,13 +30,26 @@ import org.jboss.shrinkwrap.api.container.ManifestContainer;
 import org.jboss.shrinkwrap.api.container.ResourceContainer;
 
 /**
- * An abstract parent for JBossPDP tests.
+ * Constants and helper methods for {@link JBossPDP} and XACMLAuthorizationModule tests.
  * 
  * @author Josef Cacek
  */
-public abstract class AbstractJBossPDPTest {
+public abstract class XACMLTestUtils {
 
-    private static Logger LOGGER = Logger.getLogger(AbstractJBossPDPTest.class);
+    private static Logger LOGGER = Logger.getLogger(XACMLTestUtils.class);
+
+    /** The TESTOBJECTS_REQUESTS */
+    public static final String TESTOBJECTS_REQUESTS = "testobjects/requests";
+    /** The TESTOBJECTS_POLICIES */
+    public static final String TESTOBJECTS_POLICIES = "testobjects/policies";
+    /** The TESTOBJECTS_CONFIG */
+    public static final String TESTOBJECTS_CONFIG = "testobjects/config";
+    /** The property name to replace in the Medical XACML request template. */
+    public static final String SUBST_SUBJECT_ID = "subjectId";
+    /** The MED_EXAMPLE_POLICY_SET */
+    public static final String MED_EXAMPLE_POLICY_SET = "med-example-policySet.xml";
+    /** The MED_EXAMPLE_POLICY */
+    public static final String MED_EXAMPLE_POLICY_SET2 = "med-example-policySet2.xml";
 
     // Protected methods -----------------------------------------------------
 
@@ -63,24 +77,24 @@ public abstract class AbstractJBossPDPTest {
     protected static <T extends Archive<T>> void addXACMLPoliciesToArchive(final ResourceContainer<T> rc) {
         LOGGER.debug("Adding files with XACML policies to the Archive");
         rc.addAsResources(JBossPDPServletInitializationTestCase.class.getPackage(),// 
-                JBossPDPTestUtils.TESTOBJECTS_POLICIES + "/xacml-policySet.xml", // 
-                JBossPDPTestUtils.TESTOBJECTS_POLICIES + "/xacml-policy2.xml",//
-                JBossPDPTestUtils.TESTOBJECTS_POLICIES + "/xacml-policy3.xml", //
-                JBossPDPTestUtils.TESTOBJECTS_POLICIES + "/xacml-policy4.xml", //
-                JBossPDPTestUtils.TESTOBJECTS_POLICIES + "/xacml-policy5.xml");
+                TESTOBJECTS_POLICIES + "/xacml-policySet.xml", // 
+                TESTOBJECTS_POLICIES + "/xacml-policy2.xml",//
+                TESTOBJECTS_POLICIES + "/xacml-policy3.xml", //
+                TESTOBJECTS_POLICIES + "/xacml-policy4.xml", //
+                TESTOBJECTS_POLICIES + "/xacml-policy5.xml");
         rc.addAsResources(JBossPDPServletInitializationTestCase.class.getPackage(), //
-                JBossPDPTestUtils.TESTOBJECTS_POLICIES + "/med-example-policySet.xml", //
-                JBossPDPTestUtils.TESTOBJECTS_POLICIES + "/med-example-policy.xml");
+                TESTOBJECTS_POLICIES + "/" + MED_EXAMPLE_POLICY_SET, //
+                TESTOBJECTS_POLICIES + "/" + MED_EXAMPLE_POLICY_SET2);
     }
 
     /**
      * Adds common classes to the given archive.
      * 
-     * @param rc
+     * @param cc
      */
     protected static <T extends Archive<T>> void addCommonClassesToArchive(final ClassContainer<T> cc) {
         LOGGER.debug("Adding common classes to the Archive");
-        cc.addClasses(JBossPDPServiceBean.class, JBossPDPTestUtils.class, AbstractJBossPDPTest.class);
+        cc.addClasses(JBossPDPServiceBean.class, XACMLTestUtils.class);
     }
 
 }

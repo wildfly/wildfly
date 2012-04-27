@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PolicySet xmlns="urn:oasis:names:tc:xacml:2.0:policy:schema:os"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:oasis:names:tc:xacml:2.0:policy:schema:os 
+      http://docs.oasis-open.org/xacml/access_control-xacml-2.0-policy-schema-os.xsd"
+	PolicySetId="med-example-policySet2-policySet"
+	PolicyCombiningAlgId="urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:permit-overrides">
+	<Target>
+		<Subjects>
+			<Subject>
+				<SubjectMatch
+					MatchId="urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match">
+					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">simpsons.com</AttributeValue>
+					<SubjectAttributeDesignator
+						AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
+						DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name" />
+				</SubjectMatch>
+			</Subject>
+		</Subjects>
+	</Target>
+	<Policy 
+	PolicyId="med-example-policy-policy1"
+		RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:deny-overrides">
+		<Description>Med Example Corp access control policy</Description>
+		<Target />
+		<Rule RuleId="med-example-policy-rule1" Effect="Deny">
+			<Target>
+				<Subjects>
+					<Subject>
+						<SubjectMatch
+							MatchId="urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match">
+							<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">hs@simpsons.com</AttributeValue>
+							<SubjectAttributeDesignator
+								AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
+								DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name" />
+						</SubjectMatch>
+					</Subject>
+				</Subjects>
+			</Target>
+		</Rule>
+	</Policy>
+</PolicySet>

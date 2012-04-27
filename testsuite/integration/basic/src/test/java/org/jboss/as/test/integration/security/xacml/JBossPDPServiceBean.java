@@ -23,6 +23,9 @@ package org.jboss.as.test.integration.security.xacml;
 
 import java.io.IOException;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
+
 import org.jboss.security.xacml.core.JBossPDP;
 import org.jboss.security.xacml.jaxb.LocatorType;
 import org.jboss.security.xacml.jaxb.LocatorsType;
@@ -73,7 +76,7 @@ public class JBossPDPServiceBean {
      */
     private JBossPDP createPDPForInterop() {
         final String policiesPath = getClass().getPackage().getName().replace('.', '/') + "/"
-                + JBossPDPTestUtils.TESTOBJECTS_POLICIES;
+                + XACMLTestUtils.TESTOBJECTS_POLICIES;
         //create XML configuration for the JBossPDP (as a JAXBElement)
         PDP pdp = new PDP();
         final PoliciesType policies = new PoliciesType();
@@ -91,6 +94,6 @@ public class JBossPDPServiceBean {
         final LocatorsType locators = new LocatorsType();
         locators.getLocator().add(locator);
         pdp.setLocators(locators);
-        return new JBossPDP(JBossPDPTestUtils.createJAXBElementPDP(pdp));
+        return new JBossPDP(new JAXBElement<PDP>(new QName("urn:jboss:xacml:2.0", "jbosspdp"), PDP.class, pdp));
     }
 }

@@ -3,14 +3,26 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="urn:oasis:names:tc:xacml:2.0:policy:schema:os 
       http://docs.oasis-open.org/xacml/access_control-xacml-2.0-policy-schema-os.xsd"
-	PolicySetId="urn:xacml:2.0:interop:example:policysetid:01"
+	PolicySetId="med-example-policySet-policySet1"
 	PolicyCombiningAlgId="urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:deny-overrides">
-	<Target />
-	<Policy PolicyId="urn:oasis:names:tc:example:SimplePolicy1"
-		RuleCombiningAlgId="identifier:rule-combining-algorithm:deny-overrides">
+	<Target>
+		<Subjects>
+			<Subject>
+				<SubjectMatch
+					MatchId="urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match">
+					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">med.example.com</AttributeValue>
+					<SubjectAttributeDesignator
+						AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
+						DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name" />
+				</SubjectMatch>
+			</Subject>
+		</Subjects>
+	</Target>
+	<Policy PolicyId="med-example-policySet-policy1"
+		RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:deny-overrides">
 		<Description>Med Example Corp access control policy</Description>
 		<Target />
-		<Rule RuleId="urn:oasis:names:tc:xacml:2.0:example:SimpleRule1"
+		<Rule RuleId="med-example-policySet-rule1"
 			Effect="Permit">
 			<Description>
 				Any subject with an e-mail name in the med.example.com domain can perform any action on any resource.
@@ -21,9 +33,7 @@
 						<SubjectMatch
 							MatchId="urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match">
 							<AttributeValue
-								DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name">
-								med.example.com
-							</AttributeValue>
+								DataType="http://www.w3.org/2001/XMLSchema#string">med.example.com</AttributeValue>
 							<SubjectAttributeDesignator
 								AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
 								DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name" />
@@ -33,4 +43,30 @@
 			</Target>
 		</Rule>
 	</Policy>
+	<Policy 
+		PolicyId="med-example-policySet-policy2" 
+		RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:deny-overrides">
+		<Description>Med Example Corp access control policy</Description>
+		<Target />
+		<Rule RuleId="med-example-policySet-rule2"
+			Effect="Deny">
+			<Description>
+				No subject with an e-mail guest@med.example.com can perform any action on any resource.
+	  		</Description>
+			<Target>
+				<Subjects>
+					<Subject>
+						<SubjectMatch
+							MatchId="urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match">
+							<AttributeValue
+								DataType="http://www.w3.org/2001/XMLSchema#string">guest@med.EXAMPLE.com</AttributeValue>
+							<SubjectAttributeDesignator
+								AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
+								DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name" />
+						</SubjectMatch>
+					</Subject>
+				</Subjects>
+			</Target>
+		</Rule>
+	</Policy>	
 </PolicySet>
