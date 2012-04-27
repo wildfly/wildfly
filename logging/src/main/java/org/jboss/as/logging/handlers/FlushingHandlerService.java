@@ -22,12 +22,27 @@
 
 package org.jboss.as.logging.handlers;
 
+import org.jboss.logmanager.ExtHandler;
+
 /**
  * Date: 23.09.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public interface FlushingHandlerService extends HandlerService {
+public abstract class FlushingHandlerService<T extends ExtHandler> extends HandlerService<T> {
 
-    void setAutoflush(final boolean autoflush);
+    private boolean autoflush;
+
+
+    public final synchronized boolean isAutoflush() {
+        return autoflush;
+    }
+
+    public final synchronized void setAutoflush(final boolean autoflush) {
+        this.autoflush = autoflush;
+        final T handler = getValue();
+        if (handler != null) {
+            handler.setAutoFlush(autoflush);
+        }
+    }
 }
