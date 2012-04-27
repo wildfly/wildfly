@@ -1,10 +1,9 @@
 package org.jboss.as.web;
 
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.alias.AbstractAliasedResourceDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -15,7 +14,7 @@ import org.jboss.dmr.ModelType;
  * @author Tomaz Cerar
  * @created 23.2.12 16:33
  */
-public class WebAccessLogDefinition extends AbstractAliasedResourceDefinition {
+public class WebAccessLogDefinition extends SimpleResourceDefinition {
     public static final WebAccessLogDefinition INSTANCE = new WebAccessLogDefinition();
 
     protected static final SimpleAttributeDefinition PATTERN =
@@ -75,13 +74,6 @@ public class WebAccessLogDefinition extends AbstractAliasedResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration accesslog) {
         for (SimpleAttributeDefinition def : ACCESS_LOG_ATTRIBUTES) {
             accesslog.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
-        }
-    }
-
-    @Override
-    public void registerAliasAttributes(ManagementResourceRegistration resourceRegistration, PathElement alias) {
-        for (SimpleAttributeDefinition def : ACCESS_LOG_ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(def, aliasHandler, aliasHandler);
         }
     }
 }

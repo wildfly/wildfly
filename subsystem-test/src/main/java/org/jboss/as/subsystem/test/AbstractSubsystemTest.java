@@ -89,6 +89,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -649,11 +650,11 @@ public abstract class AbstractSubsystemTest {
 
         ModelNode op = new ModelNode();
         op.get(OP).set("read-resource-description");
-        //op.get(OP_ADDR).setEmptyList();
         op.get(OP_ADDR).set(address);
         op.get("recursive").set(true);
         op.get("inherited").set(false);
         op.get("operations").set(true);
+        op.get("include-aliases").set(true);
         ModelNode result = kernelServices.executeOperation(op);
         if (result.hasDefined(FAILURE_DESCRIPTION)) {
             throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
@@ -1102,6 +1103,18 @@ public abstract class AbstractSubsystemTest {
         public void unregisterProxyController(PathElement address) {
         }
 
+        @Override
+        public void registerAlias(PathElement address, AliasEntry alias) {
+        }
+
+        @Override
+        public void unregisterAlias(PathElement address) {
+        }
+
+        @Override
+        public AliasEntry getAliasEntry() {
+            return null;
+        }
     };
 
     private static class RootResourceGrabber implements OperationStepHandler, DescriptionProvider {
