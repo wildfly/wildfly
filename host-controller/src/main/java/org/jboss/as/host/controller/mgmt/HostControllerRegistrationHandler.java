@@ -42,7 +42,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.Transformers;
@@ -69,11 +68,12 @@ import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
+import org.jboss.threads.AsyncFutureTask;
 
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -108,7 +108,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             case DomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST:
                 // Start the registration process
                 final RegistrationContext context = new RegistrationContext();
-                context.activeOperation = handlers.registerActiveOperation(header.getBatchId(), context);
+                context.activeOperation = handlers.registerActiveOperation(header.getBatchId(), context, context);
                 return new InitiateRegistrationHandler();
             case DomainControllerProtocol.REQUEST_SUBSYSTEM_VERSIONS:
                 // register the subsystem versions
@@ -153,8 +153,8 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             registration.initialize(hostName, hostInfo, context);
             if(domainController.isHostRegistered(hostName)) {
                 registration.failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(hostName));
+                return;
             }
-
             // Read the domain model async, this will block until the registration process is complete
             context.executeAsync(new ManagementRequestContext.AsyncTask<RegistrationContext>() {
                 @Override
@@ -165,7 +165,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                         final OperationStepHandler handler = new HostRegistrationStepHandler(registration);
                         operationExecutor.execute(READ_DOMAIN_MODEL, OperationMessageHandler.logging, registration, OperationAttachments.EMPTY, handler);
                     } catch (Exception e) {
-                        registration.failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
+                        registration.failed(e);
                         return;
                     }
                     // Send a registered notification back
@@ -232,15 +232,25 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             // First lock the domain controller
             context.acquireControllerLock();
+            // Check with the controller lock held
+            if(domainController.isHostRegistered(registrationContext.hostName)) {
+                final String failureDescription = DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(registrationContext.hostName);
+                registrationContext.failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, failureDescription);
+                context.getFailureDescription().set(failureDescription);
+                context.completeStep();
+                return;
+            }
             // Read the domain root model
             final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
             // Check the mgmt version
             final ModelNode hostInfo = registrationContext.hostInfo;
             boolean as711 = hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt() == 1 && hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt() == 1;
-            final ModelNode subsystems;
+            final Transformers transformers;
             if(as711) {
-                throw HostControllerMessages.MESSAGES.unsupportedManagementVersionForHost(hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt(),
-                        hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt(), 1, 2);
+                final OperationFailedException failure = HostControllerMessages.MESSAGES.unsupportedManagementVersionForHost(
+                        hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt(), hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt(), 1, 2);
+                registrationContext.failed(failure);
+                throw failure;
             } else {
                 // Build the extensions list
                 final ModelNode extensions = new ModelNode();
@@ -248,33 +258,28 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 for(final Resource.ResourceEntry entry : resources) {
                     extensions.add(entry.getName());
                 }
-                // Remotely resolve the subsystem versions
-                subsystems = registrationContext.resolveSubsystemVersions(extensions);
+                // Remotely resolve the subsystem versions and create the transformation
+                transformers = registrationContext.createTransfomers(extensions);
             }
             // Now run the read-domain model operation
-            final ReadMasterDomainModelHandler handler = new ReadMasterDomainModelHandler(registrationContext.transformers);
-            final ModelNode op = READ_DOMAIN_MODEL.clone();
-            op.get(SUBSYSTEM).set(subsystems);
-            context.addStep(op, handler, OperationContext.Stage.MODEL);
+            final ReadMasterDomainModelHandler handler = new ReadMasterDomainModelHandler(transformers);
+            context.addStep(READ_DOMAIN_MODEL, handler, OperationContext.Stage.MODEL);
             // Complete
-            context.completeStep();
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
     }
 
-    class RegistrationContext implements ModelController.OperationTransactionControl {
+    class RegistrationContext implements ModelController.OperationTransactionControl, ActiveOperation.CompletedCallback<Void> {
 
-        private ManagementRequestContext<RegistrationContext> responseChannel;
-        private ModelNode hostInfo;
         private String hostName;
+        private ModelNode hostInfo;
+        private ManagementRequestContext<RegistrationContext> responseChannel;
 
+        private volatile IOTask<?> task;
         private volatile boolean failed;
+        private volatile Transformers transformers;
         private ActiveOperation<Void, RegistrationContext> activeOperation;
         private final AtomicBoolean completed = new AtomicBoolean();
-        private final CountDownLatch completedLatch = new CountDownLatch(1);
-
-        private final CountDownLatch subsystemsLatch = new CountDownLatch(1);
-        private ModelNode subsystems;
-        private Transformers transformers;
 
         protected synchronized void initialize(final String hostName, final ModelNode hostInfo, final ManagementRequestContext<RegistrationContext> responseChannel) {
             this.hostName = hostName;
@@ -282,76 +287,68 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             this.responseChannel = responseChannel;
         }
 
-        protected ModelNode resolveSubsystemVersions(final ModelNode extensions) {
-            synchronized (this) {
-                // Check again with the controller lock held
-                if(domainController.isHostRegistered(hostName)) {
-                    failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(hostName));
-                    throw new IllegalStateException();
-                }
-                try {
-                    // Send the versions
-                    sendResponse(responseChannel, DomainControllerProtocol.PARAM_OK, extensions);
-                } catch (IOException e) {
-                    ProtocolLogger.ROOT_LOGGER.debugf(e, "failed to process message");
-                    failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
-                    throw new IllegalStateException(e);
-                }
-            }
-
-            try {
-                subsystemsLatch.await();
-            } catch (InterruptedException e) {
-                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
-                Thread.currentThread().interrupt();
-                throw new IllegalStateException(e);
-            }
-            if(failed) {
-                throw new IllegalStateException();
-            }
-            final ModelNode subsystems;
-            synchronized (this) {
-                subsystems = this.subsystems;
-            }
-            if(subsystems == null) {
-                throw new IllegalStateException();
-            }
-            return subsystems;
+        @Override
+        public void completed(Void result) {
+            //
         }
 
-        protected void setSubsystems(final ModelNode resolved, final ManagementRequestContext<RegistrationContext> responseChannel) {
-            synchronized (this) {
-                if(failed) {
-                    throw new IllegalStateException();
-                }
-                this.responseChannel = responseChannel;
-                setSubsystemVersions(resolved);
-                subsystemsLatch.countDown();
-            }
+        @Override
+        public void failed(Exception e) {
+            failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
         }
 
-        protected void setSubsystemVersions(final ModelNode subsystems) {
-            this.subsystems = subsystems;
-            int major = hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt();
-            int minor = hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt();
-            TransformationTarget target = TransformationTargetImpl.create(major, minor, subsystems);
-            transformers = Transformers.Factory.create(target);
+        @Override
+        public void cancelled() {
+            //
         }
 
         @Override
         public void operationPrepared(final ModelController.OperationTransaction transaction, final ModelNode result) {
-            try {
+            if(failed) {
+                transaction.rollback();
+            } else {
+                try {
+                    registerHost(transaction, result);
+                } catch (SlaveRegistrationException e) {
+                    failed(e.getErrorCode(), e.getErrorMessage());
+                } catch (Exception e) {
+                    failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
+                }
                 if(failed) {
                     transaction.rollback();
-                } else {
-                    registerHost(transaction, result);
-                    if(failed) {
-                        transaction.rollback();
-                    }
                 }
-            } finally {
-                activeOperation.getResultHandler().done(null);
             }
+        }
+
+        /**
+         * Create the transformers. This will remotely resolve the subsystem versions.
+         *
+         * @param extensions the extensions
+         * @return the transformers
+         * @throws OperationFailedException
+         */
+        protected Transformers createTransfomers(final ModelNode extensions) throws OperationFailedException {
+            final ModelNode subsystems = executeBlocking(new IOTask<ModelNode>() {
+                @Override
+                void sendMessage(FlushableDataOutput output) throws IOException {
+                    sendResponse(output, DomainControllerProtocol.PARAM_OK, extensions);
+                }
+            });
+            if(failed) {
+                throw new OperationFailedException(new ModelNode("failed to setup transformers"));
+            }
+            // Initialize the transformers
+            final int major = hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt();
+            final int minor = hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt();
+            final TransformationTarget target = TransformationTargetImpl.create(major, minor, subsystems);
+            final Transformers transformers = Transformers.Factory.create(target);
+            this.transformers = transformers;
+            return transformers;
+        }
+
+        protected void setSubsystems(final ModelNode resolved, final ManagementRequestContext<RegistrationContext> responseChannel) {
+            this.responseChannel = responseChannel;
+            completeTask(resolved);
         }
 
         /**
@@ -361,51 +358,26 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
          *
          * @param transaction the model controller tx
          * @param result the prepared result (domain model)
+         * @throws SlaveRegistrationException
          */
-        void registerHost(final ModelController.OperationTransaction transaction, final ModelNode result) {
-            synchronized (this) {
-                // Check again with the controller lock held
-                if(domainController.isHostRegistered(hostName)) {
-                    failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(hostName));
-                    return;
+        void registerHost(final ModelController.OperationTransaction transaction, final ModelNode result) throws SlaveRegistrationException {
+            //
+            final Boolean registered = executeBlocking(new IOTask<Boolean>() {
+                @Override
+                void sendMessage(final FlushableDataOutput output) throws IOException {
+                    sendResponse(output, DomainControllerProtocol.PARAM_OK, result);
                 }
-                // Send model back to HC
-                try {
-                    sendResponse(responseChannel, DomainControllerProtocol.PARAM_OK, result);
-                } catch (IOException e) {
-                    ProtocolLogger.ROOT_LOGGER.debugf(e, "failed to process message");
-                    failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
-                    return;
-                }
-            }
-            // wait until either we get a go or no-go
-            try {
-                completedLatch.await();
-            } catch (InterruptedException e) {
-                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
-                Thread.currentThread().interrupt();
+            });
+            if(! registered) {
+                transaction.rollback();
                 return;
             }
             synchronized (this) {
-                // Check if the host-controller boot worked
-                if(failed) {
-                    return;
-                }
                 // Create the proxy controller
                 final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostName));
-                final RemoteProxyController proxy = RemoteProxyController.create(handler, addr, ProxyOperationAddressTranslator.HOST);
-//                final TransformingProxyController transforming = TransformingProxyController.Factory.create(proxy, transformers);
-                try {
-                    // Register proxy controller
-//                    domainController.registerRemoteHost(transforming);
-                    domainController.registerRemoteHost(proxy);
-                } catch (SlaveRegistrationException e) {
-                    failed(e.getErrorCode(), e.getErrorMessage());
-                    return;
-                } catch (Exception e) {
-                    failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
-                    return;
-                }
+                final TransformingProxyController transforming = TransformingProxyController.Factory.create(handler, transformers, addr, ProxyOperationAddressTranslator.HOST);
+                // Register proxy controller
+                domainController.registerRemoteHost(transforming);
                 // Complete registration
                 if(! failed) {
                     transaction.commit();
@@ -429,9 +401,9 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         }
 
         void completeRegistration(final ManagementRequestContext<RegistrationContext> responseChannel, boolean commit) {
-            failed |= ! commit;
             this.responseChannel = responseChannel;
-            completedLatch.countDown();
+            failed |= ! commit;
+            completeTask(! failed);
         }
 
         void failed(SlaveRegistrationException.ErrorCode errorCode, String message) {
@@ -441,13 +413,16 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         void failed(byte errorCode, String message) {
             if(completed.compareAndSet(false, true)) {
                 failed = true;
+                final IOTask<?> task = this.task;
+                if(task != null) {
+                    task.setFailed();
+                }
                 try {
                     sendFailedResponse(responseChannel, errorCode, message);
                 } catch (IOException e) {
                     ProtocolLogger.ROOT_LOGGER.debugf(e, "failed to process message");
-                } finally {
-                    completedLatch.countDown();
                 }
+                activeOperation.getResultHandler().done(null);
             }
         }
 
@@ -458,9 +433,76 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 } catch (IOException e) {
                     ProtocolLogger.ROOT_LOGGER.debugf(e, "failed to process message");
                 }
+                activeOperation.getResultHandler().done(null);
             }
         }
 
+        protected boolean completeTask(Object result) {
+            synchronized (this) {
+                if(failed) {
+                    return false;
+                }
+                if(task != null) {
+                    return task.completeStep(result);
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Execute a task and wait for the response.
+         *
+         * @param task the task to execute
+         * @param <T> the response type
+         * @return the result
+         */
+        protected <T> T executeBlocking(final IOTask<T> task) {
+            synchronized (this) {
+                this.task = task;
+                try {
+                    final ManagementResponseHeader header = ManagementResponseHeader.create(responseChannel.getRequestHeader());
+                    final FlushableDataOutput output = responseChannel.writeMessage(header);
+                    try {
+                        task.sendMessage(output);
+                    } catch (IOException e) {
+                        failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                        throw new IllegalStateException(e);
+                    } finally {
+                        StreamUtils.safeClose(output);
+                    }
+                } catch (IOException e) {
+                    failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                    throw new IllegalStateException(e);
+                }
+            }
+            try {
+                return task.get();
+            } catch (InterruptedException e) {
+                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                throw new IllegalStateException(e);
+            } catch (ExecutionException e) {
+                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                throw new IllegalStateException(e);
+            }
+        }
+
+    }
+
+    abstract static class IOTask<T> extends AsyncFutureTask<T> {
+
+        IOTask() {
+            super(null);
+        }
+
+        abstract void sendMessage(final FlushableDataOutput output) throws IOException;
+
+        boolean completeStep(Object result) {
+            return setResult((T) result);
+        }
+
+        boolean setFailed() {
+            return setFailed(null);
+        }
     }
 
     /**
@@ -475,18 +517,22 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         final ManagementResponseHeader header = ManagementResponseHeader.create(context.getRequestHeader());
         final FlushableDataOutput output = context.writeMessage(header);
         try {
-            // response type
-            output.writeByte(responseType);
-            if(response != null) {
-                // operation result
-                response.writeExternal(output);
-            }
-            // response end
-            output.writeByte(ManagementProtocol.RESPONSE_END);
-            output.close();
+            sendResponse(output, responseType, response);
         } finally {
             StreamUtils.safeClose(output);
         }
+    }
+
+    static void sendResponse(final FlushableDataOutput output, final byte responseType, final ModelNode response) throws IOException {
+        // response type
+        output.writeByte(responseType);
+        if(response != null) {
+            // operation result
+            response.writeExternal(output);
+        }
+        // response end
+        output.writeByte(ManagementProtocol.RESPONSE_END);
+        output.close();
     }
 
     /**

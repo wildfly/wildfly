@@ -77,9 +77,7 @@ public class RemoteProxyController implements ProxyController {
      * @return the proxy controller
      */
     public static RemoteProxyController create(final ManagementChannelHandler channelAssociation, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator) {
-        // Create the protocol client here for now
-        final TransactionalProtocolClientImpl client = new TransactionalProtocolClientImpl(channelAssociation);
-        channelAssociation.addHandlerFactory(client);
+        final TransactionalProtocolClient client = TransactionalProtocolHandlers.createClient(channelAssociation);
         // the remote proxy
         return create(client, pathAddress, addressTranslator);
     }

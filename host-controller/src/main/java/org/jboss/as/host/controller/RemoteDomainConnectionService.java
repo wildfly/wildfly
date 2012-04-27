@@ -98,9 +98,11 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Endpoint;
+import org.jboss.remoting3.RemotingOptions;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 import org.jboss.threads.JBossThreadFactory;
+import org.xnio.OptionMap;
 
 /**
  * Establishes the connection from a slave {@link org.jboss.as.domain.controller.DomainController} to the master
@@ -267,14 +269,15 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         final RemoteDomainConnection connection;
         final ManagementChannelHandler handler;
         try {
-
             // Include additional local host information when registering at the DC
             final ModelNode hostInfo = createLocalHostHostInfo(localHostInfo, productConfig);
+            final OptionMap options = OptionMap.EMPTY;
 
             // Gather the required information to connect to the remote DC
             final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
             configuration.setUri(new URI("remote://" + NetworkUtils.formatPossibleIpv6Address(localHostInfo.getRemoteDomainControllerHost()) + ":" + localHostInfo.getRemoteDomainControllerPort()));
             configuration.setEndpoint(endpointInjector.getValue());
+            configuration.setOptionMap(options);
 
             final SecurityRealm realm = securityRealmInjector.getOptionalValue();
             // Create the remote domain channel strategy

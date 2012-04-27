@@ -173,7 +173,6 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
     protected static void writeHeader(final ManagementProtocolHeader header, final OutputStream os) throws IOException {
         final FlushableDataOutput output = FlushableDataOutputImpl.create(os);
         header.write(output);
-        output.flush();
     }
 
 }

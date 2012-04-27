@@ -53,8 +53,7 @@ public final class StreamUtils {
         if (closeable != null) try {
             closeable.close();
         } catch (Throwable t) {
-            // temporarily disable log message until fixed in remoting/xnio
-            // ROOT_LOGGER.failedToCloseResource(t, closeable);
+            ROOT_LOGGER.failedToCloseResource(t, closeable);
         }
     }
 
