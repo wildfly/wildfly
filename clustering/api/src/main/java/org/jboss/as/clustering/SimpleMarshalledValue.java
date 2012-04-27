@@ -33,6 +33,8 @@ import java.util.Arrays;
 
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
+import org.jboss.marshalling.SimpleDataInput;
+import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.marshalling.Unmarshaller;
 
 /**
@@ -59,13 +61,17 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
         byte[] bytes = this.bytes;
         if (bytes != null) return bytes;
         if (this.object == null) return null;
+        int version = this.context.getCurrentVersion();
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        Marshaller marshaller = this.context.createMarshaller();
+        SimpleDataOutput data = new SimpleDataOutput(Marshalling.createByteOutput(output));
+        data.writeInt(version);
+        Marshaller marshaller = this.context.createMarshaller(version);
         try {
-            marshaller.start(Marshalling.createByteOutput(output));
+            marshaller.start(data);
+
             // Workaround for AS7-2496
             ClassLoader currentLoader = null;
-            ClassLoader contextLoader = context.getContextClassLoader();
+            ClassLoader contextLoader = context.getContextClassLoader(version);
             if (contextLoader != null) {
                 currentLoader = getCurrentThreadContextClassLoader();
                 setCurrentThreadContextClassLoader(contextLoader);
@@ -94,12 +100,15 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
         if (this.object == null) {
             this.context = context;
             if (this.bytes != null) {
-                Unmarshaller unmarshaller = context.createUnmarshaller();
+                ByteArrayInputStream input = new ByteArrayInputStream(this.bytes);
+                SimpleDataInput data = new SimpleDataInput(Marshalling.createByteInput(input));
+                int version = data.readInt();
+                Unmarshaller unmarshaller = context.createUnmarshaller(version);
                 try {
-                    unmarshaller.start(Marshalling.createByteInput(new ByteArrayInputStream(this.bytes)));
+                    unmarshaller.start(data);
                     // Workaround for AS7-2496
                     ClassLoader currentLoader = null;
-                    ClassLoader contextLoader = context.getContextClassLoader();
+                    ClassLoader contextLoader = context.getContextClassLoader(version);
                     if (contextLoader != null) {
                         currentLoader = getCurrentThreadContextClassLoader();
                         setCurrentThreadContextClassLoader(contextLoader);

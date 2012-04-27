@@ -23,6 +23,8 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.clustering.ClassLoaderAwareClassResolver;
@@ -51,6 +53,8 @@ import org.jboss.msc.value.InjectedValue;
  * @author Stuart Douglas
  */
 public class StatefulSessionComponentCreateService extends SessionBeanComponentCreateService {
+    private static final int CURRENT_MARSHALLING_VERSION = 1;
+
     private final InterceptorFactory afterBegin;
     private final Method afterBeginMethod;
     private final InterceptorFactory afterCompletion;
@@ -61,7 +65,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     private final InterceptorFactory postActivate;
     private final StatefulTimeoutInfo statefulTimeout;
     private final CacheInfo cache;
-    private final MarshallingConfiguration marshallingConfiguration;
+    private final Map<Integer, MarshallingConfiguration> marshallingConfigurations;
     private final InjectedValue<DefaultAccessTimeoutService> defaultAccessTimeoutService = new InjectedValue<DefaultAccessTimeoutService>();
     private final InterceptorFactory ejb2XRemoveMethod;
     @SuppressWarnings("rawtypes")
@@ -92,12 +96,13 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         //the interceptor chain for EJB e.x remove methods
         this.ejb2XRemoveMethod = Interceptors.getChainedInterceptorFactory(StatefulSessionSynchronizationInterceptor.factory(componentDescription.getTransactionManagementType()), new ImmediateInterceptorFactory(new StatefulRemoveInterceptor(false)), Interceptors.getTerminalInterceptorFactory());
         this.cache = componentDescription.getCache();
-        this.marshallingConfiguration = new MarshallingConfiguration();
-        this.marshallingConfiguration.setSerializedCreator(new SunReflectiveCreator());
-        this.marshallingConfiguration.setExternalizerCreator(new ReflectiveCreator());
-        this.marshallingConfiguration.setClassResolver(new ClassLoaderAwareClassResolver(ModularClassResolver.getInstance(componentConfiguration.getModuleLoader()), componentConfiguration.getModuleClassLoader()));
-        this.marshallingConfiguration.setSerializabilityChecker(new StatefulSessionBeanSerializabilityChecker(componentConfiguration.getComponentClass()));
-        this.marshallingConfiguration.setClassTable(new StatefulSessionBeanClassTable());
+        MarshallingConfiguration marshallingConfiguration = new MarshallingConfiguration();
+        marshallingConfiguration.setSerializedCreator(new SunReflectiveCreator());
+        marshallingConfiguration.setExternalizerCreator(new ReflectiveCreator());
+        marshallingConfiguration.setClassResolver(new ClassLoaderAwareClassResolver(ModularClassResolver.getInstance(componentConfiguration.getModuleLoader()), componentConfiguration.getModuleClassLoader()));
+        marshallingConfiguration.setSerializabilityChecker(new StatefulSessionBeanSerializabilityChecker(componentConfiguration.getComponentClass()));
+        marshallingConfiguration.setClassTable(new StatefulSessionBeanClassTable());
+        this.marshallingConfigurations = Collections.singletonMap(CURRENT_MARSHALLING_VERSION, marshallingConfiguration);
         this.serializableInterceptorContextKeys = componentConfiguration.getInterceptorContextKeys();
     }
 
@@ -151,8 +156,12 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         return this.cache;
     }
 
-    public MarshallingConfiguration getMarshallingConfiguration() {
-        return this.marshallingConfiguration;
+    public int getCurrentMarshallingVersion() {
+        return CURRENT_MARSHALLING_VERSION;
+    }
+
+    public Map<Integer, MarshallingConfiguration> getMarshallingConfigurations() {
+        return this.marshallingConfigurations;
     }
 
     public DefaultAccessTimeoutService getDefaultAccessTimeoutService() {

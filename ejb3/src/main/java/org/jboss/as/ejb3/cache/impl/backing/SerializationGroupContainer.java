@@ -46,7 +46,7 @@ public class SerializationGroupContainer<K extends Serializable, V extends Cache
     private static final Logger log = Logger.getLogger(SerializationGroupContainer.class);
 
     private PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> groupCache;
-    private final MarshallingConfiguration marshallingConfiguration;
+    private final PassivationManager<K, V> passivationManager;
     private final SerializationGroupSerializabilityChecker serializabilityChecker;
 
     private boolean clustered;
@@ -54,22 +54,7 @@ public class SerializationGroupContainer<K extends Serializable, V extends Cache
     public SerializationGroupContainer(PassivationManager<K, V> passivationManager) {
         this.serializabilityChecker = new SerializationGroupSerializabilityChecker();
         this.serializabilityChecker.addSerializabilityChecker(SerializabilityChecker.DEFAULT);
-        MarshallingConfiguration config = passivationManager.getMarshallingConfiguration();
-        this.marshallingConfiguration = new MarshallingConfiguration();
-        this.marshallingConfiguration.setBufferSize(config.getBufferSize());
-        this.marshallingConfiguration.setClassCount(config.getClassCount());
-        this.marshallingConfiguration.setClassExternalizerFactory(config.getClassExternalizerFactory());
-        this.marshallingConfiguration.setClassResolver(config.getClassResolver());
-        this.marshallingConfiguration.setClassTable(config.getClassTable());
-        this.marshallingConfiguration.setExceptionListener(config.getExceptionListener());
-        this.marshallingConfiguration.setExternalizerCreator(config.getExternalizerCreator());
-        this.marshallingConfiguration.setInstanceCount(config.getInstanceCount());
-        this.marshallingConfiguration.setObjectResolver(config.getObjectResolver());
-        this.marshallingConfiguration.setObjectTable(config.getObjectTable());
-        this.marshallingConfiguration.setSerializabilityChecker(this.serializabilityChecker);
-        this.marshallingConfiguration.setSerializedCreator(config.getSerializedCreator());
-        this.marshallingConfiguration.setStreamHeader(config.getStreamHeader());
-        this.marshallingConfiguration.setVersion(config.getVersion());
+        this.passivationManager = passivationManager;
     }
 
     public boolean isClustered() {
@@ -81,12 +66,33 @@ public class SerializationGroupContainer<K extends Serializable, V extends Cache
     }
 
     @Override
-    public MarshallingConfiguration getMarshallingConfiguration() {
-        return this.marshallingConfiguration;
+    public int getCurrentMarshallingVersion() {
+        return this.passivationManager.getCurrentMarshallingVersion();
+    }
+
+    @Override
+    public MarshallingConfiguration getMarshallingConfiguration(int version) {
+        MarshallingConfiguration config = this.passivationManager.getMarshallingConfiguration(version);
+        MarshallingConfiguration result = new MarshallingConfiguration();
+        result.setBufferSize(config.getBufferSize());
+        result.setClassCount(config.getClassCount());
+        result.setClassExternalizerFactory(config.getClassExternalizerFactory());
+        result.setClassResolver(config.getClassResolver());
+        result.setClassTable(config.getClassTable());
+        result.setExceptionListener(config.getExceptionListener());
+        result.setExternalizerCreator(config.getExternalizerCreator());
+        result.setInstanceCount(config.getInstanceCount());
+        result.setObjectResolver(config.getObjectResolver());
+        result.setObjectTable(config.getObjectTable());
+        result.setSerializabilityChecker(this.serializabilityChecker);
+        result.setSerializedCreator(config.getSerializedCreator());
+        result.setStreamHeader(config.getStreamHeader());
+        result.setVersion(config.getVersion());
+        return result;
     }
 
     public void addMemberPassivationManager(PassivationManager<K, V> passivationManager) {
-        SerializabilityChecker checker = passivationManager.getMarshallingConfiguration().getSerializabilityChecker();
+        SerializabilityChecker checker = passivationManager.getMarshallingConfiguration(passivationManager.getCurrentMarshallingVersion()).getSerializabilityChecker();
         if (checker != null) {
             this.serializabilityChecker.addSerializabilityChecker(checker);
         }

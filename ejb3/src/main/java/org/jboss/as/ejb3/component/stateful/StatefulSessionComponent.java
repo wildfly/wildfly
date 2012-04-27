@@ -25,6 +25,7 @@ import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.cache.PassivationManager;
@@ -84,7 +85,8 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     private final InterceptorFactory postActivate;
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodAccessTimeouts;
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
-    private final MarshallingConfiguration marshallingConfiguration;
+    private final int currentMarshallingVersion;
+    private final Map<Integer, MarshallingConfiguration> marshallingConfigurations;
 
     private final InterceptorFactory ejb2XRemoveMethod;
 
@@ -114,7 +116,8 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         this.methodAccessTimeouts = ejbComponentCreateService.getMethodApplicableAccessTimeouts();
         this.defaultAccessTimeoutProvider = ejbComponentCreateService.getDefaultAccessTimeoutService();
         this.ejb2XRemoveMethod = ejbComponentCreateService.getEjb2XRemoveMethod();
-        this.marshallingConfiguration = ejbComponentCreateService.getMarshallingConfiguration();
+        this.currentMarshallingVersion = ejbComponentCreateService.getCurrentMarshallingVersion();
+        this.marshallingConfigurations = ejbComponentCreateService.getMarshallingConfigurations();
         this.serialiableInterceptorContextKeys = ejbComponentCreateService.getSerializableInterceptorContextKeys();
 
         String beanName = ejbComponentCreateService.getComponentClass().getName();
@@ -154,8 +157,17 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     }
 
     @Override
-    public MarshallingConfiguration getMarshallingConfiguration() {
-        return this.marshallingConfiguration;
+    public int getCurrentMarshallingVersion() {
+        return this.currentMarshallingVersion;
+    }
+
+    @Override
+    public MarshallingConfiguration getMarshallingConfiguration(int version) {
+        MarshallingConfiguration config = this.marshallingConfigurations.get(version);
+        if (config == null) {
+            throw EjbMessages.MESSAGES.unsupportedMarshallingVersion(version);
+        }
+        return config;
     }
 
     protected SessionID getSessionIdOf(final InterceptorContext ctx) {

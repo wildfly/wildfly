@@ -21,24 +21,35 @@
  */
 package org.jboss.as.clustering.web.impl;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 
 import org.jboss.as.clustering.MarshallingContext;
+import org.jboss.as.clustering.VersionedMarshallingConfiguration;
 import org.jboss.as.clustering.web.SessionAttributeMarshaller;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 /**
  * @author Paul Ferraro
  *
  */
-public class SessionAttributeMarshallerTest {
-    private final SessionAttributeMarshaller marshaller = new SessionAttributeMarshallerImpl(new MarshallingContext(Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader()), new MarshallingConfiguration()));
+public class SessionAttributeMarshallerTest implements VersionedMarshallingConfiguration {
+    private final SessionAttributeMarshaller marshaller = new SessionAttributeMarshallerImpl(new MarshallingContext(Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader()), this));
+
+    @Override
+    public int getCurrentMarshallingVersion() {
+        return 0;
+    }
+
+    @Override
+    public MarshallingConfiguration getMarshallingConfiguration(int version) {
+        return new MarshallingConfiguration();
+    }
 
     @Test
     public void test() throws IOException, ClassNotFoundException {

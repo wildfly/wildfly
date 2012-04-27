@@ -44,7 +44,19 @@ public class SimpleMarshalledValueFactoryTestCase {
     private final SimpleMarshalledValueFactory factory;
     
     public SimpleMarshalledValueFactoryTestCase() {
-        this.context = new MarshallingContext(Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader()), new MarshallingConfiguration());
+        VersionedMarshallingConfiguration configuration = new VersionedMarshallingConfiguration() {
+            @Override
+            public int getCurrentMarshallingVersion() {
+                return 0;
+            }
+
+            @Override
+            public MarshallingConfiguration getMarshallingConfiguration(int version) {
+                assertEquals(0, version);
+                return new MarshallingConfiguration();
+            }
+        };
+        this.context = new MarshallingContext(Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader()), configuration);
         this.factory = this.createFactory(this.context);
     }
 

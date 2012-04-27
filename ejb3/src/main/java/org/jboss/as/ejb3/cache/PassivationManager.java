@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.cache;
 
-import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.as.clustering.VersionedMarshallingConfiguration;
 
 /**
  * Manages passivation and replication lifecycle callbacks on an object.
@@ -29,7 +29,7 @@ import org.jboss.marshalling.MarshallingConfiguration;
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @author Paul Ferraro
  */
-public interface PassivationManager<K, V extends Identifiable<K>> {
+public interface PassivationManager<K, V extends Identifiable<K>> extends VersionedMarshallingConfiguration {
     /**
      * This method is called after an object has been retrieved deserialized after passivation.
      * @param obj the object
@@ -44,6 +44,4 @@ public interface PassivationManager<K, V extends Identifiable<K>> {
      *         assume it will be thrown.
      */
     void prePassivate(V obj);
-
-    MarshallingConfiguration getMarshallingConfiguration();
 }

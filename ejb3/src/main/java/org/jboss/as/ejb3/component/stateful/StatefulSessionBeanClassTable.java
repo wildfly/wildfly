@@ -39,6 +39,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.transaction.UserTransaction;
 
+import org.jboss.as.clustering.SimpleMarshalledValue;
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.impl.backing.SerializationGroupImpl;
@@ -84,7 +85,8 @@ public class StatefulSessionBeanClassTable implements ClassTable {
         StatefulSerializedProxy.class,
         ManagedReference.class,
         ValueManagedReferenceFactory.ValueManagedReference.class,
-        SerializedCdiInterceptorsKey.class
+        SerializedCdiInterceptorsKey.class,
+        SimpleMarshalledValue.class,
     };
 
     private static final Map<Class<?>, Writer> writers = createWriters();
