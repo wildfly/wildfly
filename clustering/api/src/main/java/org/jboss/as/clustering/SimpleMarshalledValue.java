@@ -179,23 +179,31 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
     }
 
     static ClassLoader getCurrentThreadContextClassLoader() {
-        PrivilegedAction<ClassLoader> action = new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                return Thread.currentThread().getContextClassLoader();
-            }
-        };
-        return AccessController.doPrivileged(action);
+        if(System.getSecurityManager() == null) {
+            return Thread.currentThread().getContextClassLoader();
+        } else {
+            PrivilegedAction<ClassLoader> action = new PrivilegedAction<ClassLoader>() {
+                @Override
+                public ClassLoader run() {
+                    return Thread.currentThread().getContextClassLoader();
+                }
+            };
+            return AccessController.doPrivileged(action);
+        }
     }
 
     static void setCurrentThreadContextClassLoader(final ClassLoader loader) {
-        PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
-            @Override
-            public Void run() {
-                Thread.currentThread().setContextClassLoader(loader);
-                return null;
-            }
-        };
-        AccessController.doPrivileged(action);
+        if(System.getSecurityManager() == null) {
+            Thread.currentThread().setContextClassLoader(loader);
+        } else {
+            PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
+                @Override
+                public Void run() {
+                    Thread.currentThread().setContextClassLoader(loader);
+                    return null;
+                }
+            };
+            AccessController.doPrivileged(action);
+        }
     }
 }
