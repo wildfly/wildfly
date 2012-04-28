@@ -662,6 +662,11 @@ public abstract class AttributeDefinition {
         }
 
         @Override
+        public ModelNode getResponseHeaders() {
+            return null;
+        }
+
+        @Override
         public Stage getCurrentStage() {
             return null;
         }
