@@ -55,6 +55,13 @@ public interface Cache<K extends Serializable, V extends Identifiable<K>> extend
     V get(K key);
 
     /**
+     *
+     * @param key The EJB identifier to check
+     * @return <code>true</code> if the EJB is present in the cache
+     */
+    boolean contains(K key);
+
+    /**
      * Decreases the objects usage count. If the usage count hits 0 then the object will be released.
      *
      * @param obj the object

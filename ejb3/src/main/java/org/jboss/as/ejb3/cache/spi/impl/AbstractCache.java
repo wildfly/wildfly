@@ -72,6 +72,17 @@ public abstract class AbstractCache<K extends Serializable, V extends Cacheable<
         return (entry != null) ? entry.getUnderlyingItem() : null;
     }
 
+    @Override
+    public boolean contains(K key) {
+        try {
+            return this.backingCache.peek(key) != null;
+        } catch (NoSuchEJBException e) {
+            //the javadoc says that this may be thrown
+            //although it looks like the current impls don't
+            return false;
+        }
+    }
+
     /**
      * {@inheritDoc}
      * @see org.jboss.as.ejb3.cache.Cache#release(org.jboss.as.ejb3.cache.Identifiable)
