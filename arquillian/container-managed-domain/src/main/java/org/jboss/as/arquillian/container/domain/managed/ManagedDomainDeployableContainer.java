@@ -176,7 +176,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
         }
 
         cmd.add("-Djboss.home.dir=" + jbossHomeDir);
-        cmd.add("-Dorg.jboss.boot.log.file=" + jbossHomeDir + "/domain/log/host-controller.log");
+        cmd.add("-Dorg.jboss.boot.log.file=" + jbossHomeDir + "/domain/log/process-controller.log");
         cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + CONFIG_PATH + "logging.properties");
         cmd.add("-Djboss.bundles.dir=" + bundlesDir.getCanonicalPath());
         cmd.add("-Djboss.domain.default.config=" + config.getDomainConfig());
@@ -185,9 +185,19 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
         cmd.add(modulesJar.getAbsolutePath());
         cmd.add("-mp");
         cmd.add(modulesPath);
-        cmd.add("-jaxpmodule");
-        cmd.add("javax.xml.jaxp-provider");
         cmd.add("org.jboss.as.process-controller");
+        cmd.add("-jboss-home");
+        cmd.add(jbossHomeDir);
+        cmd.add("-jvm");
+        cmd.add(javaExec);
+        cmd.add("--");
+        cmd.add("-Dorg.jboss.boot.log.file=" + jbossHomeDir + "/domain/log/host-controller.log");
+        cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + CONFIG_PATH + "logging.properties");
+        cmd.add("--");
+        cmd.add("-default-jvm");
+        cmd.add(javaExec);
+
+
 
         return cmd;
     }
