@@ -113,15 +113,18 @@ abstract class AbstractOperationContext implements OperationContext {
         return booting;
     }
 
+    @Override
     public void addStep(final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
         addStep(step, stage, false);
     }
 
+    @Override
     public void addStep(final ModelNode operation, final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
         final ModelNode response = activeStep == null ? new ModelNode().setEmptyObject() : activeStep.response;
         addStep(response, operation, null, step, stage);
     }
 
+    @Override
     public void addStep(final ModelNode response, final ModelNode operation, final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
         addStep(response, operation, null, step, stage);
     }
@@ -187,14 +190,22 @@ abstract class AbstractOperationContext implements OperationContext {
         }
     }
 
+    @Override
     public final ModelNode getFailureDescription() {
         return activeStep.response.get(FAILURE_DESCRIPTION);
     }
 
+    @Override
     public final boolean hasFailureDescription() {
         return activeStep.response.has(FAILURE_DESCRIPTION);
     }
 
+    @Override
+    public final ModelNode getResponseHeaders() {
+        return activeStep.response.get(RESPONSE_HEADERS);
+    }
+
+    @Override
     public final ResultAction completeStep() {
         try {
             doCompleteStep();
@@ -209,6 +220,7 @@ abstract class AbstractOperationContext implements OperationContext {
         }
     }
 
+    @Override
     public final void completeStep(RollbackHandler rollbackHandler) {
         if (rollbackHandler == null) {
             throw MESSAGES.nullVar("rollbackHandler");
@@ -513,14 +525,17 @@ abstract class AbstractOperationContext implements OperationContext {
         return Type.getType(processType, runningMode);
     }
 
+    @Override
     public final boolean isNormalServer() {
         return processType.isServer() && runningMode == RunningMode.NORMAL;
     }
 
+    @Override
     public final boolean isRollbackOnly() {
         return resultAction == ResultAction.ROLLBACK;
     }
 
+    @Override
     public final void setRollbackOnly() {
         resultAction = ResultAction.ROLLBACK;
     }
@@ -577,14 +592,17 @@ abstract class AbstractOperationContext implements OperationContext {
         activeStep.response.get(RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).set(true);
     }
 
+    @Override
     public final ModelNode getResult() {
         return activeStep.response.get(RESULT);
     }
 
+    @Override
     public final boolean hasResult() {
         return activeStep.response.has(RESULT);
     }
 
+    @Override
     public final ModelNode getServerResults() {
         if (processType != ProcessType.HOST_CONTROLLER ) {
             throw MESSAGES.serverResultsAccessNotAllowed(ProcessType.HOST_CONTROLLER, processType);

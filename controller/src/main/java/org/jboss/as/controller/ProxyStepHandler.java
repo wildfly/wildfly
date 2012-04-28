@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 
@@ -84,6 +85,9 @@ public class ProxyStepHandler implements OperationStepHandler {
             // operation failed before it could commit
             context.getResult().set(finalResult.get(RESULT));
             context.getFailureDescription().set(finalResult.get(FAILURE_DESCRIPTION));
+            if (finalResult.hasDefined(RESPONSE_HEADERS)) {
+                context.getResponseHeaders().set(finalResult.get(RESPONSE_HEADERS));
+            }
             context.completeStep();
         } else {
 
@@ -138,6 +142,9 @@ public class ProxyStepHandler implements OperationStepHandler {
                 }
                 if (context.getProcessType() == ProcessType.HOST_CONTROLLER && finalResponse.has(SERVER_GROUPS)) {
                     context.getServerResults().set(finalResponse.get(SERVER_GROUPS));
+                }
+                if (finalResponse.hasDefined(RESPONSE_HEADERS)) {
+                    context.getResponseHeaders().set(finalResponse.get(RESPONSE_HEADERS));
                 }
             } else {
                 // This is an error condition
