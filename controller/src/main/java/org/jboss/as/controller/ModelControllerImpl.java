@@ -120,14 +120,16 @@ class ModelControllerImpl implements ModelController {
 
         context.completeStep();
 
-        ControlledProcessState.State state = processState.getState();
-        switch (state) {
-            case RELOAD_REQUIRED:
-            case RESTART_REQUIRED:
-                response.get(RESPONSE_HEADERS, PROCESS_STATE).set(state.toString());
-                break;
-            default:
-                break;
+        if (!response.hasDefined(RESPONSE_HEADERS) || !response.get(RESPONSE_HEADERS).hasDefined(PROCESS_STATE)) {
+            ControlledProcessState.State state = processState.getState();
+            switch (state) {
+                case RELOAD_REQUIRED:
+                case RESTART_REQUIRED:
+                    response.get(RESPONSE_HEADERS, PROCESS_STATE).set(state.toString());
+                    break;
+                default:
+                    break;
+            }
         }
         return response;
     }

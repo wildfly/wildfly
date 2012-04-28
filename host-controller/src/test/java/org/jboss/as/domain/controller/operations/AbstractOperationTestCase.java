@@ -247,6 +247,10 @@ public abstract class AbstractOperationTestCase {
             return false;
         }
 
+        public ModelNode getResponseHeaders() {
+            return null;
+        }
+
         @Override
         public ProcessType getProcessType() {
             return null;
