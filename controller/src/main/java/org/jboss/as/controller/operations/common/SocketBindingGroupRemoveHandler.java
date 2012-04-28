@@ -42,6 +42,6 @@ public class SocketBindingGroupRemoveHandler extends AbstractRemoveStepHandler {
     }
 
     protected boolean requiresRuntime(OperationContext context) {
-        return false;
+        return context.getProcessType().isServer();
     }
 }

@@ -93,4 +93,13 @@ public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler
             context.reloadRequired();
         }
     }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
+        if (context.isBooting()) {
+            super.rollbackRuntime(context, operation, model, controllers);
+        } else {
+            context.revertReloadRequired();
+        }
+    }
 }

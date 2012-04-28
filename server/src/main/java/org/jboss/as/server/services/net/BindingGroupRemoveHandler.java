@@ -33,13 +33,17 @@ import org.jboss.dmr.ModelNode;
 public class BindingGroupRemoveHandler extends SocketBindingGroupRemoveHandler {
 
     public static final BindingGroupRemoveHandler INSTANCE = new BindingGroupRemoveHandler();
+
     private BindingGroupRemoveHandler() {
     }
 
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        context.reloadRequired();
+    }
 
     @Override
-    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        super.performRemove(context, operation, model);
-        context.reloadRequired();
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        context.revertReloadRequired();
     }
 }
