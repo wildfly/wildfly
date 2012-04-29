@@ -113,7 +113,7 @@ public interface Constants {
     String VALUE = "value";
     String VAULT = "vault";
     String VAULT_OPTION = "vault-option";
-    String OPTIONS = "options";
+    String VAULT_OPTIONS = "vault-options";
     String LIST_CACHED_PRINCIPALS = "list-cached-principals";
     String FLUSH_CACHE = "flush-cache";
     String PRINCIPAL_ARGUMENT = "principal";

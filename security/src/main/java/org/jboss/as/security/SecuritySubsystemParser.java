@@ -174,8 +174,8 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             writer.writeStartElement(Element.VAULT.getLocalName());
             VaultResourceDefinition.CODE.marshallAsAttribute(vault, writer);
 
-            if (vault.hasDefined(Constants.OPTIONS)) {
-                ModelNode properties = vault.get(Constants.OPTIONS);
+            if (vault.hasDefined(Constants.VAULT_OPTIONS)) {
+                ModelNode properties = vault.get(Constants.VAULT_OPTIONS);
                 for (Property prop : properties.asPropertyList()) {
                     writer.writeEmptyElement(Element.VAULT_OPTION.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
@@ -359,7 +359,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case VAULT_OPTION: {
-                    parsePropertyElement(reader, vault.get(Constants.OPTIONS));
+                    parsePropertyElement(reader, vault.get(Constants.VAULT_OPTIONS));
                     break;
                 }
             }
