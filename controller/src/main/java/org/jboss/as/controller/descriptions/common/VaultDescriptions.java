@@ -39,8 +39,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.Attribute;
-import org.jboss.as.controller.parsing.Element;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -59,10 +59,10 @@ public class VaultDescriptions {
         node.get(ATTRIBUTES, Attribute.CODE.getLocalName(), TYPE).set(ModelType.STRING);
         node.get(ATTRIBUTES, Attribute.CODE.getLocalName(), NILLABLE).set(true);
 
-        node.get(ATTRIBUTES, Element.VAULT_OPTION.getLocalName(), DESCRIPTION).set(bundle.getString("vault.option"));
-        node.get(ATTRIBUTES, Element.VAULT_OPTION.getLocalName(), TYPE).set(ModelType.OBJECT);
-        node.get(ATTRIBUTES, Element.VAULT_OPTION.getLocalName(), VALUE_TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, Element.VAULT_OPTION.getLocalName(), NILLABLE).set(true);
+        node.get(ATTRIBUTES, ModelDescriptionConstants.VAULT_OPTIONS, DESCRIPTION).set(bundle.getString("vault.options"));
+        node.get(ATTRIBUTES, ModelDescriptionConstants.VAULT_OPTIONS, TYPE).set(ModelType.OBJECT);
+        node.get(ATTRIBUTES, ModelDescriptionConstants.VAULT_OPTIONS, VALUE_TYPE).set(ModelType.STRING);
+        node.get(ATTRIBUTES, ModelDescriptionConstants.VAULT_OPTIONS, NILLABLE).set(true);
 
         node.get(OPERATIONS); // placeholder
 
@@ -80,10 +80,10 @@ public class VaultDescriptions {
         node.get(REQUEST_PROPERTIES, Attribute.CODE.getLocalName(), DESCRIPTION).set(bundle.getString("vault.code"));
         node.get(REQUEST_PROPERTIES, Attribute.CODE.getLocalName(), REQUIRED).set(false);
 
-        node.get(REQUEST_PROPERTIES, Element.VAULT_OPTION.getLocalName(), DESCRIPTION).set(bundle.getString("vault.option"));
-        node.get(REQUEST_PROPERTIES, Element.VAULT_OPTION.getLocalName(), TYPE).set(ModelType.OBJECT);
-        node.get(REQUEST_PROPERTIES, Element.VAULT_OPTION.getLocalName(), VALUE_TYPE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, Element.VAULT_OPTION.getLocalName(), REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.VAULT_OPTIONS, DESCRIPTION).set(bundle.getString("vault.options"));
+        node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.VAULT_OPTIONS, TYPE).set(ModelType.OBJECT);
+        node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.VAULT_OPTIONS, VALUE_TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.VAULT_OPTIONS, REQUIRED).set(false);
 
         node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;

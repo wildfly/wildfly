@@ -53,7 +53,7 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.CODE, ModelType.STRING, true).build();
 
 
-    public static final PropertiesAttributeDefinition OPTIONS = new PropertiesAttributeDefinition(Constants.OPTIONS, Constants.VAULT_OPTION, true);
+    public static final PropertiesAttributeDefinition OPTIONS = new PropertiesAttributeDefinition(Constants.VAULT_OPTIONS, Constants.VAULT_OPTION, true);
 
 
     private VaultResourceDefinition() {
@@ -80,14 +80,14 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
         @Override
         protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
             Map<String, Object> vaultOptions = new HashMap<String, Object>();
-            String vaultClass = null;
             ModelNode vaultNode = operation;
-            vaultClass = vaultNode.get(Constants.CODE).asString();
-            List<ModelNode> vaultOptionList = vaultNode.get(Constants.VAULT_OPTION).asList();
-            if (vaultOptionList != null) {
-                for (ModelNode vaultOptionNode : vaultOptionList) {
-                    Property vaultProp = vaultOptionNode.asProperty();
-                    vaultOptions.put(vaultProp.getName(), vaultProp.getValue().asString());
+            ModelNode vaultClassNode = CODE.resolveModelAttribute(context, model);
+            String vaultClass = vaultClassNode.getType() == ModelType.UNDEFINED ? null : vaultClassNode.asString();
+
+            if (vaultNode.hasDefined(Constants.VAULT_OPTIONS)) {
+                List<Property> vaultOptionList = vaultNode.get(Constants.VAULT_OPTIONS).asPropertyList();
+                for (Property vaultOption : vaultOptionList) {
+                    vaultOptions.put(vaultOption.getName(), vaultOption.getValue().asString());
                 }
             }
 
