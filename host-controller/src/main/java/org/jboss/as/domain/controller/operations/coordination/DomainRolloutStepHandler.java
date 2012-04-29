@@ -236,12 +236,12 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                         if (localHostName.equals(server.getHostName())) {
                             // Use our server proxies
                             proxy = serverProxies.get(server.getServerName());
-                            if (proxy == null) {
-                                if (trace) {
-                                    HOST_CONTROLLER_LOGGER.tracef("No proxy for %s", server);
-                                }
-                                return false;
+                        }
+                        if (proxy == null) {
+                            if (trace) {
+                                HOST_CONTROLLER_LOGGER.tracef("No proxy for %s", server);
                             }
+                            return false;
                         }
                     }
                     final RemoteProxyController remoteProxyController = (RemoteProxyController) proxy;

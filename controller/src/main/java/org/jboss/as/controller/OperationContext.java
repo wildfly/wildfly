@@ -135,7 +135,7 @@ public interface OperationContext {
     boolean hasResult();
 
     /**
-     * Get the failure description result node, creating it if necessary.
+     * Get the failure description response node, creating it if necessary.
      *
      * @return the failure description
      */
@@ -157,6 +157,17 @@ public interface OperationContext {
      */
     ModelNode getServerResults();
 
+    /**
+     * Get the response-headers response node, creating it if necessary. Ordinary operation step handlers should not
+     * use this API for manipulating the {@code operation-requires-restart} or {@code process-state} headers. Use
+     * {@link #reloadRequired()} and {@link #restartRequired()} for that. (Some core operation step handlers used
+     * for coordinating execution of operations across different processes in a managed domain may use this
+     * method to manipulate the {@code operation-requires-restart} or {@code process-state} headers, but that is
+     * an exception.)
+     *
+     * @return the response-headers node
+     */
+    ModelNode getResponseHeaders();
 
     /**
      * Complete a step, returning the overall operation result.  The step handler calling this operation should append

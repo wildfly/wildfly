@@ -82,7 +82,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
             contextResult.setEmptyObject(); // clear out any old data
             contextResult.set(getDomainResults(operation));
             if (domainOperationContext.getServerResults().size() > 0) {
-                populateServerGroupResults(context, context.getResult());
+                populateServerGroupResults(context);
             } else {
                 // Just make sure there's an 'undefined' server-groups node
                 context.getServerResults();
@@ -202,7 +202,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
         return result;
     }
 
-    private void populateServerGroupResults(final OperationContext context, final ModelNode result) {
+    private void populateServerGroupResults(final OperationContext context) {
         final Set<String> groupNames = new TreeSet<String>();
         final Map<String, Set<HostServer>> groupToServerMap = new HashMap<String, Set<HostServer>>();
         for (Map.Entry<ServerIdentity, ModelNode> entry : domainOperationContext.getServerResults().entrySet()) {
