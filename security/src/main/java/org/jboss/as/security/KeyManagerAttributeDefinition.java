@@ -1,6 +1,10 @@
 package org.jboss.as.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -16,6 +20,7 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.ParametersOfValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -30,8 +35,8 @@ public class KeyManagerAttributeDefinition extends AttributeDefinition {
 
     static {
         final ParametersValidator delegate = new ParametersValidator();
-        delegate.registerValidator(Constants.ALGORITHM, new ModelTypeValidator(ModelType.STRING, true));
-        delegate.registerValidator(Constants.PROVIDER, new ModelTypeValidator(ModelType.STRING, true));
+        delegate.registerValidator(Constants.ALGORITHM, new ModelTypeValidator(ModelType.STRING, true, true));
+        delegate.registerValidator(Constants.PROVIDER, new ModelTypeValidator(ModelType.STRING, true, true));
 
         keyManagerValidator = new ParametersOfValidator(delegate);
         fieldValidator = delegate;
@@ -56,7 +61,7 @@ public class KeyManagerAttributeDefinition extends AttributeDefinition {
         final String trimmed = value == null ? null : value.trim();
         ModelNode node;
         if (trimmed != null ) {
-            node = new ModelNode().set(trimmed);
+            node = new ModelNode().set(ParseUtils.parsePossibleExpression(trimmed));
         } else {
             node = new ModelNode();
         }
@@ -103,11 +108,13 @@ public class KeyManagerAttributeDefinition extends AttributeDefinition {
         password.get(DESCRIPTION); // placeholder
         password.get(TYPE).set(ModelType.STRING);
         password.get(NILLABLE).set(true);
+        password.get(EXPRESSIONS_ALLOWED).set(true);
 
         final ModelNode provider = valueType.get(Constants.PROVIDER);
         provider.get(DESCRIPTION);  // placeholder
         provider.get(TYPE).set(ModelType.STRING);
         provider.get(NILLABLE).set(true);
+        provider.get(EXPRESSIONS_ALLOWED).set(true);
 
         return valueType;
     }
