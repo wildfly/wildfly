@@ -22,11 +22,13 @@
 
 package org.jboss.as.security;
 
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
 
@@ -54,7 +56,7 @@ class SecurityDomainRemove extends AbstractRemoveStepHandler {
         context.removeService(SecurityDomainService.SERVICE_NAME.append(securityDomain));
     }
 
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String securityDomain = address.getLastElement().getValue();
         final String cacheType = SecurityDomainAdd.getAuthenticationCacheType(operation);
