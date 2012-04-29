@@ -98,7 +98,7 @@
          <xs:element name="jsse" type="jsseType" minOccurs="0" maxOccurs="1"/>
       </xs:sequence>
       <xs:attribute name="name" type="xs:string" use="required"/>
-      <xs:attribute name="cache-type" type="xs:string" use="optional"/>
+      <xs:attribute name="cache-type" type="cacheTypeType" use="optional"/>
    </xs:complexType>
 
    <xs:complexType name="authenticationType">
@@ -418,4 +418,18 @@
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="optional"/>
    </xs:complexType>
+
+   <xs:simpleType name="cacheTypeType">
+      <xs:annotation>
+         <xs:documentation>
+               <![CDATA[
+                    Cache type configuration. Default value is "default".
+                ]]>
+         </xs:documentation>
+      </xs:annotation>
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="default"/>
+         <xs:enumeration value="infinispan"/>
+      </xs:restriction>
+   </xs:simpleType>
 </xs:schema>
