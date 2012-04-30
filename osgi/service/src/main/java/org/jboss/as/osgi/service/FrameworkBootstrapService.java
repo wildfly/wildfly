@@ -51,6 +51,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.naming.InitialContext;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.osgi.management.OSGiRuntimeResource;
 import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.server.ServerEnvironment;
@@ -77,6 +78,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.FrameworkModuleProvider;
 import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.Services;
@@ -105,9 +107,10 @@ public class FrameworkBootstrapService implements Service<Void> {
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
     private final InjectedValue<SocketBinding> httpServerPortBinding = new InjectedValue<SocketBinding>();
+    private final OSGiRuntimeResource resource;
 
-    public static ServiceController<Void> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler) {
-        FrameworkBootstrapService service = new FrameworkBootstrapService();
+    public static ServiceController<Void> addService(final ServiceTarget target, OSGiRuntimeResource resource, final ServiceVerificationHandler verificationHandler) {
+        FrameworkBootstrapService service = new FrameworkBootstrapService(resource);
         ServiceBuilder<Void> builder = target.addService(FRAMEWORK_BOOTSTRAP, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
@@ -116,12 +119,13 @@ public class FrameworkBootstrapService implements Service<Void> {
         return builder.install();
     }
 
-    private FrameworkBootstrapService() {
+    private FrameworkBootstrapService(OSGiRuntimeResource resource) {
+        this.resource = resource;
     }
 
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
-        LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
         try {
             ServiceContainer serviceContainer = context.getController().getServiceContainer();
 
@@ -143,7 +147,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             ModuleIdentityArtifactProvider.addService(serviceTarget);
             RepositoryProvider.addService(serviceTarget);
             ResolverService.addService(serviceTarget);
-            SystemServicesIntegration.addService(serviceTarget);
+            SystemServicesIntegration.addService(serviceTarget, resource);
 
             // Configure the {@link Framework} builder
             Activation activation = subsystemState.getActivationPolicy();
@@ -162,7 +166,7 @@ public class FrameworkBootstrapService implements Service<Void> {
 
     public synchronized void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
-        LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
     }
 
     @Override
@@ -186,7 +190,9 @@ public class FrameworkBootstrapService implements Service<Void> {
         }
 
         // Provide the ModuleLogger
-        props.put(ModuleLogger.class.getName(), Module.getModuleLogger());
+        ModuleLogger moduleLogger = Module.getModuleLogger();
+        if (moduleLogger != null)
+            props.put(ModuleLogger.class.getName(), moduleLogger.getClass().getName());
 
         // Setup default system modules
         String sysmodules = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
@@ -235,29 +241,37 @@ public class FrameworkBootstrapService implements Service<Void> {
     private static final class SystemServicesIntegration implements Service<SystemServicesProvider>, SystemServicesProvider {
 
         private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
+        private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
         private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
+        private final OSGiRuntimeResource resource;
         private ServiceContainer serviceContainer;
         private JNDIServiceListener jndiServiceListener;
 
-        public static ServiceController<?> addService(final ServiceTarget target) {
-            SystemServicesIntegration service = new SystemServicesIntegration();
+        public static ServiceController<?> addService(final ServiceTarget target, OSGiRuntimeResource resource) {
+            SystemServicesIntegration service = new SystemServicesIntegration(resource);
             ServiceBuilder<SystemServicesProvider> builder = target.addService(IntegrationServices.SYSTEM_SERVICES_PROVIDER, service);
             builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
+            builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, service.injectedBundleManager);
             builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedBundleContext);
             builder.addDependency(Services.FRAMEWORK_CREATE);
             builder.setInitialMode(Mode.ON_DEMAND);
             return builder.install();
         }
 
-        private SystemServicesIntegration() {
+        private SystemServicesIntegration(OSGiRuntimeResource resource) {
+            this.resource = resource;
         }
 
         @Override
         public void start(StartContext context) throws StartException {
             ServiceController<?> controller = context.getController();
-            LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+            LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
             serviceContainer = context.getController().getServiceContainer();
             final BundleContext syscontext = injectedBundleContext.getValue();
+
+            // Inject the system bundle context into the runtime resource
+            BundleManager bundleManager = injectedBundleManager.getValue();
+            resource.getInjectedBundleManager().inject(bundleManager);
 
             // Register the JNDI service listener
             jndiServiceListener = new JNDIServiceListener(syscontext);
@@ -297,8 +311,9 @@ public class FrameworkBootstrapService implements Service<Void> {
         @Override
         public void stop(StopContext context) {
             ServiceController<?> controller = context.getController();
-            LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+            LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
             injectedBundleContext.getValue().removeServiceListener(jndiServiceListener);
+            resource.getInjectedBundleManager().uninject();
         }
 
         @Override
@@ -337,13 +352,13 @@ public class FrameworkBootstrapService implements Service<Void> {
         @Override
         public void start(StartContext context) throws StartException {
             ServiceController<?> controller = context.getController();
-            LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+            LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
         }
 
         @Override
         public void stop(StopContext context) {
             ServiceController<?> controller = context.getController();
-            LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+            LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
             frameworkModule = null;
         }
 

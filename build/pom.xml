@@ -1194,11 +1194,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.osgi</groupId>
-                    <artifactId>javax.servlet.api</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.jboss.osgi.logging</groupId>
                     <artifactId>jboss-osgi-logging</artifactId>
                 </dependency>
@@ -1426,6 +1421,11 @@
                 <dependency>
                     <groupId>org.jboss.spec.javax.security.jacc</groupId>
                     <artifactId>jboss-jacc-api_1.4_spec</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.spec.javax.servlet</groupId>
+                    <artifactId>jboss-servlet-api_2.5_spec</artifactId>
                 </dependency>
 
                 <dependency>

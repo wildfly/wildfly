@@ -39,6 +39,7 @@ public interface ModelConstants {
     String ENTRIES = "entries";
     String FRAGMENT = "fragment";
     String ID = "id";
+    String LOCATION = "location";
     String NAME = "name";
     String PROPERTY = "property";
     String START = "start";
