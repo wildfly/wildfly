@@ -20,7 +20,8 @@ public class MailServerDefinition extends SimpleResourceDefinition {
     public static final MailServerDefinition INSTANCE_POP3 = new MailServerDefinition(MailSubsystemModel.POP3_SERVER_PATH);
 
     private MailServerDefinition(PathElement path) {
-        super(path, MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION+"."+MailSubsystemModel.SERVER_TYPE), MailServerAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(path, MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION,MailSubsystemModel.SERVER_TYPE),
+                MailServerAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     protected static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF =
