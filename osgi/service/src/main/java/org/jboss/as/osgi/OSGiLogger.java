@@ -89,8 +89,4 @@ public interface OSGiLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 11909, value = "Management operation '%s' failed")
     void errorInOperationHandler(@Cause Throwable cause, String opname);
-
-    @LogMessage(level = WARN)
-    @Message(id = 11910, value = "BundleContext not available")
-    void warnBundleContextNotAvailable();
 }
