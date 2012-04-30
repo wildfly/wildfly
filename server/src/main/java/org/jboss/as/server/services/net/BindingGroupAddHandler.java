@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -69,23 +70,33 @@ public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler
     @Override
     protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
 
-        Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
-        Set<ResourceEntry> children = root.getChildren(SOCKET_BINDING_GROUP);
-        if (children.size() > 1){
-            PathAddress mine = PathAddress.pathAddress(operation.require(OP_ADDR));
-            for (ResourceEntry entry : children) {
-                if (!entry.getName().equals(mine.getLastElement().getValue())) {
-                    throw ServerMessages.MESSAGES.cannotAddMoreThanOneSocketBindingGroupForServer(
-                            mine,
-                            PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, entry.getName())));
-                }
-            }
-        }
+        final Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
 
         ModelNode model = resource.getModel();
         populateModel(operation, model);
 
         SocketBindingGroupResourceDefinition.PORT_OFFSET.validateAndSet(operation, model);
+
+        // Validate only a single socket binding group
+        final PathAddress mine = PathAddress.pathAddress(operation.require(OP_ADDR));
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+                Set<ResourceEntry> children = root.getChildren(SOCKET_BINDING_GROUP);
+                if (children.size() > 1) {
+                    for (ResourceEntry entry : children) {
+                        if (!entry.getName().equals(mine.getLastElement().getValue())) {
+                            throw ServerMessages.MESSAGES.cannotAddMoreThanOneSocketBindingGroupForServer(
+                                    mine,
+                                    PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, entry.getName())));
+                        }
+                    }
+                }
+
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            }
+        },OperationContext.Stage.MODEL);
 
         SocketBindingGroupResourceDefinition.validateDefaultInterfaceReference(context, model);
     }
