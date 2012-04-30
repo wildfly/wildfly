@@ -51,8 +51,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.domain.controller.DomainControllerLogger;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Assembles the overall result for a domain operation from individual host and server results.
@@ -154,7 +156,16 @@ public class DomainFinalResultHandler implements OperationStepHandler {
         }
 
         if (hostFailureResults != null) {
-            context.getFailureDescription().get(HOST_FAILURE_DESCRIPTIONS).set(hostFailureResults);
+            //context.getFailureDescription().get(HOST_FAILURE_DESCRIPTIONS).set(hostFailureResults);
+
+            //The following is a workaround for AS7-4597
+            //DomainRolloutStepHandler.pushToServers() puts in a simple string into the failure description, but that might be a red herring.
+            //If there is a failure description and it is not of type OBJECT, then let's not set it for now
+            if (!context.getFailureDescription().isDefined() || context.getFailureDescription().getType() == ModelType.OBJECT) {
+                context.getFailureDescription().get(HOST_FAILURE_DESCRIPTIONS).set(hostFailureResults);
+            } else {
+                DomainControllerLogger.CONTROLLER_LOGGER.debugf("Failure description is not of type OBJECT '%s'", context.getFailureDescription());
+            }
             return false;
         }
         return true;
