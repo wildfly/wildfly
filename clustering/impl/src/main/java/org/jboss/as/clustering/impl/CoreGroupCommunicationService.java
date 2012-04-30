@@ -21,8 +21,6 @@
  */
 package org.jboss.as.clustering.impl;
 
-import static org.jboss.as.clustering.impl.ClusteringImplMessages.MESSAGES;
-
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -101,6 +99,8 @@ import org.jgroups.util.Buffer;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 
+import static org.jboss.as.clustering.impl.ClusteringImplMessages.MESSAGES;
+
 /**
  * Implementation of the {@link GroupCommunicationService} interface and its direct subinterfaces based on a <a
  * href="http://www.jgroups.com/">JGroups</a> <code>MuxRpcDispatcher</code> and a <code>JChannel</code>.
@@ -155,6 +155,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         this.marshallingConfig.setClassResolver(ModularClassResolver.getInstance(this.loaderRef.getValue()));
         this.marshallingConfig.setSerializedCreator(new SunReflectiveCreator());
         this.marshallingConfig.setExternalizerCreator(new ReflectiveCreator());
+        this.marshallingConfig.setClassTable(CoreGroupClassTable.INSTANCE);
         try {
             this.start();
         } catch (Exception e) {
