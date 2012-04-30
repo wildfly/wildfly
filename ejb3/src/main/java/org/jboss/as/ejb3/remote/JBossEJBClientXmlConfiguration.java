@@ -86,6 +86,11 @@ public class JBossEJBClientXmlConfiguration implements EJBClientConfiguration {
         return this.invocationTimeout;
     }
 
+    @Override
+    public long getReconnectTasksTimeout() {
+        return 0;
+    }
+
     public void addClusterConfiguration(final EJBClientClusterConfig clusterConfig) {
         this.clusterConfigs.put(clusterConfig.getClusterName(), clusterConfig);
     }
