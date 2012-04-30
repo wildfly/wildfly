@@ -729,6 +729,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-build</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.servlet</groupId>
+                        <artifactId>jboss-servlet-api_2.5_spec</artifactId>
+                    </exclusion>
+                </exclusions>
                 <type>pom</type>
                 <version>${project.version}</version>
             </dependency>
