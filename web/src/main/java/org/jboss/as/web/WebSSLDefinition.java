@@ -36,6 +36,7 @@ public class WebSSLDefinition extends AbstractAliasedResourceDefinition {
                     .setValidator(new StringLengthValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode("jboss"))
+                    .setAllowExpression(true)
                     .build();
 
     protected static final SimpleAttributeDefinition PASSWORD =
