@@ -1,10 +1,11 @@
 package org.jboss.as.appclient.deployment;
 
-import org.jboss.ejb.client.EJBClientConfiguration;
-import org.xnio.OptionMap;
+import java.util.Iterator;
 
 import javax.security.auth.callback.CallbackHandler;
-import java.util.Iterator;
+
+import org.jboss.ejb.client.EJBClientConfiguration;
+import org.xnio.OptionMap;
 
 /**
  * @author Stuart Douglas
@@ -55,5 +56,10 @@ public abstract class ForwardingEjbClientConfiguration implements EJBClientConfi
     @Override
     public long getInvocationTimeout() {
         return delegate.getInvocationTimeout();
+    }
+
+    @Override
+    public long getReconnectTasksTimeout() {
+        return delegate.getReconnectTasksTimeout();
     }
 }
