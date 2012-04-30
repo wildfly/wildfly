@@ -21,7 +21,8 @@
  */
 package org.jboss.as.osgi.management;
 
-import java.util.Collections;
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -137,7 +138,7 @@ public class OSGiRuntimeResource implements Resource {
     @Override
     public Set<ResourceEntry> getChildren(String childType) {
         if (ModelConstants.BUNDLE.equals(childType)) {
-            Set<ResourceEntry> result = new HashSet<Resource.ResourceEntry>();
+            Set<ResourceEntry> result = new TreeSet<Resource.ResourceEntry>();
             for (String id : getBundleIDs()) {
                 result.add(new OSGiBundleResource.OSGiBundleResourceEntry(id));
             }
@@ -181,32 +182,35 @@ public class OSGiRuntimeResource implements Resource {
     }
 
     private boolean hasBundle(PathElement element) {
+        boolean result = false;
         BundleContext context = getBundleContext();
-        if (context == null)
-            return false;
-
-        try {
-            long id = Long.parseLong(element.getValue());
-            return context.getBundle(id) != null;
-        } catch (NumberFormatException nfe) {
-            return false;
+        if (context != null) {
+            try {
+                long id = Long.parseLong(element.getValue());
+                result = (context.getBundle(id) != null);
+            } catch (NumberFormatException nfe) {
+                // ignore
+            }
         }
+        return result;
     }
 
     private Set<String> getBundleIDs() {
+        Set<String> result = new TreeSet<String>();
         BundleContext context = getBundleContext();
-        if (context == null) {
-            return Collections.emptySet();
-        } else {
-            Set<String> result = new TreeSet<String>();
+        if (context != null) {
             for (Bundle b : context.getBundles()) {
                 result.add(Long.toString(b.getBundleId()));
             }
-            return result;
         }
+        return result;
     }
 
     private BundleContext getBundleContext() {
-        return injectedBundleContext.getOptionalValue();
+        BundleContext context = injectedBundleContext.getOptionalValue();
+        if (context == null) {
+            LOGGER.warnBundleContextNotAvailable();
+        }
+        return context;
     }
 }
