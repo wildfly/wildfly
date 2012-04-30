@@ -91,7 +91,7 @@ public class TransformersImpl implements Transformers {
             String subsystemName = address.getLastElement().getValue();
             SubsystemTransformer transformer = target.getSubsystemTransformer(subsystemName);
             if (transformer != null) {
-                log.info("transforming subsystem: " + subsystemName + ", to model version: " + transformer.getMajorManagementVersion() + "." + transformer.getMinorManagementVersion());
+                log.debug("transforming subsystem: " + subsystemName + ", to model version: " + transformer.getMajorManagementVersion() + "." + transformer.getMinorManagementVersion());
                 ResourceDefinition rd = TransformerRegistry.loadSubsystemDefinition(subsystemName, transformer.getMajorManagementVersion(), transformer.getMinorManagementVersion());
                 ManagementResourceRegistration targetDefinition = ManagementResourceRegistration.Factory.create(rd);
                 ModelNode fullSubsystemModel = Resource.Tools.readModel(resource);

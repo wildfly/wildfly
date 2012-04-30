@@ -47,7 +47,7 @@ public class SimpleFullModelTransformer {
                 if (info.getManagementInterfaceMajorVersion() == major && info.getManagementInterfaceMinorVersion() == minor) {
                     return resource; //no need to transform
                 }
-                log.info("transforming subsystem: " + subsystem + ", to model version: " + subsystemVersions.get(subsystemName));
+                log.debug("transforming subsystem: " + subsystem + ", to model version: " + subsystemVersions.get(subsystemName));
                 SubsystemTransformer transformer = extensionRegistry.getTransformerRegistry().getSubsystemTransformer(subsystemName, major, minor);
                 if (transformer != null) {
                     ResourceDefinition rd = TransformerRegistry.loadSubsystemDefinition(subsystemName, major, minor);
@@ -56,7 +56,7 @@ public class SimpleFullModelTransformer {
                     ModelNode transformed = transformer.transformModel(null, fullSubsystemModel);
                     return TransformerRegistry.modelToResource(targetDefinition, transformed);
                 } else { //for now no default subsystem transformer
-                    log.warn("We have no transformer for subsystem: " + subsystemName + "-" + major + "." + minor + " model transfer can break!");
+                    log.debug("We have no transformer for subsystem: " + subsystemName + "-" + major + "." + minor + " model transfer can break!");
                     //defaultSubsystemTransformer.transformSubsystem(resource, registration, subsystemName, major, minor);
                 }
             }

@@ -81,7 +81,10 @@ public interface SubsystemRegistration {
 
     /**
      * Registers subsystem model transformer
-      * @param subsystemTransformer - transformer of model
+     * @param subsystemTransformer - transformer of model
+     *
+     * @deprecated experimental method; may be removed or changed without warning. Should not be used outside the main JBoss AS codebase
      */
+    @Deprecated
     void registerSubsystemTransformer(SubsystemTransformer subsystemTransformer);
 }

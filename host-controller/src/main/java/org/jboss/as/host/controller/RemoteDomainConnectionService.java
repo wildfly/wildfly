@@ -24,6 +24,7 @@ package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_MODEL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -315,17 +316,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
      * @return the subsystem versions
      */
     private ModelNode resolveSubsystems(final List<ModelNode> extensions) {
-//        final ModelNode composite = new ModelNode();
-//        composite.get(OP).set(COMPOSITE);
-//        composite.get(OP_ADDR).setEmptyList();
-//        composite.get(STEPS).setEmptyList();
-//        for(final ModelNode extension : extensions) {
-//            final ModelNode operation = new ModelNode();
-//            operation.get(OP).set(ADD);
-//            operation.get(OP_ADDR).add(EXTENSION, extension.asString());
-//            composite.get(STEPS).add(operation);
-//        }
-//        final ModelNode result = controller.execute(composite, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT, OperationAttachments.EMPTY);
 
         final List<ModelNode> bootOperations = new ArrayList<ModelNode>();
         for(final ModelNode extension : extensions) {
@@ -337,7 +327,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         operation.get(DOMAIN_MODEL).set(bootOperations);
         final ModelNode result = controller.execute(operation, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT, OperationAttachments.EMPTY);
         if(! SUCCESS.equals(result.get(OUTCOME).asString())) {
-            throw new IllegalStateException();
+            throw HostControllerMessages.MESSAGES.failedToAddExtensions(result.get(FAILURE_DESCRIPTION));
         }
         final ModelNode subsystems = new ModelNode();
         for(final ModelNode extension : extensions) {

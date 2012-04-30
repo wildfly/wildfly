@@ -46,7 +46,6 @@ import java.util.Stack;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.smartcardio.ATR;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;

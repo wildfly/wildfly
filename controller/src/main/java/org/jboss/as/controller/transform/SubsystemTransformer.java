@@ -9,7 +9,10 @@ package org.jboss.as.controller.transform;
  *
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
+ *
+ * @deprecated experimental interface; may be removed or change without warning. Should not be used outside the main JBoss AS codebase
  */
+@Deprecated
 public interface SubsystemTransformer extends ResourceTransformer, OperationTransformer {
     int getMajorManagementVersion();
 

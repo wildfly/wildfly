@@ -87,9 +87,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.ValidateOperationHandler;
@@ -789,26 +787,6 @@ public abstract class AbstractProxyControllerTest {
                         }
                     },
                     false);
-        }
-    }
-
-
-    static class DelegatingProxyController implements ProxyController {
-
-        ProxyController delegate;
-
-        void setDelegate(ProxyController delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public PathAddress getProxyNodeAddress() {
-            return delegate.getProxyNodeAddress();
-        }
-
-        @Override
-        public void execute(ModelNode operation, OperationMessageHandler handler, ProxyOperationControl control, OperationAttachments attachments) {
-            delegate.execute(operation, handler, control, attachments);
         }
     }
 }

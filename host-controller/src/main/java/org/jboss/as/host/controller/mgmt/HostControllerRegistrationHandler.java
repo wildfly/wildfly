@@ -45,15 +45,15 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformationTargetImpl;
-import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
-import org.jboss.as.controller.transform.TransformersImpl;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerMessages;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
 import static org.jboss.as.host.controller.HostControllerLogger.DOMAIN_LOGGER;
 import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
+
+import org.jboss.as.host.controller.HostControllerMessages;
 import org.jboss.as.protocol.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -160,13 +160,10 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 @Override
                 public void execute(ManagementRequestContext<RegistrationContext> context) throws Exception {
                     final Channel channel = context.getChannel();
-                    final ModelNode result;
                     try {
                         // The domain model is going to be sent as part of the prepared notification
                         final OperationStepHandler handler = new HostRegistrationStepHandler(registration);
                         operationExecutor.execute(READ_DOMAIN_MODEL, OperationMessageHandler.logging, registration, OperationAttachments.EMPTY, handler);
-
-                        //result = controller.execute(READ_DOMAIN_MODEL, OperationMessageHandler.logging, registration, OperationAttachments.EMPTY);
                     } catch (Exception e) {
                         registration.failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
                         return;
@@ -242,7 +239,8 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             boolean as711 = hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt() == 1 && hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt() == 1;
             final ModelNode subsystems;
             if(as711) {
-                throw new OperationFailedException("Host controller version too old, Only 7.1.2 or higer are supported!");
+                throw HostControllerMessages.MESSAGES.unsupportedManagementVersionForHost(hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt(),
+                        hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt(), 1, 2);
             } else {
                 // Build the extensions list
                 final ModelNode extensions = new ModelNode();
@@ -305,6 +303,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 subsystemsLatch.await();
             } catch (InterruptedException e) {
                 failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
+                Thread.currentThread().interrupt();
                 throw new IllegalStateException(e);
             }
             if(failed) {
@@ -384,6 +383,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 completedLatch.await();
             } catch (InterruptedException e) {
                 failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
+                Thread.currentThread().interrupt();
                 return;
             }
             synchronized (this) {
@@ -394,10 +394,11 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 // Create the proxy controller
                 final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostName));
                 final RemoteProxyController proxy = RemoteProxyController.create(handler, addr, ProxyOperationAddressTranslator.HOST);
-                final TransformingProxyController transforming = TransformingProxyController.Factory.create(proxy, transformers);
+//                final TransformingProxyController transforming = TransformingProxyController.Factory.create(proxy, transformers);
                 try {
                     // Register proxy controller
-                    domainController.registerRemoteHost(transforming);
+//                    domainController.registerRemoteHost(transforming);
+                    domainController.registerRemoteHost(proxy);
                 } catch (SlaveRegistrationException e) {
                     failed(e.getErrorCode(), e.getErrorMessage());
                     return;

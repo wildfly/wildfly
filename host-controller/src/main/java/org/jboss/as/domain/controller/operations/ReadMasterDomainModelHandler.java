@@ -26,21 +26,15 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.Transformers;
-import org.jboss.as.host.controller.mgmt.TransformingProxyController;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Step handler responsible for collecting a complete description of the domain model,
@@ -83,13 +77,13 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler, Descr
      * @param resource the root resource
      * @return the list of resources
      */
-    List<ModelNode> describeAsNodeList(final Resource resource) {
+    private static List<ModelNode> describeAsNodeList(final Resource resource) {
         final List<ModelNode> list = new ArrayList<ModelNode>();
         describe(PathAddress.EMPTY_ADDRESS, resource, list);
         return list;
     }
 
-    void describe(final PathAddress base, final Resource resource, List<ModelNode> nodes) {
+    private static void describe(final PathAddress base, final Resource resource, List<ModelNode> nodes) {
         if (resource.isProxy() || resource.isRuntime()) {
             return; // ignore runtime and proxies
         } else if (base.size() >= 1 && base.getElement(0).getKey().equals(ModelDescriptionConstants.HOST)) {
