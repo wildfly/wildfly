@@ -36,6 +36,7 @@ import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.MountType;
@@ -44,8 +45,6 @@ import org.jboss.as.server.services.security.VaultReaderException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
-import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
@@ -602,4 +601,7 @@ public interface ServerMessages {
 
     @Message(id = 18769, value = "Validation for %s is not implemented")
     UnsupportedOperationException attributeValidationUnimplemented(String attribute);
+
+    @Message(id = 18770, value = "Cannot add more than one socket binding group. Add of '%s' attempted, but '%s' already exists")
+    OperationFailedException cannotAddMoreThanOneSocketBindingGroupForServer(PathAddress wanted, PathAddress existing);
 }
