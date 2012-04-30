@@ -82,24 +82,26 @@ public class FileUtils {
     }
 
 
-
-
-    public static void copyFile(final File src, final File dest) throws Exception {
+    public static void copyFile(final File src, final File dest) throws IOException {
         final InputStream in = new BufferedInputStream(new FileInputStream(src));
         try {
-            dest.getParentFile().mkdirs();
-            final OutputStream out = new BufferedOutputStream(new FileOutputStream(dest));
-            try {
-                int i = in.read();
-                while (i != -1) {
-                    out.write(i);
-                    i = in.read();
-                }
-            } finally {
-                close(out);
-            }
+            copyFile(in, dest);
         } finally {
             close(in);
+        }
+    }
+
+    public static void copyFile(final InputStream in, final File dest) throws IOException {
+        dest.getParentFile().mkdirs();
+        final OutputStream out = new BufferedOutputStream(new FileOutputStream(dest));
+        try {
+            int i = in.read();
+            while (i != -1) {
+                out.write(i);
+                i = in.read();
+            }
+        } finally {
+            close(out);
         }
     }
 

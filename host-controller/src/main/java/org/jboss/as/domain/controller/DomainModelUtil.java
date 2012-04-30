@@ -104,7 +104,6 @@ import org.jboss.as.domain.controller.operations.ProcessTypeHandler;
 import org.jboss.as.domain.controller.operations.ProfileAddHandler;
 import org.jboss.as.domain.controller.operations.ProfileDescribeHandler;
 import org.jboss.as.domain.controller.operations.ProfileRemoveHandler;
-import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
 import org.jboss.as.domain.controller.operations.ResolveExpressionOnDomainHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupProfileWriteAttributeHandler;
@@ -182,7 +181,7 @@ public class DomainModelUtil {
                                                                   final ContentRepository contentRepository, final HostFileRepository fileRepository,
                                                                   final DomainController domainController, final ExtensionRegistry extensionRegistry,
                                                                   final PathManagerService pathManager) {
-        initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true, domainController,
+        initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true,
                 domainController.getLocalHostInfo(), extensionRegistry, null, pathManager);
     }
 
@@ -191,15 +190,15 @@ public class DomainModelUtil {
                                                                  final LocalHostControllerInfo hostControllerInfo, final ExtensionRegistry extensionRegistry,
                                                              final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
                                                              final PathManagerService pathManager) {
-        initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, false, null,
+        initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, false,
                 hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry, pathManager);
     }
 
     private static void initializeDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-                                                             final ContentRepository contentRepo, final HostFileRepository fileRepository, final boolean isMaster,
-                                                             final DomainController domainController, final LocalHostControllerInfo hostControllerInfo,
-                                                             final ExtensionRegistry extensionRegistry, final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
-                                                             final PathManagerService pathManager) {
+                                                 final ContentRepository contentRepo, final HostFileRepository fileRepository, final boolean isMaster,
+                                                 final LocalHostControllerInfo hostControllerInfo,
+                                                 final ExtensionRegistry extensionRegistry, final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+                                                 final PathManagerService pathManager) {
 
         final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
         final EnumSet<OperationEntry.Flag> masterOnly = EnumSet.of(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY);
@@ -319,7 +318,7 @@ public class DomainModelUtil {
         mgmtContent.registerSubModel(planDef);
 
         // Extensions
-        root.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, true));
+        root.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, true, !isMaster));
         extensionRegistry.setSubsystemParentResourceRegistrations(profile, null);
 
         if(!isMaster) {
@@ -327,8 +326,6 @@ public class DomainModelUtil {
                     contentRepo, hostControllerInfo, ignoredDomainResourceRegistry);
             root.registerOperationHandler(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME, armdmh, armdmh, false, OperationEntry.EntryType.PRIVATE);
         } else {
-//            final ReadMasterDomainModelHandler rmdmh = new ReadMasterDomainModelHandler(extensionRegistry);
-//            root.registerOperationHandler(ReadMasterDomainModelHandler.OPERATION_NAME, rmdmh, rmdmh, false, OperationEntry.EntryType.PRIVATE, EnumSet.of(OperationEntry.Flag.READ_ONLY));
             final SubsystemDescriptionDump dumper = new SubsystemDescriptionDump(extensionRegistry);
             root.registerOperationHandler(SubsystemDescriptionDump.OPERATION_NAME, dumper, SubsystemDescriptionDump.DESCRIPTION, false, OperationEntry.EntryType.PRIVATE, EnumSet.of(OperationEntry.Flag.READ_ONLY));
         }

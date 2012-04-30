@@ -25,10 +25,10 @@ package org.jboss.as.domain.controller.operations.coordination;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import org.jboss.as.controller.remote.RemoteProxyController;
-import org.jboss.as.controller.remote.TransactionalProtocolClient;
+
 import static org.jboss.as.domain.controller.DomainControllerLogger.CONTROLLER_LOGGER;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,13 +37,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ProxyController;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
+import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.host.controller.mgmt.TransformingProxyController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
@@ -55,16 +54,13 @@ import org.jboss.threads.AsyncFuture;
  */
 public class DomainSlaveHandler implements OperationStepHandler {
 
-    private final ExecutorService executorService;
     private final DomainOperationContext domainOperationContext;
     private final Map<String, ProxyController> hostProxies;
 
     public DomainSlaveHandler(final Map<String, ProxyController> hostProxies,
-                              final DomainOperationContext domainOperationContext,
-                              final ExecutorService executorService) {
+                              final DomainOperationContext domainOperationContext) {
         this.hostProxies = hostProxies;
         this.domainOperationContext = domainOperationContext;
-        this.executorService = executorService;
     }
 
     @Override
@@ -84,8 +80,8 @@ public class DomainSlaveHandler implements OperationStepHandler {
         for (Map.Entry<String, ProxyController> entry : hostProxies.entrySet()) {
             // Create the proxy task
             final String host = entry.getKey();
-            final TransactionalProtocolClient client = ((TransformingProxyController)entry.getValue()).getProtocolClient();
-            final HostControllerUpdateTask task = new HostControllerUpdateTask(host, operation.clone(), context, client);
+            final TransformingProxyController proxyController = (TransformingProxyController) entry.getValue();
+            final HostControllerUpdateTask task = new HostControllerUpdateTask(host, operation.clone(), context, proxyController);
             // Execute the operation on the remote host
             final AsyncFuture<ModelNode> finalResult = task.execute(listener);
             finalResults.put(host, finalResult);

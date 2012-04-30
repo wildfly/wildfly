@@ -321,7 +321,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private ModelNode resolveSubsystems(final List<ModelNode> extensions) {
 
         final List<ModelNode> bootOperations = new ArrayList<ModelNode>();
-        for(final ModelNode extension : extensions) {
+        for (final ModelNode extension : extensions) {
             final ModelNode e = new ModelNode();
             e.get("domain-resource-address").add(EXTENSION, extension.asString());
             bootOperations.add(e);
@@ -329,17 +329,12 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         final ModelNode operation = APPLY_DOMAIN_MODEL.clone();
         operation.get(DOMAIN_MODEL).set(bootOperations);
         final ModelNode result = controller.execute(operation, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT, OperationAttachments.EMPTY);
-        if(! SUCCESS.equals(result.get(OUTCOME).asString())) {
+        if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
             throw HostControllerMessages.MESSAGES.failedToAddExtensions(result.get(FAILURE_DESCRIPTION));
         }
         final ModelNode subsystems = new ModelNode();
-        for(final ModelNode extension : extensions) {
-            final Map<String, SubsystemInformation> subsystemsInfo = extensionRegistry.getAvailableSubsystems(extension.asString());
-            if(subsystemsInfo != null && ! subsystemsInfo.isEmpty()) {
-                for(final Map.Entry<String, SubsystemInformation> entry : subsystemsInfo.entrySet()) {
-                    subsystems.add(entry.getKey(), entry.getValue().getManagementInterfaceMajorVersion() +"."+ entry.getValue().getManagementInterfaceMinorVersion());
-                }
-            }
+        for (final ModelNode extension : extensions) {
+            extensionRegistry.recordSubsystemVersions(extension.asString(), subsystems);
         }
         return subsystems;
     }

@@ -366,7 +366,7 @@ public class ServerControllerModelUtil {
         deployments.registerSubModel(PathElement.pathElement(SUBDEPLOYMENT), ServerDescriptionProviders.SUBDEPLOYMENT_PROVIDER);
 
         // Extensions
-        root.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, parallelBoot));
+        root.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, parallelBoot, false));
         extensionRegistry.setSubsystemParentResourceRegistrations(root, deployments);
         extensionRegistry.setPathManager(pathManager);
 
