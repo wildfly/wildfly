@@ -16,6 +16,7 @@
  */
 package org.jboss.as.test.smoke.stilts;
 
+import static org.jboss.as.test.osgi.OSGiManagementOperations.bundleStart;
 import static org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet.DESTINATION_QUEUE_ONE;
 
 import java.io.InputStream;
@@ -30,7 +31,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.osgi.OSGiManagementTest;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet;
 import org.jboss.as.test.smoke.stilts.bundle.SimpleStompletActivator;
 import org.jboss.as.test.smoke.stilts.bundle.StompletServerActivator;
@@ -66,16 +68,19 @@ import org.projectodd.stilts.stomplet.Stomplet;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-public class SimpleStompletTestCase extends OSGiManagementTest {
+public class SimpleStompletTestCase {
 
     static final String STOMPLET_SERVER_PROVIDER = "stomplet-server-provider";
     static final String STOMPLET_NAME = "simple-stomplet";
 
     @ArquillianResource
-    public Deployer deployer;
+    Deployer deployer;
 
     @ArquillianResource
-    public URL url;
+    URL url;
+
+    @ArquillianResource
+    ManagementClient managementClient;
 
     @Deployment(testable = false)
     public static Archive<?> getTestArchive() {
@@ -100,10 +105,10 @@ public class SimpleStompletTestCase extends OSGiManagementTest {
 
         // Provide the stomplet server
         deployer.deploy(STOMPLET_SERVER_PROVIDER);
-        Assert.assertTrue("Bundle started", bundleStart(STOMPLET_SERVER_PROVIDER));
+        Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), STOMPLET_SERVER_PROVIDER));
 
         // Find the stomplet bundle and start it
-        Assert.assertTrue("Bundle started", bundleStart(STOMPLET_NAME));
+        Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), STOMPLET_NAME));
 
         StompClient client = new StompClient("stomp://" + url.getHost());
         client.connect();
@@ -162,6 +167,10 @@ public class SimpleStompletTestCase extends OSGiManagementTest {
 
         subscription.unsubscribe();
         client.disconnect();
+    }
+
+    private ModelControllerClient getControllerClient() {
+        return managementClient.getControllerClient();
     }
 
     @Deployment(name = STOMPLET_SERVER_PROVIDER, managed = false, testable = false)

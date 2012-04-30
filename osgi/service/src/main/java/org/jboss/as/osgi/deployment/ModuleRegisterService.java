@@ -91,7 +91,7 @@ public class ModuleRegisterService implements Service<ModuleRegisterService> {
 
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
-        LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
         LOGGER.infoRegisterModule(module);
         try {
             XResourceBuilder builder = XResourceBuilderFactory.create();
@@ -110,7 +110,7 @@ public class ModuleRegisterService implements Service<ModuleRegisterService> {
 
     public synchronized void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
-        LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+        LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
         if (resource != null) {
             LOGGER.infoUnregisterModule(module);
             injectedEnvironment.getValue().uninstallResources(resource);

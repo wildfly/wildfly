@@ -22,14 +22,20 @@
 
 package org.jboss.as.test.integration.osgi.management;
 
+import static org.jboss.as.test.osgi.OSGiManagementOperations.getFrameworkStartLevel;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.management.util.CLIOpResult;
-import org.jboss.as.test.osgi.OSGiManagementTest;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.osgi.OSGiManagementOperations;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,20 +48,29 @@ import org.junit.runner.RunWith;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-public class OSGiManagementTestCase extends OSGiManagementTest {
+public class OSGiManagementTestCase {
+
+    @ArquillianResource
+    ManagementClient managementClient;
+
+    @Deployment
+    public static Archive<?> getDeployment() {
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
+        archive.addClass(OSGiManagementTestCase.class);
+        return archive;
+    }
 
     @Test
     public void testFrameworkActivation() throws Exception {
 
         // Get the current startlevel
-        String startLevel = getFrameworkStartLevel();
+        String startLevel = getFrameworkStartLevel(getControllerClient());
 
         // If the startlevel is not defined the subsystem is down
         // [TODO] define a more explicit runtime atttribute
         if ("undefined".equals(startLevel)) {
-            CLIOpResult cliresult = sendLine("/subsystem=osgi:activate");
-            assertTrue(cliresult.isIsOutcomeSuccess());
-            assertEquals("1", getFrameworkStartLevel());
+            OSGiManagementOperations.activateFramework(getControllerClient());
+            assertEquals("1", getFrameworkStartLevel(getControllerClient()));
         } else if ("1".equals(startLevel)) {
             // Nothing to do
         } else {
@@ -94,4 +109,8 @@ public class OSGiManagementTestCase extends OSGiManagementTest {
     }
 
     // [TODO] any other management operations that need testing?
+
+    private ModelControllerClient getControllerClient() {
+        return managementClient.getControllerClient();
+    }
 }

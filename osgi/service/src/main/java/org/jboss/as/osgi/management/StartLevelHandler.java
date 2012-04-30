@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.osgi.parser;
+package org.jboss.as.osgi.management;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.framework.Services;
 import org.osgi.service.startlevel.StartLevel;
 
@@ -35,36 +36,34 @@ import org.osgi.service.startlevel.StartLevel;
  *
  * @author David Bosschaert
  */
-abstract class StartLevelHandler implements OperationStepHandler {
-    static final StartLevelHandler READ_HANDLER = new StartLevelHandler() {
+public abstract class StartLevelHandler implements OperationStepHandler {
+
+    public static final StartLevelHandler READ_HANDLER = new StartLevelHandler() {
         @Override
-        void invokeOperation(StartLevel sls, OperationContext context, ModelNode operation) {
-            int sl = sls.getStartLevel();
-            context.getResult().set(sl);
+        void invokeOperation(StartLevel startLevel, OperationContext context, ModelNode operation) {
+            int level = startLevel.getStartLevel();
+            context.getResult().set(level);
         }
     };
 
-    static final StartLevelHandler WRITE_HANDLER = new StartLevelHandler() {
+    public static final StartLevelHandler WRITE_HANDLER = new StartLevelHandler() {
         @Override
-        void invokeOperation(StartLevel sls, OperationContext context, ModelNode operation) {
+        void invokeOperation(StartLevel startLevel, OperationContext context, ModelNode operation) {
             int targetStartLevel = operation.require(ModelDescriptionConstants.VALUE).asInt();
-            sls.setStartLevel(targetStartLevel);
+            startLevel.setStartLevel(targetStartLevel);
         }
     };
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        ServiceController<?> svc = context.getServiceRegistry(false).getRequiredService(Services.START_LEVEL);
-
-        if (svc == null || svc.getState() != ServiceController.State.UP) {
-            // non-metric read-attribute handlers should not fail
-            // OSGiMessages.MESSAGES.osgiSubsystemNotActive()
-            context.getResult().set(new ModelNode());
+        ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.START_LEVEL);
+        if (controller != null && controller.getState() == ServiceController.State.UP) {
+            StartLevel startLevel = (StartLevel) controller.getValue();
+            invokeOperation(startLevel, context, operation);
         } else {
-            StartLevel sls = (StartLevel) svc.getValue();
-            invokeOperation(sls, context, operation);
+            // non-metric read-attribute handlers should not fail
+            context.getResult().set(new ModelNode());
         }
-
         context.completeStep();
     }
 

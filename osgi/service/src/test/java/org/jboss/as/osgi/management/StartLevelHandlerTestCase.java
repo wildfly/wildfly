@@ -19,12 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.osgi.parser;
+package org.jboss.as.osgi.management;
 
 import junit.framework.Assert;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.osgi.management.StartLevelHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
@@ -39,8 +40,8 @@ import org.osgi.service.startlevel.StartLevel;
  */
 public class StartLevelHandlerTestCase {
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void testReadHandler() throws Exception {
         StartLevel sls = Mockito.mock(StartLevel.class);
         Mockito.when(sls.getStartLevel()).thenReturn(999);
@@ -50,7 +51,7 @@ public class StartLevelHandlerTestCase {
         Mockito.when(sc.getState()).thenReturn(ServiceController.State.UP);
 
         ServiceRegistry sr = Mockito.mock(ServiceRegistry.class);
-        Mockito.when(sr.getRequiredService(Services.START_LEVEL)).thenReturn(sc);
+        Mockito.when(sr.getService(Services.START_LEVEL)).thenReturn(sc);
 
         OperationContext ctx = Mockito.mock(OperationContext.class);
         ModelNode result = new ModelNode();
@@ -63,8 +64,8 @@ public class StartLevelHandlerTestCase {
         Assert.assertEquals(999, result.asInt());
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void testWriteHandler() throws Exception {
         StartLevel sls = Mockito.mock(StartLevel.class);
 
@@ -73,7 +74,7 @@ public class StartLevelHandlerTestCase {
         Mockito.when(sc.getState()).thenReturn(ServiceController.State.UP);
 
         ServiceRegistry sr = Mockito.mock(ServiceRegistry.class);
-        Mockito.when(sr.getRequiredService(Services.START_LEVEL)).thenReturn(sc);
+        Mockito.when(sr.getService(Services.START_LEVEL)).thenReturn(sc);
 
         OperationContext ctx = Mockito.mock(OperationContext.class);
         Mockito.when(ctx.getServiceRegistry(false)).thenReturn(sr);
@@ -87,14 +88,14 @@ public class StartLevelHandlerTestCase {
         Mockito.verify(sls).setStartLevel(42);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void testSubsystemDown() throws Exception {
         ServiceController sc = Mockito.mock(ServiceController.class);
         Mockito.when(sc.getState()).thenReturn(ServiceController.State.DOWN);
 
         ServiceRegistry sr = Mockito.mock(ServiceRegistry.class);
-        Mockito.when(sr.getRequiredService(Services.START_LEVEL)).thenReturn(sc);
+        Mockito.when(sr.getService(Services.START_LEVEL)).thenReturn(sc);
 
         ModelNode result = new ModelNode("test");
         OperationContext ctx = Mockito.mock(OperationContext.class);

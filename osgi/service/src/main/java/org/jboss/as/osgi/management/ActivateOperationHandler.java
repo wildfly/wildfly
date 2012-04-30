@@ -19,42 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.osgi.parser;
+package org.jboss.as.osgi.management;
 
+import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.framework.Services;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
+ * Operation to activate the OSGi subsystem.
+ *
  * @author David Bosschaert
- * @author Thomas.Diesler@jboss.com
  */
-public class ActivateOperationTestCase {
+public class ActivateOperationHandler extends AbstractRuntimeOnlyHandler  {
 
-    @Test
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public void testActivateOperation() throws Exception {
-        ModelNode activateOp = new ModelNode();
-        activateOp.get(ModelDescriptionConstants.OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, "osgi");
-        activateOp.get(ModelDescriptionConstants.OP).set(ModelConstants.ACTIVATE);
+    public static ActivateOperationHandler INSTANCE = new ActivateOperationHandler();
 
-        ServiceController sc = Mockito.mock(ServiceController.class);
-
-        ServiceRegistry sr = Mockito.mock(ServiceRegistry.class);
-        Mockito.when(sr.getRequiredService(Services.FRAMEWORK_ACTIVE)).thenReturn(sc);
-
-        OperationContext context = Mockito.mock(OperationContext.class);
-        Mockito.when(context.getServiceRegistry(false)).thenReturn(sr);
-
-        ActivateOperationHandler.INSTANCE.executeRuntimeStep(context, activateOp);
-
-        Mockito.verify(sc).setMode(Mode.ACTIVE);
-        Mockito.verify(context).completeStep();
+    private ActivateOperationHandler() {
     }
+
+    @Override
+    protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+        ServiceController<?> svc = context.getServiceRegistry(false).getRequiredService(Services.FRAMEWORK_ACTIVE);
+        svc.setMode(Mode.ACTIVE);
+        context.completeStep();
+    }
+
 }

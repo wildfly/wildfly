@@ -19,7 +19,7 @@ package org.jboss.as.test.smoke.osgi;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.osgi.StartLevelAware;
-import org.jboss.as.test.osgi.OSGiTestUtil;
+import org.jboss.as.test.osgi.OSGiFrameworkUtils;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -35,7 +35,7 @@ import javax.inject.Inject;
 import java.io.InputStream;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.jboss.as.test.osgi.OSGiTestUtil.changeStartLevel;
+import static org.jboss.as.test.osgi.OSGiFrameworkUtils.changeStartLevel;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -64,7 +64,7 @@ public class SimpleStartLevelTestCase {
     @StartLevelAware(startLevel = 3)
     public static JavaArchive create() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arq465-bundle");
-        archive.addClass(OSGiTestUtil.class);
+        archive.addClass(OSGiFrameworkUtils.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
