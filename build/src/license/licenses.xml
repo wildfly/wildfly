@@ -2500,16 +2500,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.osgi</groupId>
-      <artifactId>javax.servlet.api</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.com/licenses/lgpl-2.1.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.osgi.logging</groupId>
       <artifactId>jboss-osgi-logging</artifactId>
       <licenses>
@@ -2963,6 +2953,16 @@
     <dependency>
       <groupId>org.jboss.spec.javax.security.jacc</groupId>
       <artifactId>jboss-jacc-api_1.4_spec</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License, Version 2.1</name>
+          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.spec.javax.servlet</groupId>
+      <artifactId>jboss-servlet-api_2.5_spec</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>

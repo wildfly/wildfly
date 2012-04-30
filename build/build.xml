@@ -1204,7 +1204,7 @@
         </bundle-def>
 
         <bundle-def name="javax.servlet.api" slot="v25">
-            <maven-bundle group="org.jboss.osgi" artifact="javax.servlet.api"/>
+            <maven-bundle group="org.jboss.spec.javax.servlet" artifact="jboss-servlet-api_2.5_spec"/>
         </bundle-def>
 
         <bundle-def name="org.jboss.osgi.logging">
