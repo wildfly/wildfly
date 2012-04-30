@@ -5,7 +5,6 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -38,12 +37,11 @@ import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP_SERVER;
 import static org.jboss.as.mail.extension.MailSubsystemModel.USER_NAME;
 
 /**
- * The subsystem parser, which uses stax to read and write to and from xml
+ * The default subsystem parser / writer
  *
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  */
 class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-    private static final Logger log = Logger.getLogger(MailSubsystemParser.class);
 
 
     /**
@@ -52,13 +50,10 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
-        log.tracef("model node: %s", context.getModelNode());
         ModelNode model = context.getModelNode();
         List<Property> sessions = model.get(MAIL_SESSION).asPropertyList();
 
         for (Property mailSession : sessions) {
-            String jndi = mailSession.getName();
-            log.tracef("jndi: %s", jndi);
             ModelNode sessionData = mailSession.getValue();
             writer.writeStartElement(Element.MAIL_SESSION.getLocalName());
 
@@ -133,7 +128,6 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                 }
             }
         }
-        log.tracef("list is: %s", list);
     }
 
     private void parseMailSession(final XMLExtendedStreamReader reader, List<ModelNode> list, final ModelNode parent) throws XMLStreamException {
@@ -143,7 +137,6 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             Attribute attr = Attribute.forName(reader.getAttributeLocalName(i));
             String value = reader.getAttributeValue(i);
             if (attr == Attribute.JNDI_NAME) {
-                log.tracef("jndi name: %s", value);
                 jndiName = value;
                 JNDI_NAME.parseAndSetParameter(value, operation, reader);
 

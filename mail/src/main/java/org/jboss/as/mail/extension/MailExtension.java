@@ -2,8 +2,9 @@ package org.jboss.as.mail.extension;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -21,9 +22,15 @@ public class MailExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "mail";
     private final MailSubsystemParser parser = new MailSubsystemParser();
     private static final String RESOURCE_NAME = MailExtension.class.getPackage().getName() + ".LocalDescriptions";
+    static PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+    static PathElement MAIL_SESSION_PATH = PathElement.pathElement(MailSubsystemModel.MAIL_SESSION);
 
-    static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, MailExtension.class.getClassLoader(), true, false);
+    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
+        for (String kp : keyPrefix) {
+            prefix.append('.').append(kp);
+        }
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, MailExtension.class.getClassLoader(), true, false);
     }
 
     @Override
