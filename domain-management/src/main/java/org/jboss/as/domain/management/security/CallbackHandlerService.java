@@ -66,8 +66,12 @@ public interface CallbackHandlerService {
      *
      * The service can decide if it will return a single shared CallbackHandler or a new one for each call to this method.
      *
+     * The shared state is authentication request specific but this is the only time it will be provided, for CallbackHandlers
+     * making use of this then state specific instances should be returned.
+     *
+     * @param sharedState - The state to be shared between the authentication side of the call and the authorization side.
      * @return A CallbackHandler instance.
      */
-    CallbackHandler getCallbackHandler();
+    CallbackHandler getCallbackHandler(final Map<String, Object> sharedState);
 
 }

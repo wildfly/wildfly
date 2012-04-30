@@ -74,6 +74,7 @@ public enum Attribute {
     MANAGEMENT_SUBSYSTEM_ENDPOINT("management-subsystem-endpoint"),
     MAX_SIZE("max-size"),
     MAX_THREADS("max-threads"),
+    MECHANISM("mechanism"),
     MODULE("module"),
     MULTICAST_ADDRESS("multicast-address"),
     MULTICAST_PORT("multicast-port"),

@@ -301,6 +301,20 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="mechanism" default="DIGEST" use="optional">
+           <xs:annotation>
+              <xs:documentation>
+                   By default plug-ins will be assumed to be used with the DIGEST authentication mechanism, 
+                   this attribute can override the plug-in for use with the PLAIN mechanism.
+              </xs:documentation>
+           </xs:annotation>        
+           <xs:simpleType>
+              <xs:restriction base="xs:string">
+                 <xs:enumeration value="DIGEST" />
+                 <xs:enumeration value="PLAIN" />
+              </xs:restriction>
+           </xs:simpleType>        
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="authorizationType">

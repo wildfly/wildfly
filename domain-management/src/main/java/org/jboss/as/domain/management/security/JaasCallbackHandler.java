@@ -97,7 +97,7 @@ public class JaasCallbackHandler implements Service<CallbackHandlerService>, Cal
         return configurationOptions;
     }
 
-    public CallbackHandler getCallbackHandler() {
+    public CallbackHandler getCallbackHandler(Map<String, Object> sharedState) {
         return this;
     }
 

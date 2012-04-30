@@ -24,7 +24,7 @@ package org.jboss.as.domain.management.plugin;
 
 /**
  * An interface to be implemented by a credential that validates a password rather than supplying a password.
- * 
+ *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public interface ValidatePasswordCredential extends Credential {

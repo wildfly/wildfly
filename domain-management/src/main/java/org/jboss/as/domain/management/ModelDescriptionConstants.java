@@ -41,6 +41,7 @@ public class ModelDescriptionConstants {
     public static final String KEYSTORE_PATH = "keystore-path";
     public static final String KEYSTORE_RELATIVE_TO = "keystore-relative-to";
     public static final String LOCAL = "local";
+    public static final String MECHANISM = "mechanism";
     public static final String NAME = "name";
     public static final String PASSWORD = "password";
     public static final String PATH = "path";
