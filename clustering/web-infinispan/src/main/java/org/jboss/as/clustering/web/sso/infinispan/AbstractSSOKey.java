@@ -54,7 +54,7 @@ public abstract class AbstractSSOKey<V> implements SSOKey, Serializable {
 
     @Override
     public int hashCode() {
-        return this.id.hashCode() ^ this.getClass().hashCode();
+        return this.id.hashCode() ^ this.getClass().getName().hashCode();
     }
 
     @Override
