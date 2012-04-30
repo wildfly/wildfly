@@ -28,10 +28,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
+import org.jboss.dmr.ModelNode;
+import org.junit.Test;
 
 /**
  *
@@ -66,5 +71,23 @@ public class JGroupsSubsystemTest extends ClusteringSubsystemTest {
             addresses.add(ignoredChild);
         }
         return new HashSet<PathAddress>(addresses);
+    }
+
+    @Test
+    public void testProtocolOrdering() throws Exception {
+        String xml = getSubsystemXml();
+        KernelServices kernel = super.installInController(xml);
+
+        ModelNode model = kernel.readWholeModel().require("subsystem").require("jgroups").require("stack").require("maximal");
+        List<ModelNode> protocols = model.require("protocols").asList();
+        Set<String> keys = model.get("protocol").keys();
+
+        Assert.assertEquals(protocols.size(), keys.size());
+        int i = 0;
+        for (String key : keys) {
+            String name = protocols.get(i).asString();
+            Assert.assertEquals(key, name);
+            i++;
+        }
     }
 }
