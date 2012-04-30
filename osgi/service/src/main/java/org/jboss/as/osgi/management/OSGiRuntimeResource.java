@@ -214,7 +214,7 @@ public class OSGiRuntimeResource implements Resource {
         BundleManager bundleManager = injectedBundleManager.getOptionalValue();
         BundleContext context = bundleManager != null ? bundleManager.getSystemBundle().getBundleContext() : null;
         if (context == null) {
-            LOGGER.warnBundleContextNotAvailable();
+            LOGGER.debugf("BundleContext not available for management operation");
         }
         return context;
     }
