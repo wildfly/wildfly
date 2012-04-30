@@ -32,7 +32,9 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * A {@link ResourceDefinition} for a resource that also has an alias address.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @deprecated This is likely to change before 7.2.0
  */
+@Deprecated
 public interface AliasedResourceDefinition extends ResourceDefinition {
 
     /**

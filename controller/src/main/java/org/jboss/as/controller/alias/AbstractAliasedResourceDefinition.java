@@ -44,7 +44,9 @@ import org.jboss.dmr.ModelNode;
  * {@link AliasedResourceDefinition#getAliasDescriptionProvider(ImmutableManagementResourceRegistration, PathElement)}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @deprecated This is likely to change before 7.2.0
  */
+@Deprecated
 public class AbstractAliasedResourceDefinition extends SimpleResourceDefinition implements AliasedResourceDefinition {
 
     private final StandardResourceDescriptionResolver standardResourceDescriptionResolver;

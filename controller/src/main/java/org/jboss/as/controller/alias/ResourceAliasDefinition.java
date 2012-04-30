@@ -11,7 +11,9 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * to the {@link AliasedResourceDefinition} for the resource being aliased.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @deprecated This is likely to change before 7.2.0
  */
+@Deprecated
 public class ResourceAliasDefinition implements ResourceDefinition {
 
     private final AliasedResourceDefinition delegate;

@@ -29,14 +29,15 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import sun.tools.tree.ReturnStatement;
 
 /**
  * {@link OperationStepHandler} for a resource that is just an alias for another resource.  Simply translates the
  * operation address to the primary address and adds a Stage.IMMEDIATE step for the translated operation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @deprecated This is likely to change before 7.2.0
  */
+@Deprecated
 public class AliasedResourceOperationStepHandler implements OperationStepHandler {
 
     private final PathAddress mainAddress;
