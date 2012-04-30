@@ -33,6 +33,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.framework.BundleManager;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
@@ -42,20 +43,20 @@ import org.osgi.framework.BundleContext;
  */
 public class OSGiRuntimeResource implements Resource {
 
-    private final InjectedValue<BundleContext> injectedBundleContext;
+    private final InjectedValue<BundleManager> injectedBundleManager;
     private final Resource delegate;
 
     public OSGiRuntimeResource() {
-        this(Resource.Factory.create(), new InjectedValue<BundleContext>());
+        this(Resource.Factory.create(), new InjectedValue<BundleManager>());
     }
 
-    private OSGiRuntimeResource(Resource resource, InjectedValue<BundleContext> injectedBundleContext) {
-        this.injectedBundleContext = injectedBundleContext;
+    private OSGiRuntimeResource(Resource resource, InjectedValue<BundleManager> injectedBundleManager) {
+        this.injectedBundleManager = injectedBundleManager;
         this.delegate = resource;
     }
 
-    public InjectedValue<BundleContext> getInjectedBundleContext() {
-        return injectedBundleContext;
+    public InjectedValue<BundleManager> getInjectedBundleManager() {
+        return injectedBundleManager;
     }
 
     @Override
@@ -92,8 +93,9 @@ public class OSGiRuntimeResource implements Resource {
     @Override
     public Resource requireChild(PathElement element) {
         if (ModelConstants.BUNDLE.equals(element.getKey())) {
-            if (hasBundle(element))
+            if (hasBundle(element)) {
                 return OSGiBundleResource.INSTANCE;
+            }
             throw new NoSuchResourceException(element);
         } else {
             return delegate.requireChild(element);
@@ -178,19 +180,21 @@ public class OSGiRuntimeResource implements Resource {
 
     @Override
     public Resource clone() {
-        return new OSGiRuntimeResource(delegate.clone(), injectedBundleContext);
+        return new OSGiRuntimeResource(delegate.clone(), injectedBundleManager);
     }
 
     private boolean hasBundle(PathElement element) {
         boolean result = false;
-        BundleContext context = getBundleContext();
-        if (context != null) {
+        BundleManager bundleManager = injectedBundleManager.getOptionalValue();
+        if (bundleManager != null) {
+            Bundle bundle;
             try {
-                long id = Long.parseLong(element.getValue());
-                result = (context.getBundle(id) != null);
-            } catch (NumberFormatException nfe) {
-                // ignore
+                Long bundleId = Long.parseLong(element.getValue());
+                bundle = bundleManager.getBundleById(bundleId);
+            } catch (NumberFormatException ex) {
+                bundle = bundleManager.getBundleByLocation(element.getValue());
             }
+            result = (bundle != null);
         }
         return result;
     }
@@ -207,7 +211,8 @@ public class OSGiRuntimeResource implements Resource {
     }
 
     private BundleContext getBundleContext() {
-        BundleContext context = injectedBundleContext.getOptionalValue();
+        BundleManager bundleManager = injectedBundleManager.getOptionalValue();
+        BundleContext context = bundleManager != null ? bundleManager.getSystemBundle().getBundleContext() : null;
         if (context == null) {
             LOGGER.warnBundleContextNotAvailable();
         }
