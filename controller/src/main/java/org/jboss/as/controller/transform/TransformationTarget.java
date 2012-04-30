@@ -88,4 +88,6 @@ public interface TransformationTarget {
      */
     boolean isTransformationNeeded();
 
+    boolean addSubsystemVersion(String subsystemName, int majorVersion, int minorVersion);
+
 }
