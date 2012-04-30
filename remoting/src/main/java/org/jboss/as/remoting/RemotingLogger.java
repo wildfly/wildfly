@@ -47,5 +47,5 @@ public interface RemotingLogger extends BasicLogger {
 
     @LogMessage(level = INFO)
     @Message(id = 17100, value = "Listening on %s")
-    void listeningOnSocket(InetSocketAddress address);
+    void listeningOnSocket(String address);
 }

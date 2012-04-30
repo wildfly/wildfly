@@ -22,8 +22,13 @@
 
 package org.jboss.as.network;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Arrays;
 import java.util.Locale;
 
 /**
@@ -33,7 +38,8 @@ import java.util.Locale;
  */
 public class NetworkUtils {
 
-    private  static final boolean can_bind_to_mcast_addr; // are we running on Linux ?
+    private static final int IPV6_LEN = 8;
+    private static final boolean can_bind_to_mcast_addr; // are we running on Linux ?
 
     static {
         can_bind_to_mcast_addr = checkForLinux() || checkForSolaris() || checkForHp();
@@ -52,10 +58,129 @@ public class NetworkUtils {
         return "[" + address + "]";
     }
 
+    /**
+     * Formats input address. For IPV4 returns simply host address, for IPV6 formats address according to <a
+     * href="http://tools.ietf.org/html/rfc5952">RFC5952</a> rules. It does not embed IPV6 address in '[', ']', since those are part of IPV6 URI literal.
+     *
+     * @param inet
+     * @return
+     */
+    public static String formatAddress(InetAddress inet){
+        if(inet == null){
+            throw new NullPointerException();
+        }
+        if(inet instanceof Inet4Address){
+            return inet.getHostAddress();
+        } else if (inet instanceof Inet6Address){
+            byte[] byteRepresentation = inet.getAddress();
+            int[] hexRepresentation = new int[IPV6_LEN];
+
+            for(int i=0;i < hexRepresentation.length;i++){
+                hexRepresentation[i] = ( byteRepresentation[2*i] & 0xFF) << 8 | ( byteRepresentation[2*i+1] & 0xFF );
+            }
+            compactLongestZeroSequence(hexRepresentation);
+            return formatAddress6(hexRepresentation);
+        } else {
+            return inet.getHostAddress();
+        }
+    }
+
+    /**
+     * Converts socket address into string literal, which has form: 'address:port'. Example:<br>
+     * <ul>
+     *      <li>127.0.0.1:8080</li>
+     *      <li>dns.name.com:8080</li>
+     *      <li>[0fe:1::20]:8080</li>
+     *      <li>[::1]:8080</li>
+     * </ul>
+     * @param inet
+     * @return
+     */
+    public static String formatAddress(InetSocketAddress inet){
+        if(inet == null){
+            throw new NullPointerException();
+        }
+        StringBuilder result = new StringBuilder();
+        if(inet.isUnresolved()){
+            result.append(inet.getHostName());
+        }else{
+            result.append(formatPossibleIpv6Address(formatAddress(inet.getAddress())));
+        }
+        result.append(":").append(inet.getPort());
+        return result.toString();
+    }
+
+    /**
+     * Converts IPV6 int[] representation into valid IPV6 string literal. Sequence of '-1' values are converted into '::'.
+     * @param hexRepresentation
+     * @return
+     */
+    private static String formatAddress6(int[] hexRepresentation){
+       if(hexRepresentation == null){
+           throw new NullPointerException();
+       }
+       if(hexRepresentation.length != IPV6_LEN){
+           throw new IllegalArgumentException();
+       }
+       StringBuilder stringBuilder = new StringBuilder();
+       boolean inCompressedSection = false;
+       for(int i = 0;i<hexRepresentation.length;i++){
+           if(hexRepresentation[i] == -1){
+               if(!inCompressedSection){
+                   inCompressedSection = true;
+                   if(i == 0){
+                       stringBuilder.append("::");
+                   } else {
+                       stringBuilder.append(":");
+                   }
+               }
+           } else {
+               inCompressedSection = false;
+               stringBuilder.append(Integer.toHexString(hexRepresentation[i]));
+               if(i+1<hexRepresentation.length){
+                   stringBuilder.append(":");
+               }
+           }
+       }
+       return stringBuilder.toString();
+    }
+
     public static boolean isBindingToMulticastDressSupported() {
         return can_bind_to_mcast_addr;
     }
 
+    private static void compactLongestZeroSequence(int[] hexRepresentatoin){
+        int bestRunStart = -1;
+        int bestRunLen = -1;
+        boolean inRun = false;
+        int runStart = -1;
+        for(int i=0;i<hexRepresentatoin.length;i++){
+
+            if(hexRepresentatoin[i] == 0){
+                if(!inRun){
+                    runStart = i;
+                    inRun = true;
+                }
+            } else {
+                if(inRun){
+                    inRun = false;
+                    int runLen = i - runStart;
+                    if(bestRunLen < 0){
+                        bestRunStart = runStart;
+                        bestRunLen = runLen;
+                    } else {
+                        if(runLen > bestRunLen){
+                            bestRunStart = runStart;
+                            bestRunLen = runLen;
+                        }
+                    }
+                }
+            }
+        }
+        if(bestRunStart >=0){
+            Arrays.fill(hexRepresentatoin, bestRunStart, bestRunStart + bestRunLen, -1);
+        }
+    }
 
     private static boolean checkForLinux() {
         return checkForPresence("os.name", "linux");

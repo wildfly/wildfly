@@ -169,18 +169,14 @@ public class BootstrapListener extends AbstractServiceListener<Object> {
             boolean hasHttp = mgmt.getHttpNetworkInterfaceBinding() != null && mgmt.getHttpPort() > 0;
             boolean hasHttps = mgmt.getHttpsNetworkInterfaceBinding() != null && mgmt.getHttpsPort() > 0;
             if (hasHttp && hasHttps) {
-                ServerLogger.AS_ROOT_LOGGER.logHttpAndHttpsConsole(formatAddress(mgmt.getHttpNetworkInterfaceBinding().getAddress()), mgmt.getHttpPort(), formatAddress(mgmt.getHttpsNetworkInterfaceBinding().getAddress()), mgmt.getHttpsPort());
+                ServerLogger.AS_ROOT_LOGGER.logHttpAndHttpsConsole(NetworkUtils.formatAddress(mgmt.getHttpNetworkInterfaceBinding().getAddress()), mgmt.getHttpPort(), NetworkUtils.formatAddress(mgmt.getHttpsNetworkInterfaceBinding().getAddress()), mgmt.getHttpsPort());
             } else if (hasHttp) {
-                ServerLogger.AS_ROOT_LOGGER.logHttpConsole(formatAddress(mgmt.getHttpNetworkInterfaceBinding().getAddress()), mgmt.getHttpPort());
+                ServerLogger.AS_ROOT_LOGGER.logHttpConsole(NetworkUtils.formatAddress(mgmt.getHttpNetworkInterfaceBinding().getAddress()), mgmt.getHttpPort());
             } else if (hasHttps) {
-                ServerLogger.AS_ROOT_LOGGER.logHttpsConsole(formatAddress(mgmt.getHttpsNetworkInterfaceBinding().getAddress()), mgmt.getHttpsPort());
+                ServerLogger.AS_ROOT_LOGGER.logHttpsConsole(NetworkUtils.formatAddress(mgmt.getHttpsNetworkInterfaceBinding().getAddress()), mgmt.getHttpsPort());
             } else {
                 ServerLogger.AS_ROOT_LOGGER.logNoConsole();
             }
         }
-    }
-
-    private String formatAddress(InetAddress addr) {
-        return NetworkUtils.formatPossibleIpv6Address(addr.getHostAddress());
     }
 }
