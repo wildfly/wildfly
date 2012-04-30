@@ -78,6 +78,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.FrameworkModuleProvider;
 import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.Services;
@@ -240,6 +241,7 @@ public class FrameworkBootstrapService implements Service<Void> {
     private static final class SystemServicesIntegration implements Service<SystemServicesProvider>, SystemServicesProvider {
 
         private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
+        private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
         private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
         private final OSGiRuntimeResource resource;
         private ServiceContainer serviceContainer;
@@ -249,6 +251,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             SystemServicesIntegration service = new SystemServicesIntegration(resource);
             ServiceBuilder<SystemServicesProvider> builder = target.addService(IntegrationServices.SYSTEM_SERVICES_PROVIDER, service);
             builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
+            builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, service.injectedBundleManager);
             builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedBundleContext);
             builder.addDependency(Services.FRAMEWORK_CREATE);
             builder.setInitialMode(Mode.ON_DEMAND);
@@ -267,7 +270,8 @@ public class FrameworkBootstrapService implements Service<Void> {
             final BundleContext syscontext = injectedBundleContext.getValue();
 
             // Inject the system bundle context into the runtime resource
-            resource.getInjectedBundleContext().inject(syscontext);
+            BundleManager bundleManager = injectedBundleManager.getValue();
+            resource.getInjectedBundleManager().inject(bundleManager);
 
             // Register the JNDI service listener
             jndiServiceListener = new JNDIServiceListener(syscontext);
@@ -309,7 +313,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             ServiceController<?> controller = context.getController();
             LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
             injectedBundleContext.getValue().removeServiceListener(jndiServiceListener);
-            resource.getInjectedBundleContext().uninject();
+            resource.getInjectedBundleManager().uninject();
         }
 
         @Override

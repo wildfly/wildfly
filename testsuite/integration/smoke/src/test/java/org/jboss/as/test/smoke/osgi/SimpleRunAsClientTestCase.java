@@ -16,19 +16,27 @@
  */
 package org.jboss.as.test.smoke.osgi;
 
+import static org.jboss.as.test.osgi.OSGiManagementOperations.bundleStart;
+import static org.jboss.as.test.osgi.OSGiManagementOperations.bundleStop;
+import static org.jboss.as.test.osgi.OSGiManagementOperations.getBundleId;
+import static org.jboss.as.test.osgi.OSGiManagementOperations.getBundleInfo;
+import static org.jboss.as.test.osgi.OSGiManagementOperations.getBundleState;
+
 import java.io.InputStream;
-import java.util.Map;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.osgi.parser.ModelConstants;
-import org.jboss.as.test.osgi.OSGiManagementTest;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleActivator;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleService;
+import org.jboss.dmr.ModelNode;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -45,7 +53,7 @@ import org.osgi.framework.BundleActivator;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-public class SimpleRunAsClientTestCase extends OSGiManagementTest {
+public class SimpleRunAsClientTestCase {
 
     private static final String DEPLOYMENT_NAME = "runasclient-test-bundle";
     private static final String SYMBOLIC_NAME = "test-bundle";
@@ -53,39 +61,53 @@ public class SimpleRunAsClientTestCase extends OSGiManagementTest {
     @ArquillianResource
     public Deployer deployer;
 
+    @ArquillianResource
+    ManagementClient managementClient;
+
+    @Deployment
+    public static Archive<?> getDeployment() {
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
+        archive.addClass(SimpleRunAsClientTestCase.class);
+        return archive;
+    }
+
     @Test
     public void testClientDeploymentAsArchive() throws Exception {
 
         deployer.deploy(DEPLOYMENT_NAME);
         try {
-            Long bundleId = getBundleId(SYMBOLIC_NAME, null);
+            Long bundleId = getBundleId(getControllerClient(), SYMBOLIC_NAME, null);
             Assert.assertNotNull("Bundle found", bundleId);
-            Assert.assertEquals("INSTALLED", getBundleState(bundleId));
+            Assert.assertEquals("INSTALLED", getBundleState(getControllerClient(), bundleId));
 
-            Assert.assertTrue("Bundle started", bundleStart(bundleId));
-            Assert.assertEquals("ACTIVE", getBundleState(bundleId));
+            Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), bundleId));
+            Assert.assertEquals("ACTIVE", getBundleState(getControllerClient(), bundleId));
 
-            Map<String, Object> info = getBundleInfo(bundleId);
-            Assert.assertEquals(7, info.size());
-            Assert.assertEquals(bundleId + "L", info.get(ModelConstants.ID));
-            Assert.assertEquals("1", info.get(ModelConstants.STARTLEVEL));
-            Assert.assertEquals("ACTIVE", info.get(ModelConstants.STATE));
-            Assert.assertEquals(SYMBOLIC_NAME, info.get(ModelConstants.SYMBOLIC_NAME));
-            Assert.assertEquals(DEPLOYMENT_NAME, info.get(ModelConstants.LOCATION));
-            Assert.assertEquals("bundle", info.get(ModelConstants.TYPE));
-            Assert.assertEquals("0.0.0", info.get(ModelConstants.VERSION));
+            ModelNode info = getBundleInfo(getControllerClient(), bundleId);
+            Assert.assertEquals(7, info.asList().size());
+            Assert.assertEquals(bundleId, (Long)info.get(ModelConstants.ID).asLong());
+            Assert.assertEquals(1, info.get(ModelConstants.STARTLEVEL).asInt());
+            Assert.assertEquals("ACTIVE", info.get(ModelConstants.STATE).asString());
+            Assert.assertEquals(SYMBOLIC_NAME, info.get(ModelConstants.SYMBOLIC_NAME).asString());
+            Assert.assertEquals(DEPLOYMENT_NAME, info.get(ModelConstants.LOCATION).asString());
+            Assert.assertEquals("bundle", info.get(ModelConstants.TYPE).asString());
+            Assert.assertEquals("0.0.0", info.get(ModelConstants.VERSION).asString());
 
-            Assert.assertTrue("Bundle stopped", bundleStop(bundleId));
-            Assert.assertEquals("RESOLVED", getBundleState(bundleId));
+            Assert.assertTrue("Bundle stopped", bundleStop(getControllerClient(), bundleId));
+            Assert.assertEquals("RESOLVED", getBundleState(getControllerClient(), bundleId));
 
-            Assert.assertTrue("Bundle started", bundleStart(DEPLOYMENT_NAME));
-            Assert.assertEquals("ACTIVE", getBundleState(DEPLOYMENT_NAME));
+            Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), DEPLOYMENT_NAME));
+            Assert.assertEquals("ACTIVE", getBundleState(getControllerClient(), DEPLOYMENT_NAME));
 
-            Assert.assertTrue("Bundle stopped", bundleStop(DEPLOYMENT_NAME));
-            Assert.assertEquals("RESOLVED", getBundleState(DEPLOYMENT_NAME));
+            Assert.assertTrue("Bundle stopped", bundleStop(getControllerClient(), DEPLOYMENT_NAME));
+            Assert.assertEquals("RESOLVED", getBundleState(getControllerClient(), DEPLOYMENT_NAME));
         } finally {
             deployer.undeploy(DEPLOYMENT_NAME);
         }
+    }
+
+    private ModelControllerClient getControllerClient() {
+        return managementClient.getControllerClient();
     }
 
     @Deployment(name = DEPLOYMENT_NAME, managed = false, testable = false)
