@@ -70,12 +70,12 @@ class SharedWebMetaDataBuilder {
     private void init() {
         ModelNode containerConfig = config.get(Constants.CONTAINER);
         if (containerConfig.hasDefined(Constants.MIME_MAPPING)) {
-            for (final Property mapping : config.get(Constants.MIME_MAPPING).asPropertyList()) {
+            for (final Property mapping : containerConfig.get(Constants.MIME_MAPPING).asPropertyList()) {
                 mimeMappings.add(createMimeMapping(mapping.getName(), mapping.getValue().asString()));
             }
         }
         if (containerConfig.hasDefined(Constants.WELCOME_FILE)) {
-            for (final ModelNode file : config.get(Constants.WELCOME_FILE).asList()) {
+            for (final ModelNode file : containerConfig.get(Constants.WELCOME_FILE).asList()) {
                 welcomeFiles.add(file.asString());
             }
         }
