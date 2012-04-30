@@ -88,6 +88,7 @@ public class JMXPropertyEditorsTestCase {
     private ManagementClient managementClient;
 
     private MBeanServerConnection connection;
+    private static final String USER_SYS_PROP = System.getProperty("os.name","linux").contains("indows")?"USERNAME":"USER";
 
     @Before
     public void initialize() throws Exception {
@@ -672,7 +673,7 @@ public class JMXPropertyEditorsTestCase {
     public void testFile() throws Exception {
         try {
             deployer.deploy("File");
-            performTest("File", new File("/I_DONT_EXIST/DUNNO"));
+            performTest("File", new File("/I_DONT_EXIST/DUNNO").getAbsoluteFile());
         } finally {
 
             try {
@@ -1216,7 +1217,7 @@ public class JMXPropertyEditorsTestCase {
         // jar
         final JavaArchive jmxSAR = createArchive("Properties");
 
-        Asset asset = createServiceAsset("Properties", "prop1=ugabuga\nprop2=HAHA\nenv=${env.USER}");
+        Asset asset = createServiceAsset("Properties", "prop1=ugabuga\nprop2=HAHA\nenv=${env."+USER_SYS_PROP+"}");
         jmxSAR.addAsManifestResource(asset, "jboss-service.xml");
 
         System.err.println(jmxSAR.toString(true));
@@ -1230,7 +1231,7 @@ public class JMXPropertyEditorsTestCase {
             Properties props = new Properties();
             props.put("prop1", "ugabuga");
             props.put("prop2", "HAHA");
-            props.put("env", System.getenv("USER"));
+            props.put("env", System.getenv(USER_SYS_PROP));
             // props also dont override equals...
             performTest("Properties", props, new Comparator() {
 
@@ -1447,7 +1448,7 @@ public class JMXPropertyEditorsTestCase {
             Assert.assertEquals("Found wrong attribute value for '" + attributeName + "'", expectedValue, attributeValue);
         } else {
             boolean equal = comparator.compare(expectedValue, attributeValue) == 0;
-            Assert.assertTrue("Found wrong attribute value for '" + attributeName + "'", equal);
+            Assert.assertTrue("Found wrong attribute value for '" + attributeName + "', value: '"+attributeValue+"' expected: '"+expectedValue+"'", equal);
         }
 
     }
