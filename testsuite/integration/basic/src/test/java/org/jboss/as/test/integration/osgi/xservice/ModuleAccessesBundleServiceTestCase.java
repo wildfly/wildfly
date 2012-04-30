@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.osgi.xservice;
 
-import static org.jboss.as.test.osgi.OSGiTestUtil.getDeployedBundle;
+import static org.jboss.as.test.osgi.OSGiFrameworkUtils.getDeployedBundle;
 
 import java.io.InputStream;
 
@@ -35,7 +35,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.osgi.xservice.api.Echo;
 import org.jboss.as.test.integration.osgi.xservice.bundle.TargetBundleActivator;
 import org.jboss.as.test.integration.osgi.xservice.module.ClientModuleTwoActivator;
-import org.jboss.as.test.osgi.OSGiTestUtil;
+import org.jboss.as.test.osgi.OSGiFrameworkUtils;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
@@ -69,7 +69,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "xservice-module-access");
-        archive.addClasses(OSGiTestUtil.class, AbstractXServiceTestCase.class);
+        archive.addClasses(OSGiFrameworkUtils.class, AbstractXServiceTestCase.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();

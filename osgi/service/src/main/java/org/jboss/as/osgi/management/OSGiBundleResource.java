@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.osgi.parser;
+package org.jboss.as.osgi.management;
 
 import java.util.Collections;
 import java.util.Set;
@@ -27,6 +27,7 @@ import java.util.Set;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,6 +37,7 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class OSGiBundleResource implements Resource {
+
     static OSGiBundleResource INSTANCE = new OSGiBundleResource();
 
     private OSGiBundleResource() {
@@ -121,8 +123,9 @@ public class OSGiBundleResource implements Resource {
         return new OSGiBundleResource();
     }
 
-    static class OSGiBundleResourceEntry extends OSGiBundleResource implements ResourceEntry {
-        final PathElement path;
+    static class OSGiBundleResourceEntry extends OSGiBundleResource implements ResourceEntry, Comparable<ResourceEntry> {
+
+        private final PathElement path;
 
         public OSGiBundleResourceEntry(String name) {
             path = PathElement.pathElement(ModelConstants.BUNDLE, name);
@@ -141,6 +144,29 @@ public class OSGiBundleResource implements Resource {
         @Override
         public OSGiBundleResourceEntry clone() {
             return new OSGiBundleResourceEntry(path.getValue());
+        }
+
+        @Override
+        public int compareTo(ResourceEntry other) {
+            return getName().compareTo(other.getName());
+        }
+
+        @Override
+        public int hashCode() {
+            return path.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof OSGiBundleResourceEntry))
+                return false;
+            OSGiBundleResourceEntry other = (OSGiBundleResourceEntry) obj;
+            return path.equals(other.path);
+        }
+
+        @Override
+        public String toString() {
+            return path.toString();
         }
     }
 }
