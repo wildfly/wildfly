@@ -118,8 +118,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                         final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                         switch (attribute) {
                             case CODE: {
-                                String code = value;
-                                vault.get(CODE).set(code);
+                                vault.get(CODE).set(value);
                                 break;
                             }
                             default:
@@ -487,7 +486,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             switch (element) {
                 case LOGIN_MODULE: {
                     EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
-                    EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
+                    EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE, Attribute.LOGIN_MODULE_STACK_REF);
                     parseCommonModule(reader, op.add(), required, notAllowed);
 
                     break;
@@ -521,7 +520,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             switch (element) {
                 case POLICY_MODULE: {
                     EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
-                    EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
+                    EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE, Attribute.LOGIN_MODULE_STACK_REF);
                     parseCommonModule(reader, op.get(POLICY_MODULES).add(), required, notAllowed);
                     break;
                 }
@@ -541,7 +540,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             switch (element) {
                 case ACL_MODULE: {
                     EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
-                    EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
+                    EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE, Attribute.LOGIN_MODULE_STACK_REF);
                     parseCommonModule(reader, op.get(ACL_MODULES).add(), required, notAllowed);
                     break;
                 }
@@ -561,7 +560,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 switch (element) {
                     case PROVIDER_MODULE: {
                         EnumSet<Attribute> required = EnumSet.of(Attribute.CODE);
-                        EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE, Attribute.FLAG);
+                        EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE, Attribute.FLAG, Attribute.LOGIN_MODULE_STACK_REF);
                         parseCommonModule(reader, op.get(PROVIDER_MODULES).add(), required, notAllowed);
                         break;
                     }
@@ -582,7 +581,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             switch (element) {
                 case TRUST_MODULE: {
                     EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
-                    EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
+                    EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE, Attribute.LOGIN_MODULE_STACK_REF);
                     parseCommonModule(reader, op.get(TRUST_MODULES).add(), required, notAllowed);
                     break;
                 }
@@ -602,7 +601,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             switch (element) {
                 case MAPPING_MODULE: {
                     EnumSet<Attribute> required = EnumSet.of(Attribute.CODE);
-                    EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.FLAG);
+                    EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.FLAG, Attribute.LOGIN_MODULE_STACK_REF);
                     parseCommonModule(reader, op.get(MAPPING_MODULES).add(), required, notAllowed);
                     break;
                 }
@@ -644,6 +643,11 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                     node.get(MODULE).set(module);
                     break;
                 }
+                case LOGIN_MODULE_STACK_REF: {
+                    ModelNode ref = JASPIAuthenticationModulesAttributeDefinition.parseField(LOGIN_MODULE_STACK_REF, value, reader);
+                    node.get(LOGIN_MODULE_STACK_REF).set(ref);
+                    break;
+                }
                 default:
                     throw unexpectedAttribute(reader, i);
             }
@@ -679,6 +683,21 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         }
     }
 
+    private void parseAuthModule(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+        Namespace schemaVer = Namespace.forUri(reader.getNamespaceURI());
+        EnumSet<Attribute> required = EnumSet.of(Attribute.CODE);
+        EnumSet<Attribute> notAllowed = null;
+        // in version 1.2 of the schema the optional flag attribute has been included.
+        if (schemaVer == Namespace.SECURITY_1_2) {
+            notAllowed = EnumSet.of(Attribute.TYPE);
+        }
+        // in earlier versions of the schema, the flag attribute was missing (not allowed).
+        else {
+            notAllowed = EnumSet.of(Attribute.TYPE, Attribute.FLAG);
+        }
+        parseCommonModule(reader, node, required, notAllowed);
+    }
+
     private void parseLoginModuleStack(List<ModelNode> list, ModelNode parentAddress, XMLExtendedStreamReader reader) throws XMLStreamException {
         EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         String name = null;
@@ -707,37 +726,6 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
 
         ModelNode op = appendAddOperation(list, parentAddress, LOGIN_MODULE_STACK, name);
         parseLoginModules(reader, op.get(LOGIN_MODULES));
-    }
-
-    private void parseAuthModule(XMLExtendedStreamReader reader, ModelNode op) throws XMLStreamException {
-        EnumSet<Attribute> required = EnumSet.of(Attribute.CODE);
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            required.remove(attribute);
-            switch (attribute) {
-                case CODE: {
-                    ModelNode code = JASPIAuthenticationModulesAttributeDefinition.parseField(CODE, value, reader);
-                    op.get(CODE).set(code);
-                    break;
-                }
-                case LOGIN_MODULE_STACK_REF: {
-                    ModelNode ref = JASPIAuthenticationModulesAttributeDefinition.parseField(LOGIN_MODULE_STACK_REF, value, reader);
-                    op.get(LOGIN_MODULE_STACK_REF).set(ref);
-                    break;
-                }
-                default:
-                    throw unexpectedAttribute(reader, i);
-            }
-        }
-
-        if (required.size() > 0) {
-            throw missingRequired(reader, required);
-        }
-
-        parseProperties(Element.MODULE_OPTION.getLocalName(), reader, op.get(MODULE_OPTIONS));
     }
 
     private void parseProperties(String childElementName, XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
