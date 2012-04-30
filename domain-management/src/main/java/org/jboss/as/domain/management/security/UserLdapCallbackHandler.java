@@ -127,7 +127,7 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
         return true;
     }
 
-    public CallbackHandler getCallbackHandler() {
+    public CallbackHandler getCallbackHandler(Map<String, Object> sharedState) {
         return this;
     }
 

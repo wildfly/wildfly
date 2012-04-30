@@ -85,6 +85,7 @@ import org.jboss.as.domain.management.security.JaasAuthenticationResourceDefinit
 import org.jboss.as.domain.management.security.KeystoreAttributes;
 import org.jboss.as.domain.management.security.LdapAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.LocalAuthenticationResourceDefinition;
+import org.jboss.as.domain.management.security.PlugInAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.PropertiesAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.PropertiesAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.security.PropertyResourceDefinition;
@@ -741,7 +742,7 @@ public class ManagementXml {
                         throw unexpectedElement(reader);
                     }
                     ModelNode parentAddress = realmAddress.clone().add(AUTHENTICATION);
-                    parsePlugIn(reader, expectedNs, parentAddress, list);
+                    parsePlugIn_Authentication(reader, expectedNs, parentAddress, list);
                     usernamePasswordFound = true;
                     break;
                 }
@@ -1167,7 +1168,7 @@ public class ManagementXml {
                 }
                 case PLUG_IN: {
                     ModelNode parentAddress = realmAddress.clone().add(AUTHORIZATION);
-                    parsePlugIn(reader, expectedNs, parentAddress, list);
+                    parsePlugIn_Authorization(reader, expectedNs, parentAddress, list);
                     authzFound = true;
                     break;
                 }
@@ -1216,7 +1217,66 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private void parsePlugIn(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private void parsePlugIn_Authentication(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode parentAddress, final List<ModelNode> list) throws XMLStreamException {
+        ModelNode addr = parentAddress.clone().add(PLUG_IN);
+        ModelNode plugIn = Util.getEmptyOperation(ADD, addr);
+        list.add(plugIn);
+
+        boolean nameFound = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME:
+                        PlugInAuthenticationResourceDefinition.NAME.parseAndSetParameter(value, plugIn, reader);
+                        nameFound = true;
+                        break;
+                    case MECHANISM: {
+                        PlugInAuthenticationResourceDefinition.MECHANISM.parseAndSetParameter(value, plugIn, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (nameFound == false) {
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROPERTIES: {
+                    while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                        requireNamespace(reader, expectedNs);
+                        final Element propertyElement = Element.forName(reader.getLocalName());
+                        switch (propertyElement) {
+                            case PROPERTY:
+                                parseProperty(reader, addr, list);
+                                break;
+                            default:
+                                throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parsePlugIn_Authorization(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode parentAddress, final List<ModelNode> list) throws XMLStreamException {
         ModelNode addr = parentAddress.clone().add(PLUG_IN);
         ModelNode plugIn = Util.getEmptyOperation(ADD, addr);
@@ -1440,9 +1500,25 @@ public class ManagementXml {
             }
             writer.writeEndElement();
         } else if (authentication.hasDefined(PLUG_IN)) {
-            writePlugIn(writer, authentication.get(PLUG_IN));
+            writePlugIn_Authentication(writer, authentication.get(PLUG_IN));
         }
 
+        writer.writeEndElement();
+    }
+
+    private void writePlugIn_Authentication(XMLExtendedStreamWriter writer, ModelNode plugIn) throws XMLStreamException {
+        writer.writeStartElement(Element.PLUG_IN.getLocalName());
+        AbstractPlugInAuthResourceDefinition.NAME.marshallAsAttribute(plugIn, writer);
+        PlugInAuthenticationResourceDefinition.MECHANISM.marshallAsAttribute(plugIn, writer);
+        if (plugIn.hasDefined(PROPERTY)) {
+            writer.writeStartElement(PROPERTIES);
+            for (Property current : plugIn.get(PROPERTY).asPropertyList()) {
+                writer.writeEmptyElement(PROPERTY);
+                writer.writeAttribute(Attribute.NAME.getLocalName(), current.getName());
+                PropertyResourceDefinition.VALUE.marshallAsAttribute(current.getValue(), writer);
+            }
+            writer.writeEndElement();
+        }
         writer.writeEndElement();
     }
 
@@ -1455,13 +1531,13 @@ public class ManagementXml {
             PropertiesAuthorizationResourceDefinition.PATH.marshallAsAttribute(properties, writer);
             PropertiesAuthorizationResourceDefinition.RELATIVE_TO.marshallAsAttribute(properties, writer);
         } else if (authorization.hasDefined(PLUG_IN)) {
-            writePlugIn(writer, authorization.get(PLUG_IN));
+            writePlugIn_Authorization(writer, authorization.get(PLUG_IN));
         }
 
         writer.writeEndElement();
     }
 
-    private void writePlugIn(XMLExtendedStreamWriter writer, ModelNode plugIn) throws XMLStreamException {
+    private void writePlugIn_Authorization(XMLExtendedStreamWriter writer, ModelNode plugIn) throws XMLStreamException {
         writer.writeStartElement(Element.PLUG_IN.getLocalName());
         AbstractPlugInAuthResourceDefinition.NAME.marshallAsAttribute(plugIn, writer);
         if (plugIn.hasDefined(PROPERTY)) {

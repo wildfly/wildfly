@@ -32,4 +32,11 @@ public interface PlugInProvider {
 
     // TODO - Add a nice newPlugIn method to obtain a plug-in based on name.
 
+    /**
+     * Return an authentication plug-in for the specified name or null if this PlugInProvider does not recognise the name.
+     *
+     * @param name - The name of the desired plug-in.
+     * @return The plug-in or null if no plug-in by that name can be obtained by this provider.
+     */
+    AuthenticationPlugIn loadAuthenticationPlugIn(final String name);
 }

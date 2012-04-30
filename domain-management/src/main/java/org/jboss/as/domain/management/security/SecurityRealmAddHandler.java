@@ -46,6 +46,7 @@ import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEY_PASSWORD;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.PLUG_IN;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
 import java.security.KeyStore;
@@ -67,6 +68,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -105,6 +107,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     protected void installServices(final OperationContext context, final String realmName, final ModelNode model,
                                    final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers)
             throws OperationFailedException {
+        final ModelNode plugIns = model.hasDefined(PLUG_IN) ? model.get(PLUG_IN) : null;
         final ModelNode authentication = model.hasDefined(AUTHENTICATION) ? model.get(AUTHENTICATION) : null;
         final ModelNode authorization = model.hasDefined(AUTHORIZATION) ? model.get(AUTHORIZATION) : null;
         final ModelNode serverIdentities = model.hasDefined(SERVER_IDENTITY) ? model.get(SERVER_IDENTITY) : null;
@@ -115,9 +118,13 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         final ServiceName realmServiceName = SecurityRealmService.BASE_SERVICE_NAME.append(realmName);
         ServiceBuilder<?> realmBuilder = serviceTarget.addService(realmServiceName, securityRealmService);
 
+        ServiceName plugInLoaderName = null;
         ServiceName authenticationName = null;
         ServiceName authorizationName = null;
         ModelNode authTruststore = null;
+        if (plugIns != null) {
+            plugInLoaderName = addPlugInLoaderService(realmServiceName, plugIns, serviceTarget, newControllers);
+        }
         if (authentication != null) {
             // Authentication can have a truststore defined at the same time as a username/password based mechanism.
             //
@@ -137,6 +144,9 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
                 authenticationName = addJaasService(authentication.require(JAAS), realmServiceName, securityRealmService, serviceTarget, newControllers, context.isNormalServer());
             } else if (authentication.hasDefined(LDAP)) {
                 authenticationName = addLdapService(authentication.require(LDAP), realmServiceName, securityRealmService, serviceTarget, newControllers);
+            } else if (authentication.hasDefined(PLUG_IN)) {
+                authenticationName = addPlugInAuthenticationService(authentication.require(PLUG_IN), realmServiceName,
+                        plugInLoaderName, securityRealmService, serviceTarget, newControllers);
             } else if (authentication.hasDefined(PROPERTIES)) {
                 authenticationName = addPropertiesAuthenticationService(authentication.require(PROPERTIES), realmServiceName, realmName, securityRealmService, serviceTarget, newControllers);
             } else if (authentication.hasDefined(USERS)) {
@@ -177,6 +187,17 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         if (newControllers != null) {
             newControllers.add(sc);
         }
+    }
+
+    private ServiceName addPlugInLoaderService(ServiceName realmServiceName, ModelNode plugInModel,
+            ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
+        ServiceName plugInLoaderName = realmServiceName.append(PlugInLoaderService.SERVICE_SUFFIX);
+
+        PlugInLoaderService loaderService = new PlugInLoaderService(plugInModel);
+        ServiceBuilder<PlugInLoaderService> builder = serviceTarget.addService(plugInLoaderName, loaderService);
+        newControllers.add(builder.setInitialMode(Mode.ON_DEMAND).install());
+
+        return plugInLoaderName;
     }
 
     private ServiceName addClientCertService(ServiceName realmServiceName, CallbackHandlerServiceRegistry registry, ServiceTarget serviceTarget,
@@ -239,7 +260,24 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         return localServiceName;
     }
 
-    private ServiceName addPropertiesAuthenticationService(ModelNode properties, ServiceName realmServiceName, String realmName, CallbackHandlerServiceRegistry registry, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
+    private ServiceName addPlugInAuthenticationService(ModelNode plugIn, ServiceName realmServiceName,
+            ServiceName plugInLoaderName, SecurityRealmService registry, ServiceTarget serviceTarget,
+            List<ServiceController<?>> newControllers) {
+        ServiceName plugInServiceName = realmServiceName.append(PlugInAuthenticationCallbackHandler.SERVICE_SUFFIX);
+
+        PlugInAuthenticationCallbackHandler plugInService = new PlugInAuthenticationCallbackHandler(registry.getName(),
+                registry, plugIn);
+
+        ServiceBuilder<CallbackHandlerService> plugInBuilder = serviceTarget.addService(plugInServiceName, plugInService);
+        plugInBuilder.addDependency(plugInLoaderName, PlugInLoaderService.class, plugInService.getPlugInLoaderServiceValue());
+
+        newControllers.add(plugInBuilder.setInitialMode(ON_DEMAND).install());
+
+        return plugInServiceName;
+    }
+
+    private ServiceName addPropertiesAuthenticationService(ModelNode properties, ServiceName realmServiceName,
+            String realmName, CallbackHandlerServiceRegistry registry, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
         ServiceName propsServiceName = realmServiceName.append(PropertiesCallbackHandler.SERVICE_SUFFIX);
         PropertiesCallbackHandler propsCallbackHandler = new PropertiesCallbackHandler(realmName, properties, registry);
 

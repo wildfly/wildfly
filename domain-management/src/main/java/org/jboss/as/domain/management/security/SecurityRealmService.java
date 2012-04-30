@@ -68,6 +68,7 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
     private final InjectedValue<CallbackHandlerFactory> secretCallbackFactory = new InjectedValue<CallbackHandlerFactory>();
 
     private final String name;
+    // TODO - Switch to an InjectedSetValue to remove need to implement a registry.
     private final Map<AuthenticationMechanism, CallbackHandlerService> registeredServices = new HashMap<AuthenticationMechanism, CallbackHandlerService>();
     private boolean started = false;
 
@@ -162,8 +163,9 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
          * shared to combine the authentication step and the loading of authorization data.
          */
         final CallbackHandlerService handlerService = getCallbackHandlerService(mechanism);
+        final Map<String, Object> sharedState = new HashMap<String, Object>();
         return new AuthorizingCallbackHandler() {
-            CallbackHandler handler = handlerService.getCallbackHandler();
+            CallbackHandler handler = handlerService.getCallbackHandler(sharedState);
             Map<String, String> options = handlerService.getConfigurationOptions();
             final boolean subjectCallbackSupported;
 

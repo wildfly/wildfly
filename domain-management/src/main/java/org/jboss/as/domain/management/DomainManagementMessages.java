@@ -568,6 +568,43 @@ public interface DomainManagementMessages {
     @Message(id = 15259, value = "No CallbackHandler available for mechanism %s in realm %s")
     IllegalStateException noCallbackHandlerForMechanism(final String mechanism, final String realmName);
 
+    /**
+     * IllegalStateException to indicate no plug in providers were loaded for the specified name.
+     *
+     * @param name The name of the module loaded.
+     * @return an {@link IllegalStateException} for the failure.
+     */
+    @Message(id = 15260, value = "No plug in providers found for module name %s")
+    IllegalArgumentException noPlugInProvidersLoaded(final String name);
+
+    /**
+     * IllegalStateException to indicate a failure loading the PlugIn.
+     *
+     * @param name - The name of the plug-in being loaded.
+     * @param error - The error that occurred.
+     * @return an {@link IllegalArgumentException} for the failure.
+     */
+    @Message(id = 15261, value = "Unable to load plug-in for module %s due to error (%s)")
+    IllegalArgumentException unableToLoadPlugInProviders(final String name, final String error);
+
+    /**
+     * IllegalArgumentException to indicate that an AuthenticationPlugIn was not loaded.
+     *
+     * @param name - The name specified.
+     * @return an {@link IllegalArgumentException} for the failure.
+     */
+    @Message(id = 15262, value = "No authentication plug-in found for name %s")
+    IllegalArgumentException noAuthenticationPlugInFound(final String name);
+
+    /**
+     * IllegalStateException to indicate that a plug-in could not be initialised.
+     *
+     * @param name - The name specified.
+     * @return an {@link IllegalArgumentException} for the failure.
+     */
+    @Message(id = 15263, value = "Unable to initialise plug-in %s due to error %s")
+    IllegalStateException unableToInitialisePlugIn(final String name, final String message);
+
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
      * this range commencing 15200.

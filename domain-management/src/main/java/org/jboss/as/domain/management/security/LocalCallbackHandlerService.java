@@ -89,7 +89,7 @@ class LocalCallbackHandlerService implements Service<CallbackHandlerService>, Ca
         return true;
     }
 
-    public CallbackHandler getCallbackHandler() {
+    public CallbackHandler getCallbackHandler(Map<String, Object> sharedState) {
         return this;
     }
 
