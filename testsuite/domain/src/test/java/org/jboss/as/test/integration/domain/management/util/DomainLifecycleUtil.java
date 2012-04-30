@@ -112,12 +112,12 @@ public class DomainLifecycleUtil {
 
             final String additionalJavaOpts = System.getProperty("jboss.options");
 
-            File modulesJar = new File(jbossHomeDir + "/jboss-modules.jar");
+            File modulesJar = new File(jbossHomeDir + File.separatorChar + "jboss-modules.jar");
             if (modulesJar.exists() == false)
                 throw new IllegalStateException("Cannot find: " + modulesJar);
 
             String javaHome = configuration.getJavaHome();
-            String java = (javaHome != null) ? javaHome + "/bin/java" : "java";
+            String java = (javaHome != null) ? javaHome + File.separatorChar + "bin" + File.separatorChar + "java" : "java";
 
             File domainDir = configuration.getDomainDirectory() != null ? new File(configuration.getDomainDirectory()) : new File(new File(jbossHomeDir), "domain");
             String domainPath = domainDir.getAbsolutePath();
@@ -126,7 +126,7 @@ public class DomainLifecycleUtil {
             if (configuration.getModulePath() != null && !configuration.getModulePath().isEmpty()) {
                 modulePath = configuration.getModulePath();
             } else {
-                modulePath = jbossHomeDir + "/modules";
+                modulePath = jbossHomeDir + File.separatorChar + "modules";
             }
 
             // No point backing up the file in a test scenario, just write what we need.

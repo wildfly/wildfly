@@ -30,8 +30,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -40,8 +43,10 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 import org.jboss.as.test.integration.domain.management.util.DomainControllerClientConfig;
+import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.shrinkwrap.api.exporter.StreamExporter;
 import org.junit.Assert;
 
 /**
@@ -60,15 +65,19 @@ public class DomainTestSupport {
 
     public static JBossAsManagedConfiguration getMasterConfiguration(String domainConfigPath, String hostConfigPath, String testName) throws URISyntaxException {
 
-        File domains = new File("target" + File.separator + "domains" + File.separator + testName);
+        File domains = getBaseDir(testName);
+        File extraModules = getAddedModulesDir(testName);
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         final JBossAsManagedConfiguration masterConfig = new JBossAsManagedConfiguration();
+        configureModulePath(masterConfig, extraModules);
         masterConfig.setHostControllerManagementAddress(masterAddress);
         masterConfig.setHostCommandLineProperties("-Djboss.test.host.master.address=" + masterAddress);
         URL url = tccl.getResource(domainConfigPath);
+        assert url != null : "cannot find domainConfigPath";
         masterConfig.setDomainConfigFile(new File(url.toURI()).getAbsolutePath());
         System.out.println(masterConfig.getDomainConfigFile());
         url = tccl.getResource(hostConfigPath);
+        assert url != null : "cannot find hostConfigPath";
         System.out.println(masterConfig.getHostConfigFile());
         masterConfig.setHostConfigFile(new File(url.toURI()).getAbsolutePath());
         File masterDir = new File(domains, "master");
@@ -81,9 +90,11 @@ public class DomainTestSupport {
 
     public static JBossAsManagedConfiguration getSlaveConfiguration(String hostConfigPath, String testName) throws URISyntaxException {
 
-        File domains = new File("target" + File.separator + "domains" + File.separator + testName);
+        File domains = getBaseDir(testName);
+        File extraModules = getAddedModulesDir(testName);
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         final JBossAsManagedConfiguration slaveConfig = new JBossAsManagedConfiguration();
+        configureModulePath(slaveConfig, extraModules);
         slaveConfig.setHostName("slave");
         slaveConfig.setHostControllerManagementAddress(slaveAddress);
         slaveConfig.setHostControllerManagementPort(19999);
@@ -117,6 +128,16 @@ public class DomainTestSupport {
         }
 
         processFutures(futures, timeout);
+    }
+
+    public static File getBaseDir(String testName) {
+        return new File("target" + File.separator + "domains" + File.separator + testName);
+    }
+
+    public static File getAddedModulesDir(String testName) {
+        File f = new File(getBaseDir(testName), "added-modules");
+        f.mkdirs();
+        return f;
     }
 
     public static ModelNode createOperationNode(String address, String operation) {
@@ -206,12 +227,22 @@ public class DomainTestSupport {
         }
     }
 
+    private static void configureModulePath(JBossAsManagedConfiguration config, File extraModules) {
+        String basePath = config.getModulePath();
+        if (basePath == null || basePath.isEmpty()) {
+            basePath = config.getJbossHome() + File.separatorChar + "modules";
+        }
+        String fullPath = extraModules.getAbsolutePath() + File.pathSeparatorChar + basePath;
+        config.setModulePath(fullPath);
+    }
+
     private final String domainConfig;
     private final String masterConfig;
     private final String slaveConfig;
     private final DomainLifecycleUtil domainMasterLifecycleUtil;
     private final DomainLifecycleUtil domainSlaveLifecycleUtil;
     private final DomainControllerClientConfig sharedClientConfig;
+    private final String testClass;
 
 
     public DomainTestSupport(final String testClass, final Configuration configuration) throws Exception {
@@ -219,6 +250,7 @@ public class DomainTestSupport {
     }
 
     public DomainTestSupport(final String testClass, final String domainConfig, final String masterConfig, final String slaveConfig) throws Exception {
+        this.testClass = testClass;
         this.domainConfig = domainConfig;
         this.masterConfig = masterConfig;
         this.slaveConfig = slaveConfig;
@@ -248,10 +280,16 @@ public class DomainTestSupport {
         if (domainSlaveLifecycleUtil != null) {
             domainSlaveLifecycleUtil.start();
         }
-        try {
-            //Thread.sleep(2000);
-        } catch (Exception e) {
-            e.printStackTrace();
+    }
+
+    public void addTestModule(String moduleName, InputStream moduleXml, Map<String, StreamExporter> contents) throws IOException {
+        File modulesDir = getAddedModulesDir(testClass);
+        String modulePath = moduleName.replace('.', File.separatorChar) + File.separatorChar + "main";
+        File moduleDir = new File(modulesDir, modulePath);
+        moduleDir.mkdirs();
+        FileUtils.copyFile(moduleXml, new File(moduleDir, "module.xml"));
+        for (Map.Entry<String, StreamExporter> entry : contents.entrySet()) {
+            entry.getValue().exportTo(new File(moduleDir, entry.getKey()), true);
         }
     }
 

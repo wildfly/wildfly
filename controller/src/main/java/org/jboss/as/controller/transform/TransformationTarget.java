@@ -88,4 +88,13 @@ public interface TransformationTarget {
      */
     boolean isTransformationNeeded();
 
+    /**
+     * Add version information for a subsystem.
+     *
+     * @param subsystemName the name of the subsystem. Cannot be {@code null}
+     * @param majorVersion the major version of the subsystem's management API
+     * @param minorVersion the minor version of the subsystem's management API
+     */
+    void addSubsystemVersion(String subsystemName, int majorVersion, int minorVersion);
+
 }

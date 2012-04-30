@@ -50,6 +50,7 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.SubsystemTransformer;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
@@ -303,6 +304,23 @@ public class ExtensionRegistry {
             extensions.clear();
             reverseMap.clear();
             unnamedMerged = false;
+        }
+    }
+
+    /**
+     * Records the versions of the subsystems associated with the given {@code moduleName} as properties in the
+     * provided {@link ModelNode}. Each subsystem property key will be the subsystem name and the value will be
+     * a string composed of the subsystem major version dot appended to its minor version.
+     *
+     * @param moduleName the name of the extension module
+     * @param subsystems a model node of type {@link ModelType#UNDEFINED} or type {@link ModelType#OBJECT}
+     */
+    public void recordSubsystemVersions(String moduleName, ModelNode subsystems) {
+        final Map<String, SubsystemInformation> subsystemsInfo = getAvailableSubsystems(moduleName);
+        if(subsystemsInfo != null && ! subsystemsInfo.isEmpty()) {
+            for(final Map.Entry<String, SubsystemInformation> entry : subsystemsInfo.entrySet()) {
+                subsystems.add(entry.getKey(), entry.getValue().getManagementInterfaceMajorVersion() +"."+ entry.getValue().getManagementInterfaceMinorVersion());
+            }
         }
     }
 

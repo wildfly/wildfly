@@ -7,6 +7,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,11 +16,11 @@ import java.util.Map;
  */
 public class TransformationTargetImpl implements TransformationTarget {
     private static final Logger log = Logger.getLogger(TransformationTarget.class);
-    private int major;
-    private int minor;
-    private ExtensionRegistry extensionRegistry;
-    private TransformerRegistry transformerRegistry;
-    private Map<String, String> subsystemVersions = new HashMap<String, String>();
+    private final int major;
+    private final int minor;
+    private final ExtensionRegistry extensionRegistry;
+    private final TransformerRegistry transformerRegistry;
+    private final Map<String, String> subsystemVersions = Collections.synchronizedMap(new HashMap<String, String>());
 
     private TransformationTargetImpl(final int majorManagementVersion, final int minorManagementVersion, final ModelNode subsystemVersions) {
         this.major = majorManagementVersion;
@@ -90,5 +91,11 @@ public class TransformationTargetImpl implements TransformationTarget {
     public boolean isTransformationNeeded() {
         //return  !(major==org.jboss.as.version.Version.MANAGEMENT_MAJOR_VERSION&& minor == org.jboss.as.version.Version.MANAGEMENT_MINOR_VERSION); //todo dependencies issue
         return !(major == 1 && minor == 2);
+    }
+
+    @Override
+    public void addSubsystemVersion(String subsystemName, int majorVersion, int minorVersion) {
+        StringBuilder sb = new StringBuilder(String.valueOf(majorVersion)).append('.').append(minorVersion);
+        this.subsystemVersions.put(subsystemName, sb.toString());
     }
 }
