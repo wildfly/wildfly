@@ -22,17 +22,27 @@
 
 package org.jboss.as.controller.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
@@ -119,6 +129,37 @@ public abstract class AbstractControllerTestBase {
             }
         }
     }
+
+    public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
+        ModelNode rsp = getController().execute(operation, null, null, null);
+        if (FAILED.equals(rsp.get(OUTCOME).asString())) {
+            throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
+        }
+        return rsp.get(RESULT);
+    }
+
+    public void executeForFailure(ModelNode operation) throws OperationFailedException {
+        try {
+            executeForResult(operation);
+            Assert.fail("Should have given error");
+        } catch (OperationFailedException expected) {
+        }
+    }
+
+    protected ModelNode createOperation(String operationName, String...address) {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(operationName);
+        if (address.length > 0) {
+            for (String addr : address) {
+                operation.get(OP_ADDR).add(addr);
+            }
+        } else {
+            operation.get(OP_ADDR).setEmptyList();
+        }
+
+        return operation;
+    }
+
 
     protected void addBootOperations(List<ModelNode> bootOperations) {
 

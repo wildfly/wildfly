@@ -50,8 +50,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -139,7 +140,7 @@ public class GlobalOperationHandlers {
             // Non-AccessType.METRIC attributes with a special read handler registered
             final Map<String, ModelNode> otherAttributes = new HashMap<String, ModelNode>();
             // Child resources recursively read
-            final Map<PathElement, ModelNode> childResources = recursive ? new HashMap<PathElement, ModelNode>() : Collections.<PathElement, ModelNode>emptyMap();
+            final Map<PathElement, ModelNode> childResources = recursive ? new LinkedHashMap<PathElement, ModelNode>() : Collections.<PathElement, ModelNode>emptyMap();
 
             // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
             // in reverse order of how they should execute, as that is the way adding a Stage.IMMEDIATE step works
@@ -1168,7 +1169,7 @@ public class GlobalOperationHandlers {
             }
             Set<String> set = result.get(childType);
             if (set == null) {
-                set = new HashSet<String>();
+                set = new LinkedHashSet<String>();
                 result.put(childType, set);
                 if (resource.hasChildren(childType)) {
                     set.addAll(resource.getChildrenNames(childType));

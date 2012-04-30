@@ -20,25 +20,32 @@ package org.jboss.as.server.services.net;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.common.AbstractSocketBindingGroupAddHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBindingManager;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- * Handler for the domain socket-binding-group resource's add operation.
+ * Handler for the server socket-binding-group resource's add operation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -61,6 +68,19 @@ public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler
      */
     @Override
     protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
+
+        Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
+        Set<ResourceEntry> children = root.getChildren(SOCKET_BINDING_GROUP);
+        if (children.size() > 1){
+            PathAddress mine = PathAddress.pathAddress(operation.require(OP_ADDR));
+            for (ResourceEntry entry : children) {
+                if (!entry.getName().equals(mine.getLastElement().getValue())) {
+                    throw ServerMessages.MESSAGES.cannotAddMoreThanOneSocketBindingGroupForServer(
+                            mine,
+                            PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, entry.getName())));
+                }
+            }
+        }
 
         ModelNode model = resource.getModel();
         populateModel(operation, model);
