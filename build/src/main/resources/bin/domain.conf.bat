@@ -68,12 +68,12 @@ rem The HostController process uses its own set of java options
 set "HOST_CONTROLLER_JAVA_OPTS=%JAVA_OPTS%"
 
 rem # Sample JPDA settings for remote socket debugging
-rem set "PROCESS_CONTROLLER_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS% -Xdebug -Xrunjdwp:transport=dt_socket,address=8788,server=y,suspend=n"
-rem set "HOST_CONTROLLER_JAVA_OPTS=%HOST_CONTROLLER_JAVA_OPTS% -Xdebug -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"
+rem set "PROCESS_CONTROLLER_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS% -Xrunjdwp:transport=dt_socket,address=8788,server=y,suspend=n"
+rem set "HOST_CONTROLLER_JAVA_OPTS=%HOST_CONTROLLER_JAVA_OPTS% -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"
 
 rem # Sample JPDA settings for shared memory debugging
-rem set "PROCESS_CONTROLLER_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS% -Xdebug -Xrunjdwp:transport=dt_shmem,address=jboss,server=y,suspend=n"
-rem set "HOST_CONTROLLER_JAVA_OPTS=%HOST_CONTROLLER_JAVA_OPTS% -Xdebug -Xrunjdwp:transport=dt_shmem,address=jboss,server=y,suspend=n"
+rem set "PROCESS_CONTROLLER_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS% -Xrunjdwp:transport=dt_shmem,address=jboss,server=y,suspend=n"
+rem set "HOST_CONTROLLER_JAVA_OPTS=%HOST_CONTROLLER_JAVA_OPTS% -Xrunjdwp:transport=dt_shmem,address=jboss,server=y,suspend=n"
 
 :JAVA_OPTS_SET
 
