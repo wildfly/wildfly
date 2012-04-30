@@ -70,12 +70,5 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         super.compareXml(configId, original, marshalled, true);
     }
 
-    @Test
-    public void testConverter() throws Exception {
-        String dmr = readResource("modcluster-1.1.dmr");
-        ModelNode expected = ModelNode.fromString(dmr);
-        testConverter(expected, 1, 1);
-    }
-
 
 }

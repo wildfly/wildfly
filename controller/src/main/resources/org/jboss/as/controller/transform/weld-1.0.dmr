@@ -1,9 +1,0 @@
-{
-    "model-description" => {
-        "description" => "The configuration of the weld subsystem.",
-        "head-comment-allowed" => true,
-        "tail-comment-allowed" => true,
-        "namespace" => "urn:jboss:domain:weld:1.0"
-    },
-    "address" => [("subsystem" => "weld")]
-}

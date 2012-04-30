@@ -86,7 +86,6 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         dynamicLoadProvider.registerSubModel(CustomLoadMetricDefinition.INSTANCE);
 
         subsystem.registerXMLElementWriter(new ModClusterSubsystemXMLWriter());
-        subsystem.registerSubsystemTransformer(new ModClusterModelTransformer11());
     }
 
     @Override
