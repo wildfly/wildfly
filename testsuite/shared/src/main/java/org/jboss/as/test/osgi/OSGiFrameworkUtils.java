@@ -43,10 +43,10 @@ import org.osgi.service.startlevel.StartLevel;
  * @author thomas.diesler@jboss.com
  * @since 24-May-2011
  */
-public final class OSGiTestUtil {
+public final class OSGiFrameworkUtils {
 
     // Hide ctor
-    private OSGiTestUtil() {
+    private OSGiFrameworkUtils() {
     }
 
     /**
