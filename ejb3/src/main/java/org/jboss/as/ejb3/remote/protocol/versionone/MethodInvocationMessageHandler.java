@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
@@ -38,8 +39,6 @@ import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
-import org.jboss.as.ejb3.component.interceptors.AsyncInvocationTask;
-import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
@@ -295,22 +294,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                 // just invoke normally
                 return componentView.invoke(interceptorContext);
             }
-            // it's really a async method invocation on a session bean. So treat it accordingly
-            final SessionBeanComponent sessionBeanComponent = (SessionBeanComponent) componentView.getComponent();
-            final CancellationFlag cancellationFlag = new CancellationFlag();
-            // add the cancellation flag to the interceptor context
-            interceptorContext.putPrivateData(CancellationFlag.class, cancellationFlag);
-
-            final AsyncInvocationTask asyncInvocationTask = new AsyncInvocationTask(cancellationFlag) {
-                @Override
-                protected Object runInvocation() throws Exception {
-                    return componentView.invoke(interceptorContext);
-                }
-            };
-            // invoke
-            sessionBeanComponent.getAsynchronousExecutor().submit(asyncInvocationTask);
-            // wait/block for the bean invocation to complete and get the real result to be returned to the client
-            return asyncInvocationTask.get();
+            return ((Future)componentView.invoke(interceptorContext)).get();
         } else {
             return componentView.invoke(interceptorContext);
         }

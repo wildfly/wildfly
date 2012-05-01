@@ -23,6 +23,8 @@ package org.jboss.as.ejb3.remote;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +74,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.security.SecurityContext;
+import org.jboss.security.SecurityContextAssociation;
 
 /**
  * {@link EJBReceiver} for local same-VM invocations. This handles all invocations on remote interfaces
@@ -160,11 +164,17 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
             if (ejbComponent instanceof SessionBeanComponent) {
                 final SessionBeanComponent component = (SessionBeanComponent) ejbComponent;
                 final CancellationFlag flag = new CancellationFlag();
+                final SecurityContext securityContext = SecurityContextAssociation.getSecurityContext();
                 final AsyncInvocationTask task = new AsyncInvocationTask(flag) {
 
                     @Override
                     protected Object runInvocation() throws Exception {
-                        return view.invoke(context);
+                        setSecurityContextOnAssociation(securityContext);
+                        try {
+                            return view.invoke(context);
+                        } finally {
+                            clearSecurityContextOnAssociation();
+                        }
                     }
                 };
                 context.putPrivateData(CancellationFlag.class, flag);
@@ -401,5 +411,27 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         public EJBReceiver getEJBReceiver() {
             return LocalEjbReceiver.this;
         }
+    }
+
+
+    private static void setSecurityContextOnAssociation(final SecurityContext sc) {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+            @Override
+            public Void run() {
+                SecurityContextAssociation.setSecurityContext(sc);
+                return null;
+            }
+        });
+    }
+    private static void clearSecurityContextOnAssociation() {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+            @Override
+            public Void run() {
+                SecurityContextAssociation.clearSecurityContext();
+                return null;
+            }
+        });
     }
 }

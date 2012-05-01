@@ -41,9 +41,8 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
-import org.jboss.as.ejb3.component.interceptors.AsyncFutureInterceptorFactory;
-import org.jboss.as.ejb3.component.interceptors.AsyncVoidInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBViewDescription;
+import org.jboss.as.ejb3.component.interceptors.AsyncFutureInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.processors.dd.MethodResolutionUtils;
@@ -59,6 +58,7 @@ import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Merging processor that handles EJB async methods, and adds a configurator to configure any that are found.
@@ -147,20 +147,15 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
                                     }
                                 }
                             }
-
                         }
                     }
                 });
             }
-
         }
-
     }
 
     private static void addAsyncInterceptor(final ViewConfiguration configuration, final Method method) throws DeploymentUnitProcessingException {
-        if (method.getReturnType().equals(void.class)) {
-            configuration.addClientInterceptor(method, AsyncVoidInterceptorFactory.INSTANCE, InterceptorOrder.Client.LOCAL_ASYNC_INVOCATION);
-        } else if (method.getReturnType().equals(Future.class)) {
+        if (method.getReturnType().equals(void.class) || method.getReturnType().equals(Future.class)) {
             configuration.addClientInterceptor(method, AsyncFutureInterceptorFactory.INSTANCE, InterceptorOrder.Client.LOCAL_ASYNC_INVOCATION);
         } else {
             throw MESSAGES.wrongReturnTypeForAsyncMethod(method);
