@@ -54,8 +54,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
-import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-
 /**
  * OSGi subsystem operation handler.
  *
