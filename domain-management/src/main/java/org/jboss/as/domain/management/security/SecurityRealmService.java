@@ -44,13 +44,13 @@ import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
-import org.jboss.as.domain.management.CallbackHandlerServiceRegistry;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedSetValue;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -59,51 +59,20 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class SecurityRealmService implements Service<SecurityRealm>, SecurityRealm, CallbackHandlerServiceRegistry {
+public class SecurityRealmService implements Service<SecurityRealm>, SecurityRealm {
 
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "security_realm");
 
     private final InjectedValue<SubjectSupplementalService> subjectSupplemental = new InjectedValue<SubjectSupplementalService>();
     private final InjectedValue<SSLIdentityService> sslIdentity = new InjectedValue<SSLIdentityService>();
     private final InjectedValue<CallbackHandlerFactory> secretCallbackFactory = new InjectedValue<CallbackHandlerFactory>();
+    private final InjectedSetValue<CallbackHandlerService> callbackHandlerServices = new InjectedSetValue<CallbackHandlerService>();
 
     private final String name;
-    // TODO - Switch to an InjectedSetValue to remove need to implement a registry.
     private final Map<AuthenticationMechanism, CallbackHandlerService> registeredServices = new HashMap<AuthenticationMechanism, CallbackHandlerService>();
-    private boolean started = false;
 
     public SecurityRealmService(String name) {
         this.name = name;
-    }
-
-    /*
-     * CallbackHandlerServiceRegistry Methods
-     */
-
-    public void register(AuthenticationMechanism mechanism, CallbackHandlerService callbackHandler) {
-        if (started) {
-            throw MESSAGES.registryUpdateAfterStarted();
-        }
-
-        synchronized (registeredServices) {
-            if (registeredServices.containsKey(mechanism)) {
-                throw MESSAGES.callbackHandlerAlreadyRegistered(mechanism.name());
-            }
-            registeredServices.put(mechanism, callbackHandler);
-        }
-    }
-
-    public void unregister(AuthenticationMechanism mechanism, CallbackHandlerService callbackHandler) {
-        if (started) {
-            throw MESSAGES.registryUpdateAfterStarted();
-        }
-
-        synchronized (registeredServices) {
-            if (registeredServices.containsKey(mechanism) == false || registeredServices.get(mechanism) != callbackHandler) {
-                throw MESSAGES.callbackHandlerRegistrationMisMatch();
-            }
-            registeredServices.remove(mechanism);
-        }
     }
 
     /*
@@ -112,14 +81,21 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
 
     public void start(StartContext context) throws StartException {
         ROOT_LOGGER.debugf("Starting '%s' Security Realm Service", name);
+        for (CallbackHandlerService current : callbackHandlerServices.getValue()) {
+            AuthenticationMechanism mechanism = current.getPreferredMechanism();
+            if (registeredServices.containsKey(mechanism)) {
+                registeredServices.clear();
+                throw MESSAGES.multipleCallbackHandlerForMechanism(mechanism.name());
+            }
+            registeredServices.put(mechanism, current);
+        }
         SecurityRealmRegistry.register(name, getValue());
-        started = true;
     }
 
     public void stop(StopContext context) {
         ROOT_LOGGER.debugf("Stopping '%s' Security Realm Service", name);
+        registeredServices.clear();
         SecurityRealmRegistry.remove(name);
-        started = false;
     }
 
     public SecurityRealmService getValue() throws IllegalStateException, IllegalArgumentException {
@@ -241,6 +217,10 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
 
     public InjectedValue<CallbackHandlerFactory> getSecretCallbackFactory() {
         return secretCallbackFactory;
+    }
+
+    public InjectedSetValue<CallbackHandlerService> getCallbackHandlerService() {
+        return callbackHandlerServices;
     }
 
     public SSLContext getSSLContext() {

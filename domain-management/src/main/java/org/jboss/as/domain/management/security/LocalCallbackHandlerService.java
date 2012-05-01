@@ -22,8 +22,8 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.RealmConfigurationConstants.LOCAL_DEFAULT_USER;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.LOCAL_DEFAULT_USER;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -38,7 +38,6 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 
 import org.jboss.as.domain.management.AuthenticationMechanism;
-import org.jboss.as.domain.management.CallbackHandlerServiceRegistry;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -57,12 +56,10 @@ class LocalCallbackHandlerService implements Service<CallbackHandlerService>, Ca
     private final String allowedUsers;
     private boolean allowAll;
     private final Set<String> allowedUsersSet = new HashSet<String>();
-    private final CallbackHandlerServiceRegistry registry;
 
-    LocalCallbackHandlerService(final String defaultUser, final String allowedUsers, final CallbackHandlerServiceRegistry registry) {
+    LocalCallbackHandlerService(final String defaultUser, final String allowedUsers) {
         this.defaultUser = defaultUser;
         this.allowedUsers = allowedUsers;
-        this.registry = registry;
     }
 
     /*
@@ -116,11 +113,9 @@ class LocalCallbackHandlerService implements Service<CallbackHandlerService>, Ca
                 }
             }
         }
-        registry.register(getPreferredMechanism(), this);
     }
 
     public void stop(StopContext context) {
-        registry.unregister(getPreferredMechanism(), this);
         allowAll = false;
         allowedUsersSet.clear(); // Effectively disables this CBH
     }

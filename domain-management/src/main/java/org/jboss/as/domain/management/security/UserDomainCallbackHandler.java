@@ -27,13 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
 
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.AuthorizeCallback;
-import javax.security.sasl.RealmCallback;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -41,8 +34,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.AuthorizeCallback;
+import javax.security.sasl.RealmCallback;
+
 import org.jboss.as.domain.management.AuthenticationMechanism;
-import org.jboss.as.domain.management.CallbackHandlerServiceRegistry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -59,14 +59,12 @@ public class UserDomainCallbackHandler implements Service<CallbackHandlerService
     public static final String SERVICE_SUFFIX = "users";
 
     private final String realm;
-    private final CallbackHandlerServiceRegistry registry;
 
     private volatile ModelNode userDomain;
 
-    public UserDomainCallbackHandler(String realm, ModelNode userDomain, final CallbackHandlerServiceRegistry registry) {
+    public UserDomainCallbackHandler(String realm, ModelNode userDomain) {
         this.realm = realm;
         setUserDomain(userDomain);
-        this.registry = registry;
     }
 
     void setUserDomain(final ModelNode userDomain) {
@@ -103,11 +101,9 @@ public class UserDomainCallbackHandler implements Service<CallbackHandlerService
 
 
     public void start(StartContext context) throws StartException {
-        registry.register(getPreferredMechanism(), this);
     }
 
     public void stop(StopContext context) {
-        registry.unregister(getPreferredMechanism(), this);
     }
 
     public UserDomainCallbackHandler getValue() throws IllegalStateException, IllegalArgumentException {

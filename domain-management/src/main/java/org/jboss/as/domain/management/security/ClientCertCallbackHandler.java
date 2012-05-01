@@ -33,7 +33,6 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 
 import org.jboss.as.domain.management.AuthenticationMechanism;
-import org.jboss.as.domain.management.CallbackHandlerServiceRegistry;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -49,10 +48,7 @@ public class ClientCertCallbackHandler implements Service<CallbackHandlerService
 
     public static final String SERVICE_SUFFIX = "client_cert";
 
-    private final CallbackHandlerServiceRegistry registry;
-
-    ClientCertCallbackHandler(final CallbackHandlerServiceRegistry registry) {
-        this.registry = registry;
+    ClientCertCallbackHandler() {
     }
 
     /*
@@ -64,11 +60,9 @@ public class ClientCertCallbackHandler implements Service<CallbackHandlerService
     }
 
     public void start(StartContext context) throws StartException {
-        registry.register(AuthenticationMechanism.CLIENT_CERT, this);
     }
 
     public void stop(StopContext context) {
-        registry.unregister(AuthenticationMechanism.CLIENT_CERT, this);
     }
 
     /*
