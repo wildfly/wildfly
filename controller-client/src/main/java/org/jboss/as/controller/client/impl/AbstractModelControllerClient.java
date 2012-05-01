@@ -18,15 +18,12 @@
  */
 package org.jboss.as.controller.client.impl;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -59,14 +56,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
     private static ManagementRequestHandler<ModelNode, OperationExecutionContext> MESSAGE_HANDLER = new HandleReportRequestHandler();
     private static ManagementRequestHandler<ModelNode, OperationExecutionContext> GET_INPUT_STREAM = new ReadAttachmentInputStreamRequestHandler();
 
-    private static final OperationMessageHandler NO_OP_HANDLER = new OperationMessageHandler() {
-
-        @Override
-        public void handleReport(MessageSeverity severity, String message) {
-            //
-        }
-
-    };
+    private static final OperationMessageHandler NO_OP_HANDLER = OperationMessageHandler.DISCARD;
 
     /**
      * Get the mgmt channel association.
@@ -197,35 +187,29 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
                     final OperationExecutionContext exec = context.getAttachment();
                     final ManagementRequestHeader header = ManagementRequestHeader.class.cast(context.getRequestHeader());
                     final ManagementResponseHeader response = new ManagementResponseHeader(header.getVersion(), header.getRequestId(), null);
-                    final InputStream is = exec.getOperation().getInputStreams().get(index);
-                    try {
-                        final ByteArrayOutputStream bout = copyStream(is);
-                        final FlushableDataOutput output = context.writeMessage(response);
+                    final InputStreamEntry entry = exec.getStream(index);
+                    synchronized (entry) {
+                        // Initialize the stream entry
+                        final int size = entry.initialize();
                         try {
-                            output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
-                            output.writeInt(bout.size());
-                            output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
-                            output.write(bout.toByteArray());
-                            output.writeByte(ManagementProtocol.RESPONSE_END);
-                            output.close();
+                            final FlushableDataOutput output = context.writeMessage(response);
+                            try {
+                                output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
+                                output.writeInt(size);
+                                output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
+                                entry.copyStream(output);
+                                output.writeByte(ManagementProtocol.RESPONSE_END);
+                                output.close();
+                            } finally {
+                                StreamUtils.safeClose(output);
+                            }
                         } finally {
-                            StreamUtils.safeClose(output);
+                            // the caller is responsible for closing the input streams
+                            // StreamUtils.safeClose(is);
                         }
-                    } finally {
-                        // the caller is responsible for closing the input streams
-                        // StreamUtils.safeClose(is);
                     }
                 }
             });
-        }
-
-        protected ByteArrayOutputStream copyStream(final InputStream is) throws IOException {
-            final ByteArrayOutputStream bout = new ByteArrayOutputStream();
-            // Hmm, a null input-stream should be a failure?
-            if(is != null) {
-                StreamUtils.copyStream(is, bout);
-            }
-            return bout;
         }
 
     }
@@ -257,18 +241,25 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
 
         private final Operation operation;
         private final OperationMessageHandler handler;
+        private final List<InputStreamEntry> streams;
 
         OperationExecutionContext(final Operation operation, final OperationMessageHandler handler) {
             this.operation = operation;
             this.handler = handler != null ? handler : NO_OP_HANDLER;
-        }
-
-        Operation getOperation() {
-            return operation;
+            this.streams = createStreamEntries(operation);
         }
 
         OperationMessageHandler getOperationMessageHandler() {
             return handler;
+        }
+
+        InputStreamEntry getStream(int index) {
+            final InputStreamEntry entry = streams.get(index);
+            if(entry == null) {
+                // Hmm, a null input-stream should be a failure?
+                return InputStreamEntry.EMPTY;
+            }
+            return entry;
         }
 
         @Override
@@ -287,6 +278,9 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         }
 
         private void closeAttachments() {
+            for(final InputStreamEntry entry : streams) {
+                StreamUtils.safeClose(entry);
+            }
             if(operation.isAutoCloseStreams()) {
                 StreamUtils.safeClose(operation);
             }
@@ -352,6 +346,24 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             // Once the remote operation returns, we can set the cancelled status
             resultHandler.cancel();
         }
+    }
+
+    static List<InputStreamEntry> createStreamEntries(final Operation operation) {
+        final List<InputStream> streams = operation.getInputStreams();
+        if(streams.isEmpty()) {
+            return Collections.emptyList();
+        }
+        final List<InputStreamEntry> entries = new ArrayList<InputStreamEntry>();
+        final boolean autoClose = operation.isAutoCloseStreams();
+        for(final InputStream stream : streams) {
+            if(stream instanceof InputStreamEntry) {
+                entries.add((InputStreamEntry) stream);
+            } else {
+                // TODO don't copy everything to memory... perhaps use InputStreamEntry.CachingStreamEntry
+                entries.add(new InputStreamEntry.InMemoryEntry(stream, autoClose));
+            }
+        }
+        return entries;
     }
 
 }
