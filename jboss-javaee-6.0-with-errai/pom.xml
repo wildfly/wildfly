@@ -136,7 +136,7 @@
             <dependency>
                 <groupId>org.mvel</groupId>
                 <artifactId>mvel2</artifactId>
-                <version>${mvel.version}</version>
+                <version>${org.mvel.version}</version>
             </dependency>
 
         </dependencies>
