@@ -24,9 +24,6 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.MECHANISM;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.NAME;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.PROPERTY;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
@@ -34,7 +31,6 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -58,12 +54,10 @@ import org.jboss.as.domain.management.plugin.PasswordCredential;
 import org.jboss.as.domain.management.plugin.PlugInConfigurationSupport;
 import org.jboss.as.domain.management.plugin.ValidatePasswordCredential;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
@@ -73,21 +67,21 @@ import org.jboss.sasl.util.UsernamePasswordHashUtil;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class PlugInAuthenticationCallbackHandler implements Service<CallbackHandlerService>, CallbackHandlerService {
+public class PlugInAuthenticationCallbackHandler extends AbstractPlugInService implements Service<CallbackHandlerService>,
+        CallbackHandlerService {
 
     public static final String SERVICE_SUFFIX = "plug-in-authentication";
 
     private static UsernamePasswordHashUtil hashUtil = null;
-    private final InjectedValue<PlugInLoaderService> plugInLoader = new InjectedValue<PlugInLoaderService>();
+
     private final CallbackHandlerServiceRegistry registry;
     private final ModelNode model;
     private final String realmName;
-    private String name;
-    private Map<String, String> configurationProperties;
     private AuthenticationMechanism mechanism;
 
     PlugInAuthenticationCallbackHandler(final String realmName, final CallbackHandlerServiceRegistry registry,
             final ModelNode model) {
+        super(model);
         this.realmName = realmName;
         this.registry = registry;
         this.model = model;
@@ -97,25 +91,9 @@ public class PlugInAuthenticationCallbackHandler implements Service<CallbackHand
      * Service Methods
      */
 
+    @Override
     public void start(final StartContext context) throws StartException {
-        name = model.require(NAME).asString();
-        if (model.hasDefined(PROPERTY)) {
-            List<Property> propertyList = model.require(PROPERTY).asPropertyList();
-            Map<String, String> configurationProperties = new HashMap<String, String>(propertyList.size());
-
-            for (Property current : propertyList) {
-                String propertyName = current.getName();
-                String value = null;
-                if (current.getValue().hasDefined(VALUE)) {
-                    value = current.getValue().require(VALUE).asString();
-                }
-                configurationProperties.put(propertyName, value);
-            }
-            this.configurationProperties = Collections.unmodifiableMap(configurationProperties);
-        } else {
-            configurationProperties = Collections.emptyMap();
-        }
-
+        super.start(context);
         if (model.hasDefined(MECHANISM)) {
             mechanism = AuthenticationMechanism.valueOf(model.require(MECHANISM).asString());
         } else {
@@ -126,17 +104,11 @@ public class PlugInAuthenticationCallbackHandler implements Service<CallbackHand
 
     public void stop(final StopContext context) {
         registry.unregister(mechanism, this);
-        name = null;
-        configurationProperties = null;
         mechanism = null;
     }
 
     public CallbackHandlerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
-    }
-
-    public InjectedValue<PlugInLoaderService> getPlugInLoaderServiceValue() {
-        return plugInLoader;
     }
 
     private static UsernamePasswordHashUtil getHashUtil() {
@@ -176,11 +148,12 @@ public class PlugInAuthenticationCallbackHandler implements Service<CallbackHand
     }
 
     public CallbackHandler getCallbackHandler(final Map<String, Object> sharedState) {
-        final AuthenticationPlugIn ap = plugInLoader.getValue().loadAuthenticationPlugIn(name);
+        final String name = getPlugInName();
+        final AuthenticationPlugIn<Credential> ap = getPlugInLoader().loadAuthenticationPlugIn(name);
         if (ap instanceof PlugInConfigurationSupport) {
             PlugInConfigurationSupport pcf = (PlugInConfigurationSupport) ap;
             try {
-                pcf.init(configurationProperties, sharedState);
+                pcf.init(getConfiguration(), sharedState);
             } catch (IOException e) {
                 throw MESSAGES.unableToInitialisePlugIn(name, e.getMessage());
             }

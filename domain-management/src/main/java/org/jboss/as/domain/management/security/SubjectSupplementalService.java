@@ -22,21 +22,26 @@
 
 package org.jboss.as.domain.management.security;
 
-import java.io.IOException;
-
-import javax.security.auth.Subject;
+import java.util.Map;
 
 /**
- * Interface for services responsible for supplementing the contents of the Subject representing
- * the authenticated user with additional values.
- *
- * As a minimum this will be the addition of roles to the subject but can also be extended to
- * add anything else relevant to the identity of the user.
+ * Interface to be implemented by services supplying SubjectSupplemental implementations.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-interface SubjectSupplemental {
+public interface SubjectSupplementalService {
 
-    void supplementSubject(final Subject subject) throws IOException;
+    /**
+     * Obtain a SubjectSupplemental instance to load role information.
+     *
+     * The service can decide if it will return a single shared SubjectSupplemental or a new one for each call to this method.
+     *
+     * The shared state is authentication request specific but this is the only time it will be provided, for
+     * SubjectSupplemental making use of this then state specific instances should be returned.
+     *
+     * @param sharedState - The state to be shared between the authentication side of the call and the authorization side.
+     * @return A SubjectSupplemental instance.
+     */
+    SubjectSupplemental getSubjectSupplemental(final Map<String, Object> sharedState);
 
 }

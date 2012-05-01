@@ -26,11 +26,12 @@ package org.jboss.as.domain.management.plugin;
  * The interface to be implemented by a Plug-In provider which is providing plug-in implementations for use with the security
  * realms.
  *
+ * The load methods are expected to return null where the name is not recognised by this plug-in, if the name is recognised but
+ * the provider fails to load the plug-in then optionally a {@link RuntimeException} can be thrown instead.
+ *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public interface PlugInProvider {
-
-    // TODO - Add a nice newPlugIn method to obtain a plug-in based on name.
 
     /**
      * Return an authentication plug-in for the specified name or null if this PlugInProvider does not recognise the name.
@@ -38,5 +39,14 @@ public interface PlugInProvider {
      * @param name - The name of the desired plug-in.
      * @return The plug-in or null if no plug-in by that name can be obtained by this provider.
      */
-    AuthenticationPlugIn loadAuthenticationPlugIn(final String name);
+    AuthenticationPlugIn<Credential> loadAuthenticationPlugIn(final String name);
+
+    /**
+     * Return an authorization plug-in for the specified name or null if this PlugInProvider does not recognise the name.
+     *
+     * @param name - The name of the desired plug-in.
+     * @return The plug-in or null if no plug-in by that name can be obtained by this provider.
+     */
+    AuthorizationPlugIn loadAuthorizationPlugIn(final String name);
+
 }

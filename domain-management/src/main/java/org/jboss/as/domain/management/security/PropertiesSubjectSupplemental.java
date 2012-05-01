@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -43,7 +44,7 @@ import org.jboss.msc.service.StopContext;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class PropertiesSubjectSupplemental extends PropertiesFileLoader implements Service<SubjectSupplemental>,
+public class PropertiesSubjectSupplemental extends PropertiesFileLoader implements Service<SubjectSupplementalService>, SubjectSupplementalService,
         SubjectSupplemental {
 
     public static final String SERVICE_SUFFIX = "properties_authorization";
@@ -57,7 +58,7 @@ public class PropertiesSubjectSupplemental extends PropertiesFileLoader implemen
      * Service Methods
      */
 
-    public SubjectSupplemental getValue() throws IllegalStateException, IllegalArgumentException {
+    public SubjectSupplementalService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
@@ -67,6 +68,14 @@ public class PropertiesSubjectSupplemental extends PropertiesFileLoader implemen
 
     public void stop(StopContext context) {
         super.stop(context);
+    }
+
+    /*
+     * SubjectSupplementalService Method
+     */
+
+    public SubjectSupplemental getSubjectSupplemental(Map<String, Object> sharedState) {
+        return this;
     }
 
     /*

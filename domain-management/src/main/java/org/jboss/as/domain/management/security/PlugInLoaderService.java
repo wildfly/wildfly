@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.domain.management.plugin.AuthenticationPlugIn;
+import org.jboss.as.domain.management.plugin.AuthorizationPlugIn;
+import org.jboss.as.domain.management.plugin.Credential;
 import org.jboss.as.domain.management.plugin.PlugInProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -58,6 +60,7 @@ public class PlugInLoaderService implements Service<PlugInLoaderService> {
     private List<String> plugInNames = null;
     private final Map<String, List<PlugInProvider>> cachedProviders = new HashMap<String, List<PlugInProvider>>();
     private final Map<String, PlugInProvider> authenticationProviders = new HashMap<String, PlugInProvider>();
+    private final Map<String, PlugInProvider> authorizationProviders = new HashMap<String, PlugInProvider>();
 
     public PlugInLoaderService(final ModelNode plugInModel) {
         this.plugInModel = plugInModel;
@@ -78,6 +81,7 @@ public class PlugInLoaderService implements Service<PlugInLoaderService> {
         plugInNames = null;
         cachedProviders.clear();
         authenticationProviders.clear();
+        authorizationProviders.clear();
     }
 
     public PlugInLoaderService getValue() throws IllegalStateException, IllegalArgumentException {
@@ -110,8 +114,8 @@ public class PlugInLoaderService implements Service<PlugInLoaderService> {
         }
     }
 
-    public AuthenticationPlugIn loadAuthenticationPlugIn(final String name) {
-        AuthenticationPlugIn response = null;
+    public AuthenticationPlugIn<Credential> loadAuthenticationPlugIn(final String name) {
+        AuthenticationPlugIn<Credential> response = null;
         synchronized (authenticationProviders) {
             if (authenticationProviders.containsKey(name)) {
                 PlugInProvider provider = authenticationProviders.get(name);
@@ -128,6 +132,37 @@ public class PlugInLoaderService implements Service<PlugInLoaderService> {
                         response = currentProvider.loadAuthenticationPlugIn(name);
                         if (response != null) {
                             authenticationProviders.put(name, currentProvider);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (response == null) {
+            throw MESSAGES.noAuthenticationPlugInFound(name);
+        }
+
+        return response;
+    }
+
+    public AuthorizationPlugIn loadAuthorizationPlugIn(final String name) {
+        AuthorizationPlugIn response = null;
+        synchronized (authorizationProviders) {
+            if (authorizationProviders.containsKey(name)) {
+                PlugInProvider provider = authorizationProviders.get(name);
+                response = provider.loadAuthorizationPlugIn(name);
+                if (response == null) {
+                    // For some reason the provider that previosly handed this name is no longer handling it.
+                    authorizationProviders.remove(name);
+                }
+            }
+            if (response == null) {
+                for (String current : plugInNames) {
+                    List<PlugInProvider> providerList = loadPlugInProvider(current);
+                    for (PlugInProvider currentProvider : providerList) {
+                        response = currentProvider.loadAuthorizationPlugIn(name);
+                        if (response != null) {
+                            authorizationProviders.put(name, currentProvider);
                             break;
                         }
                     }
