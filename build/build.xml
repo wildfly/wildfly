@@ -104,6 +104,13 @@
             </patternset>
             <mapper type="flatten"/>
         </unzip>
+        <!-- Copy the JBoss Modules specific schemas to the JBOSS_HOME/docs/schema folder -->
+        <unzip src="${org.jboss.modules:jboss-modules:jar}" dest="${output.dir}/docs/schema/">
+            <patternset>
+                <include name="schema/*.xsd"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
 
     </target>
 
