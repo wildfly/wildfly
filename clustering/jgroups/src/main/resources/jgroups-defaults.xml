@@ -36,7 +36,7 @@
         
         thread_pool.enabled="true"
         thread_pool.min_threads="20"
-        thread_pool.max_threads="200"
+        thread_pool.max_threads="300"
         thread_pool.keep_alive_time="5000"
         thread_pool.queue_enabled="true"
         thread_pool.queue_max_size="1000"
@@ -44,7 +44,7 @@
         
         oob_thread_pool.enabled="true"
         oob_thread_pool.min_threads="20"
-        oob_thread_pool.max_threads="200"
+        oob_thread_pool.max_threads="300"
         oob_thread_pool.keep_alive_time="1000"
         oob_thread_pool.queue_enabled="false"
         oob_thread_pool.rejection_policy="discard"/>
