@@ -667,12 +667,10 @@ public class DeployHandler extends BatchModeCommandHandler {
         addHeaders(ctx, request);
 
         ModelNode result;
-        FileInputStream is = null;
         try {
             if(!unmanaged) {
-                is = new FileInputStream(f);
                 OperationBuilder op = new OperationBuilder(request);
-                op.addInputStream(is);
+                op.addFileAsAttachment(f);
                 request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
                 result = ctx.getModelControllerClient().execute(op.build());
             } else {
@@ -680,8 +678,6 @@ public class DeployHandler extends BatchModeCommandHandler {
             }
         } catch (Exception e) {
             throw new CommandFormatException("Failed to add the deployment content to the repository: " + e.getLocalizedMessage());
-        } finally {
-            StreamUtils.safeClose(is);
         }
         if (!Util.isSuccess(result)) {
             throw new CommandFormatException(Util.getFailureDescription(result));
