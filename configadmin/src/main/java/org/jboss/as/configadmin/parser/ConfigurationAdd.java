@@ -21,10 +21,16 @@
  */
 package org.jboss.as.configadmin.parser;
 
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -32,14 +38,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 /**
  * @author Thomas.Diesler@jboss.com
+ * @author David Bosschaert
  */
 public class ConfigurationAdd extends AbstractAddStepHandler {
     static final ConfigurationAdd INSTANCE = new ConfigurationAdd();
@@ -63,18 +64,19 @@ public class ConfigurationAdd extends AbstractAddStepHandler {
             dictionary.put(key, entries.get(key).asString());
         }
 
-        ConfigAdminState subsystemState = ConfigAdminState.getSubsystemState(context);
-        if (subsystemState != null) {
-            subsystemState.putConfiguration(pid, dictionary);
+        ConfigAdminServiceImpl configAdmin = ConfigAdminExtension.getConfigAdminService(context);
+        if (configAdmin != null) {
+            configAdmin.putConfigurationFromDMR(pid, dictionary);
         }
     }
 
     @Override
     protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
         String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CONFIGURATION).asString();
-        ConfigAdminState subsystemState = ConfigAdminState.getSubsystemState(context);
-        if (subsystemState != null) {
-            subsystemState.removeConfiguration(pid);
+
+        ConfigAdminServiceImpl configAdmin = ConfigAdminExtension.getConfigAdminService(context);
+        if (configAdmin != null) {
+            configAdmin.removeConfigurationFromDMR(pid);
         }
     }
 

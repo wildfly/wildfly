@@ -21,6 +21,10 @@
  */
 package org.jboss.as.configadmin.parser;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -28,11 +32,9 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 /**
  * @author Thomas.Diesler@jboss.com
+ * @author David Bosschaert
  */
 public class ConfigurationRemove extends AbstractRemoveStepHandler {
     static final ConfigurationRemove INSTANCE = new ConfigurationRemove();
@@ -43,9 +45,9 @@ public class ConfigurationRemove extends AbstractRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CONFIGURATION).asString();
-        ConfigAdminState subsystemState = ConfigAdminState.getSubsystemState(context);
-        if (subsystemState != null && context.completeStep() == OperationContext.ResultAction.KEEP) {
-            subsystemState.removeConfiguration(pid);
+        ConfigAdminServiceImpl configAdmin = ConfigAdminExtension.getConfigAdminService(context);
+        if (configAdmin != null) {
+            configAdmin.removeConfigurationFromDMR(pid);
         }
     }
 

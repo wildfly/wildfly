@@ -22,9 +22,22 @@
 
 package org.jboss.as.configadmin.service;
 
-import org.jboss.as.configadmin.parser.ModelConstants;
+import static org.jboss.as.configadmin.ConfigAdminLogger.ROOT_LOGGER;
+
+import java.io.IOException;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.jboss.as.configadmin.parser.ConfigAdminExtension;
 import org.jboss.as.configadmin.parser.ConfigAdminState;
+import org.jboss.as.configadmin.parser.ModelConstants;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -40,26 +53,14 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import java.io.IOException;
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import static org.jboss.as.configadmin.ConfigAdminLogger.ROOT_LOGGER;
-
 /**
  * Maintains a set of {@link Dictionary}s in the domain model keyed be persistent ID (PID).
  *
  * @author Thomas.Diesler@jboss.com
+ * @author David Bosschaert
  * @since 29-Nov-2010
  */
 public class ConfigAdminServiceImpl implements ConfigAdminService {
-
     private final InjectedValue<ConfigAdminState> injectedSubsystemState = new InjectedValue<ConfigAdminState>();
     private final InjectedValue<ModelController> injectedModelController = new InjectedValue<ModelController>();
     private final Set<ConfigAdminListener> listeners = new CopyOnWriteArraySet<ConfigAdminListener>();
@@ -118,7 +119,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
             ModelNode node = controllerClient.execute(op);
             ModelNode outcome = node.get(ModelDescriptionConstants.OUTCOME);
             if (ModelDescriptionConstants.SUCCESS.equals(outcome.asString())) {
-                executor.execute(new ConfigurationModifiedService(pid, newConfig));
+                putConfigurationInternal(pid, newConfig);
             } else {
                 ROOT_LOGGER.cannotAddConfiguration(pid, node);
             }
@@ -126,6 +127,16 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
             ROOT_LOGGER.cannotAddConfiguration(ex, pid);
         }
         return oldConfig;
+    }
+
+    public void putConfigurationFromDMR(String pid, Dictionary<String, String> dictionary) {
+        dictionary.put(SOURCE_PROPERTY_KEY, FROM_DMR_SOURCE_VALUE);
+        putConfigurationInternal(pid, dictionary);
+    }
+
+    private void putConfigurationInternal(String pid, Dictionary<String, String> dictionary) {
+        injectedSubsystemState.getValue().putConfiguration(pid, dictionary);
+        executor.execute(new ConfigurationModifiedService(pid, dictionary));
     }
 
     @Override
@@ -139,7 +150,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
                 ModelNode node = controllerClient.execute(op);
                 ModelNode outcome = node.get(ModelDescriptionConstants.OUTCOME);
                 if (ModelDescriptionConstants.SUCCESS.equals(outcome.asString())) {
-                    executor.execute(new ConfigurationModifiedService(pid, oldConfig));
+                    removeConfigurationInternal(pid, oldConfig);
                 } else {
                     ROOT_LOGGER.cannotRemoveConfiguration(pid, node);
                 }
@@ -148,6 +159,31 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
             }
         }
         return oldConfig;
+    }
+
+    public void removeConfigurationFromDMR(String pid) {
+        Dictionary<String, String> dictionary = injectedSubsystemState.getValue().getConfiguration(pid);
+
+        if (!FROM_DMR_SOURCE_VALUE.equals(dictionary.get(SOURCE_PROPERTY_KEY))) {
+            // Set the FROM SOURCE value on the dictionary
+            Dictionary<String, String> copy = new Hashtable<String, String>();
+            copy.put(SOURCE_PROPERTY_KEY, FROM_DMR_SOURCE_VALUE);
+            if (dictionary != null) {
+                Enumeration<String> keys = dictionary.keys();
+                while (keys.hasMoreElements()) {
+                    String key = keys.nextElement();
+                    copy.put(key, dictionary.get(key));
+                }
+            }
+            dictionary = copy;
+        }
+
+        removeConfigurationInternal(pid, dictionary);
+    }
+
+    private void removeConfigurationInternal(String pid, Dictionary<String, String> dictionary) {
+        injectedSubsystemState.getValue().removeConfiguration(pid);
+        executor.execute(new ConfigurationModifiedService(pid, dictionary));
     }
 
     @Override
