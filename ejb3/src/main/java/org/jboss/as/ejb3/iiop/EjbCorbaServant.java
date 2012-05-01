@@ -24,7 +24,9 @@ package org.jboss.as.ejb3.iiop;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.security.AccessController;
 import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -299,7 +301,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                         } else {
 
                             if (sc != null) {
-                                SecurityContextAssociation.setSecurityContext(sc);
+                                setSecurityContextOnAssociation(sc);
                             }
                             try {
                                 final InterceptorContext interceptorContext = new InterceptorContext();
@@ -311,7 +313,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                                 retVal = componentView.invoke(interceptorContext);
                             } finally {
                                 if (sc != null) {
-                                    SecurityContextAssociation.clearSecurityContext();
+                                    clearSecurityContextOnAssociation();
                                 }
                             }
                         }
@@ -429,5 +431,27 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
 
     public void setEjbMetaData(final EJBMetaData ejbMetaData) {
         this.ejbMetaData = ejbMetaData;
+    }
+
+
+    private static void setSecurityContextOnAssociation(final SecurityContext sc) {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+            @Override
+            public Void run() {
+                SecurityContextAssociation.setSecurityContext(sc);
+                return null;
+            }
+        });
+    }
+    private static void clearSecurityContextOnAssociation() {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+            @Override
+            public Void run() {
+                SecurityContextAssociation.clearSecurityContext();
+                return null;
+            }
+        });
     }
 }
