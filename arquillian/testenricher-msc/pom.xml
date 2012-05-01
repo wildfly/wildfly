@@ -1,52 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-  <!-- Parent -->
-  <parent>
-      <groupId>org.jboss.as</groupId>
-      <artifactId>jboss-as-arquillian</artifactId>
-      <version>7.1.2.Final-SNAPSHOT</version>
-  </parent>
+    <!-- Parent -->
+    <parent>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-arquillian</artifactId>
+        <version>7.1.2.Final-SNAPSHOT</version>
+    </parent>
 
-  <!-- Model Version -->
-  <modelVersion>4.0.0</modelVersion>
+    <!-- Model Version -->
+    <modelVersion>4.0.0</modelVersion>
 
-  <!-- Artifact Configuration -->
-  <groupId>org.jboss.as</groupId>
-  <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
-  <version>7.1.2.Final-SNAPSHOT</version>
-  
-  <name>JBoss Application Server: Arquillian TestEnricher MSC</name>
+    <!-- Artifact Configuration -->
+    <groupId>org.jboss.as</groupId>
+    <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
+    <version>7.1.2.Final-SNAPSHOT</version>
 
-  <!-- Properties -->
-  <properties>
-  </properties>
+    <name>JBoss Application Server: Arquillian TestEnricher MSC</name>
 
-  <!-- Dependencies -->
-  <dependencies>
+    <!-- Properties -->
+    <properties>
+    </properties>
 
-    <!-- org.jboss.arquillian -->
-    <dependency>
-      <groupId>org.jboss.arquillian.test</groupId>
-      <artifactId>arquillian-test-spi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.arquillian.container</groupId>
-      <artifactId>arquillian-container-test-spi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>javax.inject</groupId>
-      <artifactId>javax.inject</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.logging</groupId>
-      <artifactId>jboss-logging</artifactId>
-    </dependency>
+    <!-- Dependencies -->
+    <dependencies>
 
-    <dependency>
-        <groupId>org.jboss.msc</groupId>
-        <artifactId>jboss-msc</artifactId>
-    </dependency>
-  </dependencies>
+        <!-- org.jboss.arquillian -->
+        <dependency>
+            <groupId>org.jboss.arquillian.test</groupId>
+            <artifactId>arquillian-test-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-test-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.msc</groupId>
+            <artifactId>jboss-msc</artifactId>
+        </dependency>
+    </dependencies>
 </project>
 

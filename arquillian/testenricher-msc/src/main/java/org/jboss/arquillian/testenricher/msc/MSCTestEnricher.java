@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import javax.inject.Inject;
 
 import org.jboss.arquillian.test.spi.TestEnricher;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -68,7 +69,7 @@ public class MSCTestEnricher implements TestEnricher {
 
     private void injectServiceContainer(Object testCase, Field field) {
         try {
-            ServiceContainer serviceContainer = ServiceContainerAssociation.getServiceContainer();
+            ServiceContainer serviceContainer = CurrentServiceContainer.getServiceContainer();
             field.set(testCase, serviceContainer);
         } catch (IllegalAccessException ex) {
             throw new IllegalStateException("Cannot inject ServiceContainer", ex);
@@ -77,7 +78,7 @@ public class MSCTestEnricher implements TestEnricher {
 
     private void injectServiceTarget(Object testCase, Field field) {
         try {
-            ServiceTarget serviceTarget = ServiceTargetAssociation.getServiceTarget();
+            ServiceTarget serviceTarget = ServiceTargetAssociation.getServiceTarget(testCase.getClass().getName());
             field.set(testCase, serviceTarget);
         } catch (IllegalAccessException ex) {
             throw new IllegalStateException("Cannot inject ServiceTarget", ex);

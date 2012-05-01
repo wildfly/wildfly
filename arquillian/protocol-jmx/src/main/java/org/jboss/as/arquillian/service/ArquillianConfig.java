@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.arquillian.testenricher.msc.ServiceContainerAssociation;
 import org.jboss.arquillian.testenricher.msc.ServiceTargetAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
@@ -127,10 +126,6 @@ class ArquillianConfig implements Service<ArquillianConfig> {
             testClass = module.getClassLoader().loadClass(className);
         }
 
-        // Always make the MSC artifacts available
-        ServiceTargetAssociation.setServiceTarget(serviceTarget);
-        ServiceContainerAssociation.setServiceContainer(serviceContainer);
-
         return testClass;
     }
 
@@ -139,12 +134,18 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         serviceContainer = context.getController().getServiceContainer();
         serviceTarget = context.getChildTarget();
         arqService.registerArquillianConfig(this);
+        for(String testClass : testClasses) {
+            ServiceTargetAssociation.setServiceTarget(testClass, serviceTarget);
+        }
     }
 
     @Override
     public synchronized void stop(StopContext context) {
         context.getController().setMode(Mode.REMOVE);
         arqService.unregisterArquillianConfig(this);
+        for(String testClass : testClasses) {
+            ServiceTargetAssociation.clearServiceTarget(testClass);
+        }
     }
 
     @Override
