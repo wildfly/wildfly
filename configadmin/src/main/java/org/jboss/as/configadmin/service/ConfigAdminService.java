@@ -34,6 +34,8 @@ import org.jboss.msc.service.ServiceName;
  * @since 29-Nov-2010
  */
 public interface ConfigAdminService extends Service<ConfigAdminService> {
+    String SOURCE_PROPERTY_KEY = ".org.jboss.source";
+    String FROM_DMR_SOURCE_VALUE = "fromdmr";
 
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("configadmin");
 

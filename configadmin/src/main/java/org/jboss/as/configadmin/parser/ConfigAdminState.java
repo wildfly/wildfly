@@ -22,7 +22,16 @@
 
 package org.jboss.as.configadmin.parser;
 
-import org.jboss.as.controller.OperationContext;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Dictionary;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Set;
+
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -33,16 +42,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.osgi.spi.util.UnmodifiableDictionary;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Set;
 
 /**
  * The ConfigAdmin subsystem state.
@@ -62,11 +61,6 @@ public class ConfigAdminState extends Observable implements Serializable, Servic
         ServiceBuilder<ConfigAdminState> builder = serviceTarget.addService(SERVICE_NAME, state);
         builder.setInitialMode(Mode.LAZY);
         return builder.install();
-    }
-
-    static ConfigAdminState getSubsystemState(OperationContext context) {
-        ServiceController<?> controller = context.getServiceRegistry(true).getService(ConfigAdminState.SERVICE_NAME);
-        return controller != null ? (ConfigAdminState) controller.getValue() : null;
     }
 
     ConfigAdminState() {}

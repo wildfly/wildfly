@@ -21,8 +21,11 @@
  */
 package org.jboss.as.configadmin.parser;
 
+import org.jboss.as.configadmin.service.ConfigAdminService;
+import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -31,15 +34,22 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Domain extension used to initialize the ConfigAdmin subsystem.
  *
  * @author Thomas.Diesler@jboss.com
+ * @author David Bosschaert
  */
 public class ConfigAdminExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "configadmin";
+
+    static ConfigAdminServiceImpl getConfigAdminService(OperationContext context) {
+        ServiceController<?> controller = context.getServiceRegistry(true).getService(ConfigAdminService.SERVICE_NAME);
+        return controller != null ? (ConfigAdminServiceImpl) controller.getValue() : null;
+    }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {

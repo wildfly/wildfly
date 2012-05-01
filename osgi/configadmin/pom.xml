@@ -72,7 +72,8 @@
                             org.jboss.as.configadmin.service,
                             org.jboss.msc.service,
                             org.osgi.framework;version="[1.5,2.0)",
-                            org.osgi.service.cm;version="[1.3,2.0)"
+                            org.osgi.service.cm;version="[1.3,2.0)",
+                            org.osgi.util.tracker;version="[1.4,2.0)"
                         </Import-Package>
                     </instructions>
                 </configuration>

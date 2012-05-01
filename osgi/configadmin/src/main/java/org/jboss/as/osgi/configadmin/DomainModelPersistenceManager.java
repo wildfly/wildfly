@@ -22,7 +22,15 @@
 
 package org.jboss.as.osgi.configadmin;
 
+import java.io.IOException;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Set;
+import java.util.Vector;
+
 import org.apache.felix.cm.PersistenceManager;
+import org.jboss.as.configadmin.service.ConfigAdminListener;
 import org.jboss.as.configadmin.service.ConfigAdminService;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -30,33 +38,34 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
-
-import java.io.IOException;
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * An implementation of the Apache Felix ConfigAdmin {@link PersistenceManager} that delegates
  * to the {@link ConfigAdminService}
  *
  * @author Thomas.Diesler@jboss.com
+ * @author David Bosschaert
  * @since 01-Dec-2010
  */
-public class DomainModelPersistenceManager implements PersistenceManager, BundleActivator {
-
-    private ConfigAdminService configadminService;
+public class DomainModelPersistenceManager implements PersistenceManager, BundleActivator, ConfigAdminListener {
+    private ConfigAdminService jbossConfigAdminService;
+    private ServiceTracker osgiConfigAdminServiceTracker;
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void start(BundleContext context) throws Exception {
+        osgiConfigAdminServiceTracker = new ServiceTracker(context, ConfigurationAdmin.class.getName(), null);
+        osgiConfigAdminServiceTracker.open();
 
         // Get the ConfigAdminService
         ServiceReference sref = context.getServiceReference(ServiceContainer.class.getName());
         ServiceContainer serviceContainer = (ServiceContainer) context.getService(sref);
         ServiceController<?> controller = serviceContainer.getRequiredService(ConfigAdminService.SERVICE_NAME);
-        configadminService = (ConfigAdminService) controller.getValue();
+        jbossConfigAdminService = (ConfigAdminService) controller.getValue();
+        jbossConfigAdminService.addListener(this);
 
         // Register the PersistenceManager
         Hashtable props = new Hashtable();
@@ -66,32 +75,42 @@ public class DomainModelPersistenceManager implements PersistenceManager, Bundle
 
     @Override
     public void stop(BundleContext context) throws Exception {
-        configadminService = null;
+        jbossConfigAdminService.removeListener(this);
+        jbossConfigAdminService = null;
+
+        osgiConfigAdminServiceTracker.close();
     }
 
     @Override
     public boolean exists(String pid) {
-        return configadminService.hasConfiguration(pid);
+        return jbossConfigAdminService.hasConfiguration(pid);
     }
 
     @Override
-    public Dictionary load(String pid) throws IOException {
-        Dictionary<String, String> props = configadminService.getConfiguration(pid);
+    public Dictionary<String, String> load(String pid) throws IOException {
+        Dictionary<String, String> props = jbossConfigAdminService.getConfiguration(pid);
         return addStandardProperties(pid, props);
     }
 
     @Override
-    public Enumeration getDictionaries() throws IOException {
-        Vector<Dictionary> result = new Vector<Dictionary>();
-        for (String pid : configadminService.getConfigurations()) {
-            Dictionary<String, String> props = configadminService.getConfiguration(pid);
+    public Enumeration<Dictionary<String, String>> getDictionaries() throws IOException {
+        Vector<Dictionary<String, String>> result = new Vector<Dictionary<String, String>>();
+        for (String pid : jbossConfigAdminService.getConfigurations()) {
+            Dictionary<String, String> props = jbossConfigAdminService.getConfiguration(pid);
             result.add(addStandardProperties(pid, props));
         }
         return result.elements();
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public void store(String pid, Dictionary source) throws IOException {
+        if (ConfigAdminService.FROM_DMR_SOURCE_VALUE.equals(source.get(ConfigAdminService.SOURCE_PROPERTY_KEY))) {
+            // If the change was triggered from the DMR, the persistence in the model was already done,
+            // don't do it again.
+            return;
+        }
+
         Dictionary<String, String> copy = new Hashtable<String, String>();
         if (source != null) {
             Enumeration keys = source.keys();
@@ -100,12 +119,12 @@ public class DomainModelPersistenceManager implements PersistenceManager, Bundle
                 copy.put(key, source.get(key).toString());
             }
         }
-        configadminService.putConfiguration(pid, copy);
+        jbossConfigAdminService.putConfiguration(pid, copy);
     }
 
     @Override
     public void delete(String pid) throws IOException {
-        configadminService.removeConfiguration(pid);
+        jbossConfigAdminService.removeConfiguration(pid);
     }
 
     private Dictionary<String, String> addStandardProperties(final String pid, final Dictionary<String, String> source) {
@@ -119,5 +138,30 @@ public class DomainModelPersistenceManager implements PersistenceManager, Bundle
         }
         copy.put(Constants.SERVICE_PID, pid);
         return copy;
+    }
+
+    @Override
+    public void configurationModified(String pid, Dictionary<String,String> dictionary) {
+        ConfigurationAdmin osgiConfigAdminService = (ConfigurationAdmin) osgiConfigAdminServiceTracker.getService();
+        if (osgiConfigAdminService == null) {
+            // No Configuration Admin Service available, nothing to do
+            return;
+        }
+
+        try {
+            Configuration configuration = osgiConfigAdminService.getConfiguration(pid, null);
+            if (ConfigAdminService.FROM_DMR_SOURCE_VALUE.equals(dictionary.get(ConfigAdminService.SOURCE_PROPERTY_KEY))) {
+                // Only call update if the change did not come from the OSGi Config Admin Service,
+                // otherwise we end up in an infinite loop
+                configuration.update(dictionary);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Set<String> getPIDs() {
+        return null; // all PIDs
     }
 }
