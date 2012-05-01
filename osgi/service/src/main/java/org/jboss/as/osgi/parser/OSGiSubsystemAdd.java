@@ -21,8 +21,6 @@
  */
 package org.jboss.as.osgi.parser;
 
-import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -53,6 +51,8 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 
 /**
  * OSGi subsystem operation handler.
