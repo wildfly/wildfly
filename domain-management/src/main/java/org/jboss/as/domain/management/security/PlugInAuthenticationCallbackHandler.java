@@ -45,7 +45,6 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.AuthenticationMechanism;
-import org.jboss.as.domain.management.CallbackHandlerServiceRegistry;
 import org.jboss.as.domain.management.plugin.AuthenticationPlugIn;
 import org.jboss.as.domain.management.plugin.Credential;
 import org.jboss.as.domain.management.plugin.DigestCredential;
@@ -74,16 +73,14 @@ public class PlugInAuthenticationCallbackHandler extends AbstractPlugInService i
 
     private static UsernamePasswordHashUtil hashUtil = null;
 
-    private final CallbackHandlerServiceRegistry registry;
     private final ModelNode model;
     private final String realmName;
     private AuthenticationMechanism mechanism;
 
-    PlugInAuthenticationCallbackHandler(final String realmName, final CallbackHandlerServiceRegistry registry,
+    PlugInAuthenticationCallbackHandler(final String realmName,
             final ModelNode model) {
         super(model);
         this.realmName = realmName;
-        this.registry = registry;
         this.model = model;
     }
 
@@ -99,11 +96,9 @@ public class PlugInAuthenticationCallbackHandler extends AbstractPlugInService i
         } else {
             mechanism = AuthenticationMechanism.DIGEST;
         }
-        registry.register(mechanism, this);
     }
 
     public void stop(final StopContext context) {
-        registry.unregister(mechanism, this);
         mechanism = null;
     }
 

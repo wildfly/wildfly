@@ -22,13 +22,18 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BASE_DN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_ATTRIBUTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER_DN;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -43,13 +48,8 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.domain.management.AuthenticationMechanism;
-import org.jboss.as.domain.management.CallbackHandlerServiceRegistry;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -78,9 +78,8 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
     private final boolean recursive;
     private final String userDn;
     protected final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
-    private final CallbackHandlerServiceRegistry registry;
 
-    public UserLdapCallbackHandler(ModelNode userLdap, final CallbackHandlerServiceRegistry registry) {
+    public UserLdapCallbackHandler(ModelNode userLdap) {
         baseDn = userLdap.require(BASE_DN).asString();
         if (userLdap.hasDefined(USERNAME_ATTRIBUTE)) {
             usernameAttribute = userLdap.require(USERNAME_ATTRIBUTE).asString();
@@ -102,7 +101,6 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
         } else {
             userDn = DEFAULT_USER_DN;
         }
-        this.registry = registry;
     }
 
 
@@ -136,11 +134,9 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
      */
 
     public void start(StartContext context) throws StartException {
-        registry.register(getPreferredMechanism(), this);
     }
 
     public void stop(StopContext context) {
-        registry.unregister(getPreferredMechanism(), this);
     }
 
     public CallbackHandlerService getValue() throws IllegalStateException, IllegalArgumentException {

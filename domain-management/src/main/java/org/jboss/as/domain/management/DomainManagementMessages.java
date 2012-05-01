@@ -534,29 +534,13 @@ public interface DomainManagementMessages {
     IOException invalidLocalUser(final String userName);
 
     /**
-     * IllegalArgumentException to indicate that a CallbackHandler is already registered for the specified mechanism.
+     * StartException to indicate that multiple CallbackHandlerServices are associated for the same mechanism.
      *
      * @param mechanismName - the name of the mechanism being registered.
-     * @return an {@link IllegalArgumentException} for the failure.
+     * @return an {@link StartException} for the failure.
      */
-    @Message(id = 15256, value = "A CallbackHandlerService has already been registered for the %s mechanism.")
-    IllegalArgumentException callbackHandlerAlreadyRegistered(final String mechanismName);
-
-    /**
-     * IllegalArgumentException to indicate an invalid attempt to unregister a CallbackHandlerService registration.
-     *
-     * @return an {@link IllegalArgumentException} for the failure.
-     */
-    @Message(id = 15257, value = "An invalid attempt to unregister a CallbackHandlerService has occurred.")
-    IllegalArgumentException callbackHandlerRegistrationMisMatch();
-
-    /**
-     * IllegalStateException to indicate an invalid attempt to update the registry after the security realm has started.
-     *
-     * @return an {@link IllegalStateException} for the failure.
-     */
-    @Message(id = 15258, value = "Unexpected registry update after service started.")
-    IllegalStateException registryUpdateAfterStarted();
+    @Message(id = 15256, value = "Multiple CallbackHanderServices for the same mechanism (%s)")
+    StartException multipleCallbackHandlerForMechanism(final String mechanismName);
 
     /**
      * IllegalStateException to indicate a CallbackHandler has been requested for an unsupported mechanism.

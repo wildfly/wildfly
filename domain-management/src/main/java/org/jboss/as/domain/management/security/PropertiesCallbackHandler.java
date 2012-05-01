@@ -22,12 +22,12 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
-import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
 import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -48,12 +48,8 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.AuthenticationMechanism;
-import org.jboss.as.domain.management.CallbackHandlerServiceRegistry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
@@ -72,9 +68,8 @@ CallbackHandlerService, CallbackHandler {
 
     private final String realm;
     private final boolean plainText;
-    private final CallbackHandlerServiceRegistry registry;
 
-    public PropertiesCallbackHandler(String realm, ModelNode properties, final CallbackHandlerServiceRegistry registry) {
+    public PropertiesCallbackHandler(String realm, ModelNode properties) {
         super(properties.require(PATH).asString());
         this.realm = realm;
         if (properties.hasDefined(PLAIN_TEXT)) {
@@ -82,7 +77,6 @@ CallbackHandlerService, CallbackHandler {
         } else {
             plainText = false;
         }
-        this.registry = registry;
     }
 
     /*
@@ -122,22 +116,12 @@ CallbackHandlerService, CallbackHandler {
      * Service Methods
      */
 
-    public void start(StartContext context) throws StartException {
-        super.start(context);
-        registry.register(getPreferredMechanism(), this);
-    }
-
     @Override
     protected void verifyProperties(Properties properties) throws IOException {
         final String admin = "admin";
         if (properties.contains(admin) && admin.equals(properties.get(admin))) {
             ROOT_LOGGER.userAndPasswordWarning();
         }
-    }
-
-    public void stop(StopContext context) {
-        registry.unregister(getPreferredMechanism(), this);
-        super.stop(context);
     }
 
     public CallbackHandlerService getValue() throws IllegalStateException, IllegalArgumentException {

@@ -45,7 +45,6 @@ import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.domain.management.AuthenticationMechanism;
-import org.jboss.as.domain.management.CallbackHandlerServiceRegistry;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -72,13 +71,11 @@ public class JaasCallbackHandler implements Service<CallbackHandlerService>, Cal
     }
 
     private final String name;
-    private final CallbackHandlerServiceRegistry registry;
 
     private final InjectedValue<ServerSecurityManager> securityManagerValue = new InjectedValue<ServerSecurityManager>();
 
-    public JaasCallbackHandler(final String name, final CallbackHandlerServiceRegistry registry) {
+    public JaasCallbackHandler(final String name) {
         this.name = name;
-        this.registry = registry;
     }
 
     /*
@@ -203,11 +200,9 @@ public class JaasCallbackHandler implements Service<CallbackHandlerService>, Cal
      */
 
     public void start(final StartContext context) throws StartException {
-        registry.register(getPreferredMechanism(), this);
     }
 
     public void stop(final StopContext context) {
-        registry.unregister(getPreferredMechanism(), this);
     }
 
     public InjectedValue<ServerSecurityManager> getSecurityManagerValue() {
