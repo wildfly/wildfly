@@ -26,11 +26,11 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- *
+ * An abstract plug-in implementation that can be extended as an alternative to implementing the interfaces.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public abstract class AbstractPlugIn implements PlugInLifecycleSupport, AuthenticationPlugIn, AuthorizationPlugIn {
+public abstract class AbstractPlugIn implements AuthenticationPlugIn<Credential>, AuthorizationPlugIn, PlugInConfigurationSupport {
 
     protected Map<String, String> configuration;
     protected Map<String, Object> sharedState;
@@ -48,7 +48,7 @@ public abstract class AbstractPlugIn implements PlugInLifecycleSupport, Authenti
     /**
      * @see org.jboss.as.domain.management.plugin.AuthenticationPlugIn#loadIdentity(java.lang.String, java.lang.String)
      */
-    public Identity loadIdentity(String userName, String realm) throws IOException {
+    public Identity<Credential> loadIdentity(String userName, String realm) throws IOException {
         throw new IOException();
     }
 
@@ -57,15 +57,6 @@ public abstract class AbstractPlugIn implements PlugInLifecycleSupport, Authenti
      */
     public String[] loadRoles(String userName, String realm) throws IOException {
         return roles;
-    }
-
-    /**
-     * @see org.jboss.as.domain.management.plugin.PlugInLifecycleSupport#end()
-     */
-    public void end() {
-        configuration = null;
-        sharedState = null;
-        roles = null;
     }
 
 }
