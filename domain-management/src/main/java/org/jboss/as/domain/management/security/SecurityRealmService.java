@@ -63,7 +63,7 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
 
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "security_realm");
 
-    private final InjectedValue<SubjectSupplemental> subjectSupplemental = new InjectedValue<SubjectSupplemental>();
+    private final InjectedValue<SubjectSupplementalService> subjectSupplemental = new InjectedValue<SubjectSupplementalService>();
     private final InjectedValue<SSLIdentityService> sslIdentity = new InjectedValue<SSLIdentityService>();
     private final InjectedValue<CallbackHandlerFactory> secretCallbackFactory = new InjectedValue<CallbackHandlerFactory>();
 
@@ -200,8 +200,9 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
                     allPrincipals.add(new RealmUser(getName(), userPrincipal.getName()));
                 }
 
-                SubjectSupplemental subjectSupplemental = getSubjectSupplemental();
-                if (subjectSupplemental != null) {
+                SubjectSupplementalService subjectSupplementalService = subjectSupplemental.getOptionalValue();
+                if (subjectSupplementalService != null) {
+                    SubjectSupplemental subjectSupplemental = subjectSupplementalService.getSubjectSupplemental(sharedState);
                     subjectSupplemental.supplementSubject(subject);
                 }
 
@@ -230,7 +231,7 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
      * Injectors
      */
 
-    public InjectedValue<SubjectSupplemental> getSubjectSupplementalInjector() {
+    public InjectedValue<SubjectSupplementalService> getSubjectSupplementalInjector() {
         return subjectSupplemental;
     }
 
@@ -240,15 +241,6 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
 
     public InjectedValue<CallbackHandlerFactory> getSecretCallbackFactory() {
         return secretCallbackFactory;
-    }
-
-    /**
-     * Used to obtain the linked SubjectSupplemental if available.
-     *
-     * @return {@link SubjectSupplemental} The linkes SubjectSupplemental.
-     */
-    private SubjectSupplemental getSubjectSupplemental() {
-        return subjectSupplemental.getOptionalValue();
     }
 
     public SSLContext getSSLContext() {

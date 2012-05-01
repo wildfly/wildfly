@@ -157,13 +157,16 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             if (authorization.hasDefined(PROPERTIES)) {
                 authorizationName = addPropertiesAuthorizationService(authorization.require(PROPERTIES), realmServiceName,
                         realmName, serviceTarget, newControllers);
+            } else if (authorization.hasDefined(PLUG_IN)) {
+                authorizationName = addPlugInAuthorizationService(authorization.require(PLUG_IN), realmServiceName,
+                        plugInLoaderName, realmName, serviceTarget, newControllers);
             }
         }
         if (authenticationName != null) {
             realmBuilder.addDependency(authenticationName);
         }
         if (authorizationName != null) {
-            realmBuilder.addDependency(authorizationName, SubjectSupplemental.class, securityRealmService.getSubjectSupplementalInjector());
+            realmBuilder.addDependency(authorizationName, SubjectSupplementalService.class, securityRealmService.getSubjectSupplementalInjector());
         }
 
         ModelNode ssl = null;
@@ -313,6 +316,24 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         }
 
         return propsServiceName;
+    }
+
+    private ServiceName addPlugInAuthorizationService(ModelNode properties, ServiceName realmServiceName,
+            ServiceName plugInLoaderName, String realmName, ServiceTarget serviceTarget,
+            List<ServiceController<?>> newControllers) {
+        ServiceName plugInServiceName = realmServiceName.append(PlugInSubjectSupplemental.SERVICE_SUFFIX);
+        PlugInSubjectSupplemental plugInSubjectSupplemental = new PlugInSubjectSupplemental(realmName, properties);
+
+        ServiceBuilder<?> plugInBuilder = serviceTarget.addService(plugInServiceName, plugInSubjectSupplemental);
+        plugInBuilder.addDependency(plugInLoaderName, PlugInLoaderService.class,
+                plugInSubjectSupplemental.getPlugInLoaderServiceValue());
+
+        final ServiceController<?> serviceController = plugInBuilder.setInitialMode(ON_DEMAND).install();
+        if (newControllers != null) {
+            newControllers.add(serviceController);
+        }
+
+        return plugInServiceName;
     }
 
     private ServiceName addSSLService(OperationContext context, ModelNode ssl, ModelNode trustStore, ServiceName realmServiceName,
