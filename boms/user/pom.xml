@@ -50,6 +50,7 @@
         <version.junit>4.8.1</version.junit>
         <version.org.testng>5.14.6</version.org.testng>
         <version.com.google.gwt>2.4.0</version.com.google.gwt>
+        <version.org.mvel>2.1.Beta8</version.org.mvel>
 
         <!-- Versions of Maven plugins, user must setup them by his/her own -->
         <version.org.apache.maven.surefire.plugin>2.10</version.org.apache.maven.surefire.plugin>
