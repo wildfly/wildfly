@@ -22,9 +22,9 @@
 
 package org.jboss.as.controller.remote;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
@@ -32,10 +32,11 @@ import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -78,18 +79,21 @@ class OperationAttachmentsProxy implements OperationAttachments {
     }
 
     void shutdown(Exception error) {
-        for (ProxiedInputStream stream : proxiedStreams) {
+        for (final ProxiedInputStream stream : proxiedStreams) {
             stream.shutdown(error);
         }
     }
 
     public static class ProxiedInputStream extends InputStream {
-        final ManagementChannelAssociation channelAssociation;
-        final int batchId;
-        final int index;
-        volatile byte[] bytes;
-        volatile ByteArrayInputStream delegate;
-        volatile Exception error;
+        static final int BUFFER_SIZE = 8192;
+
+        private final int index;
+        private final int batchId;
+        private final PipedInputStream pipe = new PipedInputStream(BUFFER_SIZE);
+        private final ManagementChannelAssociation channelAssociation;
+
+        private volatile boolean initialized;
+        private volatile Exception error;
 
         ProxiedInputStream(final ManagementChannelAssociation channelAssociation, final int batchId, final int index) {
             this.channelAssociation = channelAssociation;
@@ -100,33 +104,28 @@ class OperationAttachmentsProxy implements OperationAttachments {
 
         @Override
         public int read() throws IOException {
-            if (delegate == null) {
+            if(! initialized && error == null) {
                 synchronized (this) {
-                    if (delegate == null) {
+                    if(! initialized) {
                         initializeBytes();
-                        try {
-                            wait();
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            throw MESSAGES.remoteCallerThreadInterrupted();
-                        }
-                        if (error != null) {
-                            if (error instanceof IOException) {
-                                throw (IOException)error;
-                            }
-                            throw new IOException(error);
-                        }
-                        delegate = new ByteArrayInputStream(bytes);
-                        bytes = null;
                     }
                 }
             }
-            return delegate.read();
+            if (error != null) {
+                if (error instanceof IOException) {
+                    throw (IOException)error;
+                }
+                throw new IOException(error);
+            }
+            return pipe.read();
         }
 
         void initializeBytes() {
-            if (bytes == null) {
+            if (! initialized) {
+                initialized = true;
                 try {
+                    final PipedOutputStream os = new PipedOutputStream(pipe);
+                    // Execute the async request
                     channelAssociation.executeRequest(batchId, new AbstractManagementRequest<Object, Object>() {
 
                         @Override
@@ -142,32 +141,39 @@ class OperationAttachmentsProxy implements OperationAttachments {
 
                         @Override
                         public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Object> resultHandler, ManagementRequestContext<Object> context) throws IOException {
-                            // TODO execute async
-                            synchronized (ProxiedInputStream.this) {
+                            try {
                                 ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
                                 final int size = input.readInt();
                                 ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
-
-                                final byte[] buf = new byte[size];
-                                for (int i = 0; i < size; i++) {
-                                    buf[i] = input.readByte();
+                                final byte[] buffer = new byte[BUFFER_SIZE];
+                                int totalRead = 0;
+                                while (totalRead < size) {
+                                    int len = Math.min((int) (size - totalRead), buffer.length);
+                                    input.readFully(buffer, 0, len);
+                                    os.write(buffer, 0, len);
+                                    totalRead += len;
                                 }
-                                bytes = buf;
-                                ProxiedInputStream.this.notifyAll();
+                                os.close();
+                            } catch(IOException e) {
+                                shutdown(e);
+                                throw e;
                             }
                         }
                     });
                 } catch (IOException e) {
-                    error = e;
+                    shutdown(e);
                 }
             }
         }
 
         void shutdown(Exception error) {
+            StreamUtils.safeClose(this);
             this.error = error;
-            synchronized (this) {
-                notifyAll();
-            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            pipe.close();
         }
     }
 }

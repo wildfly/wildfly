@@ -31,6 +31,7 @@ import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
 
 import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
@@ -63,7 +64,7 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
     public void handleMessage(final Channel channel, final MessageInputStream message) {
         try {
             ROOT_LOGGER.tracef("%s handling incoming data", this);
-            final DataInput input = new SimpleDataInput(Marshalling.createByteInput(message));
+            final DataInput input = new DataInputStream(message);
             final ManagementProtocolHeader header = ManagementProtocolHeader.parse(input);
             final byte type = header.getType();
             if(type == ManagementProtocol.TYPE_PING) {
