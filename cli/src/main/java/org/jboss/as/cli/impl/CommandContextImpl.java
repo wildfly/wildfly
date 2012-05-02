@@ -130,6 +130,7 @@ import org.jboss.as.cli.parsing.operation.OperationFormat;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jreadline.console.settings.Settings;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.util.HexConverter;
 
@@ -259,10 +260,14 @@ class CommandContextImpl implements CommandContext {
     }
 
     protected void initBasicConsole() {
+        copyConfigSettingsToConsole();
         this.console = Console.Factory.getConsole(this);
-        console.setUseHistory(config.isHistoryEnabled());
-        console.setHistoryFile(new File(config.getHistoryFileDir(), config.getHistoryFileName()));
-        console.getHistory().setMaxSize(config.getHistoryMaxSize());
+    }
+
+    private void copyConfigSettingsToConsole() {
+        Settings.getInstance().setHistoryDisabled(!config.isHistoryEnabled());
+        Settings.getInstance().setHistoryFile(new File(config.getHistoryFileDir(), config.getHistoryFileName()));
+        Settings.getInstance().setHistorySize(config.getHistoryMaxSize());
     }
 
     private void initCommands() {
