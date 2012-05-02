@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.component.entity;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
@@ -118,6 +119,9 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
                 if (componentMethod == null) {
                     handleNonBeanMethod(componentConfiguration, configuration, index, method);
                 } else {
+                    if(!Modifier.isPublic(componentMethod.getModifiers())) {
+                        throw EjbMessages.MESSAGES.ejbBusinessMethodMustBePublic(componentMethod);
+                    }
                     configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                 }

@@ -23,6 +23,7 @@
 package org.jboss.as.ee.component;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -70,11 +71,17 @@ public class BasicComponentCreateService implements Service<Component> {
         preDestroy = Interceptors.getChainedInterceptorFactory(componentConfiguration.getPreDestroyInterceptors());
         final IdentityHashMap<Method, InterceptorFactory> componentInterceptors = new IdentityHashMap<Method, InterceptorFactory>();
         for (Method method : componentConfiguration.getDefinedComponentMethods()) {
-            componentInterceptors.put(method, Interceptors.getChainedInterceptorFactory(componentConfiguration.getComponentInterceptors(method)));
+            if(requiresInterceptors(method, componentConfiguration)) {
+                componentInterceptors.put(method, Interceptors.getChainedInterceptorFactory(componentConfiguration.getComponentInterceptors(method)));
+            }
         }
         componentClass = componentConfiguration.getComponentClass();
         this.componentInterceptors = componentInterceptors;
         this.namespaceContextSelector = componentConfiguration.getNamespaceContextSelector();
+    }
+
+    protected boolean requiresInterceptors(final Method method, final ComponentConfiguration componentConfiguration) {
+        return Modifier.isPublic(method.getModifiers()) && componentConfiguration.getComponentDescription().isIntercepted();
     }
 
     /**

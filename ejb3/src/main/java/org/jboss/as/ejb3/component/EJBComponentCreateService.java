@@ -22,6 +22,18 @@
 
 package org.jboss.as.ejb3.component;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
@@ -38,17 +50,6 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
-
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Jaikiran Pai
@@ -116,10 +117,12 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         if (ejbComponentDescription.isTimerServiceApplicable()) {
             Map<Method, InterceptorFactory> timeoutInterceptors = new IdentityHashMap<Method, InterceptorFactory>();
             for (Method method : componentConfiguration.getDefinedComponentMethods()) {
-                final InterceptorFactory interceptorFactory = Interceptors.getChainedInterceptorFactory(componentConfiguration.getAroundTimeoutInterceptors(method));
-                timeoutInterceptors.put(method, interceptorFactory);
+                if ((ejbComponentDescription.getTimeoutMethod() != null && ejbComponentDescription.getTimeoutMethod().equals(method)) ||
+                        ejbComponentDescription.getScheduleMethods().containsKey(method)) {
+                        final InterceptorFactory interceptorFactory = Interceptors.getChainedInterceptorFactory(componentConfiguration.getAroundTimeoutInterceptors(method));
+                        timeoutInterceptors.put(method, interceptorFactory);
+                }
             }
-
             this.timeoutInterceptors = timeoutInterceptors;
         } else {
             timeoutInterceptors = Collections.emptyMap();
@@ -130,19 +133,19 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
             for (ViewConfiguration view : views) {
                 //TODO: Move this into a configurator
                 final EJBViewConfiguration ejbView = (EJBViewConfiguration) view;
-                    final MethodIntf viewType = ejbView.getMethodIntf();
-                    for (Method method : view.getProxyFactory().getCachedMethods()) {
-                        // TODO: proxy factory exposes non-public methods, is this a bug in the no-interface view?
-                        if (!Modifier.isPublic(method.getModifiers()))
-                            continue;
-                        final Method componentMethod = getComponentMethod(componentConfiguration, method.getName(), method.getParameterTypes());
-                        if (componentMethod != null) {
-                            this.processTxAttr(ejbComponentDescription, viewType, componentMethod);
-                        } else {
-                            this.processTxAttr(ejbComponentDescription, viewType, method);
-                        }
+                final MethodIntf viewType = ejbView.getMethodIntf();
+                for (Method method : view.getProxyFactory().getCachedMethods()) {
+                    // TODO: proxy factory exposes non-public methods, is this a bug in the no-interface view?
+                    if (!Modifier.isPublic(method.getModifiers()))
+                        continue;
+                    final Method componentMethod = getComponentMethod(componentConfiguration, method.getName(), method.getParameterTypes());
+                    if (componentMethod != null) {
+                        this.processTxAttr(ejbComponentDescription, viewType, componentMethod);
+                    } else {
+                        this.processTxAttr(ejbComponentDescription, viewType, method);
                     }
                 }
+            }
         }
 
         this.timeoutMethod = ejbComponentDescription.getTimeoutMethod();
@@ -173,6 +176,19 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         this.moduleName = componentConfiguration.getModuleName();
         this.distinctName = componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName();
         this.shutDownInterceptorFactory = ejbComponentDescription.getShutDownInterceptorFactory();
+    }
+
+    @Override
+    protected boolean requiresInterceptors(final Method method, final ComponentConfiguration componentConfiguration) {
+        if(super.requiresInterceptors(method, componentConfiguration)) {
+            return true;
+        }
+        final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription)componentConfiguration.getComponentDescription();
+        if ((ejbComponentDescription.getTimeoutMethod() != null && ejbComponentDescription.getTimeoutMethod().equals(method)) ||
+                ejbComponentDescription.getScheduleMethods().containsKey(method)) {
+            return true;
+        }
+        return false;
     }
 
     private static Method getComponentMethod(final ComponentConfiguration componentConfiguration, final String name, final Class<?>[] parameterTypes) {
