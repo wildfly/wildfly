@@ -24,7 +24,7 @@ package org.jboss.as.connector.subsystems.jca;
 
 import junit.framework.Assert;
 
-import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -44,7 +44,7 @@ public class AbstractComplexSubsystemTestCase extends AbstractSubsystemTest {
     public ModelNode getModel(String resourceFileName, String archiveName) throws Exception {
         return getModel(resourceFileName, true, archiveName);
     }
-    
+
     public ModelNode getModel(String resourceFileName) throws Exception {
         return getModel(resourceFileName, true, null);
     }
@@ -75,5 +75,5 @@ public class AbstractComplexSubsystemTestCase extends AbstractSubsystemTest {
 
     }
 
-    
+
 }

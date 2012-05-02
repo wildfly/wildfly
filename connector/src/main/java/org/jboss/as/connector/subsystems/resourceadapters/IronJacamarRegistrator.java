@@ -1,6 +1,6 @@
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import org.jboss.as.connector.pool.PoolOperations;
+import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;

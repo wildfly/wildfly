@@ -33,12 +33,12 @@ import javax.resource.spi.work.*;
 
 import javax.transaction.xa.XAResource;
 
-import org.jboss.as.connector.bootstrap.NamedBootstrapContext;
-import org.jboss.as.connector.workmanager.NamedWorkManager;
+import org.jboss.as.connector.services.bootstrap.NamedBootstrapContext;
+import org.jboss.as.connector.services.workmanager.NamedWorkManager;
 
 /**
  * MultipleResourceAdapter2
- * 
+ *
  */
 public class MultipleResourceAdapter2 implements ResourceAdapter {
 
@@ -69,7 +69,7 @@ public class MultipleResourceAdapter2 implements ResourceAdapter {
 
     /**
      * Set name
-     * 
+     *
      * @param name The value
      */
     public void setName(String name) {
@@ -78,7 +78,7 @@ public class MultipleResourceAdapter2 implements ResourceAdapter {
 
     /**
      * Get name
-     * 
+     *
      * @return The value
      */
     public String getName() {
@@ -95,7 +95,7 @@ public class MultipleResourceAdapter2 implements ResourceAdapter {
 
     /**
      * This is called during the activation of a message endpoint.
-     * 
+     *
      * @param endpointFactory A message endpoint factory instance.
      * @param spec An activation spec JavaBean instance.
      * @throws ResourceException generic exception
@@ -106,7 +106,7 @@ public class MultipleResourceAdapter2 implements ResourceAdapter {
 
     /**
      * This is called when a message endpoint is deactivated.
-     * 
+     *
      * @param endpointFactory A message endpoint factory instance.
      * @param spec An activation spec JavaBean instance.
      */
@@ -116,7 +116,7 @@ public class MultipleResourceAdapter2 implements ResourceAdapter {
 
     /**
      * This is called when a resource adapter instance is bootstrapped.
-     * 
+     *
      * @param ctx A bootstrap context containing references
      * @throws ResourceAdapterInternalException indicates bootstrap failure.
      */
@@ -158,7 +158,7 @@ public class MultipleResourceAdapter2 implements ResourceAdapter {
 
     /**
      * This method is called by the application server during crash recovery.
-     * 
+     *
      * @param specs An array of ActivationSpec JavaBeans
      * @throws ResourceException generic exception
      * @return An array of XAResource objects
@@ -170,7 +170,7 @@ public class MultipleResourceAdapter2 implements ResourceAdapter {
 
     /**
      * Returns a hash code value for the object.
-     * 
+     *
      * @return A hash code value for this object.
      */
     @Override
@@ -185,7 +185,7 @@ public class MultipleResourceAdapter2 implements ResourceAdapter {
 
     /**
      * Indicates whether some other object is equal to this one.
-     * 
+     *
      * @param other The reference object with which to compare.
      * @return true if this object is the same as the obj argument, false otherwise.
      */

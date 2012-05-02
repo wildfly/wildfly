@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.jca.beanvalidation;
 import static org.junit.Assert.*;
 import java.util.List;
 import java.util.Set;
-import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidActivationSpec;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidMessageEndpoint;
@@ -72,7 +72,7 @@ public class NegativeValidationASTestCase {
 
         raa.addAsManifestResource(NegativeValidationASTestCase.class.getPackage(),"ra-wrong-as-property.xml", "ra.xml")
                 .addAsManifestResource(NegativeValidationASTestCase.class.getPackage(),"ironjacamar.xml", "ironjacamar.xml")
-                .addAsManifestResource( 
+                .addAsManifestResource(
                         new StringAsset("Dependencies: javax.inject.api,org.jboss.as.connector \n"),"MANIFEST.MF");
 
         return raa;
