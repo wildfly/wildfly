@@ -2,7 +2,7 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import java.util.Map;
 
-import org.jboss.as.connector.ConnectorMessages;
+import org.jboss.as.connector.logging.ConnectorMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -52,27 +52,27 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
             setStringIfNotNull(context, dataSource.getUrlSelectorStrategyClassName());
         } else if (attributeName.equals(Constants.USE_JAVA_CONTEXT.getName())) {
             setBooleanIfNotNull(context, dataSource.isUseJavaContext());
-        } else if (attributeName.equals(org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE.getName())) {
             if (dataSource.getXaPool() == null) {
                 return;
             }
             setIntIfNotNull(context, dataSource.getXaPool().getMaxPoolSize());
-        } else if (attributeName.equals(org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE.getName())) {
             if (dataSource.getXaPool() == null) {
                 return;
             }
             setIntIfNotNull(context, dataSource.getXaPool().getMinPoolSize());
-        } else if (attributeName.equals(org.jboss.as.connector.pool.Constants.POOL_PREFILL.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL.getName())) {
             if (dataSource.getXaPool() == null) {
                 return;
             }
             setBooleanIfNotNull(context, dataSource.getXaPool().isPrefill());
-        } else if (attributeName.equals(org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN.getName())) {
             if (dataSource.getXaPool() == null) {
                 return;
             }
             setBooleanIfNotNull(context, dataSource.getXaPool().isUseStrictMin());
-        } else if (attributeName.equals(org.jboss.as.connector.pool.Constants.POOL_FLUSH_STRATEGY.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY.getName())) {
             if (dataSource.getXaPool() == null) {
                 return;
             }
@@ -133,12 +133,12 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
                 return;
             }
             setLongIfNotNull(context, dataSource.getTimeOut().getAllocationRetryWaitMillis());
-        } else if (attributeName.equals(org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS.getName())) {
             if(dataSource.getTimeOut() == null) {
                 return;
             }
             setLongIfNotNull(context, dataSource.getTimeOut().getBlockingTimeoutMillis());
-        } else if (attributeName.equals(org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES.getName())) {
             if(dataSource.getTimeOut() == null) {
                 return;
             }
@@ -266,17 +266,17 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
             for (final Map.Entry<String, String> entry : propertiesMap.entrySet()) {
                 context.getResult().asPropertyList().add(new ModelNode().set(entry.getKey(), entry.getValue()).asProperty());
             }
-        } else if (attributeName.equals(org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
             }
             setLongIfNotNull(context, dataSource.getValidation().getBackgroundValidationMillis());
-        } else if (attributeName.equals(org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
             }
             setBooleanIfNotNull(context, dataSource.getValidation().isBackgroundValidation());
-        } else if (attributeName.equals(org.jboss.as.connector.pool.Constants.USE_FAST_FAIL.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
             }
@@ -348,12 +348,12 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
                 return;
             }
             setLongIfNotNull(context, dataSource.getTimeOut().getAllocationRetryWaitMillis());
-        } else if (attributeName.equals(org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS.getName())) {
             if (dataSource.getTimeOut() == null) {
                 return;
             }
             setLongIfNotNull(context, dataSource.getTimeOut().getBlockingTimeoutMillis());
-        } else if (attributeName.equals(org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES.getName())) {
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES.getName())) {
             if (dataSource.getTimeOut() == null) {
                 return;
             }

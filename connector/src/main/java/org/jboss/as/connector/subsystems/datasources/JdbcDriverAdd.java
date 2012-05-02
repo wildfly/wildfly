@@ -22,8 +22,8 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
-import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
@@ -39,10 +39,10 @@ import java.sql.Driver;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.registry.DriverRegistry;
-import org.jboss.as.connector.registry.DriverService;
-import org.jboss.as.connector.registry.InstalledDriver;
+import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.connector.services.driver.registry.DriverRegistry;
+import org.jboss.as.connector.services.driver.DriverService;
+import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;

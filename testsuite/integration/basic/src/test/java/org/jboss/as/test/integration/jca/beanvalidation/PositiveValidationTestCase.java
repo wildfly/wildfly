@@ -26,7 +26,7 @@ import static org.junit.Assert.*;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidActivationSpec;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidAdminObjectInterface;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnection;
@@ -63,7 +63,7 @@ public class PositiveValidationTestCase {
 
     /**
      * Define the deployment
-     * 
+     *
      * @return The deployment archive
      */
     @Deployment
@@ -89,7 +89,7 @@ public class PositiveValidationTestCase {
 
     /**
      * Test configuration
-     * 
+     *
      * @throws Throwable Thrown if case of an error
      */
     @Test
@@ -128,7 +128,7 @@ public class PositiveValidationTestCase {
         ActivationSpec as = listener.getActivation().createInstance();
         assertNotNull(as);
         assertNotNull(as.getResourceAdapter());
-        
+
         ValidActivationSpec vas=(ValidActivationSpec)as;
 
         ValidMessageEndpoint me = new ValidMessageEndpoint();

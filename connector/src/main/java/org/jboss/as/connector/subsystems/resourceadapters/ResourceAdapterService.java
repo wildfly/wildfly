@@ -22,7 +22,7 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
 
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.msc.inject.Injector;

@@ -27,11 +27,10 @@ import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_
 import java.util.List;
 import java.util.concurrent.Executor;
 
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.workmanager.NamedWorkManager;
-import org.jboss.as.connector.workmanager.WorkManagerService;
+import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.connector.services.workmanager.NamedWorkManager;
+import org.jboss.as.connector.services.workmanager.WorkManagerService;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.ParserException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;

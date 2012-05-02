@@ -24,7 +24,7 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import java.util.List;
 
-import org.jboss.as.connector.deployers.DsDeploymentActivator;
+import org.jboss.as.connector.deployers.ds.DsDeploymentActivator;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;

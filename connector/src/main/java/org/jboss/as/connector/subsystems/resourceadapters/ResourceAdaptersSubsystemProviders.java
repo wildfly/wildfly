@@ -22,16 +22,16 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
-import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
-import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
-import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
-import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
-import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
-import static org.jboss.as.connector.pool.Constants.POOL_FLUSH_STRATEGY;
-import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
-import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
-import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;

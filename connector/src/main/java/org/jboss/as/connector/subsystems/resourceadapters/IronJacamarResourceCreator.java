@@ -22,12 +22,7 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.mdr.AS7MetadataRepository;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
@@ -44,24 +39,18 @@ import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 
-import javax.management.InstanceNotFoundException;
-import javax.management.IntrospectionException;
-import javax.management.JMException;
-import javax.management.MalformedObjectNameException;
-import javax.management.ReflectionException;
-import java.io.IOException;
 import java.util.Map;
 
-import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
-import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
-import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
-import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
-import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
-import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
-import static org.jboss.as.connector.pool.Constants.POOL_FLUSH_STRATEGY;
-import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
-import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
-import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;

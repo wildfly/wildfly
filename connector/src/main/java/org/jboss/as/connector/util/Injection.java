@@ -25,7 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Locale;
 
-import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 /**
  * Injection utility which can inject values into objects

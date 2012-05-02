@@ -30,7 +30,7 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.clustering.registry.RegistryCollectorService;
-import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;

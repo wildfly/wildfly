@@ -34,7 +34,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
-import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
 import org.jboss.jca.core.spi.rar.Activation;
