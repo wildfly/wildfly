@@ -106,8 +106,8 @@ public class LogStoreProbeHandler implements OperationStepHandler {
                     LogStoreConstants.PARTICIPANT_JMX_NAMES);
             String pAddress = pAttributes.get(JNDI_PROPNAME);
 
-            if (pAddress.length() == 0) {
-                pAttributes.put(JNDI_PROPNAME, String.valueOf(i));
+            if (pAddress == null || pAddress.length() == 0) {
+                pAttributes.put(JNDI_PROPNAME, String.valueOf(i++));
                 pAddress = pAttributes.get(JNDI_PROPNAME);
             }
 
