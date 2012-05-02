@@ -45,6 +45,7 @@ public class WebSessionCacheConfigurationService extends AbstractCacheConfigurat
     protected ConfigurationBuilder getConfigurationBuilder() {
         ConfigurationBuilder builder = new ConfigurationBuilder().read(this.configuration.getValue());
         builder.storeAsBinary().enable().storeKeysAsBinary(false).storeValuesAsBinary(true);
+        builder.transaction().syncCommitPhase(false);
         return builder;
     }
 

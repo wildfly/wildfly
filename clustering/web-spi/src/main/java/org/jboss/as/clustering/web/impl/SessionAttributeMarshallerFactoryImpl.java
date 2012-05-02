@@ -22,6 +22,7 @@
 package org.jboss.as.clustering.web.impl;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -93,6 +94,7 @@ public class SessionAttributeMarshallerFactoryImpl implements SessionAttributeMa
     private static final Class<?>[] classes = new Class<?>[] {
         DistributableSessionMetadata.class,
         SimpleMarshalledValue.class,
+        Serializable.class,
     };
 
     private static final Map<Class<?>, Writer> writers = createWriters();
