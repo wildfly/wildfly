@@ -118,7 +118,7 @@ public class ClusteredSingleSignOnTestCase {
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
         log.info("+++ testNoAuthSingleSignOn");
-        SSOBaseCase.executeNoAuthSingleSignOnTest(baseURL1, baseURL2, log);
+        SSOBaseCase.executeNoAuthSingleSignOnTest(new URL(baseURL1, "/"), new URL(baseURL2, "/"), log);
     }
     
 }
