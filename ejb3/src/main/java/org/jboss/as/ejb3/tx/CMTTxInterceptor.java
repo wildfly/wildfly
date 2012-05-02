@@ -21,23 +21,8 @@
  */
 package org.jboss.as.ejb3.tx;
 
-import java.rmi.RemoteException;
-import java.util.Random;
-
-import javax.ejb.EJBException;
-import javax.ejb.EJBTransactionRequiredException;
-import javax.ejb.EJBTransactionRolledbackException;
-import javax.ejb.NoSuchEJBException;
-import javax.ejb.TransactionAttributeType;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.MethodIntfHelper;
@@ -48,6 +33,20 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.logging.Logger;
 import org.jboss.tm.TransactionTimeoutConfiguration;
 import org.jboss.util.deadlock.ApplicationDeadlockException;
+
+import javax.ejb.EJBException;
+import javax.ejb.EJBTransactionRolledbackException;
+import javax.ejb.NoSuchEJBException;
+import javax.ejb.TransactionAttributeType;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.RollbackException;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import java.rmi.RemoteException;
+import java.util.Random;
 
 /**
  * Ensure the correct exceptions are thrown based on both caller
@@ -79,7 +78,7 @@ public class CMTTxInterceptor implements Interceptor {
     protected void endTransaction(TransactionManager tm, Transaction tx) {
         try {
             if (tx != tm.getTransaction()) {
-                throw new IllegalStateException("Wrong tx on thread: expected " + tx + ", actual " + tm.getTransaction());
+                throw EjbLogger.EJB3_LOGGER.wrongTxOnThread(tx, tm.getTransaction());
             }
 
             if (tx.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
@@ -193,7 +192,7 @@ public class CMTTxInterceptor implements Interceptor {
             case SUPPORTS:
                 return supports(invocation, component);
             default:
-                throw new IllegalStateException("Unexpected tx attribute " + attr + " on " + invocation);
+                throw EjbLogger.EJB3_LOGGER.unknownTxAttributeOnInvocation(attr, invocation);
         }
     }
 
@@ -252,7 +251,7 @@ public class CMTTxInterceptor implements Interceptor {
         final TransactionManager tm = component.getTransactionManager();
         Transaction tx = tm.getTransaction();
         if (tx == null) {
-            throw new EJBTransactionRequiredException("Transaction is required for invocation: " + invocation);
+            throw EjbLogger.EJB3_LOGGER.txRequiredForInvocation(invocation);
         }
         return invokeInCallerTx(invocation, tx, component);
     }
@@ -260,7 +259,7 @@ public class CMTTxInterceptor implements Interceptor {
     protected Object never(InterceptorContext invocation, final EJBComponent component) throws Exception {
         final TransactionManager tm = component.getTransactionManager();
         if (tm.getTransaction() != null) {
-            throw new EJBException("Transaction present on server in Never call (EJB3 13.6.2.6)");
+            throw EjbLogger.EJB3_LOGGER.txPresentForNeverTxAttribute();
         }
         return invokeInNoTx(invocation);
     }
@@ -350,9 +349,9 @@ public class CMTTxInterceptor implements Interceptor {
         try {
             tx.setRollbackOnly();
         } catch (SystemException ex) {
-            log.error("SystemException while setting transaction for rollback only", ex);
+            EjbLogger.EJB3_LOGGER.failedToSetRollbackOnly(ex);
         } catch (IllegalStateException ex) {
-            log.error("IllegalStateException while setting transaction for rollback only", ex);
+            EjbLogger.EJB3_LOGGER.failedToSetRollbackOnly(ex);
         }
     }
 

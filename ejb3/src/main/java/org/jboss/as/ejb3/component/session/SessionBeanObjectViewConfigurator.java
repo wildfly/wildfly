@@ -37,6 +37,7 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.interceptors.GetHomeInterceptorFactory;
 import org.jboss.as.server.deployment.Attachments;
@@ -123,7 +124,7 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
     private static final InterceptorFactory PRIMARY_KEY_INTERCEPTOR = new ImmediateInterceptorFactory(new Interceptor() {
         @Override
         public Object processInvocation(final InterceptorContext context) throws Exception {
-            throw new EJBException("Cannot call getPrimaryKey on a session bean");
+            throw EjbLogger.EJB3_LOGGER.cannotCallGetPKOnSessionBean();
         }
     });
 

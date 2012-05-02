@@ -28,6 +28,7 @@ import java.util.Calendar;
 import javax.ejb.EJBException;
 import javax.ejb.ScheduleExpression;
 
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.timerservice.persistence.CalendarTimerEntity;
 import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
 import org.jboss.as.ejb3.timerservice.persistence.TimerEntity;
@@ -275,7 +276,7 @@ public class CalendarTimer extends TimerImpl {
                 try {
                     methodParamClass = Class.forName(paramClassName, false, timedObjectInvoker.getClassLoader());
                 } catch (ClassNotFoundException cnfe) {
-                    throw new RuntimeException("Could not load method param class: " + paramClassName + " of timeout method", cnfe);
+                    throw EjbLogger.EJB3_LOGGER.failedToLoadTimeoutMethodParamClass(cnfe, paramClassName);
                 }
                 timeoutMethodParamTypes[i++] = methodParamClass;
             }

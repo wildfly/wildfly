@@ -30,6 +30,7 @@ import javax.ejb.Stateful;
 import javax.ejb.Stateless;
 
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
@@ -151,7 +152,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
                     sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, beanMetaData);
                     break;
                 default:
-                    throw new IllegalArgumentException("Unknown session bean type: " + sessionBeanType);
+                    throw EjbLogger.EJB3_LOGGER.unknownSessionBeanType(sessionBeanType.name());
             }
 
             addComponent(deploymentUnit, sessionBeanDescription);
@@ -171,7 +172,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             case Singleton:
                 return SessionBeanComponentDescription.SessionBeanType.SINGLETON;
             default:
-                throw new IllegalArgumentException("Unknown session bean type: " + sessionType);
+                throw EjbLogger.EJB3_LOGGER.unknownSessionBeanType(sessionType.name());
         }
     }
 
@@ -188,14 +189,12 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
         final String className = sessionBeanClass.name().toString();
         // must *not* be a interface
         if (Modifier.isInterface(flags)) {
-            logger.warn("[EJB3.1 spec, section 4.9.2] Session bean implementation class MUST NOT be a interface - "
-                    + className + " is an interface, hence won't be considered as a session bean");
+            EjbLogger.EJB3_LOGGER.sessionBeanClassCannotBeAnInterface(className);
             return false;
         }
         // bean class must be public, must *not* be abstract or final
         if (!Modifier.isPublic(flags) || Modifier.isAbstract(flags) || Modifier.isFinal(flags)) {
-            logger.warn("[EJB3.1 spec, section 4.9.2] Session bean implementation class MUST be public, not abstract and not final - "
-                    + className + " won't be considered as a session bean, since it doesn't meet that requirement");
+            EjbLogger.EJB3_LOGGER.sessionBeanClassMustBePublicNonAbstractNonFinal(className);
             return false;
         }
         // valid class
@@ -240,7 +239,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
                 sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), sessionBean);
                 break;
             default:
-                throw new IllegalArgumentException("Unknown session bean type: " + sessionType);
+                throw EjbLogger.EJB3_LOGGER.unknownSessionBeanType(sessionType.name());
         }
         addComponent(deploymentUnit, sessionBeanDescription);
     }

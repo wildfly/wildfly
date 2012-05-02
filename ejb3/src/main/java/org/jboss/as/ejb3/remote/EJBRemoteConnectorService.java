@@ -272,7 +272,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                         break;
 
                     default:
-                        throw new RuntimeException("Cannot handle client version " + version);
+                        throw EjbLogger.EJB3_LOGGER.ejbRemoteServiceCannotHandleClientVersion(version);
                 }
 
             } catch (IOException e) {
@@ -314,7 +314,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private MarshallerFactory getMarshallerFactory(final String marshallerStrategy) {
         final MarshallerFactory marshallerFactory = Marshalling.getProvidedMarshallerFactory(marshallerStrategy);
         if (marshallerFactory == null) {
-            throw new RuntimeException("Could not find a marshaller factory for " + marshallerStrategy + " marshalling strategy");
+            throw EjbLogger.EJB3_LOGGER.failedToFindMarshallerFactoryForStrategy(marshallerStrategy);
         }
         return marshallerFactory;
     }

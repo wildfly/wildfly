@@ -25,6 +25,7 @@ import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.IdentifierFactory;
@@ -186,7 +187,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     @Override
     public EJBLocalObject getEJBLocalObject(final InterceptorContext ctx) throws IllegalStateException {
         if (getEjbLocalObjectViewServiceName() == null) {
-            throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBLocalObject");
+            throw EjbLogger.EJB3_LOGGER.ejbLocalObjectUnavailable(getComponentName());
         }
         return createViewInstanceProxy(EJBLocalObject.class, Collections.<Object, Object>singletonMap(SessionID.class, getSessionIdOf(ctx)), getEjbLocalObjectViewServiceName());
     }

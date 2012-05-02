@@ -466,12 +466,12 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                     marshaller.finish();
                     return beanReferenceFactory.createReferenceWithId(stream.toByteArray(), beanRepositoryIds[0]);
                 }
-                throw new RuntimeException("Unknown locator type " + locator);
+                throw EjbLogger.EJB3_LOGGER.unknownEJBLocatorType(locator);
             } else {
-                throw new IllegalArgumentException("Provided locator " + locator + " was not for EJB " + ejbComponent);
+                throw EjbLogger.EJB3_LOGGER.incorrectEJBLocatorForBean(locator, ejbComponent.getComponentName());
             }
         } catch (Exception e) {
-            throw new RuntimeException("Could not create CORBA Object for " + locator + " for EJB " + ejbComponent, e);
+            throw EjbLogger.EJB3_LOGGER.couldNotCreateCorbaObject(e, locator);
         }
     }
 

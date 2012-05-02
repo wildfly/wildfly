@@ -33,6 +33,7 @@ import javax.ejb.Timer;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.interceptors.InvocationType;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.context.EntityContextImpl;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
@@ -216,7 +217,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     public EJBObject getEjbObject() {
         final Object pk = getPrimaryKey();
         if (pk == null) {
-            throw new IllegalStateException("Cannot call getEjbObjectViewServiceName before the object is associated with a primary key");
+            throw EjbLogger.EJB3_LOGGER.cannotCallGetEjbObjectBeforePrimaryKeyAssociation();
         }
         return getComponent().getEJBObject(pk);
     }
@@ -224,7 +225,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     public EJBLocalObject getEjbLocalObject() {
         final Object pk = getPrimaryKey();
         if (pk == null) {
-            throw new IllegalStateException("Cannot call getEjbLocalObjectViewServiceName before the object is associated with a primary key");
+            throw EjbLogger.EJB3_LOGGER.cannotCallGetEjbLocalObjectBeforePrimaryKeyAssociation();
         }
         return getComponent().getEJBLocalObject(pk);
     }

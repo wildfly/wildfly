@@ -31,6 +31,7 @@ import java.util.Set;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 
@@ -53,7 +54,7 @@ public class EjbJarDescription {
     public EjbJarDescription(EEModuleDescription eeModuleDescription, final EEApplicationClasses applicationClassesDescription, boolean war) {
         this.war = war;
         if (eeModuleDescription == null) {
-            throw new IllegalArgumentException(EEModuleDescription.class.getSimpleName() + " cannot be null");
+            throw EjbMessages.MESSAGES.paramCannotBeNull("EE module description");
         }
         this.eeModuleDescription = eeModuleDescription;
         this.applicationClassesDescription = applicationClassesDescription;
@@ -61,7 +62,7 @@ public class EjbJarDescription {
 
     public void addSecurityRole(final String role) {
         if (role == null || role.trim().isEmpty()) {
-            throw new IllegalArgumentException("Security role name cannot be null or empty: " + role);
+            throw EjbMessages.MESSAGES.stringParamCannotBeNullOrEmpty("Security role");
         }
         this.applicationLevelSecurityRoles.add(role);
     }

@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.InvocationType;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.interceptors.AsyncInvocationTask;
@@ -188,7 +189,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                         } catch (Throwable t) {
                             // catch Throwable, so that we don't skip invoking the method, just because we
                             // failed to send a notification to the client that the method is an async method
-                            logger.warn("Method " + invokedMethod + " was a async method but the client could not be informed about the same. This will mean that the client might block till the method completes", t);
+                            EjbLogger.EJB3_LOGGER.failedToSendAsyncMethodIndicatorToClient(t, invokedMethod);
                         }
                     }
 
@@ -290,8 +291,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         if (componentView.isAsynchronous(method)) {
             final Component component = componentView.getComponent();
             if (!(component instanceof SessionBeanComponent)) {
-                logger.warn("Asynchronous invocations are only supported on session beans. Bean class " + component.getComponentClass()
-                        + " is not a session bean, invocation on method " + method + " will have no asynchronous semantics");
+                EjbLogger.EJB3_LOGGER.asyncMethodSupportedOnlyForSessionBeans(component.getComponentClass(), method);
                 // just invoke normally
                 return componentView.invoke(interceptorContext);
             }

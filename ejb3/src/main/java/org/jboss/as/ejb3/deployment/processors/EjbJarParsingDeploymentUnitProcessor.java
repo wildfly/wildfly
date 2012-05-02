@@ -38,6 +38,7 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.cache.EJBBoundCacheParser;
 import org.jboss.as.ejb3.clustering.EJBBoundClusteringMetaDataParser;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
@@ -205,7 +206,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(stream);
             return xmlReader;
         } catch (XMLStreamException xmlse) {
-            throw new DeploymentUnitProcessingException("Failed to create reader for ejb-jar.xml: " + ejbJarXml.getPathName(), xmlse);
+            throw EjbLogger.EJB3_LOGGER.failedToParse(xmlse, "ejb-jar.xml: " + ejbJarXml.getPathName());
         }
     }
 
@@ -249,7 +250,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             EjbJarMetaData ejbJarMetaData = EjbJarMetaDataParser.parse(reader, dtdInfo, SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
             return ejbJarMetaData;
         } catch (XMLStreamException xmlse) {
-            throw new DeploymentUnitProcessingException("Exception while parsing ejb-jar.xml: " + descriptor.getPathName(), xmlse);
+            throw EjbLogger.EJB3_LOGGER.failedToParse(xmlse, "ejb-jar.xml: " + descriptor.getPathName());
         } finally {
             try {
                 stream.close();
@@ -291,7 +292,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             final EjbJarMetaData ejbJarMetaData = parser.parse(reader, dtdInfo, propertyReplacer);
             return ejbJarMetaData;
         } catch (XMLStreamException xmlse) {
-            throw new DeploymentUnitProcessingException("Exception while parsing " + JBOSS_EJB3_XML + ": " + descriptor.getPathName(), xmlse);
+            throw EjbLogger.EJB3_LOGGER.failedToParse(xmlse, JBOSS_EJB3_XML + ": " + descriptor.getPathName());
         } finally {
             try {
                 stream.close();

@@ -1,5 +1,7 @@
 package org.jboss.as.ejb3.deployment;
 
+import org.jboss.as.ejb3.EjbMessages;
+
 import java.io.Serializable;
 
 /**
@@ -15,13 +17,13 @@ public final class DeploymentModuleIdentifier implements Serializable {
 
     public DeploymentModuleIdentifier(String applicationName, String moduleName, String distinctName) {
         if (applicationName == null) {
-            throw new IllegalArgumentException("Application name cannot be null");
+            throw EjbMessages.MESSAGES.paramCannotBeNull("Application name");
         }
         if (moduleName == null) {
-            throw new IllegalArgumentException("Module name cannot be null");
+            throw EjbMessages.MESSAGES.paramCannotBeNull("Module name");
         }
         if (distinctName == null) {
-            throw new IllegalArgumentException("Distinct name cannot be null");
+            throw EjbMessages.MESSAGES.paramCannotBeNull("Distinct name");
         }
         this.applicationName = applicationName;
         this.moduleName = moduleName;

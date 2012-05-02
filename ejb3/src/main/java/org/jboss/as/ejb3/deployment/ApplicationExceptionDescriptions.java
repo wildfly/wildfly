@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
 
 /**
@@ -37,7 +38,7 @@ public class ApplicationExceptionDescriptions {
 
     public void addApplicationException(final String exceptionClassName, final boolean rollback, final boolean inherited) {
         if (exceptionClassName == null || exceptionClassName.isEmpty()) {
-            throw new IllegalArgumentException("Invalid exception class name: " + exceptionClassName);
+            throw EjbMessages.MESSAGES.stringParamCannotBeNullOrEmpty("Exception class name");
         }
         //TODO: Is this a good idea? ApplicationException's equals/hashCode
         //will not work the way that would be expected

@@ -32,6 +32,7 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.ResourceInjectionTarget;
 import org.jboss.as.ee.component.deployers.AbstractDeploymentDescriptorBindingsProcessor;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -88,13 +89,13 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                     try {
                         remoteInterfaceType = index.classIndex(home).getModuleClass();
                     } catch (ClassNotFoundException e) {
-                        throw new DeploymentUnitProcessingException("Could not load home interface type " + home, e);
+                        throw EjbLogger.EJB3_LOGGER.failedToLoadViewClass(e, home);
                     }
                 } else if (!isEmpty(remoteInterface)) {
                     try {
                         remoteInterfaceType = index.classIndex(remoteInterface).getModuleClass();
                     } catch (ClassNotFoundException e) {
-                        throw new DeploymentUnitProcessingException("Could not load remote interface type " + remoteInterface, e);
+                        throw EjbLogger.EJB3_LOGGER.failedToLoadViewClass(e, remoteInterface);
                     }
                 }
 
@@ -120,7 +121,7 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                 } else {
 
                     if (remoteInterfaceType == null) {
-                        throw new DeploymentUnitProcessingException("Could not determine type of ejb-ref " + name + " for " + resourceInjectionTarget);
+                        throw EjbLogger.EJB3_LOGGER.couldNotDetermineEjbRefForInjectionTarget(name, resourceInjectionTarget);
                     }
                     if (!isEmpty(ejbName)) {
                         bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(ejbName, remoteInterfaceType.getName(), name, deploymentUnit, appclient));
@@ -152,13 +153,13 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                         try {
                             localInterfaceType = index.classIndex(localHome).getModuleClass();
                         } catch (ClassNotFoundException e) {
-                            throw new DeploymentUnitProcessingException("Could not load local home interface type " + localHome, e);
+                            throw EjbLogger.EJB3_LOGGER.failedToLoadViewClass(e, localHome);
                         }
                     } else if (!isEmpty(localInterface)) {
                         try {
                             localInterfaceType = index.classIndex(localInterface).getModuleClass();
                         } catch (ClassNotFoundException e) {
-                            throw new DeploymentUnitProcessingException("Could not load local interface type " + localInterface, e);
+                            throw EjbLogger.EJB3_LOGGER.failedToLoadViewClass(e, localInterface);
                         }
                     }
 
@@ -173,7 +174,7 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                     localInterfaceType = processInjectionTargets(resourceInjectionTarget, injectionSource, classLoader, deploymentReflectionIndex, ejbRef, localInterfaceType);
 
                     if (localInterfaceType == null) {
-                        throw new DeploymentUnitProcessingException("Could not determine type of ejb-local-ref " + name + " for " + resourceInjectionTarget);
+                        throw EjbLogger.EJB3_LOGGER.couldNotDetermineEjbLocalRefForInjectionTarget(name, resourceInjectionTarget);
                     }
                     final BindingConfiguration bindingConfiguration;
                     EjbInjectionSource ejbInjectionSource = null;

@@ -33,6 +33,7 @@ import javax.naming.NamingException;
 import javax.rmi.CORBA.Stub;
 import javax.rmi.PortableRemoteObject;
 
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.util.NestedRuntimeException;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.ORB;
@@ -98,11 +99,11 @@ public class HandleDelegateImpl implements HandleDelegate {
                     final ORB orb = (ORB) new InitialContext().lookup("java:comp/ORB");
                     stub.connect(orb);
                 } catch (NamingException ne) {
-                    throw new IOException("Unable to lookup java:comp/ORB");
+                    throw EjbLogger.EJB3_LOGGER.failedToLookupORB();
                 }
             }
         } else {
-            throw new IOException("Not an ObjectImpl " + object.getClass().getName());
+            throw EjbLogger.EJB3_LOGGER.notAnObjectImpl(object.getClass());
         }
     }
 

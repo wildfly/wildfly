@@ -34,6 +34,7 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.EjbHomeViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -131,7 +132,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
                     ejbObjectClass = classIndex.classIndex(createdView.getViewClassName()).getModuleClass();
                     pkClass = classIndex.classIndex(componentDescription.getPrimaryKeyType()).getModuleClass();
                 } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load view class for " + componentDescription.getComponentName(), e);
+                    throw EjbLogger.EJB3_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getComponentName());
                 }
                 final EjbMetadataInterceptorFactory factory = new EjbMetadataInterceptorFactory(ejbObjectClass, configuration.getViewClass(), pkClass, false, false);
 
@@ -203,19 +204,6 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
             clazz = clazz.getSuperclass();
         }
         throw MESSAGES.failToResolveMethodForHomeInterface("ejbHome", method, ejbName);
-    }
-
-    private Method resolveRemoveMethod(final Class<?> componentClass, final DeploymentReflectionIndex index, final String ejbName) throws DeploymentUnitProcessingException {
-        Class<?> clazz = componentClass;
-        while (clazz != Object.class) {
-            final ClassReflectionIndex<?> classIndex = index.getClassIndex(clazz);
-            Method ret = classIndex.getMethod(Void.TYPE, "ejbRemove");
-            if (ret != null) {
-                return ret;
-            }
-            clazz = clazz.getSuperclass();
-        }
-        throw new DeploymentUnitProcessingException("Could not resolve ejbRemove method for interface method on EJB " + ejbName);
     }
 
     private static String[] namesOf(final Class<?>[] types) {

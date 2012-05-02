@@ -133,7 +133,7 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
             try {
                 return classLoader.loadClass(ejbClass);
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Failed to load component view class: " + ejbClass, e);
+                throw new RuntimeException(e);
             }
         }
         return null;

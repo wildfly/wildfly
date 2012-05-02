@@ -32,6 +32,7 @@ import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -76,7 +77,7 @@ public class AroundTimeoutAnnotationParsingProcessor implements DeploymentUnitPr
 
     private void processAroundInvoke(final AnnotationTarget target, final EEModuleDescription eeModuleDescription) {
         if (!(target instanceof MethodInfo)) {
-            throw new IllegalArgumentException("@AroundTimeout is only valid on method targets.");
+            throw EjbLogger.EJB3_LOGGER.annotationApplicableOnlyForMethods(AROUND_TIMEOUT_ANNOTATION_NAME.toString());
         }
         final MethodInfo methodInfo = MethodInfo.class.cast(target);
         final ClassInfo classInfo = methodInfo.declaringClass();
@@ -92,17 +93,17 @@ public class AroundTimeoutAnnotationParsingProcessor implements DeploymentUnitPr
         final Type[] args = methodInfo.args();
         switch (args.length) {
             case 0:
-                throw new IllegalArgumentException("Invalid argument signature.  Methods annotated with " + AROUND_TIMEOUT_ANNOTATION_NAME + " must have a single InvocationContext argument.");
+                throw EjbLogger.EJB3_LOGGER.aroundTimeoutMethodExpectedWithInvocationContextParam(methodInfo.name(), classInfo.toString());
             case 1:
                 if (!InvocationContext.class.getName().equals(args[0].name().toString())) {
-                    throw new IllegalArgumentException("Invalid argument type.  Methods annotated with " + AROUND_TIMEOUT_ANNOTATION_NAME + " must have a single InvocationContext argument.");
+                    throw EjbLogger.EJB3_LOGGER.aroundTimeoutMethodExpectedWithInvocationContextParam(methodInfo.name(), classInfo.toString());
                 }
                 break;
             default:
-                throw new IllegalArgumentException("Invalid number of arguments for method " + methodInfo.name() + " annotated with " + AROUND_TIMEOUT_ANNOTATION_NAME + " on class " + classInfo.name());
+                throw EjbLogger.EJB3_LOGGER.aroundTimeoutMethodExpectedWithInvocationContextParam(methodInfo.name(), classInfo.toString());
         }
         if (!methodInfo.returnType().name().toString().equals(Object.class.getName())) {
-            throw new IllegalArgumentException("@AroundTimeout methods must have an Object return type for " + methodInfo.name() + " annotated with " + AROUND_TIMEOUT_ANNOTATION_NAME + " on class " + classInfo.name());
+            throw EjbLogger.EJB3_LOGGER.aroundTimeoutMethodMustReturnObjectType(methodInfo.name(), classInfo.toString());
         }
     }
 }

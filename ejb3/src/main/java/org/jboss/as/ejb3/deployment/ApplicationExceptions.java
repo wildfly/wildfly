@@ -22,6 +22,9 @@
 
 package org.jboss.as.ejb3.deployment;
 
+import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.EjbMessages;
+
 import java.rmi.RemoteException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,22 +53,20 @@ public class ApplicationExceptions {
 
     public void addApplicationException(Class<?> exceptionClass, org.jboss.as.ejb3.tx.ApplicationExceptionDetails applicationException) {
         if (exceptionClass == null) {
-            throw new IllegalArgumentException("Exception class cannot be null");
+            throw EjbMessages.MESSAGES.paramCannotBeNull("Exception class");
         }
         if (applicationException == null) {
-            throw new IllegalArgumentException("ApplicationException cannot be null");
+            throw EjbMessages.MESSAGES.paramCannotBeNull("ApplicationException");
         }
         // EJB 3.1 spec, section 14.1.1
         // application exception *must* be of type Exception
         if (!Exception.class.isAssignableFrom(exceptionClass)) {
-            throw new IllegalArgumentException("[EJB 3.1 spec, section 14.1.1] Class: " + exceptionClass + " cannot be " +
-                    "marked as an application exception because it is not of type " + Exception.class.getName());
+            throw EjbLogger.EJB3_LOGGER.cannotBeApplicationExceptionBecauseNotAnExceptionType(exceptionClass);
         }
         // EJB 3.1 spec, section 14.1.1:
         // application exception *cannot* be of type java.rmi.RemoteException
         if (RemoteException.class.isAssignableFrom(exceptionClass)) {
-            throw new IllegalArgumentException("[EJB 3.1 spec, section 14.1.1] Exception class: " + exceptionClass + " cannot be marked as an " +
-                    "application exception because it is of type " + RemoteException.class.getName());
+            throw EjbLogger.EJB3_LOGGER.rmiRemoteExceptionCannotBeApplicationException(exceptionClass);
         }
         // add it to our map
         this.applicationExceptions.put(exceptionClass, applicationException);

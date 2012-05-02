@@ -69,7 +69,7 @@ public class EjbLookupInjectionSource extends InjectionSource {
             try {
                 type = index.classIndex(targetTypeName).getModuleClass();
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Could not load EJB type " + targetTypeName, e);
+                throw new RuntimeException(e);
             }
         } else {
             type = null;

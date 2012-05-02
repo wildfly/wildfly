@@ -38,6 +38,7 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -226,7 +227,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
 
     @Override
     protected ViewConfigurator getSessionBeanObjectViewConfigurator() {
-        throw new RuntimeException("Singleton beans cannot have EJB 2.x views");
+        throw EjbLogger.EJB3_LOGGER.ejb2xViewNotApplicableForSingletonBeans();
     }
 
     private void addConcurrencyManagementInterceptor() {

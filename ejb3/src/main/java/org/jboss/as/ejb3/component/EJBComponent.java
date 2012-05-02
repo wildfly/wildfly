@@ -62,6 +62,7 @@ import java.security.Principal;
 import java.util.Collections;
 import java.util.Map;
 
+import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
@@ -146,12 +147,12 @@ public abstract class EJBComponent extends BasicComponent {
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
         if (viewInterface == null)
-            throw new IllegalArgumentException("View interface is null");
+            throw EJB3_LOGGER.viewInterfaceCannotBeNull();
         if (viewServices.containsKey(viewInterface.getName())) {
             final ServiceName serviceName = viewServices.get(viewInterface.getName());
             return createViewInstanceProxy(viewInterface, contextData, serviceName);
         } else {
-            throw new IllegalStateException("View of type " + viewInterface + " not found on bean " + this);
+            throw EJB3_LOGGER.viewNotFound(viewInterface.getName(), this.getComponentName());
         }
     }
 

@@ -36,6 +36,7 @@ import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.utils.DescriptorUtils;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.interceptors.AsyncInvocationTask;
@@ -113,7 +114,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         final Class<?> viewClass = invocation.getViewClass();
         final ComponentView view = ejb.getView(viewClass.getName());
         if (view == null) {
-            throw new RuntimeException("Could not find view " + viewClass + " for ejb " + ejb.getEjbName());
+            throw EjbLogger.EJB3_LOGGER.viewNotFound(viewClass.getName(), ejb.getEjbName());
         }
 
         final ClonerConfiguration paramConfig = new ClonerConfiguration();
@@ -172,7 +173,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
                 //TODO: we do not clone the exception of an async task
                 receiverContext.resultReady(new ImmediateResultProducer(task));
             } else {
-                throw new RuntimeException("Cannot perform asynchronous local invocation for component that is not a session bean");
+                throw EjbLogger.EJB3_LOGGER.asyncInvocationOnlyApplicableForSessionBeans();
             }
         } else {
             final Object result;
@@ -196,7 +197,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         final EjbDeploymentInformation ejbInfo = findBean(appName, moduleName, distinctName, beanName);
         final EJBComponent component = ejbInfo.getEjbComponent();
         if (!(component instanceof StatefulSessionComponent)) {
-            throw new IllegalArgumentException("EJB " + beanName + " is not a Stateful Session bean in app: " + appName + " module: " + moduleName + " distinct name:" + distinctName);
+            throw EjbLogger.EJB3_LOGGER.notStatefulSessionBean(beanName, appName, moduleName, distinctName);
         }
         final StatefulSessionComponent statefulComponent = (StatefulSessionComponent) component;
         final SessionID sessionID = statefulComponent.createSession();
@@ -224,10 +225,8 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
 
         try {
             return cloner.clone(object);
-        } catch (IOException e) {
-            throw new RuntimeException("IOException marshaling EJB parameters", e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("ClassNotFoundException marshaling EJB parameters", e);
+        } catch (Exception e) {
+            throw EjbLogger.EJB3_LOGGER.failedToMarshalEjbParameters(e);
         }
     }
 
@@ -275,11 +274,11 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
     private EjbDeploymentInformation findBean(final String appName, final String moduleName, final String distinctName, final String beanName) {
         final ModuleDeployment module = deploymentRepository.getValue().getModules().get(new DeploymentModuleIdentifier(appName, moduleName, distinctName));
         if (module == null) {
-            throw new IllegalArgumentException("Could not find module app: " + appName + " module: " + moduleName + " distinct name:" + distinctName);
+            throw EjbLogger.EJB3_LOGGER.unknownDeployment(appName, moduleName, distinctName);
         }
         final EjbDeploymentInformation ejbInfo = module.getEjbs().get(beanName);
         if (ejbInfo == null) {
-            throw new IllegalArgumentException("Could not find ejb " + beanName + " in app: " + appName + " module: " + moduleName + " distinct name:" + distinctName);
+            throw EjbLogger.EJB3_LOGGER.ejbNotFoundInDeployment(beanName, appName, moduleName, distinctName);
         }
         return ejbInfo;
     }
