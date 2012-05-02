@@ -26,6 +26,7 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorContext;
@@ -66,7 +67,7 @@ public class TimerCMTTxInterceptor extends CMTTxInterceptor {
                 super.endTransaction(tm, tx);
             }
             if (rolledBack && EXCEPTION.get() == null) {
-                throw new TimerTransactionRolledBackException("Timer invocation failed, transaction rolled back");
+                throw EjbLogger.EJB3_LOGGER.timerInvocationRolledBack();
             }
         } finally {
             EXCEPTION.remove();

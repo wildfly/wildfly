@@ -31,6 +31,7 @@ import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -100,7 +101,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
     private void setupJNDIBindings(EJBComponentDescription sessionBean, DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         final Collection<ViewDescription> views = sessionBean.getViews();
         if (views == null || views.isEmpty()) {
-            logger.info("No jndi bindings will be created for EJB: " + sessionBean.getEJBName() + " since no views are exposed");
+            EjbLogger.EJB3_LOGGER.noJNDIBindingsForSessionBean(sessionBean.getEJBName());
             return;
         }
 

@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.deployers.AbstractComponentConfigProcessor;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -72,7 +73,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
 
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         if (module == null) {
-            throw new IllegalStateException("Module hasn't yet been attached to deployment unit: " + deploymentUnit);
+            throw EjbLogger.EJB3_LOGGER.moduleNotAttachedToDeploymentUnit(deploymentUnit);
         }
         ClassLoader cl = module.getClassLoader();
         Class<?> ejbClass = null;

@@ -155,14 +155,14 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         try {
             remoteClass = classIndex.classIndex(remoteView.getViewClassName());
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Could not load remote interface for " + componentDescription.getEJBClassName(), e);
+            throw EjbLogger.EJB3_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
         }
         final EJBViewDescription homeView = componentDescription.getEjbHomeView();
         final ClassIndex homeClass;
         try {
             homeClass = classIndex.classIndex(homeView.getViewClassName());
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Could not load home interface for " + componentDescription.getEJBClassName(), e);
+            throw EjbLogger.EJB3_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
         }
 
         componentDescription.getEjbHomeView().getConfigurators().add(new IIOPInterceptorViewConfigurator());
@@ -174,7 +174,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
             //TODO: change all this to use the deployment reflection index
             remoteInterfaceAnalysis = InterfaceAnalysis.getInterfaceAnalysis(remoteClass.getModuleClass());
         } catch (RMIIIOPViolationException e) {
-            throw new RuntimeException("Could not analyze remote interface for " + componentDescription.getEJBClassName(), e);
+            throw EjbLogger.EJB3_LOGGER.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
         }
 
         final Map<String, SkeletonStrategy> beanMethodMap = new HashMap<String, SkeletonStrategy>();
@@ -215,7 +215,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
             //TODO: change all this to use the deployment reflection index
             homeInterfaceAnalysis = InterfaceAnalysis.getInterfaceAnalysis(homeClass.getModuleClass());
         } catch (RMIIIOPViolationException e) {
-            throw new RuntimeException("Could not analyze remote interface for " + componentDescription.getEJBClassName(), e);
+            throw EjbLogger.EJB3_LOGGER.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
         }
 
         final Map<String, SkeletonStrategy> homeMethodMap = new HashMap<String, SkeletonStrategy>();

@@ -31,6 +31,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
@@ -76,7 +77,7 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
                     installManagementResource(configuration, deploymentUnit);
                 }
             } catch (RuntimeException e) {
-                throw new DeploymentUnitProcessingException("Failed to install management resources for " + configuration, e);
+                throw EjbLogger.EJB3_LOGGER.failedToInstallManagementResource(e, configuration.getComponentName());
             }
         }
     }

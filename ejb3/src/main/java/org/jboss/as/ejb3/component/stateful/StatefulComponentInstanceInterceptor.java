@@ -29,6 +29,7 @@ import javax.ejb.NoSuchEJBException;
 import javax.ejb.RemoveException;
 
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -59,7 +60,7 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
         StatefulSessionComponentInstance instance = component.getCache().get(sessionId);
         if (instance == null) {
             //This exception will be transformed into the correct exception type by the exception transforming interceptor
-            throw new NoSuchEJBException("Could not find SFSB " + component.getComponentName() + " with " + sessionId);
+            throw EjbMessages.MESSAGES.couldNotFindEjb(sessionId.toString());
         }
         try {
             context.putPrivateData(ComponentInstance.class, instance);

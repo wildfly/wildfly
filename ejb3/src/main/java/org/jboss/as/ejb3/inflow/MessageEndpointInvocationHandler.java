@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.inflow;
 
+import org.jboss.as.ejb3.EjbLogger;
+
 import javax.resource.ResourceException;
 import javax.resource.spi.ApplicationServerInternalException;
 import javax.resource.spi.LocalTransactionException;
@@ -128,7 +130,7 @@ public class MessageEndpointInvocationHandler extends AbstractInvocationHandler 
     protected Object doInvoke(Object proxy, Method method, Object[] args) throws Throwable {
         // Are we still usable?
         if (released.get())
-            throw new UnavailableException("Message endpoint " + this + " has already been released");
+            throw EjbLogger.EJB3_LOGGER.messageEndpointAlreadyReleased(this);
 
         // TODO: check for concurrent invocation
 

@@ -40,6 +40,7 @@ import javax.ejb.Remote;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -159,7 +160,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         if (remoteViews == null || remoteViews.length == 0) {
             Set<Class<?>> interfaces = getPotentialBusinessInterfaces(sessionBeanClass);
             if (interfaces.size() != 1)
-                throw new DeploymentUnitProcessingException("Bean " + sessionBeanClass + " specifies @Remote annotation, but does not implement 1 interface");
+                throw EjbLogger.EJB3_LOGGER.beanWithRemoteAnnotationImplementsMoreThanOneInterface(sessionBeanClass);
             return interfaces;
         }
         return Arrays.asList(remoteViews);
@@ -178,7 +179,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         if (localViews == null || localViews.length == 0) {
             Set<Class<?>> interfaces = getPotentialBusinessInterfaces(sessionBeanClass);
             if (interfaces.size() != 1)
-                throw new DeploymentUnitProcessingException("Bean " + sessionBeanClass + " specifies @Local annotation, but does not implement 1 interface");
+                throw EjbLogger.EJB3_LOGGER.beanWithLocalAnnotationImplementsMoreThanOneInterface(sessionBeanClass);
             return interfaces;
         }
         return Arrays.asList(localViews);
@@ -224,7 +225,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         try {
             return cl.loadClass(className);
         } catch (ClassNotFoundException e) {
-            throw new DeploymentUnitProcessingException("Could not load EJB class " + className, e);
+            throw new DeploymentUnitProcessingException(e);
         }
     }
 

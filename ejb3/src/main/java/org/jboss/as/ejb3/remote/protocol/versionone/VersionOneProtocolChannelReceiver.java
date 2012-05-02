@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.clustering.registry.RegistryCollector;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -104,7 +105,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             this.sendNewClusterFormedMessage(clusters);
         } catch (IOException ioe) {
             // just log and don't throw an error
-            logger.warn("Could not send cluster formation message to the client on channel " + channel, ioe);
+            EjbLogger.EJB3_LOGGER.failedToSendClusterFormationMessageToClient(ioe, channel);
         }
         for (final Registry<String, List<ClientMapping>> cluster : clusters) {
             // add the topology update listener
@@ -208,7 +209,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             this.sendModuleAvailability(new DeploymentModuleIdentifier[]{deploymentModuleIdentifier});
         } catch (IOException e) {
-            logger.warn("Could not send module availability notification of module " + deploymentModuleIdentifier + " to channel " + this.channelAssociation.getChannel(), e);
+            EjbLogger.EJB3_LOGGER.failedToSendModuleAvailabilityMessageToClient(e, deploymentModuleIdentifier, channelAssociation.getChannel());
         }
     }
 
@@ -217,7 +218,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             this.sendModuleUnAvailability(new DeploymentModuleIdentifier[]{deploymentModuleIdentifier});
         } catch (IOException e) {
-            logger.warn("Could not send module un-availability notification of module " + deploymentModuleIdentifier + " to channel " + this.channelAssociation.getChannel(), e);
+            EjbLogger.EJB3_LOGGER.failedToSendModuleUnavailabilityMessageToClient(e, deploymentModuleIdentifier, channelAssociation.getChannel());
         }
     }
 
@@ -263,8 +264,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             logger.debug("Received new cluster formation notification for cluster " + registry.getName());
             this.sendNewClusterFormedMessage(Collections.singleton(registry));
         } catch (IOException ioe) {
-            logger.warn("Could not send a cluster formation message for cluster: " + registry.getName()
-                    + " to the client on channel " + this.channelAssociation.getChannel(), ioe);
+            EjbLogger.EJB3_LOGGER.failedToSendClusterFormationMessageToClient(ioe, registry.getName(), channelAssociation.getChannel());
         }
     }
 
@@ -374,7 +374,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             try {
                 this.sendClusterNodesAdded(added);
             } catch (IOException ioe) {
-                logger.warn("Could not write a new cluster node addition message to channel " + this.channelReceiver.channelAssociation.getChannel(), ioe);
+                EjbLogger.EJB3_LOGGER.failedToSendClusterNodeAdditionMessageToClient(ioe, channelAssociation.getChannel());
             }
         }
 
@@ -388,7 +388,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             try {
                 this.sendClusterNodesRemoved(removed);
             } catch (IOException ioe) {
-                logger.warn("Could not write a cluster node removal message to channel " + this.channelReceiver.channelAssociation.getChannel(), ioe);
+                EjbLogger.EJB3_LOGGER.failedToSendClusterNodeRemovalMessageToClient(ioe, channelAssociation.getChannel());
             }
         }
 

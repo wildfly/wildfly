@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.security;
 
+import org.jboss.as.ejb3.EjbMessages;
+
 import java.util.Collections;
 import java.util.Set;
 
@@ -44,7 +46,7 @@ public class EJBMethodSecurityAttribute {
 
     private EJBMethodSecurityAttribute(final boolean permitAll, final boolean denyAll, final Set<String> rolesAllowed) {
         if (rolesAllowed == null)
-            throw new NullPointerException("rolesAllowed");
+            throw EjbMessages.MESSAGES.paramCannotBeNull("rolesAllowed");
         this.permitAll = permitAll;
         this.denyAll = denyAll;
         this.rolesAllowed = rolesAllowed;

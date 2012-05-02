@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.ejb.NoSuchEntityException;
 
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 
@@ -55,7 +56,7 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
                 //this happens in an instance is removed and then re-added in the space of the same transaction
                 existing.replacedInstance = instance;
             } else {
-                throw new IllegalArgumentException("Instance for PK [" + instance.getPrimaryKey() + "] already registerd.");
+                throw EjbLogger.EJB3_LOGGER.instanceAlreadyRegisteredForPK(instance.getPrimaryKey());
             }
         }
         return cacheEntry;
@@ -81,7 +82,7 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
         if (instance.getPrimaryKey() == null) return;  // TODO: Should this be an Exception
         final CacheEntry cacheEntry = cache.get(instance.getPrimaryKey());
         if (cacheEntry == null) {
-            throw new IllegalArgumentException("Instance [" + instance + "] not found in cache");
+            throw EjbLogger.EJB3_LOGGER.entityBeanInstanceNotFoundInCache(instance);
         }
         if (cacheEntry.replacedInstance != null) {
             //this can happen if an entity is removed and a new entity with the same PK is added in a transactions

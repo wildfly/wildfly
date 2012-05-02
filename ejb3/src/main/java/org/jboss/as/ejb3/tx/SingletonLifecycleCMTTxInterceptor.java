@@ -25,6 +25,7 @@ import javax.ejb.TransactionAttributeType;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -57,7 +58,7 @@ public class SingletonLifecycleCMTTxInterceptor extends CMTTxInterceptor impleme
             case SUPPORTS:
                 return supports(invocation, component);
             default:
-                throw new IllegalStateException("Unexpected tx attribute " + txAttr + " on " + invocation);
+                throw EjbLogger.EJB3_LOGGER.unknownTxAttributeOnInvocation(txAttr, invocation);
         }
     }
 
