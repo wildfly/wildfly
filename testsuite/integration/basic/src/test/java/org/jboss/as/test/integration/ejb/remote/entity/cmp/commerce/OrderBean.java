@@ -23,12 +23,13 @@ package org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce;
 
 import java.util.Collection;
 import java.util.Set;
+
 import javax.ejb.CreateException;
-import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
 import javax.ejb.FinderException;
 import javax.naming.InitialContext;
+
 import static org.junit.Assert.fail;
 
 public abstract class OrderBean implements EntityBean {
@@ -138,16 +139,16 @@ public abstract class OrderBean implements EntityBean {
         this.ctx = ctx;
     }
 
-    void setShippingAddressId(Long id) throws FinderException {
+    public void setShippingAddressId(Long id) throws FinderException {
         setShippingAddress(getAddressHome().findByPrimaryKey(id));
         System.out.println(getShippingAddress());
     }
 
-    void setBillingAddressId(Long id) throws FinderException {
+    public void setBillingAddressId(Long id) throws FinderException {
         setBillingAddress(getAddressHome().findByPrimaryKey(id));
     }
 
-    void addLineItemId(Long id) throws FinderException {
+    public void addLineItemId(Long id) throws FinderException {
         getLineItems().add(getLineItemHome().findByPrimaryKey(id));
     }
 
@@ -170,7 +171,7 @@ public abstract class OrderBean implements EntityBean {
     public void ejbRemove() {
     }
 
-    void ejbHomeResetId() {
+    public void ejbHomeResetId() {
         id = 0;
     }
 

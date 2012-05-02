@@ -115,7 +115,7 @@ public abstract class LineItemBean implements EntityBean {
     public void ejbRemove() {
     }
 
-    void ejbHomeResetId() {
+    public void ejbHomeResetId() {
         id = 0;
     }
 }

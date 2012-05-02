@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.component.session;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import javax.ejb.EJBException;
 import javax.ejb.EJBLocalObject;
@@ -102,7 +103,11 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
                 handleIsIdenticalMethod(componentConfiguration, configuration, index, method);
             }  else {
                 final Method componentMethod = ClassReflectionIndexUtil.findMethod(index, componentConfiguration.getComponentClass(), MethodIdentifier.getIdentifierForMethod(method));
+
                 if (componentMethod != null) {
+                    if(!Modifier.isPublic(componentMethod.getModifiers())) {
+                        throw EjbMessages.MESSAGES.ejbBusinessMethodMustBePublic(componentMethod);
+                    }
                     configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                 } else if(method.getDeclaringClass() != Object.class && method.getDeclaringClass() != WriteReplaceInterface.class) {
