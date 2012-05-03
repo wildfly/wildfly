@@ -33,7 +33,7 @@
                     <locking isolation="REPEATABLE_READ"/>
                 </replicated-cache>
             </cache-container>
-            <cache-container name="web" aliases="standard-session-cache" default-cache="repl">
+            <cache-container name="web" aliases="standard-session-cache" default-cache="repl" module="org.jboss.as.clustering.web.infinispan">
                 <transport lock-timeout="60000"/>
                 <replicated-cache name="repl" mode="ASYNC" batching="true">
                     <file-store/>
@@ -43,7 +43,7 @@
                     <file-store/>
                 </distributed-cache>
             </cache-container>
-            <cache-container name="ejb" aliases="sfsb sfsb-cache" default-cache="repl">
+            <cache-container name="ejb" aliases="sfsb sfsb-cache" default-cache="repl" module="org.jboss.as.clustering.ejb3.infinispan">
                 <transport lock-timeout="60000"/>
                 <replicated-cache name="repl" mode="ASYNC" batching="true">
                     <eviction strategy="LRU" max-entries="10000"/>

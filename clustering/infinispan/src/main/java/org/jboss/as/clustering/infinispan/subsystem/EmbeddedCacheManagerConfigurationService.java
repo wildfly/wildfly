@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.ServiceLoader;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -31,9 +32,11 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalJmxStatisticsConfigurationBuilder;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
+import org.infinispan.marshall.Ids;
 import org.jboss.as.clustering.infinispan.ChannelProvider;
 import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
+import org.jboss.as.clustering.infinispan.io.SimpleExternalizer;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -112,12 +115,17 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
 
         GlobalConfigurationBuilder builder = new GlobalConfigurationBuilder();
         ModuleLoader moduleLoader = this.dependencies.getModuleLoader();
+        builder.serialization().classResolver(ModularClassResolver.getInstance(moduleLoader));
         try {
-            builder.classLoader((this.moduleId != null) ? moduleLoader.loadModule(this.moduleId).getClassLoader() : EmbeddedCacheManagerConfiguration.class.getClassLoader());
+            ClassLoader loader = (this.moduleId != null) ? moduleLoader.loadModule(this.moduleId).getClassLoader() : EmbeddedCacheManagerConfiguration.class.getClassLoader();
+            builder.classLoader(loader);
+            int id = Ids.MAX_ID;
+            for (SimpleExternalizer<?> externalizer: ServiceLoader.load(SimpleExternalizer.class, loader)) {
+                builder.serialization().addAdvancedExternalizer(id++, externalizer);
+            }
         } catch (ModuleLoadException e) {
             throw new StartException(e);
         }
-        builder.serialization().classResolver(ModularClassResolver.getInstance(moduleLoader));
         builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
 
         TransportConfiguration transport = this.dependencies.getTransportConfiguration();

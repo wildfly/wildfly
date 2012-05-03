@@ -23,6 +23,8 @@
 package org.jboss.as.clustering;
 
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
  * Like {@link SimpleMarshalledValue}, but also serializes the underlying object's hash code,
@@ -32,7 +34,7 @@ import java.io.IOException;
 public class HashableMarshalledValue<T> extends SimpleMarshalledValue<T> {
     private static final long serialVersionUID = -7576022002375288323L;
 
-    private final int hashCode;
+    private transient int hashCode;
 
     /**
      * @param object
@@ -42,6 +44,10 @@ public class HashableMarshalledValue<T> extends SimpleMarshalledValue<T> {
     public HashableMarshalledValue(T object, MarshallingContext context) throws IOException {
         super(object, context);
         this.hashCode = (object != null ) ? object.hashCode() : 0;
+    }
+
+    public HashableMarshalledValue() {
+        // Required for externalization
     }
 
     @Override
@@ -56,5 +62,17 @@ public class HashableMarshalledValue<T> extends SimpleMarshalledValue<T> {
             return (this.hashCode == value.hashCode()) && super.equals(object);
         }
         return super.equals(object);
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        super.writeExternal(out);
+        out.writeInt(this.hashCode);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException {
+        super.readExternal(in);
+        this.hashCode = in.readInt();
     }
 }

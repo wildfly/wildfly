@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,14 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.clustering.infinispan.io;
 
-package org.jboss.as.clustering.web.infinispan;
+import org.jboss.as.clustering.HashableMarshalledValue;
 
 /**
  * @author Paul Ferraro
  */
-public interface SessionKeyFactory<K extends SessionKey> {
-    K createKey(String sessionId);
-
-    boolean ours(K key);
+@SuppressWarnings({ "rawtypes", "serial" })
+public class HashableMarshalledValueExternalizer extends ExternalizableExternalizer<HashableMarshalledValue> {
+    public HashableMarshalledValueExternalizer() {
+        super(HashableMarshalledValue.class);
+    }
 }
