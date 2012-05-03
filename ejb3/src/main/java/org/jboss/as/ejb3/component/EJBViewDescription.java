@@ -34,6 +34,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.Value;
 
 /**
  * EJB specific view description.
@@ -95,14 +96,14 @@ public class EJBViewDescription extends ViewDescription {
     }
 
     @Override
-    protected InjectionSource createInjectionSource(final ServiceName serviceName) {
+    protected InjectionSource createInjectionSource(final ServiceName serviceName, Value<ClassLoader> viewClassLoader) {
         if(methodIntf != MethodIntf.REMOTE && methodIntf != MethodIntf.HOME) {
-            return super.createInjectionSource(serviceName);
+            return super.createInjectionSource(serviceName, viewClassLoader);
         } else {
             final EJBComponentDescription componentDescription = getComponentDescription();
             final EEModuleDescription desc = componentDescription.getModuleDescription();
             final String earApplicationName = desc.getEarApplicationName();
-            return new RemoteViewInjectionSource(serviceName, earApplicationName, desc.getModuleName(), desc.getDistinctName(), componentDescription.getComponentName(), getViewClassName() , componentDescription.isStateful());
+            return new RemoteViewInjectionSource(serviceName, earApplicationName, desc.getModuleName(), desc.getDistinctName(), componentDescription.getComponentName(), getViewClassName() , componentDescription.isStateful(),viewClassLoader);
         }
     }
 
