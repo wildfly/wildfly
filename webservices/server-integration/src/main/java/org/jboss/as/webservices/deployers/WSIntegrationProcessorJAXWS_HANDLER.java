@@ -24,7 +24,7 @@ package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsEjbs;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsPojos;
-import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
+import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.DotNames.HANDLER_CHAIN_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WS_ENDPOINT_HANDLERS_MAPPING_KEY;
 
@@ -52,7 +52,10 @@ public final class WSIntegrationProcessorJAXWS_HANDLER extends AbstractIntegrati
 
     @Override
     protected void processAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex) throws DeploymentUnitProcessingException {
-        final WSEndpointHandlersMapping mapping = getRequiredAttachment(unit, WS_ENDPOINT_HANDLERS_MAPPING_KEY);
+        final WSEndpointHandlersMapping mapping = getOptionalAttachment(unit, WS_ENDPOINT_HANDLERS_MAPPING_KEY);
+        if (mapping == null)
+            return;
+
         final String endpointClassName = classInfo.name().toString();
 
         if (isEjb3(classInfo)) {
