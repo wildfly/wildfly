@@ -78,14 +78,6 @@ public abstract class SSOBaseCase {
         String ssoID = processSSOCookie(store, serverA.toString(), serverB.toString());
         log.debug("Saw JSESSIONIDSSO=" + ssoID);
 
-        // Pause a moment before switching wars to better simulate real life
-        // use cases. Otherwise, the test case can "outrun" the async
-        // replication in the TreeCache used by the clustered SSO
-        // 500 ms is a long time, but this isn't a test of replication speed
-        // and we don't want spurious failures.
-        if (!serverA.equals(serverB)) {
-            Thread.sleep(500);
-        }
 
         // Now try getting the war2 index using the JSESSIONIDSSO cookie
         log.debug("Prepare /war2/index.html get");
@@ -98,10 +90,6 @@ public abstract class SSOBaseCase {
         // Now try logging out of war2
         executeLogout(httpclient, warB2);
 
-        // Again, pause before switching wars
-        if (!serverA.equals(serverB)) {
-            Thread.sleep(500);
-        }
 
         // Reset Http client
         httpclient = new DefaultHttpClient();
@@ -134,14 +122,6 @@ public abstract class SSOBaseCase {
         String ssoID = processSSOCookie(store, serverA.toString(), serverB.toString());
         log.debug("Saw JSESSIONIDSSO=" + ssoID);
 
-        // Pause a moment before switching wars to better simulate real life
-        // use cases. Otherwise, the test case can "outrun" the async
-        // replication in the TreeCache used by the clustered SSO
-        // 500 ms is a long time, but this isn't a test of replication speed
-        // and we don't want spurious failures.
-        if (!serverA.equals(serverB)) {
-            Thread.sleep(500);
-        }
 
         // Now try getting the war2 index using the JSESSIONIDSSO cookie
         log.debug("Prepare /war2/index.html get");
