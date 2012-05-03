@@ -21,14 +21,17 @@
  */
 package org.jboss.as.clustering.web;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
  * Encapsulates the replicated metadata for a session. The wrapped data can be mutated, allowing the same object to always be
  * stored in JBoss Cache. Always storing the same object avoids an earlier, no longer accurate, object being reverted into the
  * cache during a transaction rollback.
  */
-public class DistributableSessionMetadata implements Serializable {
+public class DistributableSessionMetadata implements Externalizable {
     /** The serialVersionUID */
     private static final long serialVersionUID = -6845914023373746866L;
 
@@ -76,5 +79,23 @@ public class DistributableSessionMetadata implements Serializable {
 
     public void setValid(boolean isValid) {
         this.isValid = isValid;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeUTF(this.id);
+        out.writeLong(this.creationTime);
+        out.writeInt(this.maxInactiveInterval);
+        out.writeBoolean(this.isNew);
+        out.writeBoolean(this.isValid);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException {
+        this.id = in.readUTF();
+        this.creationTime = in.readLong();
+        this.maxInactiveInterval = in.readInt();
+        this.isNew = in.readBoolean();
+        this.isValid = in.readBoolean();
     }
 }

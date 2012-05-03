@@ -24,9 +24,10 @@ package org.jboss.as.clustering;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Externalizable;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Arrays;
@@ -41,7 +42,7 @@ import org.jboss.marshalling.Unmarshaller;
  * A non-hashable marshalled value, that is lazily serialized, but only deserialized on demand.
  * @author Paul Ferraro
  */
-public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingContext> {
+public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingContext>, Externalizable {
     private static final long serialVersionUID = -8852566958387608376L;
 
     private transient volatile MarshallingContext context;
@@ -51,6 +52,10 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
     public SimpleMarshalledValue(T object, MarshallingContext context) {
         this.context = context;
         this.object = object;
+    }
+
+    public SimpleMarshalledValue() {
+        // Required for externalization
     }
 
     T peek() {
@@ -165,19 +170,8 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
         return (bytes != null) ? bytes.toString() : null;
     }
 
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        int size = in.readInt();
-        byte[] bytes = null;
-        if (size > 0) {
-            bytes = new byte[size];
-            in.read(bytes);
-        }
-        this.bytes = bytes;
-    }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject();
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
         byte[] bytes = this.getBytes();
         if (bytes != null) {
             out.writeInt(bytes.length);
@@ -185,6 +179,17 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
         } else {
             out.writeInt(0);
         }
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException {
+        int size = in.readInt();
+        byte[] bytes = null;
+        if (size > 0) {
+            bytes = new byte[size];
+            in.read(bytes);
+        }
+        this.bytes = bytes;
     }
 
     static ClassLoader getCurrentThreadContextClassLoader() {

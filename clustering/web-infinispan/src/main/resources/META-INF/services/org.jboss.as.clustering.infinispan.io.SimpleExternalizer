@@ -1,0 +1,2 @@
+org.jboss.as.clustering.infinispan.io.SimpleMarshalledValueExternalizer
+org.jboss.as.clustering.web.infinispan.DistributableSessionMetadataExternalizer

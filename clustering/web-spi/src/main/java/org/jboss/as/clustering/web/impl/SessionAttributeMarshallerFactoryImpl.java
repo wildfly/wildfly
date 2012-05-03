@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.web.impl;
 
+import java.io.Externalizable;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.IdentityHashMap;
@@ -28,9 +29,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.as.clustering.MarshallingContext;
-import org.jboss.as.clustering.SimpleMarshalledValue;
 import org.jboss.as.clustering.VersionedMarshallingConfiguration;
-import org.jboss.as.clustering.web.DistributableSessionMetadata;
 import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.SessionAttributeMarshaller;
 import org.jboss.as.clustering.web.SessionAttributeMarshallerFactory;
@@ -91,10 +90,10 @@ public class SessionAttributeMarshallerFactoryImpl implements SessionAttributeMa
         return config;
     }
 
+    // List session attribute classes for optimization
     private static final Class<?>[] classes = new Class<?>[] {
-        DistributableSessionMetadata.class,
-        SimpleMarshalledValue.class,
         Serializable.class,
+        Externalizable.class,
     };
 
     private static final Map<Class<?>, Writer> writers = createWriters();

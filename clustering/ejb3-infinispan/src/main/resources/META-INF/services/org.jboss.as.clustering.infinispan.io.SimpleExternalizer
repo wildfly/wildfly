@@ -1,0 +1,4 @@
+org.jboss.as.clustering.infinispan.io.SimpleMarshalledValueExternalizer
+org.jboss.as.clustering.infinispan.io.UUIDExternalizer
+org.jboss.as.clustering.ejb3.cache.backing.infinispan.SessionIDExternalizer
+org.jboss.as.clustering.ejb3.cache.backing.infinispan.ClientMappingExternalizer
