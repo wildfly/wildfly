@@ -22,26 +22,44 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author David Bosschaert
  */
 public final class ServiceVerificationHandler extends AbstractServiceListener<Object> implements ServiceListener<Object>, OperationStepHandler {
     private final Set<ServiceController<?>> set = new HashSet<ServiceController<?>>();
     private final Set<ServiceController<?>> failed = new HashSet<ServiceController<?>>();
     private final Set<ServiceController<?>> problem = new HashSet<ServiceController<?>>();
+    private final long initialSettleTime;
     private int outstanding;
+
+    /**
+     * Create a Service Verification Handler with default settings.
+     */
+    public ServiceVerificationHandler() {
+        this(100);
+    }
+
+    /**
+     * Create a Service Verification Handler with a specified settle time (the maximum time for the services
+     * to reach the desired state).
+     * @param settleTime The settle time in milliseconds.
+     */
+    public ServiceVerificationHandler(long settleTime) {
+        initialSettleTime = settleTime;
+    }
 
     public synchronized void execute(final OperationContext context, final ModelNode operation) {
 
@@ -52,7 +70,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
         // services in PROBLEM state, wait up to 100ms to give them a chance to transition to START_REQUESTED.
 
         long start = 0;
-        long settleTime = 100;
+        long settleTime = initialSettleTime;
         while (outstanding > 0 || (settleTime > 0 && !problem.isEmpty())) {
             try {
                 long wait = outstanding > 0 ? 0 : settleTime;
@@ -65,7 +83,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
                     }
                 } else {
                     start = 0;
-                    settleTime = 100;
+                    settleTime = initialSettleTime;
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
