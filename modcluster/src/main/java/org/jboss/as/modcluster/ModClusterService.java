@@ -21,20 +21,7 @@
  */
 package org.jboss.as.modcluster;
 
-import org.apache.catalina.connector.Connector;
-import org.jboss.as.network.SocketBinding;
-import org.jboss.as.network.SocketBindingManager;
-import org.jboss.as.web.WebServer;
-import org.jboss.modcluster.config.impl.ModClusterConfig;
-import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
-import org.jboss.modcluster.load.LoadBalanceFactorProvider;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
@@ -43,14 +30,32 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
+import org.apache.catalina.Engine;
+import org.apache.catalina.connector.Connector;
+import org.jboss.as.clustering.msc.AsynchronousService;
+import org.jboss.as.network.SocketBinding;
+import org.jboss.as.network.SocketBindingManager;
+import org.jboss.as.web.WebServer;
+import org.jboss.modcluster.config.impl.ModClusterConfig;
+import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
+import org.jboss.modcluster.container.catalina.CatalinaFactory;
+import org.jboss.modcluster.container.catalina.ProxyConnectorProvider;
+import org.jboss.modcluster.container.catalina.ServerProvider;
+import org.jboss.modcluster.container.catalina.ServiceLoaderCatalinaFactory;
+import org.jboss.modcluster.container.catalina.SimpleProxyConnectorProvider;
+import org.jboss.modcluster.container.catalina.SimpleServerProvider;
+import org.jboss.modcluster.load.LoadBalanceFactorProvider;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service configuring and starting modcluster.
  *
  * @author Jean-Frederic Clere
  */
-class ModClusterService implements ModCluster, Service<ModCluster> {
+class ModClusterService extends AsynchronousService<ModCluster> implements ModCluster, Service<ModCluster> {
 
     static final ServiceName NAME = ServiceName.JBOSS.append("mod-cluster");
 
@@ -67,15 +72,13 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     private org.jboss.modcluster.ModClusterService service;
 
     ModClusterService(ModClusterConfig config, LoadBalanceFactorProvider load) {
+        super(true, true);
         this.config = config;
         this.load = load;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public synchronized void start(StartContext context) throws StartException {
+    protected void start() {
         ROOT_LOGGER.debugf("Starting Mod_cluster Extension");
 
         boolean isMulticast = isMulticastEnabled(bindingManager.getValue().getDefaultInterfaceBinding().getNetworkInterfaces());
@@ -99,8 +102,18 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         }
 
         service = new org.jboss.modcluster.ModClusterService(config, load);
-        adapter = new CatalinaEventHandlerAdapter(service, webServer.getValue().getServer(), connector.getValue());
+
+        WebServer webServer = this.webServer.getValue();
+        ServerProvider serverProvider = new SimpleServerProvider(webServer.getServer());
+        ProxyConnectorProvider connectorProvider = new SimpleProxyConnectorProvider(connector.getValue());
+        CatalinaFactory factory = new ServiceLoaderCatalinaFactory(connectorProvider);
+
+        adapter = new CatalinaEventHandlerAdapter(service, serverProvider, factory);
         adapter.start();
+
+        // Trigger a manual STATUS now instead of waiting potentially 10 seconds
+        Engine engine = (Engine) webServer.getService().getContainer();
+        service.status(factory.createEngine(engine));
     }
 
     private boolean isMulticastEnabled(Collection<NetworkInterface> ifaces) {
@@ -116,11 +129,8 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public synchronized void stop(StopContext context) {
+    protected void stop() {
         if (adapter != null) {
             adapter.stop();
             adapter = null;
@@ -128,7 +138,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     }
 
     @Override
-    public synchronized ModCluster getValue() throws IllegalStateException, IllegalArgumentException {
+    public synchronized ModCluster getValue() {
         return this;
     }
 
