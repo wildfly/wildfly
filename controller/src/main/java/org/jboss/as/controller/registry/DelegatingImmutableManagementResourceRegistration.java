@@ -25,10 +25,10 @@ package org.jboss.as.controller.registry;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
@@ -125,5 +125,10 @@ public class DelegatingImmutableManagementResourceRegistration implements Immuta
     public ImmutableManagementResourceRegistration getSubModel(PathAddress address) {
         ImmutableManagementResourceRegistration sub = delegate.getSubModel(address);
         return sub == null ? null : new DelegatingImmutableManagementResourceRegistration(sub);
+    }
+
+    @Override
+    public AliasEntry getAliasEntry() {
+        return delegate.getAliasEntry();
     }
 }

@@ -303,6 +303,20 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         }
     }
 
+    @Override
+    public void registerAlias(PathElement address, AliasEntry alias, AbstractResourceRegistration target) {
+        getOrCreateSubregistry(address.getKey()).registerAlias(address.getValue(), alias, target);
+    }
+
+    @Override
+    public void unregisterAlias(PathElement address) {
+        final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
+        final NodeSubregistry subregistry = snapshot.get(address.getKey());
+        if (subregistry != null) {
+            subregistry.unregisterAlias(address.getValue());
+        }
+    }
+
     NodeSubregistry getOrCreateSubregistry(final String key) {
         for (;;) {
             final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
@@ -486,5 +500,9 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         return MESSAGES.operationNotRegisteredException(op, PathAddress.pathAddress(address));
     }
 
+    @Override
+    public AliasEntry getAliasEntry() {
+        return null;
+    }
 }
 

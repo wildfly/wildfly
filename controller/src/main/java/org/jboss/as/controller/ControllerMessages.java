@@ -2476,4 +2476,23 @@ public interface ControllerMessages {
     @Message(id = 14859, value = "Failed to rename temp file %s to %s")
     ConfigurationPersistenceException failedToRenameTempFile(@Cause Throwable cause, File temp, File file);
 
+    /**
+     * Creates an exception indicating the alias is already registered at the location.
+     *
+     * @param location the location.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 14860, value = "An alias is already registered at location '%s'")
+    IllegalArgumentException aliasAlreadyRegistered(String location);
+
+    @Message(id = 14861, value = "Expected an address under '%s', was '%s'")
+    IllegalArgumentException badAliasConvertAddress(PathAddress aliasAddress, PathAddress actual);
+
+    @Message(id = 14862, value = "Alias target address not found: %s")
+    IllegalArgumentException aliasTargetResourceRegistrationNotFound(PathAddress targetAddress);
+
+    @Message(id = 14863, value = "No operation called '%s' found for alias address '%s' which maps to '%s'")
+    IllegalArgumentException aliasStepHandlerOperationNotFound(String name, PathAddress aliasAddress, PathAddress targetAddress);
+
 }
