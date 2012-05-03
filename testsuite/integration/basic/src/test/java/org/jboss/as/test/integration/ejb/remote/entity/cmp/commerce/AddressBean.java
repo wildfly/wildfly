@@ -103,7 +103,7 @@ public abstract class AddressBean implements EntityBean {
     public void ejbRemove() {
     }
 
-    void ejbHomeResetId() {
+    public void ejbHomeResetId() {
         id = 0;
     }
 }

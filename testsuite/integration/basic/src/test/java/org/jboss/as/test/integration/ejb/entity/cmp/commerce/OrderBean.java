@@ -154,7 +154,7 @@ public abstract class OrderBean implements EntityBean {
     public void ejbRemove() {
     }
 
-    void ejbHomeResetId() {
+    public void ejbHomeResetId() {
         id = 0;
     }
 }

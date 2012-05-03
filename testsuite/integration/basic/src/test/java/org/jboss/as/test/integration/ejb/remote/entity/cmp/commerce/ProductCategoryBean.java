@@ -111,7 +111,7 @@ public abstract class ProductCategoryBean implements EntityBean {
     public void ejbRemove() {
     }
 
-    void ejbHomeResetId() {
+    public void ejbHomeResetId() {
         id = 0;
     }
 

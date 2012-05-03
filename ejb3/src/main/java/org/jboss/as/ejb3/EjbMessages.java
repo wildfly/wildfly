@@ -1,32 +1,13 @@
 package org.jboss.as.ejb3;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.ee.component.Component;
-import org.jboss.as.ee.component.ComponentCreateServiceFactory;
-import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.cache.Identifiable;
-import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
-import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
-import org.jboss.as.ejb3.concurrency.LockableComponent;
-import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
-import org.jboss.as.ejb3.timerservice.TimerImpl;
-import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
-import org.jboss.as.naming.context.NamespaceContextSelector;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.ejb.client.SessionID;
-import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
-import org.jboss.logging.Messages;
-import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.StartException;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.rmi.RemoteException;
+import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.EJBAccessException;
@@ -45,14 +26,32 @@ import javax.interceptor.InvocationContext;
 import javax.naming.Context;
 import javax.transaction.xa.Xid;
 import javax.xml.stream.Location;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.rmi.RemoteException;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentCreateServiceFactory;
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.EJBViewDescription;
+import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
+import org.jboss.as.ejb3.concurrency.LockableComponent;
+import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
+import org.jboss.as.ejb3.timerservice.TimerImpl;
+import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
+import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Cause;
+import org.jboss.logging.Message;
+import org.jboss.logging.MessageBundle;
+import org.jboss.logging.Messages;
+import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.StartException;
 
 /**
  * This module is using message IDs in the range 14100-14599. This file is using the subset 14300-14599 for
@@ -2065,6 +2064,12 @@ public interface EjbMessages {
 
     @Message(id = 14577, value = "Unsupported marshalling version: %d")
     IllegalArgumentException unsupportedMarshallingVersion(int version);
+
+    @Message(id = 14578, value = "%s method %s must be public")
+    DeploymentUnitProcessingException ejbMethodMustBePublic(final String type, final Method method);
+
+    @Message(id = 14579, value = "EJB business method %s must be public")
+    DeploymentUnitProcessingException ejbBusinessMethodMustBePublic(final Method method);
 
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
