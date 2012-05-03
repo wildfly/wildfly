@@ -34,6 +34,7 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,19 +45,19 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class CliArgumentsTestCase extends AbstractCliTestBase {
-    
+
     private static final String tempDir = System.getProperty("java.io.tmpdir");
-    
+
     @ArquillianResource
     private ManagementClient managementClient;
-    
+
     @Deployment
     public static Archive<?> getDeployment() {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
         ja.addClass(GlobalOpsTestCase.class);
         return ja;
     }
-    
+
     @Test
     public void testVersionArgument() throws Exception {
         CLIWrapper cw = new CLIWrapper(false, new String[] {"--version"});
@@ -74,43 +75,44 @@ public class CliArgumentsTestCase extends AbstractCliTestBase {
     }
 
     @Test
+    @Ignore("This is a duplicate  of testConnectArgument()")
     public void testCommandsArgument() throws Exception {
-        CLIWrapper cli = new CLIWrapper(false, new String[] {getControllerString(), "--commands=version,connect,ls"});
+        CLIWrapper cli = new CLIWrapper(false, new String[] {getControllerString(), "--commands=connect,version,,ls"});
         String output = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         Assert.assertTrue("CLI Output contains JBOSS_HOME: " + output, output.contains("JBOSS_HOME"));
-        Assert.assertTrue("CLI Output contains sybsystem:  " + output, output.contains("subsystem"));
+        Assert.assertTrue("CLI Output contains subsystem:  " + output, output.contains("subsystem"));
         Assert.assertTrue("CLI Output contains extension:  " + output, output.contains("extension"));
-        
+
         Assert.assertTrue(cli.hasQuit());
     }
-    
+
     @Test
     public void testFileArgument() throws Exception {
-        
+
         // prepare file
         File cliScriptFile = new File(tempDir, "testScript.cli");
         if (cliScriptFile.exists()) Assert.assertTrue(cliScriptFile.delete());
         FileUtils.writeStringToFile(cliScriptFile, "version" + System.getProperty("line.separator"));
-        
+
         // pass it to CLI
         CLIWrapper cw = new CLIWrapper(false, new String[] {"--file=" + cliScriptFile.getAbsolutePath()});
         String output = cw.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         Assert.assertTrue("output.contains(\"JBOSS_HOME\")", output.contains("JBOSS_HOME"));
-        Assert.assertTrue("cli.hasQuit()", cw.hasQuit());      
-        
+        Assert.assertTrue("cli.hasQuit()", cw.hasQuit());
+
         cliScriptFile.delete();
     }
-    
+
     @Test
     public void testConnectArgument() throws Exception {
-        CLIWrapper cli = new CLIWrapper(false, new String[] {getControllerString(), "--commands=version,connect,ls"});
-        String output = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        Assert.assertTrue(output.contains("JBOSS_HOME"));
-        Assert.assertTrue(output.contains("subsystem"));
-        Assert.assertTrue(output.contains("extension"));        
+        CLIWrapper cli = new CLIWrapper(false, new String[] {getControllerString(), "--commands=connect,version,ls"});
+        String output = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT );
+        Assert.assertTrue("CLI Output contains JBOSS_HOME: " + output, output.contains("JBOSS_HOME"));
+        Assert.assertTrue("CLI Output contains subsystem:  " + output, output.contains("subsystem"));
+        Assert.assertTrue("CLI Output contains extension:  " + output, output.contains("extension"));
         Assert.assertTrue(cli.hasQuit());
-    }    
-    
+    }
+
     @Test
     public void testControlerArgument() throws Exception {
         String controller = getControllerString();
@@ -119,14 +121,14 @@ public class CliArgumentsTestCase extends AbstractCliTestBase {
         cli.sendLine("ls");
         String output = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         Assert.assertTrue(output.contains("subsystem"));
-        Assert.assertTrue(output.contains("extension"));        
+        Assert.assertTrue(output.contains("extension"));
         cli.quit();
-        
+
         cli = new CLIWrapper(false, new String[] {getControllerString(-1)});
         cli.sendLine("connect");
         output = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT * 10);
         Assert.assertTrue(output.contains("The controller is not available"));
-        cli.quit();        
+        cli.quit();
     }
 
     private String getControllerString() {
