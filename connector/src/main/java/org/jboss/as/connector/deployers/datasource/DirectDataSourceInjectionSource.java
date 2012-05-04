@@ -22,21 +22,14 @@
 
 package org.jboss.as.connector.deployers.datasource;
 
-import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.sql.XADataSource;
-
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.registry.DriverRegistry;
+import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
 import org.jboss.as.connector.subsystems.datasources.DataSourceReferenceFactoryService;
 import org.jboss.as.connector.subsystems.datasources.LocalDataSourceService;
 import org.jboss.as.connector.subsystems.datasources.ModifiableDataSource;
 import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
 import org.jboss.as.connector.subsystems.datasources.XaDataSourceService;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
@@ -69,7 +62,13 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
 
-import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+import javax.sql.XADataSource;
+import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 
 /**
  * A binding description for DataSourceDefinition annotations.
