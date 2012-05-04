@@ -76,7 +76,7 @@ public class SingleSignOnUnitTestCase {
     @Test
     public void testFormAuthSingleSignOn(@ArquillianResource URL baseURLNoAuth) throws Exception {
         log.info("+++ testFormAuthSingleSignOn");
-        SSOBaseCase.executeFormAuthSingleSignOnTest(baseURLNoAuth, baseURLNoAuth, log);
+        SSOTestBase.executeFormAuthSingleSignOnTest(baseURLNoAuth, baseURLNoAuth, log);
     }
 
     /**
@@ -85,7 +85,7 @@ public class SingleSignOnUnitTestCase {
     @Test
     public void testNoAuthSingleSignOn(@ArquillianResource URL baseURLNoAuth) throws Exception {
         log.info("+++ testNoAuthSingleSignOn");
-        SSOBaseCase.executeNoAuthSingleSignOnTest(baseURLNoAuth, baseURLNoAuth, log);
+        SSOTestBase.executeNoAuthSingleSignOnTest(baseURLNoAuth, baseURLNoAuth, log);
     }
 
 }
