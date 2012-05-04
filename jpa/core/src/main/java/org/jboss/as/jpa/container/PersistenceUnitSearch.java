@@ -28,7 +28,6 @@ import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 import java.util.List;
 
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
-import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -61,16 +60,6 @@ public class PersistenceUnitSearch {
             }
             return pu;
         } else {
-            if ( persistenceUnitName == null) {
-                PersistenceUnitsInApplication persistenceUnitsInApplication = DeploymentUtils.getTopDeploymentUnit(deploymentUnit).getAttachment(PersistenceUnitsInApplication.PERSISTENCE_UNITS_IN_APPLICATION);
-
-                if (persistenceUnitsInApplication.getCount() > 1) {
-                    // AS7-2275 no unitName and there is more than one persistence unit;
-                    throw MESSAGES.noPUnitNameSpecifiedAndMultiplePersistenceUnits(persistenceUnitsInApplication.getCount(),DeploymentUtils.getTopDeploymentUnit(deploymentUnit));
-                }
-                ROOT_LOGGER.tracef("pu searching with empty unit name, application %s has %d persistence unit definitions",
-                    DeploymentUtils.getTopDeploymentUnit(deploymentUnit).getName(), persistenceUnitsInApplication.getCount());
-            }
             PersistenceUnitMetadata name = findPersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
             if (traceEnabled) {
                 if (name != null) {
@@ -99,7 +88,7 @@ public class PersistenceUnitSearch {
 
         for (ResourceRoot resourceRoot : resourceRoots) {
             if (!SubDeploymentMarker.isSubDeployment(resourceRoot)) {
-                name = findWithinLibraryJar(resourceRoot, persistenceUnitName);
+                name = findWithinLibraryJar(unit, resourceRoot, persistenceUnitName);
                 if (name != null) {
                     return name;
                 }
@@ -109,12 +98,14 @@ public class PersistenceUnitSearch {
         return null;
     }
 
-    private static PersistenceUnitMetadata findWithinLibraryJar(ResourceRoot moduleResourceRoot, String persistenceUnitName) {
+    private static PersistenceUnitMetadata findWithinLibraryJar(DeploymentUnit unit, ResourceRoot moduleResourceRoot, String persistenceUnitName) {
 
         final ResourceRoot deploymentRoot = moduleResourceRoot;
         PersistenceUnitMetadataHolder holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
         if (holder == null || holder.getPersistenceUnits() == null)
             return null;
+
+        ambiguousPUError(unit, persistenceUnitName, holder);
 
         for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
             if (traceEnabled) {
@@ -141,6 +132,8 @@ public class PersistenceUnitSearch {
                 continue;
             }
 
+            ambiguousPUError(unit, persistenceUnitName, holder);
+
             for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
                 if (traceEnabled) {
                     ROOT_LOGGER.tracef("findWithinDeployment check '%s' against pu '%s'", persistenceUnitName, persistenceUnit.getPersistenceUnitName());
@@ -154,6 +147,13 @@ public class PersistenceUnitSearch {
             }
         }
         return null;
+    }
+
+    private static void ambiguousPUError(DeploymentUnit unit, String persistenceUnitName, PersistenceUnitMetadataHolder holder) {
+        if (holder.getPersistenceUnits().size() > 1 &&  (persistenceUnitName == null || persistenceUnitName.length() == 0)) {
+            // AS7-2275 no unitName and there is more than one persistence unit;
+            throw MESSAGES.noPUnitNameSpecifiedAndMultiplePersistenceUnits(holder.getPersistenceUnits().size(), unit);
+        }
     }
 
     private static PersistenceUnitMetadata getPersistenceUnit(DeploymentUnit current, final String absolutePath, String puName) {
