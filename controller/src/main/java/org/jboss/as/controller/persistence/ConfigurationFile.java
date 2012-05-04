@@ -72,9 +72,11 @@ public class ConfigurationFile {
     private final File historyRoot;
     private final File currentHistory;
     private final File snapshotsDirectory;
+    private final boolean persistOriginal;
+    private volatile File lastFile;
 
 
-    public ConfigurationFile(final File configurationDir, final String rawName, final String name) {
+    public ConfigurationFile(final File configurationDir, final String rawName, final String name, boolean persistOriginal) {
         if (!configurationDir.exists() || !configurationDir.isDirectory()) {
             throw MESSAGES.directoryNotFound(configurationDir.getAbsolutePath());
         }
@@ -84,6 +86,7 @@ public class ConfigurationFile {
         this.historyRoot = new File(configurationDir, rawName.replace('.', '_') + "_history");
         this.currentHistory = new File(historyRoot, "current");
         this.snapshotsDirectory = new File(historyRoot, "snapshot");
+        this.persistOriginal = persistOriginal;
         final File file = determineMainFile(configurationDir, rawName, name);
         try {
             this.mainFile = file.getCanonicalFile();
@@ -136,10 +139,18 @@ public class ConfigurationFile {
             final File directoryFile = new File(configurationDir, name);
             if (directoryFile.exists()) {
                 mainName = stripPrefixSuffix(name);
+            } else if (!persistOriginal) {
+                final File absoluteFile = new File(name);
+                if (absoluteFile.exists()) {
+                    return absoluteFile;
+                }
             }
         }
         if (mainName != null) {
-            return new File(configurationDir, mainName);
+            File file = new File(configurationDir, new File(mainName).getName());
+            if (file.exists()) {
+                return file;
+            }
         }
 
         throw MESSAGES.mainFileNotFound(name != null ? name : rawName, configurationDir);
@@ -248,11 +259,16 @@ public class ConfigurationFile {
         if (directoryFile.exists()) {
             return directoryFile;
         }
+        if (!persistOriginal) {
+            File absoluteFile = new File(name);
+            if (absoluteFile.exists()) {
+                return absoluteFile;
+            }
+        }
         throw MESSAGES.fileNotFound(directoryFile.getAbsolutePath());
     }
 
     File getMainFile() {
-        //System.out.println("----- Using file " + mainFile.getAbsolutePath());
         return mainFile;
     }
 
@@ -262,26 +278,43 @@ public class ConfigurationFile {
                 return;
             }
 
+            final File copySource;
+            if (persistOriginal) {
+                copySource = mainFile;
+            } else {
+                copySource = new File(mainFile.getParentFile(), mainFile.getName() + ".boot");
+                FilePersistenceUtils.deleteFile(copySource);
+                copySource.deleteOnExit();
+            }
+
             try {
-                if (!bootFile.equals(mainFile)) {
-                    FileUtils.copyFile(bootFile, mainFile);
+                if (!bootFile.equals(copySource)) {
+                    FilePersistenceUtils.copyFile(bootFile, copySource);
                 }
 
                 createHistoryDirectory();
 
                 final File historyBase = new File(historyRoot, mainFile.getName());
-                final File last = addSuffixToFile(historyBase, LAST);
+                lastFile = addSuffixToFile(historyBase, LAST);
                 final File boot = addSuffixToFile(historyBase, BOOT);
                 final File initial = addSuffixToFile(historyBase, INITIAL);
 
                 if (!initial.exists()) {
-                    FileUtils.copyFile(mainFile, initial);
+                    FilePersistenceUtils.copyFile(copySource, initial);
                 }
 
-                FileUtils.copyFile(mainFile, last);
-                FileUtils.copyFile(mainFile, boot);
+                FilePersistenceUtils.copyFile(copySource, lastFile);
+                FilePersistenceUtils.copyFile(copySource, boot);
             } catch (IOException e) {
                 throw MESSAGES.failedToCreateConfigurationBackup(e, bootFile);
+            } finally {
+                if (!persistOriginal) {
+                    //Delete the temporary file
+                    try {
+                        FilePersistenceUtils.deleteFile(copySource);
+                    } catch (Exception ignore) {
+                    }
+                }
             }
             doneBootup.set(true);
         }
@@ -293,7 +326,13 @@ public class ConfigurationFile {
             return;
         }
         try {
-            moveFile(mainFile, getVersionedFile(mainFile));
+            if (persistOriginal) {
+                //Move the main file to the versioned history
+                moveFile(mainFile, getVersionedFile(mainFile));
+            } else {
+                //Copy the Last file to the versioned history
+                moveFile(lastFile, getVersionedFile(mainFile));
+            }
             int seq = sequence.get();
             if (seq > CURRENT_HISTORY_LENGTH) {
                 File delete = getVersionedFile(mainFile, seq - CURRENT_HISTORY_LENGTH);
@@ -306,13 +345,23 @@ public class ConfigurationFile {
         }
     }
 
-    void fileWritten() throws ConfigurationPersistenceException {
+    void commitTempFile(File temp) throws ConfigurationPersistenceException {
         if (!doneBootup.get()) {
             return;
         }
-        File last = addSuffixToFile(new File(historyRoot, mainFile.getName()), LAST);
+        if (persistOriginal) {
+            FilePersistenceUtils.moveTempFileToMain(temp, mainFile);
+        } else {
+            FilePersistenceUtils.moveTempFileToMain(temp, lastFile);
+        }
+    }
+
+    void fileWritten() throws ConfigurationPersistenceException {
+        if (!doneBootup.get() || !persistOriginal) {
+            return;
+        }
         try {
-            FileUtils.copyFile(mainFile, last);
+            FilePersistenceUtils.copyFile(mainFile, lastFile);
         } catch (IOException e) {
             throw MESSAGES.failedToBackup(e, mainFile);
         }
@@ -325,14 +374,14 @@ public class ConfigurationFile {
             backup.delete();
         }
 
-        FileUtils.rename(file, backup);
+        FilePersistenceUtils.rename(file, backup);
     }
 
     String snapshot() throws ConfigurationPersistenceException {
         String name = getTimeStamp(new Date()) + mainFileName;
         File snapshot = new File(snapshotsDirectory, name);
         try {
-            FileUtils.copyFile(mainFile, snapshot);
+            FilePersistenceUtils.copyFile(mainFile, snapshot);
         } catch (IOException e) {
             throw MESSAGES.failedToTakeSnapshot(e, mainFile, snapshot);
         }
@@ -354,6 +403,10 @@ public class ConfigurationFile {
         } else {
             findSnapshotWithPrefix(prefix, true).delete();
         }
+    }
+
+    boolean isPersistOriginal() {
+        return persistOriginal;
     }
 
     private File findSnapshotWithPrefix(final String prefix, boolean errorIfNoFiles) {

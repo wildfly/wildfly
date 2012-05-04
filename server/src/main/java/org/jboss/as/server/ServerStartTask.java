@@ -112,7 +112,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         final ProductConfig productConfig = new ProductConfig(Module.getBootModuleLoader(), home);
         // Create server environment on the server, so that the system properties are getting initialized on the right side
         final ServerEnvironment providedEnvironment = new ServerEnvironment(hostControllerName, properties,
-                SecurityActions.getSystemEnvironment(), null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL, productConfig);
+                SecurityActions.getSystemEnvironment(), null, null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL, productConfig);
         final Bootstrap.Configuration configuration = new Bootstrap.Configuration(providedEnvironment);
         final ExtensionRegistry extensionRegistry = configuration.getExtensionRegistry();
         final Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = new Bootstrap.ConfigurationPersisterFactory() {

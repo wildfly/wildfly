@@ -21,40 +21,43 @@
 */
 package org.jboss.as.controller.persistence;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.dmr.ModelNode;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class FileUtils {
+public abstract class TestConfigurationPersister extends AbstractConfigurationPersister {
 
-    static void copyFile(final File file, final File backup) throws IOException {
-        final FileInputStream fis = new FileInputStream(file);
+    public TestConfigurationPersister() {
+        super(null);
+    }
+
+    @Override
+    public PersistenceResource store(ModelNode model, Set<PathAddress> affectedAddresses)
+            throws ConfigurationPersistenceException {
+        return create(model);
+    }
+
+    @Override
+    public List<ModelNode> load() throws ConfigurationPersistenceException {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
         try {
-            final FileOutputStream fos = new FileOutputStream(backup);
-            try {
-                StreamUtils.copyStream(fis, fos);
-                fos.flush();
-                fos.getFD().sync();
-                fos.close();
-            } finally {
-                StreamUtils.safeClose(fos);
-            }
-        } finally {
-            StreamUtils.safeClose(fis);
+            output.write(model.asString().getBytes());
+        } catch (Exception e) {
+            throw new ConfigurationPersistenceException(e);
         }
     }
 
-    static void rename(File file, File to) throws IOException {
-        if (!file.renameTo(to) && file.exists()) {
-            copyFile(file, to);
-        }
-    }
-
+    abstract PersistenceResource create(ModelNode model) throws ConfigurationPersistenceException;
 }

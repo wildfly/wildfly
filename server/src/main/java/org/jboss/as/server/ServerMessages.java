@@ -604,4 +604,8 @@ public interface ServerMessages {
 
     @Message(id = 18770, value = "Cannot add more than one socket binding group. Add of '%s' attempted, but '%s' already exists")
     OperationFailedException cannotAddMoreThanOneSocketBindingGroupForServer(PathAddress wanted, PathAddress existing);
+
+    @Message(id = 18771, value = "Can't use both --server-config and --initial-server-config")
+    IllegalArgumentException cannotHaveBothInitialServerConfigAndServerConfig();
+
 }
