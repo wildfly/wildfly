@@ -3,17 +3,16 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:output method="text" indent="no"/>
 
-    <xsl:param name="moduleName"></xsl:param>
-
     <!-- Print the groupId. -->
-    <xsl:template match="//module-def[@name]">
-        <!-- This needs to go inside since we don't have XSLT 2.0. -->
-        <xsl:if test="@name = $moduleName">
+    <xsl:template match="//module-def[@name and not(@slot) ]">
             <xsl:apply-templates select="maven-resource"/>
-        </xsl:if>
+            <xsl:text>MODULE: </xsl:text><xsl:value-of select="@name"/>
+            <xsl:text>
+</xsl:text>
     </xsl:template>
 
     <xsl:template match="//maven-resource">
+        <!--<xsl:text>    ARTIFACT: </xsl:text>-->
         <xsl:value-of select="@group"/>:<xsl:value-of select="@artifact"/>
         <xsl:text>
 </xsl:text>
