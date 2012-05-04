@@ -29,17 +29,20 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
+import javax.ejb.EJB;
+import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
+
 /**
- * stateful session bean
+ * Stateless session bean invoked asynchronously.
  */
 @Stateless
 @Asynchronous
-public class AsyncBean {
-
+@LocalBean
+public class AsyncBean implements AsyncBeanCancelRemoteInterface {
     public static volatile boolean voidMethodCalled = false;
     public static volatile boolean futureMethodCalled = false;
 
@@ -48,6 +51,9 @@ public class AsyncBean {
     
     @Resource
     SessionContext ctx;
+    
+    @EJB
+    AsyncBeanSynchronizeSingletonRemote synchronizeBean;
 
     public void asyncMethod(CountDownLatch latch, CountDownLatch latch2) throws InterruptedException {
         latch.await(5, TimeUnit.SECONDS);
@@ -77,7 +83,20 @@ public class AsyncBean {
         result += ";";
         result += ctx.wasCancelCalled() ? "true" : "false";
         return new AsyncResult<String>(result);
-    }   
+    }
+    
+    public Future<String> asyncRemoteCancelMethod() throws InterruptedException {
+        String result = "";
+        result = ctx.wasCancelCalled() ? "true" : "false";
+        
+        synchronizeBean.latchCountDown();
+        synchronizeBean.latch2AwaitSeconds(5);
+        
+        result += ";";
+
+        result += ctx.wasCancelCalled() ? "true" : "false";
+        return new AsyncResult<String>(result);
+    }
     
     public Future<String> asyncMethodWithException(boolean isException) {
         if(isException) {
