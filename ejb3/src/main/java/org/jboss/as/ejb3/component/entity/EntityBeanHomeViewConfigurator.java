@@ -34,6 +34,7 @@ import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
@@ -100,9 +101,9 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
 
                 final EntityBeanHomeCreateInterceptorFactory factory = new EntityBeanHomeCreateInterceptorFactory(ejbCreate, ejbPostCreate);
                 //add a dependency on the view to create
-                componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
+                configuration.getDependencies().add(new DependencyConfigurator<ViewService>() {
                     @Override
-                    public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
+                    public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ViewService service) throws DeploymentUnitProcessingException {
                         serviceBuilder.addDependency(createdView.getServiceName(), ComponentView.class, factory.getViewToCreate());
                     }
                 });
@@ -115,9 +116,9 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
                     throw EjbMessages.MESSAGES.ejbMethodMustBePublic("ejbFind", ejbFind);
                 }
                 final EntityBeanHomeFinderInterceptorFactory interceptorFactory = createHomeFindInterceptorFactory(ejbFind, localHome);
-                componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
+                configuration.getDependencies().add(new DependencyConfigurator<ViewService>() {
                     @Override
-                    public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
+                    public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ViewService service) throws DeploymentUnitProcessingException {
                         serviceBuilder.addDependency(createdView.getServiceName(), ComponentView.class, interceptorFactory.getViewToCreate());
                     }
                 });
