@@ -28,6 +28,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
+import org.jboss.as.cli.impl.ArgumentWithValue;
 
 /**
  *
@@ -37,6 +38,9 @@ public class BatchMoveLineHandler extends CommandHandlerWithHelp {
 
     public BatchMoveLineHandler() {
         super("batch-move-line");
+        // purely for validation, so the arguments are recognized
+        new ArgumentWithValue(this, 0, "--current");
+        new ArgumentWithValue(this, 1, "--new");
     }
 
     @Override
