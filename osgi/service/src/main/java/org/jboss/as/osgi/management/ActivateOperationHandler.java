@@ -23,7 +23,9 @@ package org.jboss.as.osgi.management;
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -43,8 +45,13 @@ public class ActivateOperationHandler extends AbstractRuntimeOnlyHandler  {
 
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-        ServiceController<?> svc = context.getServiceRegistry(false).getRequiredService(Services.FRAMEWORK_ACTIVE);
+        ServiceController<?> svc = context.getServiceRegistry(true).getRequiredService(Services.FRAMEWORK_ACTIVE);
         svc.setMode(Mode.ACTIVE);
+
+        // This verification handler will cause context.completeStep() to wait until svc is active.
+        ServiceVerificationHandler svh = new ServiceVerificationHandler();
+        svc.addListener(svh);
+        context.addStep(svh, Stage.VERIFY);
         context.completeStep();
     }
 

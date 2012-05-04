@@ -28,13 +28,11 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * @author David Bosschaert
  */
-@Ignore("[AS7-3556] Replace mocked subsystem model tests with functional tests")
 public class SubsystemStateTestCase {
 
     @Test
