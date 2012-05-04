@@ -36,6 +36,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.service.SarMessages;
+import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -144,6 +145,12 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
             final Attribute attribute = QNAME_MAP.get(qName);
             return attribute == null ? UNKNOWN : attribute;
         }
+    }
+
+    private final PropertyReplacer propertyReplacer;
+
+    public JBossServiceXmlDescriptorParser(final PropertyReplacer propertyReplacer) {
+        this.propertyReplacer = propertyReplacer;
     }
 
     public void readElement(final XMLExtendedStreamReader reader, final ParseResult<JBossServiceXmlDescriptor> value) throws XMLStreamException {
@@ -374,7 +381,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
                     }
                     break;
                 case CHARACTERS:
-                    attributeConfig.setValue(reader.getText());
+                    attributeConfig.setValue(propertyReplacer.replaceProperties(reader.getText()));
             }
         }
         throw unexpectedContent(reader);

@@ -29,6 +29,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.ee.structure.JBossDescriptorPropertyReplacement;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -49,15 +50,12 @@ import org.jboss.vfs.VirtualFile;
 public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcessor {
     static final String SERVICE_DESCRIPTOR_PATH = "META-INF/jboss-service.xml";
     static final String SERVICE_DESCRIPTOR_SUFFIX = "-service.xml";
-    private final XMLMapper xmlMapper = XMLMapper.Factory.create();
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
     /**
      * Construct a new instance.
      */
     public ServiceDeploymentParsingProcessor() {
-        xmlMapper.registerRootElement(new QName("urn:jboss:service:7.0", "server"), new JBossServiceXmlDescriptorParser());
-        xmlMapper.registerRootElement(new QName(null, "server"), new JBossServiceXmlDescriptorParser());
     }
 
     /**
@@ -68,6 +66,7 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
         final VirtualFile deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
         if(deploymentRoot == null || !deploymentRoot.exists())
@@ -81,6 +80,12 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
         }
         if(serviceXmlFile == null || !serviceXmlFile.exists())
             return;
+
+
+        final XMLMapper xmlMapper = XMLMapper.Factory.create();
+        final JBossServiceXmlDescriptorParser jBossServiceXmlDescriptorParser = new JBossServiceXmlDescriptorParser(JBossDescriptorPropertyReplacement.propertyReplacer(phaseContext.getDeploymentUnit()));
+        xmlMapper.registerRootElement(new QName("urn:jboss:service:7.0", "server"), jBossServiceXmlDescriptorParser);
+        xmlMapper.registerRootElement(new QName(null, "server"), jBossServiceXmlDescriptorParser);
 
         InputStream xmlStream = null;
         try {

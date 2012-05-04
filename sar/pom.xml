@@ -84,8 +84,16 @@
             <artifactId>jboss-common-beans</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-common</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-ee</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>

@@ -59,7 +59,7 @@ public class JBossServiceXmlDescriptorParserTestCase {
 
     @Before
     public void setupParser() throws Exception {
-        parser = new JBossServiceXmlDescriptorParser();
+        parser = new JBossServiceXmlDescriptorParser(propertyReplacer);
         xmlMapper = XMLMapper.Factory.create();
         xmlMapper.registerRootElement(new QName(JBossServiceXmlDescriptorParser.NAMESPACE, "server"), parser);
         inputFactory = XMLInputFactory.newInstance();
