@@ -22,6 +22,10 @@
 
 package org.jboss.as.messaging;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -34,10 +38,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
+import org.jboss.security.SecurityContextAssociation;
 
 /**
  * {@code OperationStepHandler} for adding a new security setting.
@@ -55,6 +56,9 @@ class SecuritySettingAdd extends AbstractAddStepHandler implements DescriptionPr
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        //remove once AS7-4687 is resolved
+        SecurityActions.setSystemProperty(SecurityContextAssociation.SECURITYCONTEXT_THREADLOCAL, "true");
+
         final HornetQServer server = getServer(context, operation);
         if(server != null) {
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
