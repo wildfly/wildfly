@@ -77,6 +77,11 @@ public final class Attachments {
      */
     public static final AttachmentKey<Boolean> SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT = AttachmentKey.create(Boolean.class);
 
+    /**
+     * If this is set to true property replacement will be enabled for jboss descriptors
+     */
+    public static final AttachmentKey<Boolean> JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT = AttachmentKey.create(Boolean.class);
+
     private Attachments() {
     }
 }

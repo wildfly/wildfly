@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.structure;
 
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -32,17 +33,19 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
  * property replacement should be done on EE spec descriptors.
  *
  */
-public class SpecDescriptorPropertyReplacementProcessor implements DeploymentUnitProcessor {
+public class DescriptorPropertyReplacementProcessor implements DeploymentUnitProcessor {
 
-    private volatile boolean specDescriptorPropertyReplacement = true;
+    private volatile boolean descriptorPropertyReplacement = true;
+    private final AttachmentKey<Boolean> attachmentKey;
 
-    public SpecDescriptorPropertyReplacementProcessor() {
+    public DescriptorPropertyReplacementProcessor(final AttachmentKey<Boolean> attachmentKey) {
+        this.attachmentKey = attachmentKey;
     }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        deploymentUnit.putAttachment(Attachments.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT, specDescriptorPropertyReplacement);
+        deploymentUnit.putAttachment(attachmentKey, descriptorPropertyReplacement);
 
     }
 
@@ -51,8 +54,8 @@ public class SpecDescriptorPropertyReplacementProcessor implements DeploymentUni
 
     }
 
-    public void setSpecDescriptorPropertyReplacement(boolean specDescriptorPropertyReplacement) {
-        this.specDescriptorPropertyReplacement = specDescriptorPropertyReplacement;
+    public void setDescriptorPropertyReplacement(boolean descriptorPropertyReplacement) {
+        this.descriptorPropertyReplacement = descriptorPropertyReplacement;
     }
 
 

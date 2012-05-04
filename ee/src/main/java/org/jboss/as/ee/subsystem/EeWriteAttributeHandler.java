@@ -27,7 +27,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.ee.component.deployers.DefaultEarSubDeploymentsIsolationProcessor;
-import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacementProcessor;
+import org.jboss.as.ee.structure.DescriptorPropertyReplacementProcessor;
 import org.jboss.as.ee.structure.GlobalModuleDependencyProcessor;
 import org.jboss.dmr.ModelNode;
 
@@ -40,20 +40,23 @@ public class EeWriteAttributeHandler extends AbstractWriteAttributeHandler<Void>
 
     private final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor;
     private final GlobalModuleDependencyProcessor moduleDependencyProcessor;
-    private final SpecDescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor;
+    private final DescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor;
+    private final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor;
 
     public EeWriteAttributeHandler(final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor,
-                                   final GlobalModuleDependencyProcessor moduleDependencyProcessor, final SpecDescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor) {
+                                   final GlobalModuleDependencyProcessor moduleDependencyProcessor, final DescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor, final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor) {
         super(GlobalModulesDefinition.INSTANCE, EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED);
         this.isolationProcessor = isolationProcessor;
         this.moduleDependencyProcessor = moduleDependencyProcessor;
         this.specDescriptorPropertyReplacementProcessor = specDescriptorPropertyReplacementProcessor;
+        this.jbossDescriptorPropertyReplacementProcessor = jbossDescriptorPropertyReplacementProcessor;
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
         registry.registerReadWriteAttribute(GlobalModulesDefinition.INSTANCE, null, this);
         registry.registerReadWriteAttribute(EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED, null, this);
         registry.registerReadWriteAttribute(EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT, null, this);
+        registry.registerReadWriteAttribute(EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT, null, this);
     }
 
     @Override
@@ -77,9 +80,12 @@ public class EeWriteAttributeHandler extends AbstractWriteAttributeHandler<Void>
         } else if (EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getName().equals(attributeName)) {
             boolean isolate = newValue.asBoolean();
             isolationProcessor.setEarSubDeploymentsIsolated(isolate);
-        }else if (EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.getName().equals(attributeName)) {
+        } else if (EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.getName().equals(attributeName)) {
             boolean enabled = newValue.asBoolean();
-            specDescriptorPropertyReplacementProcessor.setSpecDescriptorPropertyReplacement(enabled);
+            specDescriptorPropertyReplacementProcessor.setDescriptorPropertyReplacement(enabled);
+        } else if (EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.getName().equals(attributeName)) {
+            boolean enabled = newValue.asBoolean();
+            jbossDescriptorPropertyReplacementProcessor.setDescriptorPropertyReplacement(enabled);
         }
     }
 }

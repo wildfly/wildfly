@@ -35,7 +35,8 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.ee.component.deployers.DefaultEarSubDeploymentsIsolationProcessor;
-import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacementProcessor;
+import org.jboss.as.ee.structure.Attachments;
+import org.jboss.as.ee.structure.DescriptorPropertyReplacementProcessor;
 import org.jboss.as.ee.structure.GlobalModuleDependencyProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -51,18 +52,23 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 public class EeSubsystemRootResource extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition EAR_SUBDEPLOYMENTS_ISOLATED =
-            new SimpleAttributeDefinition("ear-subdeployments-isolated", "ear-subdeployments-isolated",
+            new SimpleAttributeDefinition(EESubsystemModel.EAR_SUBDEPLOYMENTS_ISOLATED, EESubsystemModel.EAR_SUBDEPLOYMENTS_ISOLATED,
                     new ModelNode().set(false), ModelType.BOOLEAN, true, true, null);
 
-    public static final SimpleAttributeDefinition SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT = new SimpleAttributeDefinition("spec-descriptor-property-replacement",
-            "spec-descriptor-property-replacement",  new ModelNode().set(true), ModelType.BOOLEAN, true, true, null);
+    public static final SimpleAttributeDefinition SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT = new SimpleAttributeDefinition(EESubsystemModel.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT,
+            EESubsystemModel.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT,  new ModelNode().set(true), ModelType.BOOLEAN, true, true, null);
+
+
+    public static final SimpleAttributeDefinition JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT = new SimpleAttributeDefinition(EESubsystemModel.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT,
+            EESubsystemModel.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT,  new ModelNode().set(true), ModelType.BOOLEAN, true, true, null);
 
     public static final EeSubsystemRootResource INSTANCE = new EeSubsystemRootResource();
 
     // Our different operation handlers manipulate the state of the subsystem's DUPs, so they need to share a ref
     private final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor = new DefaultEarSubDeploymentsIsolationProcessor();
     private final GlobalModuleDependencyProcessor moduleDependencyProcessor = new GlobalModuleDependencyProcessor();
-    private final SpecDescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor = new SpecDescriptorPropertyReplacementProcessor();
+    private final DescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor = new DescriptorPropertyReplacementProcessor(Attachments.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT);
+    private final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor = new DescriptorPropertyReplacementProcessor(Attachments.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT);
 
     private EeSubsystemRootResource() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, EeExtension.SUBSYSTEM_NAME),
@@ -75,7 +81,7 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
         final ResourceDescriptionResolver rootResolver = getResourceDescriptionResolver();
 
         // Ops to add and remove the root resource
-        final EeSubsystemAdd subsystemAdd = new EeSubsystemAdd(isolationProcessor, moduleDependencyProcessor, specDescriptorPropertyReplacementProcessor);
+        final EeSubsystemAdd subsystemAdd = new EeSubsystemAdd(isolationProcessor, moduleDependencyProcessor, specDescriptorPropertyReplacementProcessor, jbossDescriptorPropertyReplacementProcessor);
         final DescriptionProvider subsystemAddDescription = new DefaultResourceAddDescriptionProvider(rootResourceRegistration, rootResolver);
         rootResourceRegistration.registerOperationHandler(ADD, subsystemAdd, subsystemAddDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
         final DescriptionProvider subsystemRemoveDescription = new DefaultResourceRemoveDescriptionProvider(rootResolver);
@@ -85,7 +91,7 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration rootResourceRegistration) {
-        EeWriteAttributeHandler writeHandler = new EeWriteAttributeHandler(isolationProcessor, moduleDependencyProcessor, specDescriptorPropertyReplacementProcessor);
+        EeWriteAttributeHandler writeHandler = new EeWriteAttributeHandler(isolationProcessor, moduleDependencyProcessor, specDescriptorPropertyReplacementProcessor, jbossDescriptorPropertyReplacementProcessor);
         writeHandler.registerAttributes(rootResourceRegistration);
     }
 }

@@ -35,6 +35,7 @@ enum Element {
     MODULE("module"),
     EAR_SUBDEPLOYMENTS_ISOLATED(EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getXmlName()),
     SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT(EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.getXmlName()),
+    JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT(EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.getXmlName()),
     UNKNOWN(null);
 
     private final String name;
