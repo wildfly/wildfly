@@ -87,12 +87,12 @@ public interface EjbLogger extends BasicLogger {
      */
     EjbLogger ROOT_LOGGER = Logger.getMessageLogger(EjbLogger.class, EjbLogger.class.getPackage().getName());
 
-    EjbLogger EJB3_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.ejb3");
+    EjbLogger EJB3_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3");
 
     /**
      * logger use to log EJB invocation errors
      */
-    EjbLogger EJB3_INVOCATION_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.ejb3.invocation");
+    EjbLogger EJB3_INVOCATION_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.invocation");
 
     /**
      * Logs an error message indicating an exception occurred while removing the an inactive bean.
