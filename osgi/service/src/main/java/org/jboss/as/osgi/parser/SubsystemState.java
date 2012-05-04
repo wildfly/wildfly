@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.Observable;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -126,13 +125,12 @@ public class SubsystemState  extends Observable implements Service<SubsystemStat
     }
 
     public OSGiCapability removeCapability(String id) {
-        ModuleIdentifier identifier = ModuleIdentifier.fromString(id);
         synchronized (capabilities) {
             for (Iterator<OSGiCapability> it = capabilities.iterator(); it.hasNext(); ) {
                 OSGiCapability module = it.next();
-                if (module.getIdentifier().equals(identifier)) {
+                if (module.getIdentifier().equals(id)) {
                     it.remove();
-                    notifyObservers(new ChangeEvent(ChangeType.CAPABILITY, true, identifier.toString()));
+                    notifyObservers(new ChangeEvent(ChangeType.CAPABILITY, true, id));
                     return module;
                 }
             }

@@ -121,7 +121,7 @@ public class BundleResourceHandlerTestCase {
     }
 
     @Test
-    public void testTypeAttributeFragmen() throws Exception {
+    public void testTypeAttributeFragment() throws Exception {
         mockEnvironment();
         ModelNode readOp = getReadOperation("1", ModelConstants.TYPE);
 
