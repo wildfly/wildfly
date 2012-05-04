@@ -528,8 +528,8 @@ public interface JpaMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11470, value = "Persistence unitName was not specified and there are %d persistence unit definitions in application %s."+
-        "  Either change the application to have only one persistence unit definition or specify the unitName for each reference to a persistence unit.")
+    @Message(id = 11470, value = "Persistence unitName was not specified and there are %d persistence unit definitions in application deployment %s."+
+        "  Either change the application deployment to have only one persistence unit definition or specify the unitName for each reference to a persistence unit.")
     IllegalArgumentException noPUnitNameSpecifiedAndMultiplePersistenceUnits(int puCount, DeploymentUnit deploymentUnit);
 
     /**
