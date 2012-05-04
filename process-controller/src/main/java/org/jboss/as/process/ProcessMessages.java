@@ -63,12 +63,21 @@ interface ProcessMessages {
     String argCachedDc();
 
     /**
-     * Instructions for the {@link CommandLineArgument#DOMAIN_CONFIG} and {@link CommandLineArgument#SHORT_DOMAIN_CONFIG} command line arguments.
+     * Instructions for the {@link CommandLineArgument#DOMAIN_CONFIG} and {@link CommandLineArgument#SHORT_DOMAIN_CONFIG} and {@link CommandLineConstants#LEGACY_SHORT_DOMAIN_CONFIG} command line arguments.
      *
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Name of the domain configuration file to use (default is \"domain.xml\")")
     String argDomainConfig();
+
+    /**
+     * Instructions for the {@link CommandLineArgument#READ_ONLY_DOMAIN_CONFIG} command line arguments.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Name of the domain configuration file to use. This differs from '" + CommandLineConstants.DOMAIN_CONFIG + "', '" +
+     CommandLineConstants.SHORT_DOMAIN_CONFIG + "' and '" + CommandLineConstants.OLD_DOMAIN_CONFIG + "' in that the initial file is never persisted.")
+    String argReadOnlyDomainConfig();
 
     /**
      * Instructions for the {@link CommandLineArgument#SHORT_HELP} or {@link CommandLineArgument#HELP} command line argument.
@@ -101,6 +110,14 @@ interface ProcessMessages {
      */
     @Message(id = Message.NONE, value = "Name of the host configuration file to use (default is \"host.xml\")")
     String argHostConfig();
+
+    /**
+     * Instructions for the {@link CommandLineArgument#READ_ONLY_HOST_CONFIG} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Name of the host configuration file to use. This differs from '" + CommandLineConstants.HOST_CONFIG + "' in that the initial file is never persisted.")
+    String argReadOnlyHostConfig();
 
     /**
      * Instructions for the {@link CommandLineArgument#PC_ADDRESS} command line argument.

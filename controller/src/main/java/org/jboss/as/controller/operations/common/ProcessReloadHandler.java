@@ -29,7 +29,6 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
@@ -48,20 +47,15 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ProcessReloadHandler<T extends RunningModeControl> implements OperationStepHandler, DescriptionProvider {
+public abstract class ProcessReloadHandler<T extends RunningModeControl> implements OperationStepHandler, DescriptionProvider {
 
     /**
      * The operation name.
      */
     public static final String OPERATION_NAME = "reload";
 
-    private static final AttributeDefinition ADMIN_ONLY = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ADMIN_ONLY, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false)).build();
-
-    //Only used for hosts
-    private static final AttributeDefinition RESTART_SERVERS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RESTART_SERVERS, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(true)).build();
-
+    protected static final AttributeDefinition ADMIN_ONLY = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ADMIN_ONLY, ModelType.BOOLEAN, true)
+                                                                    .setDefaultValue(new ModelNode(false)).build();
 
     private final T runningModeControl;
     private final ControlledProcessState processState;
@@ -85,13 +79,12 @@ public class ProcessReloadHandler<T extends RunningModeControl> implements Opera
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                final boolean adminOnly = ADMIN_ONLY.resolveModelAttribute(context, operation).asBoolean(false);
-                final boolean restartServers = RESTART_SERVERS.resolveModelAttribute(context, operation).asBoolean(true);
+                final ReloadContext<T> reloadContext = initializeReloadContext(context, operation);
                 final ServiceController<?> service = context.getServiceRegistry(true).getRequiredService(rootService);
                 if(context.completeStep() == OperationContext.ResultAction.KEEP) {
                     service.addListener(new AbstractServiceListener<Object>() {
                         public void listenerAdded(final ServiceController<?> controller) {
-                            reloadInitiated(runningModeControl, adminOnly, restartServers);
+                            reloadContext.reloadInitiated(runningModeControl);
                             processState.setStopping();
                             controller.setMode(ServiceController.Mode.NEVER);
                         }
@@ -99,7 +92,7 @@ public class ProcessReloadHandler<T extends RunningModeControl> implements Opera
                         public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                             if (transition == ServiceController.Transition.STOPPING_to_DOWN) {
                                 controller.removeListener(this);
-                                doReload(runningModeControl, adminOnly, restartServers);
+                                reloadContext.doReload(runningModeControl);
                                 controller.setMode(ServiceController.Mode.ACTIVE);
                             }
                         }
@@ -117,25 +110,17 @@ public class ProcessReloadHandler<T extends RunningModeControl> implements Opera
 
     private synchronized DescriptionProvider getDescriptionProvider() {
         if (descriptionProvider == null) {
-            if (isIncludeRestartServers()) {
-                descriptionProvider = new DefaultOperationDescriptionProvider(OPERATION_NAME, resourceDescriptionResolver, ADMIN_ONLY, RESTART_SERVERS);
-            } else {
-                descriptionProvider = new DefaultOperationDescriptionProvider(OPERATION_NAME, resourceDescriptionResolver, ADMIN_ONLY);
-            }
+            descriptionProvider = new DefaultOperationDescriptionProvider(OPERATION_NAME, resourceDescriptionResolver, getAttributes());
         }
         return descriptionProvider;
     }
 
-    protected boolean isIncludeRestartServers() {
-        return false;
-    }
+    protected abstract AttributeDefinition[] getAttributes();
 
-    protected void reloadInitiated(T runningModeControl, final boolean adminOnly, final boolean restartServers) {
+    protected abstract ReloadContext<T> initializeReloadContext(OperationContext context, ModelNode operation) throws OperationFailedException;
 
-    }
-
-    //To be overridden by the host version of this
-    protected void doReload(final T runningModeControl, final boolean adminOnly, final boolean restartServers) {
-        runningModeControl.setRunningMode(adminOnly ? RunningMode.ADMIN_ONLY : RunningMode.NORMAL);
+    protected interface ReloadContext<T> {
+        void reloadInitiated(T runningModeControl);
+        void doReload(T runningModeControl);
     }
 }

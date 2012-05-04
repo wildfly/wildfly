@@ -19,6 +19,7 @@ import org.jboss.as.version.ProductConfig;
 
 /**
  * Encapsulates the runtime environment for a host controller.
+ * This is parsed when the host controller is initially started, a process reload reuses the host controller environment.
  *
  * @author Brian Stansberry
  */
@@ -208,12 +209,13 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     private final String hostName;
     private final String modulePath;
 
-    private String hostControllerName;
+    private volatile String hostControllerName;
+    private final HostRunningModeControl runningModeControl;
 
     public HostControllerEnvironment(Map<String, String> hostSystemProperties, boolean isRestart, String modulePath,
                                      InetAddress processControllerAddress, Integer processControllerPort, InetAddress hostControllerAddress,
-                                     Integer hostControllerPort, String defaultJVM, String domainConfig, String hostConfig,
-                                     RunningMode initialRunningMode, boolean backupDomainFiles, boolean useCachedDc, ProductConfig productConfig) {
+                                     Integer hostControllerPort, String defaultJVM, String domainConfig, String initialDomainConfig, String hostConfig,
+                                     String initialHostConfig, RunningMode initialRunningMode, boolean backupDomainFiles, boolean useCachedDc, ProductConfig productConfig) {
 
         if (hostSystemProperties == null) {
             throw MESSAGES.nullVar("hostSystemProperties");
@@ -240,6 +242,8 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         this.hostControllerPort = hostControllerPort;
         this.isRestart = isRestart;
         this.modulePath = modulePath;
+        this.initialRunningMode = initialRunningMode;
+        this.runningModeControl = new HostRunningModeControl(initialRunningMode, RestartMode.SERVERS);
 
         // Calculate host and default server name
         String hostName = hostSystemProperties.get(HOST_NAME);
@@ -330,10 +334,11 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         this.domainConfigurationDir = tmp;
         SecurityActions.setSystemProperty(DOMAIN_CONFIG_DIR, this.domainConfigurationDir.getAbsolutePath());
 
-        String defaultHostConfig = SecurityActions.getSystemProperty(JBOSS_HOST_DEFAULT_CONFIG, "host.xml");
-        hostConfigurationFile = new ConfigurationFile(domainConfigurationDir, defaultHostConfig, hostConfig);
-        String defaultDomainConfig = SecurityActions.getSystemProperty(JBOSS_DOMAIN_DEFAULT_CONFIG, "domain.xml");
-        domainConfigurationFile = new ConfigurationFile(domainConfigurationDir, defaultDomainConfig, domainConfig);
+        final String defaultHostConfig = SecurityActions.getSystemProperty(JBOSS_HOST_DEFAULT_CONFIG, "host.xml");
+        hostConfigurationFile = new ConfigurationFile(domainConfigurationDir, defaultHostConfig, initialHostConfig == null ? hostConfig : initialHostConfig, initialHostConfig == null);
+
+        final String defaultDomainConfig = SecurityActions.getSystemProperty(JBOSS_DOMAIN_DEFAULT_CONFIG, "domain.xml");
+        domainConfigurationFile = new ConfigurationFile(domainConfigurationDir, defaultDomainConfig, initialDomainConfig == null ? domainConfig : initialDomainConfig, initialDomainConfig == null);
 
         tmp = getFileFromProperty(DOMAIN_DATA_DIR);
         if (tmp == null) {
@@ -425,7 +430,6 @@ public class HostControllerEnvironment extends ProcessEnvironment {
 
         this.backupDomainFiles = backupDomainFiles;
         this.useCachedDc = useCachedDc;
-        this.initialRunningMode = initialRunningMode;
         this.productConfig = productConfig;
     }
 
@@ -504,6 +508,15 @@ public class HostControllerEnvironment extends ProcessEnvironment {
      */
     public RunningMode getInitialRunningMode() {
         return initialRunningMode;
+    }
+
+    /**
+     * Get the {@link HostRunningModeControl} containing the current running mode of the host controller
+     *
+     * @return the running mode control
+     */
+    public HostRunningModeControl getRunningModeControl() {
+        return runningModeControl;
     }
 
     /**

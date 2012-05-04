@@ -37,6 +37,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.MountType;
@@ -84,13 +85,23 @@ public interface ServerMessages {
     String argUsage();
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#DOMAIN_CONFIG} and {@link
-     * org.jboss.as.process.CommandLineArgument#SHORT_DOMAIN_CONFIG} command line arguments.
+     * Instructions for the {@link CommandLineArgument#LEGACY_SHORT_SERVER_CONFIG} and {@link
+     * CommandLineArgument#SHORT_SERVER_CONFIG} and {@link CommandLineArgument#SERVER_CONFIG} command line arguments.
      *
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Name of the server configuration file to use (default is \"standalone.xml\")")
     String argServerConfig();
+
+    /**
+     * Instructions for the {@link CommandLineArgument#READ_ONLY_SERVER_CONFIG} command line arguments.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Name of the server configuration file to use. This differs from '" + CommandLineConstants.SERVER_CONFIG +
+            "', '" + CommandLineConstants.SHORT_SERVER_CONFIG + "' and '" + CommandLineConstants.OLD_SERVER_CONFIG + "' in that the original file is never persisted.")
+    String argReadOnlyServerConfig();
+
 
     /**
      * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_HELP} or {@link
@@ -604,4 +615,10 @@ public interface ServerMessages {
 
     @Message(id = 18770, value = "Cannot add more than one socket binding group. Add of '%s' attempted, but '%s' already exists")
     OperationFailedException cannotAddMoreThanOneSocketBindingGroupForServer(PathAddress wanted, PathAddress existing);
+
+    @Message(id = 18771, value = "Can't use both --server-config and --initial-server-config")
+    IllegalArgumentException cannotHaveBothInitialServerConfigAndServerConfig();
+
+
+
 }

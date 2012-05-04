@@ -200,6 +200,9 @@ public final class ServerService extends AbstractControllerService {
 
     public synchronized void start(final StartContext context) throws StartException {
         ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
+        if (runningModeControl.isReloaded()) {
+
+        }
         Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = configuration.getConfigurationPersisterFactory();
         extensibleConfigurationPersister = configurationPersisterFactory.createConfigurationPersister(serverEnvironment, getExecutorServiceInjector().getOptionalValue());
         setConfigurationPersister(extensibleConfigurationPersister);

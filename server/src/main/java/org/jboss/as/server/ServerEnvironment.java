@@ -37,6 +37,7 @@ import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.interfaces.InetAddressUtil;
 import org.jboss.as.controller.operations.common.ProcessEnvironment;
 import org.jboss.as.controller.persistence.ConfigurationFile;
@@ -47,6 +48,7 @@ import org.jboss.modules.ModuleLoader;
 
 /**
  * Encapsulates the runtime environment for a server.
+ * This is parsed when the server is initially started, a process reload reuses the server environment.
  *
  * @author Brian Stansberry
  * @author Mike M. Clark
@@ -293,8 +295,9 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     private final boolean allowModelControllerExecutor;
     private final RunningMode initialRunningMode;
     private final ProductConfig productConfig;
+    private final RunningModeControl runningModeControl;
 
-    public ServerEnvironment(final String hostControllerName, final Properties props, final Map<String, String> env, final String serverConfig,
+    public ServerEnvironment(final String hostControllerName, final Properties props, final Map<String, String> env, final String serverConfig, final String initialServerConfig,
                              final LaunchType launchType, final RunningMode initialRunningMode, ProductConfig productConfig) {
         if (props == null) {
             throw ControllerMessages.MESSAGES.nullVar("props");
@@ -304,6 +307,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         this.standalone = launchType != LaunchType.DOMAIN;
 
         this.initialRunningMode = initialRunningMode == null ? RunningMode.NORMAL : initialRunningMode;
+        this.runningModeControl = new RunningModeControl(this.initialRunningMode);
 
         this.hostControllerName = hostControllerName;
         if (standalone && hostControllerName != null) {
@@ -372,7 +376,9 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         }
 
         String defaultServerConfig = SecurityActions.getSystemProperty(JBOSS_SERVER_DEFAULT_CONFIG, "standalone.xml");
-        serverConfigurationFile = standalone ? new ConfigurationFile(serverConfigurationDir, defaultServerConfig, serverConfig) : null;
+        String config = initialServerConfig == null ? serverConfig : initialServerConfig;
+        boolean persist = initialServerConfig == null;
+        serverConfigurationFile = standalone ? new ConfigurationFile(serverConfigurationDir, defaultServerConfig, config, persist) : null;
 
         tmp = getFileFromProperty(SERVER_DATA_DIR, props);
         if (tmp == null) {
@@ -878,6 +884,15 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
      */
     public RunningMode getInitialRunningMode() {
         return initialRunningMode;
+    }
+
+    /**
+     * Get the {@link RunningModeControl} containing the current running mode of the server
+     *
+     * @return the running mode control
+     */
+    public RunningModeControl getRunningModeControl() {
+        return runningModeControl;
     }
 
     // package protected for now as this is not a stable API

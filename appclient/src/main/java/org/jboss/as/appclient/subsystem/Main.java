@@ -21,6 +21,8 @@
  */
 package org.jboss.as.appclient.subsystem;
 
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -49,8 +51,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.stdio.StdioContext;
-
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * The application client entry point
@@ -265,7 +265,7 @@ public final class Main {
 
         String hostControllerName = null; // No host controller unless in domain mode.
         productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(ServerEnvironment.HOME_DIR));
-        ret.environment = new ServerEnvironment(hostControllerName, systemProperties, systemEnvironment, appClientConfig, launchType, null, productConfig);
+        ret.environment = new ServerEnvironment(hostControllerName, systemProperties, systemEnvironment, appClientConfig, null, launchType, null, productConfig);
         return ret;
     }
 
