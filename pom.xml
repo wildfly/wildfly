@@ -145,7 +145,7 @@
         <version.org.jboss.as.jbossweb-native>2.0.10.Final</version.org.jboss.as.jbossweb-native>
         <version.org.jboss.byteman>2.0.1</version.org.jboss.byteman>
         <version.org.jboss.classfilewriter>1.0.2.Final</version.org.jboss.classfilewriter>
-        <version.org.jboss.common.jboss-common-beans>1.0.0.CR1</version.org.jboss.common.jboss-common-beans>
+        <version.org.jboss.common.jboss-common-beans>1.0.0.Final</version.org.jboss.common.jboss-common-beans>
         <version.org.jboss.jboss-common-core>2.2.17.GA</version.org.jboss.jboss-common-core>
         <version.org.jboss.com.sun.httpserver>1.0.1.Final</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb-client>1.0.8.Final</version.org.jboss.ejb-client>
