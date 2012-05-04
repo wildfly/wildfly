@@ -21,23 +21,23 @@
  */
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * A path address for an operation.
@@ -61,7 +61,6 @@ public class PathAddress implements Iterable<PathElement> {
      * @return the update identifier
      */
     public static PathAddress pathAddress(final ModelNode node) {
-        final Map<String, PathElement> pathMap;
         if (node.isDefined()) {
 
 //            final List<Property> props = node.asPropertyList();
@@ -89,18 +88,26 @@ public class PathAddress implements Iterable<PathElement> {
             if (props.size() == 0) {
                 return EMPTY_ADDRESS;
             } else {
-                pathMap = new LinkedHashMap<String, PathElement>();
+                final Set<String> seen = new HashSet<String>();
+                final List<PathElement> values = new ArrayList<PathElement>();
+                int index = 0;
                 for (final Property prop : props) {
                     final String name = prop.getName();
-                    if (pathMap.put(name, new PathElement(name, prop.getValue().asString())) != null) {
+                    if (seen.add(name)) {
+                        values.add(new PathElement(name, prop.getValue().asString()));
+                    } else {
                         throw duplicateElement(name);
                     }
+                    if (index == 1 && name.equals(SERVER) && seen.contains(HOST)) {
+                        seen.clear();
+                    }
+                    index++;
                 }
+                return new PathAddress(Collections.unmodifiableList(values));
             }
         } else {
             return EMPTY_ADDRESS;
         }
-        return new PathAddress(Collections.unmodifiableList(new ArrayList<PathElement>(pathMap.values())));
     }
 
     public static PathAddress pathAddress(List<PathElement> elements) {
@@ -109,6 +116,7 @@ public class PathAddress implements Iterable<PathElement> {
         }
         final ArrayList<PathElement> newList = new ArrayList<PathElement>(elements.size());
         final Set<String> seen = new HashSet<String>();
+        int index = 0;
         for (PathElement element : elements) {
             final String name = element.getKey();
             if (seen.add(name)) {
@@ -116,6 +124,11 @@ public class PathAddress implements Iterable<PathElement> {
             } else {
                 throw duplicateElement(name);
             }
+            if (index == 1 && name.equals(SERVER) && seen.contains(HOST)) {
+                seen.clear();
+            }
+            index++;
+
         }
         return new PathAddress(Collections.unmodifiableList(newList));
     }
