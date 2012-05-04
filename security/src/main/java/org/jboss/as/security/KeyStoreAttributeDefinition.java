@@ -1,7 +1,11 @@
 package org.jboss.as.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -17,6 +21,7 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.ParametersOfValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -30,11 +35,11 @@ public class KeyStoreAttributeDefinition extends AttributeDefinition {
 
     static {
         final ParametersValidator delegate = new ParametersValidator();
-        delegate.registerValidator(Constants.PASSWORD, new ModelTypeValidator(ModelType.STRING, true));
-        delegate.registerValidator(Constants.TYPE, new ModelTypeValidator(ModelType.STRING, true));
-        delegate.registerValidator(Constants.URL, new ModelTypeValidator(ModelType.STRING, false));
-        delegate.registerValidator(Constants.PROVIDER, new ModelTypeValidator(ModelType.STRING, true));
-        delegate.registerValidator(Constants.PROVIDER_ARGUMENT, new ModelTypeValidator(ModelType.STRING, true));
+        delegate.registerValidator(Constants.PASSWORD, new ModelTypeValidator(ModelType.STRING, true, true));
+        delegate.registerValidator(Constants.TYPE, new ModelTypeValidator(ModelType.STRING, true, true));
+        delegate.registerValidator(Constants.URL, new ModelTypeValidator(ModelType.STRING, false, true));
+        delegate.registerValidator(Constants.PROVIDER, new ModelTypeValidator(ModelType.STRING, true, true));
+        delegate.registerValidator(Constants.PROVIDER_ARGUMENT, new ModelTypeValidator(ModelType.STRING, true, true));
 
         keyStoreValidator = new ParametersOfValidator(delegate);
         fieldValidator = delegate;
@@ -64,7 +69,7 @@ public class KeyStoreAttributeDefinition extends AttributeDefinition {
         final String trimmed = value == null ? null : value.trim();
         ModelNode node;
         if (trimmed != null ) {
-            node = new ModelNode().set(trimmed);
+            node = new ModelNode().set(ParseUtils.parsePossibleExpression(trimmed));
         } else {
             node = new ModelNode();
         }
@@ -94,7 +99,7 @@ public class KeyStoreAttributeDefinition extends AttributeDefinition {
     }
 
     private void addAttributeValueTypeDescription(ModelNode result, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-        final ModelNode valueType = getNoTextValueTypeDescription(result    );
+        final ModelNode valueType = getNoTextValueTypeDescription(result);
         valueType.get(PASSWORD, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, PASSWORD));
         valueType.get(Constants.TYPE, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, Constants.TYPE));
         valueType.get(Constants.URL, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, Constants.URL));
@@ -117,26 +122,31 @@ public class KeyStoreAttributeDefinition extends AttributeDefinition {
         password.get(DESCRIPTION); // placeholder
         password.get(TYPE).set(ModelType.STRING);
         password.get(NILLABLE).set(true);
+        password.get(EXPRESSIONS_ALLOWED).set(true);
 
         final ModelNode type = valueType.get(Constants.TYPE);
         type.get(DESCRIPTION);  // placeholder
         type.get(TYPE).set(ModelType.STRING);
         type.get(NILLABLE).set(true);
+        type.get(EXPRESSIONS_ALLOWED).set(true);
 
         final ModelNode url = valueType.get(Constants.URL);
         url.get(DESCRIPTION);  // placeholder
         url.get(TYPE).set(ModelType.STRING);
         url.get(NILLABLE).set(true);
+        url.get(EXPRESSIONS_ALLOWED).set(true);
 
         final ModelNode provider = valueType.get(Constants.PROVIDER);
         provider.get(DESCRIPTION);  // placeholder
         provider.get(TYPE).set(ModelType.STRING);
         provider.get(NILLABLE).set(true);
+        provider.get(EXPRESSIONS_ALLOWED).set(true);
 
         final ModelNode argument = valueType.get(Constants.PROVIDER_ARGUMENT);
         argument.get(DESCRIPTION);  // placeholder
         argument.get(TYPE).set(ModelType.STRING);
         argument.get(NILLABLE).set(true);
+        argument.get(EXPRESSIONS_ALLOWED).set(true);
 
         return valueType;
     }
