@@ -13,6 +13,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.ee.structure.JBossDescriptorPropertyReplacement;
 import org.jboss.as.messaging.MessagingLogger;
 import org.jboss.as.messaging.MessagingMessages;
 import org.jboss.as.server.deployment.Attachments;
@@ -38,18 +39,17 @@ public class MessagingXmlParsingDeploymentUnitProcessor implements DeploymentUni
     private static final QName ROOT_1_0 = new QName(Namespace.MESSAGING_DEPLOYMENT_1_0.getUriString(), "messaging-deployment");
     private static final QName ROOT_NO_NAMESPACE = new QName("messaging-deployment");
 
-    private final XMLMapper mapper;
-
-    public MessagingXmlParsingDeploymentUnitProcessor() {
-        mapper = XMLMapper.Factory.create();
-        mapper.registerRootElement(ROOT_1_0, MessagingDeploymentParser_1_0.INSTANCE);
-        mapper.registerRootElement(ROOT_NO_NAMESPACE, MessagingDeploymentParser_1_0.INSTANCE);
-    }
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final Set<VirtualFile> files = messageDestinations(deploymentUnit);
+
+
+        final XMLMapper mapper = XMLMapper.Factory.create();
+        final MessagingDeploymentParser_1_0 messagingDeploymentParser_1_0 = new MessagingDeploymentParser_1_0(JBossDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
+        mapper.registerRootElement(ROOT_1_0, messagingDeploymentParser_1_0);
+        mapper.registerRootElement(ROOT_NO_NAMESPACE, messagingDeploymentParser_1_0);
 
         for (final VirtualFile file : files) {
             InputStream xmlStream = null;
