@@ -4,5 +4,6 @@
    <extension-module>org.jboss.as.ee</extension-module>
    <subsystem xmlns="urn:jboss:domain:ee:1.1">
         <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
+        <jboss-descriptor-property-replacement>false</jboss-descriptor-property-replacement>
    </subsystem>
 </config>

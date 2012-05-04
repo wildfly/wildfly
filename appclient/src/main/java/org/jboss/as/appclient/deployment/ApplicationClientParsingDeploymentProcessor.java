@@ -33,6 +33,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ee.structure.JBossDescriptorPropertyReplacement;
 import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -47,8 +48,6 @@ import org.jboss.metadata.appclient.spec.AppClientEnvironmentRefsGroupMetaData;
 import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.property.PropertyReplacer;
-import org.jboss.metadata.property.PropertyReplacers;
-import org.jboss.metadata.property.PropertyResolver;
 import org.jboss.vfs.VirtualFile;
 
 import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
@@ -67,11 +66,9 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
         if (!DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) {
             return;
         }
-        final PropertyResolver propertyResolver = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_RESOLVER);
-        final PropertyReplacer propertyReplacer = PropertyReplacers.resolvingReplacer(propertyResolver);
 
         final ApplicationClientMetaData appClientMD = parseAppClient(deploymentUnit, SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
-        final JBossClientMetaData jbossClientMD = parseJBossClient(deploymentUnit, propertyReplacer);
+        final JBossClientMetaData jbossClientMD = parseJBossClient(deploymentUnit, JBossDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
         final JBossClientMetaData merged;
         if (appClientMD == null && jbossClientMD == null) {
             return;

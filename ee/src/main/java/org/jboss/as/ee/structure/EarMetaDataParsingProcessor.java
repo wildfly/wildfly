@@ -40,8 +40,6 @@ import org.jboss.metadata.parser.jboss.JBossAppMetaDataParser;
 import org.jboss.metadata.parser.spec.EarMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.property.PropertyReplacer;
-import org.jboss.metadata.property.PropertyReplacers;
-import org.jboss.metadata.property.PropertyResolver;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
@@ -65,11 +63,8 @@ public class EarMetaDataParsingProcessor implements DeploymentUnitProcessor {
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
         final VirtualFile deploymentFile = deploymentRoot.getRoot();
 
-        final PropertyResolver propertyResolver = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_RESOLVER);
-        final PropertyReplacer propertyReplacer = PropertyReplacers.resolvingReplacer(propertyResolver);
-
         EarMetaData earMetaData = handleSpecMetadata(deploymentFile, SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
-        JBossAppMetaData jbossMetaData = handleJbossMetadata(deploymentFile ,propertyReplacer);
+        JBossAppMetaData jbossMetaData = handleJbossMetadata(deploymentFile, JBossDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
         if (earMetaData == null && jbossMetaData == null) {
             return;
         }

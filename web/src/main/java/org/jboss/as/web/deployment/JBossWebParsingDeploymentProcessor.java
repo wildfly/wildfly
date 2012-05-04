@@ -21,8 +21,6 @@
  */
 package org.jboss.as.web.deployment;
 
-import static org.jboss.as.web.WebMessages.MESSAGES;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -32,6 +30,7 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ee.structure.JBossDescriptorPropertyReplacement;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -40,10 +39,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.metadata.parser.jbossweb.JBossWebMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.property.PropertyReplacer;
-import org.jboss.metadata.property.PropertyReplacers;
-import org.jboss.metadata.property.PropertyResolver;
 import org.jboss.vfs.VirtualFile;
+
+import static org.jboss.as.web.WebMessages.MESSAGES;
 
 /**
  * @author Jean-Frederic Clere
@@ -70,9 +68,7 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
                 inputFactory.setXMLResolver(NoopXMLResolver.create());
                 XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
 
-                final PropertyResolver propertyResolver = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_RESOLVER);
-                final PropertyReplacer propertyReplacer = PropertyReplacers.resolvingReplacer(propertyResolver);
-                final JBossWebMetaData jBossWebMetaData = JBossWebMetaDataParser.parse(xmlReader, propertyReplacer);
+                final JBossWebMetaData jBossWebMetaData = JBossWebMetaDataParser.parse(xmlReader, JBossDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
                 warMetaData.setJbossWebMetaData(jBossWebMetaData);
                 // if the jboss-web.xml has a distinct-name configured, then attach the value to this
                 // deployment unit
