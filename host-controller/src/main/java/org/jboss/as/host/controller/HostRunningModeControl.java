@@ -31,6 +31,7 @@ import org.jboss.as.controller.RunningModeControl;
 public class HostRunningModeControl extends RunningModeControl {
 
     private volatile RestartMode restartMode;
+    private boolean useCurrentDomainConfig;
 
     public HostRunningModeControl(RunningMode runningMode, RestartMode restartMode) {
         super(runningMode);
@@ -52,4 +53,13 @@ public class HostRunningModeControl extends RunningModeControl {
     public void setRestartMode(RestartMode restartMode) {
         this.restartMode = restartMode;
     }
+
+    public void setUseCurrentDomainConfig(boolean useCurrentDomainConfig) {
+        this.useCurrentDomainConfig = useCurrentDomainConfig;
+    }
+
+    public boolean isUseCurrentDomainConfig() {
+        return useCurrentDomainConfig;
+    }
+
 }

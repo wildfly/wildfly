@@ -31,8 +31,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
@@ -62,8 +62,10 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
         this.hostControllerInfo = localHostControllerInfo;
         this.executorService = executorService;
         this.extensionRegistry = extensionRegistry;
-        final File configDir = environment.getDomainConfigurationDir();
         final ConfigurationFile configurationFile = environment.getHostConfigurationFile();
+        if (environment.getRunningModeControl().isReloaded()) {
+            configurationFile.resetBootFile(environment.getRunningModeControl().isUseCurrentConfig());
+        }
         this.hostPersister = ConfigurationPersisterFactory.createHostXmlConfigurationPersister(configurationFile, environment.getHostControllerName());
     }
 
@@ -85,6 +87,9 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
             }
         } else {
             final ConfigurationFile configurationFile = environment.getDomainConfigurationFile();
+            if (environment.getRunningModeControl().isReloaded()) {
+                configurationFile.resetBootFile(environment.getRunningModeControl().isUseCurrentDomainConfig());
+            }
             domainPersister = ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configurationFile, executorService, extensionRegistry);
         }
         this.slave = Boolean.valueOf(slave);

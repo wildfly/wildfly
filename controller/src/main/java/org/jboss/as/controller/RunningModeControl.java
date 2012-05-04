@@ -30,6 +30,8 @@ package org.jboss.as.controller;
 public class RunningModeControl {
 
     private volatile RunningMode runningMode;
+    private volatile boolean reloaded;
+    private volatile boolean useCurrentConfig;
 
     public RunningModeControl(final RunningMode initialMode) {
         this.runningMode = initialMode;
@@ -41,5 +43,22 @@ public class RunningModeControl {
 
     public void setRunningMode(RunningMode runningMode) {
         this.runningMode = runningMode;
+    }
+
+    public boolean isReloaded() {
+        return reloaded;
+    }
+
+    public void setReloaded(boolean reloaded) {
+        assert !reloaded : "Once a process is reloaded, always reloaded!";
+        this.reloaded = reloaded;
+    }
+
+    public void setUseCurrentConfig(boolean useCurrentConfig) {
+        this.useCurrentConfig = useCurrentConfig;
+    }
+
+    public boolean isUseCurrentConfig() {
+        return useCurrentConfig;
     }
 }

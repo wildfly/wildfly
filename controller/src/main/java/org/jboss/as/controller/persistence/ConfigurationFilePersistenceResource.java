@@ -24,6 +24,8 @@ package org.jboss.as.controller.persistence;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 
+import java.io.File;
+
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -32,21 +34,26 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ConfigurationFilePersistenceResource extends FilePersistenceResource {
+public class ConfigurationFilePersistenceResource extends AbstractFilePersistenceResource {
 
     private final ConfigurationFile configurationFile;
+    private final File tempFileName;
+    protected final File fileName;
+
 
     ConfigurationFilePersistenceResource(final ModelNode model, final ConfigurationFile configurationFile,
                                          final AbstractConfigurationPersister persister) throws ConfigurationPersistenceException {
-        super(model, configurationFile.getMainFile(), persister);
+        super(model, persister);
         this.configurationFile = configurationFile;
+        this.fileName = configurationFile.getMainFile();
+        tempFileName = FilePersistenceUtils.createTempFile(fileName);
     }
 
     @Override
-    public void commit() {
+    public void doCommit(ExposedByteArrayOutputStream marshalled) {
         try {
             try {
-                super.writeToTempFile();
+                FilePersistenceUtils.writeToTempFile(marshalled, tempFileName);
             } catch (Exception e) {
                 MGMT_OP_LOGGER.failedToStoreConfiguration(e, fileName.getName());
                 return;
@@ -54,7 +61,7 @@ public class ConfigurationFilePersistenceResource extends FilePersistenceResourc
             try {
                 configurationFile.backup();
             } finally {
-                moveTempFileToMain();
+                configurationFile.commitTempFile(tempFileName);
             }
             configurationFile.fileWritten();
         } catch (ConfigurationPersistenceException e) {

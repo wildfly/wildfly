@@ -23,15 +23,8 @@
 package org.jboss.as.controller.persistence;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
-import java.io.BufferedOutputStream;
-import java.io.Closeable;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 import org.jboss.dmr.ModelNode;
 
@@ -40,98 +33,25 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class FilePersistenceResource implements ConfigurationPersister.PersistenceResource {
+public class FilePersistenceResource extends AbstractFilePersistenceResource {
 
-    private ExposedByteArrayOutputStream marshalled;
     private final File tempFileName;
     protected final File fileName;
-    private final AbstractConfigurationPersister persister;
 
     FilePersistenceResource(final ModelNode model, final File fileName, final AbstractConfigurationPersister persister) throws ConfigurationPersistenceException {
+        super(model, persister);
         this.fileName = fileName;
-        tempFileName = new File(fileName.getParentFile(), fileName.getName() + ".tmp");
-        tempFileName.deleteOnExit();
-        this.persister = persister;
-        marshalled = new ExposedByteArrayOutputStream(1024 * 8);
-        try {
-            try {
-                BufferedOutputStream output = new BufferedOutputStream(marshalled);
-                persister.marshallAsXml(model, output);
-                output.close();
-                marshalled.close();
-            } finally {
-                safeClose(marshalled);
-            }
-        } catch (Exception e) {
-            throw MESSAGES.failedToMarshalConfiguration(e);
-        }
+        tempFileName = FilePersistenceUtils.createTempFile(fileName);
     }
 
+
     @Override
-    public void commit() {
-        if (marshalled == null) {
-            throw MESSAGES.rollbackAlreadyInvoked();
-        }
+    protected void doCommit(ExposedByteArrayOutputStream marshalled) {
         try {
-            writeToTempFile();
-            moveTempFileToMain();
+            FilePersistenceUtils.writeToTempFile(marshalled, tempFileName);
+            FilePersistenceUtils.moveTempFileToMain(tempFileName, fileName);
         } catch (Exception e) {
             MGMT_OP_LOGGER.failedToStoreConfiguration(e, fileName.getName());
-        }
-    }
-
-    protected File writeToTempFile() throws IOException {
-        deleteFile(tempFileName);
-
-        final FileOutputStream fos = new FileOutputStream(tempFileName);
-        final InputStream is = marshalled.getInputStream();
-        try {
-            BufferedOutputStream output = new BufferedOutputStream(fos);
-            byte[] bytes = new byte[1024];
-            int read;
-            while ((read = is.read(bytes)) > -1) {
-                output.write(bytes, 0, read);
-            }
-            output.flush();
-            fos.getFD().sync();
-            output.close();
-            is.close();
-        } finally {
-            safeClose(fos);
-            safeClose(is);
-        }
-        return tempFileName;
-    }
-
-    protected void moveTempFileToMain() throws ConfigurationPersistenceException {
-        //Rename the temp file written to the target file
-        try {
-            FileUtils.rename(tempFileName, fileName);
-            //Only delete the temp file if all went well, to give people the chance to manually recover it if something really weird happened
-            deleteFile(tempFileName);
-        } catch (Exception e) {
-            throw MESSAGES.failedToRenameTempFile(e, tempFileName, fileName);
-        }
-    }
-
-    @Override
-    public void rollback() {
-        marshalled = null;
-    }
-
-    private static void safeClose(final Closeable closeable) {
-        if (closeable != null) try {
-            closeable.close();
-        } catch (Throwable t) {
-            ROOT_LOGGER.failedToCloseResource(t, closeable);
-        }
-    }
-
-    private void deleteFile(File file) {
-        if (file.exists()) {
-            if (!file.delete() && file.exists()) {
-                throw new IllegalStateException("TODO i18n");
-            }
         }
     }
 }

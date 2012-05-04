@@ -22,11 +22,11 @@
 
 package org.jboss.as.process;
 
+import static org.jboss.as.process.ProcessMessages.MESSAGES;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.jboss.as.process.ProcessMessages.MESSAGES;
 
 /**
  * Date: 29.06.2011
@@ -305,6 +305,38 @@ enum CommandLineArgument {
         @Override
         public String instructions() {
             return MESSAGES.argMasterPort();
+        }
+    },
+    READ_ONLY_DOMAIN_CONFIG {
+        @Override
+        public String argument() {
+            return CommandLineConstants.READ_ONLY_DOMAIN_CONFIG;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s=<config>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argReadOnlyDomainConfig();
+        }
+    },
+    READ_ONLY_HOST_CONFIG {
+        @Override
+        public String argument() {
+            return CommandLineConstants.READ_ONLY_HOST_CONFIG;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s=<config>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argReadOnlyHostConfig();
         }
     },
     SHORT_PROPERTIES {

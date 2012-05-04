@@ -181,6 +181,22 @@ enum CommandLineArgument {
             return MESSAGES.argHelp();
         }
     },
+    READ_ONLY_SERVER_CONFIG {
+        @Override
+        public String argument() {
+            return CommandLineConstants.READ_ONLY_SERVER_CONFIG;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s=<config>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argReadOnlyServerConfig();
+        }
+    },
     SHORT_PROPERTIES {
         @Override
         public String argument() {
