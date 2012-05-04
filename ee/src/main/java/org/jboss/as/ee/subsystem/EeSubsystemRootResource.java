@@ -58,7 +58,6 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT = new SimpleAttributeDefinition(EESubsystemModel.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT,
             EESubsystemModel.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT,  new ModelNode().set(true), ModelType.BOOLEAN, true, true, null);
 
-
     public static final SimpleAttributeDefinition JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT = new SimpleAttributeDefinition(EESubsystemModel.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT,
             EESubsystemModel.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT,  new ModelNode().set(true), ModelType.BOOLEAN, true, true, null);
 

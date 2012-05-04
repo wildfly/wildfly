@@ -62,8 +62,10 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
      */
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final ResourceRoot resourceRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ResourceRoot resourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final VirtualFile deploymentRoot = resourceRoot.getRoot();
+        final boolean resolveProperties = Util.shouldResolveJBoss(deploymentUnit);
 
         if (deploymentRoot == null || !deploymentRoot.exists())
             return;
@@ -81,10 +83,12 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
         IronJacamar result = null;
         try {
             xmlStream = serviceXmlFile.openStream();
-            result = (new IronJacamarParser()).parse(xmlStream);
+            IronJacamarParser ironJacamarParser = new IronJacamarParser();
+            ironJacamarParser.setSystemPropertiesResolved(resolveProperties);
+            result = ironJacamarParser.parse(xmlStream);
             if (result != null) {
                 IronJacamarXmlDescriptor xmlDescriptor = new IronJacamarXmlDescriptor(result);
-                phaseContext.getDeploymentUnit().putAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+                deploymentUnit.putAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             } else
                 throw MESSAGES.failedToParseServiceXml(serviceXmlFile);
         } catch (Exception e) {
