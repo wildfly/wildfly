@@ -34,9 +34,6 @@ public class NamedWorkManager extends WorkManagerImpl {
     /** Default WorkManager name */
     public static final String DEFAULT_NAME = "default";
 
-    /** The name of the WorkManager - unique container wide */
-    private String name;
-
     /**
      * Constructor
      * @param name The name of the WorkManager
@@ -44,29 +41,5 @@ public class NamedWorkManager extends WorkManagerImpl {
     public NamedWorkManager(String name) {
         super();
         setName(name);
-    }
-
-    /**
-     * Get the name
-     * @return The value
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Set the name
-     * @param v The value
-     */
-    void setName(String v) {
-        name = v;
-    }
-
-    @Override
-    public WorkManager clone() throws CloneNotSupportedException {
-        NamedWorkManager nwm = (NamedWorkManager)super.clone();
-        nwm.setName(getName());
-
-        return nwm;
     }
 }
