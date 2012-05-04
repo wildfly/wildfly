@@ -42,5 +42,6 @@
         <module name="org.jboss.as.jpa.hibernate" slot="4" optional="true"/>
         <module name="org.jboss.logging"/>
         <module name="org.hibernate.envers" services="import" optional="true"/>
+	<module name="org.hibernate.commons-annotations"/>
     </dependencies>
 </module>
