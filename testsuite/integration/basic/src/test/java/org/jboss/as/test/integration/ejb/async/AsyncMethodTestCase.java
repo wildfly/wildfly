@@ -202,6 +202,31 @@ public class AsyncMethodTestCase {
         Assert.assertFalse(wasCanceled); // this should be false because task was not cancelled
         Assert.assertEquals("false;true", result); // the bean knows that it was cancelled
     }
+   
+    @Ignore("JBPAPP-8972")
+    @Test
+    @RunAsClient
+    public void testCancelRemoteAsyncMethod() throws Exception {
+        AsyncBeanCancelRemoteInterface bean = (AsyncBeanCancelRemoteInterface) remoteContext.lookup(ARCHIVE_NAME + "/" + 
+                AsyncBean.class.getSimpleName() + "!" + AsyncBeanCancelRemoteInterface.class.getName());
+        AsyncBeanSynchronizeSingletonRemote singleton = (AsyncBeanSynchronizeSingletonRemote) remoteContext.lookup(ARCHIVE_NAME + "/" + 
+                AsyncBeanSynchronizeSingleton.class.getSimpleName() + "!" + AsyncBeanSynchronizeSingletonRemote.class.getName());
+        
+        singleton.reset();
+        final Future<String> future = bean.asyncRemoteCancelMethod();
+        singleton.latchAwaitSeconds(WAIT_TIME_S); // waiting for the bean method was already invocated
+        Assert.assertFalse("isDone() was expected to return false because the method is still active", future.isDone()); // we are in async method
+        Assert.assertFalse("isCancelled() was expected to return false because the method is still active", future.isCancelled());
+        boolean wasCanceled = future.cancel(true); // we are running - task can't be canceled
+        if (wasCanceled) {
+            Assert.assertTrue("isDone() was expected to return true after a call to cancel() with mayBeInterrupting = true, returned true", future.isDone());
+            Assert.assertTrue("isCancelled() was expected to return true after a call to cancel() returned true", future.isCancelled());
+        }
+        singleton.latch2CountDown(); // the bean method can finish
+        String result = future.get();
+        Assert.assertFalse(wasCanceled); // this should be false because task was not cancelled
+        Assert.assertEquals("false;true", result); // the bean knows that it was cancelled
+    }
 
     /**
      * Exception thrown
