@@ -257,7 +257,9 @@ public abstract class SSOTestBase {
         }
         
         // Cookie copy = new Cookie(targetServer, toCopy.getName(), toCopy.getValue(), "/", null, false);
-        return new BasicClientCookie(toCopy.getName(), toCopy.getValue());
+        BasicClientCookie copy = new BasicClientCookie(toCopy.getName(), toCopy.getValue());
+        copy.setDomain(targetServer);
+        return copy;
     }
 
     public static String getSessionIdValueFromState(CookieStore cookieStore) {
