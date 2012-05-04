@@ -50,7 +50,7 @@ import javax.xml.stream.XMLStreamReader;
 import java.util.EnumSet;
 import java.util.List;
 
-import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 import static org.jboss.as.connector.subsystems.jca.ArchiveValidationAdd.ArchiveValidationParameters;
 import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION;
 import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION;

@@ -24,7 +24,6 @@ package org.jboss.as.connector.subsystems.datasources;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -41,7 +40,7 @@ import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
 import org.jboss.jca.common.api.metadata.ds.v11.DsPool;
 import org.jboss.jca.common.api.metadata.ds.v11.XaDataSource;
 
-import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano

@@ -1,8 +1,8 @@
 package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.as.connector.StatisticsDescriptionProvider;
-import org.jboss.as.connector.pool.PoolMetrics;
-import org.jboss.as.connector.subsystems.ClearStatisticsHandler;
+import org.jboss.as.connector.dynamicresource.descriptionproviders.StatisticsDescriptionProvider;
+import org.jboss.as.connector.subsystems.common.pool.PoolMetrics;
+import org.jboss.as.connector.dynamicresource.operations.ClearStatisticsHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.jca.core.spi.statistics.StatisticsPlugin;

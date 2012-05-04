@@ -28,10 +28,10 @@ import java.util.List;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.deployers.RaDeploymentActivator;
-import org.jboss.as.connector.registry.DriverRegistryService;
-import org.jboss.as.connector.transactionintegration.TransactionIntegrationService;
+import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.connector.deployers.ra.RaDeploymentActivator;
+import org.jboss.as.connector.services.driver.registry.DriverRegistryService;
+import org.jboss.as.connector.services.transactionintegration.TransactionIntegrationService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
