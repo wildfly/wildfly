@@ -70,6 +70,7 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        boolean resolveProperties = Util.shouldResolveJBoss(deploymentUnit);
 
         final Set<VirtualFile> files = dataSources(deploymentUnit);
 
@@ -78,6 +79,7 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
             try {
                 xmlStream = new FileInputStream(f.getPhysicalFile());
                 DsParser parser = new DsParser();
+                parser.setSystemPropertiesResolved(resolveProperties);
                 DataSources dataSources = parser.parse(xmlStream);
                 if (dataSources != null) {
                     deploymentUnit.addToAttachmentList(DATA_SOURCES_ATTACHMENT_KEY, dataSources);

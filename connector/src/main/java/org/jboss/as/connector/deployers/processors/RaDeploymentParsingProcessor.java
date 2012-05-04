@@ -69,6 +69,7 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final boolean resolveProperties = Util.shouldResolveSpec(deploymentUnit);
 
         final VirtualFile file = deploymentRoot.getRoot();
         if (file == null || !file.exists())
@@ -93,7 +94,9 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
             if (serviceXmlFile != null && serviceXmlFile.exists()) {
 
                 xmlStream = serviceXmlFile.openStream();
-                result = (new RaParser()).parse(xmlStream);
+                RaParser raParser = new RaParser();
+                raParser.setSystemPropertiesResolved(resolveProperties);
+                result = raParser.parse(xmlStream);
                 if (result == null)
                     throw MESSAGES.failedToParseServiceXml(serviceXmlFile);
             }
