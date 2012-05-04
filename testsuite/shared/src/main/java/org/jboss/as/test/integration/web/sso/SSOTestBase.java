@@ -77,7 +77,7 @@ public abstract class SSOTestBase {
      * 
      * @throws Exception
      */
-    protected static void executeFormAuthSingleSignOnTest(URL serverA, URL serverB, Logger log) throws Exception {
+    public static void executeFormAuthSingleSignOnTest(URL serverA, URL serverB, Logger log) throws Exception {
         URL warA1 = new URL (serverA, "/war1/");
         URL warB2 = new URL (serverB, "/war2/");
 
@@ -96,15 +96,6 @@ public abstract class SSOTestBase {
         String ssoID = processSSOCookie(store, serverA.toString(), serverB.toString());
         log.debug("Saw JSESSIONIDSSO=" + ssoID);
 
-        // Pause a moment before switching wars to better simulate real life
-        // use cases. Otherwise, the test case can "outrun" the async
-        // replication in the TreeCache used by the clustered SSO
-        // 500 ms is a long time, but this isn't a test of replication speed
-        // and we don't want spurious failures.
-        if (!serverA.equals(serverB)) {
-            Thread.sleep(500);
-        }
-
         // Now try getting the war2 index using the JSESSIONIDSSO cookie
         log.debug("Prepare /war2/index.html get");
         checkAccessAllowed(httpclient, warB2 + "index.html");
@@ -115,11 +106,6 @@ public abstract class SSOTestBase {
 
         // Now try logging out of war2
         executeLogout(httpclient, warB2);
-
-        // Again, pause before switching wars
-        if (!serverA.equals(serverB)){
-            Thread.sleep(500);
-        }
         
         // Reset Http client
         httpclient = new DefaultHttpClient();
@@ -132,7 +118,7 @@ public abstract class SSOTestBase {
 
     }
 
-    protected static void executeNoAuthSingleSignOnTest(URL serverA, URL serverB, Logger log) throws Exception {
+    public static void executeNoAuthSingleSignOnTest(URL serverA, URL serverB, Logger log) throws Exception {
         URL warA1 = new URL(serverA, "/war1/");
         URL warB2 = new URL(serverB + "/war2/");
         URL warB6 = new URL(serverB + "/war6/");
@@ -151,15 +137,6 @@ public abstract class SSOTestBase {
 
         String ssoID = processSSOCookie(store, serverA.toString(), serverB.toString());
         log.debug("Saw JSESSIONIDSSO=" + ssoID);
-
-        // Pause a moment before switching wars to better simulate real life
-        // use cases. Otherwise, the test case can "outrun" the async
-        // replication in the TreeCache used by the clustered SSO
-        // 500 ms is a long time, but this isn't a test of replication speed
-        // and we don't want spurious failures.
-        if (!serverA.equals(serverB)) {
-            Thread.sleep(500);
-        }
             
         // Now try getting the war2 index using the JSESSIONIDSSO cookie
         log.debug("Prepare /war2/index.html get");
