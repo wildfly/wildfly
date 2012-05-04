@@ -120,6 +120,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         final boolean forJMS = isJMS();
 
         final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY);
+        final EnumSet<OperationEntry.Flag> runtimeOnly = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY);
 
         registry.registerOperationHandler(LIST_MESSAGES, this, new DescriptionProvider() {
             @Override
@@ -147,70 +148,70 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getRemoveMessage(locale, forJMS);
             }
-        });
+        }, runtimeOnly);
 
         registry.registerOperationHandler(REMOVE_MESSAGES, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getRemoveMessages(locale);
             }
-        });
+        }, runtimeOnly);
 
         registry.registerOperationHandler(EXPIRE_MESSAGES, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getExpireMessages(locale);
             }
-        });
+        }, runtimeOnly);
 
         registry.registerOperationHandler(EXPIRE_MESSAGE, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getExpireMessage(locale, forJMS);
             }
-        });
+        }, runtimeOnly);
 
         registry.registerOperationHandler(SEND_MESSAGE_TO_DEAD_LETTER_ADDRESS, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getSendMessageToDeadLetterAddress(locale, forJMS);
             }
-        });
+        }, runtimeOnly);
 
         registry.registerOperationHandler(SEND_MESSAGES_TO_DEAD_LETTER_ADDRESS, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getSendMessagesToDeadLetterAddress(locale);
             }
-        });
+        }, runtimeOnly);
 
         registry.registerOperationHandler(CHANGE_MESSAGE_PRIORITY, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getChangeMessagePriority(locale, forJMS);
             }
-        });
+        }, runtimeOnly);
 
         registry.registerOperationHandler(CHANGE_MESSAGES_PRIORITY, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getChangeMessagesPriority(locale);
             }
-        });
+        }, runtimeOnly);
 
         registry.registerOperationHandler(MOVE_MESSAGE, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getMoveMessage(locale, forJMS);
             }
-        });
+        }, runtimeOnly);
 
         registry.registerOperationHandler(MOVE_MESSAGES, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getMoveMessages(locale);
             }
-        });
+        }, runtimeOnly);
 
         // TODO dmr-based LIST_MESSAGE_COUNTER
 
@@ -233,7 +234,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getDescriptionOnlyOperation(locale, RESET_MESSAGE_COUNTER, "queue");
             }
-        });
+        }, runtimeOnly);
 
         // TODO dmr-based LIST_MESSAGE_COUNTER_HISTORY
 
@@ -256,14 +257,14 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getDescriptionOnlyOperation(locale, PAUSE, "queue");
             }
-        });
+        }, runtimeOnly);
 
         registry.registerOperationHandler(RESUME, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getDescriptionOnlyOperation(locale, RESUME, "queue");
             }
-        });
+        }, runtimeOnly);
 
         // TODO LIST_CONSUMERS
 

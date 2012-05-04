@@ -97,6 +97,7 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
     public void registerOperations(final ManagementResourceRegistration registry) {
 
         final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY);
+        final EnumSet<OperationEntry.Flag> runtimeOnly = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY);
 
         registry.registerOperationHandler(LIST_ALL_SUBSCRIPTIONS, this, new DescriptionProvider() {
             @Override
@@ -169,21 +170,21 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getDropDurableSubscription(locale);
             }
-        });
+        }, runtimeOnly);
 
         registry.registerOperationHandler(DROP_ALL_SUBSCRIPTIONS, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getDescriptionOnlyOperation(locale,  DROP_ALL_SUBSCRIPTIONS, TOPIC);
             }
-        });
+        }, runtimeOnly);
 
         registry.registerOperationHandler(REMOVE_MESSAGES, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getRemoveMessages(locale);
             }
-        });
+        }, runtimeOnly);
     }
 
     @Override
