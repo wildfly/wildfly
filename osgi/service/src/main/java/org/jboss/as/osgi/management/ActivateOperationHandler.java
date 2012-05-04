@@ -23,7 +23,9 @@ package org.jboss.as.osgi.management;
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -45,6 +47,12 @@ public class ActivateOperationHandler extends AbstractRuntimeOnlyHandler  {
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
         ServiceController<?> svc = context.getServiceRegistry(false).getRequiredService(Services.FRAMEWORK_ACTIVE);
         svc.setMode(Mode.ACTIVE);
+
+        // This Service Verification Handler has 20 seconds for the service to appear,
+        // as activating the OSGi framework can take a little while when the system is busy.
+        ServiceVerificationHandler svh = new ServiceVerificationHandler(20000);
+        svc.addListener(svh);
+        context.addStep(svh, Stage.VERIFY);
         context.completeStep();
     }
 

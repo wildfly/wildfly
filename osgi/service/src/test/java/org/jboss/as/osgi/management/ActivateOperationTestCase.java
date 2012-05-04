@@ -28,6 +28,7 @@ import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.framework.Services;
 import org.junit.Test;
@@ -38,7 +39,6 @@ import org.mockito.Mockito;
  * @author Thomas.Diesler@jboss.com
  */
 public class ActivateOperationTestCase {
-
     @Test
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void testActivateOperation() throws Exception {
@@ -47,6 +47,7 @@ public class ActivateOperationTestCase {
         activateOp.get(ModelDescriptionConstants.OP).set(ModelConstants.ACTIVATE);
 
         ServiceController sc = Mockito.mock(ServiceController.class);
+        Mockito.when(sc.getState()).thenReturn(State.UP);
 
         ServiceRegistry sr = Mockito.mock(ServiceRegistry.class);
         Mockito.when(sr.getRequiredService(Services.FRAMEWORK_ACTIVE)).thenReturn(sc);
