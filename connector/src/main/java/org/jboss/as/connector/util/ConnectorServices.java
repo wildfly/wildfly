@@ -33,12 +33,13 @@ import java.util.Set;
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 /**
- * A ConnectorServices.
+ * ConnectorServices contains some utility methods used internally and
+ * constants for all connector's subsystems service names.
  *
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public final class ConnectorServices {
+public class ConnectorServices {
 
     private static Map<String, Set<ServiceName>> resourceAdapterServiceNames = new HashMap<String, Set<ServiceName>>();
     private static Map<String, Set<Integer>> resourceAdapterIdentifiers = new HashMap<String, Set<Integer>>();
@@ -105,8 +106,6 @@ public final class ConnectorServices {
 
     public static final String RA_SERVICE_NAME_SEPARATOR = "->";
 
-    private ConnectorServices() {
-    }
 
     /**
      * convenient method to check notNull of value
