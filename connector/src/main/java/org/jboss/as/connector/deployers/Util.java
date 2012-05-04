@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.connector.deployers.processors;
+package org.jboss.as.connector.deployers;
 
 
 import org.jboss.as.ee.structure.Attachments;
@@ -30,13 +30,13 @@ import org.jboss.as.server.deployment.DeploymentUnit;
  *
  * @author Jason T. Greene
  */
-class Util {
-    static boolean shouldResolveSpec(DeploymentUnit deploymentUnit) {
+public class Util {
+    public static boolean shouldResolveSpec(DeploymentUnit deploymentUnit) {
         Boolean attachment = deploymentUnit.getAttachment(Attachments.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT);
         return attachment != null && attachment.booleanValue();
     }
 
-    static boolean shouldResolveJBoss(DeploymentUnit deploymentUnit) {
+    public static boolean shouldResolveJBoss(DeploymentUnit deploymentUnit) {
         Boolean attachment = deploymentUnit.getAttachment(Attachments.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT);
         return attachment != null && attachment.booleanValue();
     }
