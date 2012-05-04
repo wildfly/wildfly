@@ -22,6 +22,24 @@
 package org.jboss.as.ejb3.component;
 
 
+import java.lang.reflect.Method;
+import java.rmi.Remote;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.ejb.EJBLocalObject;
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -37,6 +55,7 @@ import org.jboss.as.ee.component.TCCLInterceptor;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.naming.ContextInjectionSource;
@@ -70,23 +89,6 @@ import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import javax.ejb.EJBLocalObject;
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
-import java.lang.reflect.Method;
-import java.rmi.Remote;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
@@ -197,11 +199,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     /**
      * Construct a new instance.
      *
-     * @param componentName      the component name
-     * @param componentClassName the component instance class name
-     * @param ejbJarDescription  the module
+     * @param componentName             the component name
+     * @param componentClassName        the component instance class name
+     * @param ejbJarDescription         the module
      * @param deploymentUnitServiceName
-     * @param descriptorData     the optional descriptor metadata
+     * @param descriptorData            the optional descriptor metadata
      */
     public EJBComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName, final EnterpriseBeanMetaData descriptorData) {
         super(componentName, componentClassName, ejbJarDescription.getEEModuleDescription(), deploymentUnitServiceName);
@@ -236,14 +238,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
 
                 //make sure java:comp/env is always available, even if nothing is bound there
-                if(description.getNamingMode() == ComponentNamingMode.CREATE) {
+                if (description.getNamingMode() == ComponentNamingMode.CREATE) {
                     description.getBindingConfigurations().add(new BindingConfiguration("java:comp/env", new ContextInjectionSource("env", "java:comp/env")));
                 }
                 final List<SetupAction> ejbSetupActions = context.getDeploymentUnit().getAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS);
 
                 if (description.isTimerServiceApplicable()) {
 
-                    if(!ejbSetupActions.isEmpty()) {
+                    if (!ejbSetupActions.isEmpty()) {
                         configuration.addTimeoutViewInterceptor(AdditionalSetupInterceptor.factory(ejbSetupActions), InterceptorOrder.View.EE_SETUP);
                     }
                     configuration.addTimeoutViewInterceptor(shutDownInterceptorFactory, InterceptorOrder.View.SHUTDOWN_INTERCEPTOR);
@@ -257,11 +259,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                         configuration.addTimeoutViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(method)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     }
                 }
-                if(!ejbSetupActions.isEmpty()) {
+                if (!ejbSetupActions.isEmpty()) {
                     configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
                         @Override
                         public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
-                            for(final SetupAction setupAction : ejbSetupActions) {
+                            for (final SetupAction setupAction : ejbSetupActions) {
                                 serviceBuilder.addDependencies(setupAction.dependencies());
                             }
                         }
@@ -272,7 +274,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             }
         });
     }
-
 
 
     public void addLocalHome(final String localHome) {
@@ -344,7 +345,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 }
 
                 final List<SetupAction> ejbSetupActions = context.getDeploymentUnit().getAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS);
-                if(!ejbSetupActions.isEmpty()) {
+                if (!ejbSetupActions.isEmpty()) {
                     viewConfiguration.addViewInterceptor(AdditionalSetupInterceptor.factory(ejbSetupActions), InterceptorOrder.View.EE_SETUP);
                 }
 
@@ -572,7 +573,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         setupClientViewInterceptors(viewDescription);
         // return created view
 
-        if(viewType == MethodIntf.REMOTE ||
+        if (viewType == MethodIntf.REMOTE ||
                 viewType == MethodIntf.HOME) {
             setupRemoteView(viewDescription);
         }
@@ -584,7 +585,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         viewDescription.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.getDependencies().add(EJBRemoteConnectorService.SERVICE_NAME);
+                configuration.getDependencies().add(new DependencyConfigurator<ViewService>() {
+                    @Override
+                    public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ViewService service) throws DeploymentUnitProcessingException {
+                        serviceBuilder.addDependency(EJBRemoteConnectorService.SERVICE_NAME);
+                    }
+                });
             }
         });
     }
