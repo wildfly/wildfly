@@ -22,7 +22,10 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -30,14 +33,19 @@ import org.jboss.as.controller.remote.BlockingQueueOperationListener;
 import org.jboss.as.controller.remote.TransactionalOperationImpl;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
+
+import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.Transformers;
+import org.jboss.as.host.controller.mgmt.TransformingProxyController;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.threads.AsyncFuture;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Future;
 
 /**
  * @author Emanuel Muckenhuber
@@ -48,12 +56,17 @@ class HostControllerUpdateTask {
     private final ModelNode operation;
     private final OperationContext context;
     private final TransactionalProtocolClient client;
+    private final PathAddress address;
+    private final Transformers transformers;
 
-    public HostControllerUpdateTask(final String name, final ModelNode operation, final OperationContext context, final TransactionalProtocolClient client) {
+    public HostControllerUpdateTask(final String name, final ModelNode operation, final OperationContext context,
+                                    final TransformingProxyController proxyController) {
         this.name = name;
-        this.client = client;
+        this.client = proxyController.getProtocolClient();
         this.context = context;
         this.operation = operation;
+        this.transformers = proxyController.getTransformers();
+        this.address = proxyController.getProxyNodeAddress();
     }
 
     public AsyncFuture<ModelNode> execute(final ProxyOperationListener listener) {
@@ -64,11 +77,12 @@ class HostControllerUpdateTask {
         final OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
         final OperationAttachments operationAttachments = new DelegatingOperationAttachments(context);
         final ProxyOperation proxyOperation = new ProxyOperation(name, operation, messageHandler, operationAttachments);
+        final SubsystemInfoOperationListener subsystemListener = new SubsystemInfoOperationListener(listener, transformers);
         try {
-            return client.execute(listener, proxyOperation);
+            return client.execute(subsystemListener, proxyOperation);
         } catch (IOException e) {
             final TransactionalProtocolClient.PreparedOperation<ProxyOperation> result = BlockingQueueOperationListener.FailedOperation.create(proxyOperation, e);
-            listener.operationPrepared(result);
+            subsystemListener.operationPrepared(result);
             return result.getFinalResult();
         }
     }
@@ -114,6 +128,69 @@ class HostControllerUpdateTask {
                     final String hostName = operation.getName();
                     HOST_CONTROLLER_LOGGER.tracef("Received final result %s from %s", result, hostName);
                 }
+            }
+        }
+    }
+
+    /** Checks responses from slaves for subsystem version information. TODO this is pretty hacky */
+    private static class SubsystemInfoOperationListener implements TransactionalProtocolClient.TransactionalOperationListener<ProxyOperation> {
+
+        private final ProxyOperationListener delegate;
+        private final Transformers transformers;
+
+        private SubsystemInfoOperationListener(ProxyOperationListener delegate, Transformers transformers) {
+            this.delegate = delegate;
+            this.transformers = transformers;
+        }
+
+        @Override
+        public void operationPrepared(TransactionalProtocolClient.PreparedOperation<ProxyOperation> prepared) {
+            delegate.operationPrepared(prepared);
+        }
+
+        @Override
+        public void operationFailed(ProxyOperation operation, ModelNode result) {
+            delegate.operationFailed(operation, result);
+        }
+
+        @Override
+        public void operationComplete(ProxyOperation operation, ModelNode result) {
+            try {
+                storeSubsystemVersions(operation.getOperation(), result);
+            } finally {
+                delegate.operationComplete(operation, result);
+            }
+        }
+
+        private void storeSubsystemVersions(ModelNode operation, ModelNode response) {
+            PathAddress address = operation.hasDefined(OP_ADDR) ? PathAddress.pathAddress(operation.get(OP_ADDR)) : PathAddress.EMPTY_ADDRESS;
+            if (address.size() == 0 && COMPOSITE.equals(operation.get(OP).asString()) && response.hasDefined(RESULT)) {
+                // recurse
+                List<ModelNode> steps = operation.hasDefined(STEPS) ? operation.get(STEPS).asList() : Collections.<ModelNode>emptyList();
+                ModelNode result = response.get(RESULT);
+                for (int i = 0; i < steps.size(); i++) {
+                    ModelNode stepOp = steps.get(i);
+                    String resultID = "step-" + (i+1);
+                    if (result.hasDefined(resultID)) {
+                        storeSubsystemVersions(stepOp, result.get(resultID));
+                    }
+                }
+            } else if (address.size() == 1 && ADD.equals(operation.get(OP).asString())
+                        && EXTENSION.equals(address.getElement(0).getKey())
+                        && response.hasDefined(RESULT) && response.get(RESULT).hasDefined(DOMAIN_RESULTS)) {
+                // Extract the subsystem info and store it
+                TransformationTarget target = transformers.getTarget();
+                for (Property p : response.get(RESULT, DOMAIN_RESULTS).asPropertyList()) {
+
+                    String[] version = p.getValue().asString().split("\\.");
+                    int major = Integer.parseInt(version[0]);
+                    int minor = Integer.parseInt(version[1]);
+                    target.addSubsystemVersion(p.getName(), major, minor);
+                    HOST_CONTROLLER_LOGGER.debugf("Registering subsystem %s for host %s with major version [%d] and minor version [%d]",
+                            p.getName(), address, major, minor);
+                }
+                // purge the subsystem version data from the response
+                response.get(RESULT).set(new ModelNode());
             }
         }
     }

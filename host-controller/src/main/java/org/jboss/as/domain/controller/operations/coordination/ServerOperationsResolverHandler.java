@@ -146,6 +146,7 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
                                      final ModelNode localResult, final ModelNode overallResult) {
 
         ModelNode domainResult = hostControllerExecutionSupport.getFormattedDomainResult(localResult);
+        overallResult.setEmptyObject();
         overallResult.get(DOMAIN_RESULTS).set(domainResult);
 
         ModelNode serverOpsNode = overallResult.get(SERVER_OPERATIONS);

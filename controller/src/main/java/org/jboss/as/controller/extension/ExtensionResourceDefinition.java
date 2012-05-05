@@ -47,9 +47,9 @@ public class ExtensionResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.MODULE, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1)).build();
 
-    public ExtensionResourceDefinition(final ExtensionRegistry extensionRegistry, final boolean parallelBoot) {
+    public ExtensionResourceDefinition(final ExtensionRegistry extensionRegistry, final boolean parallelBoot, boolean slaveHC) {
         super(PathElement.pathElement(EXTENSION), CommonDescriptions.getResourceDescriptionResolver(EXTENSION, false),
-                new ExtensionAddHandler(extensionRegistry, parallelBoot), new ExtensionRemoveHandler(extensionRegistry),
+                new ExtensionAddHandler(extensionRegistry, parallelBoot, slaveHC), new ExtensionRemoveHandler(extensionRegistry),
                 OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
     }
 

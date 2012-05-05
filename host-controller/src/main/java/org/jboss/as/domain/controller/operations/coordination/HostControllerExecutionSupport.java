@@ -263,7 +263,7 @@ interface HostControllerExecutionSupport {
 
             @Override
             public ModelNode getFormattedDomainResult(ModelNode resultNode) {
-                return resultNode;
+                return resultNode.clone();
             }
         }
 
