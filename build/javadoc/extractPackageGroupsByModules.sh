@@ -18,7 +18,7 @@ fi
 M2_REPO=~/.m2/repository
 #for i in `find $PROJECT_ROOT_DIR/build/src/main/resources/modules/ -name module.xml` ;  do
 
-mkdir $TARGET;
+mkdir -p $TARGET;
 
 
 ###
@@ -34,7 +34,7 @@ echo "<groups>"
 
   while read -r LINE ; do
 
-echo $LINE;
+    #echo $LINE;
     ##  If it's a module name, create the <group>.
     if [[ $LINE == MODULE:* ]] ; then
       if [ "" != "$MOD_NAME" ] ; then 
@@ -48,8 +48,9 @@ echo $LINE;
       PACKAGES="";
       for JAR in `find $PROJECT_ROOT_DIR/build/target/jboss-as-7.1.2.Final-SNAPSHOT/modules/$MOD_PATH/main -name *.jar`; do
         #echo "    JAR: $JAR";
-        for PACKAGE in `jar tf $JAR | grep .class | sort | uniq`; do
-          PACKAGE=`dirname $PACKAGE | tr / .`
+        for PACKAGE in `jar tf $JAR | grep .class | sed 's#/[^/]*\.class##' | sort | uniq`; do
+          #PACKAGE=`dirname $PACKAGE | tr / .`
+          PACKAGE=`echo $PACKAGE | tr / .`
           PACKAGES="$PACKAGES:$PACKAGE";
         done;
       done;
