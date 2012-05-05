@@ -32,15 +32,12 @@ import org.jboss.dmr.ModelType;
 public class KeyStoreAttributeDefinition extends AttributeDefinition {
     private static final ParameterValidator keyStoreValidator;
     private static final ParameterValidator fieldValidator;
-
+    private static final String[] FIELDS = { Constants.PASSWORD, Constants.TYPE, Constants.URL, Constants.PROVIDER, Constants.PROVIDER_ARGUMENT};
     static {
         final ParametersValidator delegate = new ParametersValidator();
-        delegate.registerValidator(Constants.PASSWORD, new ModelTypeValidator(ModelType.STRING, true, true));
-        delegate.registerValidator(Constants.TYPE, new ModelTypeValidator(ModelType.STRING, true, true));
-        delegate.registerValidator(Constants.URL, new ModelTypeValidator(ModelType.STRING, false, true));
-        delegate.registerValidator(Constants.PROVIDER, new ModelTypeValidator(ModelType.STRING, true, true));
-        delegate.registerValidator(Constants.PROVIDER_ARGUMENT, new ModelTypeValidator(ModelType.STRING, true, true));
-
+        for (String field : FIELDS) {
+            delegate.registerValidator(field, new ModelTypeValidator(ModelType.STRING, true, true));
+        }
         keyStoreValidator = new ParametersOfValidator(delegate);
         fieldValidator = delegate;
     }
@@ -159,6 +156,23 @@ public class KeyStoreAttributeDefinition extends AttributeDefinition {
     @Override
     public ModelNode addOperationParameterDescription(ResourceBundle bundle, String prefix, ModelNode operationDescription) {
        throw SecurityMessages.MESSAGES.unsupportedOperationExceptionUseResourceDesc();
+    }
+
+    @Override
+    public ModelNode validateOperation(ModelNode operationObject) throws OperationFailedException {
+        ModelNode validateOp = operationObject;
+        if (operationObject.hasDefined(getName())) {
+            // Convert any expression strings into ModelType.EXPRESSION
+            validateOp = operationObject.clone();
+            ModelNode attr = validateOp.get(getName());
+            for (String field : FIELDS) {
+                ModelNode fieldNode = attr.get(field);
+                if (fieldNode.getType() == ModelType.STRING) {
+                    fieldNode.set(ParseUtils.parsePossibleExpression(fieldNode.asString()));
+                }
+            }
+        }
+        return super.validateOperation(validateOp);
     }
 
     @Override

@@ -32,7 +32,6 @@ import junit.framework.Assert;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.transform.SubsystemTransformer;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -115,7 +114,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         Assert.assertNotNull(servicesA);
         //Get the model and the persisted xml from the first controller
         final ModelNode modelA = servicesA.readWholeModel();
-        Assert.assertNotNull(modelA);
+        validateModel(modelA);
 
         // Test marshaling
         final String marshalled = servicesA.getPersistedSubsystemXml();
@@ -150,6 +149,10 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         compare(modelA, modelC);
 
         assertRemoveSubsystemResources(servicesA, getIgnoredChildResourcesForRemovalTest());
+    }
+
+    protected void validateModel(ModelNode model) {
+        Assert.assertNotNull(model);
     }
 
     protected ModelNode createDescribeOperation() {

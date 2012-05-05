@@ -31,13 +31,13 @@ import org.jboss.dmr.ModelType;
 public class KeyManagerAttributeDefinition extends AttributeDefinition {
     private static final ParameterValidator keyManagerValidator;
     private static final ParameterValidator fieldValidator;
-
+    private static final String[] FIELDS = { Constants.ALGORITHM, Constants.PROVIDER };
 
     static {
         final ParametersValidator delegate = new ParametersValidator();
-        delegate.registerValidator(Constants.ALGORITHM, new ModelTypeValidator(ModelType.STRING, true, true));
-        delegate.registerValidator(Constants.PROVIDER, new ModelTypeValidator(ModelType.STRING, true, true));
-
+        for (String field : FIELDS) {
+            delegate.registerValidator(field, new ModelTypeValidator(ModelType.STRING, true, true));
+        }
         keyManagerValidator = new ParametersOfValidator(delegate);
         fieldValidator = delegate;
     }
@@ -51,7 +51,7 @@ public class KeyManagerAttributeDefinition extends AttributeDefinition {
             resourceModel = resourceModel.get(getName());
 
             if (resourceModel.hasDefined(Constants.ALGORITHM))
-                writer.writeAttribute(getName() + "-factory-" + Constants.PASSWORD, resourceModel.get(Constants.PASSWORD).asString());
+                writer.writeAttribute(getName() + "-factory-" + Constants.ALGORITHM, resourceModel.get(Constants.ALGORITHM).asString());
             if (resourceModel.hasDefined(Constants.PROVIDER))
                 writer.writeAttribute(getName() + "-factory-" + Constants.PROVIDER, resourceModel.get(Constants.PROVIDER).asString());
         }
@@ -72,6 +72,23 @@ public class KeyManagerAttributeDefinition extends AttributeDefinition {
             throw SecurityMessages.MESSAGES.xmlStreamException(e.getFailureDescription().toString(), reader.getLocation());
         }
         return node;
+    }
+
+    @Override
+    public ModelNode validateOperation(ModelNode operationObject) throws OperationFailedException {
+        ModelNode validateOp = operationObject;
+        if (operationObject.hasDefined(getName())) {
+            // Convert any expression strings into ModelType.EXPRESSION
+            validateOp = operationObject.clone();
+            ModelNode attr = validateOp.get(getName());
+            for (String field : FIELDS) {
+                ModelNode fieldNode = attr.get(field);
+                if (fieldNode.getType() == ModelType.STRING) {
+                    fieldNode.set(ParseUtils.parsePossibleExpression(fieldNode.asString()));
+                }
+            }
+        }
+        return super.validateOperation(validateOp);
     }
 
     @Override

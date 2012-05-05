@@ -1,0 +1,30 @@
+<subsystem xmlns="urn:jboss:domain:security:1.2">
+    <security-domains>
+        <security-domain name="other" cache-type="default">
+            <authentication>
+                <login-module code="UsersRoles" flag="required" />
+            </authentication>
+            <jsse keystore-password="${keystore-password:changeit}"
+                  keystore-type="${keystore-type:JKS}"
+                  keystore-url="${keystore-url:../standalone/configuration/keystores/clientcert.jks}"
+                  keystore-provider="${keystore-provider:com.misc.provider}"
+                  keystore-provider-argument="${keystore-provider-argument:true}"
+                  key-manager-factory-algorithm="${keystore-manager-factory-algorithm:xyz}"
+                  key-manager-factory-provider="${keystore-manager-factory-provider:xyz}"
+                  truststore-password="${truststore-password:rmi+ssl}"
+                  truststore-type="${truststore-type:JKS}"
+                  truststore-url="${truststore-url:../standalone/configuration/keystores/tomcat.keystore}"
+                  truststore-provider="${truststore-provider:com.misc.provider}"
+                  truststore-provider-argument="${truststore-provider-argument:true}"
+                  trust-manager-factory-algorithm="${truststore-manager-factory-algorithm:xyz}"
+                  trust-manager-factory-provider="${truststore-manager-factory-provider:xyz}"
+                  client-alias="${client-alias:client-alias}"
+                  server-alias="${server-alias:server-alias}"
+                  service-auth-token="${service-auth-token:service-auth-token}"
+                  client-auth="${client-auth:client-auth}"
+                  cipher-suites="${cipher-suites:cipher-suites}"
+                  protocols="${protocols:protocols}"
+                    />
+        </security-domain>
+    </security-domains>
+</subsystem>
