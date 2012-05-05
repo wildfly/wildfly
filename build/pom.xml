@@ -1878,14 +1878,6 @@
                                     
                                     <groups>
                                         <group>
-                                            <title>Module javax.api</title>
-                                            <packages></packages>
-                                        </group>
-                                        <group>
-                                            <title>Module javax.xml.stream.api</title>
-                                            <packages></packages>
-                                        </group>
-                                        <group>
                                             <title>Module org.apache.log4j</title>
                                             <packages>org.apache.log4j:org.apache.log4j.chainsaw:org.apache.log4j.config:org.apache.log4j.helpers:org.apache.log4j.jdbc:org.apache.log4j.jmx:org.apache.log4j.lf5:org.apache.log4j.lf5.util:org.apache.log4j.lf5.viewer:org.apache.log4j.lf5.viewer.categoryexplorer:org.apache.log4j.lf5.viewer.configure:org.apache.log4j.net:org.apache.log4j.nt:org.apache.log4j.or:org.apache.log4j.or.jms:org.apache.log4j.or.sax:org.apache.log4j.pattern:org.apache.log4j.spi:org.apache.log4j.varia:org.apache.log4j.xml</packages>
                                         </group>
@@ -1900,10 +1892,6 @@
                                         <group>
                                             <title>Module org.jboss.as.deployment-repository</title>
                                             <packages>org.jboss.as.repository</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.as.domain-http-error-context</title>
-                                            <packages></packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.as.domain-http-interface</title>
@@ -1946,10 +1934,6 @@
                                             <packages>org.jboss.as.server:org.jboss.as.server.controller.descriptions:org.jboss.as.server.deployment:org.jboss.as.server.deployment.annotation:org.jboss.as.server.deployment.client:org.jboss.as.server.deployment.integration:org.jboss.as.server.deployment.module:org.jboss.as.server.deployment.module.descriptor:org.jboss.as.server.deployment.reflect:org.jboss.as.server.deployment.service:org.jboss.as.server.jmx:org.jboss.as.server.mgmt:org.jboss.as.server.mgmt.domain:org.jboss.as.server.moduleservice:org.jboss.as.server.operations:org.jboss.as.server.parsing:org.jboss.as.server.services.net:org.jboss.as.server.services.path:org.jboss.as.server.services.security</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.standalone</title>
-                                            <packages></packages>
-                                        </group>
-                                        <group>
                                             <title>Module org.jboss.as.threads</title>
                                             <packages>org.jboss.as.threads</packages>
                                         </group>
@@ -1984,10 +1968,6 @@
                                         <group>
                                             <title>Module org.jboss.marshalling.river</title>
                                             <packages>org.jboss.marshalling.river</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.modules</title>
-                                            <packages></packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.msc</title>
@@ -2088,10 +2068,6 @@
                                         <group>
                                             <title>Module gnu.getopt</title>
                                             <packages>gnu.getopt</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module javaee.api</title>
-                                            <packages></packages>
                                         </group>
                                         <group>
                                             <title>Module javax.activation.api</title>
@@ -2198,10 +2174,6 @@
                                             <packages>javax.xml.bind:javax.xml.bind.annotation:javax.xml.bind.annotation.adapters:javax.xml.bind.attachment:javax.xml.bind.helpers:javax.xml.bind.util</packages>
                                         </group>
                                         <group>
-                                            <title>Module javax.xml.jaxp-provider</title>
-                                            <packages></packages>
-                                        </group>
-                                        <group>
                                             <title>Module javax.xml.registry.api</title>
                                             <packages>javax.xml.registry:javax.xml.registry.infomodel</packages>
                                         </group>
@@ -2252,10 +2224,6 @@
                                         <group>
                                             <title>Module org.apache.commons.lang</title>
                                             <packages>org.apache.commons.lang:org.apache.commons.lang.builder:org.apache.commons.lang.enum:org.apache.commons.lang.enums:org.apache.commons.lang.exception:org.apache.commons.lang.math:org.apache.commons.lang.mutable:org.apache.commons.lang.reflect:org.apache.commons.lang.text:org.apache.commons.lang.time</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.apache.commons.logging</title>
-                                            <packages></packages>
                                         </group>
                                         <group>
                                             <title>Module org.apache.commons.pool</title>
@@ -2394,16 +2362,8 @@
                                             <packages>org.jdom:org.jdom.adapters:org.jdom.filter:org.jdom.input:org.jdom.output:org.jdom.transform:org.jdom.xpath</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.aggregate</title>
-                                            <packages></packages>
-                                        </group>
-                                        <group>
                                             <title>Module org.jboss.as.appclient</title>
                                             <packages>org.jboss.as.appclient.component:org.jboss.as.appclient.deployment:org.jboss.as.appclient.logging:org.jboss.as.appclient.service:org.jboss.as.appclient.subsystem:org.jboss.as.appclient.subsystem.parsing</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.as.console</title>
-                                            <packages></packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.as.cli</title>
@@ -2470,10 +2430,6 @@
                                             <packages>org.jboss.as.server.deployment.scanner:org.jboss.as.server.deployment.scanner.api</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.domain-add-user</title>
-                                            <packages></packages>
-                                        </group>
-                                        <group>
                                             <title>Module org.jboss.as.ee</title>
                                             <packages>org.jboss.as.ee:org.jboss.as.ee.beanvalidation:org.jboss.as.ee.component:org.jboss.as.ee.component.deployers:org.jboss.as.ee.component.interceptors:org.jboss.as.ee.component.serialization:org.jboss.as.ee.datasource:org.jboss.as.ee.managedbean.component:org.jboss.as.ee.managedbean.processors:org.jboss.as.ee.metadata:org.jboss.as.ee.metadata.property:org.jboss.as.ee.naming:org.jboss.as.ee.structure:org.jboss.as.ee.subsystem:org.jboss.as.ee.utils</packages>
                                         </group>
@@ -2512,14 +2468,6 @@
                                         <group>
                                             <title>Module org.jboss.as.jpa</title>
                                             <packages>org.jboss.as.jpa.classloader:org.jboss.as.jpa.classloader.:org.jboss.as.jpa.config:org.jboss.as.jpa.container:org.jboss.as.jpa.injectors:org.jboss.as.jpa.interceptor:org.jboss.as.jpa.persistenceprovider:org.jboss.as.jpa.processor:org.jboss.as.jpa.puparser:org.jboss.as.jpa.service:org.jboss.as.jpa.subsystem:org.jboss.as.jpa.transaction:org.jboss.as.jpa.validator</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.as.jpa.hibernate</title>
-                                            <packages></packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.as.jpa.hibernate</title>
-                                            <packages></packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.as.jpa.openjpa</title>
@@ -2584,14 +2532,6 @@
                                         <group>
                                             <title>Module org.jboss.as.webservices</title>
                                             <packages>org.jboss.as.webservices:org.jboss.as.webservices.config:org.jboss.as.webservices.deployers:org.jboss.as.webservices.deployers.deployment:org.jboss.as.webservices.dmr:org.jboss.as.webservices.injection:org.jboss.as.webservices.invocation:org.jboss.as.webservices.metadata:org.jboss.as.webservices.metadata.model:org.jboss.as.webservices.parser:org.jboss.as.webservices.publish:org.jboss.as.webservices.security:org.jboss.as.webservices.service:org.jboss.as.webservices.tomcat:org.jboss.as.webservices.util:org.jboss.as.webservices.webserviceref</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.as.webservices.server.integration</title>
-                                            <packages></packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.as.webservices.server.jaxrpc-integration</title>
-                                            <packages></packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.as.weld</title>
@@ -2750,14 +2690,6 @@
                                             <packages>org.jboss.ws.common:org.jboss.ws.common.concurrent:org.jboss.ws.common.deployment:org.jboss.ws.common.injection:org.jboss.ws.common.injection.finders:org.jboss.ws.common.injection.resolvers:org.jboss.ws.common.integration:org.jboss.ws.common.invocation:org.jboss.ws.common.io:org.jboss.ws.common.management:org.jboss.ws.common.monitoring:org.jboss.ws.common.reflection:org.jboss.ws.common.security:org.jboss.ws.common.serviceref:org.jboss.ws.common.servlet:org.jboss.ws.common.sort:org.jboss.ws.common.spi:org.jboss.ws.common.utils</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.ws.cxf.jbossws-cxf-client</title>
-                                            <packages></packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.ws.cxf.jbossws-cxf-factories</title>
-                                            <packages></packages>
-                                        </group>
-                                        <group>
                                             <title>Module org.jboss.ws.cxf.jbossws-cxf-server</title>
                                             <packages>org.jboss.wsf.stack.cxf:org.jboss.wsf.stack.cxf.config:org.jboss.wsf.stack.cxf.configuration:org.jboss.wsf.stack.cxf.deployment:org.jboss.wsf.stack.cxf.deployment.aspect:org.jboss.wsf.stack.cxf.interceptor:org.jboss.wsf.stack.cxf.management:org.jboss.wsf.stack.cxf.metadata:org.jboss.wsf.stack.cxf.metadata.services:org.jboss.wsf.stack.cxf.resolver:org.jboss.wsf.stack.cxf.security.authentication:org.jboss.wsf.stack.cxf.security.authentication.callback:org.jboss.wsf.stack.cxf.security.nonce:org.jboss.wsf.stack.cxf.spring.handler:org.jboss.wsf.stack.cxf.spring.parser:org.jboss.wsf.stack.cxf.transport</packages>
                                         </group>
@@ -2778,14 +2710,6 @@
                                             <packages>javax.xml.ws.addressing:javax.xml.ws.addressing.soap:org.jboss.ws:org.jboss.ws.annotation:org.jboss.ws.core:org.jboss.ws.core.binding:org.jboss.ws.core.client:org.jboss.ws.core.client.ssl:org.jboss.ws.core.client.transport:org.jboss.ws.core.jaxrpc:org.jboss.ws.core.jaxrpc.binding:org.jboss.ws.core.jaxrpc.binding.jbossxb:org.jboss.ws.core.jaxrpc.client:org.jboss.ws.core.jaxrpc.client.serviceref:org.jboss.ws.core.jaxrpc.handler:org.jboss.ws.core.jaxws:org.jboss.ws.core.jaxws.binding:org.jboss.ws.core.jaxws.client:org.jboss.ws.core.jaxws.client.serviceref:org.jboss.ws.core.jaxws.handler:org.jboss.ws.core.jaxws.spi:org.jboss.ws.core.jaxws.spi.http:org.jboss.ws.core.jaxws.wsaddressing:org.jboss.ws.core.server:org.jboss.ws.core.server.netty:org.jboss.ws.core.soap:org.jboss.ws.core.soap.attachment:org.jboss.ws.core.utils:org.jboss.ws.extensions.addressing:org.jboss.ws.extensions.addressing.jaxrpc:org.jboss.ws.extensions.addressing.jaxws:org.jboss.ws.extensions.addressing.map:org.jboss.ws.extensions.addressing.metadata:org.jboss.ws.extensions.addressing.policy:org.jboss.ws.extensions.addressing.soap:org.jboss.ws.extensions.json:org.jboss.ws.extensions.policy:org.jboss.ws.extensions.policy.annotation:org.jboss.ws.extensions.policy.deployer:org.jboss.ws.extensions.policy.deployer.domainAssertion:org.jboss.ws.extensions.policy.deployer.exceptions:org.jboss.ws.extensions.policy.deployer.util:org.jboss.ws.extensions.policy.metadata:org.jboss.ws.extensions.security:org.jboss.ws.extensions.security.auth.callback:org.jboss.ws.extensions.security.element:org.jboss.ws.extensions.security.exception:org.jboss.ws.extensions.security.jaxrpc:org.jboss.ws.extensions.security.jaxws:org.jboss.ws.extensions.security.nonce:org.jboss.ws.extensions.security.operation:org.jboss.ws.extensions.validation:org.jboss.ws.extensions.xop:org.jboss.ws.extensions.xop.jaxrpc:org.jboss.ws.extensions.xop.jaxws:org.jboss.ws.feature:org.jboss.wsf.stack.jbws:org.jboss.ws.jaxrpc:org.jboss.ws.metadata.accessor:org.jboss.ws.metadata.builder:org.jboss.ws.metadata.builder.jaxrpc:org.jboss.ws.metadata.builder.jaxws:org.jboss.ws.metadata.config:org.jboss.ws.metadata.config.binding:org.jboss.ws.metadata.config.jaxrpc:org.jboss.ws.metadata.jaxrpcmapping:org.jboss.ws.metadata.umdm:org.jboss.ws.metadata.wsdl:org.jboss.ws.metadata.wsdl.xmlschema:org.jboss.ws.metadata.wsdl.xsd:org.jboss.ws.metadata.wsse:org.jboss.ws.tools:org.jboss.ws.tools.ant:org.jboss.ws.tools.client:org.jboss.ws.tools.config:org.jboss.ws.tools.exceptions:org.jboss.ws.tools.factories:org.jboss.ws.tools.helpers:org.jboss.ws.tools.interfaces:org.jboss.ws.tools.jaxws.impl:org.jboss.ws.tools.mapping:org.jboss.ws.tools.metadata:org.jboss.ws.tools.schema:org.jboss.ws.tools.wsdl:org.jboss.ws.util.xml</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.ws.native.jbossws-native-factories</title>
-                                            <packages></packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.ws.native.jbossws-native-services</title>
-                                            <packages></packages>
-                                        </group>
-                                        <group>
                                             <title>Module org.jboss.ws.api</title>
                                             <packages>org.jboss.ws.api.addressing:org.jboss.ws.api.annotation:org.jboss.ws.api.binding:org.jboss.ws.api.handler:org.jboss.ws.api.monitoring:org.jboss.ws.api.tools:org.jboss.ws.api.util</packages>
                                         </group>
@@ -2796,18 +2720,6 @@
                                         <group>
                                             <title>Module org.jboss.ws.tools.common</title>
                                             <packages>org.jboss.ws.tools.ant:org.jboss.ws.tools.cmd</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.ws.saaj-impl</title>
-                                            <packages></packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.ws.tools.wsprovide</title>
-                                            <packages></packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.ws.tools.wsconsume</title>
-                                            <packages></packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.xb</title>
@@ -2824,10 +2736,6 @@
                                         <group>
                                             <title>Module org.joda.time</title>
                                             <packages>org.joda.time:org.joda.time.base:org.joda.time.chrono:org.joda.time.convert:org.joda.time.field:org.joda.time.format:org.joda.time.tz</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.omg.api</title>
-                                            <packages></packages>
                                         </group>
                                         <group>
                                             <title>Module org.osgi.core</title>
@@ -2876,10 +2784,6 @@
                                         <group>
                                             <title>Module nu.xom</title>
                                             <packages>nu.xom:nu.xom.canonical:nu.xom.converters:nu.xom.jaxen:nu.xom.jaxen.expr:nu.xom.jaxen.expr.iter:nu.xom.jaxen.function:nu.xom.jaxen.function.ext:nu.xom.jaxen.function.xslt:nu.xom.jaxen.saxpath:nu.xom.jaxen.saxpath.base:nu.xom.jaxen.saxpath.helpers:nu.xom.jaxen.util:nu.xom.tests:nu.xom.xinclude:nu.xom.xslt:org.w3c.dom</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module sun.jdk</title>
-                                            <packages></packages>
                                         </group>
                                     </groups>
                                     
