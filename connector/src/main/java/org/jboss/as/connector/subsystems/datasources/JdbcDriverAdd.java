@@ -22,27 +22,16 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.lang.reflect.Constructor;
 import java.sql.Driver;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.connector.services.driver.registry.DriverRegistry;
+import org.jboss.as.connector.logging.ConnectorMessages;
 import org.jboss.as.connector.services.driver.DriverService;
 import org.jboss.as.connector.services.driver.InstalledDriver;
+import org.jboss.as.connector.services.driver.registry.DriverRegistry;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -55,6 +44,18 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Operation handler responsible for adding a jdbc driver.
@@ -94,7 +95,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
         final ModelNode address = operation.require(OP_ADDR);
         final String driverName = PathAddress.pathAddress(address).getLastElement().getValue();
         if (operation.get(DRIVER_NAME.getName()).isDefined() && ! driverName.equals(operation.get(DRIVER_NAME.getName()).asString()))  {
-            throw SUBSYSTEM_DATASOURCES_LOGGER.driverNameAndResourceNameNotEquals(operation.get(DRIVER_NAME.getName()).asString(), driverName);
+            throw ConnectorMessages.MESSAGES.driverNameAndResourceNameNotEquals(operation.get(DRIVER_NAME.getName()).asString(), driverName);
         }
         String moduleName = operation.require(DRIVER_MODULE_NAME.getName()).asString();
         final Integer majorVersion = operation.hasDefined(DRIVER_MAJOR_VERSION.getName()) ? operation.get(DRIVER_MAJOR_VERSION.getName()).asInt() : null;

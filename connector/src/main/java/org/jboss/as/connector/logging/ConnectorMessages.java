@@ -49,6 +49,9 @@ public interface ConnectorMessages {
      */
     ConnectorMessages MESSAGES = Messages.getBundle(ConnectorMessages.class);
 
+    @Message(id = 10414, value = "the attribute driver-name (%s) cannot be different from driver resource name (%s)")
+    OperationFailedException driverNameAndResourceNameNotEquals(String driverName, String resourceName);
+
     /**
      * Creates an exception indicating the inability to complete the deployment.
      *

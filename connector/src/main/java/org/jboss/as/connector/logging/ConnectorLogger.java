@@ -24,7 +24,6 @@ package org.jboss.as.connector.logging;
 
 import java.sql.Driver;
 
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
@@ -197,15 +196,6 @@ public interface ConnectorLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 10411, value = "<drivers/> in standalone -ds.xml deployments aren't supported: Ignoring %s")
     void driversElementNotSupported(String deploymentName);
-
-    @Message(id = 10412, value = "the attribute class-name cannot be null for more than one connection-definition")
-    OperationFailedException classNameNullForMoreCD();
-
-    @Message(id = 10413, value = "the attribute class-name cannot be null for more than one admin-object")
-    OperationFailedException classNameNullForMoreAO();
-
-    @Message(id = 10414, value = "the attribute driver-name (%s) cannot be different from driver resource name (%s)")
-    OperationFailedException driverNameAndResourceNameNotEquals(String driverName, String resourceName);
 
     @LogMessage(level = WARN)
     @Message(id = 10415, value = "Method %s on DataSource class %s not found. Ignoring")
