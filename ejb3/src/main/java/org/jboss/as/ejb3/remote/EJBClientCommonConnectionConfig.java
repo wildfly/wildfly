@@ -34,12 +34,7 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.xnio.Option;
 import org.xnio.OptionMap;
 
-import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.RealmCallback;
-import java.io.IOException;
 import java.util.Properties;
 
 
@@ -134,20 +129,4 @@ class EJBClientCommonConnectionConfig implements EJBClientConfiguration.CommonCo
         }
     }
 
-    private class AnonymousCallbackHandler implements CallbackHandler {
-
-        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-            for (Callback current : callbacks) {
-                if (current instanceof NameCallback) {
-                    NameCallback ncb = (NameCallback) current;
-                    ncb.setName("anonymous");
-                } else if (current instanceof RealmCallback) {
-                    RealmCallback rcb = (RealmCallback) current;
-                    rcb.setText(rcb.getDefaultText());
-                } else {
-                    throw EjbLogger.ROOT_LOGGER.unsupportedCallback(current);
-                }
-            }
-        }
-    }
 }

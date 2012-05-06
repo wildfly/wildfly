@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import javax.security.auth.callback.CallbackHandler;
 
+import org.jboss.ejb.client.DeploymentNodeSelector;
 import org.jboss.ejb.client.EJBClientConfiguration;
 import org.xnio.OptionMap;
 
@@ -61,5 +62,10 @@ public abstract class ForwardingEjbClientConfiguration implements EJBClientConfi
     @Override
     public long getReconnectTasksTimeout() {
         return delegate.getReconnectTasksTimeout();
+    }
+
+    @Override
+    public DeploymentNodeSelector getDeploymentNodeSelector() {
+        return delegate.getDeploymentNodeSelector();
     }
 }

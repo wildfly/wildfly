@@ -81,6 +81,16 @@
                 </documentation>
             </annotation>
         </xsd:attribute>
+        <xsd:attribute name="deployment-node-selector" type="xsd:string" use="optional">
+            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                <documentation>
+                    The fully qualified classname of the class which implements the
+                    org.jboss.ejb.client.DeploymentNodeSelector
+                    interface. The instance of this class will be used for selecting nodes, from among multiple eligible
+                    nodes within a EJB client context, which can handle a particular deployment
+                </documentation>
+            </annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="ejb-receiversType">

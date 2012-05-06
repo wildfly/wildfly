@@ -26,7 +26,6 @@ package org.jboss.as.ejb3;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ResourceInjectionTarget;
-import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
@@ -48,12 +47,10 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.logging.Param;
-import org.jboss.metadata.ejb.spec.SessionType;
 import org.jboss.remoting3.Channel;
 
 import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRequiredException;
-import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.RemoveException;
 import javax.ejb.Timer;
@@ -63,14 +60,16 @@ import javax.resource.spi.UnavailableException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.transaction.RollbackException;
 import javax.transaction.Transaction;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
 import java.util.Date;
 
-import static org.jboss.logging.Logger.Level.*;
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * This module is using message IDs in the range 14100-14599. This file is using the subset 14100-14149 for
@@ -711,6 +710,14 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 14223, value = "Asynchronous invocations are only supported on session beans. Bean class %s is not a session bean, invocation on method %s will have no asynchronous semantics")
     void asyncMethodSupportedOnlyForSessionBeans(Class beanClass, Method invokedMethod);
+
+    @LogMessage(level = INFO)
+    @Message(id = 14224, value = "Cannot add cluster node %s to cluster %s since none of the client mappings matched for address %s")
+    void cannotAddClusterNodeDueToUnresolvableClientMapping(final String nodeName, final String clusterName, final InetAddress bindAddress);
+
+    @Message(id = 14225, value = "Could not create an instance of deployment node selector %s")
+    RuntimeException failedToCreateDeploymentNodeSelector(@Cause Exception e, String deploymentNodeSelectorClassName);
+
 
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is

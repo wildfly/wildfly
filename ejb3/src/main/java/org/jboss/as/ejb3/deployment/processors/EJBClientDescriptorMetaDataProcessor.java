@@ -37,6 +37,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.ejb.client.DeploymentNodeSelector;
 import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
@@ -141,6 +142,17 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
 
         final JBossEJBClientXmlConfiguration ejbClientConfig = new JBossEJBClientXmlConfiguration();
         ejbClientConfig.setInvocationTimeout(ejbClientDescriptorMetaData.getInvocationTimeout());
+        // deployment node selector
+        final String deploymentNodeSelectorClassName = ejbClientDescriptorMetaData.getDeploymentNodeSelector();
+        if (deploymentNodeSelectorClassName != null && !deploymentNodeSelectorClassName.trim().isEmpty()) {
+            try {
+                final Class<?> deploymentNodeSelectorClass = classLoader.loadClass(deploymentNodeSelectorClassName);
+                ejbClientConfig.setDeploymentNodeSelector((DeploymentNodeSelector) deploymentNodeSelectorClass.newInstance());
+            } catch (Exception e) {
+                throw EjbLogger.EJB3_LOGGER.failedToCreateDeploymentNodeSelector(e, deploymentNodeSelectorClassName);
+            }
+        }
+
         for (final EJBClientDescriptorMetaData.ClusterConfig clusterMetadata : ejbClientDescriptorMetaData.getClusterConfigs()) {
             final EJBClientClusterConfig clusterConfig = new EJBClientClusterConfig(clusterMetadata, classLoader, serviceRegistry);
             // add it to the client configuration
