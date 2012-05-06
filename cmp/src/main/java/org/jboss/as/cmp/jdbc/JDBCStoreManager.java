@@ -88,6 +88,7 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
     private final DeploymentUnit deploymentUnit;
     private final JDBCEntityMetaData metaData;
     private final CmpConfig cmpConfig;
+    private final TransactionLocal transactionData = new TransactionLocal();
 
     private InjectedValue<CmpEntityBeanComponent> component = new InjectedValue<CmpEntityBeanComponent>();
 
@@ -295,15 +296,7 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
         return readAheadCache;
     }
 
-    public static final AttachmentKey<Object> TX_DATA_MAP = AttachmentKey.create(Object.class);
-
     private Map<Object, Object> getApplicationTxDataMap() {
-        Map<Transaction, Map<Object, Object>> txDataMap = (Map<Transaction, Map<Object, Object>>) deploymentUnit.getAttachment(TX_DATA_MAP);
-        if (txDataMap == null) {
-            txDataMap = new HashMap<Transaction, Map<Object, Object>>();
-            deploymentUnit.putAttachment(TX_DATA_MAP, txDataMap);
-        }
-
         try {
             Transaction tx = tm.getTransaction();
             if (tx == null) {
@@ -311,7 +304,7 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
             }
 
             // get the txDataMap from the txMap
-            Map<Object, Object> txMap = txDataMap.get(tx);
+            Map<Object, Object> txMap = (Map<Object, Object>) transactionData.get(tx);
 
             // do we have an existing map
             if (txMap == null) {
@@ -319,7 +312,7 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
                 if (status == Status.STATUS_ACTIVE || status == Status.STATUS_PREPARING) {
                     // create and add the new map
                     txMap = new HashMap<Object, Object>();
-                    txDataMap.put(tx, txMap);
+                    transactionData.set(tx, txMap);
                 }
             }
             return txMap;
