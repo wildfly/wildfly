@@ -207,5 +207,8 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 10414, value = "the attribute driver-name (%s) cannot be different from driver resource name (%s)")
     OperationFailedException driverNameAndResourceNameNotEquals(String driverName, String resourceName);
 
+    @LogMessage(level = WARN)
+    @Message(id = 10415, value = "Method %s on DataSource class %s not found. Ignoring")
+    void methodNotFoundOnDataSource(final String method, final Class<?> clazz);
 
 }

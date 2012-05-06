@@ -22,6 +22,15 @@
 
 package org.jboss.as.connector.deployers.datasource;
 
+import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.sql.XADataSource;
+
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
 import org.jboss.as.connector.subsystems.datasources.DataSourceReferenceFactoryService;
@@ -61,12 +70,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
-
-import javax.sql.XADataSource;
-import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 
@@ -150,6 +153,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
                     }
                 }
             }
+            clearUnkownProperties(reflectionIndex, clazz, props);
             populateProperties(reflectionIndex, clazz, props);
             DsSecurityImpl dsSecurity = new DsSecurityImpl(user, password, null, null);
 
@@ -178,6 +182,29 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
 
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException(e);
+        }
+    }
+
+    private void clearUnkownProperties(final DeploymentReflectionIndex reflectionIndex, final Class<?> dataSourceClass, final Map<String, String> props) {
+        final Iterator<Map.Entry<String, String>> it = props.entrySet().iterator();
+        while (it.hasNext()) {
+            final Map.Entry<String, String> entry = it.next();
+            String value = entry.getKey();
+            if (value == null || "".equals(value)) {
+                it.remove();
+            } else {
+                StringBuilder builder = new StringBuilder("set").append(entry.getKey());
+                builder.setCharAt(3, Character.toUpperCase(entry.getKey().charAt(0)));
+                final String methodName = builder.toString();
+                final Class<?> paramType = value.getClass();
+                final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName, paramType);
+                final Method setterMethod = ClassReflectionIndexUtil.findMethod(reflectionIndex, dataSourceClass, methodIdentifier);
+                if(setterMethod == null) {
+                    it.remove();
+                    ConnectorLogger.DS_DEPLOYER_LOGGER.methodNotFoundOnDataSource(methodName, dataSourceClass);
+                }
+            }
+
         }
     }
 
