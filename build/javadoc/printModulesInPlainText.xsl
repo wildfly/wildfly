@@ -4,7 +4,7 @@
     <xsl:output method="text" indent="no"/>
 
     <!-- Print the groupId. -->
-    <xsl:template match="//module-def[@name]">
+    <xsl:template match="//module-def[@name and not(@slot) ]">
             <xsl:apply-templates select="maven-resource"/>
             <xsl:text>MODULE: </xsl:text><xsl:value-of select="@name"/>
             <xsl:text>
