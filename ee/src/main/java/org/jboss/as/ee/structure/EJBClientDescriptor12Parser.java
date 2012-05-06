@@ -124,6 +124,7 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
         USERNAME,
         SECURITY_REALM,
         INVOCATION_TIMEOUT,
+        DEPLOYMENT_NODE_SELECTOR,
         // default unknown attribute
         UNKNOWN;
 
@@ -142,6 +143,7 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
             attributesMap.put(new QName("username"), USERNAME);
             attributesMap.put(new QName("security-realm"), SECURITY_REALM);
             attributesMap.put(new QName("invocation-timeout"), INVOCATION_TIMEOUT);
+            attributesMap.put(new QName("deployment-node-selector"), DEPLOYMENT_NODE_SELECTOR);
             attributes = attributesMap;
         }
 
@@ -187,6 +189,9 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
                 case INVOCATION_TIMEOUT:
                     final Long invocationTimeout = Long.parseLong(val.trim());
                     ejbClientDescriptorMetaData.setInvocationTimeout(invocationTimeout);
+                    break;
+                case DEPLOYMENT_NODE_SELECTOR:
+                    ejbClientDescriptorMetaData.setDeploymentNodeSelector(val.trim());
                     break;
                 default:
                     unexpectedContent(reader);

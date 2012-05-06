@@ -19,8 +19,8 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<jboss-ejb-client xmlns="urn:jboss:ejb-client:1.1">
-    <client-context>
+<jboss-ejb-client xmlns="urn:jboss:ejb-client:1.2">
+    <client-context deployment-node-selector="org.jboss.as.test.manualmode.ejb.client.cluster.CustomDeploymentNodeSelector">
         <ejb-receivers exclude-local-receiver="true">
             <remoting-ejb-receiver outbound-connection-ref="remote-ejb-connection"/>
         </ejb-receivers>

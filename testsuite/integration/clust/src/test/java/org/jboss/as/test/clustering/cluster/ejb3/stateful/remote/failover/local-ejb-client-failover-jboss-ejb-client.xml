@@ -19,17 +19,15 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<jboss-ejb-client xmlns="urn:jboss:ejb-client:1.2">
-    <!-- A 1 second invocation timeout which will be tested in EJBClientDescriptorTestCase -->
-    <client-context invocation-timeout="1000" deployment-node-selector="org.jboss.as.test.integration.ejb.client.descriptor.DummyDeploymentNodeSelector">
-        <ejb-receivers exclude-local-receiver="true">
-            <remoting-ejb-receiver outbound-connection-ref="ejb-client-descriptor-test-remote-outbound-connection"
-                    connect-timeout="7000">
-                <channel-creation-options>
-                    <property name="org.jboss.remoting3.MAX_OUTBOUND_MESSAGES" value="1234"/>
-                    <property name="org.jboss.remoting3.MAX_INBOUND_MESSAGES" value="343"/>
-                </channel-creation-options>
-            </remoting-ejb-receiver>
-        </ejb-receivers>
+<jboss-ejb-client xmlns="urn:jboss:ejb-client:1.1">
+    <client-context>
+        <clusters>
+            <cluster name="ejb" connect-timeout="5000" username="user1" security-realm="PasswordRealm">
+                <connection-creation-options>
+                    <property name="org.xnio.Options.SSL_ENABLED" value="false"/>
+                    <property name="org.xnio.Options.SASL_POLICY_NOANONYMOUS" value="true"/>
+                </connection-creation-options>
+            </cluster>
+        </clusters>
     </client-context>
 </jboss-ejb-client>

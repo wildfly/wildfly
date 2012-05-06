@@ -22,6 +22,8 @@
 package org.jboss.as.ejb3.remote;
 
 import org.jboss.ejb.client.ContextSelector;
+import org.jboss.ejb.client.DeploymentNodeSelector;
+import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
@@ -31,9 +33,13 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.xnio.OptionMap;
 
+import javax.security.auth.callback.CallbackHandler;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * Service that manages an EJBClientContext
@@ -84,7 +90,7 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
-        final EJBClientContext clientContext = EJBClientContext.create();
+        final EJBClientContext clientContext = EJBClientContext.create(new LocalOnlyEjbClientConfiguration());
         // register the default local EJB receiver (if present - app clients don't have local EJB receivers)
         final LocalEjbReceiver localEjbReceiver = this.defaultLocalEJBReceiver.getOptionalValue();
         if (localEjbReceiver != null) {
@@ -144,6 +150,71 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
         public Void run() {
             EJBClientContext.lockSelector();
             return null;
+        }
+    }
+
+    /**
+     * A {@link EJBClientConfiguration} which is applicable only for a {@link EJBClientContext}
+     * consisting of just the {@link LocalEjbReceiver}. i.e. this client configuration cannot be used
+     * for setting up connections to remote servers
+     */
+    private class LocalOnlyEjbClientConfiguration implements EJBClientConfiguration {
+
+        private final DeploymentNodeSelector localPreferringDeploymentNodeSelector = new LocalEJBReceiverPreferringDeploymentNodeSelector();
+
+        @Override
+        public String getEndpointName() {
+            // This client configuration will *not* be used to create endpoints
+            return null;
+        }
+
+        @Override
+        public OptionMap getEndpointCreationOptions() {
+            // This client configuration will *not* be used to create endpoints
+            return OptionMap.EMPTY;
+        }
+
+        @Override
+        public OptionMap getRemoteConnectionProviderCreationOptions() {
+            // This client configuration will *not* be used to register connection providers
+            return OptionMap.EMPTY;
+        }
+
+        @Override
+        public CallbackHandler getCallbackHandler() {
+            // This client configuration is not applicable for registering remote connections
+            return null;
+        }
+
+        @Override
+        public Iterator<RemotingConnectionConfiguration> getConnectionConfigurations() {
+            // This client configuration will *not* be used for auto creating connections to remote servers.
+            return Collections.EMPTY_SET.iterator();
+        }
+
+        @Override
+        public Iterator<ClusterConfiguration> getClusterConfigurations() {
+            return Collections.EMPTY_SET.iterator();
+        }
+
+        @Override
+        public ClusterConfiguration getClusterConfiguration(String nodeName) {
+            return null;
+        }
+
+        @Override
+        public long getInvocationTimeout() {
+            return 0;
+        }
+
+        @Override
+        public long getReconnectTasksTimeout() {
+            return 0;
+        }
+
+        @Override
+        public DeploymentNodeSelector getDeploymentNodeSelector() {
+            return this.localPreferringDeploymentNodeSelector;
         }
     }
 

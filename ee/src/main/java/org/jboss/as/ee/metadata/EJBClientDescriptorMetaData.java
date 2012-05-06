@@ -40,6 +40,7 @@ public class EJBClientDescriptorMetaData {
     private boolean excludeLocalReceiver;
     private Boolean localReceiverPassByValue;
     private long invocationTimeout;
+    private String deploymentNodeSelector;
 
     private Map<String, RemotingReceiverConfiguration> remotingReceiverConfigurations = new HashMap<String, RemotingReceiverConfiguration>();
     private Set<ClusterConfig> clusterConfigs = new HashSet<ClusterConfig>();
@@ -125,6 +126,14 @@ public class EJBClientDescriptorMetaData {
 
     public void setInvocationTimeout(final long invocationTimeout) {
         this.invocationTimeout = invocationTimeout;
+    }
+
+    public String getDeploymentNodeSelector() {
+        return this.deploymentNodeSelector;
+    }
+
+    public void setDeploymentNodeSelector(final String selector) {
+        this.deploymentNodeSelector = selector;
     }
 
     public class ClusterConfig extends CommonConnectionConfig {

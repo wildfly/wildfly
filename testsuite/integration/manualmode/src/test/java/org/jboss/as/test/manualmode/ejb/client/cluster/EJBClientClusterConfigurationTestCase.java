@@ -115,7 +115,7 @@ public class EJBClientClusterConfigurationTestCase {
     @TargetsContainer(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION)
     public static Archive createContainer2Deployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
-        ejbJar.addClasses(ClusteredStatefulNodeNameEcho.class, NonClusteredStatefulNodeNameEcho.class, NodeNameEcho.class, ApplicationSpecificClusterNodeSelector.class);
+        ejbJar.addClasses(ClusteredStatefulNodeNameEcho.class, CustomDeploymentNodeSelector.class, NonClusteredStatefulNodeNameEcho.class, NodeNameEcho.class, ApplicationSpecificClusterNodeSelector.class);
         ejbJar.addAsManifestResource(NonClusteredStatefulNodeNameEcho.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
         return ejbJar;
     }
