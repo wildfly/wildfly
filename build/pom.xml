@@ -2617,6 +2617,8 @@
                                             <title>Module org.jboss.osgi.resolver</title>
                                             <packages>org.apache.felix.resolver:org.apache.felix.resolver.impl:org.jboss.osgi.resolver.felix:org.jboss.osgi.resolver:org.jboss.osgi.resolver.internal:org.jboss.osgi.resolver.spi:org.osgi.framework.namespace:org.osgi.framework.wiring:org.osgi.resource:org.osgi.service.resolver</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.osgi.metadata</title>
                                             <packages>org.jboss.osgi.metadata:org.jboss.osgi.metadata.internal</packages>
@@ -2633,7 +2635,8 @@
                                             <title>Module org.jboss.remote-naming</title>
                                             <packages>org.jboss.naming.remote:org.jboss.naming.remote.client:org.jboss.naming.remote.client.ejb:org.jboss.naming.remote.protocol:org.jboss.naming.remote.protocol.v1:org.jboss.naming.remote.server</packages>
                                         </group>
-                                        <!- -
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.resteasy.resteasy-atom-provider</title>
                                             <packages>org.jboss.resteasy.plugins.providers.atom</packages>
@@ -2654,6 +2657,8 @@
                                             <title>Module org.jboss.resteasy.resteasy-jettison-provider</title>
                                             <packages>org.jboss.resteasy.annotations.providers.jaxb.json:org.jboss.resteasy.plugins.providers.jaxb.json</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.resteasy.resteasy-jaxrs</title>
                                             <packages>org.jboss.resteasy.annotations:org.jboss.resteasy.annotations.cache:org.jboss.resteasy.annotations.interception:org.jboss.resteasy.annotations.providers.img:org.jboss.resteasy.client:org.jboss.resteasy.client.cache:org.jboss.resteasy.client.core:org.jboss.resteasy.client.core.executors:org.jboss.resteasy.client.core.extractors:org.jboss.resteasy.client.core.marshallers:org.jboss.resteasy.core:org.jboss.resteasy.core.interception:org.jboss.resteasy.core.messagebody:org.jboss.resteasy.core.registry:org.jboss.resteasy.core.request:org.jboss.resteasy.logging:org.jboss.resteasy.logging.impl:org.jboss.resteasy.mock:org.jboss.resteasy.plugins.delegates:org.jboss.resteasy.plugins.interceptors:org.jboss.resteasy.plugins.interceptors.encoding:org.jboss.resteasy.plugins.providers:org.jboss.resteasy.plugins.server.embedded:org.jboss.resteasy.plugins.server.resourcefactory:org.jboss.resteasy.plugins.server.servlet:org.jboss.resteasy.plugins.server.tjws:org.jboss.resteasy.specimpl:org.jboss.resteasy.spi:org.jboss.resteasy.spi.interception:org.jboss.resteasy.spi.touri:org.jboss.resteasy.spi.validation:org.jboss.resteasy.test:org.jboss.resteasy.util:org.jboss.resteasy.plugins.server.servlet</packages>
@@ -2684,6 +2689,8 @@
                                             <title>Module org.jboss.shrinkwrap.core</title>
                                             <packages>org.jboss.shrinkwrap.spi:org.jboss.shrinkwrap.api:org.jboss.shrinkwrap.api.asset:org.jboss.shrinkwrap.impl.base:org.jboss.shrinkwrap.impl.base.asset:org.jboss.shrinkwrap.impl.base.container:org.jboss.shrinkwrap.impl.base.exporter:org.jboss.shrinkwrap.impl.base.exporter.tar:org.jboss.shrinkwrap.impl.base.exporter.zip:org.jboss.shrinkwrap.impl.base.filter:org.jboss.shrinkwrap.impl.base.importer:org.jboss.shrinkwrap.impl.base.importer.tar:org.jboss.shrinkwrap.impl.base.importer.zip:org.jboss.shrinkwrap.impl.base.io:org.jboss.shrinkwrap.impl.base.io.tar:org.jboss.shrinkwrap.impl.base.path:org.jboss.shrinkwrap.impl.base.serialization:org.jboss.shrinkwrap.impl.base.spec:org.jboss.shrinkwrap.api:org.jboss.shrinkwrap.api.asset:org.jboss.shrinkwrap.api.classloader:org.jboss.shrinkwrap.api.classloader.:org.jboss.shrinkwrap.api.container:org.jboss.shrinkwrap.api.exporter:org.jboss.shrinkwrap.api.formatter:org.jboss.shrinkwrap.api.importer:org.jboss.shrinkwrap.api.serialization:org.jboss.shrinkwrap.api.spec</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.weld.core</title>
                                             <packages>org.jboss.weld:org.jboss.weld.bean:org.jboss.weld.bean.builtin:org.jboss.weld.bean.builtin.ee:org.jboss.weld.bean.interceptor:org.jboss.weld.bean.proxy:org.jboss.weld.bean.proxy.util:org.jboss.weld.bootstrap:org.jboss.weld.bootstrap.events:org.jboss.weld.context:org.jboss.weld.context.beanstore:org.jboss.weld.context.beanstore.ejb:org.jboss.weld.context.beanstore.http:org.jboss.weld.context.bound:org.jboss.weld.context.cache:org.jboss.weld.context.conversation:org.jboss.weld.context.ejb:org.jboss.weld.context.http:org.jboss.weld.context.unbound:org.jboss.weld.ejb:org.jboss.weld.el:org.jboss.weld.event:org.jboss.weld.exceptions:org.jboss.weld.injection:org.jboss.weld.interceptor:org.jboss.weld.interceptor.builder:org.jboss.weld.interceptor.proxy:org.jboss.weld.interceptor.reader:org.jboss.weld.interceptor.reader.cache:org.jboss.weld.interceptor.spi.context:org.jboss.weld.interceptor.spi.instance:org.jboss.weld.interceptor.spi.metadata:org.jboss.weld.interceptor.spi.model:org.jboss.weld.interceptor.util:org.jboss.weld.interceptor.util.proxy:org.jboss.weld.introspector:org.jboss.weld.introspector.jlr:org.jboss.weld.jsf:org.jboss.weld.literal:org.jboss.weld.logging:org.jboss.weld.logging.messages:org.jboss.weld.manager:org.jboss.weld.metadata:org.jboss.weld.metadata.cache:org.jboss.weld.persistence:org.jboss.weld.resolution:org.jboss.weld.resources:org.jboss.weld.serialization:org.jboss.weld.servlet:org.jboss.weld.util:org.jboss.weld.util.bytecode:org.jboss.weld.util.collections:org.jboss.weld.util.dom:org.jboss.weld.util.el:org.jboss.weld.util.reflection:org.jboss.weld.util.reflection.instantiation:org.jboss.weld.ws:org.jboss.weld.xml</packages>
@@ -2700,6 +2707,8 @@
                                             <title>Module org.jboss.ws.common</title>
                                             <packages>org.jboss.ws.common:org.jboss.ws.common.concurrent:org.jboss.ws.common.deployment:org.jboss.ws.common.injection:org.jboss.ws.common.injection.finders:org.jboss.ws.common.injection.resolvers:org.jboss.ws.common.integration:org.jboss.ws.common.invocation:org.jboss.ws.common.io:org.jboss.ws.common.management:org.jboss.ws.common.monitoring:org.jboss.ws.common.reflection:org.jboss.ws.common.security:org.jboss.ws.common.serviceref:org.jboss.ws.common.servlet:org.jboss.ws.common.sort:org.jboss.ws.common.spi:org.jboss.ws.common.utils</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.ws.cxf.jbossws-cxf-server</title>
                                             <packages>org.jboss.wsf.stack.cxf:org.jboss.wsf.stack.cxf.config:org.jboss.wsf.stack.cxf.configuration:org.jboss.wsf.stack.cxf.deployment:org.jboss.wsf.stack.cxf.deployment.aspect:org.jboss.wsf.stack.cxf.interceptor:org.jboss.wsf.stack.cxf.management:org.jboss.wsf.stack.cxf.metadata:org.jboss.wsf.stack.cxf.metadata.services:org.jboss.wsf.stack.cxf.resolver:org.jboss.wsf.stack.cxf.security.authentication:org.jboss.wsf.stack.cxf.security.authentication.callback:org.jboss.wsf.stack.cxf.security.nonce:org.jboss.wsf.stack.cxf.spring.handler:org.jboss.wsf.stack.cxf.spring.parser:org.jboss.wsf.stack.cxf.transport</packages>
@@ -2716,6 +2725,8 @@
                                             <title>Module org.jboss.ws.jaxws-jboss-httpserver-httpspi</title>
                                             <packages>org.jboss.ws.httpserver_httpspi</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.ws.native.jbossws-native-core</title>
                                             <packages>javax.xml.ws.addressing:javax.xml.ws.addressing.soap:org.jboss.ws:org.jboss.ws.annotation:org.jboss.ws.core:org.jboss.ws.core.binding:org.jboss.ws.core.client:org.jboss.ws.core.client.ssl:org.jboss.ws.core.client.transport:org.jboss.ws.core.jaxrpc:org.jboss.ws.core.jaxrpc.binding:org.jboss.ws.core.jaxrpc.binding.jbossxb:org.jboss.ws.core.jaxrpc.client:org.jboss.ws.core.jaxrpc.client.serviceref:org.jboss.ws.core.jaxrpc.handler:org.jboss.ws.core.jaxws:org.jboss.ws.core.jaxws.binding:org.jboss.ws.core.jaxws.client:org.jboss.ws.core.jaxws.client.serviceref:org.jboss.ws.core.jaxws.handler:org.jboss.ws.core.jaxws.spi:org.jboss.ws.core.jaxws.spi.http:org.jboss.ws.core.jaxws.wsaddressing:org.jboss.ws.core.server:org.jboss.ws.core.server.netty:org.jboss.ws.core.soap:org.jboss.ws.core.soap.attachment:org.jboss.ws.core.utils:org.jboss.ws.extensions.addressing:org.jboss.ws.extensions.addressing.jaxrpc:org.jboss.ws.extensions.addressing.jaxws:org.jboss.ws.extensions.addressing.map:org.jboss.ws.extensions.addressing.metadata:org.jboss.ws.extensions.addressing.policy:org.jboss.ws.extensions.addressing.soap:org.jboss.ws.extensions.json:org.jboss.ws.extensions.policy:org.jboss.ws.extensions.policy.annotation:org.jboss.ws.extensions.policy.deployer:org.jboss.ws.extensions.policy.deployer.domainAssertion:org.jboss.ws.extensions.policy.deployer.exceptions:org.jboss.ws.extensions.policy.deployer.util:org.jboss.ws.extensions.policy.metadata:org.jboss.ws.extensions.security:org.jboss.ws.extensions.security.auth.callback:org.jboss.ws.extensions.security.element:org.jboss.ws.extensions.security.exception:org.jboss.ws.extensions.security.jaxrpc:org.jboss.ws.extensions.security.jaxws:org.jboss.ws.extensions.security.nonce:org.jboss.ws.extensions.security.operation:org.jboss.ws.extensions.validation:org.jboss.ws.extensions.xop:org.jboss.ws.extensions.xop.jaxrpc:org.jboss.ws.extensions.xop.jaxws:org.jboss.ws.feature:org.jboss.wsf.stack.jbws:org.jboss.ws.jaxrpc:org.jboss.ws.metadata.accessor:org.jboss.ws.metadata.builder:org.jboss.ws.metadata.builder.jaxrpc:org.jboss.ws.metadata.builder.jaxws:org.jboss.ws.metadata.config:org.jboss.ws.metadata.config.binding:org.jboss.ws.metadata.config.jaxrpc:org.jboss.ws.metadata.jaxrpcmapping:org.jboss.ws.metadata.umdm:org.jboss.ws.metadata.wsdl:org.jboss.ws.metadata.wsdl.xmlschema:org.jboss.ws.metadata.wsdl.xsd:org.jboss.ws.metadata.wsse:org.jboss.ws.tools:org.jboss.ws.tools.ant:org.jboss.ws.tools.client:org.jboss.ws.tools.config:org.jboss.ws.tools.exceptions:org.jboss.ws.tools.factories:org.jboss.ws.tools.helpers:org.jboss.ws.tools.interfaces:org.jboss.ws.tools.jaxws.impl:org.jboss.ws.tools.mapping:org.jboss.ws.tools.metadata:org.jboss.ws.tools.schema:org.jboss.ws.tools.wsdl:org.jboss.ws.util.xml</packages>
@@ -2732,6 +2743,8 @@
                                             <title>Module org.jboss.ws.tools.common</title>
                                             <packages>org.jboss.ws.tools.ant:org.jboss.ws.tools.cmd</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.xb</title>
                                             <packages>org.jboss.javabean.plugins.jaxb:org.jboss.xb:org.jboss.xb.annotations:org.jboss.xb.binding:org.jboss.xb.binding.group:org.jboss.xb.binding.introspection:org.jboss.xb.binding.metadata:org.jboss.xb.binding.metadata.unmarshalling:org.jboss.xb.binding.parser:org.jboss.xb.binding.parser.sax:org.jboss.xb.binding.resolver:org.jboss.xb.binding.sunday:org.jboss.xb.binding.sunday.marshalling:org.jboss.xb.binding.sunday.unmarshalling:org.jboss.xb.binding.sunday.unmarshalling.impl.runtime:org.jboss.xb.binding.sunday.xop:org.jboss.xb.builder:org.jboss.xb.builder.runtime:org.jboss.xb.spi:org.jboss.xb.util</packages>
@@ -2748,6 +2761,8 @@
                                             <title>Module org.joda.time</title>
                                             <packages>org.joda.time:org.joda.time.base:org.joda.time.chrono:org.joda.time.convert:org.joda.time.field:org.joda.time.format:org.joda.time.tz</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.osgi.core</title>
                                             <packages>org.osgi.framework:org.osgi.framework.hooks.service:org.osgi.framework.launch:org.osgi.service.condpermadmin:org.osgi.service.packageadmin:org.osgi.service.permissionadmin:org.osgi.service.startlevel:org.osgi.service.url</packages>
@@ -2764,6 +2779,8 @@
                                             <title>Module org.python.jython.standalone</title>
                                             <packages>com.google.common.base:com.google.common.collect:com.google.common.io:com.google.common.net:com.google.common.primitives:com.google.common.util.concurrent:com.kenai.jaffl:com.kenai.jaffl.annotations:com.kenai.jaffl.byref:com.kenai.jaffl.mapper:com.kenai.jaffl.provider:com.kenai.jaffl.provider.jffi:com.kenai.jaffl.struct:com.kenai.jaffl.util:com.kenai.jffi:com.xhaus.modjy:com.ziclix.python.sql:com.ziclix.python.sql.connect:com.ziclix.python.sql.handler:com.ziclix.python.sql.pipe:com.ziclix.python.sql.pipe.csv:com.ziclix.python.sql.pipe.db:com.ziclix.python.sql.procedure:com.ziclix.python.sql.util:javatests:jline:jnr.netdb:org.python:org.python.antlr:org.python.antlr.adapter:org.python.antlr.ast:org.python.antlr.base:org.python.antlr.op:org.python.antlr.runtime:org.python.antlr.runtime.debug:org.python.antlr.runtime.misc:org.python.antlr.runtime.tree:org.python.apache.html.dom:org.python.apache.wml:org.python.apache.wml.dom:org.python.apache.xerces.dom:org.python.apache.xerces.dom3.as:org.python.apache.xerces.dom.events:org.python.apache.xerces.impl:org.python.apache.xerces.impl.dtd:org.python.apache.xerces.impl.dtd.models:org.python.apache.xerces.impl.dv:org.python.apache.xerces.impl.dv.dtd:org.python.apache.xerces.impl.dv.util:org.python.apache.xerces.impl.dv.xs:org.python.apache.xerces.impl.io:org.python.apache.xerces.impl.msg:org.python.apache.xerces.impl.validation:org.python.apache.xerces.impl.xpath:org.python.apache.xerces.impl.xpath.regex:org.python.apache.xerces.impl.xs:org.python.apache.xerces.impl.xs.identity:org.python.apache.xerces.impl.xs.models:org.python.apache.xerces.impl.xs.opti:org.python.apache.xerces.impl.xs.traversers:org.python.apache.xerces.impl.xs.util:org.python.apache.xerces.jaxp:org.python.apache.xerces.jaxp.datatype:org.python.apache.xerces.jaxp.validation:org.python.apache.xerces.parsers:org.python.apache.xerces.util:org.python.apache.xerces.xinclude:org.python.apache.xerces.xni:org.python.apache.xerces.xni.grammars:org.python.apache.xerces.xni.parser:org.python.apache.xerces.xpointer:org.python.apache.xerces.xs:org.python.apache.xerces.xs.datatypes:org.python.apache.xml.serialize:org.python.compiler:org.python.constantine:org.python.constantine.platform:org.python.constantine.platform.darwin:org.python.constantine.platform.fake:org.python.constantine.platform.freebsd:org.python.constantine.platform.linux:org.python.constantine.platform.openbsd:org.python.constantine.platform.sunos:org.python.constantine.platform.windows:org.python.core:org.python.core.adapter:org.python.core.io:org.python.core.packagecache:org.python.core.util:org.python.expose:org.python.google.common.annotations:org.python.google.common.base:org.python.google.common.base.internal:org.python.google.common.collect:org.python.google.common.io:org.python.google.common.net:org.python.google.common.primitives:org.python.google.common.util.concurrent:org.python.indexer:org.python.indexer.ast:org.python.indexer.demos:org.python.indexer.types:org.python.jsr223:org.python.modules:org.python.modules._collections:org.python.modules._csv:org.python.modules._functools:org.python.modules.jffi:org.python.modules.posix:org.python.modules.random:org.python.modules.sre:org.python.modules.thread:org.python.modules._threading:org.python.modules.time:org.python.modules._weakref:org.python.modules.zipimport:org.python.objectweb.asm:org.python.objectweb.asm.commons:org.python.objectweb.asm.signature:org.python.objectweb.asm.util:org.python.posix:org.python.posix.util:org.python.tests:org.python.tests.constructor_kwargs:org.python.tests.identity:org.python.tests.inbred:org.python.tests.mro:org.python.tests.multihidden:org.python.tests.props:org.python.util:org.w3c.dom.html</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.slf4j.jcl-over-slf4j</title>
                                             <packages>org.apache.commons.logging:org.apache.commons.logging.impl</packages>
@@ -2776,11 +2793,12 @@
                                             <title>Module org.slf4j</title>
                                             <packages>org.slf4j:org.slf4j.helpers:org.slf4j.spi</packages>
                                         </group>
-                                        <!- -
                                         <group>
                                             <title>Module org.slf4j.impl</title>
                                             <packages>org.slf4j.impl</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.slf4j.ext</title>
                                             <packages>org.slf4j:org.slf4j.agent:org.slf4j.cal10n:org.slf4j.ext:org.slf4j.instrumentation:org.slf4j.profiler</packages>
