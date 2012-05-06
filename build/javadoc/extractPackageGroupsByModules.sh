@@ -19,7 +19,7 @@ M2_REPO=~/.m2/repository
 #for i in `find $PROJECT_ROOT_DIR/build/src/main/resources/modules/ -name module.xml` ;  do
 
 mkdir -p $TARGET;
-
+rm $TARGET/listedPackages.tmp.txt
 
 ###
 ###  Also print out the groups of packages from artifacts grouped by module; see build.xml for "groups definition".
@@ -37,24 +37,34 @@ echo "<groups>"
     #echo $LINE;
     ##  If it's a module name, create the <group>.
     if [[ $LINE == MODULE:* ]] ; then
-      if [ "" != "$MOD_NAME" ] ; then 
+      if [ "" != "$MOD_NAME" ] ; then     ##  This is here for the case we wanted to grab packages from the list of artifacts from packagesGroups.tmp.txt.
         #echo "    <packages>$PACKAGES</packages>"
         echo "  </group>";
+        MOD_NAME="";
       fi;
       MOD_NAME=${LINE#MODULE: }
       MOD_PATH=`echo $MOD_NAME | tr . /`
-      echo "  <group>"
-      echo "    <title>Module $MOD_NAME</title>"
       PACKAGES="";
       for JAR in `find $PROJECT_ROOT_DIR/build/target/jboss-as-7.1.2.Final-SNAPSHOT/modules/$MOD_PATH/main -name *.jar`; do
         #echo "    JAR: $JAR";
         for PACKAGE in `jar tf $JAR | grep .class | sed 's#/[^/]*\.class##' | sort | uniq`; do
           #PACKAGE=`dirname $PACKAGE | tr / .`
           PACKAGE=`echo $PACKAGE | tr / .`
+          ##  Check whether the package is listed in some previous module.
+          #if grep --line-regexp "$PACKAGE" $TARGET/listedPackages.tmp.txt  ; then  #> /dev/null
+          if grep --line-regexp "$PACKAGE in $MOD_NAME" $TARGET/listedPackages.tmp.txt  ; then  #> /dev/null
+            echo "[WARN]  Package $PACKAGE was already used!" >&2;
+            #read -p "Press enter."
+            #read -n1 -r -p "Press any key to continue..." key <&0
+          fi
+          echo "$PACKAGE in $MOD_NAME" >> $TARGET/listedPackages.tmp.txt
           PACKAGES="$PACKAGES:$PACKAGE";
         done;
       done;
-      echo "    <packages>$PACKAGES</packages>";
+      if [ "" == "$PACKAGES" ] ; then continue; fi;
+      echo "  <group>"
+      echo "    <title>Module $MOD_NAME</title>"
+      echo "    <packages>${PACKAGES#:}</packages>";  ## Remove first colon.
       continue;
     fi;
 
