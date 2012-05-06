@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -59,6 +60,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.ISecurityManagement;
+import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.auth.callback.JBossCallbackHandler;
 import org.jboss.security.auth.login.XMLLoginConfigImpl;
 import org.jboss.security.authentication.JBossCachedAuthenticationManager;
@@ -121,6 +123,10 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
         protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
             SecurityLogger.ROOT_LOGGER.activatingSecuritySubsystem();
 
+            if(context.getProcessType() != ProcessType.APPLICATION_CLIENT) {
+                //remove once AS7-4687 is resolved
+                SecurityActions.setSystemProperty(SecurityContextAssociation.SECURITYCONTEXT_THREADLOCAL, "true");
+            }
             final ServiceTarget target = context.getServiceTarget();
 
             final SecurityBootstrapService bootstrapService = new SecurityBootstrapService();
