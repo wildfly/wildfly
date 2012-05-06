@@ -480,7 +480,7 @@ public interface EjbLogger extends BasicLogger {
     void failedToCreateOptionForProperty(String propertyName, String reason);
 
     @Message(id = 14151, value = "Could not find view %s for EJB %s")
-    RuntimeException viewNotFound(String viewClass, String ejbName);
+    IllegalStateException viewNotFound(String viewClass, String ejbName);
 
     @Message(id = 14152, value = "Cannot perform asynchronous local invocation for component that is not a session bean")
     RuntimeException asyncInvocationOnlyApplicableForSessionBeans();
