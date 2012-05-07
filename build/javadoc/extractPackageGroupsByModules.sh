@@ -20,6 +20,7 @@ M2_REPO=~/.m2/repository
 
 mkdir -p $TARGET;
 rm $TARGET/listedPackages.tmp.txt
+touch $TARGET/listedPackages.tmp.txt
 
 ###
 ###  Also print out the groups of packages from artifacts grouped by module; see build.xml for "groups definition".
@@ -28,10 +29,11 @@ rm $TARGET/listedPackages.tmp.txt
 ###  Get the groups of artifacts in format:
 ###  MODULE:  org.foo.bar
 ###      ARTIFACT:  org.foo:bar 
-xsltproc $DIRNAME/printModulesInPlainText.xsl $PROJECT_ROOT_DIR/build/build.xml > packagesGroups.tmp.txt
+xsltproc $DIRNAME/printModulesInPlainText.xsl $PROJECT_ROOT_DIR/build/build.xml > $TARGET/modulesList.tmp.txt
 
 echo "<groups>"
-
+  
+  ##  For each module in build.xml...
   while read -r LINE ; do
 
     #echo $LINE;
@@ -52,13 +54,15 @@ echo "<groups>"
           PACKAGE=`echo $PACKAGE | tr / .`
           ##  Check whether the package is listed in some previous module.
           #if grep --line-regexp "$PACKAGE" $TARGET/listedPackages.tmp.txt  ; then  #> /dev/null
-          if grep --line-regexp "$PACKAGE in $MOD_NAME" $TARGET/listedPackages.tmp.txt  ; then  #> /dev/null
+          if grep --line-regexp "$PACKAGE in .*" $TARGET/listedPackages.tmp.txt  -q; then  #> /dev/null
             echo "[WARN]  Package $PACKAGE was already used!" >&2;
+            grep --line-regexp "$PACKAGE in .*" $TARGET/listedPackages.tmp.txt  >&2;
             #read -p "Press enter."
             #read -n1 -r -p "Press any key to continue..." key <&0
+          else
+            PACKAGES="$PACKAGES:$PACKAGE";
           fi
           echo "$PACKAGE in $MOD_NAME" >> $TARGET/listedPackages.tmp.txt
-          PACKAGES="$PACKAGES:$PACKAGE";
         done;
       done;
       if [ "" == "$PACKAGES" ] ; then continue; fi;
@@ -71,7 +75,7 @@ echo "<groups>"
     ##  Otherwise, it's an groupId:artifactId. Get it, unzip it, get a list of packages.
     #ART_PATH=$LINE
     #	PACKAGES="$PACKAGES:$LINE"
-  done < packagesGroups.tmp.txt
+  done < $TARGET/modulesList.tmp.txt
 
 echo "</groups>"
 
