@@ -1768,6 +1768,9 @@
                                     <debug>true</debug>
                                     <verbose>true</verbose>
                                     <maxmemory>1024m</maxmemory>
+                                    <!-- To prevent problems with author names written in non-UTF-8:
+                                    <encoding>ISO-8859-1</encoding>
+                                    -->
                                     
                                     <includeDependencySources>true</includeDependencySources>
                                     <dependencySourceIncludes>
@@ -2742,42 +2745,61 @@
                                             <packages>org.jboss.shrinkwrap.spi:org.jboss.shrinkwrap.api:org.jboss.shrinkwrap.api.asset:org.jboss.shrinkwrap.impl.base:org.jboss.shrinkwrap.impl.base.asset:org.jboss.shrinkwrap.impl.base.container:org.jboss.shrinkwrap.impl.base.exporter:org.jboss.shrinkwrap.impl.base.exporter.tar:org.jboss.shrinkwrap.impl.base.exporter.zip:org.jboss.shrinkwrap.impl.base.filter:org.jboss.shrinkwrap.impl.base.importer:org.jboss.shrinkwrap.impl.base.importer.tar:org.jboss.shrinkwrap.impl.base.importer.zip:org.jboss.shrinkwrap.impl.base.io:org.jboss.shrinkwrap.impl.base.io.tar:org.jboss.shrinkwrap.impl.base.path:org.jboss.shrinkwrap.impl.base.serialization:org.jboss.shrinkwrap.impl.base.spec:org.jboss.shrinkwrap.api:org.jboss.shrinkwrap.api.asset:org.jboss.shrinkwrap.api.classloader:org.jboss.shrinkwrap.api.classloader.:org.jboss.shrinkwrap.api.container:org.jboss.shrinkwrap.api.exporter:org.jboss.shrinkwrap.api.formatter:org.jboss.shrinkwrap.api.importer:org.jboss.shrinkwrap.api.serialization:org.jboss.shrinkwrap.api.spec</packages>
                                         </group>
                                         -->
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.weld.core</title>
                                             <packages>org.jboss.weld:org.jboss.weld.bean:org.jboss.weld.bean.builtin:org.jboss.weld.bean.builtin.ee:org.jboss.weld.bean.interceptor:org.jboss.weld.bean.proxy:org.jboss.weld.bean.proxy.util:org.jboss.weld.bootstrap:org.jboss.weld.bootstrap.events:org.jboss.weld.context:org.jboss.weld.context.beanstore:org.jboss.weld.context.beanstore.ejb:org.jboss.weld.context.beanstore.http:org.jboss.weld.context.bound:org.jboss.weld.context.cache:org.jboss.weld.context.conversation:org.jboss.weld.context.ejb:org.jboss.weld.context.http:org.jboss.weld.context.unbound:org.jboss.weld.ejb:org.jboss.weld.el:org.jboss.weld.event:org.jboss.weld.exceptions:org.jboss.weld.injection:org.jboss.weld.interceptor:org.jboss.weld.interceptor.builder:org.jboss.weld.interceptor.proxy:org.jboss.weld.interceptor.reader:org.jboss.weld.interceptor.reader.cache:org.jboss.weld.interceptor.spi.context:org.jboss.weld.interceptor.spi.instance:org.jboss.weld.interceptor.spi.metadata:org.jboss.weld.interceptor.spi.model:org.jboss.weld.interceptor.util:org.jboss.weld.interceptor.util.proxy:org.jboss.weld.introspector:org.jboss.weld.introspector.jlr:org.jboss.weld.jsf:org.jboss.weld.literal:org.jboss.weld.logging:org.jboss.weld.logging.messages:org.jboss.weld.manager:org.jboss.weld.metadata:org.jboss.weld.metadata.cache:org.jboss.weld.persistence:org.jboss.weld.resolution:org.jboss.weld.resources:org.jboss.weld.serialization:org.jboss.weld.servlet:org.jboss.weld.util:org.jboss.weld.util.bytecode:org.jboss.weld.util.collections:org.jboss.weld.util.dom:org.jboss.weld.util.el:org.jboss.weld.util.reflection:org.jboss.weld.util.reflection.instantiation:org.jboss.weld.ws:org.jboss.weld.xml</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.weld.api</title>
                                             <packages>org.jboss.weld.context:org.jboss.weld.context.bound:org.jboss.weld.context.ejb:org.jboss.weld.context.http:org.jboss.weld.context.unbound</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.weld.spi</title>
                                             <packages>org.jboss.weld.bootstrap.api:org.jboss.weld.bootstrap.api.helpers:org.jboss.weld.bootstrap.spi:org.jboss.weld.bootstrap.spi.helpers:org.jboss.weld.context.api:org.jboss.weld.ejb.api:org.jboss.weld.ejb.spi:org.jboss.weld.ejb.spi.helpers:org.jboss.weld.injection.spi:org.jboss.weld.injection.spi.helpers:org.jboss.weld.manager.api:org.jboss.weld.resources.spi:org.jboss.weld.resources.spi.helpers:org.jboss.weld.security.spi:org.jboss.weld.serialization.spi:org.jboss.weld.serialization.spi.helpers:org.jboss.weld.servlet.api:org.jboss.weld.servlet.api.helpers:org.jboss.weld.transaction.spi:org.jboss.weld.validation.spi</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.ws.common</title>
                                             <packages>org.jboss.ws.common:org.jboss.ws.common.concurrent:org.jboss.ws.common.deployment:org.jboss.ws.common.injection:org.jboss.ws.common.injection.finders:org.jboss.ws.common.injection.resolvers:org.jboss.ws.common.integration:org.jboss.ws.common.invocation:org.jboss.ws.common.io:org.jboss.ws.common.management:org.jboss.ws.common.monitoring:org.jboss.ws.common.reflection:org.jboss.ws.common.security:org.jboss.ws.common.serviceref:org.jboss.ws.common.servlet:org.jboss.ws.common.sort:org.jboss.ws.common.spi:org.jboss.ws.common.utils</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.ws.cxf.jbossws-cxf-server</title>
                                             <packages>org.jboss.wsf.stack.cxf:org.jboss.wsf.stack.cxf.config:org.jboss.wsf.stack.cxf.configuration:org.jboss.wsf.stack.cxf.deployment:org.jboss.wsf.stack.cxf.deployment.aspect:org.jboss.wsf.stack.cxf.interceptor:org.jboss.wsf.stack.cxf.management:org.jboss.wsf.stack.cxf.metadata:org.jboss.wsf.stack.cxf.metadata.services:org.jboss.wsf.stack.cxf.resolver:org.jboss.wsf.stack.cxf.security.authentication:org.jboss.wsf.stack.cxf.security.authentication.callback:org.jboss.wsf.stack.cxf.security.nonce:org.jboss.wsf.stack.cxf.spring.handler:org.jboss.wsf.stack.cxf.spring.parser:org.jboss.wsf.stack.cxf.transport</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.ws.cxf.jbossws-cxf-transports-httpserver</title>
                                             <packages>org.jboss.wsf.stack.cxf.addons.transports.httpserver</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.ws.jaxws-client</title>
                                             <packages>org.jboss.wsf.stack.cxf.client:org.jboss.wsf.stack.cxf.client.configuration:org.jboss.wsf.stack.cxf.client.serviceref:org.jboss.wsf.stack.cxf.client.util:org.jboss.wsf.stack.cxf.extensions.addressing.map:org.jboss.wsf.stack.cxf.extensions.security:org.jboss.wsf.stack.cxf.saaj:org.jboss.wsf.stack.cxf.tools</packages>
                                         </group>
+                                        -->
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.ws.jaxws-jboss-httpserver-httpspi</title>
                                             <packages>org.jboss.ws.httpserver_httpspi</packages>
                                         </group>
+                                        -->
+
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.ws.native.jbossws-native-core</title>
                                             <packages>javax.xml.ws.addressing:javax.xml.ws.addressing.soap:org.jboss.ws:org.jboss.ws.annotation:org.jboss.ws.core:org.jboss.ws.core.binding:org.jboss.ws.core.client:org.jboss.ws.core.client.ssl:org.jboss.ws.core.client.transport:org.jboss.ws.core.jaxrpc:org.jboss.ws.core.jaxrpc.binding:org.jboss.ws.core.jaxrpc.binding.jbossxb:org.jboss.ws.core.jaxrpc.client:org.jboss.ws.core.jaxrpc.client.serviceref:org.jboss.ws.core.jaxrpc.handler:org.jboss.ws.core.jaxws:org.jboss.ws.core.jaxws.binding:org.jboss.ws.core.jaxws.client:org.jboss.ws.core.jaxws.client.serviceref:org.jboss.ws.core.jaxws.handler:org.jboss.ws.core.jaxws.spi:org.jboss.ws.core.jaxws.spi.http:org.jboss.ws.core.jaxws.wsaddressing:org.jboss.ws.core.server:org.jboss.ws.core.server.netty:org.jboss.ws.core.soap:org.jboss.ws.core.soap.attachment:org.jboss.ws.core.utils:org.jboss.ws.extensions.addressing:org.jboss.ws.extensions.addressing.jaxrpc:org.jboss.ws.extensions.addressing.jaxws:org.jboss.ws.extensions.addressing.map:org.jboss.ws.extensions.addressing.metadata:org.jboss.ws.extensions.addressing.policy:org.jboss.ws.extensions.addressing.soap:org.jboss.ws.extensions.json:org.jboss.ws.extensions.policy:org.jboss.ws.extensions.policy.annotation:org.jboss.ws.extensions.policy.deployer:org.jboss.ws.extensions.policy.deployer.domainAssertion:org.jboss.ws.extensions.policy.deployer.exceptions:org.jboss.ws.extensions.policy.deployer.util:org.jboss.ws.extensions.policy.metadata:org.jboss.ws.extensions.security:org.jboss.ws.extensions.security.auth.callback:org.jboss.ws.extensions.security.element:org.jboss.ws.extensions.security.exception:org.jboss.ws.extensions.security.jaxrpc:org.jboss.ws.extensions.security.jaxws:org.jboss.ws.extensions.security.nonce:org.jboss.ws.extensions.security.operation:org.jboss.ws.extensions.validation:org.jboss.ws.extensions.xop:org.jboss.ws.extensions.xop.jaxrpc:org.jboss.ws.extensions.xop.jaxws:org.jboss.ws.feature:org.jboss.wsf.stack.jbws:org.jboss.ws.jaxrpc:org.jboss.ws.metadata.accessor:org.jboss.ws.metadata.builder:org.jboss.ws.metadata.builder.jaxrpc:org.jboss.ws.metadata.builder.jaxws:org.jboss.ws.metadata.config:org.jboss.ws.metadata.config.binding:org.jboss.ws.metadata.config.jaxrpc:org.jboss.ws.metadata.jaxrpcmapping:org.jboss.ws.metadata.umdm:org.jboss.ws.metadata.wsdl:org.jboss.ws.metadata.wsdl.xmlschema:org.jboss.ws.metadata.wsdl.xsd:org.jboss.ws.metadata.wsse:org.jboss.ws.tools:org.jboss.ws.tools.ant:org.jboss.ws.tools.client:org.jboss.ws.tools.config:org.jboss.ws.tools.exceptions:org.jboss.ws.tools.factories:org.jboss.ws.tools.helpers:org.jboss.ws.tools.interfaces:org.jboss.ws.tools.jaxws.impl:org.jboss.ws.tools.mapping:org.jboss.ws.tools.metadata:org.jboss.ws.tools.schema:org.jboss.ws.tools.wsdl:org.jboss.ws.util.xml</packages>
                                         </group>
+                                        -->
                                         <group>
                                             <title>Module org.jboss.ws.api</title>
                                             <packages>org.jboss.ws.api.addressing:org.jboss.ws.api.annotation:org.jboss.ws.api.binding:org.jboss.ws.api.handler:org.jboss.ws.api.monitoring:org.jboss.ws.api.tools:org.jboss.ws.api.util</packages>
@@ -2790,10 +2812,12 @@
                                             <title>Module org.jboss.ws.tools.common</title>
                                             <packages>org.jboss.ws.tools.ant:org.jboss.ws.tools.cmd</packages>
                                         </group>
+                                        <!--
                                         <group>
                                             <title>Module org.jboss.xb</title>
                                             <packages>org.jboss.javabean.plugins.jaxb:org.jboss.xb:org.jboss.xb.annotations:org.jboss.xb.binding:org.jboss.xb.binding.group:org.jboss.xb.binding.introspection:org.jboss.xb.binding.metadata:org.jboss.xb.binding.metadata.unmarshalling:org.jboss.xb.binding.parser:org.jboss.xb.binding.parser.sax:org.jboss.xb.binding.resolver:org.jboss.xb.binding.sunday:org.jboss.xb.binding.sunday.marshalling:org.jboss.xb.binding.sunday.unmarshalling:org.jboss.xb.binding.sunday.unmarshalling.impl.runtime:org.jboss.xb.binding.sunday.xop:org.jboss.xb.builder:org.jboss.xb.builder.runtime:org.jboss.xb.spi:org.jboss.xb.util</packages>
                                         </group>
+                                        -->
                                         <!-- Causes "key doclet.Same_package_name_used".
                                         <group>
                                             <title>Module org.jboss.xts</title>
