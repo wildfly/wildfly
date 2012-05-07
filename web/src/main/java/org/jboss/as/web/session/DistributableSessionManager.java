@@ -418,6 +418,9 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
         resetStats();
 
+        // Notify our interested LifecycleListeners
+        lifecycle.fireLifecycleEvent(BEFORE_STOP_EVENT, this);
+
         clearSessions();
 
         this.distributedCacheManager.stop();
