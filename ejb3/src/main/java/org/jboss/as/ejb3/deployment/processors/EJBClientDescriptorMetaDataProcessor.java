@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.deployment.processors;
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.remote.DescriptorBasedEJBClientContextService;
 import org.jboss.as.ejb3.remote.EJBClientClusterConfig;
@@ -138,7 +139,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
 
     }
 
-    private EJBClientConfiguration createClientConfiguration(final ServiceRegistry serviceRegistry, final ClassLoader classLoader, final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) {
+    private EJBClientConfiguration createClientConfiguration(final ServiceRegistry serviceRegistry, final ClassLoader classLoader, final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) throws DeploymentUnitProcessingException {
 
         final JBossEJBClientXmlConfiguration ejbClientConfig = new JBossEJBClientXmlConfiguration();
         ejbClientConfig.setInvocationTimeout(ejbClientDescriptorMetaData.getInvocationTimeout());
@@ -149,7 +150,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                 final Class<?> deploymentNodeSelectorClass = classLoader.loadClass(deploymentNodeSelectorClassName);
                 ejbClientConfig.setDeploymentNodeSelector((DeploymentNodeSelector) deploymentNodeSelectorClass.newInstance());
             } catch (Exception e) {
-                throw EjbLogger.EJB3_LOGGER.failedToCreateDeploymentNodeSelector(e, deploymentNodeSelectorClassName);
+                throw EjbMessages.MESSAGES.failedToCreateDeploymentNodeSelector(e, deploymentNodeSelectorClassName);
             }
         }
 
