@@ -9,8 +9,8 @@ public class AsyncBeanDescriptor {
     public static volatile boolean futureMethodCalled = false;
 
     public Future<Boolean> futureMethod(CountDownLatch latch) throws InterruptedException {
-        latch.countDown();
         futureMethodCalled = true;
+        latch.countDown();
         return new AsyncResult<Boolean>(true);
     }
 }

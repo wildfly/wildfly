@@ -54,7 +54,7 @@ import org.junit.runner.RunWith;
 public class AsyncMethodTestCase {
     private static final Logger log = Logger.getLogger(AsyncMethodTestCase.class);
     private static final String ARCHIVE_NAME = "AsyncTestCase";
-    private static final Integer WAIT_TIME_S = 2;
+    private static final Integer WAIT_TIME_S = 10;
 
     @ArquillianResource
     private InitialContext iniCtx;
@@ -258,7 +258,7 @@ public class AsyncMethodTestCase {
                 ARCHIVE_NAME + "/" + AsyncBeanRemote.class.getSimpleName() + "!" + AsyncBeanRemoteInterface.class.getName());
         bean.asyncMethod();
     }
-    
+
     /**
      * Remote async return future call
      */
