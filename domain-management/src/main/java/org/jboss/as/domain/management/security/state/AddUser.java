@@ -20,17 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.as.domain.management.security.state;
 
-import org.jboss.as.domain.management.security.ConsoleWrapper;
-import org.jboss.msc.service.StartException;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.domain.management.security.ConsoleWrapper;
+import org.jboss.msc.service.StartException;
 
 /**
  * State to perform the actual addition to the discovered properties files.
@@ -41,18 +40,27 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 public class AddUser extends UpdatePropertiesHandler implements State {
 
     private final StateValues stateValues;
+    private final ConsoleWrapper theConsole;
 
     public AddUser(ConsoleWrapper theConsole, final StateValues stateValues) {
         super(theConsole);
+        this.theConsole = theConsole;
         this.stateValues = stateValues;
     }
 
     @Override
     public State execute() {
+        State nextState = update(stateValues);
         /*
-        * At this point the files have been written and confirmation passed back so nothing else to do.
-        */
-        return update(stateValues);
+         * If this is interactive mode and no error occurred offer to display the
+         * Base64 password of the user - otherwise the util can end.
+         */
+        if (nextState == null && stateValues.isInteractive()) {
+            nextState = new ConfirmationChoice(theConsole, MESSAGES.serverUser(), MESSAGES.yesNo(), new DisplaySecret(
+                    theConsole, stateValues), null);
+
+        }
+        return nextState;
     }
 
     @Override
