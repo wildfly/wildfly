@@ -217,7 +217,7 @@ No changes will be made to your system.
         if not final_filename:
             return False
 
-        archive_fp = open(final_filename, 'r')
+        archive_fp = open(final_filename, 'rb')
         digest = hashlib.new(get_hash_name())
         digest.update(archive_fp.read())
         archive_fp.close()
