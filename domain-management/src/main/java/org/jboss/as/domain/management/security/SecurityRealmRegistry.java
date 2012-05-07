@@ -25,6 +25,8 @@ package org.jboss.as.domain.management.security;
 import java.security.Permission;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.as.domain.management.SecurityRealm;
 
@@ -39,7 +41,7 @@ public class SecurityRealmRegistry {
 
     private static final RuntimePermission LOOKUP_REALM_PERMISSION = new RuntimePermission("org.jboss.as.domain.management.security.LOOKUP_REALM");
 
-    private static Map<String, SecurityRealm> realms = new HashMap<String, SecurityRealm>();
+    private static ConcurrentMap<String, SecurityRealm> realms = new ConcurrentHashMap<String, SecurityRealm>(2, 0.75f, 2);
 
     public static SecurityRealm lookup(final String name) {
         checkPermission(LOOKUP_REALM_PERMISSION);
