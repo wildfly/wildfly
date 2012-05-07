@@ -75,7 +75,7 @@ public class AsyncBean {
         latch2.await(5, TimeUnit.SECONDS);
         
         result += ";";
-        result = ctx.wasCancelCalled() ? "true" : "false";
+        result += ctx.wasCancelCalled() ? "true" : "false";
         return new AsyncResult<String>(result);
     }   
     
