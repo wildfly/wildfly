@@ -186,7 +186,7 @@ public class CommonDescriptions {
         root.get(REQUEST_PROPERTIES, VALUE, REQUIRED).set(false);
         root.get(REQUEST_PROPERTIES, VALUE, NILLABLE).set(true);
         if (useBoottime) {
-            root.get(REQUEST_PROPERTIES, BOOT_TIME, TYPE).set(ModelType.STRING);
+            root.get(REQUEST_PROPERTIES, BOOT_TIME, TYPE).set(ModelType.BOOLEAN);
             root.get(REQUEST_PROPERTIES, BOOT_TIME, DESCRIPTION).set(bundle.getString("system-property.boottime"));
             root.get(REQUEST_PROPERTIES, BOOT_TIME, REQUIRED).set(false);
             root.get(REQUEST_PROPERTIES, BOOT_TIME, NILLABLE).set(true);
