@@ -2864,12 +2864,10 @@
                                             <packages>org.apache.commons.logging:org.apache.commons.logging.impl</packages>
                                         </group>
                                         -->
-                                        <!--
                                         <group>
                                             <title>Module org.scannotation.scannotation</title>
                                             <packages>org.scannotation:org.scannotation.archiveiterator</packages>
                                         </group>
-                                        -->
                                         <!--
                                         <group>
                                             <title>Module org.slf4j</title>
@@ -2888,24 +2886,18 @@
                                             <packages>org.slf4j:org.slf4j.agent:org.slf4j.cal10n:org.slf4j.ext:org.slf4j.instrumentation:org.slf4j.profiler</packages>
                                         </group>
                                         -->
-                                        <!--
                                         <group>
                                             <title>Module org.yaml.snakeyaml</title>
                                             <packages>biz.source_code.base64Coder:com.google.gdata.util.common.base:org.yaml.snakeyaml:org.yaml.snakeyaml.composer:org.yaml.snakeyaml.constructor:org.yaml.snakeyaml.emitter:org.yaml.snakeyaml.error:org.yaml.snakeyaml.events:org.yaml.snakeyaml.extensions.compactnotation:org.yaml.snakeyaml.introspector:org.yaml.snakeyaml.nodes:org.yaml.snakeyaml.parser:org.yaml.snakeyaml.reader:org.yaml.snakeyaml.representer:org.yaml.snakeyaml.resolver:org.yaml.snakeyaml.scanner:org.yaml.snakeyaml.serializer:org.yaml.snakeyaml.tokens:org.yaml.snakeyaml.util</packages>
                                         </group>
-                                        -->
-                                        <!--
                                         <group>
                                             <title>Module javax.wsdl4j.api</title>
                                             <packages>com.ibm.wsdl:com.ibm.wsdl.extensions:com.ibm.wsdl.extensions.http:com.ibm.wsdl.extensions.mime:com.ibm.wsdl.extensions.schema:com.ibm.wsdl.extensions.soap:com.ibm.wsdl.extensions.soap12:com.ibm.wsdl.factory:com.ibm.wsdl.util:com.ibm.wsdl.util.xml:com.ibm.wsdl.xml:javax.wsdl:javax.wsdl.extensions:javax.wsdl.extensions.http:javax.wsdl.extensions.mime:javax.wsdl.extensions.schema:javax.wsdl.extensions.soap:javax.wsdl.extensions.soap12:javax.wsdl.factory:javax.wsdl.xml</packages>
                                         </group>
-                                        -->
-                                        <!-- Causes "key doclet.Same_package_name_used".
                                         <group>
                                             <title>Module nu.xom</title>
-                                            <packages>nu.xom:nu.xom.canonical:nu.xom.converters:nu.xom.jaxen:nu.xom.jaxen.expr:nu.xom.jaxen.expr.iter:nu.xom.jaxen.function:nu.xom.jaxen.function.ext:nu.xom.jaxen.function.xslt:nu.xom.jaxen.saxpath:nu.xom.jaxen.saxpath.base:nu.xom.jaxen.saxpath.helpers:nu.xom.jaxen.util:nu.xom.tests:nu.xom.xinclude:nu.xom.xslt:org.w3c.dom</packages>
+                                            <packages>nu.xom:nu.xom.canonical:nu.xom.converters:nu.xom.jaxen:nu.xom.jaxen.expr:nu.xom.jaxen.expr.iter:nu.xom.jaxen.function:nu.xom.jaxen.function.ext:nu.xom.jaxen.function.xslt:nu.xom.jaxen.saxpath:nu.xom.jaxen.saxpath.base:nu.xom.jaxen.saxpath.helpers:nu.xom.jaxen.util:nu.xom.tests:nu.xom.xinclude:nu.xom.xslt</packages>
                                         </group>
-                                        -->
                                     </groups>
                                     
                                 </configuration>
