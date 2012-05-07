@@ -56,8 +56,6 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
     private final Set<ServiceController<?>> servicesWithMissingDeps = identitySet();
     /** Services with missing deps as of the last time tick reached zero */
     private Set<ServiceName> previousMissingDepSet = new HashSet<ServiceName>();
-    /** State report generated the last time tick reached zero or awaitContainerStateChangeReport was called  */
-    private ContainerStateChangeReport changeReport;
 
     ContainerStateMonitor(final ServiceRegistry registry, final ServiceController<?> controller) {
         serviceRegistry = registry;
@@ -160,8 +158,7 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
             while (busyServiceCount.get() > count) {
                 wait();
             }
-            changeReport = createContainerStateChangeReport();
-            return changeReport;
+            return createContainerStateChangeReport(false);
         }
     }
 
@@ -174,14 +171,10 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
         synchronized (this) {
             notifyAll();
             if (tick == 0) {
-                if (changeReport == null) {
-                    changeReport = createContainerStateChangeReport();
-                }
-                // else someone called awaitContainerStateChangeReport -- use the one created by that
+                ContainerStateChangeReport changeReport = createContainerStateChangeReport(true);
 
                 if (changeReport != null) {
                     final String msg = createChangeReportLogMessage(changeReport);
-                    changeReport = null;
                     ROOT_LOGGER.info(msg);
                 }
             }
@@ -192,7 +185,18 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
         busyServiceCount.incrementAndGet();
     }
 
-    private synchronized ContainerStateChangeReport createContainerStateChangeReport() {
+    /**
+     * Creates a data structure reporting recent favorable and unfavorable changes in the state of installed services.
+     *
+     * @param resetHistory {@code true} if history tracking state used for detecting what has changed on the next
+     *                                 invocation of this method should be reset (meaning the next run will detect
+     *                                 more changes); {@code false} if the current history should be retained
+     *                                 (meaning the next run will act as if this run never happened)
+     *
+     * @return the report, or {@code null} if there is nothing noteworthy to report; i.e. no newly failed or missing
+     *         services and no newly corrected services
+     */
+    private synchronized ContainerStateChangeReport createContainerStateChangeReport(boolean resetHistory) {
 
         final Map<ServiceName, Set<ServiceName>> missingDeps = new HashMap<ServiceName, Set<ServiceName>>();
         for (ServiceController<?> controller : servicesWithMissingDeps) {
@@ -230,9 +234,11 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
 
         final Map<ServiceController<?>, String> currentFailedControllers = new HashMap<ServiceController<?>, String>(failedControllers);
 
-        previousMissingDepSet = new HashSet<ServiceName>(missingDeps.keySet());
+        if (resetHistory)  {
+            previousMissingDepSet = new HashSet<ServiceName>(missingDeps.keySet());
 
-        failedControllers.clear();
+            failedControllers.clear();
+        }
 
         boolean needReport = !missingServices.isEmpty() || !currentFailedControllers.isEmpty() || !noLongerMissingServices.isEmpty();
         return needReport ? new ContainerStateChangeReport(missingServices, currentFailedControllers, noLongerMissingServices) : null;
