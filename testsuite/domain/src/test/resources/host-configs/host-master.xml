@@ -40,7 +40,7 @@
             <security-realm name="ApplicationRealm">
                 <authentication>
                      <local default-user="$local" allowed-users="*"/>
-                     <properties path="application-users.properties" relative-to="jboss.domain.config.dir" />
+                     <properties path="domain/configuration/application-users.properties" relative-to="jboss.home.dir" />
                 </authentication>
             </security-realm>
         </security-realms>
