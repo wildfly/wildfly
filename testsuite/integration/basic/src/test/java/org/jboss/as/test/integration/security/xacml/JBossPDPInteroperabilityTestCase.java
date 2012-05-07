@@ -161,7 +161,7 @@ public class JBossPDPInteroperabilityTestCase {
     @Test
     public void testPoliciesLoadedFromDir() throws Exception {
         //create temporary folder for policies
-        final File policyDir = new File((File) null, "test-JBossPDP-Med-" + System.currentTimeMillis());
+        final File policyDir = new File("test-JBossPDP-Med-" + System.currentTimeMillis());
         final InputStream requestIS = getClass().getResourceAsStream(
                 XACMLTestUtils.TESTOBJECTS_REQUESTS + "/med-example-request.xml");
         try {
@@ -205,7 +205,7 @@ public class JBossPDPInteroperabilityTestCase {
      * Creates a {@link JBossPDP} instance filled with policies from Medical example (loaded from a directory in the
      * filesystem).
      * 
-     * @param policiesPath
+     * @param policyDir
      * @return
      * @throws IOException
      */
@@ -228,7 +228,7 @@ public class JBossPDPInteroperabilityTestCase {
         final PDP pdp = new PDP();
         final PoliciesType policies = new PoliciesType();
         final PolicySetType policySet = new PolicySetType();
-        policySet.setLocation(policyDir.getAbsolutePath());
+        policySet.setLocation(policyDir.toURI().getPath());
         policies.getPolicySet().add(policySet);
         pdp.setPolicies(policies);
         final LocatorType locator = new LocatorType();
