@@ -23,6 +23,7 @@
 package org.jboss.as.domain.management.security.state;
 
 import org.jboss.as.domain.management.security.AddPropertiesUser;
+import org.jboss.as.domain.management.security.AddPropertiesUser.Interactiveness;
 
 import java.io.File;
 import java.util.List;
@@ -59,6 +60,10 @@ public class StateValues {
 
     public boolean isSilent() {
         return (howInteractive == AddPropertiesUser.Interactiveness.SILENT);
+    }
+
+    public boolean isInteractive() {
+        return howInteractive == Interactiveness.INTERACTIVE;
     }
 
     public boolean isExistingUser() {

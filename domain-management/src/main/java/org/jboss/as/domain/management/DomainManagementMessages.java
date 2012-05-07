@@ -385,6 +385,30 @@ public interface DomainManagementMessages {
     String errorHeader();
 
     /**
+     * A message to check if this user is going to be used by a host controller to connect to the master domain controller.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "Is this new user going to be used for one AS process to connect to another AS process e.g. slave domain controller?")
+    String serverUser();
+
+    /**
+     * Simple yes/no prompt.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "yes/no?")
+    String yesNo();
+
+    /**
+     * To represent this user use the following secret entry in the server-identities.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "To represent the user add the following to the server-identities definition <secret value=\"%s\" />")
+    String secretElement(String base64);
+
+    /**
      * Error message if more than one username/password authentication mechanism is defined.
      *
      * @param realmName the name of the security realm
