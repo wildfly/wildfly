@@ -715,9 +715,6 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 14224, value = "Cannot add cluster node %s to cluster %s since none of the client mappings matched for address %s")
     void cannotAddClusterNodeDueToUnresolvableClientMapping(final String nodeName, final String clusterName, final InetAddress bindAddress);
 
-    @Message(id = 14225, value = "Could not create an instance of deployment node selector %s")
-    RuntimeException failedToCreateDeploymentNodeSelector(@Cause Exception e, String deploymentNodeSelectorClassName);
-
 
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
