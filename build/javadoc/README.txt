@@ -37,6 +37,7 @@ Workaround: Find which artifacts cause this issue and remove them from the set o
 6) Another Javadoc bug is AS7-4719: MissingResourceException, key doclet.Same_package_name_used
 
 Workaround: Find which groups cause this issue and remove the affected packages from their <packages>.
+This is done by extractPackageGroupsByModules.sh but might happen when edited manually.
 
 7) When done, aggregated JavaDoc will be created in:
   target/apidocs
