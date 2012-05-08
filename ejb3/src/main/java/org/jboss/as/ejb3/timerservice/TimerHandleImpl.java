@@ -21,12 +21,16 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import javax.ejb.EJBException;
 import javax.ejb.Timer;
 import javax.ejb.TimerHandle;
 
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
@@ -92,7 +96,7 @@ public class TimerHandleImpl implements TimerHandle {
     public Timer getTimer() throws IllegalStateException, EJBException {
         if (service == null) {
             // get hold of the timer service through the use of timed object id
-            service = (TimerServiceImpl) CurrentServiceContainer.getServiceContainer().getRequiredService(ServiceName.parse(serviceName)).getValue();
+            service = (TimerServiceImpl) currentServiceContainer().getRequiredService(ServiceName.parse(serviceName)).getValue();
             if (service == null) {
                 throw MESSAGES.timerServiceWithIdNotRegistered(timedObjectId);
             }
@@ -133,6 +137,16 @@ public class TimerHandleImpl implements TimerHandle {
     @Override
     public int hashCode() {
         return this.id.hashCode();
+    }
+
+
+    private static ServiceContainer currentServiceContainer() {
+        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
+            @Override
+            public ServiceContainer run() {
+                return CurrentServiceContainer.getServiceContainer();
+            }
+        });
     }
 
 }

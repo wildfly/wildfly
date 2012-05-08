@@ -23,7 +23,8 @@
 package org.jboss.as.jacorb.service;
 
 import java.net.InetSocketAddress;
-import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Properties;
 
 import org.jboss.as.jacorb.JacORBLogger;
@@ -34,6 +35,7 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -193,7 +195,7 @@ public class CorbaORBService implements Service<ORB> {
     }
 
     public static ORB getCurrent() {
-        return (ORB) CurrentServiceContainer.getServiceContainer().getRequiredService(SERVICE_NAME).getValue();
+        return (ORB) currentServiceContainer().getRequiredService(SERVICE_NAME).getValue();
     }
 
     /**
@@ -243,5 +245,15 @@ public class CorbaORBService implements Service<ORB> {
                 this.context.complete();
             }
         }
+    }
+
+
+    private static ServiceContainer currentServiceContainer() {
+        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
+            @Override
+            public ServiceContainer run() {
+                return CurrentServiceContainer.getServiceContainer();
+            }
+        });
     }
 }

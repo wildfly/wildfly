@@ -22,10 +22,10 @@
 
 package org.jboss.as.jpa.container;
 
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
-
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
@@ -35,7 +35,10 @@ import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.transaction.TransactionUtil;
 import org.jboss.as.jpa.util.JPAServiceNames;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Transaction scoped entity manager will be injected into SLSB or SFSB beans.  At bean invocation time, they
@@ -101,8 +104,18 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         // read all non-transient fields
         in.defaultReadObject();
-        final ServiceController<?> controller = CurrentServiceContainer.getServiceContainer().getService(JPAServiceNames.getPUServiceName(puScopedName));
+        final ServiceController<?> controller = currentServiceContainer().getService(JPAServiceNames.getPUServiceName(puScopedName));
         final PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl) controller.getService();
         emf = persistenceUnitService.getEntityManagerFactory();
+    }
+
+
+    private static ServiceContainer currentServiceContainer() {
+        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
+            @Override
+            public ServiceContainer run() {
+                return CurrentServiceContainer.getServiceContainer();
+            }
+        });
     }
 }

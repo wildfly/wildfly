@@ -22,10 +22,6 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-import static org.jboss.as.domain.management.RealmConfigurationConstants.SUBJECT_CALLBACK_SUPPORTED;
-
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Collection;
@@ -52,6 +48,10 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedSetValue;
 import org.jboss.msc.value.InjectedValue;
+
+import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.SUBJECT_CALLBACK_SUPPORTED;
 
 /**
  * The service representing the security realm, this service will be injected into any management interfaces
@@ -89,13 +89,11 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
             }
             registeredServices.put(mechanism, current);
         }
-        SecurityRealmRegistry.register(name, getValue());
     }
 
     public void stop(StopContext context) {
         ROOT_LOGGER.debugf("Stopping '%s' Security Realm Service", name);
         registeredServices.clear();
-        SecurityRealmRegistry.remove(name);
     }
 
     public SecurityRealmService getValue() throws IllegalStateException, IllegalArgumentException {

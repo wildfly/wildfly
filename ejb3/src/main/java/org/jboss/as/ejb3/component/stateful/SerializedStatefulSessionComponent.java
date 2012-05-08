@@ -2,6 +2,8 @@ package org.jboss.as.ejb3.component.stateful;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -11,6 +13,7 @@ import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.ImmediateValue;
@@ -40,7 +43,7 @@ public class SerializedStatefulSessionComponent implements Serializable {
 
     private Object readResolve() throws ObjectStreamException {
         ServiceName name = ServiceName.parse(serviceName);
-        ServiceController<?> service = CurrentServiceContainer.getServiceContainer().getRequiredService(name);
+        ServiceController<?> service = currentServiceContainer().getRequiredService(name);
         StatefulSessionComponent component = (StatefulSessionComponent) service.getValue();
         final InterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
 
@@ -50,5 +53,15 @@ public class SerializedStatefulSessionComponent implements Serializable {
         }
         context.getContextData().put(SessionID.class, sessionID);
         return component.constructComponentInstance(instance, false, context);
+    }
+
+
+    private static ServiceContainer currentServiceContainer() {
+        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
+            @Override
+            public ServiceContainer run() {
+                return CurrentServiceContainer.getServiceContainer();
+            }
+        });
     }
 }
