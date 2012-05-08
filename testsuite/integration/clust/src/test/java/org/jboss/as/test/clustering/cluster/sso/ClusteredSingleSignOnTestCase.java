@@ -89,8 +89,14 @@ public class ClusteredSingleSignOnTestCase {
     }
             
     @Test
-    @InSequence(1)
-    public void stopServers() throws Exception {
+    @InSequence(1)        
+    public void stopServers(
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
+        
+        SSOTestBase.removeSso(client1.getControllerClient());
+        SSOTestBase.removeSso(client2.getControllerClient());
+        
         deployer.undeploy(DEPLOYMENT_1);
         controller.stop(CONTAINER_1);
         deployer.undeploy(DEPLOYMENT_2);
