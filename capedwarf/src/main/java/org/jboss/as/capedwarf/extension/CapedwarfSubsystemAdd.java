@@ -41,10 +41,7 @@ import org.jboss.as.capedwarf.deployment.CapedwarfWebCleanupProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWebComponentsDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWeldParseProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWeldProcessor;
-import org.jboss.as.capedwarf.services.HackChannelService;
 import org.jboss.as.capedwarf.services.ServletExecutorConsumerService;
-import org.jboss.as.clustering.jgroups.ChannelFactory;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -76,7 +73,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.TempDir;
 import org.jboss.vfs.VFSUtils;
-import org.jgroups.Channel;
+import org.jgroups.JChannel;
 
 /**
  * Handler responsible for adding the subsystem resource to the model
@@ -116,7 +113,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 final ServiceTarget serviceTarget = context.getServiceTarget();
 
                 final ServletExecutorConsumerService consumerService = addQueueConsumer(serviceTarget, newControllers);
-                addIndexingChannel(serviceTarget, newControllers);
+                putChannelToJndi(serviceTarget, newControllers);
 
                 final TempDir tempDir = createTempDir(serviceTarget, newControllers);
 
@@ -150,22 +147,14 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
         return consumerService;
     }
 
-    protected void addIndexingChannel(ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
-        final String stack = "tcp"; // TODO -- from config!
-        final String clusterId = "Hibernate Search Cluster";
-        final ServiceName serviceName = ChannelService.getServiceName("indexing");
-        final HackChannelService channelService = new HackChannelService(clusterId);
-        final ServiceBuilder<Channel> channelBuilder = serviceTarget.addService(serviceName, channelService)
-                .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelService.getFactory())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
-        newControllers.add(channelBuilder.install());
-
+    protected void putChannelToJndi(ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
+        final ServiceName serviceName = ChannelService.getServiceName(Constants.CAPEDWARF);
         final String jndiName = Constants.CHANNEL_JNDI;
         final ContextNames.BindInfo bindInfo = Constants.CHANNEL_BIND_INFO;
         final BinderService binder = new BinderService(bindInfo.getBindName());
         final ServiceBuilder<ManagedReferenceFactory> binderBuilder = serviceTarget.addService(bindInfo.getBinderServiceName(), binder)
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
-                .addDependency(serviceName, Channel.class, new ManagedReferenceInjector<Channel>(binder.getManagedObjectInjector()))
+                .addDependency(serviceName, JChannel.class, new ManagedReferenceInjector<JChannel>(binder.getManagedObjectInjector()))
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
         newControllers.add(binderBuilder.install());
