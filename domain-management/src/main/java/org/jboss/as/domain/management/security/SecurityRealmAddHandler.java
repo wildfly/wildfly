@@ -184,7 +184,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             realmBuilder.addDependency(sslServiceName, SSLIdentityService.class, securityRealmService.getSSLIdentityInjector());
         }
 
-        realmBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
+        realmBuilder.setInitialMode(Mode.ACTIVE);
         ServiceController<?> sc = realmBuilder.install();
         if (newControllers != null) {
             newControllers.add(sc);
