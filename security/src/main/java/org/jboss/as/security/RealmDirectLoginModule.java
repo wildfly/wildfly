@@ -22,9 +22,6 @@
 
 package org.jboss.as.security;
 
-import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
-import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
-
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.NoSuchAlgorithmException;
@@ -51,12 +48,17 @@ import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.RealmRole;
 import org.jboss.as.domain.management.security.RealmUser;
-import org.jboss.as.domain.management.security.SecurityRealmRegistry;
+import org.jboss.as.domain.management.security.SecurityRealmService;
+import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.jboss.security.SimpleGroup;
 import org.jboss.security.auth.spi.UsernamePasswordLoginModule;
+
+import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
 /**
  * A login module implementation to interface directly with the security realm.
@@ -83,7 +85,11 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
         super.initialize(subject, callbackHandler, sharedState, options);
         securityRealm = AccessController.doPrivileged(new PrivilegedAction<SecurityRealm>() {
             public SecurityRealm run() {
-                return SecurityRealmRegistry.lookup(realm);
+                final ServiceController<?> controller = CurrentServiceContainer.getServiceContainer().getService(SecurityRealmService.BASE_SERVICE_NAME.append(realm));
+                if(controller != null) {
+                    return (SecurityRealm) controller.getValue();
+                }
+                return null;
             }
         });
         if (securityRealm == null) {
@@ -230,4 +236,5 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
     private enum ValidationMode {
         DIGEST, PASSWORD, VALIDATION
     };
+
 }
