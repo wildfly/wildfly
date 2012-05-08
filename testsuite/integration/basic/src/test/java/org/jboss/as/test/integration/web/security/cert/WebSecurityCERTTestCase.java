@@ -22,12 +22,17 @@
 
 package org.jboss.as.test.integration.web.security.cert;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.security.cert.X509Certificate;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 
 import org.apache.http.HttpResponse;
@@ -38,42 +43,20 @@ import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.management.Connector;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
+import org.jboss.as.test.integration.web.security.WebCERTTestsSecurityDomainSetup;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
-import org.jboss.dmr.ModelNode;
 import org.jboss.security.JBossJSSESecurityDomain;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.AUTHENTICATION;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.JSSE;
-import static org.jboss.as.security.Constants.MODULE_OPTIONS;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import static org.jboss.as.security.Constants.TRUSTSTORE_PASSWORD;
-import static org.jboss.as.security.Constants.TRUSTSTORE_URL;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Unit test for CLIENT-CERT authentication.
@@ -82,25 +65,13 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("AS7-3837")
+@ServerSetup(WebCERTTestsSecurityDomainSetup.class)
 public class WebSecurityCERTTestCase {
 
-    protected final String URL = "https://localhost:8380/" + getContextPath() + "/secured/";
-
+    private static final String URL = "https://localhost:8380/web-secure-client-cert/secured/";
 
     @Deployment
     public static WebArchive deployment() {
-        // FIXME hack to get things prepared before the deployment happens
-        try {
-            //TODO: convert this to a ServerSetupTask when fixing the test
-            final ModelControllerClient client = null;
-            // create required security domains
-            createSecurityDomains(client);
-            // create the test connector
-            createTestConnector(client);
-        } catch (Exception e) {
-            // ignore
-        }
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure-client-cert.war");
         war.addClass(SecuredServlet.class);
@@ -113,15 +84,6 @@ public class WebSecurityCERTTestCase {
 
         WebSecurityPasswordBasedBase.printWar(war);
         return war;
-    }
-
-    @AfterClass
-    public static void after() throws Exception {
-        final ModelControllerClient client = null;
-        // and remove the connector again
-        removeTestConnector(client);
-        // remove test security domains
-        removeSecurityDomains(client);
     }
 
     @Test
@@ -139,7 +101,6 @@ public class WebSecurityCERTTestCase {
         httpclient = wrapClient(httpclient, alias);
         try {
             HttpGet httpget = new HttpGet(URL);
-
             HttpResponse response = httpclient.execute(httpget);
 
             StatusLine statusLine = response.getStatusLine();
@@ -151,127 +112,6 @@ public class WebSecurityCERTTestCase {
             // immediate deallocation of all system resources
             httpclient.getConnectionManager().shutdown();
         }
-    }
-
-    public static void createTestConnector(final ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-        ModelNode op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add("socket-binding-group", "standard-sockets");
-        op.get(OP_ADDR).add("socket-binding", "https-test");
-        op.get("interface").set("default");
-        op.get("port").set(8380);
-
-        updates.add(op);
-        final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
-                    final ModelNode steps = composite.get(STEPS);
-        op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "web");
-        op.get(OP_ADDR).add("connector", "testConnector");
-        op.get("socket-binding").set("https-test");
-        op.get("enabled").set(true);
-        op.get("protocol").set("HTTP/1.1");
-        op.get("scheme").set("https");
-        op.get("secure").set(true);
-        steps.add(op);
-        ModelNode ssl = createOpNode("subsystem=web/connector=testConnector/ssl=configuration", "add");
-        ssl.get("name").set("https-test");
-        ssl.get("key-alias").set("test");
-        ssl.get("password").set("changeit");
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        URL keystore = tccl.getResource("security/server.keystore");
-        ssl.get("certificate-key-file").set(keystore.getPath());
-        ssl.get("protocol").set("TLS");
-        ssl.get("verify-client").set(true);
-        steps.add(ssl);
-        updates.add(composite);
-        applyUpdates(updates, client);
-    }
-
-    public static void createSecurityDomains(final ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-        ModelNode op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, "cert-test");
-        ModelNode loginModule = op.get(AUTHENTICATION).add();
-        loginModule.get(CODE).set("CertificateRoles");
-        loginModule.get(FLAG).set("required");
-        ModelNode moduleOptions = loginModule.get(MODULE_OPTIONS);
-        moduleOptions.add("securityDomain", "cert");
-        updates.add(op);
-
-        op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, "cert");
-        ModelNode jsse = op.get(JSSE);
-        jsse.get(TRUSTSTORE_PASSWORD).set("changeit");
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        URL keystore = tccl.getResource("security/jsse.keystore");
-        jsse.get(TRUSTSTORE_URL).set(keystore.getPath());
-        updates.add(op);
-
-        applyUpdates(updates, client);
-    }
-
-    public static void removeTestConnector(final ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-        ModelNode op = new ModelNode();
-        op.get(OP).set(REMOVE);
-        op.get(OP_ADDR).add(SUBSYSTEM, "web");
-        op.get(OP_ADDR).add("connector", "testConnector");
-        updates.add(op);
-
-        op = new ModelNode();
-        op.get(OP).set(REMOVE);
-        op.get(OP_ADDR).add("socket-binding-group", "standard-sockets");
-        op.get(OP_ADDR).add("socket-binding", "https-test");
-        updates.add(op);
-
-        applyUpdates(updates, client);
-    }
-
-    public static void removeSecurityDomains(final ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-
-        ModelNode op = new ModelNode();
-        op.get(OP).set(REMOVE);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, "cert-test");
-        updates.add(op);
-
-        op = new ModelNode();
-        op.get(OP).set(REMOVE);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, "cert");
-        updates.add(op);
-
-        applyUpdates(updates, client);
-    }
-
-    public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
-        for (ModelNode update : updates) {
-            applyUpdate(update, client);
-        }
-    }
-
-    public static void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
-        ModelNode result = client.execute(new OperationBuilder(update).build());
-        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-            if (result.hasDefined("result")) {
-                System.out.println(result.get("result"));
-            }
-        } else if (result.hasDefined("failure-description")) {
-            throw new RuntimeException(result.get("failure-description").toString());
-        } else {
-            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
-        }
-    }
-
-    public String getContextPath() {
-        return "web-secure-client-cert";
     }
 
     public static HttpClient wrapClient(HttpClient base, String alias) {
@@ -287,7 +127,26 @@ public class WebSecurityCERTTestCase {
             KeyManager[] keyManagers = jsseSecurityDomain.getKeyManagers();
             TrustManager[] trustManagers = jsseSecurityDomain.getTrustManagers();
             ctx.init(keyManagers, trustManagers, null);
-            SSLSocketFactory ssf = new SSLSocketFactory(ctx, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+            X509HostnameVerifier verifier = new X509HostnameVerifier() {
+
+                @Override
+                public void verify(String s, SSLSocket sslSocket) throws IOException {
+                }
+
+                @Override
+                public void verify(String s, X509Certificate x509Certificate) throws SSLException {
+                }
+
+                @Override
+                public void verify(String s, String[] strings, String[] strings1) throws SSLException {
+                }
+
+                @Override
+                public boolean verify(String string, SSLSession ssls) {
+                    return true;
+                }
+            };
+            SSLSocketFactory ssf = new SSLSocketFactory(ctx, verifier);//SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
             ClientConnectionManager ccm = base.getConnectionManager();
             SchemeRegistry sr = ccm.getSchemeRegistry();
             sr.register(new Scheme("https", 8380, ssf));
@@ -297,5 +156,4 @@ public class WebSecurityCERTTestCase {
             return null;
         }
     }
-
 }
