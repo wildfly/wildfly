@@ -530,16 +530,16 @@ public interface ServerMessages {
     @Message(id = 18745, value = "Resource is too large to be a valid class file")
     IOException resourceTooLarge();
 
-    @Message(id = 18746, value = "Sub deployment %s in jboss-structure.xml was not found. Available sub deployments: %s")
+    @Message(id = 18746, value = "Sub deployment %s in jboss-deployment-structure.xml was not found. Available sub deployments: %s")
     DeploymentUnitProcessingException subdeploymentNotFound(String path, StringBuilder subdeployments);
 
     @Message(id = 18747, value = "No jboss-deployment-structure.xml file found at %s")
     DeploymentUnitProcessingException deploymentStructureFileNotFound(File file);
 
-    @Message(id = 18748, value = "Error loading jboss-structure.xml from %s")
+    @Message(id = 18748, value = "Error loading jboss-deployment-structure.xml from %s")
     DeploymentUnitProcessingException errorLoadingDeploymentStructureFile(String path, @Cause XMLStreamException cause);
 
-    @Message(id = 18749, value = "Sub deployment '%s' is listed twice in jboss-structure.xml")
+    @Message(id = 18749, value = "Sub deployment '%s' is listed twice in jboss-deployment-structure.xml")
     XMLStreamException duplicateSubdeploymentListing(String name);
 
     @Message(id = 18750, value = "Additional module name '%s' is not valid. Names must start with 'deployment.'")
