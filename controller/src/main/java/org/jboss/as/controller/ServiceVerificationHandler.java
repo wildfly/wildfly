@@ -90,20 +90,22 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
             }
             ModelNode problemList = null;
             for (ServiceController<?> controller : problem) {
-                if (!controller.getImmediateUnavailableDependencies().isEmpty()) {
-                    if (problemList == null) {
-                        problemList = failureDescription.get(MESSAGES.servicesMissingDependencies());
-                    }
-                    final StringBuilder problem = new StringBuilder();
-                    problem.append(controller.getName().getCanonicalName());
-                    for(Iterator<ServiceName> i = controller.getImmediateUnavailableDependencies().iterator(); i.hasNext(); ) {
-                        ServiceName missing = i.next();
-                        problem.append(missing.getCanonicalName());
+                if (problemList == null) {
+                    problemList = failureDescription.get(MESSAGES.servicesMissingDependencies());
+                }
+                final StringBuilder problem = new StringBuilder();
+                problem.append(controller.getName().getCanonicalName());
+                Set<ServiceName> immediatelyUnavailable = controller.getImmediateUnavailableDependencies();
+                if (!immediatelyUnavailable.isEmpty()) {
+                    final StringBuilder missing = new StringBuilder();
+                    for(Iterator<ServiceName> i = immediatelyUnavailable.iterator(); i.hasNext(); ) {
+                        ServiceName missingSvc = i.next();
+                        missing.append(missingSvc.getCanonicalName());
                         if(i.hasNext()) {
-                            problem.append(", ");
+                            missing.append(", ");
                         }
                     }
-                    problem.append(MESSAGES.servicesMissing(problem));
+                    problem.append(" ").append(MESSAGES.servicesMissing(missing));
                     problemList.add(problem.toString());
                 }
             }
