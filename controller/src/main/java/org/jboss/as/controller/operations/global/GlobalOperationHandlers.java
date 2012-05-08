@@ -469,7 +469,7 @@ public class GlobalOperationHandlers {
             }
         }
 
-        private ModelNode getNodeDescription(ImmutableManagementResourceRegistration registry, ModelNode operation) {
+        private ModelNode getNodeDescription(ImmutableManagementResourceRegistration registry, ModelNode operation) throws OperationFailedException {
             final DescriptionProvider descriptionProvider = registry.getModelDescription(PathAddress.EMPTY_ADDRESS);
             final Locale locale = getLocale(operation);
             return descriptionProvider.getModelDescription(locale);
@@ -1186,11 +1186,46 @@ public class GlobalOperationHandlers {
         return result;
     }
 
-    private static Locale getLocale(final ModelNode operation) {
+    private static Locale getLocale(final ModelNode operation) throws OperationFailedException {
         if (!operation.hasDefined(LOCALE)) {
             return null;
         }
-        return new Locale(operation.get(LOCALE).asString());
+        String unparsed = operation.get(LOCALE).asString();
+        int len = unparsed.length();
+        if (len != 2 && len != 5 && len < 7) {
+            throw MESSAGES.invalidLocaleString(unparsed);
+        }
+
+        char char0 = unparsed.charAt(0);
+        char char1 = unparsed.charAt(1);
+        if (char0 < 'a' || char0 > 'z' || char1 < 'a' || char1 > 'z') {
+            throw MESSAGES.invalidLocaleString(unparsed);
+        }
+        if (len == 2) {
+            return new Locale(unparsed, "");
+        }
+
+        if (unparsed.charAt(2) != '_') {
+            throw MESSAGES.invalidLocaleString(unparsed);
+        }
+        char char3 = unparsed.charAt(3);
+        if (char3 == '_') {
+            // no country
+            return new Locale(unparsed.substring(0, 2), "", unparsed.substring(4));
+        }
+
+        char char4 = unparsed.charAt(4);
+        if (char3 < 'A' || char3 > 'Z' || char4 < 'A' || char4 > 'Z') {
+            throw MESSAGES.invalidLocaleString(unparsed);
+        }
+        if (len == 5) {
+            return new Locale(unparsed.substring(0, 2), unparsed.substring(3));
+        }
+
+        if (unparsed.charAt(5) != '_') {
+            throw MESSAGES.invalidLocaleString(unparsed);
+        }
+        return new Locale(unparsed.substring(0, 2), unparsed.substring(3, 5), unparsed.substring(6));
     }
 
 
