@@ -130,6 +130,7 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
         Configuration groupCacheConfiguration = groupCache.getCacheConfiguration();
         EmbeddedCacheManager container = groupCache.getCacheManager();
         ConfigurationBuilder builder = new ConfigurationBuilder().read(groupCacheConfiguration);
+        builder.storeAsBinary().enable().storeKeysAsBinary(true).storeValuesAsBinary(false);
         if (this.maxSize > 0) {
             if (!groupCacheConfiguration.eviction().strategy().isEnabled()) {
                 builder.eviction().strategy(EvictionStrategy.LRU);
