@@ -22,8 +22,13 @@
 
 package org.jboss.as.osgi;
 
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.msc.service.ServiceName;
-
+import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.framework.BundleManager;
+import org.jboss.osgi.metadata.OSGiMetaData;
+import org.jboss.osgi.spi.BundleInfo;
+import org.osgi.framework.Bundle;
 
 /**
  * OSGi Subsystem constants
@@ -32,6 +37,21 @@ import org.jboss.msc.service.ServiceName;
  */
 public interface OSGiConstants {
 
+    /** Service base name for all OSGi subsystem services. */
     ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("osgi", "as");
-    ServiceName FRAMEWORK_BASE_NAME = SERVICE_BASE_NAME.append("framework");
+
+    /** Attachment key for the {@link BundleManager}. */
+    AttachmentKey<BundleInfo> BUNDLE_INFO_KEY = AttachmentKey.create(BundleInfo.class);
+
+    /** Attachment key for the {@link BundleManager}. */
+    AttachmentKey<BundleManager> BUNDLE_MANAGER_KEY = AttachmentKey.create(BundleManager.class);
+
+    /** Attachment key for a bundle deployment. */
+    AttachmentKey<Deployment> DEPLOYMENT_KEY = AttachmentKey.create(Deployment.class);
+
+    /** Attachment key for the installed bundle. */
+    AttachmentKey<Bundle> INSTALLED_BUNDLE_KEY = AttachmentKey.create(Bundle.class);
+
+    /** Attachment key for {@link OSGiMetaData}. */
+    AttachmentKey<OSGiMetaData> OSGI_METADATA_KEY = AttachmentKey.create(OSGiMetaData.class);
 }
