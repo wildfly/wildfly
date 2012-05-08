@@ -137,7 +137,7 @@
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.1.1</version.org.codehaus.woodstox.woodstox-core-asl>
         <version.org.datanucleus>3.0.4</version.org.datanucleus>
-        <version.org.datanucleus.appengine>2.0.0-RC2</version.org.datanucleus.appengine>
+        <version.org.datanucleus.appengine>2.0.0</version.org.datanucleus.appengine>
         <version.org.datanucleus.cache>3.1.0</version.org.datanucleus.cache>
         <version.org.hibernate>4.1.2.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>4.0.1.Final</version.org.hibernate.commons.annotations>
