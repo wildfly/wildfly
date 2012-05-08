@@ -129,10 +129,10 @@ public class PersistentBundlesIntegration implements PersistentBundlesHandler {
                 return;
             }
 
-            final Set<ServiceName> deploymentServiceNames = new HashSet<ServiceName>();
+            final Set<ServiceName> depUnitPhaseServices = new HashSet<ServiceName>();
             for (String deploymentName : deploymentNames) {
                 ServiceName serviceName = Services.deploymentUnitName(deploymentName);
-                deploymentServiceNames.add(serviceName.append(Phase.INSTALL.toString()));
+                depUnitPhaseServices.add(serviceName.append(Phase.INSTALL.toString()));
             }
 
             final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
@@ -143,12 +143,12 @@ public class PersistentBundlesIntegration implements PersistentBundlesHandler {
                 public void transition(ServiceController<? extends Object> controller, Transition transition) {
                     if (isClosed() == false) {
                         ServiceName serviceName = controller.getName();
-                        synchronized (deploymentServiceNames) {
-                            if (deploymentServiceNames.contains(serviceName)) {
+                        synchronized (depUnitPhaseServices) {
+                            if (depUnitPhaseServices.contains(serviceName)) {
                                 switch (transition) {
                                     case STARTING_to_UP:
                                     case STARTING_to_START_FAILED:
-                                        deploymentServiceNames.remove(serviceName);
+                                        depUnitPhaseServices.remove(serviceName);
                                         int remaining = deploymentCount.decrementAndGet();
                                         LOGGER.debugf("Initial deployment tracked: %s (remaining=%d)", serviceName.getCanonicalName(), remaining);
                                         if (deploymentCount.get() == 0) {

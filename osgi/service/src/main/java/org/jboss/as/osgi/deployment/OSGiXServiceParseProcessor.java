@@ -24,6 +24,7 @@ package org.jboss.as.osgi.deployment;
 
 import java.io.IOException;
 
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -49,27 +50,27 @@ public class OSGiXServiceParseProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         // Check if we already have an OSGi deployment
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaData(deploymentUnit);
+        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
         if (metadata != null)
             return;
 
         // Get the OSGi XService properties
-        VirtualFile virtualFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        VirtualFile virtualFile = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         VirtualFile xserviceFile = virtualFile.getChild(XSERVICE_PROPERTIES_NAME);
         if (xserviceFile.exists() == false)
             return;
 
         try {
             metadata = OSGiMetaDataBuilder.load(xserviceFile.openStream());
-            OSGiMetaDataAttachment.attachOSGiMetaData(deploymentUnit, metadata);
+            depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
         } catch (IOException ex) {
             throw MESSAGES.cannotParseOSGiMetadata(ex, xserviceFile);
         }
     }
 
     @Override
-    public void undeploy(final DeploymentUnit deploymentUnit) {
-        OSGiMetaDataAttachment.detachOSGiMetaData(deploymentUnit);
+    public void undeploy(final DeploymentUnit depUnit) {
+        depUnit.removeAttachment(OSGiConstants.OSGI_METADATA_KEY);
     }
 }

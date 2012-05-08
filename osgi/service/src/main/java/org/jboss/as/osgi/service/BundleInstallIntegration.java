@@ -21,14 +21,18 @@
  */
 package org.jboss.as.osgi.service;
 
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
-import org.jboss.as.osgi.deployment.DeploymentHolderService;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -45,14 +49,6 @@ import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.BundleException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.Future;
-
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
-import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
-
 /**
  * A {@link BundleInstallProvider} that delegates to the {@link ServerDeploymentManager}.
  *
@@ -61,10 +57,11 @@ import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
  */
 public class BundleInstallIntegration implements BundleInstallHandler {
 
+    private static Map<String, Deployment> deploymentMap = new HashMap<String, Deployment>();
+
     private final InjectedValue<ModelController> injectedController = new InjectedValue<ModelController>();
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private ServerDeploymentManager deploymentManager;
-    private ServiceTarget serviceTarget;
 
     public static ServiceController<?> addService(final ServiceTarget target) {
         BundleInstallIntegration service = new BundleInstallIntegration();
@@ -84,7 +81,6 @@ public class BundleInstallIntegration implements BundleInstallHandler {
         ServiceController<?> controller = context.getController();
         LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
         deploymentManager = new ModelControllerServerDeploymentManager(injectedController.getValue());
-        serviceTarget = context.getChildTarget();
     }
 
     @Override
@@ -98,34 +94,37 @@ public class BundleInstallIntegration implements BundleInstallHandler {
         return this;
     }
 
+    public static Deployment getDeployment(String contextName) {
+        return deploymentMap.get(contextName);
+    }
+
+    public static Deployment removeDeployment(String contextName) {
+        return deploymentMap.remove(contextName);
+    }
+
     @Override
     public void installBundle(Deployment dep) throws BundleException {
         LOGGER.tracef("Install deployment: %s", dep);
         try {
 
             // Install the {@link Deployment} holder service
-            String contextName = DeploymentHolderService.getContextName(dep);
-            DeploymentHolderService.addService(serviceTarget, contextName, dep);
+            String contextName = getContextName(dep);
+            deploymentMap.put(contextName, dep);
 
             // Build and execute the deployment plan
-            InputStream inputStream = dep.getRoot().openStream();
+            InputStream input = dep.getRoot().openStream();
             try {
-                DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-                builder = builder.add(contextName, inputStream).andDeploy();
-                DeploymentPlan plan = builder.build();
-                DeploymentAction deployAction = builder.getLastAction();
-                executeDeploymentPlan(plan, deployAction);
+                ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
+                server.deploy(contextName, input);
             } finally {
-                if(inputStream != null) try {
-                    inputStream.close();
+                if(input != null) try {
+                    input.close();
                 } catch (IOException e) {
-                    LOGGER.debugf(e, "Failed to close resource %s", inputStream);
+                    LOGGER.debugf(e, "Failed to close resource %s", input);
                 }
             }
         } catch (RuntimeException rte) {
             throw rte;
-        } catch (BundleException ex) {
-            throw ex;
         } catch (Exception ex) {
             throw MESSAGES.cannotDeployBundle(ex, dep);
         }
@@ -135,30 +134,20 @@ public class BundleInstallIntegration implements BundleInstallHandler {
     public void uninstallBundle(Deployment dep) {
         LOGGER.tracef("Uninstall deployment: %s", dep);
         try {
-            // Undeploy through the deployment manager
-            DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            String contextName = DeploymentHolderService.getContextName(dep);
-            builder = builder.undeploy(contextName).remove(contextName);
-            DeploymentPlan plan = builder.build();
-            DeploymentAction removeAction = builder.getLastAction();
-            executeDeploymentPlan(plan, removeAction);
+            ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
+            server.undeploy(getContextName(dep));
         } catch (Exception ex) {
             LOGGER.warnCannotUndeployBundle(ex, dep);
         }
     }
 
-    private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction action) throws Exception {
-
-        Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
-        ServerDeploymentPlanResult planResult = future.get();
-
-        ServerDeploymentActionResult actionResult = planResult.getDeploymentActionResult(action.getId());
-        if (actionResult != null) {
-            Exception deploymentException = (Exception) actionResult.getDeploymentException();
-            if (deploymentException != null)
-                throw deploymentException;
-        }
-
-        return action.getDeploymentUnitUniqueName();
+    private String getContextName(Deployment dep) {
+        String name = dep.getLocation();
+        if (name.endsWith("/"))
+            name = name.substring(0, name.length() - 1);
+        int idx = name.lastIndexOf("/");
+        if (idx > 0)
+            name = name.substring(idx + 1);
+        return name;
     }
 }
