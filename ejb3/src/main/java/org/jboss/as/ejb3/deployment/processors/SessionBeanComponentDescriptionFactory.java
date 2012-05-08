@@ -249,6 +249,9 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             return null;
         }
         final ClassInfo info = compositeIndex.getClassByName(DotName.createSimple(ejbClass));
+        if (info == null) {
+            return null;
+        }
         if(info.annotations().get(STATEFUL_ANNOTATION) != null) {
             return SessionType.Stateful;
         } else if(info.annotations().get(STATELESS_ANNOTATION) != null) {
