@@ -18,6 +18,8 @@
 package org.jboss.as.weld.ejb;
 
 import java.io.Serializable;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import javax.enterprise.context.ContextNotActiveException;
 import javax.enterprise.context.RequestScoped;
@@ -30,6 +32,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.context.ejb.EjbLiteral;
 import org.jboss.weld.context.ejb.EjbRequestContext;
@@ -61,7 +64,7 @@ public class EjbRequestScopeActivationInterceptor implements Serializable, org.j
     public Object processInvocation(final InterceptorContext context) throws Exception {
         //get the reference to the bean manager on the first invocation
         if(beanManager == null) {
-            final WeldContainer weldContainer = (WeldContainer) CurrentServiceContainer.getServiceContainer().getRequiredService(weldContainerServiceName).getValue();
+            final WeldContainer weldContainer = (WeldContainer) currentServiceContainer().getRequiredService(weldContainerServiceName).getValue();
             beanManager = (BeanManagerImpl) weldContainer.getBeanManager();
         }
 
@@ -111,4 +114,12 @@ public class EjbRequestScopeActivationInterceptor implements Serializable, org.j
         }
     }
 
+    private static ServiceContainer currentServiceContainer() {
+        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
+            @Override
+            public ServiceContainer run() {
+                return CurrentServiceContainer.getServiceContainer();
+            }
+        });
+    }
 }

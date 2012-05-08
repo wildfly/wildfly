@@ -21,6 +21,27 @@
  */
 package org.jboss.as.ejb3.component;
 
+import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.util.Collections;
+import java.util.Map;
+
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
+
 import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentView;
@@ -40,27 +61,10 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StopContext;
-
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
-import java.lang.reflect.Method;
-import java.security.Principal;
-import java.util.Collections;
-import java.util.Map;
 
 import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
@@ -157,7 +161,7 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData, final ServiceName serviceName) {
-        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(serviceName);
+        final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(serviceName);
         final ComponentView view = (ComponentView) serviceController.getValue();
         final ManagedReference instance;
         try {
@@ -167,6 +171,15 @@ public abstract class EJBComponent extends BasicComponent {
             throw new RuntimeException(e);
         }
         return viewInterface.cast(instance.getInstance());
+    }
+
+    private static ServiceContainer currentServiceContainer() {
+        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
+            @Override
+            public ServiceContainer run() {
+                return CurrentServiceContainer.getServiceContainer();
+            }
+        });
     }
 
     @Override
@@ -236,7 +249,7 @@ public abstract class EJBComponent extends BasicComponent {
         if (ejbHomeViewServiceName == null) {
             throw MESSAGES.beanHomeInterfaceIsNull(getComponentName());
         }
-        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbHomeViewServiceName);
+        final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(ejbHomeViewServiceName);
         final ComponentView view = (ComponentView) serviceController.getValue();
         final String locatorAppName = earApplicationName == null ? "" : earApplicationName;
         return EJBClient.createProxy(new EJBHomeLocator<EJBHome>((Class<EJBHome>) view.getViewClass(), locatorAppName, moduleName, getComponentName(), distinctName));
@@ -246,7 +259,7 @@ public abstract class EJBComponent extends BasicComponent {
         if (ejbObjectViewServiceName == null) {
             return null;
         }
-        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbObjectViewServiceName);
+        final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(ejbObjectViewServiceName);
         final ComponentView view = (ComponentView) serviceController.getValue();
         return view.getViewClass();
     }
@@ -255,7 +268,7 @@ public abstract class EJBComponent extends BasicComponent {
         if (ejbLocalObjectViewServiceName == null) {
             return null;
         }
-        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbLocalObjectViewServiceName);
+        final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(ejbLocalObjectViewServiceName);
         final ComponentView view = (ComponentView) serviceController.getValue();
         return view.getViewClass();
     }

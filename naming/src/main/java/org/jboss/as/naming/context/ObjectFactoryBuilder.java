@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming.context;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Hashtable;
 
 import javax.naming.Context;
@@ -35,6 +37,7 @@ import javax.naming.spi.ObjectFactory;
 import org.jboss.as.naming.ServiceAwareObjectFactory;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceContainer;
 
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
@@ -161,11 +164,21 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
             final Class<?> factoryClass = classLoader.loadClass(reference.getFactoryClassName());
             ObjectFactory factory = ObjectFactory.class.cast(factoryClass.newInstance());
             if (factory instanceof ServiceAwareObjectFactory) {
-                ((ServiceAwareObjectFactory) factory).injectServiceRegistry(CurrentServiceContainer.getServiceContainer());
+                ((ServiceAwareObjectFactory) factory).injectServiceRegistry(currentServiceContainer());
             }
             return factory;
         } catch (Throwable t) {
             throw MESSAGES.objectFactoryCreationFailure(t);
         }
+    }
+
+
+    private static ServiceContainer currentServiceContainer() {
+        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
+            @Override
+            public ServiceContainer run() {
+                return CurrentServiceContainer.getServiceContainer();
+            }
+        });
     }
 }

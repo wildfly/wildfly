@@ -21,6 +21,8 @@
  */
 package org.jboss.as.jpa.hibernate4.infinispan;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.EnumSet;
 import java.util.Properties;
 
@@ -34,6 +36,7 @@ import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerConfigur
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerConfigurationService;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Transition;
 import org.jboss.msc.service.ServiceListener;
@@ -62,7 +65,7 @@ public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.Infi
     protected EmbeddedCacheManager createCacheManager(Properties properties) throws CacheException {
         String container = properties.getProperty(CACHE_CONTAINER, DEFAULT_CACHE_CONTAINER);
         ServiceName serviceName = EmbeddedCacheManagerConfigurationService.getServiceName(container);
-        ServiceRegistry registry = CurrentServiceContainer.getServiceContainer();
+        ServiceRegistry registry = currentServiceContainer();
         @SuppressWarnings("unchecked")
         ServiceController<EmbeddedCacheManagerConfiguration> service = (ServiceController<EmbeddedCacheManagerConfiguration>) registry.getRequiredService(serviceName);
         ServiceListener<EmbeddedCacheManagerConfiguration> listener = new NotifyingListener<EmbeddedCacheManagerConfiguration>();
@@ -101,5 +104,15 @@ public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.Infi
                 this.notify();
             }
         }
+    }
+
+
+    private static ServiceContainer currentServiceContainer() {
+        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
+            @Override
+            public ServiceContainer run() {
+                return CurrentServiceContainer.getServiceContainer();
+            }
+        });
     }
 }

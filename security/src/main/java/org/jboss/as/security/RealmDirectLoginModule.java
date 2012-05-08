@@ -50,6 +50,7 @@ import org.jboss.as.domain.management.security.RealmRole;
 import org.jboss.as.domain.management.security.RealmUser;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
@@ -62,7 +63,7 @@ import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_
 
 /**
  * A login module implementation to interface directly with the security realm.
- *
+ * <p/>
  * This login module allows all interactions with the backing store to be delegated to the realm removing the need for any
  * duplicate and synchronized definitions.
  *
@@ -83,15 +84,10 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         final String realm = options.containsKey(REALM_OPTION) ? (String) options.get(REALM_OPTION) : DEFAULT_REALM;
         super.initialize(subject, callbackHandler, sharedState, options);
-        securityRealm = AccessController.doPrivileged(new PrivilegedAction<SecurityRealm>() {
-            public SecurityRealm run() {
-                final ServiceController<?> controller = CurrentServiceContainer.getServiceContainer().getService(SecurityRealmService.BASE_SERVICE_NAME.append(realm));
-                if(controller != null) {
-                    return (SecurityRealm) controller.getValue();
-                }
-                return null;
-            }
-        });
+        final ServiceController<?> controller = currentServiceContainer().getService(SecurityRealmService.BASE_SERVICE_NAME.append(realm));
+        if (controller != null) {
+            securityRealm = (SecurityRealm) controller.getValue();
+        }
         if (securityRealm == null) {
             throw SecurityMessages.MESSAGES.realmNotFound(realm);
         }
@@ -136,7 +132,6 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
     }
 
     /**
-     *
      * @see org.jboss.security.auth.spi.UsernamePasswordLoginModule#getUsersPassword()
      */
     @Override
@@ -152,13 +147,13 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
         switch (validationMode) {
             case DIGEST:
                 DigestHashCallback dhc = new DigestHashCallback("Digest");
-                handle(new Callback[] { rcb, ncb, dhc });
+                handle(new Callback[]{rcb, ncb, dhc});
                 password = dhc.getHexHash();
 
                 break;
             case PASSWORD:
                 PasswordCallback pcb = new PasswordCallback("Password", false);
-                handle(new Callback[] { rcb, ncb, pcb });
+                handle(new Callback[]{rcb, ncb, pcb});
                 password = String.valueOf(pcb.getPassword());
 
                 break;
@@ -201,7 +196,7 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
                 VerifyPasswordCallback vpc = new VerifyPasswordCallback(inputPassword);
 
                 try {
-                    handle(new Callback[] { rcb, ncb, vpc });
+                    handle(new Callback[]{rcb, ncb, vpc});
                     return vpc.isVerified();
                 } catch (LoginException e) {
                     return false;
@@ -227,7 +222,7 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
                 sg.addMember(createIdentity(current.getName()));
             }
 
-            return new Group[] { sg };
+            return new Group[]{sg};
         } catch (Exception e) {
             throw SecurityMessages.MESSAGES.failureCallingSecurityRealm(e.getMessage());
         }
@@ -235,6 +230,16 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
 
     private enum ValidationMode {
         DIGEST, PASSWORD, VALIDATION
-    };
+    }
 
+    ;
+
+    private static ServiceContainer currentServiceContainer() {
+        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
+            @Override
+            public ServiceContainer run() {
+                return CurrentServiceContainer.getServiceContainer();
+            }
+        });
+    }
 }
