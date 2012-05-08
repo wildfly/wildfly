@@ -22,27 +22,22 @@
 
 package org.jboss.as.osgi.deployment;
 
-import static org.jboss.as.osgi.OSGiConstants.FRAMEWORK_BASE_NAME;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.framework.StorageState;
+import org.jboss.osgi.framework.StorageStateProvider;
+import org.osgi.framework.BundleException;
 
 /**
  * Processes deployments that have OSGi metadata attached.
@@ -54,54 +49,51 @@ import org.jboss.osgi.framework.Services;
  */
 public class BundleInstallProcessor implements DeploymentUnitProcessor {
 
-    static final AttachmentKey<ServiceName> INSTALL_SERVICE_NAME_KEY = AttachmentKey.create(ServiceName.class);
-
+    private AttachmentKey<ServiceName> BUNDLE_INSTALL_SERVICE = AttachmentKey.create(ServiceName.class);
     private final InitialDeploymentTracker deploymentTracker;
-    private final AtomicBoolean frameworkActivated = new AtomicBoolean();
 
     public BundleInstallProcessor(InitialDeploymentTracker deploymentTracker) {
         this.deploymentTracker = deploymentTracker;
     }
 
     @Override
-    public void deploy(final DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
-        final DeploymentUnit depUnit = context.getDeploymentUnit();
-        final Deployment deployment = OSGiDeploymentAttachment.getDeployment(depUnit);
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        final Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
         if (deployment != null) {
-            if (frameworkActivated.compareAndSet(false, true)) {
-                activateFramework(context);
-            }
             ServiceName serviceName;
-            if (!deploymentTracker.isClosed() && deploymentTracker.hasDeploymentName(depUnit.getName())) {
-                serviceName = PersistentBundleInstallService.addService(deploymentTracker, context, deployment);
-                deploymentTracker.registerBundleInstallService(serviceName);
-            } else {
-                serviceName = BundleInstallService.addService(context, deployment);
+            try {
+                final BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
+                if (!deploymentTracker.isClosed() && deploymentTracker.hasDeploymentName(depUnit.getName())) {
+                    restoreStorageState(phaseContext, deployment);
+                    serviceName = bundleManager.installBundle(deployment, deploymentTracker.getBundleInstallListener());
+                    deploymentTracker.registerBundleInstallService(serviceName);
+                } else {
+                    serviceName = bundleManager.installBundle(deployment, null);
+                }
+            } catch (BundleException ex) {
+                throw new DeploymentUnitProcessingException(ex);
             }
-            depUnit.putAttachment(INSTALL_SERVICE_NAME_KEY, serviceName);
+            phaseContext.addDeploymentDependency(serviceName, OSGiConstants.INSTALLED_BUNDLE_KEY);
+            depUnit.putAttachment(BUNDLE_INSTALL_SERVICE, serviceName);
         }
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        final ServiceName serviceName = depUnit.getAttachment(INSTALL_SERVICE_NAME_KEY);
-        if (serviceName != null) {
-            final ServiceController<?> serviceController = depUnit.getServiceRegistry().getService(serviceName);
-            if (serviceController != null) {
-                serviceController.setMode(Mode.REMOVE);
-            }
+        ServiceName serviceName = depUnit.getAttachment(BUNDLE_INSTALL_SERVICE);
+        ServiceController<?> controller = serviceName != null ? depUnit.getServiceRegistry().getService(serviceName) : null;
+        if (controller != null) {
+            controller.setMode(Mode.REMOVE);
         }
     }
 
-    private void activateFramework(final DeploymentPhaseContext context) {
-        Service<Void> service = new AbstractService<Void>() {
-            public void start(StartContext context) throws StartException {
-                context.getController().setMode(Mode.REMOVE);
-            }
-        };
-        ServiceTarget serviceTarget = context.getServiceTarget();
-        ServiceBuilder<Void> builder = serviceTarget.addService(FRAMEWORK_BASE_NAME.append("ACTIVATE"), service);
-        builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
-        builder.install();
+    private void restoreStorageState(final DeploymentPhaseContext phaseContext, final Deployment deployment) {
+        StorageStateProvider storageProvider = (StorageStateProvider) phaseContext.getServiceRegistry().getRequiredService(Services.STORAGE_STATE_PROVIDER).getValue();
+        StorageState storageState = storageProvider.getByLocation(deployment.getLocation());
+        if (storageState != null) {
+            deployment.addAttachment(StorageState.class, storageState);
+            deployment.setAutoStart(false);
+        }
     }
 }

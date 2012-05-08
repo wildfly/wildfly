@@ -35,6 +35,8 @@ import org.jboss.osgi.spi.BundleInfo;
 /**
  * Processes deployments that contain a valid OSGi manifest.
  *
+ * If so it attaches the {@link Manifest} under key {@link Attachments#OSGI_MANIFEST}
+ *
  * @author Thomas.Diesler@jboss.com
  * @since 02-Dec-2010
  */

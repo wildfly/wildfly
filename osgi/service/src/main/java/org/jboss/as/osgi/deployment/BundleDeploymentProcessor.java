@@ -24,6 +24,9 @@ package org.jboss.as.osgi.deployment;
 
 import java.util.List;
 
+import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.osgi.service.BundleInstallIntegration;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -32,11 +35,11 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
+import org.jboss.osgi.framework.IntegrationServices;
+import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.spi.BundleInfo;
 
 /**
@@ -55,47 +58,36 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         final String contextName = depUnit.getName();
 
-        // Check if we already have an OSGi deployment
-        Deployment deployment = OSGiDeploymentAttachment.getDeployment(depUnit);
-        if (deployment != null)
-            return;
-
-        // Check if {@link InstallHandlerIntegration} provided the {@link Deployment}
-        if (deployment == null) {
-            ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
-            ServiceController<Deployment> controller = DeploymentHolderService.getDeployment(serviceRegistry, contextName);
-            if (controller != null) {
-                deployment = controller.getValue();
-                deployment.setAutoStart(false);
-                controller.setMode(Mode.REMOVE);
-            }
+        // Check if {@link BundleInstallIntegration} provided the {@link Deployment}
+        Deployment deployment = BundleInstallIntegration.removeDeployment(contextName);
+        if (deployment != null) {
+            deployment.setAutoStart(false);
         }
 
         // Check for attached BundleInfo
-        BundleInfo info = BundleInfoAttachment.getBundleInfo(depUnit);
+        BundleInfo info = depUnit.getAttachment(OSGiConstants.BUNDLE_INFO_KEY);
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
-            deployment.setAutoStart(true);
+
+            // Prevent autostart of ARQ deployments
+            DotName runWithName = DotName.createSimple("org.junit.runner.RunWith");
+            CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+            List<AnnotationInstance> runWithList = compositeIndex.getAnnotations(runWithName);
+            deployment.setAutoStart(runWithList.isEmpty());
         }
 
-        // Create the {@link BundleInstallService}
+        // Attach the deployment and activate the framework
         if (deployment != null) {
-
-            // Process annotations to modify the generated {@link Deployment}
-            final DotName runWithName = DotName.createSimple("org.junit.runner.RunWith");
-            final CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-            final List<AnnotationInstance> runWithList = compositeIndex.getAnnotations(runWithName);
-            if (runWithList.isEmpty() == false) {
-                deployment.setAutoStart(false);
-            }
-
-            OSGiDeploymentAttachment.attachDeployment(depUnit, deployment);
+            phaseContext.getServiceRegistry().getRequiredService(Services.FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
+            phaseContext.addDependency(IntegrationServices.AUTOINSTALL_COMPLETE, AttachmentKey.create(Object.class));
+            phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
+            depUnit.putAttachment(OSGiConstants.DEPLOYMENT_KEY, deployment);
         }
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        OSGiDeploymentAttachment.detachDeployment(depUnit);
+        depUnit.removeAttachment(OSGiConstants.DEPLOYMENT_KEY);
     }
 }
