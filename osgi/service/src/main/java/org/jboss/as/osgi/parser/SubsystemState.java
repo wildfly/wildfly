@@ -22,7 +22,7 @@
 
 package org.jboss.as.osgi.parser;
 
-import static org.jboss.as.osgi.OSGiConstants.FRAMEWORK_BASE_NAME;
+import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
 import java.io.Serializable;
@@ -54,7 +54,7 @@ import org.jboss.msc.service.StopContext;
  */
 public class SubsystemState  extends Observable implements Service<SubsystemState> {
 
-    public static final ServiceName SERVICE_NAME = FRAMEWORK_BASE_NAME.append("subsystemstate");
+    public static final ServiceName SERVICE_NAME = SERVICE_BASE_NAME.append("subsystemstate");
     public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES = "org.jboss.osgi.system.modules";
     public static final String PROP_JBOSS_OSGI_SYSTEM_PACKAGES = "org.jboss.osgi.system.packages";
     public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA = "org.jboss.osgi.system.modules.extra";

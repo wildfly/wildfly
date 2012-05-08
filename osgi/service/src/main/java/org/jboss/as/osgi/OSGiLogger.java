@@ -89,4 +89,8 @@ public interface OSGiLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 11909, value = "Management operation '%s' failed")
     void errorInOperationHandler(@Cause Throwable cause, String opname);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 11910, value = "Cannot stop bundle: %s")
+    void errorCannotStopBundle(@Cause Throwable cause, Bundle bundle);
 }
