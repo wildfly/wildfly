@@ -1836,6 +1836,8 @@
                 java.home - java installation directory
                 jboss.server.base.dir - root directory for an individual server
                                         instance
+                jboss.server.config.dir - directory in which server configuration
+                                          files are stored.
                 jboss.server.data.dir - directory the server will use for persistent
                                         data file storage
                 jboss.server.log.dir - directory the server will use for
@@ -1930,6 +1932,8 @@
                 java.home - java installation directory
                 jboss.server.base.dir - root directory for an individual server
                                         instance
+                jboss.server.config.dir - directory in which server configuration
+                                          files are stored.
                 jboss.server.data.dir - directory the server will use for persistent
                                         data file storage
                 jboss.server.log.dir - directory the server will use for
