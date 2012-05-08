@@ -1258,12 +1258,6 @@
             <maven-resource group="org.python" artifact="jython-standalone"/>
         </module-def>
 
-        <module-def name="org.picketlink.fed">
-            <maven-resource group="org.picketlink" artifact="picketlink-fed-api"/>
-            <maven-resource group="org.picketlink" artifact="picketlink-fed-core"/>
-            <maven-resource group="org.picketlink" artifact="picketlink-fed-model"/>
-        </module-def>
-
         <module-def name="org.picketlink.social">
             <maven-resource group="org.picketlink" artifact="picketlink-consolidated-social"/>
         </module-def>

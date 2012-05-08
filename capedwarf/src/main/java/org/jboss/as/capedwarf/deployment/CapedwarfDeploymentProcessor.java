@@ -74,7 +74,7 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
     private static final ModuleIdentifier HIBERNATE_SEARCH = ModuleIdentifier.create("org.hibernate.search");
     private static final ModuleIdentifier LUCENE = ModuleIdentifier.create("org.apache.lucene");
     private static final ModuleIdentifier HTTP_COMPONENTS = ModuleIdentifier.create("org.apache.httpcomponents");
-    private static final ModuleIdentifier PICKETLINK_FED = ModuleIdentifier.create("org.picketlink.fed");
+    private static final ModuleIdentifier PICKETLINK = ModuleIdentifier.create("org.picketlink");
     private static final ModuleIdentifier PICKETLINK_SOCIAL = ModuleIdentifier.create("org.picketlink.social");
     // inline this module deps, if running with bundled
     private static final ModuleIdentifier[] INLINE = {
@@ -89,7 +89,7 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
             HIBERNATE_SEARCH,
             LUCENE,
             HTTP_COMPONENTS,
-            PICKETLINK_FED,
+            PICKETLINK,
             PICKETLINK_SOCIAL
     };
 

@@ -160,11 +160,6 @@
 
         <dependency>
             <groupId>org.picketlink</groupId>
-            <artifactId>picketlink-fed-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.picketlink</groupId>
             <artifactId>picketlink-consolidated-social</artifactId>
         </dependency>
 

@@ -50,7 +50,7 @@
         <module name="org.hibernate.search"/>
         <module name="org.apache.lucene"/>
         <module name="org.apache.httpcomponents"/>
-        <module name="org.picketlink.fed"/>
+        <module name="org.picketlink"/>
         <module name="org.picketlink.social"/>
         <module name="com.google.appengine"/>
     </dependencies>

@@ -5842,12 +5842,12 @@
                 <groupId>org.picketlink</groupId>
                 <artifactId>picketlink-core</artifactId>
                 <version>${version.org.picketlink}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-fed</artifactId>
-                <version>${version.org.picketlink}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -5908,50 +5908,6 @@
                 <groupId>org.powermock</groupId>
                 <artifactId>powermock-api-mockito</artifactId>
                 <version>${version.org.powermock}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-fed-api</artifactId>
-                <version>${version.org.picketlink}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.servlet</groupId>
-                        <artifactId>servlet-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.persistence</groupId>
-                        <artifactId>persistence-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.picketlink</groupId>
-                        <artifactId>picketlink-xmlsec-model</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache</groupId>
-                        <artifactId>xmlsec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.openid4java</groupId>
-                        <artifactId>openid4java</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>sun-jaxb</groupId>
-                        <artifactId>jaxb-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>sun-jaxws</groupId>
-                        <artifactId>jaxws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.security</groupId>
-                        <artifactId>jbosssx</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
