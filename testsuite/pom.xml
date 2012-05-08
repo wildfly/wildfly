@@ -83,8 +83,8 @@
         <jbossas.ts.dir>${basedir}</jbossas.ts.dir>
         <!-- This project's root dir. -->
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        
-        
+
+
         <!-- Used to provide an absolute location for the distribution under test. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <jboss.dist>${project.basedir}/../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
@@ -111,8 +111,8 @@
         <jvm.args.securityPolicy></jvm.args.securityPolicy>
         <jvm.args.securityManagerOther></jvm.args.securityManagerOther>
         <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy} ${jvm.args.securityManagerOther}</jvm.args.security>
-        
-        
+
+
         <!-- JaCoCo - Code coverage (-Dcoverage). -->
         <jvm.args.jacoco></jvm.args.jacoco>
 
@@ -146,6 +146,9 @@
 
         <!-- Don't try to deploy the testsuite modules because they don't build jars -->
         <maven.deploy.skip>true</maven.deploy.skip>
+
+        <!-- used to enable trace logging for test suite runs -->
+        <trace>none</trace>
 
     </properties>
 
@@ -358,11 +361,33 @@
                                     <parameters>
                                         <parameter><name>managementIPAddress</name>    <value>${node0}</value></parameter>
                                         <parameter><name>publicIPAddress</name>        <value>${node0}</value></parameter>
-                                        
+
                                         <parameter><name>udpMcastAddress</name>        <value>${mcast}</value></parameter>
                                         <parameter><name>diagnosticsMcastAddress</name><value>${mcast.jgroupsDiag}</value></parameter>
                                         <parameter><name>mpingMcastAddress</name>      <value>${mcast}</value></parameter>
                                         <parameter><name>modclusterMcastAddress</name> <value>${mcast.modcluster}</value></parameter>
+                                    </parameters>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>ts.config-as.trace-logging</id>
+                        <phase>process-test-resources</phase>
+                        <goals><goal>transform</goal></goals>
+                        <inherited>true</inherited>
+                        <configuration>
+                            <transformationSets>
+                                <!-- IPs. -->
+                                <transformationSet>
+                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
+                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                    <stylesheet>${xslt.scripts.dir}/enableTrace.xsl</stylesheet>
+                                    <includes>
+                                        <include>standalone*.xml</include>
+                                    </includes>
+                                    <parameters>
+                                        <parameter><name>trace</name>    <value>${trace}</value></parameter>
                                     </parameters>
                                 </transformationSet>
                             </transformationSets>
@@ -634,7 +659,7 @@
             <activation><property><name>mcast.modcluster</name></property></activation>
             <properties> <mcast.modcluster >${mcast.modcluster}</mcast.modcluster> </properties>
         </profile>
-        
+
 
 
         <!-- Security policy.  ARQ-690, AS7-2823, AS7-2826. -->
@@ -965,7 +990,7 @@
                                                     </fileset>
                                                 </classfiles>
                                                 <sourcefiles encoding="UTF-8">
-                                                    <!-- 
+                                                    <!--
                                                          for i in $(find . -path './*/src/main/java'); do
                                                              DIR=`echo $i | sed 's|./||'`;
                                                              echo "<fileset dir=\"../$DIR\"><include name=\"**/*.java\"/></fileset>";
@@ -1050,7 +1075,7 @@
                                             <html destdir ="${basedir}/target/coverage-report/html"/>
                                             <xml  destfile="${basedir}/target/coverage-report/coverage-report.xml"/>
                                             <csv  destfile="${basedir}/target/coverage-report/coverage-report.csv"/>
-                                        </report>                                        
+                                        </report>
                                     </target>
                                 </configuration>
                             </execution>
@@ -1066,7 +1091,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
 
 
     </profiles>
