@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 
 /**
  *
@@ -27,7 +28,9 @@ public enum Attribute {
    SOCKET_BINDING(CommonAttributes.SOCKET_BINDING),
    STRING(CommonAttributes.STRING),
    TYPE_ATTR_NAME(CommonAttributes.TYPE_ATTR_NAME),
-   VALUE(CommonAttributes.VALUE);
+   VALUE(CommonAttributes.VALUE),
+   MODULE(JMSBridgeDefinition.MODULE);
+
 
    private final String name;
    private final AttributeDefinition definition;

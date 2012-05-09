@@ -71,6 +71,7 @@ import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.GROUPING_HANDLER;
 import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.INITIAL_MESSAGE_PACKET_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.JMS_BRIDGE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGES_ADDED;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNT;
@@ -108,6 +109,7 @@ import org.jboss.as.messaging.jms.ConnectionFactoryTypeValidator;
 import org.jboss.as.messaging.jms.JMSServerControlHandler;
 import org.jboss.as.messaging.jms.JMSServices;
 import org.jboss.as.messaging.jms.JMSTopicControlHandler;
+import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -478,7 +480,6 @@ public class MessagingDescriptions {
 
         return result;
     }
-
 
     static ModelNode getJmsQueueResource(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
@@ -1586,7 +1587,7 @@ public class MessagingDescriptions {
         return attr;
     }
 
-    private static ResourceBundle getResourceBundle(Locale locale) {
+    public static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
         }

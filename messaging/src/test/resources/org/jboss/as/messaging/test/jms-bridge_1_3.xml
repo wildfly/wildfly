@@ -1,0 +1,48 @@
+    <subsystem xmlns="urn:jboss:domain:messaging:1.3">
+        <jms-bridge module="org.another.mq.broker">
+            <source>
+               <connection-factory name="/cf/sourceCF" />
+               <destination name="/topic/sourceTopic" />
+               <user>myUser</user>
+               <password>myPassword</password>
+            </source>
+            <target>
+                <connection-factory name="anotherAS7/jms/cf/targetCF" />
+                <destination name="anotherAS7/jms/queue/targetQueue" />
+	            <user>${userInExpression}</user>
+                <password>${passwordInExpression}</password>
+                <context>
+                    <property key="java.naming.factory.initial"  value="org.jnp.interfaces.NamingContextFactory" />
+                    <property key="java.naming.provider.url"     value="jnp://localhost:1099" />
+                    <property key="java.naming.factory.url.pkgs" value="org.jboss.naming:org.jnp.interfaces"/>
+                    <property key="jnp.timeout"                  value="5000"/>
+                    <property key="jnp.sotimeout"                value="5000"/>
+                </context>
+            </target>
+            <selector string="color='red'"/>
+            <quality-of-service>ONCE_AND_ONLY_ONCE</quality-of-service>
+            <failure-retry-interval>-1</failure-retry-interval>
+            <max-retries>-1</max-retries>
+            <max-batch-size>1</max-batch-size>
+            <max-batch-time>-1</max-batch-time>
+            <subscription-name>mySubscription</subscription-name>
+            <client-id>myClientID</client-id>
+            <add-messageID-in-header>true</add-messageID-in-header>
+        </jms-bridge>
+
+        <jms-bridge name="bridgeB">
+            <source>
+                <connection-factory name="/cf/sourceCF" />
+                <destination name="/topic/anotherSourceTopic" />
+            </source>
+            <target>
+                <connection-factory name="/cf/targetCF" />
+                <destination name="anotherMQ/jms/queue/anotherTargetQueue" />
+            </target>
+            <quality-of-service>AT_MOST_ONCE</quality-of-service>
+            <failure-retry-interval>45678</failure-retry-interval>
+            <max-retries>7890</max-retries>
+            <max-batch-size>12345</max-batch-size>
+            <max-batch-time>10000</max-batch-time>
+        </jms-bridge>
+    </subsystem>

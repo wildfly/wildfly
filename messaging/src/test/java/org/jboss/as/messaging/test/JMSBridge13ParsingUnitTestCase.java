@@ -29,27 +29,21 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 
 /**
- * @author Emanuel Muckenhuber
+ * @author Jeff Mesnil (c) 2012 Red Hat inc
  */
-public class Subsystem12ParsingUnitTestCase extends AbstractSubsystemBaseTest {
+public class JMSBridge13ParsingUnitTestCase extends AbstractSubsystemBaseTest {
 
-    public Subsystem12ParsingUnitTestCase() {
+    public JMSBridge13ParsingUnitTestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_1_2.xml");
+        return readResource("jms-bridge_1_3.xml");
     }
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.MANAGEMENT;
-    }
-
-    @Override
-    protected void compareXml(String configId, String original, String marshalled) throws Exception {
-        // XML from messaging 1.2 does not have the same output than 1.3
-        return;
     }
 }
