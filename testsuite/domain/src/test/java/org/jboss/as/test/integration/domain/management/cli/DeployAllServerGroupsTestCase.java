@@ -58,7 +58,7 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
         war.addClass(SimpleServlet.class);
         war.addAsWebResource(new StringAsset("Version1"), "page.html");
         String tempDir = System.getProperty("java.io.tmpdir");
-        warFile = new File(tempDir + File.separator + "SimpleServlet.war");
+        warFile = new File(tempDir, "SimpleServlet.war");
         new ZipExporterImpl(war).exportTo(warFile, true);
 
         AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
@@ -66,8 +66,8 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
 
     @AfterClass
     public static void after() throws Exception {
-        Assert.assertTrue(warFile.delete());
         AbstractCliTestBase.closeCLI();
+        Assert.assertTrue(warFile.delete());
     }
 
     @Test
