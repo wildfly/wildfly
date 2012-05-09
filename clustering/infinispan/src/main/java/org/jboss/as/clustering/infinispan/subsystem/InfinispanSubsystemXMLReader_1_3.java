@@ -1,18 +1,19 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Infinispan subsystem parsing code.
@@ -57,11 +58,13 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
 
         ModelNode container = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
         String name = null;
+        final Set<Attribute> required = EnumSet.of(Attribute.NAME);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             ParseUtils.requireNoNamespaceAttribute(reader, i);
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
             switch (attribute) {
                 case NAME: {
                     name = value;
@@ -107,8 +110,8 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
             }
         }
 
-        if ((name == null) || !container.hasDefined(ModelKeys.DEFAULT_CACHE)) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME, Attribute.DEFAULT_CACHE));
+        if (!required.isEmpty()) {
+            throw ParseUtils.missingRequired(reader, required);
         }
 
         ModelNode containerAddress = subsystemAddress.clone() ;
