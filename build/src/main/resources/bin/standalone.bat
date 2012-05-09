@@ -3,6 +3,31 @@ rem -------------------------------------------------------------------------
 rem JBoss Bootstrap Script for Windows
 rem -------------------------------------------------------------------------
 
+rem Use --debug or -d to activate debug mode with an optional argument to specify the port
+rem Usage : standalone.bat -d
+rem         standalone.bat --debug 9797
+
+rem By default debug mode is disable.
+set DEBUG_MODE=false
+set DEBUG_PORT=8787
+
+rem Read command-line args.
+:READ-ARGS
+if "%1" == "" ( 
+   goto MAIN 
+) else if "%1" == "--debug" or "%1" == "-d" (
+   set "DEBUG_MODE=true"
+   shift
+   goto READ-DEBUG-PORT
+)
+
+:READ-DEBUG-PORT
+if not "x%1" == "x" (
+   set "DEBUG_PORT=%1"
+   goto MAIN
+)
+
+:MAIN
 rem $Id$
 
 @if not "%ECHO%" == ""  echo %ECHO%
@@ -23,6 +48,10 @@ if exist "%STANDALONE_CONF%" (
    call "%STANDALONE_CONF%" %*
 ) else (
    echo Config file not found "%STANDALONE_CONF%"
+)
+
+if "%DEBUG_MODE%" == "true" (
+   set "JAVA_OPTS=%JAVA_OPTS% -Xrunjdwp:transport=dt_socket,address=%DEBUG_PORT%,server=y,suspend=n"
 )
 
 pushd %DIRNAME%..

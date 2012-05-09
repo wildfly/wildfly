@@ -1,5 +1,31 @@
 #!/bin/sh
 
+# Use --debug or -d to activate debug mode with an optional argument to specify the port.
+# Usage : standalone.bat -d
+#         standalone.bat --debug 9797
+
+# By default debug mode is disable.
+DEBUG_MODE=false
+DEBUG_PORT="8787"
+while [ "$#" -gt 0 ]
+do
+    case "$1" in
+      (-d|--debug) 
+          DEBUG_MODE=true
+          shift
+          if [ -n "$1" ]; then
+              DEBUG_PORT=$1
+          fi
+          ;;
+      (--) 
+          shift 
+          break;;
+      (*)  
+          break;;
+    esac
+    shift
+done
+
 DIRNAME=`dirname "$0"`
 PROGNAME=`basename "$0"`
 GREP="grep"
@@ -31,6 +57,10 @@ if [ "x$RUN_CONF" = "x" ]; then
 fi
 if [ -r "$RUN_CONF" ]; then
     . "$RUN_CONF"
+fi
+
+if [ "$DEBUG_MODE" = "true" ]; then
+    JAVA_OPTS="$JAVA_OPTS -Xrunjdwp:transport=dt_socket,address=$DEBUG_PORT,server=y,suspend=n"
 fi
 
 # For Cygwin, ensure paths are in UNIX format before anything is touched
