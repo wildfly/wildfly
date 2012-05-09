@@ -28,7 +28,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -109,9 +108,8 @@ public class SetSessionContextMethodInvocationTestCase {
     }
 
     /**
-     * Testing whether correct exception is called on SessionContext.wasCanceledCalled is returned. Supposing IllegalStateException.
+     * Testing whether correct exception is called on {@link javax.ejb.SessionContext#wasCancelCalled()} is returned. Supposing IllegalStateException.
      */
-    @Ignore("JBPAPP-8921")
     @Test
     public void testWasCancelledCalled() throws Exception {
         final SLSBImplementingSessionBean slsb = lookup(SLSBImplementingSessionBean.class);
