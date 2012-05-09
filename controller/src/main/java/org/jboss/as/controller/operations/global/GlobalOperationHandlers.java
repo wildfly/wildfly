@@ -60,6 +60,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -166,7 +167,7 @@ public class GlobalOperationHandlers {
                 if (defaults) {
                     //get the model description
                     final DescriptionProvider descriptionProvider = registry.getModelDescription(PathAddress.EMPTY_ADDRESS);
-                    final Locale locale = getLocale(operation);
+                    final Locale locale = getLocale(context, operation);
                     final ModelNode nodeDescription = descriptionProvider.getModelDescription(locale);
 
                     if (nodeDescription.isDefined() && nodeDescription.hasDefined(ATTRIBUTES)) {
@@ -424,7 +425,7 @@ public class GlobalOperationHandlers {
                 } else {
                     // No defined value in the model. See if we should reply with a default from the metadata,
                     // reply with undefined, or fail because it's a non-existent attribute name
-                    final ModelNode nodeDescription = getNodeDescription(registry, operation);
+                    final ModelNode nodeDescription = getNodeDescription(registry, context, operation);
                     if (defaults && nodeDescription.get(ATTRIBUTES).hasDefined(attributeName) &&
                             nodeDescription.get(ATTRIBUTES, attributeName).hasDefined(DEFAULT)) {
                         final ModelNode result = nodeDescription.get(ATTRIBUTES, attributeName, DEFAULT);
@@ -446,7 +447,7 @@ public class GlobalOperationHandlers {
                     context.getResult().set(result);
                 } else {
                     // It wasn't in the model, but user wants a default value from metadata if there is one
-                    final ModelNode nodeDescription = getNodeDescription(registry, operation);
+                    final ModelNode nodeDescription = getNodeDescription(registry, context, operation);
                     if (nodeDescription.get(ATTRIBUTES).hasDefined(attributeName) &&
                             nodeDescription.get(ATTRIBUTES, attributeName).hasDefined(DEFAULT)) {
                         final ModelNode result = nodeDescription.get(ATTRIBUTES, attributeName, DEFAULT);
@@ -469,9 +470,9 @@ public class GlobalOperationHandlers {
             }
         }
 
-        private ModelNode getNodeDescription(ImmutableManagementResourceRegistration registry, ModelNode operation) throws OperationFailedException {
+        private ModelNode getNodeDescription(ImmutableManagementResourceRegistration registry, OperationContext context, ModelNode operation) throws OperationFailedException {
             final DescriptionProvider descriptionProvider = registry.getModelDescription(PathAddress.EMPTY_ADDRESS);
-            final Locale locale = getLocale(operation);
+            final Locale locale = getLocale(context, operation);
             return descriptionProvider.getModelDescription(locale);
         }
     }
@@ -747,7 +748,7 @@ public class GlobalOperationHandlers {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.operationNotRegistered(operationName,
                         PathAddress.pathAddress(operation.require(OP_ADDR)))));
             } else {
-                final ModelNode result = operationEntry.getDescriptionProvider().getModelDescription(getLocale(operation));
+                final ModelNode result = operationEntry.getDescriptionProvider().getModelDescription(getLocale(context, operation));
                 Set<OperationEntry.Flag> flags = operationEntry.getFlags();
                 boolean readOnly = flags.contains(OperationEntry.Flag.READ_ONLY);
                 result.get(READ_ONLY).set(readOnly);
@@ -816,7 +817,7 @@ public class GlobalOperationHandlers {
 
             final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             final DescriptionProvider descriptionProvider = registry.getModelDescription(PathAddress.EMPTY_ADDRESS);
-            final Locale locale = getLocale(operation);
+            final Locale locale = getLocale(context, operation);
 
             final ModelNode nodeDescription = descriptionProvider.getModelDescription(locale);
             final Map<String, ModelNode> operations = new HashMap<String, ModelNode>();
@@ -1186,50 +1187,67 @@ public class GlobalOperationHandlers {
         return result;
     }
 
-    private static Locale getLocale(final ModelNode operation) throws OperationFailedException {
+    private static Locale getLocale(OperationContext context, final ModelNode operation) throws OperationFailedException {
         if (!operation.hasDefined(LOCALE)) {
             return null;
         }
         String unparsed = normalizeLocale(operation.get(LOCALE).asString());
         int len = unparsed.length();
         if (len != 2 && len != 5 && len < 7) {
-            throw MESSAGES.invalidLocaleString(unparsed);
+            reportInvalidLocaleFormat(context, unparsed);
+            return null;
         }
 
         char char0 = unparsed.charAt(0);
         char char1 = unparsed.charAt(1);
         if (char0 < 'a' || char0 > 'z' || char1 < 'a' || char1 > 'z') {
-            throw MESSAGES.invalidLocaleString(unparsed);
+            reportInvalidLocaleFormat(context, unparsed);
+            return null;
         }
         if (len == 2) {
             return new Locale(unparsed, "");
         }
 
-        if (unparsed.charAt(2) != '_') {
-            throw MESSAGES.invalidLocaleString(unparsed);
+        if (!isLocaleSeparator(unparsed.charAt(2))) {
+            reportInvalidLocaleFormat(context, unparsed);
+            return null;
         }
         char char3 = unparsed.charAt(3);
-        if (char3 == '_') {
+        if (isLocaleSeparator(char3)) {
             // no country
             return new Locale(unparsed.substring(0, 2), "", unparsed.substring(4));
         }
 
         char char4 = unparsed.charAt(4);
         if (char3 < 'A' || char3 > 'Z' || char4 < 'A' || char4 > 'Z') {
-            throw MESSAGES.invalidLocaleString(unparsed);
+            reportInvalidLocaleFormat(context, unparsed);
+            return null;
         }
         if (len == 5) {
             return new Locale(unparsed.substring(0, 2), unparsed.substring(3));
         }
 
-        if (unparsed.charAt(5) != '_') {
-            throw MESSAGES.invalidLocaleString(unparsed);
+        if (!isLocaleSeparator(unparsed.charAt(5))) {
+            reportInvalidLocaleFormat(context, unparsed);
+            return null;
         }
         return new Locale(unparsed.substring(0, 2), unparsed.substring(3, 5), unparsed.substring(6));
     }
 
     private static String normalizeLocale(String toNormalize) {
-        return "zh_Hans".equalsIgnoreCase(toNormalize) ? "zh_CN" : toNormalize;
+        return ("zh_Hans".equalsIgnoreCase(toNormalize) || "zh-Hans".equalsIgnoreCase(toNormalize)) ? "zh_CN" : toNormalize;
+    }
+
+    private static boolean isLocaleSeparator(char ch) {
+        return ch == '-' || ch == '_';
+    }
+
+    private static void reportInvalidLocaleFormat(OperationContext context, String format) {
+        String msg = MESSAGES.invalidLocaleString(format);
+        ControllerLogger.MGMT_OP_LOGGER.debug(msg);
+        // TODO report the problem to client via out-of-band message.
+        // Enable this in 7.2 or later when there is time to test
+        //context.report(MessageSeverity.WARN, msg);
     }
 
 
