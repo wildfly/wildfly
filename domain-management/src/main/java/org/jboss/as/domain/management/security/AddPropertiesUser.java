@@ -22,10 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
-import org.jboss.as.domain.management.security.state.PropertyFileFinder;
-import org.jboss.as.domain.management.security.state.PropertyFilePrompt;
-import org.jboss.as.domain.management.security.state.State;
-import org.jboss.as.domain.management.security.state.StateValues;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -34,7 +31,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.domain.management.security.state.PropertyFileFinder;
+import org.jboss.as.domain.management.security.state.PropertyFilePrompt;
+import org.jboss.as.domain.management.security.state.State;
+import org.jboss.as.domain.management.security.state.StateValues;
 
 /**
  * A command line utility to add new users to the mgmt-users.properties files.
@@ -61,15 +61,11 @@ public class AddPropertiesUser {
     public static final String DOMAIN_CONFIG_DIR_USERS_SWITCH = "-dc";
     public static final String SERVER_CONFIG_DIR_USERS_SWITCH = "-sc";
 
-    private static final char CARRIAGE_RETURN_CHAR = '\r';
-
     public static final String NEW_LINE = "\n";
     public static final String SPACE = " ";
     private static final Properties argsCliProps = new Properties();
 
-
-    private ConsoleWrapper theConsole;
-
+    private final ConsoleWrapper theConsole;
 
     protected State nextState;
 
@@ -106,7 +102,9 @@ public class AddPropertiesUser {
             stateValues.setHowInteractive(Interactiveness.NON_INTERACTIVE);
         }
 
-        if ((theConsole == null) && (stateValues.isSilent() == false)) {
+        // Silent modes still need to be able to output an error on failure.
+        theConsole = new JavaConsole();
+        if (theConsole.getConsole() == null) {
             throw MESSAGES.noConsoleAvailable();
         }
         stateValues.setUserName(user);

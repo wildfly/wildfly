@@ -22,9 +22,10 @@
 
 package org.jboss.as.domain.management.security.state;
 
-import org.jboss.as.domain.management.security.ConsoleWrapper;
-import static org.jboss.as.domain.management.security.AddPropertiesUser.NEW_LINE;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.NEW_LINE;
+
+import org.jboss.as.domain.management.security.ConsoleWrapper;
 
 /**
  * State to report an error to the user, optionally a nextState can be supplied so the process can continue even though an
@@ -55,19 +56,17 @@ public class ErrorState implements State {
         }
     }
 
-    @Override
     public State execute() {
-        if ((stateValues == null) || (stateValues != null) && (stateValues.isSilent() == false)) {
-            theConsole.printf(NEW_LINE);
-            theConsole.printf(" * ");
-            theConsole.printf(MESSAGES.errorHeader());
-            theConsole.printf(" * ");
-            theConsole.printf(NEW_LINE);
+        // Errors should be output in all modes.
+        theConsole.printf(NEW_LINE);
+        theConsole.printf(" * ");
+        theConsole.printf(MESSAGES.errorHeader());
+        theConsole.printf(" * ");
+        theConsole.printf(NEW_LINE);
 
-            theConsole.printf(errorMessage);
-            theConsole.printf(NEW_LINE);
-            theConsole.printf(NEW_LINE);
-        }
+        theConsole.printf(errorMessage);
+        theConsole.printf(NEW_LINE);
+        theConsole.printf(NEW_LINE);
         return nextState;
     }
 
