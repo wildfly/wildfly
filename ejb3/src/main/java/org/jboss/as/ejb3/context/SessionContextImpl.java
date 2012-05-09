@@ -29,6 +29,7 @@ import javax.transaction.UserTransaction;
 import javax.xml.rpc.handler.MessageContext;
 
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
@@ -101,6 +102,9 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
     public boolean wasCancelCalled() throws IllegalStateException {
         final InterceptorContext invocation = CurrentInvocationContext.get();
         final CancellationFlag flag = invocation.getPrivateData(CancellationFlag.class);
+        if (flag == null) {
+            throw EjbMessages.MESSAGES.noAsynchronousInvocationInProgress();
+        }
         return flag.get();
     }
 
