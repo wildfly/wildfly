@@ -1190,7 +1190,7 @@ public class GlobalOperationHandlers {
         if (!operation.hasDefined(LOCALE)) {
             return null;
         }
-        String unparsed = operation.get(LOCALE).asString();
+        String unparsed = normalizeLocale(operation.get(LOCALE).asString());
         int len = unparsed.length();
         if (len != 2 && len != 5 && len < 7) {
             throw MESSAGES.invalidLocaleString(unparsed);
@@ -1226,6 +1226,10 @@ public class GlobalOperationHandlers {
             throw MESSAGES.invalidLocaleString(unparsed);
         }
         return new Locale(unparsed.substring(0, 2), unparsed.substring(3, 5), unparsed.substring(6));
+    }
+
+    private static String normalizeLocale(String toNormalize) {
+        return "zh_Hans".equalsIgnoreCase(toNormalize) ? "zh_CN" : toNormalize;
     }
 
 
