@@ -22,6 +22,10 @@
 
 package org.jboss.as.server;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import java.net.URISyntaxException;
 import java.util.jar.Attributes;
 
@@ -38,10 +42,6 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.modules.ModuleIdentifier;
-
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * This module is using message IDs in the range 15700-15999 and 18700-18799.
@@ -360,5 +360,22 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.WARN)
     @Message(id = 15960, value = "Class Path entry %s in %s  does not point to a valid jar for a Class-Path reference.")
     void classPathEntryNotValid(String classPathEntry, String resourceRoot);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15961, value= "Http management interface listening on http://%s:%d/management")
+    void logHttpManagement(String httpAddr, int httpPort);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15962, value= "Http management interface listening on https://%s:%d/management")
+    void logHttpsManagement(String httpsAddr, int httpsPort);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15963, value= "Http management interface listening on http://%s:%d/management and https://%s:%d/management")
+    void logHttpAndHttpsManagement(String httpAddr, int httpPort, String httpsAddr, int httpsPort);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15964, value= "Http management interface is not enabled")
+    void logNoHttpManagement();
+
     // NOTE
 }
