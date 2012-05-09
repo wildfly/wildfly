@@ -67,12 +67,10 @@ public class ClusteredSingleSignOnTestCase {
     @Test
     @InSequence(-2)
     public void startServers() throws Exception {
-        
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
+
+        controller.start(CONTAINER_1);       
         controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);        
-   
+           
     }
 
     @Test
@@ -83,9 +81,17 @@ public class ClusteredSingleSignOnTestCase {
         
         // add sso valves
         SSOTestBase.addClusteredSso(client1.getControllerClient());
-        SSOTestBase.restartServer(client1.getControllerClient());
         SSOTestBase.addClusteredSso(client2.getControllerClient());
-        SSOTestBase.restartServer(client2.getControllerClient());             
+                
+        controller.stop(CONTAINER_1);
+        controller.stop(CONTAINER_2);
+
+        controller.start(CONTAINER_1);       
+        controller.start(CONTAINER_2);
+        
+        deployer.deploy(DEPLOYMENT_1);
+        deployer.deploy(DEPLOYMENT_2);        
+        
     }
             
     @Test
