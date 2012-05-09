@@ -43,6 +43,8 @@ import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.ejb.client.ClusterContext;
 import org.jboss.ejb.client.ClusterNodeManager;
+import org.jboss.ejb.client.EJBClientConfiguration;
+import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBClientInvocationContext;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EJBReceiver;
@@ -125,8 +127,17 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
     }
 
     @Override
-    protected void associate(final EJBReceiverContext context) {
-        this.contexts.add(context);
+    protected void associate(final EJBReceiverContext receiverContext) {
+        this.contexts.add(receiverContext);
+
+        final RegistryCollector<String, List<ClientMapping>> clusters = this.clusterRegistryCollector.getOptionalValue();
+        if (clusters == null) {
+            return;
+        }
+        // for each cluster update the EJB client context with the current nodes in the cluster
+        for (final Registry<String, List<ClientMapping>> cluster : clusters.getRegistries()) {
+            this.addClusterNodes(receiverContext.getClientContext(), cluster.getName(), cluster.getEntries());
+        }
     }
 
     @Override
@@ -395,39 +406,69 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
             return;
         }
         final List<EJBReceiverContext> receiverContexts = this.contexts;
+        for (final EJBReceiverContext receiverContext : receiverContexts) {
+            this.addClusterNodes(receiverContext.getClientContext(), clusterName, addedNodes);
+        }
+    }
+
+    private void addClusterNodes(final EJBClientContext ejbClientContext, final String clusterName, final Map<String, List<ClientMapping>> addedNodes) {
+        if (addedNodes == null || addedNodes.isEmpty()) {
+            return;
+        }
         final SocketBinding ejbRemoteConnectorSocketBinding = this.ejbRemoteConnectorServiceValue.getValue().getEJBRemoteConnectorSocketBinding();
         final InetAddress bindAddress = ejbRemoteConnectorSocketBinding.getAddress();
-        for (final EJBReceiverContext receiverContext : receiverContexts) {
-            final ClusterContext clusterContext = receiverContext.getClientContext().getOrCreateClusterContext(clusterName);
-            // add the nodes to the cluster context
-            for (Map.Entry<String, List<ClientMapping>> entry : addedNodes.entrySet()) {
-                final String addedNodeName = entry.getKey();
-                // if the current node is being added, then let the local receiver handle it
-                if (LocalEjbReceiver.this.getNodeName().equals(addedNodeName)) {
-                    clusterContext.addClusterNodes(new LocalClusterNodeManager());
-                    continue;
-                }
-                // find a matching client mapping for our bind address
-                final List<ClientMapping> clientMappings = entry.getValue();
-                ClientMapping resolvedClientMapping = null;
-                for (final ClientMapping clientMapping : clientMappings) {
-                    final InetAddress sourceNetworkAddress = clientMapping.getSourceNetworkAddress();
-                    final int netMask = clientMapping.getSourceNetworkMaskBits();
-                    final boolean match = NetworkUtil.belongsToNetwork(bindAddress, sourceNetworkAddress, (byte) (netMask & 0xff));
-                    if (match) {
-                        resolvedClientMapping = clientMapping;
-                        logger.debug("Client mapping " + clientMapping + " matches client address " + bindAddress);
-                        break;
-                    }
-                }
-                if (resolvedClientMapping == null) {
-                    EjbLogger.ROOT_LOGGER.cannotAddClusterNodeDueToUnresolvableClientMapping(addedNodeName, clusterName, bindAddress);
-                    continue;
-                }
-                final ClusterNodeManager remotingClusterNodeManager = new RemotingConnectionClusterNodeManager(clusterContext, this.endpointInjectedValue.getValue(), addedNodeName, resolvedClientMapping.getDestinationAddress(), resolvedClientMapping.getDestinationPort());
-                clusterContext.addClusterNodes(remotingClusterNodeManager);
+        final ClusterContext clusterContext = ejbClientContext.getOrCreateClusterContext(clusterName);
+        // add the nodes to the cluster context
+        for (Map.Entry<String, List<ClientMapping>> entry : addedNodes.entrySet()) {
+            final String addedNodeName = entry.getKey();
+            // if the current node is being added, then let the local receiver handle it
+            if (LocalEjbReceiver.this.getNodeName().equals(addedNodeName)) {
+                clusterContext.addClusterNodes(new LocalClusterNodeManager());
+                continue;
             }
+            // if the EJB client context is the default server level EJB client context
+            // which can only handle local receiver and no remote receivers (due to lack of configurations
+            // to connect to them), then skip that context
+            if (this.isLocalOnlyEJBClientContext(ejbClientContext)) {
+                logger.debug("Skipping cluster node additions to EJB client context " + ejbClientContext + " since it can only handle local node");
+                continue;
+            }
+            // find a matching client mapping for our bind address
+            final List<ClientMapping> clientMappings = entry.getValue();
+            ClientMapping resolvedClientMapping = null;
+            for (final ClientMapping clientMapping : clientMappings) {
+                final InetAddress sourceNetworkAddress = clientMapping.getSourceNetworkAddress();
+                final int netMask = clientMapping.getSourceNetworkMaskBits();
+                final boolean match = NetworkUtil.belongsToNetwork(bindAddress, sourceNetworkAddress, (byte) (netMask & 0xff));
+                if (match) {
+                    resolvedClientMapping = clientMapping;
+                    logger.debug("Client mapping " + clientMapping + " matches client address " + bindAddress);
+                    break;
+                }
+            }
+            if (resolvedClientMapping == null) {
+                EjbLogger.ROOT_LOGGER.cannotAddClusterNodeDueToUnresolvableClientMapping(addedNodeName, clusterName, bindAddress);
+                continue;
+            }
+            final ClusterNodeManager remotingClusterNodeManager = new RemotingConnectionClusterNodeManager(clusterContext, this.endpointInjectedValue.getValue(), addedNodeName, resolvedClientMapping.getDestinationAddress(), resolvedClientMapping.getDestinationPort());
+            clusterContext.addClusterNodes(remotingClusterNodeManager);
         }
+
+    }
+
+    /**
+     * Returns true if the passed {@link EJBClientContext} can have only {@link LocalEjbReceiver}s.
+     * Else returns false
+     *
+     * @param ejbClientContext The EJB client context.
+     * @return
+     */
+    private boolean isLocalOnlyEJBClientContext(final EJBClientContext ejbClientContext) {
+        final EJBClientConfiguration clientConfiguration = ejbClientContext.getEJBClientConfiguration();
+        if (clientConfiguration instanceof DefaultEjbClientContextService.LocalOnlyEjbClientConfiguration) {
+            return true;
+        }
+        return false;
     }
 
     private static class ImmediateResultProducer implements EJBReceiverInvocationContext.ResultProducer {

@@ -158,7 +158,7 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
      * consisting of just the {@link LocalEjbReceiver}. i.e. this client configuration cannot be used
      * for setting up connections to remote servers
      */
-    private class LocalOnlyEjbClientConfiguration implements EJBClientConfiguration {
+    class LocalOnlyEjbClientConfiguration implements EJBClientConfiguration {
 
         private final DeploymentNodeSelector localPreferringDeploymentNodeSelector = new LocalEJBReceiverPreferringDeploymentNodeSelector();
 
