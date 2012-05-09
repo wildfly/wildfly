@@ -32,13 +32,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jboss.as.test.integration.security.loginmodules.common.servlets.AbstractLoginModuleTestServlet;
-
 /**
- * A simple servlet that just writes back a string.
+ * A simple servlet that just writes back a string. All roles are allowed.
  * 
  * @author Josef Cacek
- * @see AbstractLoginModuleTestServlet#RESPONSE_BODY
  */
 @WebServlet(urlPatterns = { SimpleSecuredServlet.SERVLET_PATH })
 @ServletSecurity(@HttpConstraint(rolesAllowed = { "*" }))

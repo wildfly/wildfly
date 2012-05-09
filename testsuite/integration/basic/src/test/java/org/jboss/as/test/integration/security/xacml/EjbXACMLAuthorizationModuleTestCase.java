@@ -32,7 +32,10 @@ import javax.ejb.EJBAccessException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
+import org.jboss.as.test.integration.security.common.config.SecurityDomain;
+import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.logging.Logger;
 import org.jboss.security.client.SecurityClient;
 import org.jboss.security.client.SecurityClientFactory;
@@ -49,7 +52,7 @@ import org.junit.runner.RunWith;
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ EjbXACMLAuthorizationModuleTestCase.CustomXACMLAuthzSecurityDomainSetup.class })
+@ServerSetup({ EjbXACMLAuthorizationModuleTestCase.SecurityDomainsSetup.class })
 public class EjbXACMLAuthorizationModuleTestCase {
     private static Logger LOGGER = Logger.getLogger(EjbXACMLAuthorizationModuleTestCase.class);
 
@@ -67,7 +70,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
      */
     @Deployment
     public static JavaArchive deploymentCustomXACMLAuthz() throws IllegalArgumentException, IOException {
-        return createJar("test-custom-xacml.jar", CustomXACMLAuthzSecurityDomainSetup.SECURITY_DOMAIN_NAME);
+        return createJar("test-custom-xacml.jar", SecurityDomain.DEFAULT_NAME);
     }
 
     /**
@@ -168,7 +171,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
                 .addAsManifestResource(EjbXACMLAuthorizationModuleTestCase.class.getPackage(),
                         XACMLTestUtils.TESTOBJECTS_CONFIG + "/jboss-ejb3.xml", "jboss-ejb3.xml");
         XACMLTestUtils.addJBossDeploymentStructureToArchive(jar);
-        jar.addClasses(AbstractSecurityDomainStackServerSetupTask.class);
+        jar.addClasses(AbstractSecurityDomainsServerSetupTask.class);
         LOGGER.info(jar.toString(true));
         return jar;
     }
@@ -176,57 +179,26 @@ public class EjbXACMLAuthorizationModuleTestCase {
     // Embedded classes ------------------------------------------------------
 
     /**
-     * A security domain ServerSetupTask for XACML tests - creates a domain with UsersRoles LoginModule and XACML policy module.
+     * A {@link ServerSetupTask} instance which creates security domains for this test case.
+     * 
+     * @author Josef Cacek
      */
-    static class XACMLAuthzSecurityDomainSetup extends AbstractSecurityDomainStackServerSetupTask {
+    static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
         /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getAuthorizationModuleConfigurations()
-         */
-        @Override
-        protected SecurityModuleConfiguration[] getAuthorizationModuleConfigurations() {
-            return createModuleConfiguration("XACML");
-        }
-
-        /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getLoginModuleConfigurations()
-         */
-        @Override
-        protected SecurityModuleConfiguration[] getLoginModuleConfigurations() {
-            return createModuleConfiguration("UsersRoles");
-        }
-
-        /**
-         * Creates a simple single SecurityModuleConfiguration instance with the given module name. Returns it in an array of
-         * size 1.
+         * Returns SecurityDomains configuration for this testcase.
          * 
-         * @param moduleName
-         * @return single-element
-         */
-        protected final SecurityModuleConfiguration[] createModuleConfiguration(final String moduleName) {
-            final SecurityModuleConfiguration loginModule = new AbstractSecurityModuleConfiguration() {
-                public String getName() {
-                    return moduleName;
-                }
-            };
-            return new SecurityModuleConfiguration[] { loginModule };
-        }
-    }
-
-    /**
-     * A security domain ServerSetupTask for XACML tests, which uses the {@link CustomXACMLAuthorizationModule} as the
-     * authorization/policy module.
-     */
-    static class CustomXACMLAuthzSecurityDomainSetup extends XACMLAuthzSecurityDomainSetup {
-
-        /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getAuthorizationModuleConfigurations()
+         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override
-        protected SecurityModuleConfiguration[] getAuthorizationModuleConfigurations() {
-            return createModuleConfiguration(CustomXACMLAuthorizationModule.class.getName());
+        protected SecurityDomain[] getSecurityDomains() {
+            final SecurityDomain sd = new SecurityDomain.Builder()
+                    .name(SecurityDomain.DEFAULT_NAME)
+                    .loginModules(new SecurityModule.Builder().name("UsersRoles").build())
+                    .authorizationModules(
+                            new SecurityModule.Builder().name(CustomXACMLAuthorizationModule.class.getName()).build()) //
+                    .build();
+            return new SecurityDomain[] { sd };
         }
-
     }
-
 }

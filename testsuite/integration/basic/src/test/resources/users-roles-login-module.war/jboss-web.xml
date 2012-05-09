@@ -1,4 +1,0 @@
-<?xml version="1.0"?>
-<jboss-web>
-    <security-domain>users-roles-login-module</security-domain>
-</jboss-web>

@@ -22,27 +22,26 @@
 
 package org.jboss.as.test.integration.security.passwordmasking;
 
-import junit.framework.Assert;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
-import javax.annotation.Resource;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
@@ -50,44 +49,41 @@ import java.sql.Statement;
 @RunWith(Arquillian.class)
 public class PasswordMaskingInContainerTestCase {
 
-   @Deployment
-   public static WebArchive deploy(){
+    @Deployment
+    public static WebArchive deploy() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "passwordMasking" + ".war");
+        war.addClass(PasswordMaskingTestServlet.class);
+        return war;
+    }
 
-      WebArchive war = ShrinkWrap.create(WebArchive.class, "passwordMasking" + ".war");
-      war.addClass(PasswordMaskingTestServlet.class);
-      war.addAsLibrary(Utils.getResource("database-login-module.war/h2-1.2.145.jar"), "h2-1.2.145.jar");
-      return war;
-   }
+    /**
+     * Tests if masked DS deployed by servlet supports standard operations.
+     */
+    @Test
+    public void datasourceOperationsTest() {
+        DataSource ds;
+        try {
+            Context ctx = new InitialContext();
+            ds = (DataSource) ctx.lookup(PasswordMaskingTestServlet.JNDI_MASKED_DS);
+        } catch (NamingException ex) {
+            throw new AssertionError("Masked datasource not found!");
+        }
+        assertNotNull("Datasource injection failed.", ds);
 
-   /**
-    * Tests if masked DS deployed by servlet supports standard operations.
-    */
-
-   @Test
-   public void datasourceOperationsTest(){
-      DataSource ds;
-      try {
-      Context ctx = new InitialContext();
-      ds = (DataSource)ctx.lookup("java:jboss/datasources/MaskedDS");
-      } catch (NamingException ex) {
-         throw new AssertionError("Masked datasource not found!");
-      }
-      assertNotNull("Datasource injection failed.", ds);
-
-      try {
-         Connection conn = ds.getConnection();
-         Statement statement = conn.createStatement();
-         statement.execute("CREATE TABLE FooBars(ID Varchar(50), Password Varchar(50))");
-         statement.execute("INSERT INTO FooBars VALUES ('foo','foo'),('bar','bar')");
-         ResultSet resultSet = statement.executeQuery("SELECT COUNT (*) FROM FooBars");
-         resultSet.next();
-         int size = resultSet.getInt(1);
-         Assert.assertEquals(2,size);
-         statement.execute("DROP TABLE FooBars");
-         conn.close();
-      } catch (SQLException ex) {
-         throw new AssertionError("Masked datasource is not operable!");
-      }
-   }
+        try {
+            Connection conn = ds.getConnection();
+            Statement statement = conn.createStatement();
+            statement.execute("CREATE TABLE FooBars(ID Varchar(50), Password Varchar(50))");
+            statement.execute("INSERT INTO FooBars VALUES ('foo','foo'),('bar','bar')");
+            ResultSet resultSet = statement.executeQuery("SELECT COUNT (*) FROM FooBars");
+            resultSet.next();
+            int size = resultSet.getInt(1);
+            assertEquals(2, size);
+            statement.execute("DROP TABLE FooBars");
+            conn.close();
+        } catch (SQLException ex) {
+            fail("Masked datasource is not operable!");
+        }
+    }
 
 }

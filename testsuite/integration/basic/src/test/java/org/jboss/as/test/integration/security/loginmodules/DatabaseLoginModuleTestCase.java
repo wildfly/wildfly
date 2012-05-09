@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,410 +19,298 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.integration.security.loginmodules;
 
-import junit.framework.Assert;
-import org.apache.http.HttpResponse;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.integration.security.loginmodules.common.Coding;
-import org.jboss.as.test.integration.security.loginmodules.common.WebAppDeployment;
-import org.jboss.as.test.integration.security.loginmodules.common.servlets.SecuredServletWithDBSetupForDep1;
-import org.jboss.as.test.integration.security.loginmodules.common.servlets.SecuredServletWithDBSetupForDep2;
-import org.jboss.as.test.integration.security.loginmodules.common.servlets.SecuredServletWithDBSetupForDep3;
-import org.jboss.as.test.integration.security.loginmodules.common.servlets.SecuredServletWithDBSetupForDep4;
-import org.jboss.logging.Logger;
-import org.jboss.security.auth.spi.DatabaseServerLoginModule;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.junit.Assert.assertEquals;
 
-import org.h2.tools.Server;
-
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static org.jboss.as.test.integration.security.loginmodules.common.Coding.BASE_64;
-import static org.jboss.as.test.integration.security.loginmodules.common.Coding.HEX;
-import static org.jboss.as.test.integration.security.common.Utils.authAndGetResponse;
-import static org.jboss.as.test.integration.security.common.Utils.getContent;
-import static org.jboss.as.test.integration.security.common.Utils.hash;
-import static org.junit.Assert.assertTrue;
+import org.apache.http.client.ClientProtocolException;
+import org.h2.tools.Server;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.security.common.AbstractDataSourceServerSetupTask;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
+import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.integration.security.common.config.DataSource;
+import org.jboss.as.test.integration.security.common.config.SecurityDomain;
+import org.jboss.as.test.integration.security.common.config.SecurityModule;
+import org.jboss.as.test.integration.security.loginmodules.common.Coding;
+import org.jboss.as.test.integration.security.loginmodules.common.servlets.SimpleSecuredServlet;
+import org.jboss.as.test.integration.security.loginmodules.common.servlets.SimpleServlet;
+import org.jboss.logging.Logger;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
- * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
- *         <p/>
- *         DatabaseLoginModule tests
+ * Tests for {@link org.jboss.security.auth.spi.DatabaseServerLoginModule}. It uses embedded H2 database as a datastore for
+ * users and roles.
+ * 
+ * @author Jan Lanik
+ * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
+@ServerSetup({ DatabaseLoginModuleTestCase.DBSetup.class, //
+        DatabaseLoginModuleTestCase.DataSourcesSetup.class, //
+        DatabaseLoginModuleTestCase.SecurityDomainsSetup.class //
+})
 @RunAsClient
 public class DatabaseLoginModuleTestCase {
 
-   private static Logger log = Logger.getLogger(DatabaseLoginModuleTestCase.class);
+    private static Logger LOGGER = Logger.getLogger(DatabaseLoginModuleTestCase.class);
 
-   private static final Map<String, WebAppDeployment> DEPLOYMENTS = new HashMap<String, WebAppDeployment>();
-   private static final Map<String, Integer> DEP_NUM = new HashMap<String, Integer>();
+    private static final String MARCUS = "marcus";
+    private static final String ANIL = "anil";
 
-   private static class DatabaseManager {
+    private static final String DATASOURCE_NAME = "DBLMTest";
 
-      DatabaseManager() {
-         try {
-            server = Server.createTcpServer().start();
-         } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-         }
-      }
+    private static final String DEP1 = "DEP1"; //"DatabaseLogin-defaultSetting";
+    private static final String DEP2 = "DEP2"; //"DatabaseLogin-hashMD5";
+    private static final String DEP3 = "DEP3"; //"DatabaseLogin-hashMD5-base64";
+    private static final String DEP4 = "DEP4"; //"DatabaseLogin-hashMD5-hex";
 
-      private Server server;
+    private static final String MD5 = "MD5";
 
-      private Map<Integer, Boolean> databaseInitializedFlags = new HashMap<Integer, Boolean>();
+    /**
+     * Creates WAR for test login module with default settings.
+     * 
+     * @return
+     */
+    @Deployment(name = DEP1)
+    public static WebArchive appDeployment1() {
+        return createWar(DEP1);
+    }
 
-      public boolean isDatabaseInitialized(int depNum) {
-         if (null == databaseInitializedFlags.get(depNum)) {
-            databaseInitializedFlags.put(depNum, false);
-         }
-         return databaseInitializedFlags.get(depNum);
-      }
+    /**
+     * Creates WAR for test login module with MD5 hashing enabled.
+     * 
+     * @return
+     */
+    @Deployment(name = DEP2)
+    public static WebArchive appDeployment2() {
+        return createWar(DEP2);
+    }
 
-      public void setDatabaseInitializedFlag(int depNum, boolean flag) {
-         databaseInitializedFlags.put(depNum, flag);
-      }
+    /**
+     * Creates WAR for test login module with MD5 hashing enabled - Base64 coding used.
+     * 
+     * @return
+     */
+    @Deployment(name = DEP3)
+    public static WebArchive appDeployment3() {
+        return createWar(DEP3);
+    }
 
-      private Map<Integer, Connection> connectionMap = new HashMap<Integer, Connection>();
+    /**
+     * Creates WAR for test login module with MD5 hashing enabled - HEX coding used.
+     * 
+     * @return
+     */
+    @Deployment(name = DEP4)
+    public static WebArchive appDeployment4() {
+        return createWar(DEP4);
+    }
 
-      private Connection getConnection(int depNum) throws SQLException {
-         Connection conn = connectionMap.get(depNum);
-         if (null == conn) {
-            conn = DriverManager.getConnection("jdbc:h2:tcp://localhost/mem:test" + depNum, "sa", "sa");
-            log.debug("connection to dep" + depNum + " database opened (jdbc:h2:tcp://localhost/mem:test" + depNum + ")");
-            // we are storing refferences to all connections so that we can check in @AfterClass that all of them are closed.
-            // That serves as an integrity check - all connections should be closed after usage
-            connectionMap.put(depNum, conn);
-         }
-         return conn;
-      }
+    /**
+     * Test default login module settings.
+     */
+    @OperateOnDeployment(DEP1)
+    @Test
+    public void testDefault(@ArquillianResource URL url) throws Exception {
+        testAccess(url);
+    }
 
-      public void executeUpdate(int depNum, String query) throws SQLException {
-         Connection connection = getConnection(depNum);
-         Statement statement = connection.createStatement();
-         statement.execute(query);
-         log.debug("dep" + depNum + "database: SQL statement executed: " + query);
-      }
+    /**
+     * Test login module setting with MD5 hashing enabled.
+     */
+    @OperateOnDeployment(DEP2)
+    @Test
+    public void testHashed(@ArquillianResource URL url) throws Exception {
+        testAccess(url);
+    }
 
-      public ResultSet executeQuery(int depNum, String query) throws SQLException {
-         Connection connection = getConnection(depNum);
-         Statement statement = connection.createStatement();
-         ResultSet result = statement.executeQuery(query);
-         log.debug("dep" + depNum + "database: SQL statement executed: " + query);
-         return result;
-      }
+    /**
+     * Test login module setting with MD5 hashing enabled - Base64 coding used.
+     */
+    @OperateOnDeployment(DEP3)
+    @Test
+    public void testHashedBase64(@ArquillianResource URL url) throws Exception {
+        testAccess(url);
+    }
 
-      public void initDatabase(int depNum) throws SQLException {
-         assertFalse(null == server);
-         assertFalse(isDatabaseInitialized(depNum));
-         executeUpdate(depNum, "CREATE TABLE Principals(PrincipalID Varchar(50), Password Varchar(50))");
-         executeUpdate(depNum, "CREATE TABLE Roles(PrincipalID Varchar(50), Role Varchar(50), RoleGroup Varchar(50))");
+    /**
+     * Test login module setting with MD5 hashing enabled - HEX coding used.
+     */
+    @OperateOnDeployment(DEP4)
+    @Test
+    public void testHashedHex(@ArquillianResource URL url) throws Exception {
+        testAccess(url);
+    }
 
-         setDatabaseInitializedFlag(depNum, true);
-      }
+    // Private methods -------------------------------------------------------
 
-      private int getRowCount(String tableName, int depNum) throws SQLException {
-         assertTrue(isDatabaseInitialized(depNum));
+    /**
+     * Tests access to a protected servlet.
+     * 
+     * @param url
+     * @throws MalformedURLException
+     * @throws ClientProtocolException
+     * @throws IOException
+     * @throws URISyntaxException
+     */
+    private void testAccess(URL url) throws MalformedURLException, ClientProtocolException, IOException, URISyntaxException {
+        final URL servletUrl = new URL(url.toExternalForm() + SimpleSecuredServlet.SERVLET_PATH.substring(1));
+        //successful authentication and authorization
+        assertEquals("Response body is not correct.", SimpleSecuredServlet.RESPONSE_BODY,
+                Utils.makeCallWithBasicAuthn(servletUrl, ANIL, ANIL, 200));
+        //successful authentication and unsuccessful authorization
+        Utils.makeCallWithBasicAuthn(servletUrl, MARCUS, MARCUS, 403);
+        //unsuccessful authentication
+        Utils.makeCallWithBasicAuthn(servletUrl, ANIL, MARCUS, 401);
+        Utils.makeCallWithBasicAuthn(servletUrl, ANIL, Utils.hash(ANIL, MD5, Coding.BASE_64), 401);
+        Utils.makeCallWithBasicAuthn(servletUrl, ANIL, Utils.hash(ANIL, MD5, Coding.HEX), 401);
+    }
 
-         ResultSet resultSet = executeQuery(depNum, "SELECT COUNT (*) FROM " + tableName);
+    /**
+     * Creates {@link WebArchive} (WAR) for given deployment name.
+     * 
+     * @param deployment
+     * @return
+     */
+    private static WebArchive createWar(final String deployment) {
+        LOGGER.info("Starting deployment " + deployment);
 
-         resultSet.next();
-         return resultSet.getInt(1);
-      }
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, deployment + ".war");
+        war.addClasses(SimpleSecuredServlet.class, SimpleServlet.class);
+        war.addAsWebInfResource(DatabaseLoginModuleTestCase.class.getPackage(), "web-basic-authn.xml", "web.xml");
+        war.addAsWebInfResource(new StringAsset("<jboss-web>" + //
+                "<security-domain>" + deployment + "</security-domain>" + //
+                "</jboss-web>"), "jboss-web.xml");
 
-      public void updateDatabase(int depNum, Map<String, String> usersMap) throws SQLException {
-         if (isDatabaseInitialized(depNum)) {
-            clearDatabase(depNum);
-         }
-         initDatabase(depNum);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(war.toString(true));
+        }
+        return war;
+    }
 
-         assertTrue(isDatabaseInitialized(depNum));
-         assertNotNull(usersMap);
+    // Embedded classes ------------------------------------------------------
 
-         // there should be no values left in the tables
-         Assert.assertEquals(0, getRowCount("Principals", depNum));
-         Assert.assertEquals(0, getRowCount("Roles", depNum));
-         for (Map.Entry<String, String> entry : usersMap.entrySet()) {
-            // record width is 50
-            String key = entry.getKey();
-            Assert.assertTrue(key.length() <= 50);
-            String value = entry.getValue();
-            Assert.assertTrue(value.length() <= 50);
-            executeUpdate(depNum, "INSERT INTO Principals VALUES ('" + key + "','" + value + "')");
-         }
-         executeUpdate(depNum, "INSERT INTO Roles VALUES ('anil','gooduser','Roles')");
-         executeUpdate(depNum, "INSERT INTO Roles VALUES ('marcus','superuser','Roles')");
-      }
+    /**
+     * A {@link ServerSetupTask} instance which creates security domains for this test case.
+     * 
+     * @author Josef Cacek
+     */
+    static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
-      public void clearDatabase(int depNum) throws SQLException {
-         assertTrue(isDatabaseInitialized(depNum));
-         Statement statement = getConnection(depNum).createStatement();
+        /**
+         * Returns SecurityDomains configuration for this testcase.
+         * 
+         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
+         */
+        @Override
+        protected SecurityDomain[] getSecurityDomains() {
+            final SecurityModule.Builder loginModuleBuilder = new SecurityModule.Builder().name("Database").options(
+                    getLoginModuleOptions(DEP1));
+            final SecurityDomain sd1 = new SecurityDomain.Builder().name(DEP1).loginModules(loginModuleBuilder.build()).build();
+            loginModuleBuilder.options(getLoginModuleOptions(DEP2)).putOption("hashAlgorithm", MD5);
+            final SecurityDomain sd2 = new SecurityDomain.Builder().name(DEP2).loginModules(loginModuleBuilder.build()).build();
+            loginModuleBuilder.options(getLoginModuleOptions(DEP3)).putOption("hashAlgorithm", MD5)
+                    .putOption("hashEncoding", "base64");
+            final SecurityDomain sd3 = new SecurityDomain.Builder().name(DEP3).loginModules(loginModuleBuilder.build()).build();
+            loginModuleBuilder.options(getLoginModuleOptions(DEP4)).putOption("hashAlgorithm", MD5)
+                    .putOption("hashEncoding", "hex");
+            final SecurityDomain sd4 = new SecurityDomain.Builder().name(DEP4).loginModules(loginModuleBuilder.build()).build();
+            return new SecurityDomain[] { sd1, sd2, sd3, sd4 };
+        }
 
-         statement.executeUpdate("DROP TABLE Principals");
-         log.debug("executed: DROP TABLE Principals");
-         statement.executeUpdate("DROP TABLE Roles");
-         log.debug("DROP TABLE Roles");
+        /**
+         * Generates common login module options.
+         * 
+         * @param deployment
+         * @return
+         */
+        private Map<String, String> getLoginModuleOptions(String deployment) {
+            final Map<String, String> options = new HashMap<String, String>();
+            options.put("dsJndiName", "java:jboss/datasources/" + DATASOURCE_NAME);
+            options.put("principalsQuery", "select Password from Principals" + deployment + " where PrincipalID=?");
+            options.put("rolesQuery", "select Role, RoleGroup from Roles where PrincipalID=?");
+            return options;
+        }
+    }
 
-         statement.getConnection().close();
-         log.debug("connection to dep" + depNum + " database closed");
-         setDatabaseInitializedFlag(depNum, false);
-      }
+    /**
+     * Datasource setup task for H2 DB.
+     */
+    static class DataSourcesSetup extends AbstractDataSourceServerSetupTask {
 
-      public void releaseResources() {
-         try {
-            for (Connection conn : connectionMap.values()) {
-               conn.close();
-            }
-         } catch (SQLException ex) {
-            throw new RuntimeException("not able to close connection", ex);
-         } finally {
+        @Override
+        protected DataSource[] getDataSourceConfigurations(ManagementClient managementClient, String containerId) {
+            return new DataSource[] { new DataSource.Builder()
+                    .name(DATASOURCE_NAME)
+                    .connectionUrl(
+                            "jdbc:h2:tcp://" + Utils.getSecondaryTestAddress(managementClient) + "/mem:" + DATASOURCE_NAME)
+                    .driver("h2").username("sa").password("sa").build() };
+        }
+    }
+
+    /**
+     * H2 DB configuration setup task.
+     */
+    static class DBSetup implements ServerSetupTask {
+
+        private Server server;
+
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            server = Server.createTcpServer("-tcpAllowOthers").start();
+            final String dbUrl = "jdbc:h2:mem:" + DATASOURCE_NAME + ";DB_CLOSE_DELAY=-1";
+            LOGGER.info("Creating database " + dbUrl);
+
+            final Connection conn = DriverManager.getConnection(dbUrl, "sa", "sa");
+            executeUpdate(conn, "CREATE TABLE Roles(PrincipalID Varchar(50), Role Varchar(50), RoleGroup Varchar(50))");
+            executeUpdate(conn, "INSERT INTO Roles VALUES ('anil','" + SimpleSecuredServlet.ALLOWED_ROLE + "','Roles')");
+            executeUpdate(conn, "INSERT INTO Roles VALUES ('marcus','superuser','Roles')");
+            createPrincipalsTab(conn, DEP1, null);
+            createPrincipalsTab(conn, DEP2, Coding.BASE_64);
+            createPrincipalsTab(conn, DEP3, Coding.BASE_64);
+            createPrincipalsTab(conn, DEP4, Coding.HEX);
+            conn.close();
+        }
+
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             server.shutdown();
-         }
-      }
-   }
+            server = null;
+        }
 
-   private static DatabaseManager databaseManager = new DatabaseManager();
+        private void createPrincipalsTab(Connection conn, String dep, Coding coding) throws SQLException {
+            executeUpdate(conn, "CREATE TABLE Principals" + dep + "(PrincipalID Varchar(50), Password Varchar(50))");
+            executeUpdate(conn, "INSERT INTO Principals" + dep + " VALUES ('anil','" + Utils.hashMD5(ANIL, coding) + "')");
+            executeUpdate(conn, "INSERT INTO Principals" + dep + " VALUES ('marcus','" + Utils.hashMD5(MARCUS, coding) + "')");
+        }
 
-   @AfterClass
-   public static void removeDatabaseTask() throws SQLException {
-      databaseManager.releaseResources();
-      databaseManager = null;
-   }
-
-   private static WebArchive addH2Lib(WebArchive war) {
-      war.addAsLibrary(Utils.getResource("database-login-module.war/h2-1.2.145.jar"), "h2-1.2.145.jar");
-      return war;
-   }
-
-   private static final String DEP1 = "DatabaseLogin-defaultSetting";
-
-   static {
-      DEP_NUM.put(DEP1, 1);
-   }
-
-   /**
-    * plaintext login with no additional options
-    */
-   @Deployment(name = DEP1, order = 1)
-   public static WebArchive appDeployment1() throws SQLException {
-      log.info("start" + DEP1 + "deployment");
-
-      WebAppDeployment dep = new WebAppDeployment(DEP1, SecuredServletWithDBSetupForDep1.class, DatabaseServerLoginModule.class);
-      DEPLOYMENTS.put(DEP1, dep);
-
-      log.debug("adding module options");
-      dep.addModuleOption("dsJndiName", "java:jboss/datasources/LoginDSdep" + DEP_NUM.get(DEP1));
-      dep.addModuleOption("principalsQuery", "select Password from Principals where PrincipalID=?");
-      dep.addModuleOption("rolesQuery", "select Role, RoleGroup from Roles where PrincipalID=?");
-
-      Map<String, String> usersProps = new HashMap<String, String>();
-      usersProps.put("anil", "anil");
-      usersProps.put("marcus", "marcus");
-      databaseManager.updateDatabase(DEP_NUM.get(DEP1), usersProps);
-
-      log.debug(dep.getWar().toString(true));
-
-      WebArchive war = dep.getWar();
-      addH2Lib(war);
-      return war;
-   }
-
-   /**
-    * Correct login
-    *
-    * @throws Exception
-    */
-   @OperateOnDeployment(DEP1)
-   @Test
-   public void testSuccesfullAuth(@ArquillianResource URL url) throws Exception {
-      Utils.makeCall(url + "secured/", "anil", "anil", 200);
-   }
-
-   /**
-    * Incorrect login
-    *
-    * @throws Exception
-    */
-   @OperateOnDeployment(DEP1)
-   @Test
-   public void testUnsucessfulAuth(@ArquillianResource URL url) throws Exception {
-      Utils.makeCall(url + "secured/", "marcus", "marcus", 403);
-   }
-
-
-   private static final String DEP2 = "DatabaseLogin-hashMD5";
-
-   static {
-      DEP_NUM.put(DEP2, 2);
-   }
-
-   /**
-    * DatabaseServerLoginModule: hashAlgorithm=MD5 testcase
-    */
-   @Deployment(name = DEP2, order = 2)
-   public static WebArchive appDeployment2() throws SQLException {
-      log.info("start" + DEP2 + "deployment");
-
-      WebAppDeployment dep = new WebAppDeployment(DEP2, SecuredServletWithDBSetupForDep2.class, DatabaseServerLoginModule.class);
-      DEPLOYMENTS.put(DEP2, dep);
-
-      log.debug("adding module options");
-      dep.addModuleOption("dsJndiName", "java:jboss/datasources/LoginDSdep" + DEP_NUM.get(DEP2));
-      dep.addModuleOption("principalsQuery", "select Password from Principals where PrincipalID=?");
-      dep.addModuleOption("rolesQuery", "select Role, RoleGroup from Roles where PrincipalID=?");
-      dep.addModuleOption("hashAlgorithm", "MD5");
-
-      Map<String, String> usersProps = new HashMap<String, String>();
-      usersProps.put("anil", Utils.hash("anil", "MD5", BASE_64));
-      usersProps.put("marcus", Utils.hash("marcus", "MD5", BASE_64));
-
-      databaseManager.updateDatabase(DEP_NUM.get(DEP2), usersProps);
-
-      log.debug(dep.getWar().toString(true));
-
-      WebArchive war = dep.getWar();
-      addH2Lib(war);
-      return war;
-   }
-
-   @OperateOnDeployment(DEP2)
-   @Test
-   public void testHashedPassword(@ArquillianResource URL url) throws Exception {
-      HttpResponse response = authAndGetResponse(url + "secured/", "anil", hash("anil", "MD5", Coding.BASE_64));
-      String pageContent = getContent(response);
-      assertTrue(pageContent.contains("The username and password you supplied are not valid."));
-   }
-
-   @OperateOnDeployment(DEP2)
-   @Test
-   public void testCleartextPassword(@ArquillianResource URL url) throws Exception {
-      HttpResponse response = authAndGetResponse(url + "secured/", "anil", "anil");
-      String pageContent = getContent(response);
-      assertTrue(pageContent.contains("GOOD"));
-   }
-
-
-   private static final String DEP3 = "DatabaseLogin-hashMD5-base64";
-
-   static {
-      DEP_NUM.put(DEP3, 3);
-   }
-
-   /**
-    * DatabaseServerLoginModule: hashAlgorithm=MD5, hashEncoding=base64 testcase
-    */
-   @Deployment(name = DEP3, order = 3)
-   public static WebArchive appDeployment3() throws SQLException {
-      log.info("start" + DEP3 + "deployment");
-
-      WebAppDeployment dep = new WebAppDeployment(DEP3, SecuredServletWithDBSetupForDep3.class, DatabaseServerLoginModule.class);
-      DEPLOYMENTS.put(DEP3, dep);
-
-      log.debug("adding module options");
-      dep.addModuleOption("dsJndiName", "java:jboss/datasources/LoginDSdep" + DEP_NUM.get(DEP3));
-      dep.addModuleOption("principalsQuery", "select Password from Principals where PrincipalID=?");
-      dep.addModuleOption("rolesQuery", "select Role, RoleGroup from Roles where PrincipalID=?");
-      dep.addModuleOption("hashAlgorithm", "MD5");
-      dep.addModuleOption("hashEncoding", "base64");
-
-      Map<String, String> usersProps = new HashMap<String, String>();
-      usersProps.put("anil", Utils.hash("anil", "MD5", Coding.BASE_64));
-      usersProps.put("marcus", Utils.hash("marcus", "MD5", BASE_64));
-      databaseManager.updateDatabase(DEP_NUM.get(DEP3), usersProps);
-
-      log.debug(dep.getWar().toString(true));
-
-      WebArchive war = dep.getWar();
-      addH2Lib(war);
-      return war;
-   }
-
-   @OperateOnDeployment(DEP3)
-   @Test
-   public void testHashedPassword3(@ArquillianResource URL url) throws Exception {
-      HttpResponse response = authAndGetResponse(url + "secured/", "anil", hash("anil", "MD5", Coding.BASE_64));
-      String pageContent = getContent(response);
-      assertTrue(pageContent.contains("The username and password you supplied are not valid."));
-   }
-
-   @OperateOnDeployment(DEP3)
-   @Test
-   public void testCleartextPassword3(@ArquillianResource URL url) throws Exception {
-      HttpResponse response = authAndGetResponse(url + "secured/", "anil", "anil");
-      String pageContent = getContent(response);
-      assertTrue(pageContent.contains("GOOD"));
-   }
-
-   private static final String DEP4 = "DatabaseLogin-hashMD5-hex";
-
-   static {
-      DEP_NUM.put(DEP4, 4);
-   }
-
-   /**
-    * DatabaseServerLoginModule: hashAlgorithm=MD5, hashEncoding=hex testcase
-    */
-   @Deployment(name = DEP4, order = 4)
-   public static WebArchive appDeployment4() throws SQLException {
-      log.info("start" + DEP4 + "deployment");
-
-      WebAppDeployment dep = new WebAppDeployment(DEP4, SecuredServletWithDBSetupForDep4.class, DatabaseServerLoginModule.class);
-      DEPLOYMENTS.put(DEP4, dep);
-
-      log.debug("adding module options");
-      dep.addModuleOption("dsJndiName", "java:jboss/datasources/LoginDSdep" + DEP_NUM.get(DEP4));
-      dep.addModuleOption("principalsQuery", "select Password from Principals where PrincipalID=?");
-      dep.addModuleOption("rolesQuery", "select Role, RoleGroup from Roles where PrincipalID=?");
-      dep.addModuleOption("hashAlgorithm", "MD5");
-      dep.addModuleOption("hashEncoding", "hex");
-
-      Map<String, String> usersProps = new HashMap<String, String>();
-      usersProps.put("anil", Utils.hash("anil", "MD5", HEX));
-      usersProps.put("marcus", Utils.hash("marcus", "MD5", HEX));
-      databaseManager.updateDatabase(DEP_NUM.get(DEP4), usersProps);
-
-      log.debug(dep.getWar().toString(true));
-
-      WebArchive war = dep.getWar();
-      addH2Lib(war);
-      return war;
-   }
-
-   @OperateOnDeployment(DEP4)
-   @Test
-   public void testHashedPassword4(@ArquillianResource URL url) throws Exception {
-      HttpResponse response = authAndGetResponse(url + "secured/", "anil", hash("anil", "MD5", HEX));
-      String pageContent = getContent(response);
-      assertTrue(pageContent.contains("The username and password you supplied are not valid."));
-   }
-
-   @OperateOnDeployment(DEP4)
-   @Test
-   public void testCleartextPassword2(@ArquillianResource URL url) throws Exception {
-      HttpResponse response = authAndGetResponse(url + "secured/", "anil", "anil");
-      String pageContent = getContent(response);
-      assertTrue(pageContent.contains("GOOD"));
-   }
+        private void executeUpdate(Connection connection, String query) throws SQLException {
+            final Statement statement = connection.createStatement();
+            final int updateResult = statement.executeUpdate(query);
+            LOGGER.info("Result: " + updateResult + ".  SQL statement: " + query);
+            statement.close();
+        }
+    }
 
 }
-
-
