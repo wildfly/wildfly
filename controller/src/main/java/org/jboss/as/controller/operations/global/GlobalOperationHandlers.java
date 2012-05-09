@@ -896,6 +896,7 @@ public class GlobalOperationHandlers {
                         rrOp.get(PROXIES).set(proxies);
                         rrOp.get(OPERATIONS).set(ops);
                         rrOp.get(INHERITED).set(inheritedOps);
+                        rrOp.get(LOCALE).set(operation.get(LOCALE));
                         ModelNode rrRsp = new ModelNode();
                         childResources.put(element, rrRsp);
 
