@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.test.integration.parse;
+package org.jboss.as.test.manualmode.parse;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
@@ -61,8 +61,14 @@ import javax.xml.namespace.QName;
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
+import org.jboss.arquillian.container.test.api.ContainerController;
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
@@ -132,6 +138,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -163,7 +170,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class ParseAndMarshalModelsTestCase {
 
-    @Deployment
+    @Deployment(name="test", managed=false, testable=true)
     public static Archive<?> getDeployment() {
 
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bogus.jar");
@@ -181,23 +188,68 @@ public class ParseAndMarshalModelsTestCase {
 
     @Before
     public void setupServiceContainer() {
-        serviceContainer = ServiceContainer.Factory.create("test");
+        System.out.println("------ before " + isInContainer());
+        if (isInContainer()){
+            System.out.println("---- Starting MSC container");
+            serviceContainer = ServiceContainer.Factory.create("test");
+        }
     }
 
     @After
     public void cleanup() throws Exception {
-        ManagementFactory.getPlatformMBeanServer().unregisterMBean(new ObjectName("jboss.msc:type=container,name=test"));
-        if (serviceContainer != null) {
-            serviceContainer.shutdown();
-            try {
-                serviceContainer.awaitTermination(5, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            finally {
-                serviceContainer = null;
+        if (isInContainer()) {
+            ManagementFactory.getPlatformMBeanServer().unregisterMBean(new ObjectName("jboss.msc:type=container,name=test"));
+            if (serviceContainer != null) {
+                serviceContainer.shutdown();
+                try {
+                    serviceContainer.awaitTermination(5, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                finally {
+                    serviceContainer = null;
+                }
             }
         }
+    }
+
+    @Test
+    @InSequence(-1)
+    @RunAsClient
+    public void start(@ArquillianResource ContainerController cc, @ArquillianResource Deployer deployer) {
+        System.out.println("------ start " + isInContainer());
+        cc.start("default-jbossas");
+        deployer.deploy("test");
+    }
+
+    @Test
+    @InSequence(1)
+    @RunAsClient
+    public void stop(@ArquillianResource ContainerController cc, @ArquillianResource Deployer deployer) {
+        System.out.println("------ stop " + isInContainer());
+        deployer.undeploy("test");
+        cc.stop("default-jbossas");
+    }
+
+    @Test
+    public void testStandaloneXml() throws Exception {
+        System.out.println("------ testStandaloneXml " + isInContainer());
+        standaloneXmlTest(getOriginalStandaloneXml("standalone.xml"));
+    }
+
+    @Test
+    public void testStandaloneHAXml() throws Exception {
+        standaloneXmlTest(getOriginalStandaloneXml("standalone-ha.xml"));
+    }
+
+    @Test
+    public void testStandaloneFullXml() throws Exception {
+        standaloneXmlTest(getOriginalStandaloneXml("standalone-full.xml"));
+    }
+
+    @Test
+    public void testStandaloneFullHAXml() throws Exception {
+        standaloneXmlTest(getOriginalStandaloneXml("standalone-full-ha.xml"));
     }
 
     @Test
@@ -311,6 +363,11 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
+    public void testHostXml() throws Exception {
+        hostXmlTest(getOriginalHostXml("host.xml"));
+    }
+
+    @Test
     public void test700HostXml() throws Exception {
         hostXmlTest(getLegacyConfigFile("host", "7-0-0.xml"));
     }
@@ -338,42 +395,47 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     //TODO Leave commented out until domain-osgi-only.xml and domain-jts.xml are definitely removed from the configuration
-//    @Test
+//    @Test @TargetsContainer("class-jbossas")
 //    public void testDomainOSGiOnlyXml() throws Exception {
 //        domainXmlTest(getExampleConfigFile("domain-osgi-only.xml"));
 //    }
 //
-//    @Test
+//    @Test @TargetsContainer("class-jbossas")
 //    public void testDomainJtsXml() throws Exception {
 //        domainXmlTest(getExampleConfigFile("domain-jts.xml"));
 //    }
 
-    @Test
+    @Test @TargetsContainer("class-jbossas")
+    public void testDomainXml() throws Exception {
+        domainXmlTest(getOriginalDomainXml("domain.xml"));
+    }
+
+    @Test @TargetsContainer("class-jbossas")
     public void test700DomainXml() throws Exception {
         domainXmlTest(getLegacyConfigFile("domain", "7-0-0.xml"));
     }
 
-    @Test
+    @Test @TargetsContainer("class-jbossas")
     public void test701DomainXml() throws Exception {
         domainXmlTest(getLegacyConfigFile("domain", "7-0-1.xml"));
     }
 
-    @Test
+    @Test @TargetsContainer("class-jbossas")
     public void test702DomainXml() throws Exception {
         domainXmlTest(getLegacyConfigFile("domain", "7-0-2.xml"));
     }
 
-    @Test
+    @Test @TargetsContainer("class-jbossas")
     public void test700DomainPreviewXml() throws Exception {
         domainXmlTest(getLegacyConfigFile("domain", "7-0-0-preview.xml"));
     }
 
-    @Test
+    @Test @TargetsContainer("class-jbossas")
     public void test701DomainPreviewXml() throws Exception {
         domainXmlTest(getLegacyConfigFile("domain", "7-0-1-preview.xml"));
     }
 
-    @Test
+    @Test @TargetsContainer("class-jbossas")
     public void test702DomainPreviewXml() throws Exception {
         domainXmlTest(getLegacyConfigFile("domain", "7-0-2-preview.xml"));
     }
@@ -699,6 +761,31 @@ public class ParseAndMarshalModelsTestCase {
 
     //  Get-config methods
 
+    private File getOriginalStandaloneXml(String profile) throws FileNotFoundException {
+        return FileUtils.getFileOrCheckParentsIfNotFound(
+                System.getProperty("jbossas.project.dir", "../../.."),
+                "build/target/generated-configs/standalone/configuration/" + profile
+        );
+    }
+
+    private File getOriginalHostXml(final String profile) throws FileNotFoundException {
+        //Get the standalone.xml from the build/src directory, since the one in the
+        //built server could have changed during running of tests
+        File f = getHostConfigDir();
+        f = new File(f, profile);
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        return f;
+    }
+
+    private File getOriginalDomainXml(final String profile) throws FileNotFoundException {
+        //Get the standalone.xml from the build/src directory, since the one in the
+        //built server could have changed during running of tests
+        File f = getDomainConfigDir();
+        f = new File(f, profile);
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        return f;
+    }
+
     private File getLegacyConfigFile(String type, String profile) throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
                 System.getProperty("jbossas.ts.submodule.dir"),
@@ -721,6 +808,21 @@ public class ParseAndMarshalModelsTestCase {
         );
     }
 
+    private File getHostConfigDir() throws FileNotFoundException {
+        //Get the standalone.xml from the build/src directory, since the one in the
+        //built server could have changed during running of tests
+        return FileUtils.getFileOrCheckParentsIfNotFound(
+                System.getProperty("jbossas.project.dir", "../../.."),
+                "build/src/main/resources/domain/configuration"
+        );
+    }
+
+    private File getDomainConfigDir() throws FileNotFoundException {
+        return FileUtils.getFileOrCheckParentsIfNotFound(
+                System.getProperty("jbossas.project.dir", "../../.."),
+                "build/target/generated-configs/domain/configuration"
+        );
+    }
 
     DescriptionProvider getRootDescriptionProvider() {
         return new DescriptionProvider() {
@@ -728,6 +830,10 @@ public class ParseAndMarshalModelsTestCase {
                 return new ModelNode();
             }
         };
+    }
+
+    private boolean isInContainer() {
+        return this.getClass().getClassLoader() instanceof ModuleClassLoader;
     }
 
     interface Setup {
