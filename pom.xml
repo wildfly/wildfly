@@ -122,7 +122,7 @@
         <version.org.apache.ws.security>1.6.5</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.0.2</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-1</version.org.apache.xalan>
-        <version.org.apache.xerces>2.9.1-jbossas-1</version.org.apache.xerces>
+        <version.org.apache.xerces>2.9.1-jbossas-2</version.org.apache.xerces>
         <version.org.codehaus.jackson>1.9.2</version.org.codehaus.jackson>
         <version.org.codehaus.jettison>1.3.1</version.org.codehaus.jettison>
         <version.org.codehaus.plexus.plexus-utils>2.0.4</version.org.codehaus.plexus.plexus-utils>
