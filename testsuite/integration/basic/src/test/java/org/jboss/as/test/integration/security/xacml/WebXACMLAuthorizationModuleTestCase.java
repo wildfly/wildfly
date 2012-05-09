@@ -35,8 +35,11 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.integration.security.common.config.SecurityDomain;
+import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -51,12 +54,14 @@ import org.junit.runner.RunWith;
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ WebXACMLAuthorizationModuleTestCase.XACMLAuthzSecurityDomainSetup.class,
-        WebXACMLAuthorizationModuleTestCase.CustomXACMLAuthzSecurityDomainSetup.class })
+@ServerSetup({ WebXACMLAuthorizationModuleTestCase.SecurityDomainsSetup.class })
 @RunAsClient
 public class WebXACMLAuthorizationModuleTestCase {
 
     private static final Logger LOGGER = Logger.getLogger(WebXACMLAuthorizationModuleTestCase.class);
+
+    private static final String SECURITY_DOMAIN_XACML = "XACML";
+    private static final String SECURITY_DOMAIN_CUSTOM = "CustomXACML";
 
     // Public methods --------------------------------------------------------
 
@@ -69,7 +74,7 @@ public class WebXACMLAuthorizationModuleTestCase {
      */
     @Deployment(name = "XACML")
     public static WebArchive deploymentDefaultXACML() throws IllegalArgumentException, IOException {
-        return createWar(XACMLAuthzSecurityDomainSetup.SECURITY_DOMAIN_NAME, "xacml-web-test.war");
+        return createWar(SECURITY_DOMAIN_XACML, "xacml-web-test.war");
     }
 
     /**
@@ -81,7 +86,7 @@ public class WebXACMLAuthorizationModuleTestCase {
      */
     @Deployment(name = "CustomXACML")
     public static WebArchive deploymentCustomXACML() throws IllegalArgumentException, IOException {
-        return createWar(CustomXACMLAuthzSecurityDomainSetup.SECURITY_DOMAIN_NAME, "custom-xacml-web-test.war");
+        return createWar(SECURITY_DOMAIN_CUSTOM, "custom-xacml-web-test.war");
     }
 
     /**
@@ -160,66 +165,30 @@ public class WebXACMLAuthorizationModuleTestCase {
     // Embedded classes ------------------------------------------------------
 
     /**
-     * A security domain ServerSetupTask for XACML tests - creates a domain with UsersRoles LoginModule and XACML policy module.
+     * A {@link ServerSetupTask} instance which creates security domains for this test case.
+     * 
+     * @author Josef Cacek
      */
-    static class XACMLAuthzSecurityDomainSetup extends AbstractSecurityDomainStackServerSetupTask {
+    static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
         /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getAuthorizationModuleConfigurations()
-         */
-        @Override
-        protected SecurityModuleConfiguration[] getAuthorizationModuleConfigurations() {
-            return createModuleConfiguration("XACML");
-        }
-
-        /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getLoginModuleConfigurations()
-         */
-        @Override
-        protected SecurityModuleConfiguration[] getLoginModuleConfigurations() {
-            return createModuleConfiguration("UsersRoles");
-        }
-
-        /**
-         * Creates a simple single SecurityModuleConfiguration instance with the given module name. Returns it in an array of
-         * size 1.
+         * Returns SecurityDomains configuration for this testcase.
          * 
-         * @param moduleName
-         * @return single-element
-         */
-        protected final SecurityModuleConfiguration[] createModuleConfiguration(final String moduleName) {
-            final SecurityModuleConfiguration loginModule = new AbstractSecurityModuleConfiguration() {
-                public String getName() {
-                    return moduleName;
-                }
-            };
-            return new SecurityModuleConfiguration[] { loginModule };
-        }
-    }
-
-    /**
-     * A security domain ServerSetupTask for XACML tests, which uses the {@link CustomXACMLAuthorizationModule} as the
-     * authorization/policy module.
-     */
-    static class CustomXACMLAuthzSecurityDomainSetup extends XACMLAuthzSecurityDomainSetup {
-
-        public static final String SECURITY_DOMAIN_NAME = "custom-xacml-authz-security-domain";
-
-        /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getAuthorizationModuleConfigurations()
+         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override
-        protected SecurityModuleConfiguration[] getAuthorizationModuleConfigurations() {
-            return createModuleConfiguration(CustomXACMLAuthorizationModule.class.getName());
-        }
-
-        /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getSecurityDomainName()
-         */
-        @Override
-        protected String getSecurityDomainName() {
-            return SECURITY_DOMAIN_NAME;
+        protected SecurityDomain[] getSecurityDomains() {
+            final SecurityModule loginModule = new SecurityModule.Builder().name("UsersRoles").build();
+            final SecurityDomain sd1 = new SecurityDomain.Builder().name(SECURITY_DOMAIN_XACML).loginModules(loginModule)
+                    .authorizationModules(new SecurityModule.Builder().name("XACML").build()) //
+                    .build();
+            final SecurityDomain sd2 = new SecurityDomain.Builder()
+                    .name(SECURITY_DOMAIN_CUSTOM)
+                    .loginModules(loginModule)
+                    .authorizationModules(
+                            new SecurityModule.Builder().name(CustomXACMLAuthorizationModule.class.getName()).build()) //
+                    .build();
+            return new SecurityDomain[] { sd1, sd2 };
         }
     }
-
 }

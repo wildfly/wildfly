@@ -22,9 +22,10 @@
 package org.jboss.as.test.integration.security.loginmodules;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -34,37 +35,51 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
-
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
+import org.apache.directory.server.annotations.CreateLdapServer;
+import org.apache.directory.server.annotations.CreateTransport;
+import org.apache.directory.server.core.annotations.AnnotationUtils;
+import org.apache.directory.server.core.annotations.ContextEntry;
+import org.apache.directory.server.core.annotations.CreateDS;
+import org.apache.directory.server.core.annotations.CreateIndex;
+import org.apache.directory.server.core.annotations.CreatePartition;
+import org.apache.directory.server.core.api.DirectoryService;
+import org.apache.directory.server.core.factory.DSAnnotationProcessor;
+import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
+import org.apache.directory.server.factory.ServerAnnotationProcessor;
+import org.apache.directory.server.ldap.LdapServer;
+import org.apache.directory.shared.ldap.model.entry.DefaultEntry;
+import org.apache.directory.shared.ldap.model.ldif.LdifEntry;
+import org.apache.directory.shared.ldap.model.ldif.LdifReader;
+import org.apache.directory.shared.ldap.model.schema.SchemaManager;
 import org.apache.http.NameValuePair;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask;
-import org.jboss.as.test.integration.security.common.LDAPServerSetupTask;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
+import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
+import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
+import org.jboss.as.test.integration.security.common.ManagedCreateTransport;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.integration.security.common.config.SecurityDomain;
+import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.loginmodules.common.servlets.PrincipalPrintingServlet;
 import org.jboss.as.test.integration.security.loginmodules.common.servlets.RolePrintingServlet;
 import org.jboss.logging.Logger;
+import org.jboss.security.auth.spi.LdapExtLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -74,9 +89,8 @@ import org.junit.runner.RunWith;
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ LdapExtLoginModuleTestCase.LDAPSetup.class, LdapExtLoginModuleTestCase.SecurityDomainSetup1.class,
-        LdapExtLoginModuleTestCase.SecurityDomainSetup2.class, LdapExtLoginModuleTestCase.SecurityDomainSetup3.class,
-        LdapExtLoginModuleTestCase.SecurityDomainSetup4.class })
+@ServerSetup({ LdapExtLoginModuleTestCase.SystemPropertiesSetup.class, LdapExtLoginModuleTestCase.LDAPServerSetupTask.class,
+        LdapExtLoginModuleTestCase.SecurityDomainsSetup.class })
 @RunAsClient
 public class LdapExtLoginModuleTestCase {
 
@@ -85,7 +99,10 @@ public class LdapExtLoginModuleTestCase {
 
     private static Logger LOGGER = Logger.getLogger(LdapExtLoginModuleTestCase.class);
 
-    private static int LDAP_PORT = 1389;
+    private static final String KEYSTORE_FILENAME = "ldaps.jks";
+    private static final File KEYSTORE_FILE = new File(KEYSTORE_FILENAME);
+    private static final int LDAP_PORT = 10389;
+    private static final int LDAPS_PORT = 10636;
 
     private static final String SECURITY_CREDENTIALS = "secret";
     private static final String SECURITY_PRINCIPAL = "uid=admin,ou=system";
@@ -116,7 +133,7 @@ public class LdapExtLoginModuleTestCase {
      */
     @Deployment(name = DEP1)
     public static WebArchive deployment1() {
-        return createWar(SecurityDomainSetup1.SECURITY_DOMAIN_NAME);
+        return createWar(SECURITY_DOMAIN_NAME_PREFIX + DEP1);
     }
 
     /**
@@ -126,7 +143,7 @@ public class LdapExtLoginModuleTestCase {
      */
     @Deployment(name = DEP2)
     public static WebArchive deployment2() {
-        return createWar(SecurityDomainSetup2.SECURITY_DOMAIN_NAME);
+        return createWar(SECURITY_DOMAIN_NAME_PREFIX + DEP2);
     }
 
     /**
@@ -136,7 +153,7 @@ public class LdapExtLoginModuleTestCase {
      */
     @Deployment(name = DEP3)
     public static WebArchive deployment3() {
-        return createWar(SecurityDomainSetup3.SECURITY_DOMAIN_NAME);
+        return createWar(SECURITY_DOMAIN_NAME_PREFIX + DEP3);
     }
 
     /**
@@ -146,7 +163,7 @@ public class LdapExtLoginModuleTestCase {
      */
     @Deployment(name = DEP4)
     public static WebArchive deployment4() {
-        return createWar(SecurityDomainSetup4.SECURITY_DOMAIN_NAME);
+        return createWar(SECURITY_DOMAIN_NAME_PREFIX + DEP4);
     }
 
     /**
@@ -157,7 +174,7 @@ public class LdapExtLoginModuleTestCase {
     @Test
     @OperateOnDeployment(DEP1)
     public void test1(@ArquillianResource URL webAppURL) throws Exception {
-        testDeployment(webAppURL, "jduke");
+        testDeployment(webAppURL, "jduke", false);
     }
 
     /**
@@ -166,10 +183,9 @@ public class LdapExtLoginModuleTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("JBPAPP-8556 - LdapExtLoginModule adds the role name(s) also from the mapping object")
     @OperateOnDeployment(DEP2)
     public void test2(@ArquillianResource URL webAppURL) throws Exception {
-        testDeployment(webAppURL, "jduke");
+        testDeployment(webAppURL, "jduke", true);
     }
 
     /**
@@ -180,7 +196,7 @@ public class LdapExtLoginModuleTestCase {
     @Test
     @OperateOnDeployment(DEP3)
     public void test3(@ArquillianResource URL webAppURL) throws Exception {
-        testDeployment(webAppURL, "Java Duke");
+        testDeployment(webAppURL, "Java Duke", false);
     }
 
     /**
@@ -191,9 +207,10 @@ public class LdapExtLoginModuleTestCase {
     @Test
     @OperateOnDeployment(DEP4)
     public void test4(@ArquillianResource URL webAppURL) throws Exception {
-        final URL rolesPrintingURL = new URL(webAppURL.toExternalForm() + RolePrintingServlet.SERVLET_PATH + "?" + QUERY_ROLES);
+        final URL rolesPrintingURL = new URL(webAppURL.toExternalForm() + RolePrintingServlet.SERVLET_PATH.substring(1) + "?"
+                + QUERY_ROLES);
         final String userName = "Java Duke";
-        final String rolesResponse = getResponse(rolesPrintingURL, userName, "theduke", 200);
+        final String rolesResponse = Utils.makeCallWithBasicAuthn(rolesPrintingURL, userName, "theduke", 200);
 
         assertNotInRole(rolesResponse, "jduke");
         assertNotInRole(rolesResponse, "Java Duke");
@@ -207,55 +224,10 @@ public class LdapExtLoginModuleTestCase {
         assertInRole(rolesResponse, "R3");
         assertInRole(rolesResponse, "R5");
 
-        final URL principalPrintingURL = new URL(webAppURL.toExternalForm() + PrincipalPrintingServlet.SERVLET_PATH + "?"
-                + QUERY_ROLES);
-        final String principal = getResponse(principalPrintingURL, userName, "theduke", 200);
+        final URL principalPrintingURL = new URL(webAppURL.toExternalForm()
+                + PrincipalPrintingServlet.SERVLET_PATH.substring(1) + "?" + QUERY_ROLES);
+        final String principal = Utils.makeCallWithBasicAuthn(principalPrintingURL, userName, "theduke", 200);
         assertEquals("Unexpected Principal name", userName, principal);
-    }
-
-    /**
-     * Returns response body to the given URL as a String. It also checks if the returned HTTP status code is the expected one.
-     * If the server returns {@link HttpServletResponse#SC_UNAUTHORIZED}, then a new request is created with the provided
-     * credentials.
-     * 
-     * @param url
-     * @param user
-     * @param pass
-     * @param expectedStatusCode
-     * @return
-     * @throws ClientProtocolException
-     * @throws IOException
-     * @throws URISyntaxException
-     */
-    public String getResponse(URL url, String user, String pass, int expectedStatusCode) throws ClientProtocolException,
-            IOException, URISyntaxException {
-        LOGGER.info("Requesting URL " + url);
-        final DefaultHttpClient httpClient = new DefaultHttpClient();
-        try {
-            final HttpGet httpGet = new HttpGet(url.toURI());
-            HttpResponse response = httpClient.execute(httpGet);
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (HttpServletResponse.SC_UNAUTHORIZED != statusCode) {
-                assertEquals("Unexpected HTTP response status code.", expectedStatusCode, statusCode);
-                return EntityUtils.toString(response.getEntity());
-            }
-            HttpEntity entity = response.getEntity();
-            if (entity != null)
-                EntityUtils.consume(entity);
-
-            final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(user, pass);
-            httpClient.getCredentialsProvider().setCredentials(new AuthScope(url.getHost(), url.getPort()), credentials);
-
-            response = httpClient.execute(httpGet);
-            statusCode = response.getStatusLine().getStatusCode();
-            assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
-            return EntityUtils.toString(response.getEntity());
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpClient.getConnectionManager().shutdown();
-        }
     }
 
     // Private methods -------------------------------------------------------
@@ -269,12 +241,17 @@ public class LdapExtLoginModuleTestCase {
      * @throws IOException
      * @throws URISyntaxException
      */
-    private void testDeployment(URL webAppURL, String username) throws MalformedURLException, ClientProtocolException,
-            IOException, URISyntaxException {
-        final URL rolesPrintingURL = new URL(webAppURL.toExternalForm() + RolePrintingServlet.SERVLET_PATH + "?" + QUERY_ROLES);
-        final String rolesResponse = getResponse(rolesPrintingURL, username, "theduke", 200);
+    private void testDeployment(URL webAppURL, String username, boolean hasJdukeRole) throws MalformedURLException,
+            ClientProtocolException, IOException, URISyntaxException {
+        final URL rolesPrintingURL = new URL(webAppURL.toExternalForm() + RolePrintingServlet.SERVLET_PATH.substring(1) + "?"
+                + QUERY_ROLES);
+        final String rolesResponse = Utils.makeCallWithBasicAuthn(rolesPrintingURL, username, "theduke", 200);
 
-        assertNotInRole(rolesResponse, "jduke");
+        if (hasJdukeRole) {
+            assertInRole(rolesResponse, "jduke");
+        } else {
+            assertNotInRole(rolesResponse, "jduke");
+        }
         assertNotInRole(rolesResponse, "Java Duke");
         assertNotInRole(rolesResponse, "Roles");
         assertNotInRole(rolesResponse, "JBossAdmin");
@@ -285,9 +262,9 @@ public class LdapExtLoginModuleTestCase {
         assertInRole(rolesResponse, "TheDuke");
         assertInRole(rolesResponse, "Echo");
 
-        final URL principalPrintingURL = new URL(webAppURL.toExternalForm() + PrincipalPrintingServlet.SERVLET_PATH + "?"
-                + QUERY_ROLES);
-        final String principal = getResponse(principalPrintingURL, username, "theduke", 200);
+        final URL principalPrintingURL = new URL(webAppURL.toExternalForm()
+                + PrincipalPrintingServlet.SERVLET_PATH.substring(1) + "?" + QUERY_ROLES);
+        final String principal = Utils.makeCallWithBasicAuthn(principalPrintingURL, username, "theduke", 200);
         assertEquals("Unexpected Principal name", username, principal);
     }
 
@@ -318,7 +295,9 @@ public class LdapExtLoginModuleTestCase {
      * @param role
      */
     private void assertInRole(final String rolePrintResponse, String role) {
-        assertTrue("Missing role assignment", StringUtils.contains(rolePrintResponse, "," + role + ","));
+        if (!StringUtils.contains(rolePrintResponse, "," + role + ",")) {
+            fail("Missing role '" + role + "' assignment");
+        }
     }
 
     /**
@@ -328,268 +307,204 @@ public class LdapExtLoginModuleTestCase {
      * @param role
      */
     private void assertNotInRole(final String rolePrintResponse, String role) {
-        assertFalse("Unexpected role assignment", StringUtils.contains(rolePrintResponse, "," + role + ","));
-    }
-
-    /**
-     * Returns URL of the LDAP server.
-     * 
-     * @return
-     */
-    private static String getLDAPProviderUrl(final ManagementClient mgmtClient) {
-        return "ldap://" + Utils.getSecondaryTestAddress(mgmtClient) + ":" + LDAP_PORT;
+        if (StringUtils.contains(rolePrintResponse, "," + role + ",")) {
+            fail("Unexpected role '" + role + "' assignment");
+        }
     }
 
     // Embedded classes ------------------------------------------------------
 
     /**
-     * A LDAPSetup.
+     * This setup task sets truststore file.
+     */
+    static class SystemPropertiesSetup extends AbstractSystemPropertiesServerSetupTask {
+
+        /**
+         * @see org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask#getSystemProperties()
+         */
+        @Override
+        protected SystemProperty[] getSystemProperties() {
+            return new SystemProperty[] { new DefaultSystemProperty("javax.net.ssl.trustStore", KEYSTORE_FILE.getAbsolutePath()) };
+        }
+    }
+
+    /**
+     * A {@link ServerSetupTask} instance which creates security domains for this test case.
      * 
      * @author Josef Cacek
      */
-    static class LDAPSetup extends LDAPServerSetupTask {
+    static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
         /**
-         * @see org.jboss.qa.security.ldap.loginmodule.LDAPServerSetupTask#configureLdapServer()
+         * Returns SecurityDomains configuration for this testcase.
+         * 
+         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override
-        protected void configureLdapServer() throws Exception {
-            super.configureLdapServer();
-            LOGGER.info("Importing LDIF file.");
-            importLdif(LdapExtLoginModuleTestCase.class.getResourceAsStream(LdapExtLoginModuleTestCase.class.getSimpleName()
-                    + ".ldif"));
+        protected SecurityDomain[] getSecurityDomains() {
+            final String secondaryTestAddress = Utils.getSecondaryTestAddress(managementClient);
+            final SecurityDomain sd1 = new SecurityDomain.Builder()
+                    .name(SECURITY_DOMAIN_NAME_PREFIX + DEP1)
+                    .loginModules(
+                            new SecurityModule.Builder().name("org.jboss.security.auth.spi.LdapExtLoginModule")
+                                    .options(getCommonOptions()).putOption("baseCtxDN", "ou=People,dc=jboss,dc=org")
+                                    .putOption("java.naming.provider.url", "ldap://" + secondaryTestAddress + ":" + LDAP_PORT)
+                                    .putOption("baseFilter", "(uid={0})").putOption("rolesCtxDN", "ou=Roles,dc=jboss,dc=org")
+                                    .putOption("roleFilter", "(member={1})").putOption("roleAttributeID", "cn").build()) //
+                    .build();
+            final SecurityDomain sd2 = new SecurityDomain.Builder()
+                    .name(SECURITY_DOMAIN_NAME_PREFIX + DEP2)
+                    .loginModules(
+                            new SecurityModule.Builder().name("LdapExtended").options(getCommonOptions())
+                                    .putOption("java.naming.provider.url", "ldap://" + secondaryTestAddress + ":" + LDAP_PORT)
+                                    .putOption("baseCtxDN", "ou=People,o=example2,dc=jboss,dc=org")
+                                    .putOption("baseFilter", "(uid={0})")
+                                    .putOption("rolesCtxDN", "ou=Roles,o=example2,dc=jboss,dc=org")
+                                    .putOption("roleFilter", "(cn={0})").putOption("roleAttributeID", "description")
+                                    .putOption("roleAttributeIsDN", "true").putOption("roleNameAttributeID", "cn")
+                                    .putOption("roleRecursion", "0").build()) //
+                    .build();
+            final SecurityDomain sd3 = new SecurityDomain.Builder()
+                    .name(SECURITY_DOMAIN_NAME_PREFIX + DEP3)
+                    .loginModules(
+                            new SecurityModule.Builder()
+                                    .name(LdapExtLoginModule.class.getName())
+                                    .options(getCommonOptions())
+                                    .putOption("java.naming.provider.url", "ldaps://" + secondaryTestAddress + ":" + LDAPS_PORT)
+                                    .putOption("baseCtxDN", "ou=People,o=example3,dc=jboss,dc=org")
+                                    .putOption("baseFilter", "(cn={0})")
+                                    .putOption("rolesCtxDN", "ou=Roles,o=example3,dc=jboss,dc=org")
+                                    .putOption("roleFilter", "(member={1})").putOption("roleAttributeID", "cn")
+                                    .putOption("roleRecursion", "0").build()) //
+                    .build();
+            final SecurityDomain sd4 = new SecurityDomain.Builder()
+                    .name(SECURITY_DOMAIN_NAME_PREFIX + DEP4)
+                    .loginModules(
+                            new SecurityModule.Builder()
+                                    .name(LdapExtLoginModule.class.getName())
+                                    .options(getCommonOptions())
+                                    .putOption("java.naming.provider.url", "ldaps://" + secondaryTestAddress + ":" + LDAPS_PORT)
+                                    .putOption("baseCtxDN", "ou=People,o=example4,dc=jboss,dc=org")
+                                    .putOption("baseFilter", "(cn={0})")
+                                    .putOption("rolesCtxDN", "ou=Roles,o=example4,dc=jboss,dc=org")
+                                    .putOption("roleFilter", "(member={1})").putOption("roleAttributeID", "cn")
+                                    .putOption("roleRecursion", "1").build()) //
+                    .build();
+            return new SecurityDomain[] { sd1, sd2, sd3, sd4 };
         }
 
-        /**
-         * @see org.jboss.qa.security.ldap.loginmodule.LDAPServerSetupTask#configureDirectoryService()
-         */
-        @Override
-        protected void configureDirectoryService() throws Exception {
-            super.configureDirectoryService();
-            LOGGER.info("Creating 'jboss' DirectoryService partition.");
-            addPartition("jboss", "dc=jboss,dc=org");
-        }
-
-        /**
-         * @see org.jboss.qa.security.ldap.loginmodule.LDAPServerSetupTask#getPort()
-         */
-        @Override
-        protected int getPort() {
-            return LDAP_PORT;
-        }
-
-    }
-
-    /**
-     * A SecurityDomainSetup1.
-     */
-    static class SecurityDomainSetup1 extends AbstractSecurityDomainStackServerSetupTask {
-
-        protected static final String SECURITY_DOMAIN_NAME = SECURITY_DOMAIN_NAME_PREFIX + DEP1;
-
-        /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup#getSecurityDomainName()
-         */
-        @Override
-        protected String getSecurityDomainName() {
-            return SECURITY_DOMAIN_NAME;
-        }
-
-        /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getLoginModuleConfigurations()
-         */
-        @Override
-        protected SecurityModuleConfiguration[] getLoginModuleConfigurations() {
-            SecurityModuleConfiguration ldapLoginModule = new SecurityModuleConfiguration() {
-
-                public String getName() {
-                    return "org.jboss.security.auth.spi.LdapExtLoginModule";
-                }
-
-                public String getFlag() {
-                    return "sufficient";
-                }
-
-                public Map<String, String> getOptions() {
-                    Map<String, String> moduleOptions = new HashMap<String, String>();
-
-                    moduleOptions.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
-                    moduleOptions.put("java.naming.provider.url", getLDAPProviderUrl(managementClient));
-                    moduleOptions.put("java.naming.security.authentication", "simple");
-                    moduleOptions.put("bindDN", SECURITY_PRINCIPAL);
-                    moduleOptions.put("bindCredential", SECURITY_CREDENTIALS);
-                    moduleOptions.put("baseCtxDN", "ou=People,dc=jboss,dc=org");
-                    moduleOptions.put("baseFilter", "(uid={0})");
-                    moduleOptions.put("rolesCtxDN", "ou=Roles,dc=jboss,dc=org");
-                    moduleOptions.put("roleFilter", "(member={1})");
-                    moduleOptions.put("roleAttributeID", "cn");
-                    return moduleOptions;
-                }
-
-            };
-            return new SecurityModuleConfiguration[] { ldapLoginModule };
+        private Map<String, String> getCommonOptions() {
+            final Map<String, String> moduleOptions = new HashMap<String, String>();
+            moduleOptions.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
+            moduleOptions.put("java.naming.security.authentication", "simple");
+            moduleOptions.put("bindDN", SECURITY_PRINCIPAL);
+            moduleOptions.put("bindCredential", SECURITY_CREDENTIALS);
+            return moduleOptions;
         }
     }
 
     /**
-     * A SecurityDomainSetup2.
+     * A server setup task which configures and starts LDAP server.
      */
-    static class SecurityDomainSetup2 extends AbstractSecurityDomainStackServerSetupTask {
+    //@formatter:off
+    @CreateDS( 
+        name = "JBossDS",
+        partitions =
+        {
+            @CreatePartition(
+                name = "jboss",
+                suffix = "dc=jboss,dc=org",
+                contextEntry = @ContextEntry( 
+                    entryLdif =
+                        "dn: dc=jboss,dc=org\n" +
+                        "dc: jboss\n" +
+                        "objectClass: top\n" +
+                        "objectClass: domain\n\n" ),
+                indexes = 
+                {
+                    @CreateIndex( attribute = "objectClass" ),
+                    @CreateIndex( attribute = "dc" ),
+                    @CreateIndex( attribute = "ou" )
+                })
+        },
+        additionalInterceptors = { KeyDerivationInterceptor.class })
+    @CreateLdapServer ( 
+        transports = 
+        {
+            @CreateTransport( protocol = "LDAP",  port = LDAP_PORT), 
+            @CreateTransport( protocol = "LDAPS", port = LDAPS_PORT) 
+        },
+//        keyStore="ldaps.jks",
+        certificatePassword="secret")            
+    //@formatter:on
+    static class LDAPServerSetupTask implements ServerSetupTask {
 
-        protected static final String SECURITY_DOMAIN_NAME = SECURITY_DOMAIN_NAME_PREFIX + DEP2;
+        private DirectoryService directoryService;
+        private LdapServer ldapServer;
 
         /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup#getSecurityDomainName()
+         * Creates directory services, starts LDAP server and KDCServer
+         * 
+         * @param managementClient
+         * @param containerId
+         * @throws Exception
+         * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
+         *      java.lang.String)
          */
-        @Override
-        protected String getSecurityDomainName() {
-            return SECURITY_DOMAIN_NAME;
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            directoryService = DSAnnotationProcessor.getDirectoryService();
+            final SchemaManager schemaManager = directoryService.getSchemaManager();
+            try {
+                for (LdifEntry ldifEntry : new LdifReader(
+                        LdapExtLoginModuleTestCase.class.getResourceAsStream(LdapExtLoginModuleTestCase.class.getSimpleName()
+                                + ".ldif"))) {
+                    directoryService.getAdminSession().add(new DefaultEntry(schemaManager, ldifEntry.getEntry()));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw e;
+            }
+            final ManagedCreateLdapServer createLdapServer = new ManagedCreateLdapServer(
+                    (CreateLdapServer) AnnotationUtils.getInstance(CreateLdapServer.class));
+            FileOutputStream fos = new FileOutputStream(KEYSTORE_FILE);
+            IOUtils.copy(getClass().getResourceAsStream(KEYSTORE_FILENAME), fos);
+            fos.close();
+            createLdapServer.setKeyStore(KEYSTORE_FILE.getAbsolutePath());
+            fixTransportAddress(createLdapServer, StringUtils.strip(Utils.getSecondaryTestAddress(managementClient), "[]"));
+            ldapServer = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService);
+            ldapServer.start();
         }
 
         /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getLoginModuleConfigurations()
+         * Fixes bind address in the CreateTransport annotation.
+         * 
+         * @param createLdapServer
          */
-        @Override
-        protected SecurityModuleConfiguration[] getLoginModuleConfigurations() {
-            SecurityModuleConfiguration ldapLoginModule = new SecurityModuleConfiguration() {
-
-                public String getName() {
-                    return "LdapExtended";
-                }
-
-                public String getFlag() {
-                    return "sufficient";
-                }
-
-                public Map<String, String> getOptions() {
-                    Map<String, String> moduleOptions = new HashMap<String, String>();
-
-                    moduleOptions.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
-                    moduleOptions.put("java.naming.provider.url", getLDAPProviderUrl(managementClient));
-                    moduleOptions.put("java.naming.security.authentication", "simple");
-                    moduleOptions.put("bindDN", SECURITY_PRINCIPAL);
-                    moduleOptions.put("bindCredential", SECURITY_CREDENTIALS);
-                    moduleOptions.put("baseCtxDN", "ou=People,o=example2,dc=jboss,dc=org");
-                    moduleOptions.put("baseFilter", "(uid={0})");
-                    moduleOptions.put("rolesCtxDN", "ou=Roles,o=example2,dc=jboss,dc=org");
-                    moduleOptions.put("roleFilter", "(cn={0})");
-                    moduleOptions.put("roleAttributeID", "description");
-                    moduleOptions.put("roleAttributeIsDN", "true");
-                    moduleOptions.put("roleNameAttributeID", "cn");
-                    moduleOptions.put("roleRecursion", "0");
-                    return moduleOptions;
-                }
-
-            };
-            return new SecurityModuleConfiguration[] { ldapLoginModule };
-        }
-    }
-
-    /**
-     * A SecurityDomainSetup3.
-     */
-    static class SecurityDomainSetup3 extends AbstractSecurityDomainStackServerSetupTask {
-
-        protected static final String SECURITY_DOMAIN_NAME = SECURITY_DOMAIN_NAME_PREFIX + DEP3;
-
-        /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup#getSecurityDomainName()
-         */
-        @Override
-        protected String getSecurityDomainName() {
-            return SECURITY_DOMAIN_NAME;
+        private void fixTransportAddress(ManagedCreateLdapServer createLdapServer, String address) {
+            final CreateTransport[] createTransports = createLdapServer.transports();
+            for (int i = 0; i < createTransports.length; i++) {
+                final ManagedCreateTransport mgCreateTransport = new ManagedCreateTransport(createTransports[i]);
+                mgCreateTransport.setAddress(address);
+                createTransports[i] = mgCreateTransport;
+            }
         }
 
         /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getLoginModuleConfigurations()
+         * Stops LDAP server and KDCServer and shuts down the directory service.
+         * 
+         * @param managementClient
+         * @param containerId
+         * @throws Exception
+         * @see org.jboss.as.arquillian.api.ServerSetupTask#tearDown(org.jboss.as.arquillian.container.ManagementClient,
+         *      java.lang.String)
          */
-        @Override
-        protected SecurityModuleConfiguration[] getLoginModuleConfigurations() {
-            SecurityModuleConfiguration ldapLoginModule = new SecurityModuleConfiguration() {
-
-                public String getName() {
-                    return "LdapExtended";
-                }
-
-                public String getFlag() {
-                    return "sufficient";
-                }
-
-                public Map<String, String> getOptions() {
-                    Map<String, String> moduleOptions = new HashMap<String, String>();
-
-                    moduleOptions.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
-                    moduleOptions.put("java.naming.provider.url", getLDAPProviderUrl(managementClient));
-                    moduleOptions.put("java.naming.security.authentication", "simple");
-                    moduleOptions.put("bindDN", SECURITY_PRINCIPAL);
-                    moduleOptions.put("bindCredential", SECURITY_CREDENTIALS);
-                    moduleOptions.put("baseCtxDN", "ou=People,o=example3,dc=jboss,dc=org");
-                    moduleOptions.put("baseFilter", "(cn={0})");
-
-                    moduleOptions.put("rolesCtxDN", "ou=Roles,o=example3,dc=jboss,dc=org");
-                    moduleOptions.put("roleFilter", "(member={1})");
-                    moduleOptions.put("roleAttributeID", "cn");
-                    moduleOptions.put("roleRecursion", "0");
-                    return moduleOptions;
-                }
-
-            };
-            return new SecurityModuleConfiguration[] { ldapLoginModule };
-        }
-    }
-
-    /**
-     * A SecurityDomainSetup4.
-     */
-    static class SecurityDomainSetup4 extends AbstractSecurityDomainStackServerSetupTask {
-
-        protected static final String SECURITY_DOMAIN_NAME = SECURITY_DOMAIN_NAME_PREFIX + DEP4;
-
-        /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup#getSecurityDomainName()
-         */
-        @Override
-        protected String getSecurityDomainName() {
-            return SECURITY_DOMAIN_NAME;
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            ldapServer.stop();
+            directoryService.shutdown();
+            KEYSTORE_FILE.delete();
+            FileUtils.deleteDirectory(directoryService.getInstanceLayout().getInstanceDirectory());
         }
 
-        /**
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainStackServerSetupTask#getLoginModuleConfigurations()
-         */
-        @Override
-        protected SecurityModuleConfiguration[] getLoginModuleConfigurations() {
-            SecurityModuleConfiguration ldapLoginModule = new SecurityModuleConfiguration() {
-
-                public String getName() {
-                    return "LdapExtended";
-                }
-
-                public String getFlag() {
-                    return "sufficient";
-                }
-
-                public Map<String, String> getOptions() {
-                    Map<String, String> moduleOptions = new HashMap<String, String>();
-
-                    moduleOptions.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
-                    moduleOptions.put("java.naming.provider.url", getLDAPProviderUrl(managementClient));
-                    moduleOptions.put("java.naming.security.authentication", "simple");
-                    moduleOptions.put("bindDN", SECURITY_PRINCIPAL);
-                    moduleOptions.put("bindCredential", SECURITY_CREDENTIALS);
-
-                    moduleOptions.put("baseCtxDN", "ou=People,o=example4,dc=jboss,dc=org");
-                    moduleOptions.put("baseFilter", "(cn={0})");
-
-                    moduleOptions.put("rolesCtxDN", "ou=Roles,o=example4,dc=jboss,dc=org");
-                    moduleOptions.put("roleFilter", "(member={1})");
-                    moduleOptions.put("roleAttributeID", "cn");
-                    moduleOptions.put("roleRecursion", "1");
-                    return moduleOptions;
-                }
-
-            };
-            return new SecurityModuleConfiguration[] { ldapLoginModule };
-        }
     }
 
 }
