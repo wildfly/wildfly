@@ -58,7 +58,7 @@ public class NamedBootstrapContext extends BaseCloneableBootstrapContext {
      * Set the name
      * @param v The value
      */
-    void setName(String v) {
+    public void setName(String v) {
         name = v;
     }
 
