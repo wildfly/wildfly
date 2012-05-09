@@ -92,7 +92,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="default-cache" type="xs:string" use="required">
+        <xs:attribute name="default-cache" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>Indicates the default cache for this cache container.</xs:documentation>
             </xs:annotation>
