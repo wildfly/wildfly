@@ -37,4 +37,6 @@ public interface HttpManagement {
 
     NetworkInterfaceBinding getHttpsNetworkInterfaceBinding();
 
+    boolean hasConsole();
+
 }
