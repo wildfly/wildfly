@@ -25,9 +25,6 @@ import java.io.IOException;
 import java.io.Writer;
 
 import javax.annotation.Resource;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -38,12 +35,12 @@ import javax.sql.DataSource;
 @WebServlet(name = "PasswordMaskingTestServlet", urlPatterns = { "/" }, loadOnStartup = 1)
 public class PasswordMaskingTestServlet extends HttpServlet {
 
+    protected static final String JNDI_MASKED_DS = "java:jboss/datasources/MaskedDS";
+
     private static final long serialVersionUID = 1L;
-    
 
-    @Resource(lookup = "java:jboss/datasources/MaskedDS")
+    @Resource(lookup = JNDI_MASKED_DS)
     private DataSource ds;
-
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

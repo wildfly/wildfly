@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,20 +25,22 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Abstract simple servlet class which implements {@link #doGet(HttpServletRequest, HttpServletResponse)} method and writes a
- * plain-text response ({@link #RESPONSE_BODY}).
+ * A simple servlet that just writes back a string.
  * 
- * @author Jan Lanik
- * 
+ * @author Josef Cacek
  */
-public abstract class AbstractLoginModuleTestServlet extends HttpServlet {
+@WebServlet(urlPatterns = { SimpleServlet.SERVLET_PATH })
+public class SimpleServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
+
+    public static final String SERVLET_PATH = "/unsecured";
 
     /** The String returned in the HTTP response body. */
     public static final String RESPONSE_BODY = "GOOD";

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,27 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.security.loginmodules.common.servlets;
-
-import javax.annotation.sql.DataSourceDefinition;
-import javax.servlet.annotation.HttpConstraint;
-import javax.servlet.annotation.ServletSecurity;
-import javax.servlet.annotation.WebServlet;
+package org.jboss.as.test.integration.security.common;
 
 /**
- * @author Jan Lanik
- *
- * Servlet class to be used in DatabaseLoginModule test cases
+ * Common constants for AS security tests.
+ * 
+ * @author Josef Cacek
  */
-@DataSourceDefinition(
-   name = "java:jboss/datasources/LoginDSdep3",
-   user = "sa",
-   password = "sa",
-   className = "org.h2.jdbcx.JdbcDataSource",
-   url = "jdbc:h2:tcp://localhost/mem:test3"
-)
-@WebServlet(name = "SecuredServlet", urlPatterns = { "/secured/" }, loadOnStartup = 1)
-@ServletSecurity(@HttpConstraint(rolesAllowed = { "gooduser" }))
-public class SecuredServletWithDBSetupForDep3 extends AbstractLoginModuleTestServlet {
-}
+public class SecurityTestConstants {
 
+    /** A web.xml content (web-app version=3.0), which sets authentication method to BASIC. */
+    public static final String WEB_XML_BASIC_AUTHN = "<?xml version='1.0'?>\n"
+            + "<web-app xmlns='http://java.sun.com/xml/ns/javaee' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n"
+            + "    xsi:schemaLocation='http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd'\n"
+            + "    version='3.0'>\n" // 
+            + "  <login-config>\n" //
+            + "    <auth-method>BASIC</auth-method>\n" //
+            + "    <realm-name>Test realm</realm-name>\n" //
+            + "  </login-config>\n" //
+            + "</web-app>\n";
+
+}

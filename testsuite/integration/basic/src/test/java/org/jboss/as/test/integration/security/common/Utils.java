@@ -38,14 +38,24 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
+import javax.security.auth.Subject;
+import javax.security.auth.login.Configuration;
+import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
@@ -60,6 +70,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
@@ -70,9 +81,11 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.security.loginmodules.common.Coding;
+import org.jboss.as.test.integration.security.loginmodules.negotiation.JBossNegotiateSchemeFactory;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.security.auth.callback.UsernamePasswordHandler;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.Base64;
@@ -86,6 +99,18 @@ import org.jboss.util.Base64;
 public class Utils {
 
     private static final Logger LOGGER = Logger.getLogger(Utils.class);
+
+    /**
+     * Return MD5 hash of the given string value, encoded with given {@link Coding}. If the value or coding is <code>null</code>
+     * then original value is returned.
+     * 
+     * @param value
+     * @param coding
+     * @return encoded MD5 hash of the string or original value if some of parameters is null
+     */
+    public static String hashMD5(String value, Coding coding) {
+        return (coding == null || value == null) ? value : hash(value, "MD5", coding);
+    }
 
    public static String hash(String target, String algorithm, Coding coding) {
       MessageDigest md = null;
@@ -196,18 +221,20 @@ public class Utils {
       }
    }
 
-   public static void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
-      ModelNode result = client.execute(new OperationBuilder(update).build());
-      if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-         if (result.hasDefined("result")) {
-            //System.out.println(result.get("result"));
-         }
-      } else if (result.hasDefined("failure-description")) {
-         throw new RuntimeException(result.get("failure-description").toString());
-      } else {
-         throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
-      }
-   }
+    public static void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
+        ModelNode result = client.execute(new OperationBuilder(update).build());
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Client update: " + update);
+            LOGGER.info("Client update result: " + result);
+        }
+        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+            LOGGER.debug("Operation succeeded.");
+        } else if (result.hasDefined("failure-description")) {
+            throw new RuntimeException(result.get("failure-description").toString());
+        } else {
+            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
+        }
+    }
 
    public static void removeSecurityDomain(final ModelControllerClient client, final String domainName) throws Exception {
       final List<ModelNode> updates = new ArrayList<ModelNode>();
@@ -463,6 +490,125 @@ public class Utils {
             // immediate deallocation of all system resources
             httpClient.getConnectionManager().shutdown();
         }
+    }
+
+    /**
+     * Returns response body for the given URL request as a String. It also checks if the returned HTTP status code is the
+     * expected one. If the server returns {@link HttpServletResponse#SC_UNAUTHORIZED} and an username is provided, then the
+     * given user is authenticated against Kerberos and a new request is executed under the new subject.
+     * 
+     * @param url URL to which the request should be made
+     * @param user Username
+     * @param pass Password
+     * @param krb5ConfPath full path to krb5.conf file
+     * @param expectedStatusCode expected status code returned from the requested server
+     * @return HTTP response body
+     * @throws ClientProtocolException
+     * @throws IOException
+     * @throws URISyntaxException
+     * @throws PrivilegedActionException
+     * @throws LoginException
+     */
+    public static String makeCallWithKerberosAuthn(final URI uri, final String user, final String pass,
+            final String krb5ConfPath, final int expectedStatusCode) throws ClientProtocolException, IOException,
+            URISyntaxException, PrivilegedActionException, LoginException {
+        LOGGER.info("Setting Kerberos configuration: " + krb5ConfPath);
+        final String origKrb5Conf = setSystemProperty("java.security.krb5.conf", krb5ConfPath);
+        final String origKrbDebug = setSystemProperty("sun.security.krb5.debug", "true");
+        LOGGER.info("Requesting URI: " + uri);
+        final DefaultHttpClient httpClient = new DefaultHttpClient();
+        try {
+            httpClient.getAuthSchemes().register(AuthPolicy.SPNEGO, new JBossNegotiateSchemeFactory(null, true));
+            httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
+
+            final HttpGet httpGet = new HttpGet(uri);
+            final HttpResponse response = httpClient.execute(httpGet);
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (HttpServletResponse.SC_UNAUTHORIZED != statusCode || StringUtils.isEmpty(user)) {
+                assertEquals("Unexpected HTTP response status code.", expectedStatusCode, statusCode);
+                return EntityUtils.toString(response.getEntity());
+            }
+            final HttpEntity entity = response.getEntity();
+            final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
+            assertTrue("WWW-Authenticate header is present", authnHeaders != null && authnHeaders.length > 0);
+            final Set<String> authnHeaderValues = new HashSet<String>();
+            for (final Header header : authnHeaders) {
+                authnHeaderValues.add(header.getValue());
+            }
+            assertTrue("WWW-Authenticate: Negotiate header is missing", authnHeaderValues.contains("Negotiate"));
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("HTTP response was SC_UNAUTHORIZED, let's authenticate the user " + user);
+            }
+            if (entity != null)
+                EntityUtils.consume(entity);
+
+            // Use our custom configuration to avoid reliance on external config
+            Configuration.setConfiguration(new Krb5LoginConfiguration());
+            // 1. Authenticate to Kerberos.
+            final LoginContext lc = new LoginContext(Utils.class.getName(), new UsernamePasswordHandler(user, pass));
+            lc.login();
+
+            // 2. Perform the work as authenticated Subject.
+            final String responseBody = Subject.doAs(lc.getSubject(), new PrivilegedExceptionAction<String>() {
+                public String run() throws Exception {
+                    final HttpResponse response = httpClient.execute(httpGet);
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
+                    return EntityUtils.toString(response.getEntity());
+                }
+            });
+            lc.logout();
+            return responseBody;
+        } finally {
+            // When HttpClient instance is no longer needed,
+            // shut down the connection manager to ensure
+            // immediate deallocation of all system resources
+            httpClient.getConnectionManager().shutdown();
+
+            setSystemProperty("java.security.krb5.conf", origKrb5Conf);
+            setSystemProperty("sun.security.krb5.debug", origKrbDebug);
+        }
+    }
+
+    /**
+     * Sets or removes (in case value==null) a system property. It's only a helper method, which avoids
+     * {@link NullPointerException} thrown from {@link System#setProperty(String, String)} method, when the value is
+     * <code>null</code>.
+     * 
+     * @param key property name
+     * @param value property value
+     * @return the previous string value of the system property
+     */
+    public static String setSystemProperty(final String key, final String value) {
+        return value == null ? System.clearProperty(key) : System.setProperty(key, value);
+    }
+
+    /**
+     * Returns management address (host) from the givem {@link ManagementClient}. If the returned value is IPv6 address then
+     * square brackets around are stripped.
+     * 
+     * @param managementClient
+     * @return
+     */
+    public static final String getHost(final ManagementClient managementClient) {
+        return StringUtils.strip(managementClient.getMgmtAddress(), "[]");
+    }
+
+    /**
+     * Returns cannonical hostname retrieved from management address of the givem {@link ManagementClient}.
+     * 
+     * @param managementClient
+     * @return
+     */
+    public static final String getCannonicalHost(final ManagementClient managementClient) {
+        String host = getHost(managementClient);
+        try {
+            host = InetAddress.getByName(host).getCanonicalHostName();
+        } catch (UnknownHostException e) {
+            LOGGER.warn("Unable to get cannonical host name", e);
+        }
+        return host.toLowerCase(Locale.ENGLISH);
     }
 
 }

@@ -1,10 +1,3 @@
-dn: dc=jboss,dc=org
-objectclass: top
-objectclass: dcObject
-objectclass: organization
-dc: jboss
-o: JBoss
-
 dn: ou=People,dc=jboss,dc=org
 objectclass: top
 objectclass: organizationalUnit

@@ -19,24 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.security.loginmodules.common.servlets;
+package org.jboss.as.test.integration.security.loginmodules.negotiation;
 
-import javax.annotation.security.DeclareRoles;
-import javax.servlet.annotation.HttpConstraint;
-import javax.servlet.annotation.ServletSecurity;
-import javax.servlet.annotation.WebServlet;
+import org.apache.http.annotation.Immutable;
+import org.apache.http.auth.AuthScheme;
+import org.apache.http.impl.auth.NegotiateSchemeFactory;
+import org.apache.http.impl.auth.SpnegoTokenGenerator;
+import org.apache.http.params.HttpParams;
 
 /**
- * A SecuredLdapLoginModuleTestServlet.
+ * SPNEGO (Simple and Protected GSSAPI Negotiation Mechanism) authentication scheme factory. Provides
+ * {@link JBossNegotiateScheme} instances.
  * 
  * @author Josef Cacek
  */
-@DeclareRoles({ "JBossAdmin" })
-@ServletSecurity(@HttpConstraint(rolesAllowed = { "JBossAdmin" }))
-@WebServlet(SecuredLdapLoginModuleTestServlet.SERVLET_PATH)
-public class SecuredLdapLoginModuleTestServlet extends AbstractLoginModuleTestServlet {
+@Immutable
+public class JBossNegotiateSchemeFactory extends NegotiateSchemeFactory {
 
-    /** The serialVersionUID */
-    private static final long serialVersionUID = 1L;
-    public static final String SERVLET_PATH = "/ldapTest";
+    // Constructors ----------------------------------------------------------
+
+    public JBossNegotiateSchemeFactory(final SpnegoTokenGenerator spengoGenerator, boolean stripPort) {
+        super(spengoGenerator, stripPort);
+    }
+
+    // Public methods --------------------------------------------------------
+
+    @Override
+    public AuthScheme newInstance(final HttpParams params) {
+        return new JBossNegotiateScheme(getSpengoGenerator(), isStripPort());
+    }
 }
