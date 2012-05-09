@@ -129,6 +129,10 @@ public class HttpManagementService implements Service<HttpManagement> {
             }
             return binding;
         }
+
+        public boolean hasConsole() {
+            return consoleMode.hasConsole();
+        }
     };
 
     public HttpManagementService(ConsoleMode consoleMode, String consoleSlot) {
