@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,24 +21,23 @@
  */
 package org.jboss.as.test.integration.security.loginmodules.common.servlets;
 
-import javax.annotation.sql.DataSourceDefinition;
+import javax.annotation.security.DeclareRoles;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity;
 import javax.servlet.annotation.WebServlet;
 
 /**
- * @author Jan Lanik
- *
- * Servlet class to be used in DatabaseLoginModule test cases
+ * Protected version of {@link SimpleServlet}. Only {@value #ALLOWED_ROLE} role has access right.
+ * 
+ * @author Josef Cacek
  */
-@DataSourceDefinition(
-   name = "java:jboss/datasources/LoginDSdep2",
-   user = "sa",
-   password = "sa",
-   className = "org.h2.jdbcx.JdbcDataSource",
-   url = "jdbc:h2:tcp://localhost/mem:test2"
-)
-@WebServlet(name = "SecuredServlet", urlPatterns = { "/secured/" }, loadOnStartup = 1)
-@ServletSecurity(@HttpConstraint(rolesAllowed = { "gooduser" }))
-public class SecuredServletWithDBSetupForDep2 extends AbstractLoginModuleTestServlet {
+@DeclareRoles({ SimpleSecuredServlet.ALLOWED_ROLE })
+@ServletSecurity(@HttpConstraint(rolesAllowed = { SimpleSecuredServlet.ALLOWED_ROLE }))
+@WebServlet(SimpleSecuredServlet.SERVLET_PATH)
+public class SimpleSecuredServlet extends SimpleServlet {
+
+    /** The serialVersionUID */
+    private static final long serialVersionUID = 1L;
+    public static final String SERVLET_PATH = "/SimpleSecuredServlet";
+    public static final String ALLOWED_ROLE = "JBossAdmin";
 }
