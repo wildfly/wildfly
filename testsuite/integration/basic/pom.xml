@@ -23,8 +23,8 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <version.apacheds>2.0.0-M6</version.apacheds>
-        <version.apacheds.shared>1.0.0-M11</version.apacheds.shared>
+        <version.apacheds>2.0.0-M7</version.apacheds>
+        <version.apacheds.shared>1.0.0-M12</version.apacheds.shared>
     </properties>
 
     <dependencies>
@@ -65,12 +65,30 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-interceptor-kerberos</artifactId>
+            <version>${version.apacheds}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-server-annotations</artifactId>
+            <version>${version.apacheds}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.directory.shared</groupId>
             <artifactId>shared-ldap-codec-standalone</artifactId>
             <version>${version.apacheds.shared}</version>
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-core-jndi</artifactId>
+            <version>${version.apacheds}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -151,6 +169,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
+                        <version>2.9</version>
                         <executions combine.children="append">
 
                             <!-- Disable default-test execution. -->

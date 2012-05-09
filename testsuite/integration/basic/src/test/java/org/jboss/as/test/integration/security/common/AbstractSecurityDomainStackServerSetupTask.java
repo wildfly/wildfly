@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.test.integration.security.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -11,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.MODULE_OPTIONS;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.security.Constants.TYPE;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +50,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
 /**
- * {@link ServerSetupTask} instance for security domain setup. It support stack of login-modules and policy-modules too.
+ * {@link ServerSetupTask} instance for security domain setup. It supports stacks of login-modules, policy-modules and
+ * (role-)mapping-modules.
  * 
  * @author Josef Cacek
  */
@@ -36,6 +59,8 @@ public abstract class AbstractSecurityDomainStackServerSetupTask implements Serv
 
     private static final Logger LOGGER = Logger.getLogger(AbstractSecurityDomainStackServerSetupTask.class);
 
+    /** The type attribute value of mapping-modules used for role assignment. */
+    private static final String ROLE = "role";
     /** The SUBSYSTEM_SECURITY */
     private static final String SUBSYSTEM_SECURITY = "security";
     public static final String SECURITY_DOMAIN_NAME = "test-security-domain";
@@ -44,6 +69,15 @@ public abstract class AbstractSecurityDomainStackServerSetupTask implements Serv
 
     // Public methods --------------------------------------------------------
 
+    /**
+     * Adds a security domain represented by this class to the AS configuration.
+     * 
+     * @param managementClient
+     * @param containerId
+     * @throws Exception
+     * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
+     *      java.lang.String)
+     */
     public final void setup(final ManagementClient managementClient, String containerId) throws Exception {
         final String securityDomainName = getSecurityDomainName();
         if (LOGGER.isInfoEnabled()) {
@@ -58,21 +92,26 @@ public abstract class AbstractSecurityDomainStackServerSetupTask implements Serv
         op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomainName);
         updates.add(op);
 
-        final ModelNode authnNode = createSecurityModelNode(Constants.AUTHENTICATION, Constants.LOGIN_MODULES,
-                getLoginModuleConfigurations());
+        final ModelNode authnNode = createSecurityModelNode(Constants.AUTHENTICATION, Constants.LOGIN_MODULES, FLAG,
+                Constants.REQUIRED, getLoginModuleConfigurations());
         if (authnNode != null) {
             updates.add(authnNode);
         }
-        final ModelNode authzNode = createSecurityModelNode(Constants.AUTHORIZATION, Constants.POLICY_MODULES,
-                getAuthorizationModuleConfigurations());
+        final ModelNode authzNode = createSecurityModelNode(Constants.AUTHORIZATION, Constants.POLICY_MODULES, FLAG,
+                Constants.REQUIRED, getAuthorizationModuleConfigurations());
         if (authzNode != null) {
             updates.add(authzNode);
         }
-
+        final ModelNode mappingNode = createSecurityModelNode(Constants.MAPPING, Constants.MAPPING_MODULES, TYPE, ROLE,
+                getMappingModuleConfigurations());
+        if (mappingNode != null) {
+            updates.add(mappingNode);
+        }
         applyUpdates(managementClient.getControllerClient(), updates);
     }
 
     /**
+     * Removes the security domain from the AS configuration.
      * 
      * @param managementClient
      * @param containerId
@@ -101,6 +140,8 @@ public abstract class AbstractSecurityDomainStackServerSetupTask implements Serv
     // Protected methods -----------------------------------------------------
 
     /**
+     * Returns name of the security domain. The default value is {@value #SECURITY_DOMAIN_NAME}.
+     * 
      * @return
      * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup#getSecurityDomainName()
      */
@@ -109,20 +150,34 @@ public abstract class AbstractSecurityDomainStackServerSetupTask implements Serv
     }
 
     /**
-     * Returns configuration of the login modules.
+     * Returns configuration of the login modules.<br/>
+     * It can return null or empty array if no such module is necessary for this security domain.
      * 
-     * @return
+     * @return array of SecurityModuleConfiguration
      */
     protected SecurityModuleConfiguration[] getLoginModuleConfigurations() {
         return null;
     }
 
     /**
-     * Returns configuration of the authorization modules.
+     * Returns configuration of the authorization modules.<br/>
+     * It can return null or empty array if no such module is necessary for this security domain.
      * 
-     * @return
+     * @return array of SecurityModuleConfiguration
      */
     protected SecurityModuleConfiguration[] getAuthorizationModuleConfigurations() {
+        return null;
+    }
+
+    /**
+     * Returns configuration of the (role-)mapping modules. The {@link SecurityModuleConfiguration#getFlag()} method should
+     * return value of <code>type</code> attribute in the mapping module, it can also return <code>null</code> - then the
+     * default value {@value #ROLE} is used.<br/>
+     * This method can return null or empty array if no such module is necessary for this security domain.
+     * 
+     * @return array of SecurityModuleConfiguration
+     */
+    protected SecurityModuleConfiguration[] getMappingModuleConfigurations() {
         return null;
     }
 
@@ -143,6 +198,7 @@ public abstract class AbstractSecurityDomainStackServerSetupTask implements Serv
     }
 
     /**
+     * Executes updates defined in the given ModelNode instance in the ModelControllerClient.
      * 
      * @param client
      * @param update
@@ -169,13 +225,16 @@ public abstract class AbstractSecurityDomainStackServerSetupTask implements Serv
      * Creates a {@link ModelNode} with the security component configuration. If the securityConfigurations array is empty or
      * null, then null is returned.
      * 
-     * @param securityComponent name of security component {@link Constants#AUTHORIZATION}/{@link Constants#AUTHENTICATION}
-     * @param subnodeName name of the security component subnode, which holds module configurations
+     * @param securityComponent name of security component (e.g. {@link Constants#AUTHORIZATION})
+     * @param subnodeName name of the security component subnode, which holds module configurations (e.g.
+     *        {@link Constants#POLICY_MODULES})
+     * @param flagAttributeName name of attribute to which the value of {@link SecurityModuleConfiguration#getFlag()} is set
+     * @param flagDefaultValue default value for flagAttributeName attr.
      * @param securityConfigurations configurations
      * @return ModelNode instance or null
      */
-    private ModelNode createSecurityModelNode(String securityComponent, String subnodeName,
-            final SecurityModuleConfiguration[] securityConfigurations) {
+    private ModelNode createSecurityModelNode(String securityComponent, String subnodeName, String flagAttributeName,
+            String flagDefaultValue, final SecurityModuleConfiguration[] securityConfigurations) {
         if (securityConfigurations == null || securityConfigurations.length == 0) {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("No security configuration for " + securityComponent + " module.");
@@ -192,11 +251,12 @@ public abstract class AbstractSecurityDomainStackServerSetupTask implements Serv
             final ModelNode securityModuleNode = securityComponentNode.get(subnodeName).add();
 
             final String code = config.getName();
-            final String flag = StringUtils.defaultIfEmpty(config.getFlag(), Constants.REQUIRED);
+            final String flag = StringUtils.defaultIfEmpty(config.getFlag(), flagDefaultValue);
             securityModuleNode.get(ModelDescriptionConstants.CODE).set(code);
-            securityModuleNode.get(FLAG).set(flag);
+            securityModuleNode.get(flagAttributeName).set(flag);
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("Adding " + securityComponent + " module [code=" + code + ", flag=" + flag + "]");
+                LOGGER.info("Adding " + securityComponent + " module [code=" + code + ", " + flagAttributeName + "=" + flag
+                        + "]");
             }
 
             Map<String, String> configOptions = config.getOptions();
@@ -222,7 +282,7 @@ public abstract class AbstractSecurityDomainStackServerSetupTask implements Serv
     // Embedded classes ------------------------------------------------------
 
     /**
-     * A SecurityModuleConfiguration.
+     * This interface represents a single security module configuration.
      */
     public interface SecurityModuleConfiguration {
         /**
@@ -233,7 +293,8 @@ public abstract class AbstractSecurityDomainStackServerSetupTask implements Serv
         String getName();
 
         /**
-         * Flag of the security module. If it's empty, then "required" is used.
+         * Returns Value of flag (authentication, authorization) or type (value mapping) attribute of the security module. If
+         * leaved empty or null, then a default value for the given security module is used.
          * 
          * @return
          */

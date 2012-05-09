@@ -304,7 +304,7 @@ public class LdapLoginModuleTestCase {
     }
 
     /**
-     * A SecurityDomainSetup.
+     * A HostSecurityDomainSetup.
      */
     static class SecurityDomainSetup extends AbstractSecurityDomainStackServerSetupTask {
 
