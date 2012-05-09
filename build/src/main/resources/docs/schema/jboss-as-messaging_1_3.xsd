@@ -39,6 +39,10 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="hornetq-server" type="hornetq-serverType" />
+<<<<<<< HEAD
+=======
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="jms-bridge" type="jms-bridgeType" />
+>>>>>>> [AS7-4628] JMS bridge
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -736,7 +740,10 @@
          <xs:element name="password" type="xs:string" maxOccurs="1" minOccurs="0" />
          <xs:element name="min-pool-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="max-pool-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+<<<<<<< HEAD
          <xs:element name="use-auto-recovery" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+=======
+>>>>>>> [AS7-4628] JMS bridge
          <!-- ============================================================== -->
          <!-- end of JMS pooled-connection-factoryType specific elements     -->
 
@@ -858,4 +865,122 @@
         </xs:restriction>
     </xs:simpleType>
 
+<<<<<<< HEAD
+=======
+   <xs:complexType name="jms-bridgeType">
+      <xs:annotation>
+         <xs:documentation>
+            <![CDATA[
+               The configuration of a JMS bridge.
+            ]]>
+         </xs:documentation>
+      </xs:annotation>
+      <xs:all>
+         <xs:element maxOccurs="1" minOccurs="1" name="source" type="jms-bridgeResourceType" />
+         <xs:element maxOccurs="1" minOccurs="1" name="destination" type="jms-bridgeResourceType" />
+         <xs:element maxOccurs="1" minOccurs="1" name="quality-of-service" type="quality-of-serviceType" />
+         <xs:element maxOccurs="1" minOccurs="1" name="failure-retry-interval" type="xs:long" />
+         <xs:element maxOccurs="1" minOccurs="1" name="max-retries" type="xs:int" />
+         <xs:element maxOccurs="1" minOccurs="1" name="max-batch-size" type="xs:int" />
+         <xs:element maxOccurs="1" minOccurs="1" name="max-batch-time" type="xs:long" />
+
+         <xs:element maxOccurs="1" minOccurs="0" name="selector" type="selectorType" />
+         <xs:element maxOccurs="1" minOccurs="0" name="subscription-name" type="xs:string" />
+         <xs:element maxOccurs="1" minOccurs="0" name="client-id" type="xs:string" />
+         <xs:element maxOccurs="1" minOccurs="0" name="add-messageID-in-header" type="xs:boolean" />
+      </xs:all>
+      <xs:attribute name="name" type="xs:string" use="optional" default="default">
+         <xs:annotation>
+            <xs:documentation>
+               The name to use for this JMS bridge. Must be unique across all "jms-bridge" elements
+               in the subsystem. So, this attribute is optional with a default value, but if more than
+               one "jms-bridge" element exists, only one can leave this attribute unspecified.
+            </xs:documentation>
+         </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="module" type="xs:string" use="optional">
+         <xs:annotation>
+            <xs:documentation>
+               The name of the module that contains resources required to lookup source or target JMS resources from another messaging broker than AS7.
+               This does not need to be specified if the bridge uses AS7 instances for both source and target.
+            </xs:documentation>
+         </xs:annotation>
+      </xs:attribute>
+   </xs:complexType>
+
+   <xs:complexType name="jms-bridgeResourceType">
+      <xs:annotation>
+         <xs:documentation>
+            <![CDATA[
+               The configuration of a JMS bridge resource which serves either of the source (from which the messages are consumed)
+               or the destination (to which messages are produced).
+            ]]>
+         </xs:documentation>
+      </xs:annotation>
+      <xs:all>
+         <xs:element maxOccurs="1" minOccurs="1" name="connection-factory">
+            <xs:complexType>
+               <xs:attribute name="name" type="xs:string" use="required">
+                  <xs:annotation>
+                      <xs:documentation>
+                         The JNDI name to lookup the connection factory.
+                      </xs:documentation>
+                  </xs:annotation>
+               </xs:attribute>
+            </xs:complexType>
+         </xs:element>
+         <xs:element maxOccurs="1" minOccurs="1" name="destination">
+            <xs:complexType>
+               <xs:attribute name="name" type="xs:string" use="required">
+                  <xs:annotation>
+                      <xs:documentation>
+                         The JNDI name to lookup the destination.
+                      </xs:documentation>
+                  </xs:annotation>
+               </xs:attribute>
+            </xs:complexType>
+         </xs:element>
+         <xs:element maxOccurs="1" minOccurs="0" name="user" type="xs:string">
+            <xs:annotation>
+               <xs:documentation>
+                  The name of the user for creating the connection.
+               </xs:documentation>
+            </xs:annotation>
+         </xs:element>
+         <xs:element maxOccurs="1" minOccurs="0" name="password" type="xs:string">
+            <xs:annotation>
+               <xs:documentation>
+                  The password of the user for creating the connection.
+               </xs:documentation>
+            </xs:annotation>
+         </xs:element>
+         <xs:element maxOccurs="1" minOccurs="0" name="contex" type="contextType" />
+      </xs:all>
+   </xs:complexType>
+
+   <xs:complexType name="selectorType">
+      <xs:attribute name="string" type="xs:string" use="required" />
+   </xs:complexType>
+
+   <xs:simpleType name="quality-of-serviceType">
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="AT_MOST_ONCE"/>
+         <xs:enumeration value="DUPLICATES_OK"/>
+         <xs:enumeration value="ONCE_AND_ONLY_ONCE"/>
+      </xs:restriction>
+   </xs:simpleType>
+
+   <xs:complexType name="contextType">
+      <xs:annotation>
+         <xs:documentation>
+             The properties set on the JNDI Context used to lookup the JMS bridge resources.
+             In the absence of a context element, the JMS bridge will lookup resources locally on its own AS7 instance.
+         </xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element maxOccurs="unbounded" minOccurs="0" name="property" type="paramType" />
+      </xs:sequence>
+   </xs:complexType>
+
+>>>>>>> [AS7-4628] JMS bridge
 </xs:schema>

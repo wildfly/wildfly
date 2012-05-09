@@ -22,6 +22,8 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.CommonAttributes.JMS_BRIDGE;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.msc.service.ServiceName;
@@ -67,6 +69,10 @@ public class MessagingServices {
 
    public static ServiceName getQueueBaseServiceName(ServiceName hornetqServiceName) {
        return hornetqServiceName.append(CORE_QUEUE_BASE);
+   }
+
+   public static ServiceName getJMSBridgeServiceName(String bridgeName) {
+       return JBOSS_MESSAGING.append(JMS_BRIDGE).append(bridgeName);
    }
 
 }

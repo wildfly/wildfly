@@ -2501,7 +2501,7 @@
                                         </group>
                                         <group>
                                             <title>Module org.jboss.as.messaging</title>
-                                            <packages>org.jboss.as.messaging:org.jboss.as.messaging.deployment:org.jboss.as.messaging.jms</packages>
+                                            <packages>org.jboss.as.messaging:org.jboss.as.messaging.deployment:org.jboss.as.messaging.jms:org.jboss.as.messaging.jms.bridge</packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.as.modcluster</title>

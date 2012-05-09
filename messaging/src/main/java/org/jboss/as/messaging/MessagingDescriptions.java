@@ -477,7 +477,6 @@ public class MessagingDescriptions {
         return result;
     }
 
-
     static ModelNode getJmsQueueResource(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
@@ -1583,7 +1582,7 @@ public class MessagingDescriptions {
         return attr;
     }
 
-    private static ResourceBundle getResourceBundle(Locale locale) {
+    public static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
         }

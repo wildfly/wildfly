@@ -43,6 +43,7 @@ import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTORS;
+import static org.jboss.as.messaging.CommonAttributes.DEFAULT;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_REF;
@@ -56,6 +57,7 @@ import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.INBOUND_CONFIG;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.JMS_BRIDGE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_CONNECTION_FACTORIES;
 import static org.jboss.as.messaging.CommonAttributes.JMS_DESTINATIONS;
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
@@ -169,7 +171,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
     }
 
-    private void processHornetQServers(final XMLExtendedStreamReader reader, final ModelNode subsystemAddress, final List<ModelNode> list) throws XMLStreamException {
+    protected void processHornetQServers(final XMLExtendedStreamReader reader, final ModelNode subsystemAddress, final List<ModelNode> list) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Namespace schemaVer = Namespace.forUri(reader.getNamespaceURI());
             switch (schemaVer) {
@@ -190,7 +192,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
-    private void processHornetQServer(final XMLExtendedStreamReader reader, final ModelNode subsystemAddress, final List<ModelNode> list, Namespace namespace) throws XMLStreamException {
+    protected void processHornetQServer(final XMLExtendedStreamReader reader, final ModelNode subsystemAddress, final List<ModelNode> list, Namespace namespace) throws XMLStreamException {
 
         String hqServerName = null;
         String elementName = null;
@@ -211,7 +213,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
 
         if (hqServerName == null || hqServerName.length() == 0) {
-            hqServerName = "default";
+            hqServerName = DEFAULT;
         }
 
         final ModelNode address = subsystemAddress.clone();
@@ -524,7 +526,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 }
                 case RETRY_INTERVAL:
                     // Use the "default" variant
-                    handleElementText(reader, element, "default", bridgeAdd);
+                    handleElementText(reader, element, DEFAULT, bridgeAdd);
                     break;
                 case FORWARDING_ADDRESS:
                 case RECONNECT_ATTEMPTS:
@@ -1399,15 +1401,14 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 first = false;
             }
         }
-
         writer.writeEndElement();
     }
 
-    private void writeHornetQServer(final XMLExtendedStreamWriter writer, final String serverName, final ModelNode node) throws XMLStreamException {
+    protected void writeHornetQServer(final XMLExtendedStreamWriter writer, final String serverName, final ModelNode node) throws XMLStreamException {
 
         writer.writeStartElement(Element.HORNETQ_SERVER.getLocalName());
 
-        if (!"default".equals(serverName)) {
+        if (!DEFAULT.equals(serverName)) {
             writer.writeAttribute(Attribute.NAME.getLocalName(), serverName);
         }
 
@@ -2255,7 +2256,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 case RETRY_INTERVAL:
                     // Use the "default" variant
-                    handleElementText(reader, element, "default", connectionFactory);
+                    handleElementText(reader, element, DEFAULT, connectionFactory);
                     break;
                 case RECONNECT_ATTEMPTS:
                 case SCHEDULED_THREAD_POOL_MAX_SIZE:
@@ -2340,7 +2341,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         return connectionFactory;
     }
 
-    private static void writeNewLine(XMLExtendedStreamWriter writer) throws XMLStreamException {
+    protected static void writeNewLine(XMLExtendedStreamWriter writer) throws XMLStreamException {
         writer.writeCharacters(NEW_LINE, 0, 1);
     }
 

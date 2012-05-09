@@ -159,4 +159,24 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 11609, value = "Attribute %s is deprecated and will not be taken into account")
     void deprecatedXMLAttribute(String name);
 
+    /**
+     * Logs an info message when a service for the given {@code type} and {@code name} is <em>started</em>.
+     *
+     * @param type the type of the service
+     * @param name the name of the service
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 11610, value = "Started %s %s")
+    void startedService(String type, String name);
+
+    /**
+     * Logs an info message when a service for the given {@code type} and {@code name} is <em>stopped</em>.
+     *
+     * @param type the type of the service
+     * @param name the name of the service
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 11611, value = "Stopped %s %s")
+    void stoppedService(String type, String name);
+
 }
