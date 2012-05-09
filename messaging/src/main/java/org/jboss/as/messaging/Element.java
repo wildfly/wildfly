@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -174,7 +175,7 @@ public enum Element {
    CHECK_PERIOD(getCheckPeriodDefinitions()),
    CLIENT_FAILURE_CHECK_PERIOD(CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD),
    CLIENT_ID(CommonAttributes.CLIENT_ID),
-   CONNECTION_FACTORY(CommonAttributes.CONNECTION_FACTORY),
+   CONNECTION_FACTORY(getConnectionFactoryDefinitions()),
    CONNECTION_FACTORIES(CommonAttributes.JMS_CONNECTION_FACTORIES),
    CONNECTION_TTL(getConnectionTTLDefinitions()),
    CONFIRMATION_WINDOW_SIZE(CommonAttributes.CONFIRMATION_WINDOW_SIZE),
@@ -197,7 +198,7 @@ public enum Element {
    MAX_RETRY_INTERVAL(getMaxRetryIntervalDefinitions()),
    MIN_LARGE_MESSAGE_SIZE(CommonAttributes.MIN_LARGE_MESSAGE_SIZE),
    MIN_POOL_SIZE(CommonAttributes.MIN_POOL_SIZE),
-   PASSWORD(CommonAttributes.PASSWORD),
+   PASSWORD(getPasswordDefinitions()),
    PRE_ACK(CommonAttributes.PRE_ACK),
    PRODUCER_WINDOW_SIZE(CommonAttributes.PRODUCER_WINDOW_SIZE),
    PRODUCER_MAX_RATE(CommonAttributes.PRODUCER_MAX_RATE),
@@ -209,7 +210,7 @@ public enum Element {
    SCHEDULED_THREAD_POOL_MAX_SIZE(getScheduledThreadPoolDefinitions()),
    THREAD_POOL_MAX_SIZE(getThreadPoolDefinitions()),
    TRANSACTION_BATH_SIZE(CommonAttributes.TRANSACTION_BATCH_SIZE),
-   USER(CommonAttributes.USER),
+   USER(getUserDefinitions()),
    USE_DUPLICATE_DETECTION(getDuplicateDetectionDefinitions()),
    USE_AUTO_RECOVERY(CommonAttributes.USE_AUTO_RECOVERY),
    USE_GLOBAL_POOLS(CommonAttributes.USE_GLOBAL_POOLS),
@@ -224,6 +225,22 @@ public enum Element {
    SETUP_ATTEMPTS(CommonAttributes.SETUP_ATTEMPTS),
    SETUP_INTERVAL(CommonAttributes.SETUP_INTERVAL),
    SOCKET_BINDING(CommonAttributes.SOCKET_BINDING.getName()),
+
+   // JMS Bridge
+   JMS_BRIDGE(CommonAttributes.JMS_BRIDGE),
+   SOURCE(JMSBridgeDefinition.SOURCE),
+   TARGET(JMSBridgeDefinition.TARGET),
+   DESTINATION(getDestinationDefinitions()),
+   CONTEXT(getContextDefinitions()),
+   PROPERTY("property"),
+   QUALITY_OF_SERVICE(JMSBridgeDefinition.QUALITY_OF_SERVICE),
+   FAILURE_RETRY_INTERVAL(JMSBridgeDefinition.FAILURE_RETRY_INTERVAL),
+   MAX_RETRIES(JMSBridgeDefinition.MAX_RETRIES),
+   MAX_BATCH_SIZE(JMSBridgeDefinition.MAX_BATCH_SIZE),
+   MAX_BATCH_TIME(JMSBridgeDefinition.MAX_BATCH_TIME),
+   SUBSCRIPTION_NAME(JMSBridgeDefinition.SUBSCRIPTION_NAME),
+   ADD_MESSAGE_ID_IN_HEADER(JMSBridgeDefinition.ADD_MESSAGE_ID_IN_HEADER),
+   MODULE(JMSBridgeDefinition.MODULE),
    ;
 
    private final String name;
@@ -393,6 +410,43 @@ public enum Element {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_CHECK_PERIOD);
         result.put("default", CommonAttributes.CHECK_PERIOD);
+        return result;
+    }
+
+    private static Map<String, AttributeDefinition> getUserDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("source", JMSBridgeDefinition.SOURCE_USER);
+        result.put("target", JMSBridgeDefinition.TARGET_USER);
+        result.put("default", CommonAttributes.USER);
+        return result;
+    }
+
+    private static Map<String, AttributeDefinition> getPasswordDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("source", JMSBridgeDefinition.SOURCE_PASSWORD);
+        result.put("target", JMSBridgeDefinition.TARGET_PASSWORD);
+        result.put("default", CommonAttributes.PASSWORD);
+        return result;
+    }
+
+    private static Map<String, AttributeDefinition> getConnectionFactoryDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("source", JMSBridgeDefinition.SOURCE_CONNECTION_FACTORY);
+        result.put("target", JMSBridgeDefinition.TARGET_CONNECTION_FACTORY);
+        return result;
+    }
+
+    private static Map<String, AttributeDefinition> getDestinationDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("source", JMSBridgeDefinition.SOURCE_DESTINATION);
+        result.put("target", JMSBridgeDefinition.TARGET_DESTINATION);
+        return result;
+    }
+
+    private static Map<String, AttributeDefinition> getContextDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("source", JMSBridgeDefinition.SOURCE_CONTEXT);
+        result.put("target", JMSBridgeDefinition.TARGET_CONTEXT);
         return result;
     }
 
