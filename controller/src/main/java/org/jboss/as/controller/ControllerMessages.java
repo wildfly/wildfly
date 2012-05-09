@@ -2478,4 +2478,7 @@ public interface ControllerMessages {
 
     @Message(id = 14860, value = "Invalid locale format:  %s")
     OperationFailedException invalidLocaleString(String unparsed);
+
+    @Message(id = 14861, value = "<one or more transitive dependencies>")
+    String transitiveDependencies();
 }

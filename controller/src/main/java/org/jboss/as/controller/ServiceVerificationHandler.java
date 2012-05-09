@@ -93,11 +93,14 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
                 if (problemList == null) {
                     problemList = failureDescription.get(MESSAGES.servicesMissingDependencies());
                 }
+
                 final StringBuilder problem = new StringBuilder();
                 problem.append(controller.getName().getCanonicalName());
+
+                final StringBuilder missing = new StringBuilder();
                 Set<ServiceName> immediatelyUnavailable = controller.getImmediateUnavailableDependencies();
                 if (!immediatelyUnavailable.isEmpty()) {
-                    final StringBuilder missing = new StringBuilder();
+
                     for(Iterator<ServiceName> i = immediatelyUnavailable.iterator(); i.hasNext(); ) {
                         ServiceName missingSvc = i.next();
                         missing.append(missingSvc.getCanonicalName());
@@ -105,9 +108,16 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
                             missing.append(", ");
                         }
                     }
-                    problem.append(" ").append(MESSAGES.servicesMissing(missing));
-                    problemList.add(problem.toString());
+                } else {
+                    // Record that unknown transitive dependencies are missing.
+                    // TODO this is uninformative so not very nice, but MSC provides no hooks to track from
+                    // a ServiceController back to a missing/failed transitive dependency or from a failed
+                    // dependency down its dependents tree to this service. If that ever changes, update
+                    // this to make use of it
+                    missing.append(MESSAGES.transitiveDependencies());
                 }
+                problem.append(" ").append(MESSAGES.servicesMissing(missing));
+                problemList.add(problem.toString());
             }
             if (context.isRollbackOnRuntimeFailure()) {
                 context.setRollbackOnly();
