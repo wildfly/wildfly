@@ -24,8 +24,8 @@ package org.jboss.as.controller.persistence;
 
 import java.util.List;
 import java.util.Set;
-
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.xml.namespace.QName;
 
 import org.jboss.as.controller.PathAddress;

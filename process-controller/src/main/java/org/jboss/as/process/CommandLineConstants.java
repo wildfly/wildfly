@@ -69,19 +69,31 @@ public class CommandLineConstants {
     public static final String HELP = "--help";
     public static final String SHORT_HELP = "-h";
 
-    /** Passed in to a DC to choose the domain.xml file */
+    /** Passed in to a DC to choose the domain.xml file. The location must be relative to the domain configuration directory */
     public static final String OLD_DOMAIN_CONFIG = "-domain-config";
     public static final String DOMAIN_CONFIG = "--domain-config";
     public static final String SHORT_DOMAIN_CONFIG = "-c";
 
-    /** Passed in to a HC to choose the host.xml file */
+    /** Passed in to a DC to choose the domain.xml file. Differs from {@link #DOMAIN_CONFIG} in that the location may be absolute, and
+     * the file is not persisted */
+    public static final String INITIAL_DOMAIN_CONFIG = "--initial-domain-config";
+
+    /** Passed in to a HC to choose the host.xml file. The location must be relative to the domain configuration directory */
     public static final String OLD_HOST_CONFIG = "-host-config";
     public static final String HOST_CONFIG = "--host-config";
 
-    /** Passed in to a standalone instance to choose the standalone.xml file */
+    /** Passed in to a DC to choose the host.xml file. Differs from {@link #HOST_CONFIG} in that the location may be absolute, and
+     * the file is not persisted */
+    public static final String INITIAL_HOST_CONFIG = "--initial-host-config";
+
+    /** Passed in to a standalone instance to choose the standalone.xml file. The location must be relative to the server configuration directory */
     public static final String SHORT_SERVER_CONFIG = "-c";
     public static final String OLD_SERVER_CONFIG = "-server-config";
     public static final String SERVER_CONFIG = "--server-config";
+
+    /** Passed in to a standalone instance to choose the standalone.xml file. Differs from {@link #SERVER_CONFIG} in that the location may be absolute, and
+     * the file is not persisted */
+    public static final String INITIAL_SERVER_CONFIG = "--initial-server-config";
 
     /** Address on which the process controller listens */
     public static final String OLD_PROCESS_CONTROLLER_BIND_ADDR = "-bind-addr";

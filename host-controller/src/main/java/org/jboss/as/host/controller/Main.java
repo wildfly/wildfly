@@ -23,7 +23,6 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
-
 import static org.jboss.as.process.Main.usage;
 
 import java.io.File;
@@ -165,7 +164,9 @@ public final class Main {
         boolean backupDomainFiles = false;
         boolean cachedDc = false;
         String domainConfig = null;
+        String initialDomainConfig = null;
         String hostConfig = null;
+        String initialHostConfig = null;
         RunningMode initialRunningMode = RunningMode.NORMAL;
         Map<String, String> hostSystemProperties = getHostSystemProperties();
         ProductConfig productConfig;
@@ -278,6 +279,11 @@ public final class Main {
                         return null;
                     }
                     domainConfig = val;
+                } else if (arg.startsWith(CommandLineConstants.INITIAL_DOMAIN_CONFIG)) {
+                    initialDomainConfig = parseValue(arg, CommandLineConstants.INITIAL_DOMAIN_CONFIG);
+                    if (initialDomainConfig == null) {
+                        return null;
+                    }
                 } else if (CommandLineConstants.HOST_CONFIG.equals(arg) || CommandLineConstants.OLD_HOST_CONFIG.equals(arg)) {
                     hostConfig = args[++i];
                 } else if (arg.startsWith(CommandLineConstants.HOST_CONFIG)) {
@@ -292,7 +298,11 @@ public final class Main {
                         return null;
                     }
                     hostConfig = val;
-
+                } else if (arg.startsWith(CommandLineConstants.INITIAL_HOST_CONFIG)) {
+                    initialHostConfig = parseValue(arg, CommandLineConstants.INITIAL_HOST_CONFIG);
+                    if (initialHostConfig == null) {
+                        return null;
+                    }
                 } else if (arg.startsWith(CommandLineConstants.MASTER_ADDRESS)) {
 
                     int idx = arg.indexOf('=');
@@ -387,11 +397,10 @@ public final class Main {
                 return null;
             }
         }
-
         productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(HostControllerEnvironment.HOME_DIR));
         return new HostControllerEnvironment(hostSystemProperties, isRestart, modulePath, pmAddress, pmPort,
                 pcSocketConfig.getBindAddress(), pcSocketConfig.getBindPort(), defaultJVM,
-                domainConfig, hostConfig, initialRunningMode, backupDomainFiles, cachedDc, productConfig);
+                domainConfig, initialDomainConfig, hostConfig, initialHostConfig, initialRunningMode, backupDomainFiles, cachedDc, productConfig);
     }
 
     private static String parseValue(final String arg, final String key) {

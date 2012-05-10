@@ -294,7 +294,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     private final RunningMode initialRunningMode;
     private final ProductConfig productConfig;
 
-    public ServerEnvironment(final String hostControllerName, final Properties props, final Map<String, String> env, final String serverConfig,
+    public ServerEnvironment(final String hostControllerName, final Properties props, final Map<String, String> env, final String serverConfig, final String initialServerConfig,
                              final LaunchType launchType, final RunningMode initialRunningMode, ProductConfig productConfig) {
         if (props == null) {
             throw ControllerMessages.MESSAGES.nullVar("props");
@@ -372,7 +372,9 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         }
 
         String defaultServerConfig = SecurityActions.getSystemProperty(JBOSS_SERVER_DEFAULT_CONFIG, "standalone.xml");
-        serverConfigurationFile = standalone ? new ConfigurationFile(serverConfigurationDir, defaultServerConfig, serverConfig) : null;
+        String config = initialServerConfig == null ? serverConfig : initialServerConfig;
+        boolean persist = initialServerConfig == null;
+        serverConfigurationFile = standalone ? new ConfigurationFile(serverConfigurationDir, defaultServerConfig, config, persist) : null;
 
         tmp = getFileFromProperty(SERVER_DATA_DIR, props);
         if (tmp == null) {

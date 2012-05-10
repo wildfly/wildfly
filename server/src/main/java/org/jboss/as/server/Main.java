@@ -113,6 +113,7 @@ public final class Main {
     public static ServerEnvironment determineEnvironment(String[] args, Properties systemProperties, Map<String, String> systemEnvironment, ServerEnvironment.LaunchType launchType) {
         final int argsLength = args.length;
         String serverConfig = null;
+        String initialServerConfig = null;
         RunningMode runningMode = RunningMode.NORMAL;
         ProductConfig productConfig;
         for (int i = 0; i < argsLength; i++) {
@@ -137,6 +138,11 @@ public final class Main {
                 } else if (arg.startsWith(CommandLineConstants.SHORT_SERVER_CONFIG)) {
                     serverConfig = parseValue(arg, CommandLineConstants.SHORT_SERVER_CONFIG);
                     if (serverConfig == null) {
+                        return null;
+                    }
+                } else if (arg.startsWith(CommandLineConstants.INITIAL_SERVER_CONFIG)) {
+                    initialServerConfig = parseValue(arg, CommandLineConstants.INITIAL_SERVER_CONFIG);
+                    if (initialServerConfig == null) {
                         return null;
                     }
                 } else if (arg.startsWith(CommandLineConstants.OLD_SERVER_CONFIG)) {
@@ -234,9 +240,13 @@ public final class Main {
             }
         }
 
+        if (serverConfig != null && initialServerConfig != null) {
+            throw ServerMessages.MESSAGES.cannotHaveBothInitialServerConfigAndServerConfig();
+        }
+
         String hostControllerName = null; // No host controller unless in domain mode.
         productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(ServerEnvironment.HOME_DIR));
-        return new ServerEnvironment(hostControllerName, systemProperties, systemEnvironment, serverConfig, launchType, runningMode, productConfig);
+        return new ServerEnvironment(hostControllerName, systemProperties, systemEnvironment, serverConfig, initialServerConfig, launchType, runningMode, productConfig);
     }
 
     private static String parseValue(final String arg, final String key) {
