@@ -219,7 +219,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
         if (element == Element.MANAGEMENT) {
             ManagementXml managementXml = new ManagementXml(this);
-            managementXml.parseManagement(reader, address, DOMAIN_1_0, list, true, false);
+            managementXml.parseManagement(reader, address, DOMAIN_1_0, list, true, false, true);
             element = nextElement(reader, DOMAIN_1_0);
         }
 
@@ -330,7 +330,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
         if (element == Element.MANAGEMENT) {
             ManagementXml managementXml = new ManagementXml(this);
-            managementXml.parseManagement(reader, address, namespace, list, true, false);
+            managementXml.parseManagement(reader, address, namespace, list, true, false, true);
             element = nextElement(reader, namespace);
         }
         // Single profile

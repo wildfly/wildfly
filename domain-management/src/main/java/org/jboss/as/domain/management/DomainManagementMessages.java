@@ -790,8 +790,65 @@ public interface DomainManagementMessages {
     @Message(id = Message.NONE, value = "n")
     String shortNo();
 
+     /** IllegalStateException to indicate that none unique username
+     *
+     * @param username - The username specified.
+     * @return an {@link IllegalArgumentException} for the failure.
+     */
+    @Message(id = 15270, value = "The specified username %s is none unique, the user query return %s rows")
+    IllegalStateException noneUniqueUserId(final String username, int rowCount);
+
+
+    /**
+     * IOException to indicate a failure when closing result set and the database connection
+     *
+     * @param e - exception
+     * @return an {@link IOException} for the failure.
+     */
+    @Message(id = 15271, value = "Failed to close the result set and the database connection!")
+    IOException closeSafelyException(@Cause Throwable e);
+
+    /**
+     * StartException to indicate a failure when loading the JDBC driver
+     *
+     * @param e - exception
+     * @return an {@link StartException} for the failure.
+     */
+    @Message(id = 15273, value = "Failed to to load JDBC driver %s")
+    StartException jdbcNotLoadedException(@Cause Throwable e, String driverName);
+
+    /**
+     * StartException to indicate the JDBC class was not found
+     *
+     * @param e - exception
+     * @return an {@link StartException} for the failure.
+     */
+    @Message(id = 15274, value = "JDBC class not found %s")
+    StartException jdbcDriverClassNotFoundException(@Cause Throwable e, String className);
+
+    /**
+     * StartException to indicate it failed to startup the database connection manager service
+     *
+     * @param e - exception
+     * @return an {@link StartException} for the failure.
+     */
+    @Message(id = 15275, value = "Failed to startup database connection manager service")
+    StartException databaseConnectionManagerServiceStartupException(@Cause Throwable e);
+
+    /**
+     * StartException to indicate it failed to startup the database connection manager service
+     *
+     * @param e - exception
+     * @return an {@link StartException} for the failure.
+     */
+    @Message(id = 15276, value = "The database connection pool reaper failed to terminate connection")
+    RuntimeException reaperTerminationConnectionException(@Cause Throwable e);
+
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
      * this range commencing 15200.
      */
+
+
+
 }

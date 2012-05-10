@@ -47,13 +47,17 @@ public enum Element {
 
     CLIENT_MAPPING("client-mapping"),
     CONTENT("content"),
+    CONNECTION_URL("connection-url"),
 
+    DATABASE("database"),
+    DATABASE_DATASOURCE("datasource"),
     DOMAIN("domain"),
     DOMAIN_CONTROLLER("domain-controller"),
     DEPLOYMENT("deployment"),
     DEPLOYMENTS("deployments"),
     DEPLOYMENT_OVERLAY("deployment-overlay"),
     DEPLOYMENT_OVERLAYS("deployment-overlays"),
+    DRIVER_CLASS("driver-class"),
 
     ENVIRONMENT_VARIABLES("environment-variables"),
     EXTENSION("extension"),
@@ -92,7 +96,10 @@ public enum Element {
     MANAGEMENT("management"),
     MANAGEMENT_CLIENT_CONTENT("management-client-content"),
     MANAGEMENT_INTERFACES("management-interfaces"),
+    MAX_POOL_SIZE("max-pool-size"),
+    MIN_POOL_SIZE("min-pool-size"),
     MULTICAST("multicast"),
+    MODULE("module"),
 
     NAME("name"),
     NATIVE_INTERFACE("native-interface"),
@@ -116,6 +123,7 @@ public enum Element {
     PROFILES("profiles"),
     PROPERTY("property"),
     PROPERTIES("properties"),
+    POOL("pool"),
     PUBLIC_ADDRESS("public-address"),
 
     REMOTE("remote"),
@@ -123,6 +131,7 @@ public enum Element {
     ROLLOUT_PLANS("rollout-plans"),
 
     SECRET("secret"),
+    SECURITY("security"),
     SECURITY_REALM("security-realm"),
     SECURITY_REALMS("security-realms"),
     SERVER("server"),
@@ -131,6 +140,8 @@ public enum Element {
     SERVER_GROUP("server-group"),
     SERVER_GROUPS("server-groups"),
     SITE_LOCAL_ADDRESS("site-local-address"),
+    SIMPLE_SELECT("table"),
+    SQL_SELECT("sql"),
     SOCKET("socket"),
     SOCKET_BINDING("socket-binding"),
     SOCKET_BINDINGS("socket-bindings"),
@@ -146,6 +157,7 @@ public enum Element {
 
     UP("up"),
     USER("user"),
+    USER_NAME("user-name"),
     USERNAME_FILTER("username-filter"),
     USERS("users"),
 

@@ -155,13 +155,6 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="outbound-connections" minOccurs="0">
-                <xs:complexType>
-                    <xs:sequence>
-                      <xs:element name="ldap" type="ldapType" minOccurs="1" /> <!-- TODO minOccurs only while ldap is only supported connection. -->
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
@@ -175,6 +168,14 @@
             <xs:extension base="domain-managementType">
                 <xs:sequence>
                     <xs:element name="management-interfaces" type="host-management-interfacesType" minOccurs="1"/>
+	                <xs:element name="outbound-connections" minOccurs="0">
+		                <xs:complexType>
+		                    <xs:choice minOccurs="0">
+		                      <xs:element name="ldap" type="ldapType" minOccurs="0" />
+		                      <xs:element name="database" type="host-databaseType" minOccurs="0" />
+		                    </xs:choice>
+		                </xs:complexType>
+		            </xs:element>
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
@@ -190,11 +191,181 @@
             <xs:extension base="domain-managementType">
                 <xs:sequence>
                     <xs:element name="management-interfaces" type="server-management-interfacesType" minOccurs="0"/>
+                    <xs:element name="outbound-connections" minOccurs="0">
+		                <xs:complexType>
+		                    <xs:choice minOccurs="0">
+		                      <xs:element name="ldap" type="ldapType" minOccurs="0" />
+		                      <xs:element name="database" type="server-databaseType" minOccurs="0" />
+		                    </xs:choice>
+		                </xs:complexType>
+		            </xs:element>
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
 
+	<xs:complexType name="host-databaseType">
+        <xs:annotation>
+            <xs:documentation>
+                The Database connection definition.
+            </xs:documentation>
+        </xs:annotation>
+         <xs:sequence>
+            <xs:element name="datasource" type="datasourceType" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="server-databaseType">
+        <xs:annotation>
+            <xs:documentation>
+                The Database connection definition.
+            </xs:documentation>
+        </xs:annotation>
+         <xs:sequence>
+            <xs:element name="datasource" type="datasourceRefType" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="datasourceType">
+    	<xs:sequence>
+			<xs:element name="module" type="xs:token" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>
+			            <![CDATA[[
+			              The name of the module that contains the JDBC driver module
+			             ]]>
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="connection-url" type="xs:token" maxOccurs="1"	minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+			            <![CDATA[[
+			              The JDBC driver connection URL Ex: <connection-url>jdbc:hsqldb:hsql://localhost:1701</connection-url>
+			             ]]>
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="driver-class" type="xs:token" maxOccurs="1" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+			            <![CDATA[[
+			              The fully qualifed name of the JDBC driver class Ex: <driver-class>org.hsqldb.jdbcDriver</driver-class>
+			             ]]>
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="driver" type="xs:token" maxOccurs="1"	minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+			            <![CDATA[[
+			              An unique reference to the classloader module which contains the JDBC driver
+			              The accepted format is driverName#majorVersion.minorVersion
+			             ]]>
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="pool" type="poolType" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>
+			            <![CDATA[[
+			              Specifies the pooling settings
+			             ]]>
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="security" type="dsSecurityType" maxOccurs="1"	minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+			            <![CDATA[[
+			              Specifies the security settings
+			             ]]>
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="name" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation>
+					The name of the connection.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+    </xs:complexType>
+ 	
+ 	<xs:complexType name="datasourceRefType">
+		<xs:annotation>
+			<xs:documentation>
+				The data source definition.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="datasourceType">
+				<xs:attribute name="ref" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>
+				            <![CDATA[[
+				              Specify the data-source that should be used as connection provider Ex: java:jboss/datasources/auth
+				             ]]>
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+    </xs:complexType>	
+	
+	<xs:complexType name="poolType">
+	    <xs:sequence>
+	      <xs:element name="min-pool-size" type="xs:nonNegativeInteger" maxOccurs="1" minOccurs="0">
+	        <xs:annotation>
+	          <xs:documentation>
+	            <![CDATA[[
+	              The min-pool-size element indicates the minimum number of connections
+	              a pool should hold. These are not created until a Subject is known from a
+	              request for a connection. This default to 0. Ex: <min-pool-size>1</min-pool-size>
+	             ]]>
+	          </xs:documentation>
+	        </xs:annotation>
+	      </xs:element>
+	      <xs:element name="max-pool-size" type="xs:nonNegativeInteger"  maxOccurs="1" minOccurs="0">
+	        <xs:annotation>
+	          <xs:documentation>
+	            <![CDATA[[
+	              The max-pool-size element indicates the maximum number of connections
+	              for a pool. No more connections will be created in each sub-pool.
+	              This defaults to 20.
+	             ]]>
+	          </xs:documentation>
+	        </xs:annotation>
+	      </xs:element>
+	    </xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="dsSecurityType">
+	    <xs:sequence>
+	      <xs:element name="user-name" type="xs:token" maxOccurs="1" minOccurs="0">
+	        <xs:annotation>
+	          <xs:documentation>
+	            <![CDATA[[
+	                Specify the username used when creating a new connection.
+	                Ex: <user-name>sa</user-name>
+	               ]]>
+	          </xs:documentation>
+	        </xs:annotation>
+	      </xs:element>
+	      <xs:element name="password" type="xs:token" maxOccurs="1" minOccurs="0">
+	        <xs:annotation>
+	          <xs:documentation>
+	            <![CDATA[[
+	                Specify the password used when creating a new connection.
+	                Ex: <password>sa-pass</password>
+	               ]]>
+	          </xs:documentation>
+	        </xs:annotation>
+	      </xs:element>
+	    </xs:sequence>
+    </xs:complexType>
+    
     <xs:complexType name="ldapType">
         <xs:annotation>
             <xs:documentation>
@@ -330,8 +501,9 @@
             </xs:documentation>
         </xs:annotation>
         <xs:choice>
-            <xs:element name="properties" type="propertiesFileType" minOccurs="0" />
+            <xs:element name="properties" type="propertiesFileType" minOccurs="0" />  
             <xs:element name="plug-in" type="plug-inAuthType" minOccurs="0" />
+            <xs:element name="database" type="databaseAuthorizationType" minOccurs="0" />
         </xs:choice>
     </xs:complexType>
 
@@ -506,6 +678,7 @@
                 <xs:element name="properties" type="propertiesAuthenticationType" minOccurs="0" />
                 <xs:element name="users" type="usersAuthenticationType" minOccurs="0" />
                 <xs:element name="plug-in" type="plug-inAuthType" minOccurs="0" />
+                <xs:element name="database" type="databaseAuthenticationType" minOccurs="0" />
             </xs:choice>
         </xs:sequence>
     </xs:complexType>
@@ -667,6 +840,153 @@
             </xs:attribute>
             </xs:extension>
         </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="databaseAuthenticationType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of users stored within a database.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="databaseDataSourceType">
+                <xs:sequence>
+                    <xs:element name="sql" type="sql-select-users-type" minOccurs="0" />
+                    <xs:element name="table" type="simple-select-users-type" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="databaseAuthorizationType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of users roles stored within a database.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="databaseDataSourceType">
+                <xs:sequence>
+                    <xs:element name="sql" type="sql-select-roles-type" minOccurs="0" />
+                    <xs:element name="table" type="simple-select-roles-type" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="databaseDataSourceType">
+       <xs:attribute name="ref" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the outbound database connection to use
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="plain-text" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Are the credentials within the database stored in plain text, if not
+                    the {credential} is expected to be the hex encoded Digest hash
+                    of 'username : realm : password'.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="simple-select-users-type">
+        <xs:annotation>
+            <xs:documentation>
+               Specify the table name and the columns that contain the username and password information
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Name of the SQL table that it should lookup users in
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="username-field" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the database field that contains
+                    the username. It's recommended index this field
+                    to speedup lookup
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="password-field" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the database field that contains
+                    the password.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+
+    </xs:complexType>
+    
+    <xs:complexType name="sql-select-users-type">
+      <xs:sequence>
+		<xs:element name="sql" type="xs:token" maxOccurs="1" minOccurs="0">
+			<xs:annotation>
+				<xs:documentation>
+		            <![CDATA[[
+                      An customized SQL statement for retreving the user, the accepted format is 
+					  "select <username>, <password> from <tablename> where <username> = ?" 
+		             ]]>
+				</xs:documentation>
+			</xs:annotation>
+		</xs:element>
+	  </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="simple-select-roles-type">
+        <xs:annotation>
+            <xs:documentation>
+                Specify the table name and the columns that contain the username and roles information.
+                The username column is the key column for retrieving the user roles
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Name of the SQL table that it should lookup the user in
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="username-field" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Name of the database field that contains
+                    the username. It's recommended to have an index on this field
+                    to speed-up lookup
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="roles-field" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Name of the database field that contains the user roles
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+
+    </xs:complexType>
+
+    <xs:complexType name="sql-select-roles-type">
+      <xs:sequence>
+    	<xs:element name="sql" type="xs:token" maxOccurs="1" minOccurs="0">
+			<xs:annotation>
+				<xs:documentation>
+		            <![CDATA[[
+                      An customized SQL statement for retreving roles for the user, the accepted format is 
+					  "select <roles> from <tablename> where <username> = ?" 
+		             ]]>
+				</xs:documentation>
+			</xs:annotation>
+		</xs:element>
+      </xs:sequence> 
     </xs:complexType>
 
     <xs:complexType name="host-management-interfacesType">
