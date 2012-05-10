@@ -1,10 +1,15 @@
 package org.jboss.as.subsystem.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALIASES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_TRANSFORMED_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.ArrayList;
@@ -14,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 import org.jboss.as.controller.ControlledProcessState;
@@ -149,7 +155,7 @@ public class KernelServices {
      * Execute an operation in the model controller
      *
      * @param operation the operation to execute
-     * @return the result of the operation
+     * @return the whole result of the operation
      */
     public ModelNode executeOperation(ModelNode operation) {
         return controller.execute(operation, null, OperationTransactionControl.COMMIT, null);
@@ -217,6 +223,59 @@ public class KernelServices {
         return null;
     }
 
+    /*
+     * Execute an operation in the model controller, expecting succes and return the "result" node
+     *
+     * @param operation the operation to execute
+     * @return the result of the operation
+     * @throws OperationFailedException if the operation failed
+     */
+    public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
+        ModelNode rsp = executeOperation(operation);
+        if (FAILED.equals(rsp.get(OUTCOME).asString())) {
+            throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
+        }
+        return rsp.get(RESULT);
+    }
+
+    /**
+     * Execute an operation in the model controller, expecting failure.
+     * Gives a junit {@link AssertionFailedError} if the operation did not fail.
+     *
+     * @param operation the operation to execute
+     * @return the result of the operation
+     */
+    public void executeForFailure(ModelNode operation) {
+        try {
+            executeForResult(operation);
+            Assert.fail("Should have given error");
+        } catch (OperationFailedException expected) {
+        }
+    }
+
+    /**
+     * Create an operation
+     *
+     * @param operationName the name of the operation
+     * @param address the address
+     * @throws IllegalArgumentException if the address is bad
+     */
+    public ModelNode createOperation(String operationName, String...address) {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(operationName);
+        if (address.length > 0) {
+            if (address.length % 2 != 0) {
+                throw new IllegalArgumentException("Address must be in pairs");
+            }
+            for (String addr : address) {
+                operation.get(OP_ADDR).add(addr);
+            }
+        } else {
+            operation.get(OP_ADDR).setEmptyList();
+        }
+
+        return operation;
+    }
 
     /**
      * Reads the persisted subsystem xml
@@ -233,10 +292,22 @@ public class KernelServices {
      * @return the whole model
      */
     public ModelNode readWholeModel() {
+        return readWholeModel(false);
+    }
+
+    /**
+     * Reads the whole model from the model controller
+     *
+     * @return the whole model
+     */
+    public ModelNode readWholeModel(boolean includeAliases) {
         ModelNode op = new ModelNode();
         op.get(OP).set(READ_RESOURCE_OPERATION);
         op.get(OP_ADDR).set(PathAddress.EMPTY_ADDRESS.toModelNode());
         op.get(RECURSIVE).set(true);
+        if (includeAliases) {
+            op.get(INCLUDE_ALIASES).set(true);
+        }
         ModelNode result = executeOperation(op);
         return AbstractSubsystemTest.checkResultAndGetContents(result);
     }

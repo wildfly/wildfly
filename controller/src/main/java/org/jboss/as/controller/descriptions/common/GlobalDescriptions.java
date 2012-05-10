@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALIASES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INHERITED;
@@ -103,6 +104,11 @@ public class GlobalDescriptions {
         node.get(REQUEST_PROPERTIES, ATTRIBUTES_ONLY, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, ATTRIBUTES_ONLY, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, ATTRIBUTES_ONLY, DEFAULT).set(false);
+        node.get(REQUEST_PROPERTIES, INCLUDE_ALIASES, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, INCLUDE_ALIASES, DESCRIPTION).set(bundle.getString("global.read-resource.include-aliases"));
+        node.get(REQUEST_PROPERTIES, INCLUDE_ALIASES, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, INCLUDE_ALIASES, NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, DEFAULT).set(false);
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
         //TODO value type
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-resource.reply"));
@@ -286,6 +292,12 @@ public class GlobalDescriptions {
         node.get(REQUEST_PROPERTIES, LOCALE, DESCRIPTION).set(bundle.getString("global.read-resource-description.locale"));
         node.get(REQUEST_PROPERTIES, LOCALE, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, LOCALE, NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, INCLUDE_ALIASES, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, INCLUDE_ALIASES, DESCRIPTION).set(bundle.getString("global.read-resource-description.include-aliases"));
+        node.get(REQUEST_PROPERTIES, INCLUDE_ALIASES, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, INCLUDE_ALIASES, NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, INCLUDE_ALIASES, DEFAULT).set(false);
+
 
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-resource-description.reply"));

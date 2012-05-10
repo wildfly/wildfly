@@ -25,10 +25,10 @@ package org.jboss.as.controller.registry;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
@@ -54,6 +54,21 @@ public interface ImmutableManagementResourceRegistration {
      * @return {@code true} if this registration represents a remote resource; {@code false} otherwise
      */
     boolean isRemote();
+
+    /**
+     * Gets whether this resource registration is an alias to another resource.
+     *
+     * @return {@code true} if this registration represents an alias; {@code false} otherwise
+     */
+    boolean isAlias();
+
+    /**
+     * Gets the alias entry for this registration if it is an alias
+     *
+     * @return the alias entry if this registration represents an aliased resource; {@code null} otherwise
+     * @throws IllegalStateException if {@link #isAlias()} returns {@code false}
+     */
+    AliasEntry getAliasEntry();
 
     /**
      * Get the operation handler at the given address, or {@code null} if none exists.

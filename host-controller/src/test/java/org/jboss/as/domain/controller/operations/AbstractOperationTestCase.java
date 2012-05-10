@@ -64,6 +64,7 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
+import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -693,6 +694,11 @@ public abstract class AbstractOperationTestCase {
             return null;
         }
 
+        @Override
+        public AliasEntry getAliasEntry() {
+            return null;
+        }
+
         public ProxyController getProxyController(PathAddress address) {
             if (address.getLastElement().getKey().equals(SERVER) && !address.getLastElement().getValue().equals("server-two")) {
                 return new ProxyController() {
@@ -709,6 +715,19 @@ public abstract class AbstractOperationTestCase {
 
         public Set<ProxyController> getProxyControllers(PathAddress address) {
             return null;
+        }
+
+        @Override
+        public void registerAlias(PathElement address, AliasEntry alias) {
+        }
+
+        @Override
+        public void unregisterAlias(PathElement address) {
+        }
+
+        @Override
+        public boolean isAlias() {
+            return false;
         }
     };
 }

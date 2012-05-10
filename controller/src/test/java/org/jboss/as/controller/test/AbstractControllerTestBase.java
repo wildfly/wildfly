@@ -100,6 +100,36 @@ public abstract class AbstractControllerTestBase {
         return container;
     }
 
+    protected ModelNode createOperation(String operationName, String...address) {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(operationName);
+        if (address.length > 0) {
+            for (String addr : address) {
+                operation.get(OP_ADDR).add(addr);
+            }
+        } else {
+            operation.get(OP_ADDR).setEmptyList();
+        }
+
+        return operation;
+    }
+
+    public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
+        ModelNode rsp = getController().execute(operation, null, null, null);
+        if (FAILED.equals(rsp.get(OUTCOME).asString())) {
+            throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
+        }
+        return rsp.get(RESULT);
+    }
+
+    public void executeForFailure(ModelNode operation) throws OperationFailedException {
+        try {
+            executeForResult(operation);
+            Assert.fail("Should have given error");
+        } catch (OperationFailedException expected) {
+        }
+    }
+
     @Before
     public void setupController() throws InterruptedException {
         container = ServiceContainer.Factory.create("test");
@@ -129,37 +159,6 @@ public abstract class AbstractControllerTestBase {
             }
         }
     }
-
-    public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
-        ModelNode rsp = getController().execute(operation, null, null, null);
-        if (FAILED.equals(rsp.get(OUTCOME).asString())) {
-            throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
-        }
-        return rsp.get(RESULT);
-    }
-
-    public void executeForFailure(ModelNode operation) throws OperationFailedException {
-        try {
-            executeForResult(operation);
-            Assert.fail("Should have given error");
-        } catch (OperationFailedException expected) {
-        }
-    }
-
-    protected ModelNode createOperation(String operationName, String...address) {
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set(operationName);
-        if (address.length > 0) {
-            for (String addr : address) {
-                operation.get(OP_ADDR).add(addr);
-            }
-        } else {
-            operation.get(OP_ADDR).setEmptyList();
-        }
-
-        return operation;
-    }
-
 
     protected void addBootOperations(List<ModelNode> bootOperations) {
 
