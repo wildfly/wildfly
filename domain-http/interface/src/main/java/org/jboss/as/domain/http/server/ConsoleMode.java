@@ -42,6 +42,10 @@ public enum ConsoleMode {
         ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
             return new ConsoleHandler(slot);
         }
+        @Override
+        public boolean hasConsole() {
+            return true;
+        }
     },
     /**
      * If an attempt is made to go to the console show an error saying the host is a slave
@@ -50,6 +54,10 @@ public enum ConsoleMode {
         @Override
         ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
             return DisabledConsoleHandler.createNoConsoleForSlave(slot);
+        }
+        @Override
+        public boolean hasConsole() {
+            return false;
         }
     },
     /**
@@ -60,6 +68,10 @@ public enum ConsoleMode {
         ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
             return DisabledConsoleHandler.createNoConsoleForAdminMode(slot);
         }
+        @Override
+        public boolean hasConsole() {
+            return false;
+        }
     },
     /**
      * If an attempt is made to go to the console a 404 is shown
@@ -69,6 +81,10 @@ public enum ConsoleMode {
         ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
             return null;
         }
+        @Override
+        public boolean hasConsole() {
+            return false;
+        }
     };
 
     /**
@@ -77,6 +93,13 @@ public enum ConsoleMode {
      * @return the console handler, may be {@code null}
      */
     ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
+        throw new IllegalStateException("Not overridden for " + this);
+    }
+
+    /**
+     * Returns whether the console is displayed or not
+     */
+    public boolean hasConsole() {
         throw new IllegalStateException("Not overridden for " + this);
     }
 
