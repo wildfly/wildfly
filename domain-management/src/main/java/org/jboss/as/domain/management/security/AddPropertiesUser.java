@@ -65,6 +65,7 @@ public class AddPropertiesUser {
     public static final CommandLineOption SILENT_OPTION = new CommandLineOption("-s", "--silent");
     public static final CommandLineOption ROLE_OPTION = new CommandLineOption("-ro", "--role");
 
+    // List the available command-line options
     public static final CommandLineOption[] COMMAND_LINE_OPTIONS = new CommandLineOption[]{
             PASSWORD_OPTION,
             USER_OPTION,
@@ -95,7 +96,7 @@ public class AddPropertiesUser {
         this.theConsole = console;
         StateValues stateValues = new StateValues();
         stateValues.setJbossHome(System.getenv("JBOSS_HOME"));
-        nextState = new PropertyFilePrompt(theConsole,stateValues);
+        nextState = new PropertyFilePrompt(theConsole, stateValues);
     }
 
     private AddPropertiesUser(final boolean management, final String user, final char[] password, final String realm) {
@@ -154,6 +155,7 @@ public class AddPropertiesUser {
                 } else if (APPLICATION_USERS_OPTION.equals(temp)) {
                     management = false;
                 } else {
+                    // Find the command-line option
                     CommandLineOption commandLineOption = findCommandLineOption(temp);
                     if (commandLineOption != null) {
                         final String value;
@@ -163,6 +165,19 @@ public class AddPropertiesUser {
                             value = it.next();
                         }
                         argsCliProps.setProperty(commandLineOption.key(), value);
+                    } else {
+                        // By default, the first arg without option is the username,
+                        if (!argsCliProps.containsKey(USER_OPTION.key())) {
+                            argsCliProps.setProperty(USER_OPTION.key(), temp);
+                        }
+                        // the second arg is the password and,
+                        else if (!argsCliProps.containsKey(PASSWORD_OPTION.key())) {
+                            argsCliProps.setProperty(PASSWORD_OPTION.key(), temp);
+                        }
+                        // the third one is the realm.
+                        else if (!argsCliProps.containsKey(REALM_OPTION.key())) {
+                            argsCliProps.setProperty(REALM_OPTION.key(), temp);
+                        }
                     }
                 }
             }
@@ -185,6 +200,12 @@ public class AddPropertiesUser {
         SILENT, NON_INTERACTIVE, INTERACTIVE
     }
 
+    /**
+     * Find the command-line option corresponding to the parameter {@code option}.
+     *
+     * @param option
+     * @return The corresponding option or null.
+     */
     private static CommandLineOption findCommandLineOption(String option) {
         for (CommandLineOption commandLineOption : COMMAND_LINE_OPTIONS) {
             if (commandLineOption.match(option)) {
@@ -201,14 +222,6 @@ public class AddPropertiesUser {
         private CommandLineOption(String shortOption, String longOption) {
             this.shortOption = shortOption;
             this.longOption = longOption;
-        }
-
-        public String getShortOption() {
-            return shortOption;
-        }
-
-        public String getLongOption() {
-            return longOption;
         }
 
         public String key() {
