@@ -22,6 +22,8 @@
 
 package org.jboss.as.web;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
@@ -31,8 +33,6 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 
 /**
  * The web extension.

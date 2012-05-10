@@ -1,12 +1,10 @@
 package org.jboss.as.web;
 
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.alias.AbstractAliasedResourceDefinition;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -17,7 +15,7 @@ import org.jboss.dmr.ModelType;
  * @author Tomaz Cerar
  * @created 23.2.12 16:34
  */
-public class WebAccessLogDirectoryDefinition extends AbstractAliasedResourceDefinition {
+public class WebAccessLogDirectoryDefinition extends SimpleResourceDefinition {
     public static final WebAccessLogDirectoryDefinition INSTANCE = new WebAccessLogDirectoryDefinition();
 
     protected static final SimpleAttributeDefinition RELATIVE_TO =
@@ -51,11 +49,5 @@ public class WebAccessLogDirectoryDefinition extends AbstractAliasedResourceDefi
     public void registerAttributes(ManagementResourceRegistration directory) {
         directory.registerReadWriteAttribute(RELATIVE_TO, null, new ReloadRequiredWriteAttributeHandler(RELATIVE_TO));
         directory.registerReadWriteAttribute(PATH, null, new ReloadRequiredWriteAttributeHandler(PATH));
-    }
-
-    @Override
-    public void registerAliasAttributes(ManagementResourceRegistration resourceRegistration, PathElement alias) {
-        resourceRegistration.registerReadWriteAttribute(RELATIVE_TO, aliasHandler, aliasHandler);
-        resourceRegistration.registerReadWriteAttribute(PATH, aliasHandler, aliasHandler);
     }
 }
