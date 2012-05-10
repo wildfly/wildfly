@@ -24,6 +24,7 @@ package org.jboss.as.controller.operations.global;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
@@ -108,7 +109,21 @@ public class GlobalOperationHandlers {
      */
     public static class ReadResourceHandler extends AbstractMultiTargetHandler implements OperationStepHandler {
 
-        private final ParametersValidator validator = new ParametersValidator();
+        private final ParametersValidator validator = new ParametersValidator() {
+
+            @Override
+            public void validate(ModelNode operation) throws OperationFailedException {
+                super.validate(operation);
+                if (operation.hasDefined(ATTRIBUTES_ONLY)) {
+                    if (operation.hasDefined(RECURSIVE)) {
+                        throw MESSAGES.cannotHaveBothParameters(ATTRIBUTES_ONLY, RECURSIVE);
+                    }
+                    if (operation.hasDefined(RECURSIVE_DEPTH)) {
+                        throw MESSAGES.cannotHaveBothParameters(ATTRIBUTES_ONLY, RECURSIVE_DEPTH);
+                    }
+                }
+            }
+        };
 
         public ReadResourceHandler() {
             validator.registerValidator(RECURSIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
@@ -116,6 +131,7 @@ public class GlobalOperationHandlers {
             validator.registerValidator(INCLUDE_RUNTIME, new ModelTypeValidator(ModelType.BOOLEAN, true));
             validator.registerValidator(PROXIES, new ModelTypeValidator(ModelType.BOOLEAN, true));
             validator.registerValidator(INCLUDE_DEFAULTS, new ModelTypeValidator(ModelType.BOOLEAN, true));
+            validator.registerValidator(ATTRIBUTES_ONLY, new ModelTypeValidator(ModelType.BOOLEAN, true));
         }
 
         @Override
@@ -131,6 +147,7 @@ public class GlobalOperationHandlers {
             final boolean queryRuntime = operation.get(INCLUDE_RUNTIME).asBoolean(false);
             final boolean proxies = operation.get(PROXIES).asBoolean(false);
             final boolean defaults = operation.get(INCLUDE_DEFAULTS).asBoolean(true);
+            final boolean attributesOnly = operation.get(ATTRIBUTES_ONLY).asBoolean(false);
 
             // Attributes read directly from the model with no special read handler step in the middle
             final Map<String, ModelNode> directAttributes = new HashMap<String, ModelNode>();
@@ -184,54 +201,56 @@ public class GlobalOperationHandlers {
             }
 
 
-            // Next, process child resources
-            for (Map.Entry<String, Set<String>> entry : childrenByType.entrySet()) {
-                String childType = entry.getKey();
-                Set<String> children = entry.getValue();
-                if (children.isEmpty()) {
-                    // Just treat it like an undefined attribute
-                    directAttributes.put(childType, new ModelNode());
-                } else {
-                    for (String child : children) {
-                        boolean storeDirect = !recursive;
-                        if (recursive) {
-                            PathElement childPE = PathElement.pathElement(childType, child);
-                            PathAddress relativeAddr = PathAddress.pathAddress(childPE);
-                            ImmutableManagementResourceRegistration childReg = registry.getSubModel(relativeAddr);
-                            if (childReg == null) {
-                                throw new OperationFailedException(new ModelNode().set(MESSAGES.noChildRegistry(childType, child)));
-                            }
-                            // Decide if we want to invoke on this child resource
-                            boolean proxy = childReg.isRemote();
-                            boolean runtimeResource = childReg.isRuntimeOnly();
-                            if (!runtimeResource || (queryRuntime && !proxy)  || (proxies && proxy)) {
-                                final int newDepth = recursiveDepth > 0 ? recursiveDepth - 1 : 0;
-                                // Add a step to read the child resource
-                                ModelNode rrOp = new ModelNode();
-                                rrOp.get(OP).set(opName);
-                                rrOp.get(OP_ADDR).set(PathAddress.pathAddress(address, childPE).toModelNode());
-                                rrOp.get(RECURSIVE).set(operation.get(RECURSIVE));
-                                rrOp.get(RECURSIVE_DEPTH).set(newDepth);
-                                rrOp.get(PROXIES).set(proxies);
-                                rrOp.get(INCLUDE_RUNTIME).set(queryRuntime);
-                                ModelNode rrRsp = new ModelNode();
-                                childResources.put(childPE, rrRsp);
+            if (!attributesOnly) {
+                // Next, process child resources
+                for (Map.Entry<String, Set<String>> entry : childrenByType.entrySet()) {
+                    String childType = entry.getKey();
+                    Set<String> children = entry.getValue();
+                    if (children.isEmpty()) {
+                        // Just treat it like an undefined attribute
+                        directAttributes.put(childType, new ModelNode());
+                    } else {
+                        for (String child : children) {
+                            boolean storeDirect = !recursive;
+                            if (recursive) {
+                                PathElement childPE = PathElement.pathElement(childType, child);
+                                PathAddress relativeAddr = PathAddress.pathAddress(childPE);
+                                ImmutableManagementResourceRegistration childReg = registry.getSubModel(relativeAddr);
+                                if (childReg == null) {
+                                    throw new OperationFailedException(new ModelNode().set(MESSAGES.noChildRegistry(childType, child)));
+                                }
+                                // Decide if we want to invoke on this child resource
+                                boolean proxy = childReg.isRemote();
+                                boolean runtimeResource = childReg.isRuntimeOnly();
+                                if (!runtimeResource || (queryRuntime && !proxy)  || (proxies && proxy)) {
+                                    final int newDepth = recursiveDepth > 0 ? recursiveDepth - 1 : 0;
+                                    // Add a step to read the child resource
+                                    ModelNode rrOp = new ModelNode();
+                                    rrOp.get(OP).set(opName);
+                                    rrOp.get(OP_ADDR).set(PathAddress.pathAddress(address, childPE).toModelNode());
+                                    rrOp.get(RECURSIVE).set(operation.get(RECURSIVE));
+                                    rrOp.get(RECURSIVE_DEPTH).set(newDepth);
+                                    rrOp.get(PROXIES).set(proxies);
+                                    rrOp.get(INCLUDE_RUNTIME).set(queryRuntime);
+                                    ModelNode rrRsp = new ModelNode();
+                                    childResources.put(childPE, rrRsp);
 
-                                OperationStepHandler rrHandler = childReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, opName);
-                                context.addStep(rrRsp, rrOp, rrHandler, OperationContext.Stage.IMMEDIATE);
-                            } else {
-                                storeDirect = true;
+                                    OperationStepHandler rrHandler = childReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, opName);
+                                    context.addStep(rrRsp, rrOp, rrHandler, OperationContext.Stage.IMMEDIATE);
+                                } else {
+                                    storeDirect = true;
+                                }
                             }
-                        }
-                        if (storeDirect) {
-                            ModelNode childMap = directChildren.get(childType);
-                            if (childMap == null) {
-                                childMap = new ModelNode();
-                                childMap.setEmptyObject();
-                                directChildren.put(childType, childMap);
+                            if (storeDirect) {
+                                ModelNode childMap = directChildren.get(childType);
+                                if (childMap == null) {
+                                    childMap = new ModelNode();
+                                    childMap.setEmptyObject();
+                                    directChildren.put(childType, childMap);
+                                }
+                                // Add a "child" => undefined
+                                childMap.get(child);
                             }
-                            // Add a "child" => undefined
-                            childMap.get(child);
                         }
                     }
                 }

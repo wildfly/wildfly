@@ -2487,4 +2487,7 @@ public interface ControllerMessages {
 
     @Message(id = 14865, value = "Stream was closed")
     IOException streamWasClosed();
+
+    @Message(id = 14866, value = "Cannot define both '%s' and '%s'")
+    OperationFailedException cannotHaveBothParameters(String nameA, String name2);
 }

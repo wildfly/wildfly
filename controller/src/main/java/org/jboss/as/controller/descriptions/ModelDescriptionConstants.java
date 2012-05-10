@@ -48,6 +48,7 @@ public class ModelDescriptionConstants {
     public static final String APPCLIENT = "appclient";
     public static final String ARCHIVE = "archive";
     public static final String ATTRIBUTES = "attributes";
+    public static final String ATTRIBUTES_ONLY = "attributes-only";
     public static final String AUTHENTICATION = "authentication";
     public static final String AUTHORIZATION = "authorization";
     public static final String AUTO_START = "auto-start";
