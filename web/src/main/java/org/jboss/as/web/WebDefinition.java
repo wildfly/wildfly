@@ -1,5 +1,10 @@
 package org.jboss.as.web;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import java.util.EnumSet;
+
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -11,18 +16,11 @@ import org.jboss.as.controller.descriptions.DefaultResourceRemoveDescriptionProv
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import java.util.EnumSet;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 /**
  * @author Tomaz Cerar
@@ -71,6 +69,7 @@ public class WebDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         registration.registerReadWriteAttribute(DEFAULT_VIRTUAL_SERVER, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_VIRTUAL_SERVER));
+        //TODO remove this - to make model more readable while debugging
         registration.registerReadWriteAttribute(NATIVE, null, new ReloadRequiredWriteAttributeHandler(NATIVE));
         registration.registerReadWriteAttribute(INSTANCE_ID, null, new ReloadRequiredWriteAttributeHandler(INSTANCE_ID));
     }
