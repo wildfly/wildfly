@@ -60,6 +60,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DATABASE_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
@@ -519,6 +520,24 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
                 // Now convert it to an operation by adding a name and address.
                 ModelNode identityAddress = baseAddress.clone().add(LDAP_CONNECTION, connectionName);
+                addConnection.get(OP).set(ADD);
+                addConnection.get(OP_ADDR).set(identityAddress);
+
+                updates.add(addConnection);
+            }
+        }
+        if (hostModel.get(CORE_SERVICE, MANAGEMENT, DATABASE_CONNECTION).isDefined()) {
+            ModelNode baseAddress = new ModelNode();
+            baseAddress.add(CORE_SERVICE, MANAGEMENT);
+
+            ModelNode connections = hostModel.get(CORE_SERVICE, MANAGEMENT, DATABASE_CONNECTION);
+            for (String connectionName : connections.keys()) {
+                ModelNode addConnection = new ModelNode();
+                // First take the properties to pass over.
+                addConnection.set(connections.get(connectionName));
+
+                // Now convert it to an operation by adding a name and address.
+                ModelNode identityAddress = baseAddress.clone().add(DATABASE_CONNECTION, connectionName);
                 addConnection.get(OP).set(ADD);
                 addConnection.get(OP_ADDR).set(identityAddress);
 
