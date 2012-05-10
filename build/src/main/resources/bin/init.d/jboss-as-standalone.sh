@@ -57,7 +57,7 @@ prog='jboss-as'
 CMD_PREFIX=''
 
 if [ ! -z "$JBOSS_USER" ]; then
-  if [ -x /etc/rc.d/init.d/functions ]; then
+  if [ -r /etc/rc.d/init.d/functions ]; then
     CMD_PREFIX="daemon --user $JBOSS_USER"
   else
     CMD_PREFIX="su - $JBOSS_USER -c"
@@ -86,7 +86,7 @@ start() {
   #$CMD_PREFIX JBOSS_PIDFILE=$JBOSS_PIDFILE $JBOSS_SCRIPT &
 
   if [ ! -z "$JBOSS_USER" ]; then
-    if [ -x /etc/rc.d/init.d/functions ]; then
+    if [ -r /etc/rc.d/init.d/functions ]; then
       daemon --user $JBOSS_USER LAUNCH_JBOSS_IN_BACKGROUND=1 JBOSS_PIDFILE=$JBOSS_PIDFILE $JBOSS_SCRIPT -c $JBOSS_CONFIG 2>&1 > $JBOSS_CONSOLE_LOG &
     else
       su - $JBOSS_USER -c "LAUNCH_JBOSS_IN_BACKGROUND=1 JBOSS_PIDFILE=$JBOSS_PIDFILE $JBOSS_SCRIPT -c $JBOSS_CONFIG" 2>&1 > $JBOSS_CONSOLE_LOG &
