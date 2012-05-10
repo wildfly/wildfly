@@ -2481,4 +2481,7 @@ public interface ControllerMessages {
 
     @Message(id = 14861, value = "<one or more transitive dependencies>")
     String transitiveDependencies();
+
+    @Message(id = 14862, value = "Cannot define both '%s' and '%s'")
+    OperationFailedException cannotHaveBothParameters(String nameA, String name2);
 }
