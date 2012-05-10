@@ -47,7 +47,7 @@
         <version.org.hibernate-jpamodelgen>1.2.0.Final</version.org.hibernate-jpamodelgen>
 
         <!-- Versions of projects not directly under JBoss umbrella -->
-        <version.junit>4.8.1</version.junit>
+        <version.junit>4.10</version.junit>
         <version.org.testng>5.14.6</version.org.testng>
         <version.com.google.gwt>2.4.0</version.com.google.gwt>
         <version.org.mvel>2.1.Beta8</version.org.mvel>
