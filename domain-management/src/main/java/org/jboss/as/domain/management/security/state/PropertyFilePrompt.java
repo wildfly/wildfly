@@ -59,35 +59,33 @@ public class PropertyFilePrompt implements State {
         theConsole.printf(MESSAGES.filePrompt());
         theConsole.printf(AddPropertiesUser.NEW_LINE);
 
-        while (true) {
-            String temp = theConsole.readLine("(a): ");
-            if (temp == null) {
-                /*
-                 * This will return user to the command prompt so add a new line to ensure the command prompt is on the next
-                 * line.
-                 */
-                theConsole.printf(AddPropertiesUser.NEW_LINE);
-                return null;
-            }
+        String temp = theConsole.readLine("(a): ");
+        if (temp == null) {
+            /*
+             * This will return user to the command prompt so add a new line to ensure the command prompt is on the next
+             * line.
+             */
+            theConsole.printf(AddPropertiesUser.NEW_LINE);
+            return null;
+        }
 
-            if (temp.length() > 0) {
-                switch (convertResponse(temp)) {
-                    case MANAGEMENT:
-                        stateValues.setManagement(true);
-                        stateValues.setRealm(DEFAULT_MANAGEMENT_REALM);
-                        return new PropertyFileFinder(theConsole, stateValues);
-                    case APPLICATION:
-                        stateValues.setManagement(false);
-                        stateValues.setRealm(DEFAULT_APPLICATION_REALM);
-                        return new PropertyFileFinder(theConsole, stateValues);
-                    default:
-                        return new ErrorState(theConsole, MESSAGES.invalidChoiceResponse(), this);
-                }
-            } else {
-                stateValues.setManagement(true);
-                stateValues.setRealm(DEFAULT_MANAGEMENT_REALM);
-                return new PropertyFileFinder(theConsole, stateValues);
+        if (temp.length() > 0) {
+            switch (convertResponse(temp)) {
+                case MANAGEMENT:
+                    stateValues.setManagement(true);
+                    stateValues.setRealm(DEFAULT_MANAGEMENT_REALM);
+                    return new PropertyFileFinder(theConsole, stateValues);
+                case APPLICATION:
+                    stateValues.setManagement(false);
+                    stateValues.setRealm(DEFAULT_APPLICATION_REALM);
+                    return new PropertyFileFinder(theConsole, stateValues);
+                default:
+                    return new ErrorState(theConsole, MESSAGES.invalidChoiceResponse(), this);
             }
+        } else {
+            stateValues.setManagement(true);
+            stateValues.setRealm(DEFAULT_MANAGEMENT_REALM);
+            return new PropertyFileFinder(theConsole, stateValues);
         }
     }
 
