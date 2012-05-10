@@ -1,12 +1,10 @@
 package org.jboss.as.web;
 
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.alias.AbstractAliasedResourceDefinition;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -16,7 +14,7 @@ import org.jboss.dmr.ModelType;
  * @author Tomaz Cerar
  * @created 23.2.12 16:54
  */
-public class WebSSODefinition extends AbstractAliasedResourceDefinition {
+public class WebSSODefinition extends SimpleResourceDefinition {
     public static final WebSSODefinition INSTANCE = new WebSSODefinition();
 
     protected static final SimpleAttributeDefinition CACHE_CONTAINER =
@@ -62,13 +60,6 @@ public class WebSSODefinition extends AbstractAliasedResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration sso) {
         for (SimpleAttributeDefinition def : SSO_ATTRIBUTES) {
             sso.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
-        }
-    }
-
-    @Override
-    public void registerAliasAttributes(ManagementResourceRegistration resourceRegistration, PathElement alias) {
-        for (SimpleAttributeDefinition def : SSO_ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(def, aliasHandler, aliasHandler);
         }
     }
 }
