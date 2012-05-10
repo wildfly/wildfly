@@ -1,10 +1,24 @@
 #!/bin/sh
 
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
-DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+# Require BASH 3 or newer
+
+REQUIRED_BASH_VERSION=3.0.0
+
+if [[ $BASH_VERSION < $REQUIRED_BASH_VERSION ]]; then
+  echo "You must use Bash version 3 or newer to run this script"
+  exit
+fi
+
+# Canonicalise the source dir, allow this script to be called anywhere
+DIR=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 
 # DEFINE
+
+# EAP team email subject
+EAP_SUBJECT="\${RELEASEVERSION} of JBoss BOMs released, please merge with http://github.com/jboss-eap/jboss-bom, tag and add to EAP maven repo build"
+# EAP team email To ?
+EAP_EMAIL_TO="pgier@redhat.com kpwiko@redhat.com"
+
 
 
 # SCRIPT
@@ -23,6 +37,16 @@ OPTIONS:
 EOF
 }
 
+notify()
+{
+   echo "***** Performing JBoss BOM release notifications"
+   echo "*** Notifying JBoss EAP team"
+   # send email using /bin/mail
+   subject = eval $EAP_SUBJECT
+   echo "See \$subject :-)" | /usr/bin/env mail -s "$subject" "$EAP_EMAIL_TO"
+
+}
+
 release()
 {
    echo "Releasing JBoss BOMs version $RELEASEVERSION"
@@ -32,7 +56,7 @@ release()
    $DIR/release-utils.sh -r
    $DIR/release-utils.sh -u -o $RELEASEVERSION -n $NEWSNAPSHOTVERSION
    git commit -a -m "Prepare for development of $NEWSNAPSHOTVERSION"
-   echo "***** Now close and release the staged repository at http://repository.jboss.org/nexus"
+   echo "***** JBoss BOMs released"
 }
 
 SNAPSHOTVERSION="UNDEFINED"
@@ -75,4 +99,5 @@ then
 else  
    release
 fi
+
 
