@@ -24,11 +24,9 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.LinkedList;
-import java.util.List;
+
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Properties;
 
 import org.jboss.as.domain.management.security.state.PropertyFileFinder;
@@ -57,9 +55,22 @@ public class AddPropertiesUser {
     public static final String MGMT_USERS_PROPERTIES = "mgmt-users.properties";
     public static final String APPLICATION_USERS_PROPERTIES = "application-users.properties";
     public static final String APPLICATION_ROLES_PROPERTIES = "application-roles.properties";
-    public static final String APPLICATION_USERS_SWITCH = "-a";
-    public static final String DOMAIN_CONFIG_DIR_USERS_SWITCH = "-dc";
-    public static final String SERVER_CONFIG_DIR_USERS_SWITCH = "-sc";
+    public static final String APPLICATION_USERS_OPTION = "-a";
+    public static final String DOMAIN_CONFIG_DIR_USERS_OPTION = "-dc";
+    public static final String SERVER_CONFIG_DIR_USERS_OPTION = "-sc";
+
+    public static final CommandLineOption PASSWORD_OPTION = new CommandLineOption("-p", "--password");
+    public static final CommandLineOption USER_OPTION = new CommandLineOption("-u", "--user");
+    public static final CommandLineOption REALM_OPTION = new CommandLineOption("-r", "--realm");
+    public static final CommandLineOption SILENT_OPTION = new CommandLineOption("-s", "--silent");
+    public static final CommandLineOption ROLE_OPTION = new CommandLineOption("-ro", "--role");
+
+    public static final CommandLineOption[] COMMAND_LINE_OPTIONS = new CommandLineOption[]{
+            PASSWORD_OPTION,
+            USER_OPTION,
+            REALM_OPTION,
+            SILENT_OPTION,
+            ROLE_OPTION};
 
     public static final String NEW_LINE = "\n";
     public static final String SPACE = " ";
@@ -88,19 +99,17 @@ public class AddPropertiesUser {
     }
 
     private AddPropertiesUser(final boolean management, final String user, final char[] password, final String realm) {
-        boolean silent = false;
         StateValues stateValues = new StateValues();
         stateValues.setJbossHome(System.getenv("JBOSS_HOME"));
-        String valueSilent = argsCliProps.getProperty("silent");
 
-        if (valueSilent != null) {
-            silent = Boolean.valueOf(valueSilent);
-        }
+        final Interactiveness howInteractive;
+        boolean silent = Boolean.valueOf(argsCliProps.getProperty(SILENT_OPTION.key()));
         if (silent) {
-            stateValues.setHowInteractive(Interactiveness.SILENT);
+            howInteractive = Interactiveness.SILENT;
         } else {
-            stateValues.setHowInteractive(Interactiveness.NON_INTERACTIVE);
+            howInteractive = Interactiveness.NON_INTERACTIVE;
         }
+        stateValues.setHowInteractive(howInteractive);
 
         // Silent modes still need to be able to output an error on failure.
         theConsole = new JavaConsole();
@@ -111,6 +120,7 @@ public class AddPropertiesUser {
         stateValues.setPassword(password);
         stateValues.setRealm(realm);
         stateValues.setManagement(management);
+        stateValues.setRoles(argsCliProps.getProperty(ROLE_OPTION.key()));
 
         nextState = new PropertyFileFinder(theConsole, stateValues);
     }
@@ -129,57 +139,84 @@ public class AddPropertiesUser {
      */
     public static void main(String[] args) {
 
-        List<String> argsList = new LinkedList<String>();
-        String[] argsArray = null;
-        StringReader stringReader = null;
         boolean management = true;
-
-        int realArgsLength;
 
         if (args.length >= 1) {
 
-            for (String temp : args) {
-                if (temp.startsWith("--")) {
-                    try {
-                        stringReader = new StringReader(temp.substring(2));
-                        argsCliProps.load(stringReader);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } finally {
-                        safeClose(stringReader);
-                    }
-                } else if (temp.equals(APPLICATION_USERS_SWITCH)) {
+            Iterator<String> it = Arrays.asList(args).iterator();
+            String temp;
+            while (it.hasNext()) {
+                temp = it.next();
+                if (DOMAIN_CONFIG_DIR_USERS_OPTION.equals(temp)) {
+                    System.setProperty(DOMAIN_CONFIG_DIR, it.next());
+                } else if (SERVER_CONFIG_DIR_USERS_OPTION.equals(temp)) {
+                    System.setProperty(SERVER_CONFIG_DIR, it.next());
+                } else if (APPLICATION_USERS_OPTION.equals(temp)) {
                     management = false;
-                } else if (temp.indexOf(DOMAIN_CONFIG_DIR_USERS_SWITCH)>=0) {
-                    System.setProperty(DOMAIN_CONFIG_DIR,temp.substring(3));
-                } else if (temp.indexOf(SERVER_CONFIG_DIR)>=0) {
-                    System.setProperty(SERVER_CONFIG_DIR,temp.substring(3));
                 } else {
-                    argsList.add(temp);
+                    CommandLineOption commandLineOption = findCommandLineOption(temp);
+                    if (commandLineOption != null) {
+                        final String value;
+                        if (SILENT_OPTION.equals(commandLineOption)) {
+                            value = Boolean.TRUE.toString();
+                        } else {
+                            value = it.next();
+                        }
+                        argsCliProps.setProperty(commandLineOption.key(), value);
+                    }
                 }
             }
         }
-        argsArray = argsList.toArray(new String[0]);
-        realArgsLength = argsArray.length;
-        if (realArgsLength == 3) {
-            new AddPropertiesUser(management, argsArray[0], argsArray[1].toCharArray(), argsArray[2]).run();
-        } else if (realArgsLength == 2) {
-            new AddPropertiesUser(management, argsArray[0], argsArray[1].toCharArray()).run();
+
+        if (argsCliProps.containsKey(PASSWORD_OPTION.key()) && argsCliProps.containsKey(USER_OPTION.key())) {
+            char[] password = argsCliProps.getProperty(PASSWORD_OPTION.key()).toCharArray();
+            String user = argsCliProps.getProperty(USER_OPTION.key());
+            if (argsCliProps.contains(REALM_OPTION.key())) {
+                new AddPropertiesUser(management, user, password, argsCliProps.getProperty(REALM_OPTION.key())).run();
+            } else {
+                new AddPropertiesUser(management, user, password).run();
+            }
         } else {
             new AddPropertiesUser().run();
         }
     }
 
-    private static void safeClose(Closeable c) {
-        if (c != null) {
-            try {
-                c.close();
-            } catch (IOException e) {
-            }
-        }
-    }
-
     public enum Interactiveness {
         SILENT, NON_INTERACTIVE, INTERACTIVE
+    }
+
+    private static CommandLineOption findCommandLineOption(String option) {
+        for (CommandLineOption commandLineOption : COMMAND_LINE_OPTIONS) {
+            if (commandLineOption.match(option)) {
+                return commandLineOption;
+            }
+        }
+        return null;
+    }
+
+    protected static class CommandLineOption {
+        private String shortOption;
+        private String longOption;
+
+        private CommandLineOption(String shortOption, String longOption) {
+            this.shortOption = shortOption;
+            this.longOption = longOption;
+        }
+
+        public String getShortOption() {
+            return shortOption;
+        }
+
+        public String getLongOption() {
+            return longOption;
+        }
+
+        public String key() {
+            return longOption.substring(2);
+        }
+
+        public boolean match(String option) {
+            return shortOption.equals(option) || longOption.equals(option);
+        }
     }
 }
