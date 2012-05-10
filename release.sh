@@ -57,6 +57,7 @@ release()
    $DIR/release-utils.sh -u -o $RELEASEVERSION -n $NEWSNAPSHOTVERSION
    git commit -a -m "Prepare for development of $NEWSNAPSHOTVERSION"
    echo "***** JBoss BOMs released"
+   notify
 }
 
 SNAPSHOTVERSION="UNDEFINED"

@@ -36,7 +36,7 @@
         <version.org.jboss.arquillian.ajocado>1.0.0.CR2</version.org.jboss.arquillian.ajocado>
         <version.org.jboss.as.arquillian.container>7.1.1.Final</version.org.jboss.as.arquillian.container>
         <version.org.jboss.jbossts.jbossjts>4.16.4.Final</version.org.jboss.jbossts.jbossjts>
-        <version.org.jboss.errai>2.0.CR2</version.org.jboss.errai>
+        <version.org.jboss.errai>2.0.Final</version.org.jboss.errai>
 
         <!-- Version of Hibernate projects -->
         <version.org.hibernate>4.1.1.Final</version.org.hibernate>
