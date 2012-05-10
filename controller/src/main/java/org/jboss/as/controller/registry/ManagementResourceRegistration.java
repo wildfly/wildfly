@@ -393,7 +393,22 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      */
     void unregisterProxyController(PathElement address);
 
-    //String getValueString();
+    /**
+     * Register an alias registration to another part of the model
+     *
+     * @param address the child of this registry that is an alias
+     * @param aliasEntry the target model
+     * @deprecated Might change before AS 7.2.0
+     */
+    @Deprecated
+    void registerAlias(PathElement address, AliasEntry aliasEntry);
+
+    /**
+     * Unregister an alias
+     *
+     * @param address the child of this registry that is an alias
+     */
+    void unregisterAlias(PathElement address);
 
     /**
      * A factory for creating a new, root model node registration.

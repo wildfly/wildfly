@@ -55,7 +55,13 @@ public class GenericSubsystemDescribeHandler implements OperationStepHandler, De
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final ModelNode address = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement()).toModelNode();
+        final ModelNode address;
+        final PathAddress pa = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)));
+        if (pa.size() > 0) {
+            address = new ModelNode().add(pa.getLastElement().getKey(), pa.getLastElement().getValue());
+        } else {
+            address = new ModelNode().setEmptyList();
+        }
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         final ModelNode result = context.getResult();
         describe(resource, address, result, context.getResourceRegistration());
@@ -63,7 +69,7 @@ public class GenericSubsystemDescribeHandler implements OperationStepHandler, De
     }
 
     protected void describe(final Resource resource, final ModelNode address, ModelNode result, final ImmutableManagementResourceRegistration registration) {
-        if(resource == null || registration.isRemote() || registration.isRuntimeOnly() || resource.isProxy() || resource.isRuntime()) {
+        if(resource == null || registration.isRemote() || registration.isRuntimeOnly() || resource.isProxy() || resource.isRuntime() || registration.isAlias()) {
             return;
         }
         final Set<PathElement> children = registration.getChildAddresses(PathAddress.EMPTY_ADDRESS);

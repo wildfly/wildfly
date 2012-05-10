@@ -2494,4 +2494,20 @@ public interface ControllerMessages {
 
     @Message(id = 14867, value = "Failed to delete file %s")
     IllegalStateException couldNotDeleteFile(File file);
+
+    @Message(id = 14868, value = "An alias is already registered at location '%s'")
+    IllegalArgumentException aliasAlreadyRegistered(String location);
+
+    @Message(id = 14869, value = "Expected an address under '%s', was '%s'")
+    IllegalArgumentException badAliasConvertAddress(PathAddress aliasAddress, PathAddress actual);
+
+    @Message(id = 14870, value = "Alias target address not found: %s")
+    IllegalArgumentException aliasTargetResourceRegistrationNotFound(PathAddress targetAddress);
+
+    @Message(id = 14871, value = "No operation called '%s' found for alias address '%s' which maps to '%s'")
+    IllegalArgumentException aliasStepHandlerOperationNotFound(String name, PathAddress aliasAddress, PathAddress targetAddress);
+
+
+    @Message(id = 14872, value = "Resource registration is not an alias")
+    IllegalStateException resourceRegistrationIsNotAnAlias();
 }

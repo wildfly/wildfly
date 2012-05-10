@@ -22,10 +22,11 @@
 
 package org.jboss.as.controller.registry;
 
+
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
-import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
@@ -36,7 +37,6 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.ProxyStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
@@ -44,42 +44,55 @@ import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * An alias registration that maps to another part of the model
+ *
+ * @author Kabir Khan
  */
-final class ProxyControllerRegistration extends AbstractResourceRegistration implements DescriptionProvider {
+final class AliasResourceRegistration extends AbstractResourceRegistration implements DescriptionProvider {
 
-    private final ProxyController proxyController;
-    private final OperationEntry operationEntry;
+    private final AliasEntry aliasEntry;
+    private final AliasStepHandler handler;
+    private final AbstractResourceRegistration target;
 
-    ProxyControllerRegistration(final String valueString, final NodeSubregistry parent, final ProxyController proxyController) {
+    AliasResourceRegistration(final String valueString, final NodeSubregistry parent, final AliasEntry aliasEntry, final AbstractResourceRegistration target) {
         super(valueString, parent);
-        this.operationEntry = new OperationEntry(new ProxyStepHandler(proxyController), this, false, EntryType.PRIVATE);
-        this.proxyController = proxyController;
+        this.aliasEntry = aliasEntry;
+        this.handler = new AliasStepHandler(aliasEntry);
+        this.target = target;
     }
 
     @Override
     OperationEntry getOperationEntry(final ListIterator<PathElement> iterator, final String operationName, OperationEntry inherited) {
-        return operationEntry;
+        OperationEntry targetOp = target.getOperationEntry(iterator, operationName, inherited);
+        if (targetOp == null) {
+            return null;
+        }
+        return new OperationEntry(handler, targetOp.getDescriptionProvider(), targetOp.isInherited(), targetOp.getType(), targetOp.getFlags());
     }
 
     @Override
     OperationEntry getInheritableOperationEntry(String operationName) {
-        return null;
+        return target.getInheritableOperationEntry(operationName);
     }
 
     @Override
     public boolean isRuntimeOnly() {
-        return true;
+        //TODO use target resource?
+        return target.isRuntimeOnly();
     }
 
     @Override
     public void setRuntimeOnly(final boolean runtimeOnly) {
-
+        throw alreadyRegistered();
     }
-
 
     @Override
     public boolean isRemote() {
+        return target.isRemote();
+    }
+
+    @Override
+    public boolean isAlias() {
         return true;
     }
 
@@ -115,12 +128,11 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
 
     @Override
     public void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler, boolean inherited) {
-        throw alreadyRegistered();
     }
 
     @Override
     public void unregisterOperationHandler(final String operationName) {
-
+        throw alreadyRegistered();
     }
 
     @Override
@@ -195,58 +207,59 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
 
     @Override
     void getOperationDescriptions(final ListIterator<PathElement> iterator, final Map<String, OperationEntry> providers, final boolean inherited) {
-
+        Map<String, OperationEntry> temp = new HashMap<String, OperationEntry>();
+        target.getOperationDescriptions(iterator, temp, inherited);
+        for (Map.Entry<String, OperationEntry> entry : providers.entrySet()) {
+            providers.put(entry.getKey(),
+                    new OperationEntry(handler, entry.getValue().getDescriptionProvider(), entry.getValue().isInherited(), entry.getValue().getType(), entry.getValue().getFlags()));
+        }
     }
 
     @Override
     void getInheritedOperationEntries(final Map<String, OperationEntry> providers) {
+        target.getInheritedOperationEntries(providers);
     }
 
     @Override
     DescriptionProvider getModelDescription(final ListIterator<PathElement> iterator) {
-        return null;
+        return target.getModelDescription(iterator);
     }
 
     @Override
     Set<String> getAttributeNames(final ListIterator<PathElement> iterator) {
-        return Collections.emptySet();
+        return target.getAttributeNames(iterator);
     }
 
     @Override
     Set<String> getChildNames(final ListIterator<PathElement> iterator) {
-        return Collections.emptySet();
+        return target.getChildNames(iterator);
     }
 
     @Override
     Set<PathElement> getChildAddresses(final ListIterator<PathElement> iterator) {
-        return Collections.emptySet();
+        return target.getChildAddresses(iterator);
     }
 
     @Override
     AttributeAccess getAttributeAccess(final ListIterator<PathElement> address, final String attributeName) {
-        return null;
+        return target.getAttributeAccess(address, attributeName);
     }
 
     @Override
     ProxyController getProxyController(ListIterator<PathElement> iterator) {
-        return proxyController;
+        return target.getProxyController(iterator);
     }
 
     @Override
     void getProxyControllers(ListIterator<PathElement> iterator, Set<ProxyController> controllers) {
-        controllers.add(proxyController);
     }
 
     @Override
     AbstractResourceRegistration getResourceRegistration(ListIterator<PathElement> iterator) {
-        // BES 2011/06/14 I do not see why the IAE makes sense, so...
-//        if (!iterator.hasNext()) {
-//            return this;
-//        }
-//        throw new IllegalArgumentException("Can't get child registrations of a proxy");
-        while (iterator.hasNext())
-            iterator.next();
-        return this;
+        if (!iterator.hasNext()) {
+            return this;
+        }
+        return target.getResourceRegistration(iterator);
     }
 
     @Override
@@ -256,16 +269,16 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     private IllegalArgumentException alreadyRegistered() {
-        return MESSAGES.proxyHandlerAlreadyRegistered(getLocationString());
+        return MESSAGES.aliasAlreadyRegistered(getLocationString());
     }
 
     @Override
     public AliasEntry getAliasEntry() {
-        return null;
+        return aliasEntry;
     }
 
     @Override
     protected void registerAlias(PathElement address, AliasEntry alias, AbstractResourceRegistration target) {
-        throw MESSAGES.proxyHandlerAlreadyRegistered(getLocationString());
+        throw alreadyRegistered();
     }
 }

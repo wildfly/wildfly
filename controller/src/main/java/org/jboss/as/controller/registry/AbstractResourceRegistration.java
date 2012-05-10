@@ -65,6 +65,10 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
         this.parent = parent;
     }
 
+    NodeSubregistry getParent() {
+        return parent;
+    }
+
     /** {@inheritDoc} */
     @Override
     public final ManagementResourceRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
@@ -420,11 +424,55 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
         return result;
     }
 
-    private static class RootInvocation {
-        private final AbstractResourceRegistration root;
-        private final PathAddress pathAddress;
+    protected AbstractResourceRegistration getRootResourceRegistration() {
+        if (parent == null) {
+            return this;
+        }
+        RootInvocation invocation = getRootInvocation();
+        return invocation.root;
 
-        private RootInvocation(AbstractResourceRegistration root, PathAddress pathAddress) {
+    }
+
+    @Override
+    public void registerAlias(PathElement address, AliasEntry alias) {
+        RootInvocation rootInvocation = parent == null ? null : getRootInvocation();
+        AbstractResourceRegistration root = rootInvocation == null ? this : rootInvocation.root;
+        PathAddress myaddr = rootInvocation == null ? PathAddress.EMPTY_ADDRESS : rootInvocation.pathAddress;
+
+        assert alias.getTarget() instanceof AbstractResourceRegistration : "Unknown alias type";
+
+        AbstractResourceRegistration tgtReg = (AbstractResourceRegistration)alias.getTarget();
+        PathAddress targetAddress = tgtReg.parent == null ? PathAddress.EMPTY_ADDRESS : tgtReg.getRootInvocation().pathAddress;
+        alias.setAddresses(targetAddress, myaddr.append(address));
+        AbstractResourceRegistration target = (AbstractResourceRegistration)root.getSubModel(alias.getTargetAddress());
+        if (target == null) {
+            throw ControllerMessages.MESSAGES.aliasTargetResourceRegistrationNotFound(alias.getTargetAddress());
+        }
+
+        registerAlias(address, alias, target);
+    }
+
+    protected abstract void registerAlias(PathElement address, AliasEntry alias, AbstractResourceRegistration target);
+
+    @Override
+    public boolean isAlias() {
+        //Overridden by AliasResourceRegistration
+        return false;
+    }
+
+    @Override
+    public AliasEntry getAliasEntry() {
+        //Overridden by AliasResourceRegistration
+        throw ControllerMessages.MESSAGES.resourceRegistrationIsNotAnAlias();
+    }
+
+
+
+    private static class RootInvocation {
+        final AbstractResourceRegistration root;
+        final PathAddress pathAddress;
+
+        RootInvocation(AbstractResourceRegistration root, PathAddress pathAddress) {
             this.root = root;
             this.pathAddress = pathAddress;
         }

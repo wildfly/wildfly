@@ -62,6 +62,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ProfileParsingCompletionHandler;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemXmlWriterRegistry;
+import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -900,6 +901,28 @@ public class ExtensionRegistry {
         public void unregisterProxyController(PathElement address) {
             deployments.unregisterProxyController(address);
             subdeployments.unregisterProxyController(address);
+        }
+
+        @Override
+        public void registerAlias(PathElement address, AliasEntry alias) {
+            deployments.registerAlias(address, alias);
+            subdeployments.registerAlias(address, alias);
+        }
+
+        @Override
+        public void unregisterAlias(PathElement address) {
+            deployments.unregisterAlias(address);
+            subdeployments.unregisterAlias(address);
+        }
+
+        @Override
+        public AliasEntry getAliasEntry() {
+            return deployments.getAliasEntry();
+        }
+
+        @Override
+        public boolean isAlias() {
+            return deployments.isAlias();
         }
     }
 }

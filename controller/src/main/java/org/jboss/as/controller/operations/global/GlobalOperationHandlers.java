@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALIASES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INHERITED;
@@ -72,6 +73,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -134,10 +136,12 @@ public class GlobalOperationHandlers {
             validator.registerValidator(ATTRIBUTES_ONLY, new ModelTypeValidator(ModelType.BOOLEAN, true));
         }
 
+
         @Override
         public void doExecute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
             validator.validate(operation);
+
 
             final String opName = operation.require(OP).asString();
             final ModelNode opAddr = operation.get(OP_ADDR);
@@ -146,6 +150,7 @@ public class GlobalOperationHandlers {
             final boolean recursive = recursiveDepth > 0 ? true : operation.get(RECURSIVE).asBoolean(false);
             final boolean queryRuntime = operation.get(INCLUDE_RUNTIME).asBoolean(false);
             final boolean proxies = operation.get(PROXIES).asBoolean(false);
+            final boolean aliases = operation.get(INCLUDE_ALIASES).asBoolean(false);
             final boolean defaults = operation.get(INCLUDE_DEFAULTS).asBoolean(true);
             final boolean attributesOnly = operation.get(ATTRIBUTES_ONLY).asBoolean(false);
 
@@ -170,7 +175,8 @@ public class GlobalOperationHandlers {
 
             // Get the model for this resource.
             final Resource resource = nullSafeReadResource(context, registry);
-            final Map<String, Set<String>> childrenByType = registry != null ? getChildAddresses(registry, resource, null) : Collections.<String, Set<String>>emptyMap();
+
+            final Map<String, Set<String>> childrenByType = registry != null ? getChildAddresses(context, address, registry, resource, null) : Collections.<String, Set<String>>emptyMap();
             final ModelNode model = resource.getModel();
 
             if (model.isDefined()) {
@@ -200,7 +206,6 @@ public class GlobalOperationHandlers {
                 }
             }
 
-
             if (!attributesOnly) {
                 // Next, process child resources
                 for (Map.Entry<String, Set<String>> entry : childrenByType.entrySet()) {
@@ -211,7 +216,6 @@ public class GlobalOperationHandlers {
                         directAttributes.put(childType, new ModelNode());
                     } else {
                         for (String child : children) {
-                            boolean storeDirect = !recursive;
                             if (recursive) {
                                 PathElement childPE = PathElement.pathElement(childType, child);
                                 PathAddress relativeAddr = PathAddress.pathAddress(childPE);
@@ -222,7 +226,11 @@ public class GlobalOperationHandlers {
                                 // Decide if we want to invoke on this child resource
                                 boolean proxy = childReg.isRemote();
                                 boolean runtimeResource = childReg.isRuntimeOnly();
-                                if (!runtimeResource || (queryRuntime && !proxy)  || (proxies && proxy)) {
+                                boolean getChild = !runtimeResource || (queryRuntime && !proxy)  || (proxies && proxy);
+                                if (!aliases && childReg.isAlias()) {
+                                    getChild = false;
+                                }
+                                if (getChild) {
                                     final int newDepth = recursiveDepth > 0 ? recursiveDepth - 1 : 0;
                                     // Add a step to read the child resource
                                     ModelNode rrOp = new ModelNode();
@@ -232,16 +240,14 @@ public class GlobalOperationHandlers {
                                     rrOp.get(RECURSIVE_DEPTH).set(newDepth);
                                     rrOp.get(PROXIES).set(proxies);
                                     rrOp.get(INCLUDE_RUNTIME).set(queryRuntime);
+                                    rrOp.get(INCLUDE_ALIASES).set(aliases);
                                     ModelNode rrRsp = new ModelNode();
                                     childResources.put(childPE, rrRsp);
 
                                     OperationStepHandler rrHandler = childReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, opName);
                                     context.addStep(rrRsp, rrOp, rrHandler, OperationContext.Stage.IMMEDIATE);
-                                } else {
-                                    storeDirect = true;
                                 }
-                            }
-                            if (storeDirect) {
+                            } else {
                                 ModelNode childMap = directChildren.get(childType);
                                 if (childMap == null) {
                                     childMap = new ModelNode();
@@ -558,10 +564,11 @@ public class GlobalOperationHandlers {
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
             validator.validate(operation);
+            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             final String childType = operation.require(CHILD_TYPE).asString();
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS, false);
             ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
-            Map<String, Set<String>> childAddresses = getChildAddresses(registry, resource, childType);
+            Map<String, Set<String>> childAddresses = getChildAddresses(context, address, registry, resource, childType);
             Set<String> childNames = childAddresses.get(childType);
             if (childNames == null) {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownChildType(childType)));
@@ -598,13 +605,14 @@ public class GlobalOperationHandlers {
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
             validator.validate(operation);
+            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             final String childType = operation.require(CHILD_TYPE).asString();
 
             final Map<PathElement, ModelNode> resources = new HashMap<PathElement, ModelNode>();
 
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS, false);
             final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
-            Map<String, Set<String>> childAddresses = getChildAddresses(registry, resource, childType);
+            Map<String, Set<String>> childAddresses = getChildAddresses(context, address, registry, resource, childType);
             Set<String> childNames = childAddresses.get(childType);
             if (childNames == null) {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownChildType(childType)));
@@ -616,7 +624,6 @@ public class GlobalOperationHandlers {
             final ReadChildrenResourcesAssemblyHandler assemblyHandler = new ReadChildrenResourcesAssemblyHandler(resources);
             context.addStep(assemblyHandler, OperationContext.Stage.IMMEDIATE);
 
-            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             for (final String key : childNames) {
                 final PathElement childPath = PathElement.pathElement(childType, key);
                 final PathAddress childAddress = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(childType, key));
@@ -832,10 +839,16 @@ public class GlobalOperationHandlers {
             final boolean recursive = recursiveDepth > 0 ? true : operation.get(RECURSIVE).asBoolean(false);
             final boolean proxies = operation.get(PROXIES).asBoolean(false);
             final boolean ops = operation.get(OPERATIONS).asBoolean(false);
+            final boolean aliases = operation.get(INCLUDE_ALIASES).asBoolean(false);
             final boolean inheritedOps = operation.get(INHERITED).asBoolean(true);
 
+            //Get hold of the real registry if it was an alias
             final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
-            final DescriptionProvider descriptionProvider = registry.getModelDescription(PathAddress.EMPTY_ADDRESS);
+
+            AliasEntry aliasEntry = registry.getAliasEntry();
+            final ImmutableManagementResourceRegistration realRegistry = aliasEntry == null ? registry : context.getRootResourceRegistration().getSubModel(aliasEntry.convertToTargetAddress(PathAddress.pathAddress(opAddr)));
+
+            final DescriptionProvider descriptionProvider = realRegistry.getModelDescription(PathAddress.EMPTY_ADDRESS);
             final Locale locale = getLocale(context, operation);
 
             final ModelNode nodeDescription = descriptionProvider.getModelDescription(locale);
@@ -850,7 +863,7 @@ public class GlobalOperationHandlers {
             context.addStep(assemblyHandler, OperationContext.Stage.IMMEDIATE);
 
             if (ops) {
-                for (final Map.Entry<String, OperationEntry> entry : registry.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, inheritedOps).entrySet()) {
+                for (final Map.Entry<String, OperationEntry> entry : realRegistry.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, inheritedOps).entrySet()) {
                     if (entry.getValue().getType() == OperationEntry.EntryType.PUBLIC) {
                         if ( context.getProcessType() == ProcessType.DOMAIN_SERVER ? entry.getValue().getFlags().contains(Flag.RUNTIME_ONLY) : true ) {
                             final DescriptionProvider provider = entry.getValue().getDescriptionProvider();
@@ -861,7 +874,7 @@ public class GlobalOperationHandlers {
             }
             if (nodeDescription.hasDefined(ATTRIBUTES)) {
                 for (final String attr : nodeDescription.require(ATTRIBUTES).keys()) {
-                    final AttributeAccess access = registry.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attr);
+                    final AttributeAccess access = realRegistry.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attr);
                     // If there is metadata for an attribute but no AttributeAccess, assume RO. Can't
                     // be writable without a registered handler. This opens the possibility that out-of-date metadata
                     // for attribute "foo" can lead to a read of non-existent-in-model "foo" with
@@ -893,14 +906,18 @@ public class GlobalOperationHandlers {
             }
 
             if (recursive) {
-                for (final PathElement element : registry.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
+                for (final PathElement element : realRegistry.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
                     PathAddress relativeAddr = PathAddress.pathAddress(element);
-                    ImmutableManagementResourceRegistration childReg = registry.getSubModel(relativeAddr);
+                    ImmutableManagementResourceRegistration childReg = realRegistry.getSubModel(relativeAddr);
 
                     boolean readChild = true;
                     if (childReg.isRemote() && !proxies) {
                         readChild = false;
                     }
+                    if (childReg.isAlias() && !aliases) {
+                        readChild = false;
+                    }
+
                     if (readChild) {
                         final int newDepth = recursiveDepth > 0 ? recursiveDepth - 1 : 0;
                         ModelNode rrOp = new ModelNode();
@@ -916,6 +933,7 @@ public class GlobalOperationHandlers {
                         rrOp.get(OPERATIONS).set(ops);
                         rrOp.get(INHERITED).set(inheritedOps);
                         rrOp.get(LOCALE).set(operation.get(LOCALE));
+                        rrOp.get(INCLUDE_ALIASES).set(aliases);
                         ModelNode rrRsp = new ModelNode();
                         childResources.put(element, rrRsp);
 
@@ -1062,7 +1080,7 @@ public class GlobalOperationHandlers {
                         // At least for proxies it should use the proxy operation handler
                         throw new IllegalStateException();
                     }
-                    final Map<String, Set<String>> resolved = getChildAddresses(registration, resource, childType);
+                    final Map<String, Set<String>> resolved = getChildAddresses(context, address, registration, resource, childType);
                     for (Map.Entry<String, Set<String>> entry : resolved.entrySet()) {
                         final String key = entry.getKey();
                         final Set<String> children = entry.getValue();
@@ -1173,13 +1191,14 @@ public class GlobalOperationHandlers {
     /**
      * Gets the addresses of the child resources under the given resource.
      *
+     * @param context        the operation context
      * @param registry       registry entry representing the resource
      * @param resource       the current resource
      * @param validChildType a single child type to which the results should be limited. If {@code null} the result
      *                       should include all child types
      * @return map where the keys are the child types and the values are a set of child names associated with a type
      */
-    private static Map<String, Set<String>> getChildAddresses(final ImmutableManagementResourceRegistration registry, Resource resource, final String validChildType) {
+    private static Map<String, Set<String>> getChildAddresses(final OperationContext context, final PathAddress addr, final ImmutableManagementResourceRegistration registry, Resource resource, final String validChildType) {
 
         Map<String, Set<String>> result = new HashMap<String, Set<String>>();
         Set<PathElement> elements = registry.getChildAddresses(PathAddress.EMPTY_ADDRESS);
@@ -1188,13 +1207,27 @@ public class GlobalOperationHandlers {
             if (validChildType != null && !validChildType.equals(childType)) {
                 continue;
             }
+            final ImmutableManagementResourceRegistration childRegistration = registry.getSubModel(PathAddress.pathAddress(element));
+            final AliasEntry aliasEntry = childRegistration.getAliasEntry();
+
             Set<String> set = result.get(childType);
             if (set == null) {
                 set = new LinkedHashSet<String>();
                 result.put(childType, set);
+            }
+
+            if (aliasEntry == null) {
                 if (resource.hasChildren(childType)) {
                     set.addAll(resource.getChildrenNames(childType));
                 }
+            } else {
+                    //PathAddress target = aliasEntry.getTargetAddress();
+                    PathAddress target = aliasEntry.convertToTargetAddress(addr.append(element));
+                    PathAddress targetParent = target.subAddress(0, target.size() - 1);
+                    Resource parentResource =  context.readResourceFromRoot(targetParent);
+                    if (parentResource.hasChildren(target.getLastElement().getKey())) {
+                        set.add(element.getValue());
+                    }
             }
             if (!element.isWildcard()) {
                 ImmutableManagementResourceRegistration childReg = registry.getSubModel(PathAddress.pathAddress(element));
