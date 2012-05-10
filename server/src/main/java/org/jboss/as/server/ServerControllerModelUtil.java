@@ -61,6 +61,7 @@ import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
+import org.jboss.as.domain.management.connections.database.DatabaseConnectionResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.domain.management.security.WhoAmIOperation;
@@ -323,6 +324,7 @@ public class ServerControllerModelUtil {
 
         management.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
         management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
+        management.registerSubModel(DatabaseConnectionResourceDefinition.INSTANCE);
         management.registerSubModel(NativeManagementResourceDefinition.INSTANCE);
         management.registerSubModel(NativeRemotingManagementResourceDefinition.INSTANCE);
         management.registerSubModel(HttpManagementResourceDefinition.INSTANCE);
