@@ -295,7 +295,7 @@ public interface ServerLogger extends BasicLogger {
     void cannotFindExtensionListEntry(ExtensionListEntry entry, ResourceRoot resourceRoot);
 
     @LogMessage(level = WARN)
-    @Message(id = 15898, value = "A server name configuration was provided both via system propert %s ('%s') and via the xml configuration ('%s'). The xml configuration valid will be used.")
+    @Message(id = 15898, value = "A server name configuration was provided both via system property %s ('%s') and via the xml configuration ('%s'). The xml configuration value will be used.")
     void duplicateServerNameConfiguration(String systemProperty, String rawServerProp, String processName);
 
     /**
