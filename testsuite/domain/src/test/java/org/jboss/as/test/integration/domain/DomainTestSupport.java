@@ -236,9 +236,8 @@ public class DomainTestSupport {
         config.setModulePath(fullPath);
     }
 
-    private final String domainConfig;
-    private final String masterConfig;
-    private final String slaveConfig;
+    private final JBossAsManagedConfiguration masterConfiguration;
+    private final JBossAsManagedConfiguration slaveConfiguration;
     private final DomainLifecycleUtil domainMasterLifecycleUtil;
     private final DomainLifecycleUtil domainSlaveLifecycleUtil;
     private final DomainControllerClientConfig sharedClientConfig;
@@ -251,24 +250,30 @@ public class DomainTestSupport {
 
     public DomainTestSupport(final String testClass, final String domainConfig, final String masterConfig, final String slaveConfig) throws Exception {
         this.testClass = testClass;
-        this.domainConfig = domainConfig;
-        this.masterConfig = masterConfig;
-        this.slaveConfig = slaveConfig;
         this.sharedClientConfig = DomainControllerClientConfig.create();
 
-        final JBossAsManagedConfiguration master = getMasterConfiguration(domainConfig, masterConfig, testClass);
-        domainMasterLifecycleUtil = new DomainLifecycleUtil(master, sharedClientConfig);
+        masterConfiguration = getMasterConfiguration(domainConfig, masterConfig, testClass);
+        domainMasterLifecycleUtil = new DomainLifecycleUtil(masterConfiguration, sharedClientConfig);
 
         if (slaveConfig != null) {
-            final JBossAsManagedConfiguration slave = getSlaveConfiguration(slaveConfig, testClass);
-            domainSlaveLifecycleUtil = new DomainLifecycleUtil(slave, sharedClientConfig);
+            slaveConfiguration = getSlaveConfiguration(slaveConfig, testClass);
+            domainSlaveLifecycleUtil = new DomainLifecycleUtil(slaveConfiguration, sharedClientConfig);
         } else {
+            slaveConfiguration = null;
             domainSlaveLifecycleUtil = null;
         }
     }
 
+    public JBossAsManagedConfiguration getDomainMasterConfiguration() {
+        return masterConfiguration;
+    }
+
     public DomainLifecycleUtil getDomainMasterLifecycleUtil() {
         return domainMasterLifecycleUtil;
+    }
+
+    public JBossAsManagedConfiguration getDomainSlaveConfiguration() {
+        return slaveConfiguration;
     }
 
     public DomainLifecycleUtil getDomainSlaveLifecycleUtil() {
