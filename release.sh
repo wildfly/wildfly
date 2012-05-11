@@ -42,7 +42,7 @@ notify()
    echo "***** Performing JBoss BOM release notifications"
    echo "*** Notifying JBoss EAP team"
    # send email using /bin/mail
-   subject = eval $EAP_SUBJECT
+   subject=eval $EAP_SUBJECT
    echo "See \$subject :-)" | /usr/bin/env mail -s "$subject" "$EAP_EMAIL_TO"
 
 }
