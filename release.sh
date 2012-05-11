@@ -56,6 +56,7 @@ release()
    $DIR/release-utils.sh -r
    $DIR/release-utils.sh -u -o $RELEASEVERSION -n $NEWSNAPSHOTVERSION
    git commit -a -m "Prepare for development of $NEWSNAPSHOTVERSION"
+   git push upstrem HEAD --tags
    echo "***** JBoss BOMs released"
    notify
 }
