@@ -30,7 +30,14 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.vfs.VirtualFile;
 
-/**
+/** *
+ * This module is using message IDs in the range 18000-18099 and 18200-18399.
+ * <p/>
+ * This file is using the subset 18000-18199 for non-logger messages.
+ * <p/>
+ * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
+ * list of currently reserved JBAS message id blocks.
+ * <p/>
  * Date: 05.11.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -343,5 +350,16 @@ public interface WebMessages {
      */
     @Message(id = 18098, value = "Unknown metric %s")
     String unknownMetric(Object metric);
+
+    /**
+     * A message indicating the {@link org.jboss.as.web.session.AbstractSessionManager#processExpirationPassivation()}
+     * failed.
+     *
+     * @param message the message from the cause
+     *
+     * @return the message.
+     */
+    @Message(id = 18099, value = "processExpirationPassivation(): failed with exception: %s")
+    String processExpirationPassivationException(String message);
 
 }

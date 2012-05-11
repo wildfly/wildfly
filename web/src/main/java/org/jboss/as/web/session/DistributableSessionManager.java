@@ -1308,7 +1308,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                 }
             }
         } catch (Exception ex) {
-            log.error("processExpirationPassivation(): failed with exception: " + ex, ex);
+            log.error(MESSAGES.processExpirationPassivationException(ex.getLocalizedMessage()), ex);
         } finally {
             SessionInvalidationTracker.resume();
         }
