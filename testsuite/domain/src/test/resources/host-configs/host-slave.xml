@@ -90,7 +90,7 @@
        </jvm>
  	</jvms>
 
-    <servers>
+    <servers directory-grouping="by-type">
         <server name="main-three" group="main-server-group">
             <socket-bindings socket-binding-group="standard-sockets" port-offset="350"/>
             <jvm name="default"/>

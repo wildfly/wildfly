@@ -22,6 +22,9 @@
 
 package org.jboss.as.host.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
@@ -35,6 +38,23 @@ public enum DirectoryGrouping {
 
     BY_TYPE("by-type"),
     BY_SERVER("by-server");
+
+
+
+    private static final Map<String, DirectoryGrouping> MAP;
+
+    static {
+        final Map<String, DirectoryGrouping> map = new HashMap<String, DirectoryGrouping>();
+        for (DirectoryGrouping directoryGrouping : values()) {
+            map.put(directoryGrouping.localName, directoryGrouping);
+        }
+        MAP = map;
+    }
+
+    public static DirectoryGrouping forName(String localName) {
+        final DirectoryGrouping directoryGrouping = localName != null ? MAP.get(localName.toLowerCase()) : null;
+        return directoryGrouping == null ? DirectoryGrouping.valueOf(localName.toUpperCase()) : directoryGrouping;
+    }
 
     private final String localName;
 
@@ -77,7 +97,7 @@ public enum DirectoryGrouping {
      */
     public static DirectoryGrouping fromModel(final ModelNode model) {
         if (model.hasDefined(ModelDescriptionConstants.DIRECTORY_GROUPING)) {
-            return DirectoryGrouping.valueOf(model.get(ModelDescriptionConstants.DIRECTORY_GROUPING).asString());
+            return DirectoryGrouping.forName(model.get(ModelDescriptionConstants.DIRECTORY_GROUPING).asString());
         }
         return defaultValue();
     }
