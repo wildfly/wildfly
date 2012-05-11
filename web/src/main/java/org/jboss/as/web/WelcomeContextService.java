@@ -95,6 +95,10 @@ class WelcomeContextService implements Service<Context> {
                 context.addServletMapping("/", "default");
                 context.addMimeMapping("html", "text/html");
                 context.addMimeMapping("jpg", "image/jpeg");
+                context.addMimeMapping("png", "image/png");
+                context.addMimeMapping("gif", "image/gif");
+                context.addMimeMapping("css", "text/css");
+                context.addMimeMapping("js", "text/javascript");
 
                 // Add the WelcomeContextConsoleServlet
                 WelcomeContextConsoleServlet wccs = new WelcomeContextConsoleServlet(httpManagement);
