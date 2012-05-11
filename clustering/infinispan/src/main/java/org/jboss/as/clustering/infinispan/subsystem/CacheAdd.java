@@ -113,7 +113,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                 try {
                     input.close();
                 } catch (IOException e) {
-                    log.warn(e.getMessage(), e);
+                    log.warn(e.getLocalizedMessage(), e);
                 }
             }
         } catch (IOException e) {
