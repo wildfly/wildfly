@@ -101,6 +101,7 @@ import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.LocalEjbReceiver;
 import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
+import org.jboss.as.ejb3.util.ServiceLookupValue;
 import org.jboss.as.jacorb.rmi.DelegatingStubFactoryFactory;
 import org.jboss.as.jacorb.service.CorbaPOAService;
 import org.jboss.as.naming.InitialContext;
@@ -341,22 +342,22 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (!appclient) {
             // get the node name
             final String nodeName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
+
+            final ServiceLookupValue<Endpoint> endpointValue = new ServiceLookupValue<Endpoint>(context.getServiceRegistry(false), RemotingServices.SUBSYSTEM_ENDPOINT);
+            final ServiceLookupValue<EJBRemoteConnectorService> ejbRemoteConnectorServiceValue = new ServiceLookupValue<EJBRemoteConnectorService>(context.getServiceRegistry(false), EJBRemoteConnectorService.SERVICE_NAME);
+
             //the default spec compliant EJB receiver
-            final LocalEjbReceiver byValueLocalEjbReceiver = new LocalEjbReceiver(nodeName, false);
+            final LocalEjbReceiver byValueLocalEjbReceiver = new LocalEjbReceiver(nodeName, false, endpointValue, ejbRemoteConnectorServiceValue);
             newControllers.add(serviceTarget.addService(LocalEjbReceiver.BY_VALUE_SERVICE_NAME, byValueLocalEjbReceiver)
                     .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, byValueLocalEjbReceiver.getDeploymentRepository())
                     .addDependency(ClusteredBackingCacheEntryStoreSourceService.CLIENT_MAPPING_REGISTRY_COLLECTOR_SERVICE_NAME, RegistryCollector.class, byValueLocalEjbReceiver.getClusterRegistryCollectorInjector())
-                    .addDependency(ServiceBuilder.DependencyType.OPTIONAL, RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, byValueLocalEjbReceiver.getEndpointInjector())
-                    .addDependency(ServiceBuilder.DependencyType.OPTIONAL, EJBRemoteConnectorService.SERVICE_NAME, EJBRemoteConnectorService.class, byValueLocalEjbReceiver.getEJBRemoteConnectorServiceInjector())
                     .install());
 
             //the receiver for invocations that allow pass by reference
-            final LocalEjbReceiver byReferenceLocalEjbReceiver = new LocalEjbReceiver(nodeName, true);
+            final LocalEjbReceiver byReferenceLocalEjbReceiver = new LocalEjbReceiver(nodeName, true, endpointValue, ejbRemoteConnectorServiceValue);
             newControllers.add(serviceTarget.addService(LocalEjbReceiver.BY_REFERENCE_SERVICE_NAME, byReferenceLocalEjbReceiver)
                     .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, byReferenceLocalEjbReceiver.getDeploymentRepository())
                     .addDependency(ClusteredBackingCacheEntryStoreSourceService.CLIENT_MAPPING_REGISTRY_COLLECTOR_SERVICE_NAME, RegistryCollector.class, byReferenceLocalEjbReceiver.getClusterRegistryCollectorInjector())
-                    .addDependency(ServiceBuilder.DependencyType.OPTIONAL, RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, byReferenceLocalEjbReceiver.getEndpointInjector())
-                    .addDependency(ServiceBuilder.DependencyType.OPTIONAL, EJBRemoteConnectorService.SERVICE_NAME, EJBRemoteConnectorService.class, byReferenceLocalEjbReceiver.getEJBRemoteConnectorServiceInjector())
                     .install());
 
             // setup the default local ejb receiver service
