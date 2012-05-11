@@ -37,10 +37,18 @@ import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Logger.Level;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 /**
+ * This module is using message IDs in the range 14600-14899.
+ * <p/>
+ * This file is using the subset 14600-14629 for logger messages.
+ * <p/>
+ * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
+ * list of currently reserved JBAS message id blocks.
+ * <p/>
  * Date: 02.11.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -344,4 +352,33 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.WARN)
     @Message(id = 14622, value = "Value '%s' for interface selection criteria 'inet-address' is ambiguous, as more than one address or network interface available on the machine matches it. Because of this ambiguity, no address will be selected as a match. Matching addresses: %s.  Matching network interfaces: %s.")
     void multipleMatchingAddresses(String toMatch, Set<InetAddress> addresses, Set<String> nis);
+
+    /**
+     * Logs an error message indicating the target definition could not be read.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 14623, value = "Could not read target definition!")
+    void cannotReadTargetDefinition(@Cause Throwable cause);
+
+    /**
+     * Logs an error message indicating a failure to transform.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 14624, value = "Could not transform")
+    void cannotTransform(@Cause Throwable cause);
+
+    /**
+     * Logs a warning message indicating the there is not transformer for the subsystem.
+     *
+     * @param subsystemName the subsystem name
+     * @param major         the major version
+     * @param minor         the minor version
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id = 14625, value = "We have no transformer for subsystem: %s-%d.%d model transfer can break!")
+    void transformerNotFound(String subsystemName, int major, int minor);
 }

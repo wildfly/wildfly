@@ -1,5 +1,6 @@
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.SubsystemInformation;
@@ -15,7 +16,6 @@ import java.util.Map;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class TransformationTargetImpl implements TransformationTarget {
-    private static final Logger log = Logger.getLogger(TransformationTarget.class);
     private final int major;
     private final int minor;
     private final ExtensionRegistry extensionRegistry;
@@ -82,7 +82,7 @@ public class TransformationTargetImpl implements TransformationTarget {
         }
         SubsystemTransformer t = transformerRegistry.getSubsystemTransformer(subsystemName, major, minor);
         if (t == null) {
-            log.warn("We have no transformer for subsystem: " + subsystemName + "-" + major + "." + minor + " model transfer can break!");
+            ControllerLogger.ROOT_LOGGER.transformerNotFound(subsystemName, major, minor);
             //return defaultSubsystemTransformer?
         }
         return t;

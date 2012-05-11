@@ -168,4 +168,14 @@ public interface WSMessages {
 
     @Message(id = 15590, value = "Endpoint config %s, %s handler chain %s: doesn't contain handler with name %s")
     OperationFailedException missingHandler(String configName, String handlerChainType, String handlerChainId, String handlerName);
+
+    /**
+     * A message indicating the method invocation failed with an exception.
+     *
+     * @param message the message from the exception
+     *
+     * @return the message.
+     */
+    @Message(id = 15594, value = "Method invocation failed with exception: %s")
+    String methodInvocationFailed(String message);
 }
