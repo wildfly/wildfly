@@ -54,6 +54,7 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.as.ejb3.util.ServiceLookupValue;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.ejb.client.ClusterContext;
@@ -109,22 +110,16 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
     private final InjectedValue<RegistryCollector> clusterRegistryCollector = new InjectedValue<RegistryCollector>();
     private final Listener deploymentListener = new Listener();
     private final boolean allowPassByReference;
-    private final InjectedValue<Endpoint> endpointInjectedValue = new InjectedValue<Endpoint>();
-    private final InjectedValue<EJBRemoteConnectorService> ejbRemoteConnectorServiceValue = new InjectedValue<EJBRemoteConnectorService>();
+    private final ServiceLookupValue<Endpoint> endpointValue;
+    private final ServiceLookupValue<EJBRemoteConnectorService> ejbRemoteConnectorServiceValue;
     private final Set<ClusterTopologyUpdateListener> clusterTopologyUpdateListeners = Collections.synchronizedSet(new HashSet<ClusterTopologyUpdateListener>());
 
 
-    public LocalEjbReceiver(final String nodeName, final boolean allowPassByReference) {
+    public LocalEjbReceiver(final String nodeName, final boolean allowPassByReference, final ServiceLookupValue<Endpoint> endpointValue, final ServiceLookupValue<EJBRemoteConnectorService> ejbRemoteConnectorServiceValue) {
         super(nodeName);
         this.allowPassByReference = allowPassByReference;
-    }
-
-    public Injector<Endpoint> getEndpointInjector() {
-        return this.endpointInjectedValue;
-    }
-
-    public Injector<EJBRemoteConnectorService> getEJBRemoteConnectorServiceInjector() {
-        return this.ejbRemoteConnectorServiceValue;
+        this.endpointValue = endpointValue;
+        this.ejbRemoteConnectorServiceValue = ejbRemoteConnectorServiceValue;
     }
 
     @Override
@@ -417,7 +412,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
             return;
         }
         final EJBRemoteConnectorService ejbRemoteConnectorService = this.ejbRemoteConnectorServiceValue.getOptionalValue();
-        final Endpoint endpoint = this.endpointInjectedValue.getOptionalValue();
+        final Endpoint endpoint = this.endpointValue.getOptionalValue();
         if(ejbRemoteConnectorService == null || endpoint == null) {
             return;
         }
