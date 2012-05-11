@@ -114,7 +114,7 @@ abstract class AbstractInvocationHandlerEJB extends AbstractInvocationHandler {
          wsInvocation.setReturnValue(retObj);
       }
       catch (Throwable t) {
-         log.error("Method invocation failed with exception: " + t.getMessage(), t);
+         log.error(MESSAGES.methodInvocationFailed(t.getLocalizedMessage()), t);
          handleInvocationException(t);
       }
       finally {

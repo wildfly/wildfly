@@ -1,5 +1,6 @@
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -24,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public final class TransformerRegistry {
-    private static final Logger log = Logger.getLogger(TransformerRegistry.class);
     private final ConcurrentHashMap<String, List<SubsystemTransformer>> subsystemTransformers = new ConcurrentHashMap<String, List<SubsystemTransformer>>();
     private static TransformerRegistry INSTANCE;
     private final SimpleFullModelTransformer modelTransformer;
@@ -50,7 +50,7 @@ public final class TransformerRegistry {
             }
             return ModelNode.fromStream(is);
         } catch (IOException e) {
-            log.error("Could not read target definition!", e);
+            ControllerLogger.ROOT_LOGGER.cannotReadTargetDefinition(e);
         } finally {
             if (is != null) {
                 try {
@@ -123,7 +123,7 @@ public final class TransformerRegistry {
         try {
             return modelTransformer.transformResource(resource, resourceRegistration, subsystemVersions);
         } catch (Exception e) {
-            log.error("could not transform", e);
+            ControllerLogger.ROOT_LOGGER.cannotTransform(e);
             return resource;
         }
     }

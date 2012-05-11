@@ -35,6 +35,13 @@ import org.jboss.logging.MessageLogger;
 import org.jboss.vfs.VirtualFile;
 
 /**
+ * This module is using message IDs in the range 18000-18099 and 18200-18399.
+ * <p/>
+ * This file is using the subset 18200-18299 for logger messages.
+ * <p/>
+ * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
+ * list of currently reserved JBAS message id blocks.
+ * <p/>
  * Date: 05.11.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -161,6 +168,6 @@ public interface WebLogger extends BasicLogger {
 
     @LogMessage(level = WARN)
     @Message(id = 18223, value = "Snapshot mode set to 'interval' but snapshotInterval is < 1 or was not specified, using 'instant'")
-    void invalidSnapshotInterval();
+    void invalidSnapshotInterval();;
 
 }
