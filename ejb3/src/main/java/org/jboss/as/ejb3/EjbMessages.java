@@ -51,6 +51,7 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -2083,4 +2084,6 @@ public interface EjbMessages {
     // Don't add exception messages greater that 14299!!! If you need more go to
     // https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
 
+    @Message(id = 14226, value = "Could not lookup service %s")
+    IllegalStateException serviceNotFound(ServiceName serviceName);
 }

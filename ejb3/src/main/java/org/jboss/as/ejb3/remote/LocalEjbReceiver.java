@@ -22,6 +22,21 @@
 package org.jboss.as.ejb3.remote;
 
 
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.ee.component.Component;
@@ -39,6 +54,7 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.as.ejb3.util.ServiceLookupValue;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.ejb.client.ClusterContext;
@@ -72,20 +88,6 @@ import org.jboss.remoting3.Endpoint;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 
 /**
  * {@link EJBReceiver} for local same-VM invocations. This handles all invocations on remote interfaces
@@ -108,22 +110,16 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
     private final InjectedValue<RegistryCollector> clusterRegistryCollector = new InjectedValue<RegistryCollector>();
     private final Listener deploymentListener = new Listener();
     private final boolean allowPassByReference;
-    private final InjectedValue<Endpoint> endpointInjectedValue = new InjectedValue<Endpoint>();
-    private final InjectedValue<EJBRemoteConnectorService> ejbRemoteConnectorServiceValue = new InjectedValue<EJBRemoteConnectorService>();
+    private final ServiceLookupValue<Endpoint> endpointValue;
+    private final ServiceLookupValue<EJBRemoteConnectorService> ejbRemoteConnectorServiceValue;
     private final Set<ClusterTopologyUpdateListener> clusterTopologyUpdateListeners = Collections.synchronizedSet(new HashSet<ClusterTopologyUpdateListener>());
 
 
-    public LocalEjbReceiver(final String nodeName, final boolean allowPassByReference) {
+    public LocalEjbReceiver(final String nodeName, final boolean allowPassByReference, final ServiceLookupValue<Endpoint> endpointValue, final ServiceLookupValue<EJBRemoteConnectorService> ejbRemoteConnectorServiceValue) {
         super(nodeName);
         this.allowPassByReference = allowPassByReference;
-    }
-
-    public Injector<Endpoint> getEndpointInjector() {
-        return this.endpointInjectedValue;
-    }
-
-    public Injector<EJBRemoteConnectorService> getEJBRemoteConnectorServiceInjector() {
-        return this.ejbRemoteConnectorServiceValue;
+        this.endpointValue = endpointValue;
+        this.ejbRemoteConnectorServiceValue = ejbRemoteConnectorServiceValue;
     }
 
     @Override
@@ -415,7 +411,12 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         if (addedNodes == null || addedNodes.isEmpty()) {
             return;
         }
-        final SocketBinding ejbRemoteConnectorSocketBinding = this.ejbRemoteConnectorServiceValue.getValue().getEJBRemoteConnectorSocketBinding();
+        final EJBRemoteConnectorService ejbRemoteConnectorService = this.ejbRemoteConnectorServiceValue.getOptionalValue();
+        final Endpoint endpoint = this.endpointValue.getOptionalValue();
+        if(ejbRemoteConnectorService == null || endpoint == null) {
+            return;
+        }
+        final SocketBinding ejbRemoteConnectorSocketBinding = ejbRemoteConnectorService.getEJBRemoteConnectorSocketBinding();
         final InetAddress bindAddress = ejbRemoteConnectorSocketBinding.getAddress();
         final ClusterContext clusterContext = ejbClientContext.getOrCreateClusterContext(clusterName);
         // add the nodes to the cluster context
@@ -450,7 +451,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
                 EjbLogger.ROOT_LOGGER.cannotAddClusterNodeDueToUnresolvableClientMapping(addedNodeName, clusterName, bindAddress);
                 continue;
             }
-            final ClusterNodeManager remotingClusterNodeManager = new RemotingConnectionClusterNodeManager(clusterContext, this.endpointInjectedValue.getValue(), addedNodeName, resolvedClientMapping.getDestinationAddress(), resolvedClientMapping.getDestinationPort());
+            final ClusterNodeManager remotingClusterNodeManager = new RemotingConnectionClusterNodeManager(clusterContext, endpoint, addedNodeName, resolvedClientMapping.getDestinationAddress(), resolvedClientMapping.getDestinationPort());
             clusterContext.addClusterNodes(remotingClusterNodeManager);
         }
 
