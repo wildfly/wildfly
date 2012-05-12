@@ -42,6 +42,7 @@ import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.WeldMessages;
 import org.jboss.as.weld.deployment.BeanArchiveMetadata;
 import org.jboss.as.weld.deployment.BeansXmlParser;
+import org.jboss.as.weld.deployment.CdiAnnotationMarker;
 import org.jboss.as.weld.deployment.WeldDeploymentMetadata;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.weld.bootstrap.spi.BeansXml;
@@ -121,6 +122,10 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
             if (deploymentUnit.getParent() != null) {
                 WeldDeploymentMarker.mark(deploymentUnit.getParent());
             }
+        } else {
+           if (CdiAnnotationMarker.isCdiDeployment(deploymentUnit)) {
+              WeldLogger.DEPLOYMENT_LOGGER.warn("Deployment contains CDI annotations but beans.xml was not found.");
+           }
         }
     }
 
