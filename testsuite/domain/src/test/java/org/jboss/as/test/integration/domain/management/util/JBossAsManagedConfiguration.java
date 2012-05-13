@@ -27,7 +27,7 @@ import org.jboss.as.arquillian.container.CommonContainerConfiguration;
  * @author Brian Stansberry
  */
 public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
-    private String jbossHome = System.getenv("JBOSS_HOME");
+    private String jbossHome = System.getProperty("jboss.home");
 
     private String javaHome = System.getenv("JAVA_HOME");
 
