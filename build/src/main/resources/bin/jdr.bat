@@ -72,8 +72,8 @@ if "x%JBOSS_MODULEPATH%" == "x" (
 )
 
 "%JAVA%" ^
+    -Djboss.home.dir="%JBOSS_HOME%" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
      org.jboss.as.jdr ^
-    -Djboss.home.dir="%JBOSS_HOME%" ^
      %*
