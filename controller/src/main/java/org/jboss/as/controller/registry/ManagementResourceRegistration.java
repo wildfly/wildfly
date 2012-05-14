@@ -74,7 +74,9 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *
      * @throws IllegalArgumentException if a submodel is already registered at {@code address}
      * @throws IllegalStateException if {@link #isRuntimeOnly()} returns {@code true}
+     * @deprecated use {@link ManagementResourceRegistration#registerSubModel(org.jboss.as.controller.ResourceDefinition)}
      */
+    @Deprecated
     ManagementResourceRegistration registerSubModel(PathElement address, DescriptionProvider descriptionProvider);
 
     /**
@@ -231,7 +233,9 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param writeHandler the handler for attribute writes. Cannot be {@code null}
      * @param storage the storage type for this attribute
      * @throws IllegalArgumentException if {@code attributeName} or {@code writeHandler} are {@code null}
+     * @deprecated use {@link ManagementResourceRegistration#registerReadWriteAttribute(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler, org.jboss.as.controller.OperationStepHandler)}
      */
+    @Deprecated
     void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, AttributeAccess.Storage storage);
 
     /**
@@ -246,7 +250,9 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param writeHandler the handler for attribute writes. Cannot be {@code null}
      * @param flags additional flags describing this attribute
      * @throws IllegalArgumentException if {@code attributeName} or {@code writeHandler} are {@code null}
+     * @deprecated use {@link ManagementResourceRegistration#registerReadWriteAttribute(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler, org.jboss.as.controller.OperationStepHandler)}
      */
+     @Deprecated
     void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler,
                                     EnumSet<AttributeAccess.Flag> flags);
 
@@ -275,7 +281,9 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *                    in which case the default handling is used
      * @param storage the storage type for this attribute
      * @throws IllegalArgumentException if {@code attributeName} is {@code null}
+     * @deprecated use {@link ManagementResourceRegistration#registerReadOnlyAttribute(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
+    @Deprecated
     void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, AttributeAccess.Storage storage);
 
     /**
@@ -289,7 +297,9 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *                    in which case the default handling is used
      * @param flags additional flags describing this attribute
      * @throws IllegalArgumentException if {@code attributeName} is {@code null}
-     */
+     * @deprecated use {@link ManagementResourceRegistration#registerReadOnlyAttribute(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler)}
+      */
+    @Deprecated
     void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags);
 
     /**
@@ -313,7 +323,9 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param metricHandler the handler for attribute reads. Cannot be {@code null}
      *
      * @throws IllegalArgumentException if {@code attributeName} or {@code metricHandler} are {@code null}
+     * @deprecated use {@link ManagementResourceRegistration#registerMetric(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
+    @Deprecated
     void registerMetric(String attributeName, OperationStepHandler metricHandler);
 
     /**
@@ -334,6 +346,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param flags additional flags describing this attribute
      *
      * @throws IllegalArgumentException if {@code attributeName} or {@code metricHandler} are {@code null}
+     * @deprecated use {@link ManagementResourceRegistration#registerMetric(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
     void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags);
 
