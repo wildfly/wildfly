@@ -59,6 +59,7 @@ public enum Attribute {
     FLUSH_LOCK_TIMEOUT(ModelKeys.FLUSH_LOCK_TIMEOUT),
     @Deprecated FLUSH_TIMEOUT("flush-timeout"),
     INDEXING(ModelKeys.INDEXING),
+    INDEX(ModelKeys.INDEX),
     INTERVAL(ModelKeys.INTERVAL),
     ISOLATION(ModelKeys.ISOLATION),
     JNDI_NAME(ModelKeys.JNDI_NAME),

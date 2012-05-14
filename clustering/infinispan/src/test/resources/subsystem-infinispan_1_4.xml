@@ -1,0 +1,147 @@
+<!--
+  ~ /*
+  ~  * JBoss, Home of Professional Open Source.
+  ~  * Copyright 2012, Red Hat, Inc., and individual contributors
+  ~  * as indicated by the @author tags. See the copyright.txt file in the
+  ~  * distribution for a full listing of individual contributors.
+  ~  *
+  ~  * This is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU Lesser General Public License as
+  ~  * published by the Free Software Foundation; either version 2.1 of
+  ~  * the License, or (at your option) any later version.
+  ~  *
+  ~  * This software is distributed in the hope that it will be useful,
+  ~  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~  * Lesser General Public License for more details.
+  ~  *
+  ~  * You should have received a copy of the GNU Lesser General Public
+  ~  * License along with this software; if not, write to the Free
+  ~  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~  */
+  -->
+
+<subsystem xmlns="urn:jboss:domain:infinispan:1.4">
+    <cache-container name="minimal" default-cache="local">
+        <local-cache name="local"/>
+    </cache-container>
+    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" eviction-executor="infinispan-eviction" jndi-name="java:global/infinispan/maximal" listener-executor="infinispan-listener" replication-queue-executor="infinispan-repl-queue" module="org.infinispan">
+        <transport cluster="maximal-cluster" executor="transport-executor" lock-timeout="120000" stack="tcp"/>
+        <local-cache name="local" batching="true" start="EAGER" module="org.infinispan">
+            <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
+            <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
+            <eviction max-entries="20000" strategy="LIRS"/>
+            <expiration interval="10000" lifespan="10" max-idle="10"/>
+            <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="true">
+                <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1" />
+            </file-store>
+            <indexing index="LOCAL" />
+        </local-cache>
+        <invalidation-cache name="invalid" mode="ASYNC" batching="true" queue-flush-interval="10" queue-size="1000" start="LAZY" async-marshalling="true">
+            <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
+            <transaction mode="NON_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
+            <eviction max-entries="20000" strategy="LRU"/>
+            <expiration interval="10000" lifespan="10" max-idle="10"/>
+            <remote-store cache="default" socket-timeout="60000" tcp-no-delay="true" fetch-state="false" passivation="false" preload="true" purge="false" shared="true" singleton="true">
+                <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1" />
+                <property name="hotrod.property">value</property>
+                <remote-server outbound-socket-binding="hotrod-server-1" />
+                <remote-server outbound-socket-binding="hotrod-server-2" />
+            </remote-store>
+            <indexing index="NONE" />
+        </invalidation-cache>
+        <replicated-cache name="repl" mode="ASYNC" batching="true" queue-flush-interval="10" queue-size="1000" start="EAGER"  async-marshalling="false">
+            <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
+            <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
+            <eviction max-entries="20000" strategy="FIFO"/>
+            <expiration interval="10000" lifespan="10" max-idle="10"/>
+            <state-transfer enabled="true" timeout="60000" chunk-size="10000" />
+            <store class="org.infinispan.loaders.file.FileCacheStore" fetch-state="true" passivation="true" preload="false" purge="true" shared="false" singleton="false">
+                <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1" />
+                <property name="location">${java.io.tmpdir}</property>
+            </store>
+            <indexing index="NONE" />
+        </replicated-cache>
+        <distributed-cache name="dist" mode="SYNC" batching="true" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" virtual-nodes="2"  async-marshalling="true">
+            <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
+            <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
+            <eviction max-entries="20000" strategy="UNORDERED"/>
+            <expiration interval="10000" lifespan="10" max-idle="10"/>
+            <state-transfer enabled="true" timeout="60000" chunk-size="10000" />
+            <mixed-keyed-jdbc-store datasource="java:jboss/jdbc/store" fetch-state="false" passivation="false" preload="true" purge="false" shared="true" singleton="true">
+                <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1" />
+                <string-keyed-table prefix="ispn_bucket" batch-size="100" fetch-size="100">
+                    <id-column name="id" type="VARCHAR"/>
+                    <data-column name="datum" type="BINARY"/>
+                    <timestamp-column name="version" type="BIGINT"/>
+                </string-keyed-table>
+                <binary-keyed-table prefix="ispn_entry" batch-size="100" fetch-size="100">
+                    <id-column name="id" type="VARCHAR"/>
+                    <data-column name="datum" type="BINARY"/>
+                    <timestamp-column name="version" type="BIGINT"/>
+                </binary-keyed-table>
+            </mixed-keyed-jdbc-store>
+
+        </distributed-cache>
+        </cache-container>
+    <cache-container name="capedwarf" default-cache="default">
+        <transport lock-timeout="60000"/>
+        <replicated-cache name="data" mode="ASYNC">
+            <transaction mode="NON_XA"/>
+            <eviction strategy="NONE"/>
+            <file-store preload="true" purge="false"/>
+        </replicated-cache>
+        <replicated-cache name="metadata" mode="ASYNC">
+            <transaction mode="NON_XA"/>
+            <eviction strategy="NONE"/>
+            <file-store preload="true" purge="false"/>
+        </replicated-cache>
+        <replicated-cache name="memcache" mode="ASYNC">
+            <transaction mode="NON_XA" locking="PESSIMISTIC"/>
+            <eviction strategy="NONE"/>
+        </replicated-cache>
+        <distributed-cache name="default" mode="ASYNC" >
+            <transaction mode="NON_XA"/>
+            <eviction strategy="NONE"/>
+            <file-store preload="true" purge="false"/>
+            <indexing index="LOCAL">
+                <property name="hibernate.search.default.directory_provider">infinispan</property>
+                <property name="hibernate.search.infinispan.cachemanager_jndiname">java:jboss/infinispan/container/HibernateSearch</property>
+                <property name="hibernate.search.default.worker.backend">jgroups</property>
+            </indexing>
+        </distributed-cache>
+        <distributed-cache name="dist" mode="ASYNC">
+            <transaction mode="NON_XA" locking="PESSIMISTIC"/>
+            <eviction strategy="NONE"/>
+            <file-store preload="true" purge="false"/>
+        </distributed-cache>
+        <distributed-cache name="tasks" mode="ASYNC">
+            <transaction mode="NON_XA"/>
+            <eviction strategy="LIRS" max-entries="10000"/>
+            <file-store preload="true" purge="false"/>
+            <indexing index="LOCAL">
+                <property name="hibernate.search.default.directory_provider">infinispan</property>
+                <property name="hibernate.search.infinispan.cachemanager_jndiname">java:jboss/infinispan/container/HibernateSearch</property>
+                <property name="hibernate.search.default.worker.backend">jgroups</property>
+            </indexing>
+        </distributed-cache>
+    </cache-container>
+    <cache-container name="HibernateSearch" default-cache="LuceneIndexesMetadata">
+            <transport lock-timeout="60000"/>
+            <replicated-cache name="LuceneIndexesMetadata" mode="SYNC" batching="true">
+                <transaction mode="NONE"/>
+                <eviction strategy="NONE"/>
+                <file-store preload="true" purge="false"/>
+            </replicated-cache>
+            <replicated-cache name="LuceneIndexesData" mode="SYNC" batching="true">
+                <transaction mode="NONE"/>
+                <eviction strategy="NONE"/>
+                <file-store preload="true" purge="false"/>
+            </replicated-cache>
+            <replicated-cache name="LuceneIndexesLocking" mode="SYNC" batching="true">
+                <transaction mode="NONE"/>
+                <eviction strategy="NONE"/>
+            </replicated-cache>
+        </cache-container>
+</subsystem>

@@ -72,7 +72,7 @@ public class InfinispanExtension implements Extension {
     private static final PathElement remoteStorePath = PathElement.pathElement(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 3;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 4;
 
     /**
      * {@inheritDoc}
@@ -131,6 +131,7 @@ public class InfinispanExtension implements Extension {
         registerClusteredCacheAttributeHandlers(distributed);
         registerSharedStateCacheAttributeHandlers(distributed);
         CacheWriteAttributeHandler.DISTRIBUTED_CACHE_ATTR.registerAttributes(distributed);
+        subsystem.registerSubsystemTransformer(new InfinispanSubsystemTransformer_1_3());
     }
 
     /**

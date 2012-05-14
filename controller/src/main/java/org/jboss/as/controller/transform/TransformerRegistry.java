@@ -172,21 +172,6 @@ public final class TransformerRegistry {
 
     }
 
-    @Deprecated
-    public Resource getTransformedRootResource(OperationContext context, Map<String, String> subsystemVersions) {
-        context.acquireControllerLock();
-        final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
-        if (subsystemVersions.isEmpty()) {
-            return root;
-        }
-        try {
-            return getTransformedResource(root, context.getRootResourceRegistration(), subsystemVersions);
-        } catch (Exception e) {
-            log.error("could not transform", e);
-            return root;
-        }
-    }
-
     public SubsystemTransformer getSubsystemTransformer(final String name, final int majorVersion, int minorVersion) {
         List<SubsystemTransformer> transformers = subsystemTransformers.get(name);
         if (transformers == null) { return null; }
