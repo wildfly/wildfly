@@ -273,7 +273,7 @@ public interface ServerMessages {
     @Message(id = 15816, value = "Missing configuration value for: %s")
     IllegalStateException missingHomeDirConfiguration(String propertyName);
 
-    @Message(id = 15817, value = "\n        %s is missing: %s")
+    @Message(id = 15817, value = "%n        %s is missing: %s")
     String missingDependencies(ServiceName dependentService, String missingDependencies);
 
     @Message(id = 15818, value = "%s is required")

@@ -644,7 +644,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14368, value = "Component %s with component class: %s\n isn't a %s component")
+    @Message(id = 14368, value = "Component %s with component class: %s%n isn't a %s component")
     IllegalArgumentException componentNotInstanceOfSessionComponent(Component component, Class<?> componentClass, String type);
 
     /**
@@ -800,7 +800,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14393, value = "<role-name> cannot be null or empty in <security-role-ref>\nfor bean: %s")
+    @Message(id = 14393, value = "<role-name> cannot be null or empty in <security-role-ref>%nfor bean: %s")
     DeploymentUnitProcessingException roleNamesIsNull(String ejbName);
 
     /**
@@ -898,7 +898,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14405, value = "Could not determine type of corresponding implied EJB 2.x local interface (see EJB 3.1 21.4.5)\n due to multiple create* methods with different return types on home %s")
+    @Message(id = 14405, value = "Could not determine type of corresponding implied EJB 2.x local interface (see EJB 3.1 21.4.5)%n due to multiple create* methods with different return types on home %s")
     DeploymentUnitProcessingException multipleCreateMethod(Class localHomeClass);
 
     /**
@@ -1164,7 +1164,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14438, value = "Timer service with timedObjectId: %s\n is already registered")
+    @Message(id = 14438, value = "Timer service with timedObjectId: %s%n is already registered")
     IllegalStateException timerServiceAlreadyRegistered(String timedObjectId);
 
     /**
@@ -1725,7 +1725,7 @@ public interface EjbMessages {
      *
      * @return an {@link String} for the error.
      */
-    @Message(id = 14508, value = "EJB component for address %s is in \n state %s, must be in state %s")
+    @Message(id = 14508, value = "EJB component for address %s is in %n state %s, must be in state %s")
     String invalidComponentState(PathAddress operationAddress, ServiceController.State controllerState, ServiceController.State up);
 
 
