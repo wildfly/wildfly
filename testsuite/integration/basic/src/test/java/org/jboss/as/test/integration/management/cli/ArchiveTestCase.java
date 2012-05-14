@@ -133,6 +133,30 @@ public class ArchiveTestCase {
             ctx.terminateSession();
         }
     }
+    
+    @Test
+    public void testUnDeployArchive() throws Exception {
+
+        final CommandContext ctx = CommandContextFactory.getInstance().newCommandContext();
+        try {
+            ctx.connectController();
+            ctx.handle("deploy " + cliArchiveFile.getAbsolutePath() + " --script=install.scr");
+
+            // check that now both wars are deployed
+            String response = HttpRequest.get(getBaseURL(url) + "deployment0/SimpleServlet", 10, TimeUnit.SECONDS);
+            assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
+            response = HttpRequest.get(getBaseURL(url) + "deployment1/SimpleServlet", 10, TimeUnit.SECONDS);
+            assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
+
+            ctx.handle("undeploy " + "--path=" + cliArchiveFile.getAbsolutePath() + " --script=uninstall.scr");
+
+            // check that both wars are undeployed
+            assertTrue(checkUndeployed(getBaseURL(url) + "deployment0/SimpleServlet"));
+            assertTrue(checkUndeployed(getBaseURL(url) + "deployment1/SimpleServlet"));
+        } finally {
+            ctx.terminateSession();
+        }
+    }
 
     @AfterClass
     public static void after() throws Exception {
