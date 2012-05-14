@@ -105,7 +105,7 @@ public class ArchiveDefaultScriptNamesTestCase {
     }
 
     @Test
-    public void testDeployArchive() throws Exception {
+    public void testDeployUndeployArchive() throws Exception {
 
         final CommandContext ctx = CommandContextFactory.getInstance().newCommandContext();
         try {
@@ -119,7 +119,7 @@ public class ArchiveDefaultScriptNamesTestCase {
             assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
             assertTrue(checkUndeployed(getBaseURL(url) + "deployment2/SimpleServlet"));
 
-            ctx.handle("deploy " + cliArchiveFile.getAbsolutePath() + " --script=undeploy.scr");
+            ctx.handle("undeploy " + "--path=" + cliArchiveFile.getAbsolutePath());
 
             // check that both wars are undeployed
             assertTrue(checkUndeployed(getBaseURL(url) + "deployment0/SimpleServlet"));

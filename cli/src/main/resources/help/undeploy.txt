@@ -33,3 +33,16 @@ ARGUMENTS
 
  --headers              - a list of operation headers separated by a semicolon. For the list of supported
                           headers, please, refer to the domain management documentation or use tab-completion.
+                          
+ --path                 - optional, points to a cli archive.
+                          The path can be either absolute or relative to the current directory.
+                          A cli archive is a zip archive containing script(s) as well as artifacts or applications 
+                          to deploy. 
+                          To be recognized as a cli archive, the extension of the archive file should be '.cli'.
+                          The undeploy command will execute the script given by the --script argument.                          
+                          
+ --script               - optional, can appear only if the file_path points a cli archive.
+                          The value is the name of the script contained in a cli archive to execute.
+                          If not specified, defaults to 'undeploy.scr'. 
+                          All paths in the scripts are relative to the root directory in the cli archive. 
+                          The script is executed as a batch.
