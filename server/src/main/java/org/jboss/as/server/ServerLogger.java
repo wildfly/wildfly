@@ -219,15 +219,15 @@ public interface ServerLogger extends BasicLogger {
     void deploymentStarted(String deployment);
 
     @LogMessage(level = ERROR)
-    @Message(id = 15879, value = "Deployment '%s' has failed services\n    Failed services: %s")
+    @Message(id = 15879, value = "Deployment '%s' has failed services%n    Failed services: %s")
     void deploymentHasFailedServices(String deployment, String failures);
 
     @LogMessage(level = ERROR)
-    @Message(id = 15880, value = "Deployment '%s' has services missing dependencies\n    Missing dependencies: %s")
+    @Message(id = 15880, value = "Deployment '%s' has services missing dependencies%n    Missing dependencies: %s")
     void deploymentHasMissingDependencies(String deployment, String missing);
 
     @LogMessage(level = ERROR)
-    @Message(id = 15881, value = "Deployment '%s' has failed services and services missing dependencies\n    Failed services: %s\n    Missing dependencies: %s")
+    @Message(id = 15881, value = "Deployment '%s' has failed services and services missing dependencies%n    Failed services: %s%n    Missing dependencies: %s")
     void deploymentHasMissingAndFailedServices(String deployment, String failures, String missing);
 
     @LogMessage(level = ERROR)
