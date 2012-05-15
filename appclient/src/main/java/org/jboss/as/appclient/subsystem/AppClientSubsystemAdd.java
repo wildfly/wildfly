@@ -25,7 +25,6 @@ package org.jboss.as.appclient.subsystem;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.appclient.deployment.ActiveApplicationClientProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientDependencyProcessor;
@@ -38,8 +37,9 @@ import org.jboss.as.appclient.service.ApplicationClientDeploymentService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.Services;
@@ -48,17 +48,14 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
 import static org.jboss.as.appclient.subsystem.Constants.CONNECTION_PROPERTIES_URL;
-import static org.jboss.as.appclient.subsystem.Constants.DEPLOYMENT;
-import static org.jboss.as.appclient.subsystem.Constants.FILE;
 import static org.jboss.as.appclient.subsystem.Constants.HOST_URL;
-import static org.jboss.as.appclient.subsystem.Constants.PARAMETERS;
 
 /**
  * Add operation handler for the application client subsystem.
  *
  * @author Stuart Douglas
  */
-class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
+class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final AppClientSubsystemAdd INSTANCE = new AppClientSubsystemAdd();
 
@@ -68,34 +65,21 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler implements De
         //
     }
 
-    @Override
-    public ModelNode getModelDescription(final Locale locale) {
-        return AppClientSubsystemDescriptions.getSubystemAddDescription(locale);
-    }
-
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        model.get(FILE).set(operation.get(FILE));
-        model.get(DEPLOYMENT).set(operation.get(DEPLOYMENT));
-        model.get(PARAMETERS).set(operation.get(PARAMETERS));
-        if(operation.hasDefined(HOST_URL)) {
-            model.get(HOST_URL).set(operation.get(HOST_URL));
-        }
-        if(operation.hasDefined(CONNECTION_PROPERTIES_URL)) {
-            model.get(CONNECTION_PROPERTIES_URL).set(operation.get(CONNECTION_PROPERTIES_URL));
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        for(SimpleAttributeDefinition attr : AppClientSubsystemResourceDefinition.ATTRIBUTES) {
+            attr.validateAndSet(operation, model);
         }
     }
 
-    protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        final String deployment = model.get(DEPLOYMENT).asString();
-        final File file = new File(model.get(FILE).asString());
-        final String hostUrl = model.hasDefined(HOST_URL) ? model.get(HOST_URL).asString() : null;
-        final String connectionPropertiesUrl = model.hasDefined(CONNECTION_PROPERTIES_URL) ? model.get(CONNECTION_PROPERTIES_URL).asString() : null;
+    protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        final String deployment = AppClientSubsystemResourceDefinition.DEPLOYMENT.resolveModelAttribute(context, model).asString();
+        final File file = new File(AppClientSubsystemResourceDefinition.FILE.resolveModelAttribute(context, model).asString());
+        final String hostUrl = model.hasDefined(HOST_URL) ? AppClientSubsystemResourceDefinition.HOST_URL.resolveModelAttribute(context, model).asString() : null;
+        final String connectionPropertiesUrl = model.hasDefined(CONNECTION_PROPERTIES_URL) ? AppClientSubsystemResourceDefinition.CONNECTION_PROPERTIES_URL.resolveModelAttribute(context, model).asString() : null;
         final List<String> parameters = new ArrayList<String>();
-        for (ModelNode param : model.get(PARAMETERS).asList()) {
+        for (ModelNode param : AppClientSubsystemResourceDefinition.PARAMETERS.resolveModelAttribute(context, model).asList()) {
             parameters.add(param.asString());
         }
-
-
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
