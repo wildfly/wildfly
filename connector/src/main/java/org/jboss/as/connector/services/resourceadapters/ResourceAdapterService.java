@@ -61,9 +61,5 @@ public class ResourceAdapterService implements Service<ResourceAdapter> {
     @Override
     public void stop(StopContext context) {
         ROOT_LOGGER.debugf("Stopped ResourceAdapterService %s", serviceName);
-
-        if (raName != null && serviceName != null) {
-            ConnectorServices.unregisterResourceAdapter(raName, serviceName);
-        }
     }
 }

@@ -85,42 +85,55 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                 ManagementResourceRegistration overrideRegistration = registration;
                                 //when you are in deploy you have a registration pointing to deployment=*
                                 //when you are in re-deploy it points to specific deploymentUnit
-                                if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnitName)== null) {
-                                    overrideRegistration = registration.registerOverrideModel(deploymentUnitName, new OverrideDescriptionProvider() {
-                                        @Override
-                                        public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
-                                            return Collections.emptyMap();
-                                        }
+                                synchronized (this) {
+                                    if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnitName) == null) {
+                                        overrideRegistration = registration.registerOverrideModel(deploymentUnitName, new OverrideDescriptionProvider() {
+                                            @Override
+                                            public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
+                                                return Collections.emptyMap();
+                                            }
 
-                                        @Override
-                                        public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                                            return Collections.emptyMap();
-                                        }
-                                    });
-                                } else {
-                                    overrideRegistration = registration.getOverrideModel(deploymentUnitName);
-                                }
+                                            @Override
+                                            public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
+                                                return Collections.emptyMap();
+                                            }
+                                        });
+                                    } else {
+                                        overrideRegistration = registration.getOverrideModel(deploymentUnitName);
+                                    }
+
                                 ManagementResourceRegistration subRegistration = overrideRegistration.getSubModel(PathAddress.pathAddress(pe));
                                 if (subRegistration == null) {
                                     subRegistration = overrideRegistration.registerSubModel(pe, new SubSystemExtensionDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "deployment-subsystem"));
                                 }
-                                final Resource subsystemResource = new IronJacamarResource.IronJacamarRuntimeResource();
+                                Resource subsystemResource;
 
-                                deploymentResource.registerChild(pe, subsystemResource);
+                                if (!deploymentResource.hasChild(pe)) {
+                                    subsystemResource = new IronJacamarResource.IronJacamarRuntimeResource();
+                                    deploymentResource.registerChild(pe, subsystemResource);
+                                } else {
+                                    subsystemResource = deploymentResource.getChild(pe);
+                                }
 
                                 ManagementResourceRegistration statsRegistration = subRegistration.getSubModel(PathAddress.pathAddress(peStats));
                                 if (statsRegistration == null) {
                                     statsRegistration = subRegistration.registerSubModel(peStats, new StatisticsElementDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics"));
                                 }
-                                final Resource statisticsResource = new IronJacamarResource.IronJacamarRuntimeResource();
+                                Resource statisticsResource;
 
-                                subsystemResource.registerChild(peStats, statisticsResource);
+                                if (!subsystemResource.hasChild(peStats)) {
+                                    statisticsResource = new IronJacamarResource.IronJacamarRuntimeResource();
+                                    subsystemResource.registerChild(peStats, statisticsResource);
+                                } else {
+                                    statisticsResource = subsystemResource.getChild(peStats);
+                                }
 
                                 if (statsRegistration.getSubModel(PathAddress.pathAddress(peCD)) == null) {
                                     ManagementResourceRegistration cdSubRegistration = statsRegistration.registerSubModel(peCD, statsResourceDescriptionProvider);
                                     final Resource cdResource = new IronJacamarResource.IronJacamarRuntimeResource();
 
-                                    statisticsResource.registerChild(peCD, cdResource);
+                                    if (!statisticsResource.hasChild(peCD))
+                                        statisticsResource.registerChild(peCD, cdResource);
 
                                     for (String statName : poolStats.getNames()) {
                                         cdSubRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
@@ -129,6 +142,7 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                 }
 
                                 registerIronjacamar(controller, subRegistration, subsystemResource);
+                            }
                             }
                         }
                     }

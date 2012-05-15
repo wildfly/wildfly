@@ -133,7 +133,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
             }
 
             final ServiceName deployerServiceName = ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName());
-            final ResourceAdapterDeploymentService raDeploymentService = new ResourceAdapterDeploymentService(connectorXmlDescriptor, cmd, ijmd, module, null);
+            final ResourceAdapterDeploymentService raDeploymentService = new ResourceAdapterDeploymentService(connectorXmlDescriptor, cmd, ijmd, module, deployerServiceName);
 
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
