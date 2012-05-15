@@ -8,11 +8,14 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.MapAttributeDefinition;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -62,6 +65,10 @@ public class WebContainerDefinition extends SimpleResourceDefinition {
             WELCOME_FILES,
             MIME_MAPPINGS,
     };
+    private static final OperationDefinition ADD_MIME = new SimpleOperationDefinition("add-mime", WebExtension.getResourceDescriptionResolver("container.mime-mapping"), MIME_NAME, MIME_VALUE);
+    private static final OperationDefinition REMOVE_MIME = new SimpleOperationDefinitionBuilder("remove-mime", WebExtension.getResourceDescriptionResolver("container.mime-mapping"))
+               .addParameter(MIME_NAME)
+               .build();
 
     private WebContainerDefinition() {
         super(WebExtension.CONTAINER_PATH,
@@ -78,12 +85,8 @@ public class WebContainerDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration container) {
         super.registerOperations(container);
-        container.registerOperationHandler("add-mime",
-                MimeMappingAdd.INSTANCE,
-                new DefaultOperationDescriptionProvider("add-mime", WebExtension.getResourceDescriptionResolver("container.mime-mapping"), MIME_NAME, MIME_VALUE));
-        container.registerOperationHandler("remove-mime",
-                MimeMappingRemove.INSTANCE,
-                new DefaultOperationDescriptionProvider("remove-mime", WebExtension.getResourceDescriptionResolver("container.mime-mapping"), MIME_NAME));
+        container.registerOperationHandler(ADD_MIME,MimeMappingAdd.INSTANCE);
+        container.registerOperationHandler(REMOVE_MIME,MimeMappingRemove.INSTANCE);
     }
 
     @Override
