@@ -26,9 +26,12 @@ import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.Connector;
 import org.jboss.jca.core.mdr.SimpleMetadataRepository;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
+import org.jboss.msc.service.ServiceName;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,6 +43,9 @@ import java.util.Set;
 public class AS7MetadataRepositoryImpl extends SimpleMetadataRepository implements AS7MetadataRepository {
 
     private final Map<String, IronJacamar> ironJacamarMetaData = new HashMap<String, IronJacamar>();
+    private final List<ServiceName> jndiServices = new LinkedList<ServiceName>();
+
+
 
     @Override
     public void registerResourceAdapter(String uniqueId, File root, Connector md, IronJacamar ijmd) throws AlreadyExistsException {

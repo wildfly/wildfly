@@ -48,9 +48,10 @@ public class RaActivate implements OperationStepHandler {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, ModelNode operation) throws OperationFailedException {
 
+                    RaOperationUtil.deactivateIfActive(context, raName);
+
                     final String archiveName = model.get(ARCHIVE.getName()).asString();
 
-                    RaOperationUtil.deactivateIfActive(context, archiveName);
                     RaOperationUtil.activate(context, raName, archiveName);
 
                     context.completeStep();

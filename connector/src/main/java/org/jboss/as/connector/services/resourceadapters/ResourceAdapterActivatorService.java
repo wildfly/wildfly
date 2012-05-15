@@ -139,7 +139,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
 
         public ResourceAdapterActivator(ServiceTarget serviceTarget, URL url, String deploymentName, File root,
                 ClassLoader cl, Connector cmd, IronJacamar ijmd) {
-            super(serviceTarget, url, deploymentName, root, cl, cmd);
+            super(serviceTarget, url, deploymentName, root, cl, cmd, null);
             this.ijmd = ijmd;
         }
 

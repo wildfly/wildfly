@@ -21,6 +21,7 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import org.jboss.as.connector.services.resourceadapters.deployment.AbstractResourceAdapterDeploymentService;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
 import org.jboss.as.connector.util.RaServicesFactory;
@@ -48,6 +49,7 @@ import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
 import org.jboss.jca.common.metadata.common.CommonValidationImpl;
 import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -304,6 +306,17 @@ public class RaOperationUtil {
         }
         ConnectorServices.unregisterResourceIdentifier(raName, identifier);
 
+        ServiceName deploymentServiceName = ConnectorServices.getDeploymentServiceName(raName);
+        AbstractResourceAdapterDeploymentService service = ((AbstractResourceAdapterDeploymentService) context.getServiceRegistry(false).getService(deploymentServiceName));
+        if (service != null) {
+            List<ServiceName> jndiServices = service.getJndiServices();
+
+            for (ServiceName name : jndiServices) {
+                context.removeService(name);
+            }
+        }
+
+
     }
 
     public static void activate(OperationContext context, String raName, String rarName)  throws OperationFailedException {
@@ -317,8 +330,8 @@ public class RaOperationUtil {
         }
         InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment inactive = (InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment) inactiveRaController.getValue();
         final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
-        ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
 
-        RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(), inactive.getDeployment(), inactive.getDeployment(), raxml, inactive.getResource());
+        ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
+        RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(), raName, inactive.getDeployment(), raxml, inactive.getResource());
     }
 }

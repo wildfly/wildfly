@@ -26,7 +26,7 @@ import org.jboss.security.SubjectFactory;
 public class RaServicesFactory {
     public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, String deployment, ResourceAdapter raxml, final Resource deploymentResource) {
         // Create the service
-        ServiceName serviceName = ConnectorServices.registerDeployment(raxml.getArchive());
+        ServiceName serviceName = ConnectorServices.registerDeployment(deploymentUnitName);
 
         ResourceAdapterXmlDeploymentService service = new ResourceAdapterXmlDeploymentService(connectorXmlDescriptor,
                 raxml, module, deployment, serviceName);
@@ -59,10 +59,10 @@ public class RaServicesFactory {
             }
 
             @Override
-                        protected CommonDeployment getDeploymentMetadata(final ServiceController<? extends Object> controller) {
-                           return  ((ResourceAdapterXmlDeploymentService) controller.getService()).getRaxmlDeployment();
-                        }
-                    });
+            protected CommonDeployment getDeploymentMetadata(final ServiceController<? extends Object> controller) {
+                return ((ResourceAdapterXmlDeploymentService) controller.getService()).getRaxmlDeployment();
+            }
+        });
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
     }
