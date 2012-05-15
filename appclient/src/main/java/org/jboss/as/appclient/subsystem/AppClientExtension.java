@@ -29,6 +29,8 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -52,21 +54,21 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 public class AppClientExtension implements Extension {
 
     public static final String NAMESPACE_1_0 = "urn:jboss:domain:appclient:1.0";
+    public static final String SUBSYSTEM_NAME = "appclient";
 
     private static final int MAJOR_VERSION = 1;
-    private static final int MINOR_VERSION = 0;
+    private static final int MINOR_VERSION = 1;
     private static final int MICRO_VERSION = 0;
 
     private static final ApplicationClientSubsystemParser parser = new ApplicationClientSubsystemParser();
 
+
+    private static final String RESOURCE_NAME = AppClientExtension.class.getPackage().getName() + ".LocalDescriptions";
+
     @Override
     public void initialize(final ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(Constants.SUBSYSTEM_NAME, MAJOR_VERSION, MINOR_VERSION, MICRO_VERSION);
-        final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(AppClientSubsystemProviders.SUBSYSTEM);
-
-        // register the operations
-        // EJB3 subsystem ADD operation
-        subsystemRegistration.registerOperationHandler(ADD, AppClientSubsystemAdd.INSTANCE, AppClientSubsystemAdd.INSTANCE, false);
+        subsystem.registerSubsystemModel(AppClientSubsystemResourceDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(parser);
     }
 
@@ -94,7 +96,6 @@ public class AppClientExtension implements Extension {
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             ParseUtils.requireNoAttributes(reader);
             ParseUtils.requireNoContent(reader);
-
             list.add(createAddOperation());
         }
     }
@@ -105,4 +106,9 @@ public class AppClientExtension implements Extension {
         subsystem.get(OP_ADDR).add(SUBSYSTEM, Constants.SUBSYSTEM_NAME);
         return subsystem;
     }
+
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, AppClientExtension.class.getClassLoader(), true, true);
+    }
+
 }
