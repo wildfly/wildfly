@@ -64,6 +64,7 @@ import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -1046,6 +1047,16 @@ public abstract class AbstractSubsystemTest {
         @Override
         public void registerOperationHandler(String operationName, OperationStepHandler handler,
                 DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType, EnumSet<Flag> flags) {
+        }
+
+        @Override
+        public void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler) {
+
+        }
+
+        @Override
+        public void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler, boolean inherited) {
+
         }
 
         @Override

@@ -51,6 +51,7 @@ import java.util.Set;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -577,6 +578,16 @@ public abstract class AbstractOperationTestCase {
         }
 
         public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags) {
+
+        }
+
+        @Override
+        public void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler) {
+
+        }
+
+        @Override
+        public void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler, boolean inherited) {
 
         }
 

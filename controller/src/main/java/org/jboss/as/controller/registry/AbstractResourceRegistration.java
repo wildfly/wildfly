@@ -32,7 +32,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -45,6 +47,7 @@ import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * A registry of model node information.  This registry is thread-safe.
@@ -134,6 +137,14 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
     public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EnumSet<Flag> flags) {
         registerOperationHandler(operationName, handler, descriptionProvider, inherited, EntryType.PUBLIC, flags);
     }
+
+    @Override
+    public void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler){
+        registerOperationHandler(definition, handler, false);
+    }
+
+    @Override
+    public abstract void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler,boolean inherited);
 
     /** {@inheritDoc} */
     @Override

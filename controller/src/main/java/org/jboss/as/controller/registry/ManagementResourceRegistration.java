@@ -27,6 +27,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import java.util.EnumSet;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -34,6 +35,8 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.dmr.ModelType;
 
 /**
  * A registration for a management resource which consists of a resource description plus registered operation handlers.
@@ -213,6 +216,22 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      */
     void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags);
 
+    /**
+     * Register an operation handler for this resource.
+     *
+     * @param definition the definition of operation
+     * @param handler    the operation handler
+     */
+    void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler);
+
+    /**
+     * Register an operation handler for this resource.
+     *
+     * @param definition the definition of operation
+     * @param handler    the operation handler
+     * @param inherited  {@code true} if the operation is inherited to child nodes, {@code false} otherwise
+     */
+    void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler, boolean inherited);
 
     /**
      * Unregister an operation handler for this resource.
