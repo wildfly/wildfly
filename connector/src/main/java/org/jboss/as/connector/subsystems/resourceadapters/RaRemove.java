@@ -69,15 +69,16 @@ public class RaRemove extends RaOperationUtil implements OperationStepHandler {
         context.addStep(new OperationStepHandler() {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                RaOperationUtil.deactivateIfActive(context, archive);
+                RaOperationUtil.deactivateIfActive(context, raName);
                 ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, raName);
                 final List<ServiceName> serviceNameList = context.getServiceRegistry(false).getServiceNames();
                 for (ServiceName name : serviceNameList) {
                     if (raServiceName.isParentOf(name)) {
                         context.removeService(name);
                     }
-                    context.removeService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
+
                 }
+                context.removeService(raServiceName);
                 if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                     // TODO:  RE-ADD SERVICES
                 }

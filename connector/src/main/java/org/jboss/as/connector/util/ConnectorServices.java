@@ -242,9 +242,6 @@ public class ConnectorServices {
             if (!entry.equals(serviceName))
                 throw MESSAGES.serviceIsntRegistered(serviceName.getCanonicalName());
 
-            Integer identifier = Integer.valueOf(serviceName.getSimpleName().substring(serviceName.getSimpleName().lastIndexOf("_") + 1));
-            deploymentIdentifiers.get(raName).remove(identifier);
-
             deploymentServiceNames.remove(raName);
             if (deploymentIdentifiers.get(raName).size() == 0) {
                 deploymentIdentifiers.remove(raName);
