@@ -54,9 +54,12 @@ import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.jca.deployers.common.DeployException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
 
@@ -68,6 +71,7 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
@@ -95,6 +99,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
     protected final InjectedValue<TransactionIntegration> txInt = new InjectedValue<TransactionIntegration>();
     protected final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
     protected final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
+
+    private final List<ServiceName> jndiServices = new LinkedList<ServiceName>();
 
     public ResourceAdapterDeployment getValue() {
         return ConnectorServices.notNull(value);
@@ -178,13 +184,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 }
             }
         }
-        if (mdr != null && mdr.getValue() != null && deploymentName != null) {
-            try {
-                mdr.getValue().unregisterResourceAdapter(deploymentName);
-            } catch (Throwable t) {
-                DEPLOYMENT_CONNECTOR_LOGGER.debug("Exception during unregistering deployment", t);
-            }
-        }
 
     }
 
@@ -228,6 +227,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
         return ccmValue;
     }
 
+    public List<ServiceName> getJndiServices()  {
+        return jndiServices;
+    }
+
     protected abstract class AbstractAS7RaDeployer extends AbstractResourceAdapterDeployer {
 
         protected final ServiceTarget serviceTarget;
@@ -236,9 +239,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
         protected final File root;
         protected final ClassLoader cl;
         protected final Connector cmd;
+        protected final ServiceName deploymentServiceName;
 
         protected AbstractAS7RaDeployer(ServiceTarget serviceTarget, URL url, String deploymentName, File root, ClassLoader cl,
-                Connector cmd) {
+                Connector cmd,  final ServiceName deploymentServiceName) {
             super(true);
             this.serviceTarget = serviceTarget;
             this.url = url;
@@ -246,6 +250,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
             this.root = root;
             this.cl = cl;
             this.cmd = cmd;
+            this.deploymentServiceName = deploymentServiceName;
         }
 
         public abstract CommonDeployment doDeploy() throws Throwable;
@@ -266,17 +271,20 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
             final ServiceName connectionFactoryServiceName = ConnectionFactoryService.SERVICE_NAME_BASE.append(jndi);
 
-            serviceTarget.addService(connectionFactoryServiceName, connectionFactoryService)
-                    .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(deploymentName))
-                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+            ServiceBuilder connectionFactoryBuilder = serviceTarget.addService(connectionFactoryServiceName, connectionFactoryService);
+            if (deploymentServiceName != null)
+                connectionFactoryBuilder.addDependency(deploymentServiceName);
+
+            connectionFactoryBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+            jndiServices.add(connectionFactoryServiceName);
 
             final ConnectionFactoryReferenceFactoryService referenceFactoryService = new ConnectionFactoryReferenceFactoryService();
             final ServiceName referenceFactoryServiceName = ConnectionFactoryReferenceFactoryService.SERVICE_NAME_BASE
                     .append(jndi);
             serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
                     .addDependency(connectionFactoryServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
-                    .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(deploymentName))
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
+            jndiServices.add(referenceFactoryServiceName);
 
             final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndi);
             final BinderService binderService = new BinderService(bindInfo.getBindName());
@@ -286,7 +294,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
                             binderService.getManagedObjectInjector())
                     .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class,
                             binderService.getNamingStoreInjector())
-                    .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(deploymentName))
                     .addListener(new AbstractServiceListener<Object>() {
                          public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                             switch (transition) {
@@ -304,6 +311,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                             }
                         }
                     }).setInitialMode(ServiceController.Mode.ACTIVE).install();
+            jndiServices.add(bindInfo.getBinderServiceName());
 
             // AS7-2222: Just hack it
             if (cf instanceof javax.resource.Referenceable) {
@@ -330,12 +338,14 @@ public abstract class AbstractResourceAdapterDeploymentService {
             final ServiceName adminObjectServiceName = AdminObjectService.SERVICE_NAME_BASE.append(jndi);
             serviceTarget.addService(adminObjectServiceName, adminObjectService).setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
+            jndiServices.add(adminObjectServiceName);
 
             final AdminObjectReferenceFactoryService referenceFactoryService = new AdminObjectReferenceFactoryService();
             final ServiceName referenceFactoryServiceName = AdminObjectReferenceFactoryService.SERVICE_NAME_BASE.append(jndi);
             serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
                     .addDependency(adminObjectServiceName, Object.class, referenceFactoryService.getAdminObjectInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
+            jndiServices.add(referenceFactoryServiceName);
 
             final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndi);
             final BinderService binderService = new BinderService(bindInfo.getBindName());
@@ -363,6 +373,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                             }
                         }
                     }).setInitialMode(ServiceController.Mode.ACTIVE).install();
+            jndiServices.add(binderServiceName);
 
             // AS7-2222: Just hack it
             if (ao instanceof javax.resource.Referenceable) {

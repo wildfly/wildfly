@@ -93,7 +93,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         final File root = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getRoot();
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("DEPLOYMENT name = %s",deploymentName);
         final AS7RaDeployer raDeployer =
-            new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, module.getClassLoader(), cmd, ijmd);
+            new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, module.getClassLoader(), cmd, ijmd, deploymentServiceName);
         raDeployer.setConfiguration(config.getValue());
 
         ClassLoader old = SecurityActions.getThreadContextClassLoader();
@@ -132,7 +132,6 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         String deploymentName = value.getDeployment() != null ? value.getDeployment().getDeploymentName() : "";
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping sevice %s",
                         ConnectorServices.RESOURCE_ADAPTER_DEPLOYMENT_SERVICE_PREFIX.append(deploymentName));
-
         unregisterAll(deploymentName);
     }
 
@@ -147,8 +146,15 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
             ConnectorServices.unregisterResourceAdapterIdentifier(raName);
         }
 
-
         super.unregisterAll(deploymentName);
+
+        if (mdr != null && mdr.getValue() != null && deploymentName != null) {
+            try {
+                mdr.getValue().unregisterResourceAdapter(deploymentName);
+            } catch (Throwable t) {
+                DEPLOYMENT_CONNECTOR_LOGGER.debug("Exception during unregistering deployment", t);
+            }
+        }
     }
 
     public CommonDeployment getRaDeployment() {
@@ -164,8 +170,8 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         private final IronJacamar ijmd;
 
         public AS7RaDeployer(ServiceTarget serviceContainer, URL url, String deploymentName, File root, ClassLoader cl,
-                Connector cmd, IronJacamar ijmd) {
-            super(serviceContainer, url, deploymentName, root, cl, cmd);
+                Connector cmd, IronJacamar ijmd,  final ServiceName deploymentServiceName) {
+            super(serviceContainer, url, deploymentName, root, cl, cmd, deploymentServiceName);
             this.ijmd = ijmd;
         }
 
