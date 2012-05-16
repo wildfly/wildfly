@@ -47,6 +47,13 @@ import org.jboss.logging.Param;
 import org.jboss.vfs.VirtualFile;
 
 /**
+ * This module is using message IDs in the range 11000-11099 and 16700-16799.
+ * <p/>
+ * This file is using the subset 11025-11099 and 16700-16799 for non-logger messages.
+ * <p/>
+ * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
+ * list of currently reserved JBAS message id blocks.
+ * <p/>
  * Date: 05.11.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -866,6 +873,6 @@ public interface EeMessages {
     @Message(id = 11099, value = "More than one message destination with name %s for binding %s destinations: %s")
     String moreThanOneMessageDestination(String name, String binding, Set<String> jndiNames);
 
-    @Message(id = 11100, value = "Failed to load jboss.properties")
+    @Message(id = 16700, value = "Failed to load jboss.properties")
     DeploymentUnitProcessingException failedToLoadJbossProperties(@Cause IOException e);
 }
