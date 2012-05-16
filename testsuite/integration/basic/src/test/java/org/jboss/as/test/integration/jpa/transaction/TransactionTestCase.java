@@ -160,7 +160,7 @@ public class TransactionTestCase {
     	SLSB1 slsb1 = lookup("SLSB1", SLSB1.class);
     	slsb1.addEmployee();
 
-    	String message = slsb1.failAfterCalls();
+    	String message = slsb1.failInFirstCall();
     	assertEquals("DB should be unchanged, which we indicate by returning 'success'","success", message);
     	
     	message = slsb1.failInSecondCall();

@@ -38,7 +38,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -102,10 +101,10 @@ public class JPA2LCTestCase {
     @Test
     public void testMultipleNonTXTransactionalEntityManagerInvocations() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
-        sfsb1.createEmployee("Kelly Smith", "Watford, England", 10);
-        sfsb1.createEmployee("Alex Scott", "London, England", 20);
-        sfsb1.getEmployeeNoTX(10);
-        sfsb1.getEmployeeNoTX(20);
+        sfsb1.createEmployee("Kelly Smith", "Watford, England", 1000);
+        sfsb1.createEmployee("Alex Scott", "London, England", 2000);
+        sfsb1.getEmployeeNoTX(1000);
+        sfsb1.getEmployeeNoTX(2000);
 
         DataSource ds = rawLookup("java:jboss/datasources/ExampleDS", DataSource.class);
         Connection conn = ds.getConnection();
@@ -119,7 +118,7 @@ public class JPA2LCTestCase {
         }
 
         // read deleted data from second level cache
-        Employee emp = sfsb1.getEmployeeNoTX(10);
+        Employee emp = sfsb1.getEmployeeNoTX(1000);
 
         assertTrue("was able to read deleted database row from second level cache", emp != null);
     }
