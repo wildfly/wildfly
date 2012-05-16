@@ -197,7 +197,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "Enter the details of the new user to add.")
+    @Message(id = Message.NONE, value = "Enter the details of the new user to add.")
     String enterNewUserDetails();
 
     /**
@@ -207,7 +207,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "Realm (%s)")
+    @Message(id = Message.NONE, value = "Realm (%s)")
     String realmPrompt(String realm);
 
     /**
@@ -215,7 +215,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "Username")
+    @Message(id = Message.NONE, value = "Username")
     String usernamePrompt();
 
     /**
@@ -225,7 +225,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "Username (%s)")
+    @Message(id = Message.NONE, value = "Username (%s)")
     String usernamePrompt(String defaultUsername);
 
     /**
@@ -241,7 +241,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "Password")
+    @Message(id = Message.NONE, value = "Password")
     String passwordPrompt();
 
     /**
@@ -257,7 +257,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "Re-enter Password")
+    @Message(id = Message.NONE, value = "Re-enter Password")
     String passwordConfirmationPrompt();
 
     /**
@@ -292,7 +292,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "About to add user '%s' for realm '%s'")
+    @Message(id = Message.NONE, value = "About to add user '%s' for realm '%s'")
     String aboutToAddUser(String username, String realm);
 
     /**
@@ -300,7 +300,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "Is this correct yes/no?")
+    @Message(id = Message.NONE, value = "Is this correct yes/no?")
     String isCorrectPrompt();
 
     /**
@@ -310,7 +310,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "The username '%s' is easy to guess")
+    @Message(id = Message.NONE, value = "The username '%s' is easy to guess")
     String usernameEasyToGuess(String username);
 
     /**
@@ -320,7 +320,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "Are you sure you want to add user '%s' yes/no?")
+    @Message(id = Message.NONE, value = "Are you sure you want to add user '%s' yes/no?")
     String sureToAddUser(String username);
 
     /**
@@ -341,7 +341,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "Added user '%s' to file '%s'")
+    @Message(id = Message.NONE, value = "Added user '%s' to file '%s'")
     String addedUser(String username, String fileName);
 
     /**
@@ -381,7 +381,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "Error")
+    @Message(id = Message.NONE, value = "Error")
     String errorHeader();
 
     /**
@@ -389,7 +389,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "Is this new user going to be used for one AS process to connect to another AS process e.g. slave domain controller?")
+    @Message(id = Message.NONE, value = "Is this new user going to be used for one AS process to connect to another AS process e.g. slave domain controller?")
     String serverUser();
 
     /**
@@ -397,7 +397,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "yes/no?")
+    @Message(id = Message.NONE, value = "yes/no?")
     String yesNo();
 
     /**
@@ -405,7 +405,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "To represent the user add the following to the server-identities definition <secret value=\"%s\" />")
+    @Message(id = Message.NONE, value = "To represent the user add the following to the server-identities definition <secret value=\"%s\" />")
     String secretElement(String base64);
 
     /**
@@ -469,14 +469,14 @@ public interface DomainManagementMessages {
     /**
      * Prompt for the file to update in add-users
      */
-    @Message(value = "What type of user do you wish to add? %n a) Management User (mgmt-users.properties) %n b) Application User (application-users.properties)")
+    @Message(id = Message.NONE, value = "What type of user do you wish to add? %n a) Management User (mgmt-users.properties) %n b) Application User (application-users.properties)")
     String filePrompt();
 
     /**
      * Prompt the user for the roles to add the user to
      * @return
      */
-    @Message(value = "What roles do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)")
+    @Message(id = Message.NONE, value = "What roles do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)")
     String rolesPrompt();
 
 
@@ -489,7 +489,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "Added user '%s' with roles %s to file '%s'")
+    @Message(id = Message.NONE, value = "Added user '%s' with roles %s to file '%s'")
     String addedRoles(String username, String roles, String fileName);
 
     /**
@@ -509,7 +509,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "User '%s' already exits, would you like to update the existing user password and roles")
+    @Message(id = Message.NONE, value = "User '%s' already exits, would you like to update the existing user password and roles")
     String aboutToUpdateUser(String user);
 
     /**
@@ -520,7 +520,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "Updated user '%s' to file '%s'")
+    @Message(id = Message.NONE, value = "Updated user '%s' to file '%s'")
     String updateUser(String userName, String canonicalPath);
 
 
@@ -545,7 +545,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "Updated user '%s' with roles %s to file '%s'")
+    @Message(id = Message.NONE, value = "Updated user '%s' with roles %s to file '%s'")
     String updatedRoles(String username, String roles, String fileName);
 
     /**
