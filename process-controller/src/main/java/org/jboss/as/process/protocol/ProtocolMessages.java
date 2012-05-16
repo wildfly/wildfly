@@ -34,6 +34,10 @@ import java.net.ConnectException;
 import java.net.URI;
 
 /**
+ * This module is using message IDs in the range 16600-16699.
+ * This file is using the subset 16640-16699 for non-logger messages.
+ * See http://community.jboss.org/docs/DOC-16810 for the full list of
+ * currently reserved JBAS message id blocks.
  * Date: 21.07.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -46,82 +50,11 @@ public interface ProtocolMessages {
     ProtocolMessages MESSAGES = Messages.getBundle(ProtocolMessages.class);
 
     /**
-     * Creates an exception indicating a connection is already connected.
-     *
-     * @return an {@link IllegalStateException} for the error.
-     */
-    @Message(value = "Already connected")
-    IllegalStateException alreadyConnected();
-
-    /**
-     * Creates an exception indicating the channel and receiver have already been started.
-     *
-     * @return an {@link IllegalStateException} for the error.
-     */
-    @Message(value = "Channel and receiver already started")
-    IllegalStateException alreadyStarted();
-
-    /**
-     * Creates an exception indicating that both connect timeout and the connect timeout property cannot be used
-     * together.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(value = "Can't use both a connect timeout and a connect timeout property")
-    IllegalArgumentException cannotSpecifyMultipleTimeouts();
-
-    /**
-     * Creates an exception indicating the uriScheme cannot be set with the endpoint.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(value = "Can't set uriScheme with specified endpoint")
-    IllegalArgumentException cannotSetUriScheme();
-
-    /**
-     * Creates an exception indicating a connection could not be made.
-     *
-     * @param uri             the URI attempted to connect.
-     * @param timeout         the timeout of the connection.
-     * @param timeoutProperty the timeout property name.
-     *
-     * @return a {@link java.net.ConnectException} for the error.
-     */
-    @Message(value = "Could not connect to %s in %sms. Make sure the server is running and/or consider setting a longer timeout by setting -D%s=<timeout in ms>.")
-    ConnectException couldNotConnect(URI uri, long timeout, String timeoutProperty);
-
-    /**
-     * Creates an exception indicating a connection could not be made.
-     *
-     * @param connectionTimeout the connection timeout
-     *
-     * @return a {@link java.net.ConnectException} for the error.
-     */
-    @Message(value = "Could not connect to remote server at %1$s within %1$sms")
-    ConnectException couldNotConnect(long connectionTimeout);
-
-    /**
-     * Creates an exception indicating the executor is needed when not endpoint is specified.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(value = "Need an executor when endpoint is not specified")
-    IllegalArgumentException executorNeeded();
-
-    /**
-     * Creates an exception indicating the executor is not needed when an endpoint is specified.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(value = "Don't need an executor when specified endpoint")
-    IllegalArgumentException executorUnneeded();
-
-    /**
      * Creates an exception indicating a failure to create the server thread.
      *
      * @return an {@link java.io.IOException} for the error.
      */
-    @Message(value = "Failed to create server thread")
+    @Message(id = 16640, value = "Failed to create server thread")
     IOException failedToCreateServerThread();
 
     /**
@@ -131,25 +64,15 @@ public interface ProtocolMessages {
      *
      * @return an {@link java.io.IOException} for the error.
      */
-    @Message(value = "Failed to read object")
+    @Message(id = 16641, value = "Failed to read object")
     IOException failedToReadObject(@Cause Throwable cause);
-
-    /**
-     * Creates an exception indicating a failure to write management response headers.
-     *
-     * @param cause the cause of the error.
-     *
-     * @return an {@link java.io.IOException} for the error.
-     */
-    @Message(value = "Failed to write management response headers")
-    IOException failedToWriteManagementResponseHeaders(@Cause Throwable cause);
 
     /**
      * Creates an exception indicating an invalid byte.
      *
      * @return an {@link java.io.UTFDataFormatException} for the error.
      */
-    @Message(value = "Invalid byte")
+    @Message(id = 16642, value = "Invalid byte")
     UTFDataFormatException invalidByte();
 
     /**
@@ -160,7 +83,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link java.io.UTFDataFormatException} for the error.
      */
-    @Message(value = "Invalid byte:%s(%d)")
+    @Message(id = 16643, value = "Invalid byte:%s(%d)")
     UTFDataFormatException invalidByte(char c, int i);
 
     /**
@@ -171,7 +94,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link java.io.IOException} for the error.
      */
-    @Message(value = "Invalid byte token.  Expecting '%s' received '%s'")
+    @Message(id = 16644, value = "Invalid byte token.  Expecting '%s' received '%s'")
     IOException invalidByteToken(int expected, byte actual);
 
     /**
@@ -181,7 +104,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link java.io.IOException} for the error.
      */
-    @Message(value = "Invalid command byte read: %s")
+    @Message(id = 16645, value = "Invalid command byte read: %s")
     IOException invalidCommandByte(int commandByte);
 
     /**
@@ -191,7 +114,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link java.io.IOException} for the error.
      */
-    @Message(value = "Invalid signature [%s]")
+    @Message(id = 16646, value = "Invalid signature [%s]")
     IOException invalidSignature(String signature);
 
     /**
@@ -201,7 +124,7 @@ public interface ProtocolMessages {
      *
      * @return an {@code IOException} for the error.
      */
-    @Message(value = "Invalid start chunk start [%s]")
+    @Message(id = 16647, value = "Invalid start chunk start [%s]")
     IOException invalidStartChunk(int chunk);
 
     /**
@@ -211,7 +134,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link java.io.IOException} for the error.
      */
-    @Message(value = "Invalid type: %s")
+    @Message(id = 16648, value = "Invalid type: %s")
     IOException invalidType(String type);
 
     /**
@@ -223,7 +146,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "Type is neither %s or %s: %s")
+    @Message(id = 16649, value = "Type is neither %s or %s: %s")
     IllegalArgumentException invalidType(String validType1, String validType2, byte providedType);
 
     /**
@@ -233,24 +156,8 @@ public interface ProtocolMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "Only '%s' is a valid url")
+    @Message(id = 16650, value = "Only '%s' is a valid url")
     IllegalArgumentException invalidUrl(String url);
-
-    /**
-     * Creates an exception indicating there is no operation handler set.
-     *
-     * @return an {@link java.io.IOException} for the error.
-     */
-    @Message(value = "No operation handler set")
-    IOException operationHandlerNotSet();
-
-    /**
-     * Creates an exception indicating there is no connection.
-     *
-     * @return an {@link IllegalStateException} for the error.
-     */
-    @Message(value = "Not connected")
-    IllegalStateException notConnected();
 
     /**
      * Creates an exception indicating the {@code varName} is {@code null}.
@@ -259,19 +166,8 @@ public interface ProtocolMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "%s is null")
+    @Message(id = 16651, value = "%s is null")
     IllegalArgumentException nullVar(String varName);
-
-    /**
-     * Creates an exception indicating the {@code parameterName1} and {@code parameterName2} are {@code null}.
-     *
-     * @param parameterName1 the parameter name.
-     * @param parameterName2 the parameter name.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(value = "%s and %s are null")
-    IllegalArgumentException nullParameters(String parameterName1, String parameterName2);
 
     /**
      * Creates an exception indicating the number of bytes read.
@@ -280,7 +176,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link java.io.EOFException} for the error.
      */
-    @Message(value = "Read %d bytes.")
+    @Message(id = 16652, value = "Read %d bytes.")
     EOFException readBytes(int bytesRead);
 
 //    /**
@@ -291,43 +187,15 @@ public interface ProtocolMessages {
 //     *
 //     * @return an {@link java.io.IOException} for the error.
 //     */
-//    @Message(value = "No request handler found with id %s in operation handler %s")
+//    @Message(id = 16653, value = "No request handler found with id %s in operation handler %s")
 //    IOException requestHandlerIdNotFound(byte id, ManagementOperationHandler operationHandler);
-
-    /**
-     * Creates an exception indicating the response handler has already been registered for the request.
-     *
-     * @return an {@link java.io.IOException} for the error.
-     */
-    @Message(value = "Response handler already registered for request")
-    IOException responseHandlerAlreadyRegistered();
-
-    /**
-     * Creates an exception indicating the response handler id was not found for the request.
-     *
-     * @param id the id.
-     *
-     * @return an {@link java.io.IOException} for the error.
-     */
-    @Message("No response handler for request %s")
-    IOException responseHandlerNotFound(int id);
-
-    /**
-     * Creates an exception indicating a problem happened executing on the server.
-     *
-     * @param errorMessage the error message.
-     *
-     * @return an {@link java.io.IOException} for the error
-     */
-    @Message(value = "A problem happened executing on the server: %s")
-    IOException serverError(String errorMessage);
 
     /**
      * Creates an exception indicating the stream is closed.
      *
      * @return an {@link java.io.IOException} for the error.
      */
-    @Message(value = "Stream closed")
+    @Message(id = 16654, value = "Stream closed")
     IOException streamClosed();
 
     /**
@@ -335,7 +203,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "Thread creation was refused")
+    @Message(id = 16655, value = "Thread creation was refused")
     IllegalStateException threadCreationRefused();
 
     /**
@@ -343,26 +211,15 @@ public interface ProtocolMessages {
      *
      * @return an {@link java.io.EOFException} for the error.
      */
-    @Message(value = "Unexpected end of stream")
+    @Message(id = 16656, value = "Unexpected end of stream")
     EOFException unexpectedEndOfStream();
-
-    /**
-     * Creates an exception indicating the scheme does not match the URI.
-     *
-     * @param scheme the scheme.
-     * @param uri    the uri.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(value = "Scheme %s does not match uri %s")
-    IllegalArgumentException unmatchedScheme(String scheme, URI uri);
 
     /**
      * Creates an exception indicating the write channel is closed.
      *
      * @return an {@link java.io.IOException} for the error.
      */
-    @Message(value = "Write channel closed")
+    @Message(id = 16657, value = "Write channel closed")
     IOException writeChannelClosed();
 
     /**
@@ -370,6 +227,6 @@ public interface ProtocolMessages {
      *
      * @return an {@link java.io.IOException} for the error.
      */
-    @Message(value = "Writes are already shut down")
+    @Message(id = 16658, value = "Writes are already shut down")
     IOException writesAlreadyShutdown();
 }

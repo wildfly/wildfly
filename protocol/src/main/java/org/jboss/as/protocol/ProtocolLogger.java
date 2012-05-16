@@ -33,8 +33,6 @@ import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.Unmarshaller;
 import org.jboss.remoting3.Channel;
 
 /**
@@ -61,11 +59,6 @@ public interface ProtocolLogger extends BasicLogger {
     ProtocolLogger CONNECTION_LOGGER = Logger.getMessageLogger(ProtocolLogger.class, "org.jboss.as.protocol.connection");
 
     /**
-     * A logger with the category {@code org.jboss.as.protocol.server}.
-     */
-    ProtocolLogger SERVER_LOGGER = Logger.getMessageLogger(ProtocolLogger.class, "org.jboss.as.protocol.server");
-
-    /**
      * Logs a warning message indicating an error occurred when closing the channel.
      *
      * @param message the error message.
@@ -74,14 +67,10 @@ public interface ProtocolLogger extends BasicLogger {
     @Message(id = 12100, value = "Got error closing channel %s")
     void errorClosingChannel(String message);
 
-    /**
-     * Logs an error message indicating a failure to accept the connection.
-     *
-     * @param cause the cause of the error.
-     */
-    @LogMessage(level = ERROR)
-    @Message(id = 12101, value = "Failed to accept a connection")
-    void failedToAcceptConnection(@Cause Throwable cause);
+
+    //    @LogMessage(level = ERROR)
+    //    @Message(id = 12101, value = "Failed to accept a connection")
+    //    void failedToAcceptConnection(@Cause Throwable cause);
 
     /**
      * Logs an error message indicating a failure to close the resource.
@@ -103,105 +92,57 @@ public interface ProtocolLogger extends BasicLogger {
     @Message(id = 12103, value = "Failed to close the server socket %s")
     void failedToCloseServerSocket(@Cause Throwable cause, ServerSocket socket);
 
-    /**
-     * Logs an error message indicating a failure to close the socket.
-     *
-     * @param cause the cause of the error.
-     */
-    @LogMessage(level = ERROR)
-    @Message(id = 12104, value = "Failed to close a socket")
-    void failedToCloseSocket(@Cause Throwable cause);
+    //    @LogMessage(level = ERROR)
+    //    @Message(id = 12104, value = "Failed to close a socket")
+    //    void failedToCloseSocket(@Cause Throwable cause);
 
-    /**
-     * Logs an error message indicating a failure to finish the marshaller.
-     *
-     * @param cause      the cause of the error.
-     * @param marshaller the marshaller in error.
-     */
-    @LogMessage(level = ERROR)
-    @Message(id = 12105, value = "Failed to finish the marshaller %s")
-    void failedToFinishMarshaller(@Cause Throwable cause, Marshaller marshaller);
+    //    @LogMessage(level = ERROR)
+    //    @Message(id = 12105, value = "Failed to finish the marshaller %s")
+    //    void failedToFinishMarshaller(@Cause Throwable cause, Marshaller marshaller);
 
-    /**
-     * Logs an error message indicating a failure to finish the unmarshaller.
-     *
-     * @param cause        the cause of the error.
-     * @param unmarshaller the marshaller in error.
-     */
-    @LogMessage(level = ERROR)
-    @Message(id = 12106, value = "Failed to finish the unmarshaller %s")
-    void failedToFinishUnmarshaller(@Cause Throwable cause, Unmarshaller unmarshaller);
+    //    @LogMessage(level = ERROR)
+    //    @Message(id = 12106, value = "Failed to finish the unmarshaller %s")
+    //    void failedToFinishUnmarshaller(@Cause Throwable cause, Unmarshaller unmarshaller);
 
-    /**
-     * Logs an error message indicating a failure to handle the incoming connection.
-     *
-     * @param cause the cause of the error.
-     */
-    @LogMessage(level = ERROR)
-    @Message(id = 12107, value = "Failed to handle incoming connection")
-    void failedToHandleIncomingConnection(@Cause Throwable cause);
+    //    @LogMessage(level = ERROR)
+    //    @Message(id = 12107, value = "Failed to handle incoming connection")
+    //    void failedToHandleIncomingConnection(@Cause Throwable cause);
 
-    /**
-     * Logs an error messaged indicating a failure to handle the socket failure condition.
-     *
-     * @param cause the cause of the error.
-     */
-    @LogMessage(level = ERROR)
-    @Message(id = 12108, value = "Failed to handle socket failure condition")
-    void failedToHandleSocketFailure(@Cause Throwable cause);
+    //    @LogMessage(level = ERROR)
+    //    @Message(id = 12108, value = "Failed to handle socket failure condition")
+    //    void failedToHandleSocketFailure(@Cause Throwable cause);
 
-    /**
-     * Logs an error messaged indicating a failure to handle the socket finished condition.
-     *
-     * @param cause the cause of the error.
-     */
-    @LogMessage(level = ERROR)
-    @Message(id = 12109, value = "Failed to handle socket finished condition")
-    void failedToHandleSocketFinished(@Cause Throwable cause);
+    //    @LogMessage(level = ERROR)
+    //    @Message(id = 12109, value = "Failed to handle socket finished condition")
+    //    void failedToHandleSocketFinished(@Cause Throwable cause);
 
-    /**
-     * Logs an error messaged indicating a failure to handle the socket shut down condition.
-     *
-     * @param cause the cause of the error.
-     */
-    @LogMessage(level = ERROR)
-    @Message(id = 12110, value = "Failed to handle socket shut down condition")
-    void failedToHandleSocketShutdown(@Cause Throwable cause);
+    //    @LogMessage(level = ERROR)
+    //    @Message(id = 12110, value = "Failed to handle socket shut down condition")
+    //    void failedToHandleSocketShutdown(@Cause Throwable cause);
 
-    /**
-     * Logs an error message indicating a failure to read a message.
-     *
-     * @param cause the cause of the error.
-     */
-    @LogMessage(level = ERROR)
-    @Message(id = 12111, value = "Failed to read a message")
-    void failedToReadMessage(@Cause Throwable cause);
+    //    @LogMessage(level = ERROR)
+    //    @Message(id = 12111, value = "Failed to read a message")
+    //    void failedToReadMessage(@Cause Throwable cause);
 
-    /**
-     * Logs a warning message indicating the leakage of the message outout stream.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 12112, value = "Leaked a message output stream; cleaning")
-    void leakedMessageOutputStream();
+    //    @LogMessage(level = WARN)
+    //    @Message(id = 12112, value = "Leaked a message output stream; cleaning")
+    //    void leakedMessageOutputStream();
 
-    /**
-     * Logs a warning message indicating the wrong channel was received.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 12113, value = "Received end for wrong channel!")
-    void receivedWrongChannel();
+    //    @LogMessage(level = WARN)
+    //    @Message(id = 12113, value = "Received end for wrong channel!")
+    //    void receivedWrongChannel();
 
     @LogMessage(level = WARN)
     @Message(id = 12114, value = "Executor is not needed for client")
     void executorNotNeeded();
 
-    @LogMessage(level = WARN)
-    @Message(id = 12115, value = "Connection timeout is no longer needed for client")
-    void connectTimeoutNotNeeded();
-
-    @LogMessage(level = WARN)
-    @Message(id = 12117, value = "Connection timeout property is no longer needed for client")
-    void connectTimeoutPropertyNotNeeded();
+    //    @LogMessage(level = WARN)
+    //    @Message(id = 12115, value = "Connection timeout is no longer needed for client")
+    //    void connectTimeoutNotNeeded();
+    //
+    //    @LogMessage(level = WARN)
+    //    @Message(id = 12117, value = "Connection timeout property is no longer needed for client")
+    //    void connectTimeoutPropertyNotNeeded();
 
     @LogMessage(level = WARN)
     @Message(id = 12118, value = "No such request (%d) associated with channel %s")
