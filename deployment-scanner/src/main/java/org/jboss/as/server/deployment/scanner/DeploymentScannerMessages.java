@@ -141,7 +141,7 @@ public interface DeploymentScannerMessages {
      *
      * @return the message.
      */
-    @Message(" A previous version of this content was deployed and remains deployed.")
+    @Message(id = Message.NONE, value = " A previous version of this content was deployed and remains deployed.")
     String previousContentDeployed();
 
     /**
