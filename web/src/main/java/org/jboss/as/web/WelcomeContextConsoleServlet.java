@@ -166,8 +166,14 @@ public class WelcomeContextConsoleServlet extends HttpServlet {
             // so they must be different loopback bindings e.g. 127.0.0.1 and ::1 as this is a
             // loopback to loopback redirection we will allow the other address to be passed to
             // the remote client.
+            String address = managementAddress.getHostAddress();
+            int percentPos = address.indexOf('%');
+            if (percentPos > 0) {
+                // Strip any scope identifier from the address.
+                address = address.substring(0, percentPos);
+            }
 
-            return managementAddress.getHostAddress();
+            return address;
         }
 
         // To reach this point there was no correlation identified between the inbound address and the address the
