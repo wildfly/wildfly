@@ -27,16 +27,11 @@ import java.io.InputStream;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-import org.jboss.as.capedwarf.services.MuxIdService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -62,11 +57,6 @@ public class CapedwarfAppIdParseProcessor extends CapedwarfDeploymentUnitProcess
             throw new IllegalArgumentException("App id already exists: " + appId);
 
         CapedwarfDeploymentMarker.setAppId(unit, appId);
-
-        ServiceTarget target = phaseContext.getServiceTarget();
-        ServiceName name = ServiceName.JBOSS.append(CAPEDWARF).append("mux-gen").append(appId);
-        ServiceBuilder<Void> builder = target.addService(name, new MuxIdService(appId));
-        builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
     }
 
     protected String parseAppId(VirtualFile xml) throws DeploymentUnitProcessingException {
