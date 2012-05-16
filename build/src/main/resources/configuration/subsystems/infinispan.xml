@@ -90,6 +90,7 @@
                <replicated-cache name="data" mode="ASYNC">
                    <transaction mode="NON_XA"/>
                    <eviction strategy="NONE"/>
+                   <file-store preload="true" purge="false"/>
                </replicated-cache>
                <replicated-cache name="metadata" mode="ASYNC">
                    <transaction mode="NON_XA"/>
