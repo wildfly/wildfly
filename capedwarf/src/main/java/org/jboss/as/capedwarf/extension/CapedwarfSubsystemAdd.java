@@ -30,12 +30,14 @@ import javax.jms.Connection;
 
 import org.jboss.as.capedwarf.api.Constants;
 import org.jboss.as.capedwarf.api.Logger;
+import org.jboss.as.capedwarf.deployment.CapedwarfAppIdParseProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfCDIExtensionProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfCleanupProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfDependenciesProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfInitializationProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfJPAProcessor;
+import org.jboss.as.capedwarf.deployment.CapedwarfMuxIdProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfPersistenceModificationProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWebCleanupProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWebComponentsDeploymentProcessor;
@@ -120,17 +122,19 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 addLogger(serviceTarget, newControllers);
 
                 final int initialPhaseOrder = Math.min(Phase.PARSE_WEB_DEPLOYMENT, Phase.PARSE_PERSISTENCE_UNIT);
-                processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 20, new CapedwarfInitializationProcessor());
-                processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 10, new CapedwarfPersistenceModificationProcessor(tempDir)); // before persistence.xml parsing
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT + 1, new CapedwarfWebCleanupProcessor()); // right after web.xml parsing
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_COMPONENTS - 1, new CapedwarfWebComponentsDeploymentProcessor());
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WELD_WEB_INTEGRATION - 10, new CapedwarfWeldParseProcessor()); // before Weld web integration
-                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WELD - 10, new CapedwarfWeldProcessor()); // before Weld
-                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA - 10, new CapedwarfJPAProcessor()); // before default JPA processor
-                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE + 10, new CapedwarfDeploymentProcessor(appengineAPI));
-                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_APP_NAMING_CONTEXT + 10, new CapedwarfDependenciesProcessor()); // adjust order as needed
-                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS + 10, new CapedwarfCDIExtensionProcessor()); // after Weld portable extensions lookup
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_JNDI_BINDINGS + 1, new CapedwarfCleanupProcessor(consumerService)); // adjust order as needed
+                processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.PARSE, initialPhaseOrder - 20, new CapedwarfInitializationProcessor());
+                processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.PARSE, initialPhaseOrder - 15, new CapedwarfAppIdParseProcessor()); // adjust order as needed
+                processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.PARSE, initialPhaseOrder - 10, new CapedwarfPersistenceModificationProcessor(tempDir)); // before persistence.xml parsing
+                processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT + 1, new CapedwarfWebCleanupProcessor()); // right after web.xml parsing
+                processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.PARSE, Phase.PARSE_WEB_COMPONENTS - 1, new CapedwarfWebComponentsDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.PARSE, Phase.PARSE_WELD_WEB_INTEGRATION - 10, new CapedwarfWeldParseProcessor()); // before Weld web integration
+                processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.DEPENDENCIES, Phase.DEPENDENCIES_WELD - 10, new CapedwarfWeldProcessor()); // before Weld
+                processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA - 10, new CapedwarfJPAProcessor()); // before default JPA processor
+                processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE + 10, new CapedwarfDeploymentProcessor(appengineAPI));
+                processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.POST_MODULE, Phase.POST_MODULE_APP_NAMING_CONTEXT + 10, new CapedwarfDependenciesProcessor()); // adjust order as needed
+                processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.POST_MODULE, Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS + 10, new CapedwarfCDIExtensionProcessor()); // after Weld portable extensions lookup
+                processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.INSTALL, Phase.INSTALL_MODULE_JNDI_BINDINGS - 1, new CapedwarfMuxIdProcessor()); // adjust order as needed
+                processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.INSTALL, Phase.INSTALL_MODULE_JNDI_BINDINGS + 1, new CapedwarfCleanupProcessor(consumerService)); // adjust order as needed
             }
         }, OperationContext.Stage.RUNTIME);
 

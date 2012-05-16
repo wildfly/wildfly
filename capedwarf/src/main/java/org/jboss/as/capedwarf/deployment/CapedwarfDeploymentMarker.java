@@ -35,6 +35,7 @@ public class CapedwarfDeploymentMarker {
 
     private boolean bundledAppEngineApi;
     private boolean cdiApp;
+    private String appId;
 
     private CapedwarfDeploymentMarker() {
     }
@@ -102,5 +103,28 @@ public class CapedwarfDeploymentMarker {
     public static boolean isCDIApp(DeploymentUnit unit) {
         final CapedwarfDeploymentMarker marker = unit.getAttachment(MARKER);
         return marker != null && marker.cdiApp;
+    }
+
+    /**
+     * Set app id info.
+     *
+     * @param unit the deployment unit
+     * @param appId the app id
+     */
+    public static void setAppId(DeploymentUnit unit, String appId) {
+        final CapedwarfDeploymentMarker marker = unit.getAttachment(MARKER);
+        if (marker != null)
+            marker.appId = appId;
+    }
+
+    /**
+     * Get app id.
+     *
+     * @param unit the deployment unit
+     * @return app id
+     */
+    public static String getAppId(DeploymentUnit unit) {
+        final CapedwarfDeploymentMarker marker = unit.getAttachment(MARKER);
+        return marker != null ? marker.appId : null;
     }
 }
