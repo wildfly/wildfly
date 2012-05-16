@@ -22,7 +22,10 @@
 package org.jboss.as.test.integration.ejb.entity.bmp;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -101,6 +104,17 @@ public class SimpleBMPBean implements EntityBean {
         return set;
     }
 
+    public Collection<Integer> ejbFindSortedCollection() {
+        final ArrayList<Integer> list = new ArrayList<Integer>();
+        for (int i=1000; i<2000; i++) {
+        	list.add(i);
+        }
+        return list;
+    }
+
+    public Enumeration<Integer> ejbFindSortedEnumeration() {
+    	return Collections.enumeration(ejbFindSortedCollection());
+    }
 
     @Override
     public void setEntityContext(final EntityContext ctx) throws EJBException, RemoteException {

@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.ejb.entity.bmp;
 
 import java.util.Collection;
+import java.util.Enumeration;
 
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchObjectLocalException;
@@ -33,6 +34,7 @@ import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.ejb.entity.bmp.BMPLocalHome;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -100,6 +102,49 @@ public class BMPEntityBeanTestCase {
             Assert.assertEquals("Collection", result.getMyField());
         }
     }
+
+	@Test
+	public void testSortedCollectionFinderMethod() throws Exception {
+		DataStore.DATA.clear();
+		final BMPLocalHome home = getHome();
+		for (int i = 1000; i < 2000; i++) {
+			DataStore.DATA.put(i, "" + i);
+		}
+		Collection<BMPLocalInterface> col = home.findSortedCollection();
+		Assert.assertTrue("Returned collection must not be empty",
+				col.size() > 0);
+		// check that returned results are sorted
+		Integer previousMyFieldValue = null;
+		for (BMPLocalInterface result : col) {
+			Integer myFieldValue = Integer.parseInt(result.getMyField());
+			if (previousMyFieldValue != null)
+				Assert.assertTrue("Returned entities should be sorted",
+						myFieldValue > previousMyFieldValue);
+			previousMyFieldValue = myFieldValue;
+		}
+	}
+
+	@Test
+	public void testSortedEnumerationFinderMethod() throws Exception {
+		DataStore.DATA.clear();
+		final BMPLocalHome home = getHome();
+		for (int i = 1000; i < 2000; i++) {
+			DataStore.DATA.put(i, "" + i);
+		}
+		Enumeration<BMPLocalInterface> enu = home.findSortedEnumeration();
+		Assert.assertTrue("Returned enumeration must not be empty",
+				enu.hasMoreElements());
+		// check that returned results are sorted
+		Integer previousMyFieldValue = null;
+		while (enu.hasMoreElements()) {
+			BMPLocalInterface result = enu.nextElement();
+			Integer myFieldValue = Integer.parseInt(result.getMyField());
+			if (previousMyFieldValue != null)
+				Assert.assertTrue("Returned entities should be sorted",
+						myFieldValue > previousMyFieldValue);
+			previousMyFieldValue = myFieldValue;
+		}
+	}
 
     @Test
     public void testRemoveEntityBean() throws Exception {
@@ -212,6 +257,16 @@ public class BMPEntityBeanTestCase {
                 return null;
             }
 
+            @Override
+            public Collection<BMPLocalInterface> findSortedCollection() {
+            	return null;
+            }
+            
+            @Override
+            public Enumeration<BMPLocalInterface> findSortedEnumeration() {
+            	return null;
+            }
+            
             @Override
             public int exampleHomeMethod() {
                 return 0;
