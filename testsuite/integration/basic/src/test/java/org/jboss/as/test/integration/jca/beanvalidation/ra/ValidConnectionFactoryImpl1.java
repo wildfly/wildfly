@@ -28,10 +28,10 @@ import javax.resource.spi.ConnectionManager;
 
 /**
  * Connection factory implementation
- *
+ * 
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public class ValidConnectionFactoryImpl implements ValidConnectionFactory {
+public class ValidConnectionFactoryImpl1 implements ValidConnectionFactory1 {
     /** The serial version UID */
     private static final long serialVersionUID = 1L;
 
@@ -39,7 +39,7 @@ public class ValidConnectionFactoryImpl implements ValidConnectionFactory {
     private Reference reference;
 
     /** ManagedConnectionFactory */
-    private ValidManagedConnectionFactory mcf;
+    private ValidManagedConnectionFactory1 mcf;
 
     /** ConnectionManager */
     private ConnectionManager connectionManager;
@@ -47,7 +47,7 @@ public class ValidConnectionFactoryImpl implements ValidConnectionFactory {
     /**
      * Default constructor
      */
-    public ValidConnectionFactoryImpl() {
+    public ValidConnectionFactoryImpl1() {
 
     }
 
@@ -57,7 +57,7 @@ public class ValidConnectionFactoryImpl implements ValidConnectionFactory {
      * @param mcf ManagedConnectionFactory
      * @param cxManager ConnectionManager
      */
-    public ValidConnectionFactoryImpl(ValidManagedConnectionFactory mcf, ConnectionManager cxManager) {
+    public ValidConnectionFactoryImpl1(ValidManagedConnectionFactory1 mcf, ConnectionManager cxManager) {
         this.mcf = mcf;
         this.connectionManager = cxManager;
     }

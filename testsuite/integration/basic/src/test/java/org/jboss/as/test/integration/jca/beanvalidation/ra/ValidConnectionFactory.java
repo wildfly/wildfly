@@ -27,8 +27,9 @@ import javax.resource.Referenceable;
 import javax.resource.ResourceException;
 
 /**
+ * Connection factory 
  * 
- * @version $Revision: $
+ * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 public interface ValidConnectionFactory extends Serializable, Referenceable {
     /**

@@ -35,8 +35,9 @@ import javax.transaction.xa.XAResource;
 import javax.validation.constraints.*;
 
 /**
+ * Resource adapter
  * 
- * @version $Revision: $
+ * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 public class ValidResourceAdapter implements ResourceAdapter,Serializable {
     /**
