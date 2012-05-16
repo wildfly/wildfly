@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.ejb.entity.bmp;
 
 import java.util.Collection;
+import java.util.Enumeration;
 
 import javax.ejb.EJBLocalHome;
 
@@ -43,6 +44,10 @@ public interface BMPLocalHome extends EJBLocalHome {
     BMPLocalInterface findByValue(String value);
 
     Collection<BMPLocalInterface> findCollection();
+
+    Collection<BMPLocalInterface> findSortedCollection();
+
+    Enumeration<BMPLocalInterface> findSortedEnumeration();
 
     int exampleHomeMethod();
 
