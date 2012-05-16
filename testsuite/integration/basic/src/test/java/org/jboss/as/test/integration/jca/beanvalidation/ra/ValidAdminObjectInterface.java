@@ -26,8 +26,9 @@ import java.io.Serializable;
 import javax.resource.Referenceable;
 
 /**
+ * Admin object
  * 
- * @version $Revision: $
+ * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 public interface ValidAdminObjectInterface extends Referenceable, Serializable {
     /**

@@ -25,7 +25,9 @@ import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 
 /**
- *
+ * Activation
+ * 
+ *@author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 public class ValidActivation {
     /** The resource adapter */

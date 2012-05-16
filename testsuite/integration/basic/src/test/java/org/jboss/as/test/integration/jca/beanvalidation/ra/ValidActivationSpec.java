@@ -32,8 +32,9 @@ import javax.validation.constraints.Size;
 import org.jboss.logging.Logger;
 
 /**
+ * Activation Spec
  * 
- * @version $Revision: $
+ * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 public class ValidActivationSpec implements ActivationSpec {
     /** The logger */

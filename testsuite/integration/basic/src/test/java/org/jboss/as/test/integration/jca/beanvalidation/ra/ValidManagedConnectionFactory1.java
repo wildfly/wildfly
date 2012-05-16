@@ -40,7 +40,7 @@ import javax.validation.constraints.*;
  * 
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public class ValidManagedConnectionFactory implements ManagedConnectionFactory, ResourceAdapterAssociation {
+public class ValidManagedConnectionFactory1 implements ManagedConnectionFactory, ResourceAdapterAssociation {
     /** The serial version UID */
     private static final long serialVersionUID = 1L;
 
@@ -58,7 +58,7 @@ public class ValidManagedConnectionFactory implements ManagedConnectionFactory, 
     /**
      * Default constructor
      */
-    public ValidManagedConnectionFactory() {
+    public ValidManagedConnectionFactory1() {
 
     }
 
@@ -88,7 +88,7 @@ public class ValidManagedConnectionFactory implements ManagedConnectionFactory, 
      * @throws javax.resource.ResourceException Generic exception
      */
     public Object createConnectionFactory(ConnectionManager cxManager) throws ResourceException {
-        return new ValidConnectionFactoryImpl(this, cxManager);
+        return new ValidConnectionFactoryImpl1(this, cxManager);
     }
 
     /**
@@ -111,7 +111,7 @@ public class ValidManagedConnectionFactory implements ManagedConnectionFactory, 
      */
     public ManagedConnection createManagedConnection(Subject subject, ConnectionRequestInfo cxRequestInfo)
             throws ResourceException {
-        return new ValidManagedConnection(this);
+        return new ValidManagedConnection1(this);
     }
 
     /**
@@ -202,9 +202,9 @@ public class ValidManagedConnectionFactory implements ManagedConnectionFactory, 
             return false;
         if (other == this)
             return true;
-        if (!(other instanceof ValidManagedConnectionFactory))
+        if (!(other instanceof ValidManagedConnectionFactory1))
             return false;
-        ValidManagedConnectionFactory obj = (ValidManagedConnectionFactory) other;
+        ValidManagedConnectionFactory1 obj = (ValidManagedConnectionFactory1) other;
         boolean result = true;
         if (result) {
             if (cfProperty == null)
