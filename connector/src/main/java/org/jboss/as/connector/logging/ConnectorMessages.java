@@ -93,17 +93,6 @@ public interface ConnectorMessages {
     StartException deploymentError(@Cause Throwable cause, String name);
 
     /**
-     * Creates an exception indicating the deployment failed.
-     *
-     * @param cause     the cause of the error.
-     * @param className the name of the class that failed.
-     *
-     * @return a {@link DeployException} for the error.
-     */
-    @Message("Deployment %s failed")
-    DeployException deploymentFailed(@Cause Throwable cause, String className);
-
-    /**
      * A message indicating inability to instantiate the driver class.
      *
      * @param driverClassName the driver class name.
@@ -475,4 +464,15 @@ public interface ConnectorMessages {
      */
     @Message(id = 10471, value = "Jndi name have to start with java:/ or java:jboss/")
     OperationFailedException jndiNameInvalidFormat();
+
+    /**
+     * Creates an exception indicating the deployment failed.
+     *
+     * @param cause     the cause of the error.
+     * @param className the name of the class that failed.
+     *
+     * @return a {@link DeployException} for the error.
+     */
+    @Message(id = 10472, value = "Deployment %s failed")
+    DeployException deploymentFailed(@Cause Throwable cause, String className);
 }
