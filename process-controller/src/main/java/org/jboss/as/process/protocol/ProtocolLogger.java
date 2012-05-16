@@ -36,6 +36,10 @@ import org.jboss.marshalling.Unmarshaller;
 import java.net.ServerSocket;
 
 /**
+ * This module is using message IDs in the range 16600-16699.
+ * This file is using the subset 16600-16639 for non-logger messages.
+ * See http://community.jboss.org/docs/DOC-16810 for the full list of
+ * currently reserved JBAS message id blocks.
  * Date: 21.07.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -59,26 +63,12 @@ public interface ProtocolLogger extends BasicLogger {
     ProtocolLogger CONNECTION_LOGGER = Logger.getMessageLogger(ProtocolLogger.class, "org.jboss.as.protocol.connection");
 
     /**
-     * A logger with the category {@code org.jboss.as.protocol.server}.
-     */
-    ProtocolLogger SERVER_LOGGER = Logger.getMessageLogger(ProtocolLogger.class, "org.jboss.as.protocol.server");
-
-    /**
-     * Logs a warning message indicating an error occurred when closing the channel.
-     *
-     * @param message the error message.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 12100, value = "Got error closing channel %s")
-    void errorClosingChannel(String message);
-
-    /**
      * Logs an error message indicating a failure to accept the connection.
      *
      * @param cause the cause of the error.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 12101, value = "Failed to accept a connection")
+    @Message(id = 16600, value = "Failed to accept a connection")
     void failedToAcceptConnection(@Cause Throwable cause);
 
     /**
@@ -88,7 +78,7 @@ public interface ProtocolLogger extends BasicLogger {
      * @param resource the resource.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 12102, value = "Failed to close resource %s")
+    @Message(id = 16601, value = "Failed to close resource %s")
     void failedToCloseResource(@Cause Throwable cause, Object resource);
 
     /**
@@ -98,7 +88,7 @@ public interface ProtocolLogger extends BasicLogger {
      * @param socket the server socket.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 12103, value = "Failed to close the server socket %s")
+    @Message(id = 16602, value = "Failed to close the server socket %s")
     void failedToCloseServerSocket(@Cause Throwable cause, ServerSocket socket);
 
     /**
@@ -107,7 +97,7 @@ public interface ProtocolLogger extends BasicLogger {
      * @param cause the cause of the error.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 12104, value = "Failed to close a socket")
+    @Message(id = 16603, value = "Failed to close a socket")
     void failedToCloseSocket(@Cause Throwable cause);
 
     /**
@@ -117,7 +107,7 @@ public interface ProtocolLogger extends BasicLogger {
      * @param marshaller the marshaller in error.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 12105, value = "Failed to finish the marshaller %s")
+    @Message(id = 16604, value = "Failed to finish the marshaller %s")
     void failedToFinishMarshaller(@Cause Throwable cause, Marshaller marshaller);
 
     /**
@@ -127,7 +117,7 @@ public interface ProtocolLogger extends BasicLogger {
      * @param unmarshaller the marshaller in error.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 12106, value = "Failed to finish the unmarshaller %s")
+    @Message(id = 16605, value = "Failed to finish the unmarshaller %s")
     void failedToFinishUnmarshaller(@Cause Throwable cause, Unmarshaller unmarshaller);
 
     /**
@@ -136,7 +126,7 @@ public interface ProtocolLogger extends BasicLogger {
      * @param cause the cause of the error.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 12107, value = "Failed to handle incoming connection")
+    @Message(id = 16606, value = "Failed to handle incoming connection")
     void failedToHandleIncomingConnection(@Cause Throwable cause);
 
     /**
@@ -145,7 +135,7 @@ public interface ProtocolLogger extends BasicLogger {
      * @param cause the cause of the error.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 12108, value = "Failed to handle socket failure condition")
+    @Message(id = 16607, value = "Failed to handle socket failure condition")
     void failedToHandleSocketFailure(@Cause Throwable cause);
 
     /**
@@ -154,7 +144,7 @@ public interface ProtocolLogger extends BasicLogger {
      * @param cause the cause of the error.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 12109, value = "Failed to handle socket finished condition")
+    @Message(id = 16608, value = "Failed to handle socket finished condition")
     void failedToHandleSocketFinished(@Cause Throwable cause);
 
     /**
@@ -163,7 +153,7 @@ public interface ProtocolLogger extends BasicLogger {
      * @param cause the cause of the error.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 12110, value = "Failed to handle socket shut down condition")
+    @Message(id = 16609, value = "Failed to handle socket shut down condition")
     void failedToHandleSocketShutdown(@Cause Throwable cause);
 
     /**
@@ -172,20 +162,13 @@ public interface ProtocolLogger extends BasicLogger {
      * @param cause the cause of the error.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 12111, value = "Failed to read a message")
+    @Message(id = 16610, value = "Failed to read a message")
     void failedToReadMessage(@Cause Throwable cause);
 
     /**
      * Logs a warning message indicating the leakage of the message outout stream.
      */
     @LogMessage(level = WARN)
-    @Message(id = 12112, value = "Leaked a message output stream; cleaning")
+    @Message(id = 16611, value = "Leaked a message output stream; cleaning")
     void leakedMessageOutputStream();
-
-    /**
-     * Logs a warning message indicating the wrong channel was received.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 12113, value = "Received end for wrong channel!")
-    void receivedWrongChannel();
 }
