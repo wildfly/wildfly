@@ -1391,7 +1391,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message("Operation %s")
+    @Message(id = Message.NONE, value = "Operation %s")
     String operation(String step);
 
     /**
@@ -1401,22 +1401,6 @@ public interface ControllerMessages {
      */
     @Message(id = 14748, value = "Operation already complete")
     IllegalStateException operationAlreadyComplete();
-
-    /**
-     * Creates a message indicating the operation is cancelled.
-     *
-     * @return the message.
-     */
-    @Message("Operation cancelled")
-    String operationCancelled();
-
-    /**
-     * Creates a message indicating the operation is cancelled asynchronously.
-     *
-     * @return a {@link CancellationException} for the error.
-     */
-    @Message("Operation cancelled asynchronously")
-    OperationCancellationException operationCancelledAsynchronously();
 
     /**
      * A message indicating the operation handler failed.
@@ -1562,7 +1546,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message("%nService %s was depended upon by ")
+    @Message(id = Message.NONE, value = "%nService %s was depended upon by ")
     String removingServiceUnsatisfiedDependencies(String name);
 
     /**
@@ -1652,7 +1636,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message("Missing[%s]")
+    @Message(id = Message.NONE, value = "Missing[%s]")
     String servicesMissing(StringBuilder sb);
 
     /**
@@ -1702,7 +1686,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message("      %s (missing) dependents: %s %n")
+    @Message(id = Message.NONE, value = "      %s (missing) dependents: %s %n")
     String serviceStatusReportMissing(ServiceName serviceName, String dependents);
 
     /**
@@ -1712,7 +1696,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message("      %s (unavailable) dependents: %s %n")
+    @Message(id = Message.NONE, value = "      %s (unavailable) dependents: %s %n")
     String serviceStatusReportUnavailable(ServiceName serviceName, String dependents);
 
     /**
@@ -1730,7 +1714,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message("      %s (no longer required)%n")
+    @Message(id = Message.NONE, value = "      %s (no longer required)%n")
     String serviceStatusReportNoLongerRequired(ServiceName serviceName);
 
     /**
@@ -1740,7 +1724,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message("      %s (new available)%n")
+    @Message(id = Message.NONE, value = "      %s (new available)%n")
     String serviceStatusReportAvailable(ServiceName serviceName);
 
     /**
@@ -2481,4 +2465,20 @@ public interface ControllerMessages {
 
     @Message(id = 14861, value = "<one or more transitive dependencies>")
     String transitiveDependencies();
+
+    /**
+     * Creates a message indicating the operation is cancelled.
+     *
+     * @return the message.
+     */
+    @Message(id = 14862, value = "Operation cancelled")
+    String operationCancelled();
+
+    /**
+     * Creates a message indicating the operation is cancelled asynchronously.
+     *
+     * @return a {@link CancellationException} for the error.
+     */
+    @Message(id = 14863, value = "Operation cancelled asynchronously")
+    OperationCancellationException operationCancelledAsynchronously();
 }
