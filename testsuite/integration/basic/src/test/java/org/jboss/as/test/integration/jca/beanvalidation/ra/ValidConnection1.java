@@ -26,7 +26,7 @@ package org.jboss.as.test.integration.jca.beanvalidation.ra;
  * 
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public interface ValidConnection {
+public interface ValidConnection1 {
     /**
      * getResourceAdapterProperty
      * 

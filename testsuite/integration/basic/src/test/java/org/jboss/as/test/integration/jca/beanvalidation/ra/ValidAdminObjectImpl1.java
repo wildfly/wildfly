@@ -36,7 +36,7 @@ import org.hibernate.validator.constraints.*;
  * 
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public class ValidAdminObjectImpl implements ValidAdminObjectInterface, ResourceAdapterAssociation, Referenceable, Serializable {
+public class ValidAdminObjectImpl1 implements ValidAdminObjectInterface1, ResourceAdapterAssociation, Referenceable, Serializable {
     /** Serial version uid */
     private static final long serialVersionUID = 1L;
 
@@ -53,7 +53,7 @@ public class ValidAdminObjectImpl implements ValidAdminObjectInterface, Resource
     /**
      * Default constructor
      */
-    public ValidAdminObjectImpl() {
+    public ValidAdminObjectImpl1() {
 
     }
 
@@ -141,9 +141,9 @@ public class ValidAdminObjectImpl implements ValidAdminObjectInterface, Resource
             return false;
         if (other == this)
             return true;
-        if (!(other instanceof ValidAdminObjectImpl))
+        if (!(other instanceof ValidAdminObjectImpl1))
             return false;
-        ValidAdminObjectImpl obj = (ValidAdminObjectImpl) other;
+        ValidAdminObjectImpl1 obj = (ValidAdminObjectImpl1) other;
         boolean result = true;
         if (result) {
             if (aoProperty == null)

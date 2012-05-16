@@ -65,7 +65,7 @@ import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 
 /**
  * Data source with security domain test JBQA-5952
- *
+ * 
  * @author <a href="mailto:vrastsel@redhat.com"> Vladimir Rastseluev</a>
  */
 @RunWith(Arquillian.class)
@@ -99,16 +99,13 @@ public class DsWithSecurityDomainTestCase {
         }
     }
 
-
     @Deployment
     public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar").addClasses(
                 DsWithSecurityDomainTestCase.class);
         jar.addClasses(AbstractLoginModuleSecurityDomainTestCaseSetup.class, AbstractSecurityDomainSetup.class);
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "test.ear").addAsLibrary(jar)
-                .addAsResource(DsWithSecurityDomainTestCase.class.getPackage(), "users.properties", "users.properties")
-                .addAsResource(DsWithSecurityDomainTestCase.class.getPackage(), "roles.properties", "roles.properties")
-                .addAsManifestResource("jca/security/data-sources/security-ds.xml", "security-ds.xml");
+                .addAsManifestResource("jca/security/data-sources/security-ds.xml", "security-ds.xml"); 
 
         return ear;
     }

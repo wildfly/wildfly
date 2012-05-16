@@ -21,28 +21,27 @@
  */
 package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
+import java.io.Serializable;
+
+import javax.resource.Referenceable;
+
 /**
- * Connection
+ * Admin object
  * 
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public interface ValidConnection {
+public interface ValidAdminObjectInterface1 extends Referenceable, Serializable {
     /**
-     * getResourceAdapterProperty
+     * Set property
      * 
-     * @return String
+     * @param property The value
      */
-    public int getResourceAdapterProperty();
+    public void setAoProperty(String property);
 
     /**
-     * getManagedConnectionFactoryProperty
+     * Get property
      * 
-     * @return String
+     * @return The value
      */
-    public String getManagedConnectionFactoryProperty();
-
-    /**
-     * Close
-     */
-    public void close();
+    public String getAoProperty();
 }

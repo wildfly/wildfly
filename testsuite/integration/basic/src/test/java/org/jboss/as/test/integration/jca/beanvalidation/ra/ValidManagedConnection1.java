@@ -41,12 +41,12 @@ import javax.transaction.xa.XAResource;
  * 
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a> 
  */
-public class ValidManagedConnection implements ManagedConnection {
+public class ValidManagedConnection1 implements ManagedConnection {
     /** The logwriter */
     private PrintWriter logwriter;
 
     /** ManagedConnectionFactory */
-    private ValidManagedConnectionFactory mcf;
+    private ValidManagedConnectionFactory1 mcf;
 
     /** Listeners */
     private List<ConnectionEventListener> listeners;
@@ -59,7 +59,7 @@ public class ValidManagedConnection implements ManagedConnection {
      * 
      * @param mcf mcf
      */
-    public ValidManagedConnection(ValidManagedConnectionFactory mcf) {
+    public ValidManagedConnection1(ValidManagedConnectionFactory1 mcf) {
         this.mcf = mcf;
         this.logwriter = null;
         this.listeners = new ArrayList<ConnectionEventListener>(1);
@@ -75,7 +75,7 @@ public class ValidManagedConnection implements ManagedConnection {
      * @throws javax.resource.ResourceException generic exception if operation fails
      */
     public Object getConnection(Subject subject, ConnectionRequestInfo cxRequestInfo) throws ResourceException {
-        connection = new ValidConnectionImpl(this, mcf);
+        connection = new ValidConnectionImpl1(this, mcf);
         return connection;
     }
 
@@ -132,7 +132,7 @@ public class ValidManagedConnection implements ManagedConnection {
      * 
      * @param handle The handle
      */
-    public void closeHandle(ValidConnection handle) {
+    public void closeHandle(ValidConnection1 handle) {
         ConnectionEvent event = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED);
         event.setConnectionHandle(handle);
         for (ConnectionEventListener cel : listeners) {

@@ -22,9 +22,9 @@
 package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 /**
+ * Connection implementation
  * 
- * 
- * @version $Revision: $
+ * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a> 
  */
 public class ValidConnectionImpl implements ValidConnection {
     /** ManagedConnection */

@@ -22,27 +22,50 @@
 package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 /**
- * Connection
+ * Connection implementation
  * 
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public interface ValidConnection {
-    /**
-     * getResourceAdapterProperty
-     * 
-     * @return String
-     */
-    public int getResourceAdapterProperty();
+public class ValidConnectionImpl1 implements ValidConnection1 {
+    /** ManagedConnection */
+    private ValidManagedConnection1 mc;
+
+    /** ManagedConnectionFactory */
+    private ValidManagedConnectionFactory1 mcf;
 
     /**
-     * getManagedConnectionFactoryProperty
+     * Default constructor
+     * 
+     * @param mc  ManagedConnection
+     * @param mcf  ManagedConnectionFactory
+     */
+    public ValidConnectionImpl1(ValidManagedConnection1 mc, ValidManagedConnectionFactory1 mcf) {
+        this.mc = mc;
+        this.mcf = mcf;
+    }
+
+    /**
+     * Call getResourceAdapterProperty
      * 
      * @return String
      */
-    public String getManagedConnectionFactoryProperty();
+    public int getResourceAdapterProperty() {
+        return ((ValidResourceAdapter) mcf.getResourceAdapter()).getRaProperty();
+    }
+
+    /**
+     * Call getManagedConnectionFactoryProperty
+     * 
+     * @return String
+     */
+    public String getManagedConnectionFactoryProperty() {
+        return mcf.getCfProperty();
+    }
 
     /**
      * Close
      */
-    public void close();
+    public void close() {
+        mc.closeHandle(this);
+    }
 }

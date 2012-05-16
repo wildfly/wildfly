@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ironjacamar>
+	<bootstrap-context>default</bootstrap-context>
+	<transaction-support>XATransaction</transaction-support>
+	<bean-validation-groups>
+		<bean-validation-group>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidGroup</bean-validation-group>
+		<bean-validation-group>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidGroup1</bean-validation-group>
+	</bean-validation-groups>
+	<config-property name="raProperty">4</config-property>
+	<connection-definitions>
+		<connection-definition
+			class-name="org.jboss.as.test.integration.jca.beanvalidation.ra.ValidManagedConnectionFactory"
+			jndi-name="java:jboss/VCF" pool-name="VCF" enabled="true"
+			use-java-context="true" use-ccm="true">
+			<config-property name="cfProperty">first</config-property>
+			<xa-pool>
+				<min-pool-size>1</min-pool-size>
+				<max-pool-size>5</max-pool-size>
+				<prefill>true</prefill>
+				<use-strict-min>true</use-strict-min>
+				<flush-strategy>IdleConnections</flush-strategy>
+				<is-same-rm-override>true</is-same-rm-override>
+				<interleaving />
+				<no-tx-separate-pools />
+				<pad-xid>true</pad-xid>
+				<wrap-xa-resource>true</wrap-xa-resource>
+			</xa-pool>
+			<security>
+				<application />
+			</security>
+			<timeout>
+				<blocking-timeout-millis>5000</blocking-timeout-millis>
+				<idle-timeout-minutes>4</idle-timeout-minutes>
+				<allocation-retry>2</allocation-retry>
+				<allocation-retry-wait-millis>3000</allocation-retry-wait-millis>
+				<xa-resource-timeout>300</xa-resource-timeout>
+			</timeout>
+			<validation>
+				<background-validation>true</background-validation>
+				<background-validation-millis>5000</background-validation-millis>
+				<use-fast-fail>true</use-fast-fail>
+			</validation>
+			<recovery no-recovery="true">
+				<recover-credential>
+					<user-name>sa</user-name>
+					<password>sa-pass</password>
+				</recover-credential>
+				<recover-plugin class-name="someClass2">
+					<config-property name="Property">C</config-property>
+				</recover-plugin>
+			</recovery>
+		</connection-definition>
+		<connection-definition
+			class-name="org.jboss.as.test.integration.jca.beanvalidation.ra.ValidManagedConnectionFactory1"
+			jndi-name="java:jboss/VCF1" pool-name="VCF1" enabled="false"
+			use-java-context="false" use-ccm="false">
+			<config-property name="cfProperty">2nd</config-property>
+			<xa-pool>
+				<min-pool-size>1</min-pool-size>
+				<max-pool-size>5</max-pool-size>
+				<prefill>false</prefill>
+				<use-strict-min>false</use-strict-min>
+				<flush-strategy>EntirePool</flush-strategy>
+				<is-same-rm-override>false</is-same-rm-override>
+				<pad-xid>false</pad-xid>
+				<wrap-xa-resource>false</wrap-xa-resource>
+			</xa-pool>
+			<security>
+				<security-domain>HsqlDbRealm</security-domain>
+			</security>
+			<timeout>
+				<blocking-timeout-millis>5000</blocking-timeout-millis>
+				<idle-timeout-minutes>4</idle-timeout-minutes>
+				<allocation-retry>2</allocation-retry>
+				<allocation-retry-wait-millis>3000</allocation-retry-wait-millis>
+				<xa-resource-timeout>300</xa-resource-timeout>
+			</timeout>
+			<validation>
+				<background-validation>false</background-validation>
+				<background-validation-millis>5000</background-validation-millis>
+				<use-fast-fail>false</use-fast-fail>
+			</validation>
+			<recovery no-recovery="false">
+				<recover-credential>
+					<security-domain>HsqlDbRealm</security-domain>
+				</recover-credential>
+				<recover-plugin class-name="someClass2">
+					<config-property name="Property">C</config-property>
+				</recover-plugin>
+			</recovery>
+		</connection-definition>
+	</connection-definitions>
+	<admin-objects>
+		<admin-object
+			class-name="org.jboss.as.test.integration.jca.beanvalidation.ra.ValidAdminObjectImpl"
+			jndi-name="java:jboss/VAO" pool-name="VAO" enabled="true"
+			use-java-context="true">
+			<config-property name="aoProperty">admin</config-property>
+		</admin-object>
+		<admin-object
+			class-name="org.jboss.as.test.integration.jca.beanvalidation.ra.ValidAdminObjectImpl1"
+			jndi-name="java:jboss/VAO1" pool-name="VAO1" enabled="false"
+			use-java-context="false">
+			<config-property name="aoProperty">admin1</config-property>
+		</admin-object>
+	</admin-objects>
+
+</ironjacamar>
