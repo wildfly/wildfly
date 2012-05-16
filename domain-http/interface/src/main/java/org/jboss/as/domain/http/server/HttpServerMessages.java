@@ -144,30 +144,6 @@ public interface HttpServerMessages {
     IllegalArgumentException missingClosingQuote(String key);
 
     /**
-     * The description for the {@link TrailingSlashFilter}.
-     *
-     * @return the description.
-     */
-    @Message("Ensure all requests to the context have a trailing slash.")
-    String trailingSlashFilterDescription();
-
-    /**
-     * The description for the {@link RealmReadinessFilter}.
-     *
-     * @return the description.
-     */
-    @Message("Redirect request to instructional page if the realm is not ready.")
-    String realmReadinessFilter();
-
-    /**
-     * The description for the {@link org.jboss.as.domain.http.server.security.SubjectAssociationHandler}.
-     *
-     * @return the description.
-     */
-    @Message("Filter to ensure the Subject for the current request is associated.")
-    String subjectAssociationFilter();
-
-    /**
      * Creates an exception indicating that unexpected characters are being drop from the header.
      *
      * @param dropping the characters being dropped.
@@ -182,5 +158,21 @@ public interface HttpServerMessages {
      * Message IDs 15100 to 15199 Reserved for the HTTP management interface, HttpServerLogger also contains messages in this
      * range commencing at 15100.
      */
+
+    /**
+     * The description for the {@link TrailingSlashFilter}.
+     *
+     * @return the description.
+     */
+    @Message(id = 15132, value = "Ensure all requests to the context have a trailing slash.")
+    String trailingSlashFilterDescription();
+
+    /**
+     * The description for the {@link RealmReadinessFilter}.
+     *
+     * @return the description.
+     */
+    @Message(id = 15133, value = "Redirect request to instructional page if the realm is not ready.")
+    String realmReadinessFilter();
 
 }
