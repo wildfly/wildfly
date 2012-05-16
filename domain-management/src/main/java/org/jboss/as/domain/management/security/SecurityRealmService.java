@@ -22,6 +22,10 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.SUBJECT_CALLBACK_SUPPORTED;
+
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Collection;
@@ -35,6 +39,7 @@ import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.AuthorizeCallback;
 
 import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthenticationMechanism;
@@ -48,10 +53,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedSetValue;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-import static org.jboss.as.domain.management.RealmConfigurationConstants.SUBJECT_CALLBACK_SUPPORTED;
 
 /**
  * The service representing the security realm, this service will be injected into any management interfaces
@@ -154,7 +155,8 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
             Subject subject;
 
             public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                if (subjectCallbackSupported) {
+                // For a follow up call just for AuthorizeCallback we don't want to insert a SubjectCallback
+                if (subjectCallbackSupported && notAuthorizeCallback(callbacks)) {
                     Callback[] newCallbacks = new Callback[callbacks.length + 1];
                     System.arraycopy(callbacks, 0, newCallbacks, 0, callbacks.length);
                     SubjectCallback subjectCallBack = new SubjectCallback();
@@ -164,6 +166,10 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
                 } else {
                     handler.handle(callbacks);
                 }
+            }
+
+            private boolean notAuthorizeCallback(Callback[] callbacks) {
+                return (callbacks.length == 1 && callbacks[0] instanceof AuthorizeCallback) == false;
             }
 
             public SubjectUserInfo createSubjectUserInfo(Collection<Principal> userPrincipals) throws IOException {
