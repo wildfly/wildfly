@@ -27,7 +27,7 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**
- * This module is using message IDs in the range 13300-13399. This file is using the subset 13350-13399 for
+ * This module is using message IDs in the range 13100-13199. This file is using the subset 13150-13199 for
  * non-logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
  * JBAS message id blocks.
  *
@@ -41,7 +41,7 @@ interface JdrMessages {
      */
     JdrMessages MESSAGES = Messages.getBundle(JdrMessages.class);
 
-    @Message(id = 13350, value = "JBoss Home directory cannot be determined.")
+    @Message(id = 13150, value = "JBoss Home directory cannot be determined.")
     String jbossHomeNotSet();
 
     /**
@@ -51,7 +51,7 @@ interface JdrMessages {
      * @param var method variable that was <code>null</code>
      * @return  Exception describing the invalid parameter.
      */
-    @Message(id = 13351, value = "Parameter %s may not be null.")
+    @Message(id = 13151, value = "Parameter %s may not be null.")
     IllegalArgumentException varNull(String var);
 
     @Message(id = Message.NONE, value = "Display this message and exit")
