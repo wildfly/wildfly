@@ -463,11 +463,17 @@ class CommandContextImpl implements CommandContext {
             return; // ignore comments
         }
 
-        if(line.charAt(line.length() - 1) == '\\') {
+        int i = line.length() - 1;
+        while(i > 0 && line.charAt(i) <= ' ') {
+            if(line.charAt(--i) == '\\') {
+                break;
+            }
+        }
+        if(line.charAt(i) == '\\') {
             if(lineBuffer == null) {
                 lineBuffer = new StringBuilder();
             }
-            lineBuffer.append(line, 0, line.length() - 1);
+            lineBuffer.append(line, 0, i);
             lineBuffer.append(' ');
             return;
         } else if(lineBuffer != null) {

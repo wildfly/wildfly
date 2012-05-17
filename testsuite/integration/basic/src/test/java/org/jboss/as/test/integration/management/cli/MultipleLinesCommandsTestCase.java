@@ -57,7 +57,6 @@ public class MultipleLinesCommandsTestCase {
     }
 
     @Test
-    @Ignore("AS7-4734")
     public void testCommand() throws Exception {
 
         final StringBuilder buf = new StringBuilder();
