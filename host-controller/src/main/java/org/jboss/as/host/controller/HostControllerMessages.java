@@ -578,46 +578,46 @@ public interface HostControllerMessages {
     @Message(id = 10994, value = "Home directory does not exist: %s")
     IllegalStateException homeDirectoryDoesNotExist(File f);
 
-    @Message(id = 15848, value = "Determined modules directory does not exist: %s")
+    @Message(id = 10995, value = "Determined modules directory does not exist: %s")
     IllegalStateException modulesDirectoryDoesNotExist(File f);
 
-    @Message(id = 15849, value = "Domain base directory does not exist: %s")
+    @Message(id = 10996, value = "Domain base directory does not exist: %s")
     IllegalStateException domainBaseDirectoryDoesNotExist(File f);
 
-    @Message(id = 15850, value = "Domain base directory is not a directory: %s")
+    @Message(id = 10997, value = "Domain base directory is not a directory: %s")
     IllegalStateException domainBaseDirectoryIsNotADirectory(File file);
 
-    @Message(id = 15851, value = "Configuration directory does not exist: %s")
+    @Message(id = 10998, value = "Configuration directory does not exist: %s")
     IllegalStateException configDirectoryDoesNotExist(File f);
 
-    @Message(id = 15852, value = "Domain data directory is not a directory: %s")
+    @Message(id = 10999, value = "Domain data directory is not a directory: %s")
     IllegalStateException domainDataDirectoryIsNotDirectory(File file);
 
-    @Message(id = 15853, value = "Could not create domain data directory: %s")
+    @Message(id = 16500, value = "Could not create domain data directory: %s")
     IllegalStateException couldNotCreateDomainDataDirectory(File file);
 
-    @Message(id = 15854, value = "Domain content directory is not a directory: %s")
+    @Message(id = 16501, value = "Domain content directory is not a directory: %s")
     IllegalStateException domainContentDirectoryIsNotDirectory(File file);
 
-    @Message(id = 15855, value = "Could not create domain content directory: %s")
+    @Message(id = 16502, value = "Could not create domain content directory: %s")
     IllegalStateException couldNotCreateDomainContentDirectory(File file);
 
-    @Message(id = 15856, value = "Log directory is not a directory: %s")
+    @Message(id = 16503, value = "Log directory is not a directory: %s")
     IllegalStateException logDirectoryIsNotADirectory(File f);
 
-    @Message(id = 15857, value = "Could not create log directory: %s")
+    @Message(id = 16504, value = "Could not create log directory: %s")
     IllegalStateException couldNotCreateLogDirectory(File f);
 
-    @Message(id = 15858, value = "Servers directory is not a directory: %s")
+    @Message(id = 16505, value = "Servers directory is not a directory: %s")
     IllegalStateException serversDirectoryIsNotADirectory(File f);
 
-    @Message(id = 15859, value = "Could not create servers directory: %s")
+    @Message(id = 16506, value = "Could not create servers directory: %s")
     IllegalStateException couldNotCreateServersDirectory(File f);
 
-    @Message(id = 15860, value = "Domain temp directory does not exist: %s")
+    @Message(id = 16507, value = "Domain temp directory does not exist: %s")
     IllegalStateException domainTempDirectoryIsNotADirectory(File file);
 
-    @Message(id = 15861, value = "Could not create domain temp directory: %s")
+    @Message(id = 16508, value = "Could not create domain temp directory: %s")
     IllegalStateException couldNotCreateDomainTempDirectory(File file);
 
     /**
@@ -627,18 +627,18 @@ public interface HostControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 15862, value = "Unable to connect due to SSL failure.")
+    @Message(id = 16509, value = "Unable to connect due to SSL failure.")
     IllegalStateException sslFailureUnableToConnect(@Cause Throwable cause);
 
-    @Message(id = 15863, value = "Option '%s' already exists")
+    @Message(id = 16510, value = "Option '%s' already exists")
     IllegalStateException jvmOptionAlreadyExists(String option);
 
-    @Message(id = 15864, value = "Environment variable '%s' already exists")
+    @Message(id = 16511, value = "Environment variable '%s' already exists")
     IllegalStateException envVariableAlreadyExists(String var);
 
-    @Message(id=15865, value="Host controller management version %s.%s is too old, Only %s.%s or higher are supported")
+    @Message(id = 16512, value="Host controller management version %s.%s is too old, Only %s.%s or higher are supported")
     OperationFailedException unsupportedManagementVersionForHost(int major, int minor, int minMajor, int minMinor);
 
-    @Message(id=15866, value="Failed to add extensions used by the domain. Failure description: %s")
+    @Message(id = 16513, value="Failed to add extensions used by the domain. Failure description: %s")
     IllegalStateException failedToAddExtensions(ModelNode failureDescription);
 }
