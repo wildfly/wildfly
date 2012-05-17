@@ -36,6 +36,7 @@ import java.util.Arrays;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.process.protocol.StreamUtils;
+import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
@@ -58,11 +59,13 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
+import org.jboss.remoting3.RemotingOptions;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
 import org.jboss.stdio.StdioContext;
 import org.jboss.threads.AsyncFuture;
+import org.xnio.OptionMap;
 
 /**
  * The main entry point for domain-managed server instances.
@@ -175,7 +178,7 @@ public final class DomainServerMain {
             endpointName = ManagementRemotingServices.MANAGEMENT_ENDPOINT;
             if (!isReconnect) {
                 ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                        SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME), EndpointService.EndpointType.MANAGEMENT, null, null);
+                        SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME), EndpointService.EndpointType.MANAGEMENT, OptionMap.create(RemotingOptions.RECEIVE_WINDOW_SIZE, ProtocolChannelClient.Configuration.WINDOW_SIZE), null, null);
             }
         } else {
             endpointName = RemotingServices.SUBSYSTEM_ENDPOINT;

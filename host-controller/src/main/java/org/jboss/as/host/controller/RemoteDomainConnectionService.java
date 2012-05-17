@@ -286,7 +286,9 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
             // Include additional local host information when registering at the DC
             final ModelNode hostInfo = createLocalHostHostInfo(localHostInfo, productConfig);
-            final OptionMap options = OptionMap.builder().set(RemotingOptions.HEARTBEAT_INTERVAL, 15000).set(Options.READ_TIMEOUT, 45000).getMap();
+            final OptionMap options = OptionMap.builder().set(RemotingOptions.HEARTBEAT_INTERVAL, 15000)
+                    .set(Options.READ_TIMEOUT, 45000)
+                    .set(RemotingOptions.RECEIVE_WINDOW_SIZE, ProtocolChannelClient.Configuration.WINDOW_SIZE).getMap();
 
             // Gather the required information to connect to the remote DC
             final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
