@@ -85,8 +85,7 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
     public void testDeploy() throws Exception {
 
         // deploy to group servers
-        cli.sendLine("deploy --server-groups=" + serverGroups[0] + " " + warFile.getAbsolutePath(), true);
-        cli.waitForPrompt(WAIT_TIMEOUT);
+        cli.sendLine("deploy --server-groups=" + serverGroups[0] + " " + warFile.getAbsolutePath());
 
         // check that the deployment is available on all servers within the group and none outside
         checkURL("/SimpleServlet/SimpleServlet", "SimpleServlet", serverGroups[0]);
@@ -105,14 +104,10 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
         new ZipExporterImpl(war).exportTo(warFile, true);
 
         // redeploy to group servers
-        cli.sendLine("deploy --server-groups=" + serverGroups[0] + " " + warFile.getAbsolutePath(), true);
-        String line = cli.readLine(WAIT_TIMEOUT);
-        // check that this fails
-        assertFalse("Deployment failed: " + line, line.indexOf("deployed successfully") >= 0);
+        assertFalse(cli.sendLine("deploy --server-groups=" + serverGroups[0] + " " + warFile.getAbsolutePath(), true));
 
         // force redeploy
-        cli.sendLine("deploy " + warFile.getAbsolutePath() + " --force", true);
-        cli.waitForPrompt(WAIT_TIMEOUT);
+        cli.sendLine("deploy " + warFile.getAbsolutePath() + " --force");
 
         // check that new version is running
         checkURL("/SimpleServlet/page.html", "Version2", serverGroups[0]);
@@ -121,8 +116,7 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
     public void testUndeploy() throws Exception {
 
         //undeploy
-        cli.sendLine("undeploy --server-groups="  + serverGroups[0] + " SimpleServlet.war", true);
-        cli.waitForPrompt(WAIT_TIMEOUT);
+        cli.sendLine("undeploy --server-groups="  + serverGroups[0] + " SimpleServlet.war");
 
         // check undeployment
         checkURL("/SimpleServlet/SimpleServlet" , "SimpleServlet", serverGroups[0], true);
@@ -156,5 +150,4 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
             }
         }
     }
-
 }

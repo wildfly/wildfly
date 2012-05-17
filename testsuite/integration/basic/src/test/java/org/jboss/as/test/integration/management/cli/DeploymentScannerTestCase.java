@@ -118,8 +118,8 @@ public class DeploymentScannerTestCase extends AbstractCliTestBase {
     private void removeDeploymentScanner() throws Exception {
 
         // remove deployment scanner
-        cli.sendLine("/subsystem=deployment-scanner/scanner=testScanner:remove()", false);
-        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        cli.sendLine("/subsystem=deployment-scanner/scanner=testScanner:remove()");
+        CLIOpResult result = cli.readAllAsOpResult();
         assertTrue(result.isIsOutcomeSuccess());
 
         // delete deployment
@@ -133,7 +133,7 @@ public class DeploymentScannerTestCase extends AbstractCliTestBase {
         assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
 
         // undeploy using CLI
-        cli.sendLine("undeploy SimpleServlet.war", true);
+        cli.sendLine("undeploy SimpleServlet.war");
         assertTrue(checkUndeployed(getBaseURL(url) + "SimpleServlet/SimpleServlet"));
     }
 }

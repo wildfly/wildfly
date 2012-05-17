@@ -72,7 +72,7 @@ public class JmsTestCase extends AbstractCliTestBase {
         // check the queue is not registered
         cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging/hornetq-server=default/jms-queue");
         cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        String ls = cli.readOutput();
         assertFalse(ls.contains("testJmsQueue"));
 
         // create queue
@@ -81,7 +81,7 @@ public class JmsTestCase extends AbstractCliTestBase {
         // check it is listed
         cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging/hornetq-server=default/jms-queue");
         cli.sendLine("ls");
-        ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        ls = cli.readOutput();
         assertTrue(ls.contains("testJmsQueue"));
     }
 
@@ -93,7 +93,7 @@ public class JmsTestCase extends AbstractCliTestBase {
         // check it is listed
         cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging/hornetq-server=default/jms-queue");
         cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        String ls = cli.readOutput();
         assertFalse(ls.contains("testJmsQueue"));
     }
 
@@ -102,7 +102,7 @@ public class JmsTestCase extends AbstractCliTestBase {
         // check the queue is not registered
         cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging/hornetq-server=default/jms-topic");
         cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        String ls = cli.readOutput();
         assertFalse(ls.contains("testJmsTopic"));
 
         // create topic
@@ -111,7 +111,7 @@ public class JmsTestCase extends AbstractCliTestBase {
         // check it is listed
         cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging/hornetq-server=default/jms-topic");
         cli.sendLine("ls");
-        ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        ls = cli.readOutput();
         assertTrue(ls.contains("testJmsTopic"));
     }
 
@@ -123,7 +123,7 @@ public class JmsTestCase extends AbstractCliTestBase {
         // check it is listed
         cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging/hornetq-server=default/jms-topic");
         cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        String ls = cli.readOutput();
         assertFalse(ls.contains("testJmsTopic"));
     }
 }
