@@ -35,7 +35,7 @@ import org.jboss.logging.MessageLogger;
 /**
  * JBoss Diagnostic Reporter (JDR) logger.
  *
- * This module is using message IDs in the range 13300-13399. This file is using the subset 13300-13349 for
+ * This module is using message IDs in the range 13100-13199. This file is using the subset 13100-13149 for
  * logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
  * JBAS message id blocks.
  *
@@ -52,41 +52,41 @@ interface JdrLogger extends BasicLogger {
      * Indicates that a JDR report has been initiated.
      */
     @LogMessage(level = INFO)
-    @Message(id=13300, value="Starting creation of a JBoss Diagnostic Report (JDR).")
+    @Message(id = 13100, value="Starting creation of a JBoss Diagnostic Report (JDR).")
     void startingCollection();
 
     /**
      * Indicates that a JDR report has completed
      */
     @LogMessage(level = INFO)
-    @Message(id=13301, value="Completed creation of a JBoss Diagnostic Report (JDR).")
+    @Message(id = 13101, value="Completed creation of a JBoss Diagnostic Report (JDR).")
     void endingCollection();
 
     /**
      * Indicates that the JBoss home directory was not set.
      */
     @LogMessage(level = ERROR)
-    @Message(id=13302, value="Unable to create JDR report, JBoss Home directory cannot be determined.")
+    @Message(id = 13102, value="Unable to create JDR report, JBoss Home directory cannot be determined.")
     void jbossHomeNotSet();
 
     /**
      * The sosreport python library threw an exception
      */
     @LogMessage(level = WARN)
-    @Message(id=13303, value="JDR python interpreter encountered an exception.")
+    @Message(id = 13103, value="JDR python interpreter encountered an exception.")
     void pythonExceptionEncountered(@Cause Throwable cause);
 
     /**
      * JDR was unable to decode a path URL for standarization across platforms.
      */
     @LogMessage(level = WARN)
-    @Message(id=13304, value="Unable to decode a url while creating JDR report.")
+    @Message(id = 13104, value="Unable to decode a url while creating JDR report.")
     void urlDecodeExceptionEncountered(@Cause Throwable cause);
 
     /**
      * JDR plugin location is not a directory as expected.
      */
     @LogMessage(level = WARN)
-    @Message(id=13305, value="Plugin contrib location is not a directory.  Ignoring.")
+    @Message(id = 13105, value="Plugin contrib location is not a directory.  Ignoring.")
     void contribNotADirectory();
 }
