@@ -37,26 +37,30 @@ public class JavaConsole implements ConsoleWrapper<Console> {
 
     private Console theConsole = System.console();
 
-    public void JavaConsole() {}
+    public JavaConsole() {
+    }
 
     @Override
     public Console format(String fmt, Object... args) throws IllegalFormatException {
-        return theConsole.format(fmt,args);
+        return theConsole.format(fmt, args);
     }
 
     @Override
     public void printf(String format, Object... args) throws IllegalFormatException {
-        theConsole.printf(format,args);
+        if (theConsole == null)
+            System.out.printf(format, args);
+        else
+            theConsole.printf(format, args);
     }
 
     @Override
     public String readLine(String fmt, Object... args) throws IOError {
-        return theConsole.readLine(fmt,args);
+        return theConsole.readLine(fmt, args);
     }
 
     @Override
     public char[] readPassword(String fmt, Object... args) throws IllegalFormatException, IOError {
-        return theConsole.readPassword(fmt,args);
+        return theConsole.readPassword(fmt, args);
     }
 
     @Override
