@@ -23,9 +23,12 @@ package org.jboss.as.cli.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
 
+import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
@@ -63,13 +66,70 @@ public interface Console {
     String readLine(String prompt, Character mask);
 
     static final class Factory {
-        public static Console getConsole(final CommandContext ctx) {
+
+        public static Console getConsole(CommandContext ctx) throws CliInitializationException {
+            return getConsole(ctx, null, null);
+        }
+
+        public static Console getConsole(final CommandContext ctx, InputStream is, OutputStream os) throws CliInitializationException {
+
+            if(is != null)
+                Settings.getInstance().setInputStream(is);
+            if(os != null)
+                Settings.getInstance().setOutputStream(os);
 
             org.jboss.jreadline.console.Console jReadlineConsole = null;
             try {
                 jReadlineConsole = new org.jboss.jreadline.console.Console();
             } catch (IOException e) {
                 e.printStackTrace();
+/*
+            final String bindingsName;
+            final String osName = SecurityActions.getSystemProperty("os.name").toLowerCase(Locale.ENGLISH);
+            if(osName.indexOf("windows") >= 0) {
+                bindingsName = "keybindings/jline-windows-bindings.properties";
+            } else if(osName.startsWith("mac")) {
+                bindingsName = "keybindings/jline-mac-bindings.properties";
+            } else {
+                bindingsName = "keybindings/jline-default-bindings.properties";
+            }
+
+            if(is == null) {
+                is = new FileInputStream(FileDescriptor.in);
+            }
+            if(os == null) {
+                os = System.out;
+            }
+            final Writer writer;
+            try {
+                String encoding = SecurityActions.getSystemProperty("jline.WindowsTerminal.output.encoding");
+                if(encoding == null) {
+                    encoding = SecurityActions.getSystemProperty("file.encoding");
+                }
+                writer = new PrintWriter(new OutputStreamWriter(os, encoding));
+            } catch (UnsupportedEncodingException e) {
+                throw new CliInitializationException("Failed to initialize console writer.", e);
+            }
+
+            ClassLoader cl = SecurityActions.getClassLoader(Factory.class);
+            InputStream bindingsIs = cl.getResourceAsStream(bindingsName);
+            final jline.ConsoleReader jlineConsole;
+            if(bindingsIs == null) {
+                System.err.println("Failed to locate key bindings for OS '" + osName +"': " + bindingsName);
+                try {
+                    jlineConsole = new jline.ConsoleReader(is, writer);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Failed to initialize console reader", e);
+                }
+            } else {
+                try {
+                    jlineConsole = new jline.ConsoleReader(is, writer, bindingsIs);
+                } catch(Exception e) {
+                    throw new IllegalStateException("Failed to initialize console reader", e);
+                } finally {
+                    StreamUtils.safeClose(bindingsIs);
+                }
+*/
             }
 
             final org.jboss.jreadline.console.Console finalJReadlineConsole = jReadlineConsole;

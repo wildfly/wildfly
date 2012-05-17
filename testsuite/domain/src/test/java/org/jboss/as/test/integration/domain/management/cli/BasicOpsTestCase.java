@@ -21,8 +21,7 @@
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
-import static org.jboss.as.test.integration.management.base.AbstractCliTestBase.WAIT_LINETIMEOUT;
-import static org.jboss.as.test.integration.management.base.AbstractCliTestBase.WAIT_TIMEOUT;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -40,49 +39,25 @@ public class BasicOpsTestCase {
     @Test
     public void testConnect() throws Exception {
         CLIWrapper cli = new CLIWrapper(false, DomainTestSupport.masterAddress);
-
-        // wait for cli welcome message
-        String line = cli.readLine(WAIT_TIMEOUT);
-
-        while(! line.contains("You are disconnected")) {
-            line = cli.readLine(WAIT_TIMEOUT);
-        }
-
-        cli.sendConnect(DomainTestSupport.masterAddress);
-        line = cli.readLine(WAIT_TIMEOUT);
-
-        assertTrue("Check we are disconnected:" + line, line.indexOf("disconnected") >= 0);
-        cli.sendLine("version", false);
-        line = cli.readLine(WAIT_TIMEOUT);
-        assertTrue("Connect failed:" + line, line.indexOf("[domain@") >= 0);
+        assertFalse(cli.isConnected());
+        assertTrue(cli.sendConnect(DomainTestSupport.masterAddress));
+        assertTrue(cli.isConnected());
         cli.quit();
-
     }
 
     @Test
     public void testDomainSetup() throws Exception {
         CLIWrapper cli = new CLIWrapper(false, DomainTestSupport.masterAddress);
+        assertFalse(cli.isConnected());
 
-        // wait for cli welcome message
-        String line = cli.readLine(WAIT_TIMEOUT);
-
-        while(! line.contains("You are disconnected")) {
-            line = cli.readLine(WAIT_TIMEOUT);
-        }
-
-        cli.sendConnect(DomainTestSupport.masterAddress);
-        line = cli.readLine(WAIT_TIMEOUT);
-
-        assertTrue("Check we are disconnected:" + line, line.indexOf("disconnected") >= 0);
-        cli.sendLine("version", false);
-        line = cli.readLine(WAIT_TIMEOUT);
-        assertTrue("Connect failed:" + line, line.indexOf("[domain@") >= 0);
+        assertTrue(cli.sendConnect(DomainTestSupport.masterAddress));
+        assertTrue(cli.isConnected());
 
         // check hosts
         cli.sendLine(":read-children-names(child-type=host)");
-        CLIOpResult res = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIOpResult res = cli.readAllAsOpResult();
         assertTrue(res.getResult() instanceof List);
-        List  hosts = (List) res.getResult();
+        List<?> hosts = (List<?>) res.getResult();
 
         assertTrue(hosts.contains("master"));
         assertTrue(hosts.contains("slave"));
@@ -96,9 +71,9 @@ public class BasicOpsTestCase {
 
     private boolean checkHostServers(CLIWrapper cli, String host, String[] serverList) throws Exception {
         cli.sendLine("/host=" + host + ":read-children-names(child-type=server-config)");
-        CLIOpResult res = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIOpResult res = cli.readAllAsOpResult();
         assertTrue(res.getResult() instanceof List);
-        List  servers = (List) res.getResult();
+        List<?>  servers = (List<?>) res.getResult();
 
         if (servers.size() != serverList.length) return false;
         for (String server : serverList) if (!servers.contains(server)) return false;

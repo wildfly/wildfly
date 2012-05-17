@@ -21,6 +21,9 @@
  */
 package org.jboss.as.cli.impl;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
@@ -61,6 +64,15 @@ public class CommandContextFactoryImpl extends CommandContextFactory {
             int controllerPort, String username, char[] password,
             boolean initConsole) throws CliInitializationException {
         final CommandContext ctx = new CommandContextImpl(controllerHost, controllerPort, username, password, initConsole);
+        addShutdownHook(ctx);
+        return ctx;
+    }
+
+    @Override
+    public CommandContext newCommandContext(String controllerHost, int controllerPort,
+            String username, char[] password,
+            InputStream consoleInput, OutputStream consoleOutput) throws CliInitializationException {
+        final CommandContext ctx = new CommandContextImpl(controllerHost, controllerPort, username, password, consoleInput, consoleOutput);
         addShutdownHook(ctx);
         return ctx;
     }
