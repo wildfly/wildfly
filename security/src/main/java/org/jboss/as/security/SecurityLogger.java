@@ -31,6 +31,13 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 /**
+ * This module is using message IDs in the range 13300-13399.
+ * <p/>
+ * This file is using the subset 13370-13399 for logger messages.
+ * <p/>
+ * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
+ * list of currently reserved JBAS message id blocks.
+ * <p/>
  * Date: 05.11.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -48,14 +55,14 @@ public interface SecurityLogger extends BasicLogger {
     * @param version a {@link String} representing the current version
     */
    @LogMessage(level = Level.INFO)
-   @Message(id = 13100, value = "Current PicketBox version=%s")
+   @Message(id = 13170, value = "Current PicketBox version=%s")
    void currentVersion(String version);
 
    /**
     * Logs a message indicating that the security subsystem is being activated
     */
    @LogMessage(level = Level.INFO)
-   @Message(id = 13101, value = "Activating Security Subsystem")
+   @Message(id = 13171, value = "Activating Security Subsystem")
    void activatingSecuritySubsystem();
 
    /**
@@ -63,6 +70,6 @@ public interface SecurityLogger extends BasicLogger {
     * @param t the underlying exception
     */
    @LogMessage(level = Level.WARN)
-   @Message(id = 13102, value = "Error deleting JACC Policy")
+   @Message(id = 13172, value = "Error deleting JACC Policy")
    void errorDeletingJACCPolicy(@Cause Throwable t);
 }
