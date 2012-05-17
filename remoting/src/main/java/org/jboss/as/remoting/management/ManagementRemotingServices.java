@@ -23,6 +23,7 @@
 package org.jboss.as.remoting.management;
 
 
+import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
@@ -75,6 +76,8 @@ public final class ManagementRemotingServices extends RemotingServices {
      * @param endpointName the name of the endpoint to install the stream server into
      * @param networkInterfaceBinding the network interface binding
      * @param port the port
+     * @param securityRealmName the security real name
+     * @param options the remoting options
      * @param verificationHandler
      * @param newControllers
      */
@@ -83,12 +86,12 @@ public final class ManagementRemotingServices extends RemotingServices {
                                                       final ServiceName networkInterfaceBinding,
                                                       final int port,
                                                       final ServiceName securityRealmName,
+                                                      final OptionMap options,
                                                       final ServiceVerificationHandler verificationHandler,
                                                       final List<ServiceController<?>> newControllers) {
         ServiceName serverCallbackService = ServiceName.JBOSS.append("host", "controller", "server-inventory", "callback");
         ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.domain.temp.dir");
         installSecurityServices(serviceTarget, MANAGEMENT_CONNECTOR, securityRealmName, serverCallbackService, tmpDirPath, verificationHandler, newControllers);
-        final OptionMap options = OptionMap.builder().set(RemotingOptions.HEARTBEAT_INTERVAL, 15000).set(Options.READ_TIMEOUT, 45000).getMap();
         installConnectorServicesForNetworkInterfaceBinding(serviceTarget, endpointName, MANAGEMENT_CONNECTOR, networkInterfaceBinding, port, options, verificationHandler, newControllers);
     }
 
@@ -99,29 +102,22 @@ public final class ManagementRemotingServices extends RemotingServices {
      * @param endpointName the name of the endpoint to install a channel listener into
      * @param channelName the name of the channel
      * @param operationHandlerName the name of the operation handler to handle request for this channel
+     * @param options the remoting options
      * @param verificationHandler
      * @param newControllers list to add the new services to
+     * @param onDemand whether to install the services on demand
      */
     public static void installManagementChannelOpenListenerService(
             final ServiceTarget serviceTarget,
             final ServiceName endpointName,
             final String channelName,
             final ServiceName operationHandlerName,
-            final ServiceVerificationHandler verificationHandler,
-            final List<ServiceController<?>> newControllers) {
-        installManagementChannelOpenListenerService(serviceTarget, endpointName, channelName, operationHandlerName, verificationHandler, newControllers, false);
-    }
-
-    public static void installManagementChannelOpenListenerService(
-            final ServiceTarget serviceTarget,
-            final ServiceName endpointName,
-            final String channelName,
-            final ServiceName operationHandlerName,
+            final OptionMap options,
             final ServiceVerificationHandler verificationHandler,
             final List<ServiceController<?>> newControllers,
             final boolean onDemand) {
 
-        final ManagementChannelOpenListenerService channelOpenListenerService = new ManagementChannelOpenListenerService(channelName, OptionMap.EMPTY);
+        final ManagementChannelOpenListenerService channelOpenListenerService = new ManagementChannelOpenListenerService(channelName, options);
         final ServiceBuilder<?> builder = serviceTarget.addService(channelOpenListenerService.getServiceName(endpointName), channelOpenListenerService)
                 .addDependency(endpointName, Endpoint.class, channelOpenListenerService.getEndpointInjector())
                 .addDependency(operationHandlerName, ManagementChannelInitialization.class, channelOpenListenerService.getOperationHandlerInjector())
@@ -153,6 +149,7 @@ public final class ManagementRemotingServices extends RemotingServices {
             final ServiceVerificationHandler verificationHandler,
             final List<ServiceController<?>> newControllers) {
 
+        final OptionMap options = OptionMap.create(RemotingOptions.RECEIVE_WINDOW_SIZE, ProtocolChannelClient.Configuration.WINDOW_SIZE, RemotingOptions.TRANSMIT_WINDOW_SIZE, ProtocolChannelClient.Configuration.WINDOW_SIZE);
         final ServiceName operationHandlerName = endpointName.append(channelName).append(ModelControllerClientOperationHandlerFactoryService.OPERATION_HANDLER_NAME_SUFFIX);
 
         final ServiceBuilder<?> builder = serviceTarget.addService(operationHandlerName, operationHandlerService)
@@ -161,7 +158,7 @@ public final class ManagementRemotingServices extends RemotingServices {
 
         addController(newControllers, verificationHandler, builder);
 
-        installManagementChannelOpenListenerService(serviceTarget, endpointName, channelName, operationHandlerName, verificationHandler, newControllers);
+        installManagementChannelOpenListenerService(serviceTarget, endpointName, channelName, operationHandlerName, options, verificationHandler, newControllers, false);
     }
 
     public static void removeManagementChannelServices(final OperationContext context, final ServiceName endpointName,

@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.operations;
 
+import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.remoting.management.ManagementChannelRegistryService;
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.ATTRIBUTE_DEFINITIONS;
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.INTERFACE;
@@ -69,6 +70,9 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
     public static final NativeManagementAddHandler INSTANCE = new NativeManagementAddHandler();
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
+    private static final int WINDOW_SIZE = ProtocolChannelClient.Configuration.WINDOW_SIZE;
+    private static final OptionMap options = OptionMap.create(RemotingOptions.RECEIVE_WINDOW_SIZE, WINDOW_SIZE);
+
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         for (AttributeDefinition definition : ATTRIBUTE_DEFINITIONS) {
             validateAndSet(definition, operation, model);
@@ -88,7 +92,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
 
         final ServiceName endpointName = ManagementRemotingServices.MANAGEMENT_ENDPOINT;
         final String hostName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
-        ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT, hostName, EndpointService.EndpointType.MANAGEMENT, verificationHandler, newControllers);
+        ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT, hostName, EndpointService.EndpointType.MANAGEMENT, options, verificationHandler, newControllers);
         installNativeManagementConnector(context, model, endpointName, serviceTarget, verificationHandler, newControllers);
 
         ManagementChannelRegistryService.addService(serviceTarget, endpointName);

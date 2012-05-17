@@ -22,6 +22,7 @@
 package org.jboss.as.protocol;
 
 import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
+import org.jboss.remoting3.RemotingOptions;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
 import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
 import java.io.Closeable;
@@ -34,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.Callback;
@@ -44,11 +44,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.Registration;
-import org.jboss.remoting3.Remoting;
-import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.IoFuture;
-import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Property;
@@ -173,10 +169,15 @@ public class ProtocolChannelClient implements Closeable {
     }
 
     public static final class Configuration {
+
+        public static int WINDOW_SIZE = 0x8000;
+
+        private static final OptionMap DEFAULT_OPTIONS = OptionMap.create(RemotingOptions.TRANSMIT_WINDOW_SIZE, WINDOW_SIZE);
         private static final long DEFAULT_CONNECT_TIMEOUT = 5000;
 
         private URI uri;
         private Endpoint endpoint;
+        // Client side, we are sending the attachments
         private OptionMap optionMap = OptionMap.EMPTY;
         private long connectionTimeout = DEFAULT_CONNECT_TIMEOUT;
 
@@ -213,7 +214,7 @@ public class ProtocolChannelClient implements Closeable {
         }
 
         public void setOptionMap(OptionMap optionMap) {
-            this.optionMap = optionMap;
+            this.optionMap = OptionMap.builder().addAll(DEFAULT_OPTIONS).addAll(optionMap).getMap();
         }
 
         public URI getUri() {

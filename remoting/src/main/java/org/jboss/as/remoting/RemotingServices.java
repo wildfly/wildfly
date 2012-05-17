@@ -118,8 +118,14 @@ public class RemotingServices {
     public static void installRemotingEndpoint(final ServiceTarget serviceTarget, final ServiceName endpointName,
             final String hostName, final EndpointService.EndpointType type, final ServiceVerificationHandler verificationHandler,
             final List<ServiceController<?>> newControllers) {
+        installRemotingEndpoint(serviceTarget, endpointName, hostName, type, OptionMap.EMPTY, verificationHandler, newControllers);
+    }
+
+    public static void installRemotingEndpoint(final ServiceTarget serviceTarget, final ServiceName endpointName,
+                final String hostName, final EndpointService.EndpointType type, final OptionMap options,
+                final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
         EndpointService endpointService = new EndpointService(hostName, type);
-        endpointService.setOptionMap(OptionMap.EMPTY);
+        endpointService.setOptionMap(options);
         addController(newControllers, verificationHandler, serviceTarget.addService(endpointName, endpointService)
                 .setInitialMode(ACTIVE));
     }
