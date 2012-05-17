@@ -102,11 +102,9 @@ public class AddPropertiesUser {
             stateValues.setHowInteractive(Interactiveness.NON_INTERACTIVE);
         }
 
-        // Silent modes still need to be able to output an error on failure.
+        // Silent modes still need to be able to output an error on failure. See JavaConsole class.
         theConsole = new JavaConsole();
-        if (theConsole.getConsole() == null) {
-            throw MESSAGES.noConsoleAvailable();
-        }
+
         stateValues.setUserName(user);
         stateValues.setPassword(password);
         stateValues.setRealm(realm);
