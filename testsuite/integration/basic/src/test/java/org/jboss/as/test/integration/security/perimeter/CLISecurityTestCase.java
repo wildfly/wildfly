@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.security.perimeter;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.http.Authentication;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.logging.Logger;
@@ -33,7 +34,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -61,17 +65,31 @@ public class CLISecurityTestCase {
             super();
         }
 
-        protected String getCliCommand() {
-
-            String authenticatedCommand = super.getCliCommand();
-            String unauthenticatedCommand = authenticatedCommand.replaceAll("--user=\\w*\\s*--password=\\w*\\s*", "");
-            return unauthenticatedCommand;
-
-            //return super.getCliCommand();
+        @Override
+        protected String getUsername() {
+            return null;
         }
 
+        @Override
+        protected InputStream createConsoleInput() {
+            return new InputStream() {
+                private final byte[] bytes = (Authentication.USERNAME + '\n').getBytes();
+                private int i = 0;
+                @Override
+                public int read() throws IOException {
+                    if(i >= bytes.length) {
+                        return -1;
+                    }
+                    return bytes[i++];
+                }
+                @Override
+                public int available() {
+                    return bytes.length - i;
+                }
+            };
+        }
         public synchronized void shutdown(){
-            getCliProcess().destroy();
+            this.quit();
         }
     }
 
@@ -100,19 +118,11 @@ public class CLISecurityTestCase {
 
         UnauthentizedCLI cli = new UnauthentizedCLI();
 
-        // wait for cli welcome message
-        String line = cli.readLine(10000);
-
-        while (!line.contains("You are disconnected")) {
-            line = cli.readLine(10000);
-        }
-
-        cli.sendLine("connect " + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getServerPort());
-        cli.sendLine("version", false);
-        line = cli.readLine(5000);
+        assertFalse(cli.isConnected());
+        cli.sendLine("connect " + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getServerPort(), true);
+        String line = cli.readOutput();
         logger.info("cli response: " + line);
         assertTrue("CLI is not secured:" + line, line.indexOf("Authenticating against security realm") >= 0);
-
 
         cli.shutdown();
     }

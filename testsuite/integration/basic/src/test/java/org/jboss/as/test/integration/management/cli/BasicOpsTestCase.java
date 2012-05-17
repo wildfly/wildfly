@@ -27,6 +27,7 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -40,27 +41,18 @@ public class BasicOpsTestCase {
     public void testConnect() throws Exception {
         CLIWrapper cli = new CLIWrapper(false);
 
-        // wait for cli welcome message
-        String line = cli.readLine(10000);
-
-        while(! line.contains("You are disconnected")) {
-            line = cli.readLine(10000);
-        }
-
+        assertFalse(cli.isConnected());
         cli.sendLine("connect " + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getServerPort());
-        cli.sendLine("version", false);
-        line = cli.readLine(5000);
-        assertTrue("Connect failed:" + line, line.indexOf("[standalone@") >= 0);
+        assertTrue(cli.isConnected());
 
         cli.quit();
-
     }
 
     @Test
     public void testLs() throws Exception {
         CLIWrapper cli = new CLIWrapper(true);
-        cli.sendLine("ls", true);
-        String ls = cli.readAllUnformated(5000, 500);
+        cli.sendLine("ls");
+        String ls = cli.readOutput();
 
         assertTrue(ls.contains("subsystem"));
         assertTrue(ls.contains("interface"));
@@ -74,6 +66,4 @@ public class BasicOpsTestCase {
 
         cli.quit();
     }
-
-
 }
