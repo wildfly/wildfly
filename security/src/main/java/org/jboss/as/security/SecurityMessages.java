@@ -41,6 +41,13 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.StartException;
 
 /**
+ * This module is using message IDs in the range 13300-13399.
+ * <p/>
+ * This file is using the subset 13300-13369 for non-logger messages.
+ * <p/>
+ * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
+ * list of currently reserved JBAS message id blocks.
+ * <p/>
  * Date: 05.11.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
