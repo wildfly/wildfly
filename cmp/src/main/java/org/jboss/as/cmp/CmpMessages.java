@@ -30,7 +30,6 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
 import javax.ejb.CreateException;
 import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJBException;
@@ -56,6 +55,16 @@ import org.jboss.logging.Messages;
 import org.jboss.msc.service.StartException;
 
 /**
+ * <b>Note:</b> This file some what abuses the standard message id use cases as some messages id's are duplicates by
+ * mistake.
+ * <p/>
+ * This module is using message IDs in the range 10700-10799, 18500-18699 and 18800-18999.
+ * <p/>
+ * This file is using the subset 10700-10799, 18500-18699, 18800-18999 for non-logger messages.
+ * <p/>
+ * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
+ * list of currently reserved JBAS message id blocks.
+ * <p/>
  * Date: 05.11.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -543,10 +552,10 @@ public interface CmpMessages {
     @Message(id = 18557, value = "Load group '%s' is not defined. Defined load groups: %s")
     IllegalStateException loadGroupNotDefined(String groupName, Set<String> loadGroups);
 
-    @Message(id = 18558, value = "Entity state is null.")
+    @Message(id = 18900, value = "Entity state is null.")
     IllegalStateException entityStateIsNull();
 
-    @Message(id = 18559, value = "No such field")
+    @Message(id = 18901, value = "No such field")
     NoSuchElementException noSuchField();
 
     @Message(id = 18560, value = "Empty field iterator is immutable")
@@ -555,7 +564,7 @@ public interface CmpMessages {
     @Message(id = 18561, value = "Could not create KeyGenerator instance.")
     RuntimeException failedToInitKeyGenerator(@Cause Exception e);
 
-    @Message(id = 18562, value = "Error in %s")
+    @Message(id = 18902, value = "Error in %s")
     EJBException errorInSelector(String selectorName, @Cause Exception e);
 
     @Message(id = 18563, value = "Single valued selector has no value")
@@ -564,19 +573,19 @@ public interface CmpMessages {
     @Message(id = 18564, value = "This collection is a read-only snapshot")
     EJBException collectionIsReadOnlySnapshot();
 
-    @Message(id = 18565, value = "Object must be an instance of %s , but is an instance of [%s]")
+    @Message(id = 18903, value = "Object must be an instance of %s , but is an instance of [%s]")
     IllegalArgumentException incorrectInterface(String relatedInterfaceName, String interfaces);
 
-    @Message(id = 18566, value = "Underlying collection has been modified")
+    @Message(id = 18904, value = "Underlying collection has been modified")
     IllegalStateException collectionHasBeenModified(@Cause ConcurrentModificationException e);
 
-    @Message(id = 18567, value = "No such local object")
+    @Message(id = 18905, value = "No such local object")
     IllegalArgumentException noSuchLocalObject(@Cause Exception e);
 
-    @Message(id = 18568, value = "Security Context is null")
+    @Message(id = 18907, value = "Security Context is null")
     IllegalStateException securityContextIsNull();
 
-    @Message(id = 18569, value = "getGeneratedKeys returned an empty ResultSet")
+    @Message(id = 18909, value = "getGeneratedKeys returned an empty ResultSet")
     EJBException getGeneratedKeysEmptyResultSet();
 
     @Message(id = 18570, value = "identity_val_local() returned an empty ResultSet")
@@ -1218,4 +1227,9 @@ public interface CmpMessages {
 
     @Message(id = 18895, value = "Instance was already removed: id=%s")
     NoSuchObjectLocalException instanceAlreadyRemovedLocal(Object pk);
+
+    /*
+    * Note id's 18910 and higher are availble for use. 18900-18910 are used for id's that were duplicates for id's in
+    * the server module.
+    */
 }
