@@ -21,6 +21,7 @@
  */
 package org.jboss.as.controller.descriptions.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -97,6 +98,11 @@ public class GlobalDescriptions {
         node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, DEFAULT).set(true);
+        node.get(REQUEST_PROPERTIES, ATTRIBUTES_ONLY, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, ATTRIBUTES_ONLY, DESCRIPTION).set(bundle.getString("global.read-resource.attributes-only"));
+        node.get(REQUEST_PROPERTIES, ATTRIBUTES_ONLY, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, ATTRIBUTES_ONLY, NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, ATTRIBUTES_ONLY, DEFAULT).set(false);
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
         //TODO value type
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-resource.reply"));
