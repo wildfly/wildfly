@@ -36,6 +36,13 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 /**
+ * This module is using message IDs in the range 10700-10799, 18500-18699 and 18800-18999.
+ * <p/>
+ * This file is using the subset 18883-18894 for logger messages.
+ * <p/>
+ * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
+ * list of currently reserved JBAS message id blocks.
+ * <p/>
  * Date: 05.11.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
