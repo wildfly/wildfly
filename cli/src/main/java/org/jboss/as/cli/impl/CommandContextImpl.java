@@ -27,6 +27,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -249,7 +251,7 @@ class CommandContextImpl implements CommandContext {
 
         if (initConsole) {
             cmdCompleter = new CommandCompleter(cmdRegistry);
-            initBasicConsole();
+            initBasicConsole(null, null);
             console.addCompleter(cmdCompleter);
             this.operationCandidatesProvider = new DefaultOperationCandidatesProvider();
         } else {
@@ -258,8 +260,39 @@ class CommandContextImpl implements CommandContext {
         }
     }
 
-    protected void initBasicConsole() {
-        this.console = Console.Factory.getConsole(this);
+    CommandContextImpl(String defaultControllerHost, int defaultControllerPort,
+            String username, char[] password,
+            InputStream consoleInput, OutputStream consoleOutput)
+            throws CliInitializationException {
+
+        config = CliConfigImpl.load(this);
+
+        operationHandler = new OperationRequestHandler();
+
+        this.username = username;
+        this.password = password;
+        if (defaultControllerHost != null) {
+            this.defaultControllerHost = defaultControllerHost;
+        } else {
+            this.defaultControllerHost = config.getDefaultControllerHost();
+        }
+        if (defaultControllerPort != -1) {
+            this.defaultControllerPort = defaultControllerPort;
+        } else {
+            this.defaultControllerPort = config.getDefaultControllerPort();
+        }
+        initCommands();
+
+        initSSLContext();
+
+        cmdCompleter = new CommandCompleter(cmdRegistry);
+        initBasicConsole(consoleInput, consoleOutput);
+        console.addCompleter(cmdCompleter);
+        this.operationCandidatesProvider = new DefaultOperationCandidatesProvider();
+    }
+
+    protected void initBasicConsole(InputStream consoleInput, OutputStream consoleOutput) throws CliInitializationException {
+        this.console = Console.Factory.getConsole(this, consoleInput, consoleOutput);
         console.setUseHistory(config.isHistoryEnabled());
         console.setHistoryFile(new File(config.getHistoryFileDir(), config.getHistoryFileName()));
         console.getHistory().setMaxSize(config.getHistoryMaxSize());
@@ -554,9 +587,9 @@ class CommandContextImpl implements CommandContext {
         printLine(message);
     }
 
-    private String readLine(String prompt, boolean password, boolean disableHistory) throws IOException {
+    private String readLine(String prompt, boolean password, boolean disableHistory) throws CommandLineException {
         if (console == null) {
-            initBasicConsole();
+            initBasicConsole(null, null);
         }
 
         boolean useHistory = console.isUseHistory();
@@ -668,10 +701,7 @@ class CommandContextImpl implements CommandContext {
                     case AUTHENTICATION_FAILURE:
                         throw new CommandLineException("Unable to authenticate against controller at " + host + ":" + port);
                     case SSL_FAILURE:
-                        try {
-                            retry = handleSSLFailure();
-                        } catch (IOException ignored) {
-                        }
+                        retry = handleSSLFailure();
                         if (retry == false) {
                             throw new CommandLineException("Unable to negotiate SSL connection with controller at " + host + ":" + port);
                         }
@@ -723,7 +753,7 @@ class CommandContextImpl implements CommandContext {
      *
      * @return true if the connection should be retried.
      */
-    private boolean handleSSLFailure() throws IOException {
+    private boolean handleSSLFailure() throws CommandLineException {
         Certificate[] lastChain;
         if (trustManager == null || (lastChain = trustManager.getLastFailedCertificateChain()) == null) {
             return false;
@@ -772,13 +802,13 @@ class CommandContextImpl implements CommandContext {
 
     private static final String[] FINGERPRINT_ALGORITHMS = new String[] { "MD5", "SHA1" };
 
-    private Map<String, String> generateFingerprints(final X509Certificate cert) throws IOException  {
+    private Map<String, String> generateFingerprints(final X509Certificate cert) throws CommandLineException  {
         Map<String, String> fingerprints = new HashMap<String, String>(FINGERPRINT_ALGORITHMS.length);
         for (String current : FINGERPRINT_ALGORITHMS) {
             try {
                 fingerprints.put(current, generateFingerPrint(current, cert.getEncoded()));
             } catch (GeneralSecurityException e) {
-                throw new IOException("Unable to generate fingerprint", e);
+                throw new CommandLineException("Unable to generate fingerprint", e);
             }
         }
 
@@ -1125,7 +1155,11 @@ class CommandContextImpl implements CommandContext {
                     NameCallback ncb = (NameCallback) current;
                     if (username == null) {
                         showRealm();
-                        username = readLine("Username: ", false, true);
+                        try {
+                            username = readLine("Username: ", false, true);
+                        } catch (CommandLineException e) {
+                            throw new IOException("Failed to read username.", e);
+                        }
                         if (username == null || username.length() == 0) {
                             throw new SaslException("No username supplied.");
                         }
@@ -1136,7 +1170,12 @@ class CommandContextImpl implements CommandContext {
                     PasswordCallback pcb = (PasswordCallback) current;
                     if (password == null) {
                         showRealm();
-                        String temp = readLine("Password: ", true, false);
+                        String temp;
+                        try {
+                            temp = readLine("Password: ", true, false);
+                        } catch (CommandLineException e) {
+                            throw new IOException("Failed to read password.", e);
+                        }
                         if (temp != null) {
                             password = temp.toCharArray();
                         }

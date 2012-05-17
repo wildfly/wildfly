@@ -41,6 +41,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -93,7 +94,7 @@ public class DeployTestCase extends AbstractCliTestBase {
     public void testDeploy() throws Exception {
 
         // deploy to server
-        cli.sendLine("deploy " + warFile.getAbsolutePath(), true);
+        cli.sendLine("deploy " + warFile.getAbsolutePath());
 
         // check deployment
         String response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/SimpleServlet", 1000, 10, TimeUnit.SECONDS);
@@ -114,13 +115,10 @@ public class DeployTestCase extends AbstractCliTestBase {
 
 
         // redeploy to server
-        cli.sendLine("deploy " + warFile.getAbsolutePath(), true);
-        String line = cli.readLine(1000);
-        // check that this fails
-        assertTrue("Deployment failed: " + line, line.indexOf("use --force to replace") >= 0);
+        Assert.assertFalse(cli.sendLine("deploy " + warFile.getAbsolutePath(), true));
 
         // force redeploy
-        cli.sendLine("deploy " + warFile.getAbsolutePath() + " --force", true);
+        cli.sendLine("deploy " + warFile.getAbsolutePath() + " --force");
 
         // check that new version is running
         final long firstTry = System.currentTimeMillis();
@@ -143,7 +141,7 @@ public class DeployTestCase extends AbstractCliTestBase {
     public void testUndeploy() throws Exception {
 
         //undeploy
-        cli.sendLine("undeploy SimpleServlet.war", true);
+        cli.sendLine("undeploy SimpleServlet.war");
 
         // check undeployment
         assertTrue(checkUndeployed(getBaseURL(url) + "SimpleServlet/SimpleServlet"));
