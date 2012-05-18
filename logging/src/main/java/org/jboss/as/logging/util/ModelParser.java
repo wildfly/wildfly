@@ -91,19 +91,21 @@ public final class ModelParser {
         } else if (node.hasDefined(CommonAttributes.LEVEL.getName())) {
             return new LevelFilter(parseLevel(CommonAttributes.LEVEL.resolveModelAttribute(context, node)));
         } else if (node.hasDefined(CommonAttributes.LEVEL_RANGE.getName())) {
-            final Level min = parseLevel(CommonAttributes.MIN_LEVEL.resolveModelAttribute(context, node));
-            final Level max = parseLevel(CommonAttributes.MAX_LEVEL.resolveModelAttribute(context, node));
-            final boolean minInclusive = CommonAttributes.MIN_INCLUSIVE.resolveModelAttribute(context, node).asBoolean();
-            final boolean maxInclusive = CommonAttributes.MAX_INCLUSIVE.resolveModelAttribute(context, node).asBoolean();
+            final ModelNode levelRange = CommonAttributes.LEVEL_RANGE.resolveModelAttribute(context, node);
+            final Level min = parseLevel(CommonAttributes.MIN_LEVEL.resolveModelAttribute(context, levelRange));
+            final Level max = parseLevel(CommonAttributes.MAX_LEVEL.resolveModelAttribute(context, levelRange));
+            final boolean minInclusive = CommonAttributes.MIN_INCLUSIVE.resolveModelAttribute(context, levelRange).asBoolean();
+            final boolean maxInclusive = CommonAttributes.MAX_INCLUSIVE.resolveModelAttribute(context, levelRange).asBoolean();
             return new LevelRangeFilter(min, minInclusive, max, maxInclusive);
         } else if (node.hasDefined(CommonAttributes.MATCH.getName())) {
             return new RegexFilter(CommonAttributes.MATCH.resolveModelAttribute(context, node).asString());
         } else if (node.hasDefined(CommonAttributes.NOT.getName())) {
             return new InvertFilter(parseFilter(context, CommonAttributes.NOT.resolveModelAttribute(context, node)));
         } else if (node.hasDefined(CommonAttributes.REPLACE.getName())) {
-            final String pattern = CommonAttributes.PATTERN.resolveModelAttribute(context, node).asString();
-            final String replacement = CommonAttributes.REPLACEMENT.resolveModelAttribute(context, node).asString();
-            final boolean replaceAll = CommonAttributes.REPLACE_ALL.resolveModelAttribute(context, node).asBoolean();
+            final ModelNode replace = CommonAttributes.REPLACE.resolveModelAttribute(context, node);
+            final String pattern = CommonAttributes.PATTERN.resolveModelAttribute(context, replace).asString();
+            final String replacement = CommonAttributes.REPLACEMENT.resolveModelAttribute(context, replace).asString();
+            final boolean replaceAll = CommonAttributes.REPLACE_ALL.resolveModelAttribute(context, replace).asBoolean();
             return new SubstituteFilter(pattern, replacement, replaceAll);
         }
         final String name = node.hasDefined(CommonAttributes.FILTER.getName()) ? node.get(CommonAttributes.FILTER.getName()).asString() : node.asString();
