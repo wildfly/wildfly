@@ -24,6 +24,7 @@ package org.jboss.as.cli.parsing.operation;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
+import org.jboss.as.cli.parsing.EscapeCharacterState;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 import org.jboss.as.cli.parsing.ParsingContext;
 
@@ -53,5 +54,6 @@ public final class HeaderNameState extends DefaultParsingState {
         putHandler(';', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler('=', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        enterState('\\', EscapeCharacterState.INSTANCE);
     }
 }
