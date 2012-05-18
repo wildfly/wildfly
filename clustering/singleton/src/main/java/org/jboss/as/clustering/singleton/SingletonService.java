@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.singleton;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.GroupRpcDispatcher;
+import org.jboss.as.clustering.ResponseFilter;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.service.ServiceProviderRegistry;
 import org.jboss.as.clustering.service.ServiceProviderRegistryService;
@@ -63,6 +65,7 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
 
     volatile ServiceProviderRegistry registry;
     volatile GroupRpcDispatcher dispatcher;
+    volatile boolean started = false;
     private volatile SingletonElectionPolicy electionPolicy;
     private volatile SingletonRpcHandler<T> handler;
     private volatile ServiceRegistry container;
@@ -107,10 +110,12 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
         this.handler = new RpcHandler(this.dispatcher, name);
         this.dispatcher.registerRPCHandler(name, this);
         this.registry.register(name, this);
+        this.started = true;
     }
 
     @Override
     protected void stop() {
+        this.started = false;
         String name = this.singletonServiceName.getCanonicalName();
         this.registry.unregister(name);
         this.dispatcher.unregisterRPCHandler(name, this);
@@ -173,7 +178,10 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
     @Override
     public T getValue() {
         AtomicReference<T> ref = this.getValueRef();
-        return (ref != null) ? ref.get() : this.handler.getValueRef().get();
+        if (ref == null) {
+            ref = this.handler.getValueRef();
+        }
+        return ref.get();
     }
 
     @Override
@@ -188,7 +196,7 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
         }
     }
 
-    private class RpcHandler implements SingletonRpcHandler<T> {
+    private class RpcHandler implements SingletonRpcHandler<T>, ResponseFilter {
         private final GroupRpcDispatcher dispatcher;
         private String name;
 
@@ -209,21 +217,45 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
         @Override
         public AtomicReference<T> getValueRef() {
             try {
-                List<AtomicReference<T>> results = this.dispatcher.callMethodOnCluster(this.name, "getValueRef", new Object[0], new Class<?>[0], false);
-                Iterator<AtomicReference<T>> refs = results.iterator();
-                while (refs.hasNext()) {
-                    if (refs.next() == null) {
-                        refs.remove();
+                List<AtomicReference<T>> results = Collections.emptyList();
+                while (results.isEmpty()) {
+                    if (!SingletonService.this.started) {
+                        throw new IllegalStateException(SingletonMessages.MESSAGES.notStarted(this.name));
                     }
-                }
-                int count = results.size();
-                if (count != 1) {
-                    throw SingletonMessages.MESSAGES.unexpectedResponseCount(count);
+                    results = this.dispatcher.callMethodOnCluster(this.name, "getValueRef", new Object[0], new Class<?>[0], false, this);
+                    Iterator<AtomicReference<T>> refs = results.iterator();
+                    while (refs.hasNext()) {
+                        // Prune non-master results
+                        if (refs.next() == null) {
+                            refs.remove();
+                        }
+                    }
+                    // We expect only 1 result
+                    int count = results.size();
+                    if (count > 1) {
+                        // This would mean there are multiple masters!
+                        throw SingletonMessages.MESSAGES.unexpectedResponseCount(this.name, count);
+                    }
+                    if (count == 0) {
+                        // This can happen If we're in the middle of a new master election, so just try again
+                        SingletonLogger.ROOT_LOGGER.noResponseFromMaster(this.name);
+                        Thread.yield();
+                    }
                 }
                 return results.get(0);
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }
+        }
+
+        @Override
+        public boolean isAcceptable(Object response, ClusterNode sender) {
+            return (response == null) || !(response instanceof IllegalStateException);
+        }
+
+        @Override
+        public boolean needMoreResponses() {
+            return true;
         }
     }
 }
