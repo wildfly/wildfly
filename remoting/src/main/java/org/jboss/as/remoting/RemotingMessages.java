@@ -91,9 +91,6 @@ public interface RemotingMessages {
     @Message(id = 17123, value = "Unable to create auth dir %s.")
     StartException unableToCreateAuthDir(String dir);
 
-    @Message(id = 17124, value = "Could not register a connection provider factory for %s uri scheme")
-    StartException couldNotRegisterConnectionProvider(String remoteUriScheme, @Cause IOException ioe);
-
     @Message(id = 17125, value = "Could not connect")
     RuntimeException couldNotConnect(@Cause URISyntaxException e);
 
