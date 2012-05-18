@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.singleton;
 
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.INFO;
 
 import org.jboss.logging.LogMessage;
@@ -48,4 +49,8 @@ public interface SingletonLogger {
     @LogMessage(level = INFO)
     @Message(id = 10342, value = "%s elected as the singleton provider of the %s service")
     void elected(String node, String service);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 10343, value = "No response received from master node of the %s service, retrying...")
+    void noResponseFromMaster(String service);
 }

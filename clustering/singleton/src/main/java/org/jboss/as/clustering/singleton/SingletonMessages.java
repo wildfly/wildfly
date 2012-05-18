@@ -30,6 +30,9 @@ public interface SingletonMessages {
 
     SingletonMessages MESSAGES = Messages.getBundle(SingletonMessages.class);
 
-    @Message(id = 10350, value = "Expected result from singleton provider only, but instead received %d results.")
-    IllegalStateException unexpectedResponseCount(int results);
+    @Message(id = 10350, value = "Expected service %s value from singleton master only, but instead received %d results.")
+    IllegalStateException unexpectedResponseCount(String serviceName, int results);
+
+    @Message(id = 10351, value = "Singleton service %s is not started.")
+    IllegalStateException notStarted(String serviceName);
 }
