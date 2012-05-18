@@ -24,6 +24,7 @@ package org.jboss.as.cli.parsing.command;
 
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
+import org.jboss.as.cli.parsing.EscapeCharacterState;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 
 
@@ -48,6 +49,7 @@ public class ArgumentState extends DefaultParsingState {
         enterState('=', new NameValueSeparatorState(valueState));
         setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
         setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        enterState('\\', EscapeCharacterState.INSTANCE);
     }
 
     private static class NameValueSeparatorState extends DefaultParsingState {
