@@ -124,12 +124,7 @@ public class SingletonTestCase {
             controller.start(CONTAINER_2);
             deployer.deploy(DEPLOYMENT_2);
 
-
-            response = client.execute(new HttpGet(url1));
-            long startTime = System.currentTimeMillis();
-            while(response.getStatusLine().getStatusCode() != HttpServletResponse.SC_OK && startTime + GRACE_TIME_TO_MEMBERSHIP_CHANGE > System.currentTimeMillis()) {
-                response = client.execute(new HttpGet(url1));
-            }
+            response = tryGet(client, url1);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(MyServiceContextListener.PREFERRED_NODE, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();

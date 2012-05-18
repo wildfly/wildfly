@@ -328,10 +328,17 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         }
         try {
             RspList<T> rsp = this.dispatcher.callRemoteMethods(null, m, options);
-            List<T> result = this.processResponseList(rsp, trace);
+            List<T> result = this.processResponseList(rsp, serviceName, methodName, args, trace);
 
             if (!excludeSelf && this.directlyInvokeLocal && (filter == null || filter.needMoreResponses())) {
-                invokeDirectly(serviceName, methodName, args, types, result, filter);
+                try {
+                    invokeDirectly(serviceName, methodName, args, types, result, filter);
+                } catch (Exception e) {
+                    // Don't log if exception response would be filtered
+                    if ((filter == null) || filter.isAcceptable(e, this.me)) {
+                        ClusteringImplLogger.ROOT_LOGGER.debugf(e, "%s local invocation failure: %s(%s)", serviceName, methodName, (args != null) ? Arrays.asList(args) : "");
+                    }
+                }
             }
             return result;
         } catch (RuntimeException e) {
@@ -917,18 +924,20 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
         return output.toByteArray();
     }
 
-    private <T> List<T> processResponseList(RspList<T> rspList, boolean trace) {
+    private <T> List<T> processResponseList(RspList<T> rspList, String serviceName, String methodName, Object[] args, boolean trace) {
         List<T> result = new ArrayList<T>(rspList.size());
         if (rspList != null) {
             for (Rsp<T> response : rspList.values()) {
-                // Only include received responses
-                if (response.wasReceived()) {
+                // Only include successful received responses
+                if (response.hasException()) {
+                    Throwable e = response.getException();
+                    ClusteringImplLogger.ROOT_LOGGER.debugf(e, "%s invocation failure from %s: %s(%s)", serviceName, response.getSender(), methodName, (args != null) ? Arrays.asList(args) : "");
+                } else if (response.wasReceived()) {
                     result.add(response.getValue());
                 } else if (trace) {
                     ClusteringImplLogger.ROOT_LOGGER.tracef("Ignoring non-received response: %s", response);
                 }
             }
-
         }
         return result;
     }
