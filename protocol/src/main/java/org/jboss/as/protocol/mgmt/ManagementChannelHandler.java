@@ -45,7 +45,7 @@ public final class ManagementChannelHandler extends AbstractMessageHandler imple
     private volatile ManagementRequestHandlerFactory[] handlers;
 
     // A receiver for this handler
-    private final Channel.Receiver receiver;
+    private final ManagementChannelReceiver receiver;
     // The management client strategy
     private final ManagementClientChannelStrategy strategy;
 
@@ -66,6 +66,10 @@ public final class ManagementChannelHandler extends AbstractMessageHandler imple
         this.strategy = strategy;
         this.handlers = initial;
         this.receiver = ManagementChannelReceiver.createDelegating(this);
+    }
+
+    public long getLastMessageReceivedTime() {
+        return receiver.getLastMessageTime();
     }
 
     /** {@inheritDoc} */

@@ -33,9 +33,11 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.modules.ModuleLoadException;
 
 /**
  * This module is using message IDs in the range 10800-10899. This file is using the subset 10830-10899 for domain
@@ -546,4 +548,8 @@ public interface DomainControllerMessages {
      */
     @Message(id = 10876, value = "No deployment content with hash %s is available in the deployment content repository for deployment '%s'. This is a fatal boot error. To correct the problem, either restart with the --admin-only switch set and use the CLI to install the missing content or remove it from the configuration, or remove the deployment from the xml configuraiton file and restart.")
     String noDeploymentContentWithHashAtBoot(String contentHash, String deploymentName);
+
+    @Message(id = 10877, value = "Failed to load module '%s'.")
+    OperationFailedException failedToLoadModule(@Cause ModuleLoadException e,String module);
+
 }
