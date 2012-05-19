@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -165,8 +166,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                     return header;
                 }
 
-                @Override
-                public void executeAsync(final AsyncTask<A> task) {
+                Runnable createAsyncTaskRunner(final AsyncTask<A> task) {
                     final ManagementRequestContext<A> context = this;
                     final AsyncTaskRunner runner = new AsyncTaskRunner() {
                         @Override
@@ -180,7 +180,17 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                         }
                     };
                     support.addCancellable(runner);
-                    getExecutor().execute(runner);
+                    return runner;
+                }
+
+                @Override
+                public void executeAsync(final AsyncTask<A> task) {
+                    executeAsync(task, getExecutor());
+                }
+
+                @Override
+                public void executeAsync(AsyncTask<A> task, Executor executor) {
+                    executor.execute(createAsyncTaskRunner(task));
                 }
 
                 @Override
@@ -263,8 +273,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                     return header;
                 }
 
-                @Override
-                public void executeAsync(final AsyncTask<A> task) {
+                Runnable createAsyncTaskRunner(final AsyncTask<A> task) {
                     final ManagementRequestContext<A> context = this;
                     final AsyncTaskRunner runner = new AsyncTaskRunner() {
                         @Override
@@ -285,10 +294,6 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                                 } else {*/
                                     task.execute(context);
                                 //}
-                            } catch (RejectedExecutionException e) {
-                                if(resultHandler.failed(e)) {
-                                    safeWriteErrorResponse(channel, header, e);
-                                }
                             } catch (Exception e) {
                                 ProtocolLogger.ROOT_LOGGER.debugf(e, " failed to process async request for %s on channel %s", task, channel);
                                 if(resultHandler.failed(e)) {
@@ -298,7 +303,23 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                         }
                     };
                     support.addCancellable(runner);
-                    getExecutor().execute(runner);
+                    return runner;
+                }
+
+                @Override
+                public void executeAsync(final AsyncTask<A> task) {
+                    executeAsync(task, getExecutor());
+                }
+
+                @Override
+                public void executeAsync(final AsyncTask<A> task, final Executor executor) {
+                    try {
+                        executor.execute(createAsyncTaskRunner(task));
+                    } catch (RejectedExecutionException e) {
+                        if(resultHandler.failed(e)) {
+                            safeWriteErrorResponse(channel, header, e);
+                        }
+                    }
                 }
 
                 @Override
@@ -484,7 +505,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
         @Override
         public void run() {
             if(cancelled.get()) {
-                return;
+                Thread.currentThread().interrupt();
             }
             this.thread = Thread.currentThread();
             try {

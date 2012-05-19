@@ -35,12 +35,15 @@ import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
+import org.jboss.as.protocol.mgmt.ManagementPingRequest;
+import org.jboss.as.protocol.mgmt.ManagementPongRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Connection;
+import org.jboss.threads.AsyncFuture;
 import org.xnio.OptionMap;
 
 import javax.net.ssl.SSLContext;
@@ -50,7 +53,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -63,7 +71,27 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
 
     private static final String CHANNEL_SERVICE_TYPE = ManagementRemotingServices.DOMAIN_CHANNEL;
     private static final ReconnectPolicy reconnectPolicy = ReconnectPolicy.RECONNECT;
+    private static final long INTERVAL;
+    private static final long TIMEOUT;
 
+    static {
+        long interval = -1;
+        try {
+            interval = Long.parseLong(SecurityActions.getSystemProperty("jboss.as.domain.ping.interval", "15000"));
+        } catch (Exception e) {
+            // TODO log
+        } finally {
+            INTERVAL = interval > 0 ? interval : 15000;
+        }
+        long timeout = -1;
+        try {
+            timeout = Long.parseLong(SecurityActions.getSystemProperty("jboss.as.domain.ping.timeout", "30000"));
+        } catch (Exception e) {
+            // TODO log
+        } finally {
+            TIMEOUT = timeout > 0 ? timeout : 30000;
+        }
+    }
     private final String localHostName;
     private final ModelNode localHostInfo;
     private final String username;
@@ -71,7 +99,9 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
     private final ProtocolChannelClient.Configuration configuration;
     private final ManagementChannelHandler channelHandler;
     private final ExecutorService executorService;
+    private final ScheduledExecutorService scheduledExecutorService;
     private final HostRegistrationCallback callback;
+    private final ManagementPongRequestHandler pongHandler = new ManagementPongRequestHandler();
 
     // Try to reconnect to the remote DC
     private final AtomicBoolean reconnect = new AtomicBoolean();
@@ -83,7 +113,9 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
 
     RemoteDomainConnection(final String localHostName, final ModelNode localHostInfo,
                            final ProtocolChannelClient.Configuration configuration, final SecurityRealm realm,
-                           final String username, final ExecutorService executorService, final HostRegistrationCallback callback) {
+                           final String username, final ExecutorService executorService,
+                           final ScheduledExecutorService scheduledExecutorService,
+                           final HostRegistrationCallback callback) {
         this.callback = callback;
         this.localHostName = localHostName;
         this.localHostInfo = localHostInfo;
@@ -92,6 +124,7 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
         this.realm = realm;
         this.executorService = executorService;
         this.channelHandler = new ManagementChannelHandler(this, executorService);
+        this.scheduledExecutorService = scheduledExecutorService;
     }
 
     /**
@@ -100,6 +133,7 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
      * @throws IOException
      */
     protected RegistrationResult connect() throws IOException {
+        channelHandler.addHandlerFactory(pongHandler);
         final RegistrationResult result = connectSync();
         if(result.ok) {
             reconnect.set(true);
@@ -134,7 +168,9 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
     public void close() throws IOException {
         if(reconnect.compareAndSet(true, false)) {
             try {
-                channelHandler.executeRequest(new UnregisterModelControllerRequest(), null).getResult().await();
+                if (channel != null) {
+                    channelHandler.executeRequest(new UnregisterModelControllerRequest(), null).getResult().await();
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } finally {
@@ -145,7 +181,7 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
     }
 
     protected boolean isConnected() {
-        if(reconnect.get()) {
+        if (reconnect.get()) {
             return channel != null;
         }
         return false;
@@ -159,6 +195,12 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
     private synchronized RegistrationResult connectSync() throws IOException {
         boolean ok = false;
         try {
+            if (reconnect.get()) {
+                // We're reconnecting, so change our instance id so the master
+                // can detect that any pongs from us are from a reconnected instance
+                pongHandler.resetConnectionId();
+            }
+
             if(connection == null) {
                 final ProtocolChannelClient client = ProtocolChannelClient.create(configuration);
                 CallbackHandler callbackHandler = null;
@@ -318,8 +360,14 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
     }
 
     void registered() {
+        schedule(new PingTask());
         callback.registrationComplete(channelHandler);
     }
+
+    private void schedule(PingTask task) {
+        scheduledExecutorService.schedule(task, INTERVAL, TimeUnit.MILLISECONDS);
+    }
+
 
     static class RegistrationResult {
 
@@ -394,7 +442,9 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
         protected void sendRequest(final ActiveOperation.ResultHandler<RegistrationResult> resultHandler, final ManagementRequestContext<Void> context, final FlushableDataOutput output) throws IOException {
             output.write(DomainControllerProtocol.PARAM_HOST_ID);
             output.writeUTF(localHostName);
-            localHostInfo.writeExternal(output);
+            ModelNode hostInfo = localHostInfo.clone();
+            hostInfo.get(RemoteDomainConnectionService.DOMAIN_CONNECTION_ID).set(pongHandler.getConnectionId());
+            hostInfo.writeExternal(output);
         }
 
         @Override
@@ -519,6 +569,60 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
             resultHandler.done(null);
         }
 
+    }
+
+    private class PingTask implements Runnable {
+
+        private Long remoteInstanceID;
+
+        @Override
+        public void run() {
+            if (isConnected()) {
+                boolean fail = false;
+                AsyncFuture<Long> future = null;
+                try {
+                    if (System.currentTimeMillis() - channelHandler.getLastMessageReceivedTime() > INTERVAL) {
+                        future = channelHandler.executeRequest(ManagementPingRequest.INSTANCE, null).getResult();
+                        Long id = future.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                        if (remoteInstanceID != null && !remoteInstanceID.equals(id)) {
+                            HostControllerLogger.DOMAIN_LOGGER.masterHostControllerChanged();
+                            fail = true;
+                        } else {
+                            remoteInstanceID = id;
+                        }
+                    }
+                } catch (IOException e) {
+                    HostControllerLogger.DOMAIN_LOGGER.debug("Caught exception sending ping request", e);
+                } catch (InterruptedException e) {
+                    safeCancel(future);
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException e) {
+                    HostControllerLogger.DOMAIN_LOGGER.debug("Caught exception sending ping request", e);
+                } catch (TimeoutException e) {
+                    fail = true;
+                    safeCancel(future);
+                    HostControllerLogger.DOMAIN_LOGGER.masterHostControllerUnreachable(TIMEOUT);
+                } finally {
+                    if (fail) {
+                        Channel channel = null;
+                        try {
+                            channel = channelHandler.getChannel();
+                        } catch (IOException e) {
+                            // ignore; shouldn't happen as the channel is already established if this task is running
+                        }
+                        StreamUtils.safeClose(channel);
+                    } else {
+                        schedule(this);
+                    }
+                }
+            }
+        }
+
+        void safeCancel(Future<?> future) {
+            if (future != null) {
+                future.cancel(true);
+            }
+        }
     }
 
 }

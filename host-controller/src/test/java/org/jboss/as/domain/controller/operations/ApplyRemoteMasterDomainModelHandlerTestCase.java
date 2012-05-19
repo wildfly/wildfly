@@ -55,13 +55,14 @@ import org.junit.Test;
  */
 public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperationTestCase {
 
-    private final ApplyRemoteMasterDomainModelHandler handler =
-            new ApplyRemoteMasterDomainModelHandler(
-                    new ExtensionRegistry(ProcessType.HOST_CONTROLLER, new RunningModeControl(RunningMode.NORMAL)),
-                    null, null, HOST_INFO, new IgnoredDomainResourceRegistry(HOST_INFO)) {
+    private final ApplyExtensionsHandler extensionHandler = new ApplyExtensionsHandler(new ExtensionRegistry(
+            ProcessType.HOST_CONTROLLER, new RunningModeControl(RunningMode.NORMAL)), HOST_INFO, new IgnoredDomainResourceRegistry(HOST_INFO)) {
+        @Override
         protected void initializeExtension(String module) {
+            // nothing here
         }
     };
+    private final ApplyRemoteMasterDomainModelHandler handler = new ApplyRemoteMasterDomainModelHandler(null, null, HOST_INFO, new IgnoredDomainResourceRegistry(HOST_INFO));
 
     @Test
     public void testNoChanges() throws Exception {
@@ -89,7 +90,7 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         final MockOperationContext operationContext = getOperationContext();
         operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
         operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
+        extensionHandler.execute(operationContext, operation);
         operationContext.verify();
     }
 
@@ -101,7 +102,7 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         operationContext.root.registerChild(PathElement.pathElement(EXTENSION, "org.jboss.extension"), Resource.Factory.create());
         operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
         operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
+        extensionHandler.execute(operationContext, operation);
         operationContext.verify();
     }
 
