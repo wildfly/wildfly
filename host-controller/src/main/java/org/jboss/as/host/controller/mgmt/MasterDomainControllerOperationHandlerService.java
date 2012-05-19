@@ -29,7 +29,11 @@ import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFacto
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
+import org.jboss.as.protocol.mgmt.ManagementPongRequestHandler;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 
@@ -47,6 +51,7 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
 
     private final DomainController domainController;
     private final HostControllerRegistrationHandler.OperationExecutor operationExecutor;
+    private final ManagementPongRequestHandler pongRequestHandler = new ManagementPongRequestHandler();
 
     public MasterDomainControllerOperationHandlerService(final DomainController domainController, final HostControllerRegistrationHandler.OperationExecutor operationExecutor) {
         this.domainController = domainController;
@@ -58,12 +63,19 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
     }
 
     @Override
+    public synchronized void start(StartContext context) throws StartException {
+        pongRequestHandler.resetConnectionId();
+        super.start(context);
+    }
+
+    @Override
     public Channel.Key startReceiving(final Channel channel) {
         final ManagementChannelHandler handler = new ManagementChannelHandler(ManagementClientChannelStrategy.create(channel), getExecutor());
         // Assemble the request handlers for the domain channel
         handler.addHandlerFactory(new HostControllerRegistrationHandler(handler, domainController, operationExecutor));
         handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler));
         handler.addHandlerFactory(new MasterDomainControllerOperationHandlerImpl(domainController));
+        handler.addHandlerFactory(pongRequestHandler);
         final Channel.Key key = channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {
