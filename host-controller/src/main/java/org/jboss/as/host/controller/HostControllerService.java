@@ -27,14 +27,19 @@ import static org.jboss.as.server.ServerLogger.CONFIG_LOGGER;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.security.AccessController;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.server.BootstrapListener;
@@ -52,6 +57,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.AsyncFuture;
+import org.jboss.threads.JBossThreadFactory;
 
 /**
  * The root service for a HostController process.
@@ -128,15 +134,9 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
         final ProcessControllerConnectionService processControllerClient = new ProcessControllerConnectionService(environment, authCode);
         serviceTarget.addService(ProcessControllerConnectionService.SERVICE_NAME, processControllerClient).install();
 
-        // Thread Factory and Executor Services
-        final ServiceName threadFactoryServiceName = HC_SERVICE_NAME.append("thread-factory");
-
-        final ThreadFactoryService threadFactoryService = new ThreadFactoryService();
-        threadFactoryService.setThreadGroupName("Host Controller Service Threads");
-        serviceTarget.addService(threadFactoryServiceName, threadFactoryService).install();
+        // Executor Services
         final HostControllerExecutorService executorService = new HostControllerExecutorService();
         serviceTarget.addService(HC_EXECUTOR_SERVICE_NAME, executorService)
-                .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.threadFactoryValue)
                 .install();
 
         // Install required path services. (Only install those identified as required)
@@ -172,13 +172,16 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
         return result.toString();
     }
 
-    static final class HostControllerExecutorService implements Service<Executor> {
-        final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
-        private ScheduledExecutorService executorService;
+    static final class HostControllerExecutorService implements Service<ExecutorService> {
+        final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("Host Controller Service Threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+        private ExecutorService executorService;
 
         @Override
         public synchronized void start(final StartContext context) throws StartException {
-            executorService = Executors.newScheduledThreadPool(DEFAULT_POOL_SIZE, threadFactoryValue.getValue());
+            executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                    5L, TimeUnit.SECONDS,
+                    new SynchronousQueue<Runnable>(),
+                    threadFactory);
         }
 
         @Override
@@ -199,7 +202,7 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
         }
 
         @Override
-        public synchronized ScheduledExecutorService getValue() throws IllegalStateException {
+        public synchronized ExecutorService getValue() throws IllegalStateException {
             return executorService;
         }
     }

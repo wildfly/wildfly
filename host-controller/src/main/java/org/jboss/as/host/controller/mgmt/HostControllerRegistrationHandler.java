@@ -27,8 +27,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyOperationAddressTranslator;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -40,7 +39,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformationTargetImpl;
@@ -53,11 +51,13 @@ import static org.jboss.as.host.controller.HostControllerLogger.DOMAIN_LOGGER;
 import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 
 import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.RemoteDomainConnectionService;
 import org.jboss.as.protocol.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.protocol.mgmt.ManagementPongRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
@@ -74,6 +74,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -94,11 +95,13 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
     private final ManagementChannelHandler handler;
     private final OperationExecutor operationExecutor;
     private final DomainController domainController;
+    private final Executor registrations;
 
-    public HostControllerRegistrationHandler(ManagementChannelHandler handler, DomainController domainController, OperationExecutor operationExecutor) {
+    public HostControllerRegistrationHandler(ManagementChannelHandler handler, DomainController domainController, OperationExecutor operationExecutor, Executor registrations) {
         this.handler = handler;
         this.operationExecutor = operationExecutor;
         this.domainController = domainController;
+        this.registrations = registrations;
     }
 
     @Override
@@ -151,14 +154,42 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
 
             final RegistrationContext registration = context.getAttachment();
             registration.initialize(hostName, hostInfo, context);
-            if(domainController.isHostRegistered(hostName)) {
-                registration.failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(hostName));
+
+            if (domainController.getCurrentRunningMode() == RunningMode.ADMIN_ONLY) {
+                registration.failed(SlaveRegistrationException.ErrorCode.MASTER_IS_ADMIN_ONLY, DomainControllerMessages.MESSAGES.adminOnlyModeCannotAcceptSlaves(RunningMode.ADMIN_ONLY));
                 return;
             }
+            if (!domainController.getLocalHostInfo().isMasterDomainController()) {
+                registration.failed(SlaveRegistrationException.ErrorCode.HOST_IS_NOT_MASTER, DomainControllerMessages.MESSAGES.slaveControllerCannotAcceptOtherSlaves());
+                return;
+            }
+
             // Read the domain model async, this will block until the registration process is complete
             context.executeAsync(new ManagementRequestContext.AsyncTask<RegistrationContext>() {
                 @Override
                 public void execute(ManagementRequestContext<RegistrationContext> context) throws Exception {
+                    //
+                    if (domainController.isHostRegistered(hostName)) {
+                        // asynchronously ping the existing host to validate it's still connected
+                        // If not, the ping will remove it and a subsequent attempt by the new host will succeed
+                        // TODO look into doing the ping synchronously
+                        domainController.pingRemoteHost(hostName);
+                        // Quick hack -- wait a bit to let async ping detect a re-registration. This can easily be improved
+                        // via the TODO above
+                        boolean inter = false;
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        } finally {
+                            // Now see if the existing registration has been removed
+                            if (domainController.isHostRegistered(hostName)) {
+                                registration.failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(hostName));
+                                return;
+                            }
+                        }
+                    }
+
                     final Channel channel = context.getChannel();
                     try {
                         // The domain model is going to be sent as part of the prepared notification
@@ -177,11 +208,11 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                             if(domainController.isHostRegistered(hostName)) {
                                 DOMAIN_LOGGER.lostConnectionToRemoteHost(hostName);
                             }
-                            domainController.unregisterRemoteHost(hostName);
+                            domainController.unregisterRemoteHost(hostName, registration.getRemoteConnectionId());
                         }
                     });
                 }
-            });
+            }, registrations);
 
         }
 
@@ -373,11 +404,10 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 return;
             }
             synchronized (this) {
-                // Create the proxy controller
-                final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostName));
-                final TransformingProxyController transforming = TransformingProxyController.Factory.create(handler, transformers, addr, ProxyOperationAddressTranslator.HOST);
-                // Register proxy controller
-                domainController.registerRemoteHost(transforming);
+                Long pingPongId = hostInfo.hasDefined(RemoteDomainConnectionService.DOMAIN_CONNECTION_ID)
+                        ? hostInfo.get(RemoteDomainConnectionService.DOMAIN_CONNECTION_ID).asLong() : null;
+                // Register the slave
+                domainController.registerRemoteHost(hostName, handler, transformers, pingPongId);
                 // Complete registration
                 if(! failed) {
                     transaction.commit();
@@ -435,6 +465,11 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 }
                 activeOperation.getResultHandler().done(null);
             }
+        }
+
+        Long getRemoteConnectionId() {
+            return hostInfo.hasDefined(RemoteDomainConnectionService.DOMAIN_CONNECTION_ID)
+                    ? hostInfo.get(RemoteDomainConnectionService.DOMAIN_CONNECTION_ID).asLong() : null;
         }
 
         protected boolean completeTask(Object result) {

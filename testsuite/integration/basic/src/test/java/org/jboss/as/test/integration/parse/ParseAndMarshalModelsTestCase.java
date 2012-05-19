@@ -100,9 +100,11 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
+import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
@@ -117,6 +119,7 @@ import org.jboss.as.host.controller.parsing.DomainXml;
 import org.jboss.as.host.controller.parsing.HostXml;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.security.vault.RuntimeVaultReader;
@@ -819,18 +822,28 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private static class MockDomainController implements DomainController {
+
+        @Override
+        public RunningMode getCurrentRunningMode() {
+            return RunningMode.ADMIN_ONLY;
+        }
+
         public LocalHostControllerInfo getLocalHostInfo() {
             return null;
         }
 
-        public void registerRemoteHost(ProxyController hostControllerClient) {
+        public void registerRemoteHost(final String hostName, final ManagementChannelHandler handler, final Transformers transformers, Long remoteConnectionId) throws SlaveRegistrationException {
         }
 
         public boolean isHostRegistered(String id) {
             return false;
         }
 
-        public void unregisterRemoteHost(String id) {
+        public void unregisterRemoteHost(String id, Long remoteConnectionId) {
+        }
+
+        @Override
+        public void pingRemoteHost(String hostName) {
         }
 
         public void registerRunningServer(ProxyController serverControllerClient) {
