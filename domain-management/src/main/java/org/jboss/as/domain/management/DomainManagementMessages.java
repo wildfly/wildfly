@@ -515,8 +515,8 @@ public interface DomainManagementMessages {
     /**
      * Message to inform user that the user has been updated to the file identified.
      *
-     * @param username - The new username.
-     * @param fileName - The file the user has been added to.
+     * @param userName - The new username.
+     * @param canonicalPath - The file the user has been added to.
      *
      * @return a {@link String} for the message.
      */
@@ -526,10 +526,10 @@ public interface DomainManagementMessages {
 
 
     /**
-    * The error message if updating user to the file fails.
-    *
-    * @param file - The name of the file the add failed for.
-    * @param error - The failure message.
+     * The error message if updating user to the file fails.
+     *
+     * @param absolutePath - The name of the file the add failed for.
+     * @param message - The failure message.
      *
      * @return a {@link String} for the message.
      */
@@ -669,12 +669,82 @@ public interface DomainManagementMessages {
     /**
      * A prompt to double check the user is really sure they want to set password.
      *
-     * @param username - The new password.
+     * @param password - The new password.
      *
      * @return a {@link String} for the message.
      */
-    @Message(value = "Are you sure you want to set password '%s' yes/no?")
+    @Message(id = Message.NONE, value = "Are you sure you want to set password '%s' yes/no?")
     String sureToSetPassword(String password);
+
+    /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#USAGE} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Usage: ./add-user.sh [args...]%nwhere args include:")
+    String argUsage();
+
+    /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#APPLICATION_USERS} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "If set add an application user instead of a management user")
+    String argApplicationUsers();
+
+    /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#DOMAIN_CONFIG_DIR_USERS} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Define the system property to use for the domain config directory (default is \"jboss.domain.config.dir\")")
+    String argDomainConfigDirUsers();
+
+    /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#SERVER_CONFIG_DIR_USERS} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Define the system property to use for the server config directory (default is \"jboss.server.config.dir\")")
+    String argServerConfigDirUsers();
+
+    /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#PASSWORD} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Password of the user. Should not be same as the username")
+    String argPassword();
+
+    /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#USER} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Name of the user")
+    String argUser();
+
+    /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#REALM} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Name of the realm used to secure the management interfaces (default is \"ManagementRealm\")")
+    String argRealm();
+
+    /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#SILENT} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Activate the silent mode (no output to the console)")
+    String argSilent();
+
+    /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#ROLE} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Comma-separated list of roles for the user (only for application users, see -a)")
+    String argRole();
+
+    /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#HELP} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Display this message and exit")
+    String argHelp();
 
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
