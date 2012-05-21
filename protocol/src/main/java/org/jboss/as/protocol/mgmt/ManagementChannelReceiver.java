@@ -50,7 +50,7 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
      * @param handler the handler
      * @return the receiver
      */
-    public static Channel.Receiver createDelegating(final ManagementMessageHandler handler) {
+    public static ManagementChannelReceiver createDelegating(final ManagementMessageHandler handler) {
         assert handler != null;
         return new ManagementChannelReceiver() {
             @Override
@@ -60,10 +60,13 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
         };
     }
 
+    private volatile long lastMessageTime;
+
     @Override
     public void handleMessage(final Channel channel, final MessageInputStream message) {
         try {
             ROOT_LOGGER.tracef("%s handling incoming data", this);
+            lastMessageTime = System.currentTimeMillis();
             final DataInput input = new DataInputStream(message);
             final ManagementProtocolHeader header = ManagementProtocolHeader.parse(input);
             final byte type = header.getType();
@@ -71,6 +74,9 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
                 // Handle legacy ping/pong directly
                 ROOT_LOGGER.tracef("Received ping on %s", this);
                 handlePing(channel, header);
+            } else if (type == ManagementProtocol.TYPE_PONG) {
+                // Nothing to do here
+                ROOT_LOGGER.tracef("Received on on %s", this);
             } else if (type == ManagementProtocol.TYPE_BYE_BYE) {
                 // Close the channel
                 ROOT_LOGGER.tracef("Received bye bye on %s, closing", this);
@@ -92,6 +98,10 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
         if(next != null) {
             channel.receiveMessage(next);
         }
+    }
+
+    public long getLastMessageTime() {
+        return lastMessageTime;
     }
 
     /**
