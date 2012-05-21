@@ -86,6 +86,7 @@
    <supplement name="ha">
        <replacement placeholder="CLUSTERED">
            <clustered>true</clustered>
+           <cluster-password>${jboss.messaging.cluster.password:CHANGE ME!!}</cluster-password>
        </replacement>
        <replacement placeholder="BROADCAST-GROUPS">
            <broadcast-groups>
