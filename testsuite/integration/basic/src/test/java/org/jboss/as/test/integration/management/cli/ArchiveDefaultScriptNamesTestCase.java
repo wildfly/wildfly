@@ -36,6 +36,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -107,7 +108,7 @@ public class ArchiveDefaultScriptNamesTestCase {
     @Test
     public void testDeployArchive() throws Exception {
 
-        final CommandContext ctx = CommandContextFactory.getInstance().newCommandContext();
+        final CommandContext ctx = CLITestUtil.getCommandContext();
         try {
             ctx.connectController();
             ctx.handle("deploy " + cliArchiveFile.getAbsolutePath());
