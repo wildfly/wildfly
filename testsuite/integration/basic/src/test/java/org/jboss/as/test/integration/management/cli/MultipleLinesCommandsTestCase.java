@@ -25,6 +25,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
+import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,7 +47,7 @@ public class MultipleLinesCommandsTestCase {
         buf.append("include-defaults=true,\\\n");
         buf.append("recursive=false)");
 
-        final CommandContext ctx = CommandContextFactory.getInstance().newCommandContext();
+        final CommandContext ctx = CLITestUtil.getCommandContext();
         try {
             ctx.connectController();
             ctx.handle(buf.toString());
@@ -64,7 +65,7 @@ public class MultipleLinesCommandsTestCase {
         buf.append("product-name\\\n");
         buf.append("--verbose");
 
-        final CommandContext ctx = CommandContextFactory.getInstance().newCommandContext();
+        final CommandContext ctx = CLITestUtil.getCommandContext();
         try {
             ctx.connectController();
             ctx.handle(buf.toString());
