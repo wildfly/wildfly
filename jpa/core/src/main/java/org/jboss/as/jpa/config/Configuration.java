@@ -55,6 +55,10 @@ public class Configuration {
 
     public static final String PROVIDER_MODULE_TOPLINK = "oracle.toplink";
 
+    public static final String PROVIDER_MODULE_DATANUCLEUS = "org.datanucleus";
+
+    public static final String PROVIDER_MODULE_DATANUCLEUS_GAE = "org.datanucleus.appengine";
+
     /**
      * default if no PROVIDER_MODULE is specified.
      */
@@ -81,6 +85,16 @@ public class Configuration {
      * EclipseLink provider class name
      */
     public static final String PROVIDER_CLASS_ECLIPSELINK = "org.eclipse.persistence.jpa.PersistenceProvider";
+
+    /**
+     * DataNucleus provider
+     */
+    public static final String PROVIDER_CLASS_DATANUCLEUS = "org.datanucleus.api.jpa.PersistenceProviderImpl";
+
+    /**
+     * DataNucleus provider GAE
+     */
+    public static final String PROVIDER_CLASS_DATANUCLEUS_GAE = "org.datanucleus.store.appengine.jpa.DatastorePersistenceProvider";
 
     /**
      * default provider class
@@ -136,12 +150,13 @@ public class Configuration {
         providerClassToModuleName.put(PROVIDER_CLASS_TOPLINK_ESSENTIALS, PROVIDER_MODULE_TOPLINK);
         providerClassToModuleName.put(PROVIDER_CLASS_TOPLINK, PROVIDER_MODULE_TOPLINK);
         providerClassToModuleName.put(PROVIDER_CLASS_ECLIPSELINK, PROVIDER_MODULE_ECLIPSELINK);
+        providerClassToModuleName.put(PROVIDER_CLASS_DATANUCLEUS, PROVIDER_MODULE_DATANUCLEUS);
     }
 
     /**
      * Get the provider module name for the specified provider class.
      *
-     * @param providerClassName
+     * @param providerClassName the provider class name
      * @return provider module name or null if not known
      */
     public static String getProviderModuleNameFromProviderClassName(final String providerClassName) {
