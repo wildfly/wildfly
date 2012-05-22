@@ -132,7 +132,7 @@ public class ManagementClient {
         return webUri;
     }
 
-    public ProtocolMetaData getDeploymentMetaData(String deploymentName) {
+    public ProtocolMetaData getProtocolMetaData(String deploymentName) {
         URI webURI = getWebUri();
 
         ProtocolMetaData metaData = new ProtocolMetaData();

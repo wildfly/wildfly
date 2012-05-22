@@ -18,21 +18,16 @@ package org.jboss.as.arquillian.container;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.Future;
 
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 
 /**
- * A deployer that uses the {@link ServerDeploymentManager}
+ * A deployer that uses the {@link ServerDeploymentHelper}
  *
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010
@@ -41,62 +36,51 @@ public class ArchiveDeployer {
 
     private static final Logger log = Logger.getLogger(ArchiveDeployer.class);
 
-    private ServerDeploymentManager deploymentManager;
+    private final ServerDeploymentHelper deployer;
 
-    public ArchiveDeployer(ServerDeploymentManager deploymentManager) {
-        this.deploymentManager = deploymentManager;
+    public ArchiveDeployer(ModelControllerClient modelControllerClient) {
+        this.deployer = new ServerDeploymentHelper(modelControllerClient);
     }
 
     public String deploy(Archive<?> archive) throws DeploymentException {
-        try {
-            final InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
-            try {
-                DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-                builder = builder.add(archive.getName(), input).andDeploy();
-                DeploymentPlan plan = builder.build();
-                DeploymentAction deployAction = builder.getLastAction();
-                return executeDeploymentPlan(plan, deployAction);
-            } finally {
-                if(input != null) try {
-                    input.close();
-                } catch (IOException e) {
-                    log.warnf(e, "Failed to close resource %s", input);
-                }
-            }
+        return deployInternal(archive);
+    }
 
-        } catch (Exception e) {
-            String rcMessage = e.getMessage();
-            Throwable rootCause = e.getCause();
-            while( null != rootCause ){
-                rcMessage = rootCause.getMessage();
-                rootCause = rootCause.getCause();
-            }
-            throw new DeploymentException("Could not deploy to container: " + rcMessage, e);
-        }
+    public String deploy(String name, InputStream input) throws DeploymentException {
+        return deployInternal(name, input);
     }
 
     public void undeploy(String runtimeName) throws DeploymentException {
         try {
-            DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            DeploymentPlan plan = builder.undeploy(runtimeName).remove(runtimeName).build();
-            Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
-            future.get();
+            deployer.undeploy(runtimeName);
         } catch (Exception ex) {
-            log.warn("Cannot undeploy: " + runtimeName + ":" + ex.getMessage());
+            log.warnf(ex, "Cannot undeploy: %s", runtimeName);
         }
     }
 
-    private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction) throws Exception {
-        Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
-        ServerDeploymentPlanResult planResult = future.get();
-
-        ServerDeploymentActionResult actionResult = planResult.getDeploymentActionResult(deployAction.getId());
-        if (actionResult != null) {
-            Exception deploymentException = (Exception) actionResult.getDeploymentException();
-            if (deploymentException != null)
-                throw deploymentException;
+    private String deployInternal(Archive<?> archive) throws DeploymentException {
+        final InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
+        try {
+            return deployInternal(archive.getName(), input);
+        } finally {
+            if (input != null)
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    log.warnf(e, "Failed to close resource %s", input);
+                }
         }
+    }
 
-        return deployAction.getDeploymentUnitUniqueName();
+    private String deployInternal(String name, InputStream input) throws DeploymentException {
+        try {
+            return deployer.deploy(name, input);
+        } catch (Exception ex) {
+            Throwable rootCause = ex.getCause();
+            while (null != rootCause) {
+                rootCause = rootCause.getCause();
+            }
+            throw new DeploymentException("Cannot deploy: " + name, rootCause);
+        }
     }
 }
