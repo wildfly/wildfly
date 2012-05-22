@@ -613,6 +613,69 @@ public interface DomainManagementMessages {
     @Message(id = 15263, value = "Unable to initialise plug-in %s due to error %s")
     IllegalStateException unableToInitialisePlugIn(final String name, final String message);
 
+    /**
+     * The error message for password which does not met strength requirement.
+     *
+     * @param currentStrength - strength value which has been computed from password.
+     * @param desiredStrength - Minimum strength value which should be met.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15264, value = "Password is not strong enough, it is '%s'. It should be atleast '%s'.")
+    String passwordNotStrongEnough(String currentStrength, String desiredStrength);
+
+    /**
+     * The error message for password which has forbidden value.
+     *
+     * @param password - password value.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 152565, value = "Password must not be equal to '%s', this value is restricted.")
+    String passwordMustNotBeEqual(String password);
+
+    /**
+     * The error message for password which has no digit.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15266, value = "Password must not have atleast one digit.")
+    String passwordMustHaveDigit();
+
+    /**
+     * The error message for password which has no symbol.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15267, value = "Password must have atleast one non-alphanumeric symbol.")
+    String passwordMustHaveSymbol();
+
+    /**
+     * The error message for password which has no alpha numerical values.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15268, value = "Password must have atleast one alphanumeric character.")
+    String passwordMustHaveAlpha();
+
+    /**
+     * The error message for password which is not long enough.
+     * @param desiredLength - desired length of password.
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15269, value = "Password must have atleast '%s' characters!")
+    String passwordNotLontEnough(int desiredLength);
+
+    /**
+     * A prompt to double check the user is really sure they want to set password.
+     *
+     * @param username - The new password.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "Are you sure you want to set password '%s' yes/no?")
+    String sureToSetPassword(String password);
+
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
      * this range commencing 15200.

@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.management.security.state;
 
+
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.AddPropertiesUser.BAD_USER_NAMES;
 
@@ -29,6 +30,8 @@ import java.util.Arrays;
 import java.util.Locale;
 
 import org.jboss.as.domain.management.security.ConsoleWrapper;
+import org.jboss.as.domain.management.security.password.PasswordCheckResult;
+import org.jboss.as.domain.management.security.password.PasswordCheckUtil;
 
 /**
  * State to check the strength of the stateValues selected.
@@ -84,6 +87,18 @@ public class WeakCheckState implements State {
             State noState = new PromptNewUserState(theConsole, stateValues);
 
             return new ConfirmationChoice(theConsole,message, prompt, continuingState, noState);
+        }
+
+        PasswordCheckResult result = PasswordCheckUtil.INSTANCE.check(false, stateValues.getUserName(), new String(stateValues.getPassword()));
+        if(result.getResult()==PasswordCheckResult.Result.WARN && stateValues.isSilentOrNonInteractive() == false){
+            String message = result.getMessage();
+            String prompt = MESSAGES.sureToSetPassword(new String(stateValues.getPassword()));
+            State noState = new PromptNewUserState(theConsole, stateValues);
+            return new ConfirmationChoice(theConsole,message, prompt, continuingState, noState);
+        }
+
+        if(result.getResult()==PasswordCheckResult.Result.REJECT){
+                return new ErrorState(theConsole, result.getMessage(), retryState);
         }
 
         return continuingState;
