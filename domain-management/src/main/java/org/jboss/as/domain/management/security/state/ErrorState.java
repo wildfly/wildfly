@@ -63,10 +63,13 @@ public class ErrorState implements State {
         theConsole.printf(MESSAGES.errorHeader());
         theConsole.printf(" * ");
         theConsole.printf(NEW_LINE);
-
         theConsole.printf(errorMessage);
         theConsole.printf(NEW_LINE);
         theConsole.printf(NEW_LINE);
+        // Throw an exception if the mode is non-interactive and there's no next state.
+        if ((stateValues != null && !stateValues.isInteractive()) && nextState == null) {
+            throw new RuntimeException(errorMessage);
+        }
         return nextState;
     }
 
