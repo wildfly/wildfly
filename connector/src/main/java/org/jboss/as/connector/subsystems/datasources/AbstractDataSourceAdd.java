@@ -50,6 +50,7 @@ import org.jboss.security.SubjectFactory;
 
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -64,7 +65,6 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
         final String jndiName = model.get(JNDINAME.getName()).asString();
-
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
@@ -152,7 +152,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         for (final SimpleAttributeDefinition attribute : attributes) {
             attribute.validateAndSet(operation, modelNode);
         }
-        //modelNode.get(ENABLED.getName()).set(false);
+
 
     }
 

@@ -226,7 +226,8 @@ class Constants {
 
     static SimpleAttributeDefinition USE_JAVA_CONTEXT = new SimpleAttributeDefinition(USE_JAVA_CONTEXT_NAME, DataSource.Attribute.USE_JAVA_CONTEXT.getLocalName(), new ModelNode().set(Defaults.USE_JAVA_CONTEXT), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinition(ENABLED_NAME, DataSource.Attribute.ENABLED.getLocalName(), new ModelNode().set(Defaults.ENABLED), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+    //Note: ENABLED default is false in AS7 (true in IJ) because of the enable/disable operation behaviour
+    static SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinition(ENABLED_NAME, DataSource.Attribute.ENABLED.getLocalName(), new ModelNode().set(Boolean.FALSE), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition JTA = new SimpleAttributeDefinition(JTA_NAME, DataSource.Attribute.JTA.getLocalName(), new ModelNode().set(Defaults.JTA), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
