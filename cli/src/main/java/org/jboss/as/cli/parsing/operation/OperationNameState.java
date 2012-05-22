@@ -21,13 +21,10 @@
  */
 package org.jboss.as.cli.parsing.operation;
 
-import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
-import org.jboss.as.cli.parsing.EscapeCharacterState;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 import org.jboss.as.cli.parsing.OutputTargetState;
-import org.jboss.as.cli.parsing.ParsingContext;
+import org.jboss.as.cli.parsing.WordCharacterHandler;
 
 
 /**
@@ -41,17 +38,9 @@ public final class OperationNameState extends DefaultParsingState {
 
     public OperationNameState() {
         super(ID);
-        setEnterHandler(new CharacterHandler(){
-            @Override
-            public void handle(ParsingContext ctx) throws CommandFormatException {
-                if(ctx.getCharacter() == '\\') {
-                    ctx.enterState(EscapeCharacterState.INSTANCE);
-                } else {
-                    ctx.getCallbackHandler().character(ctx);
-                }
-            }});
-        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-        enterState('\\', EscapeCharacterState.INSTANCE);
+        setIgnoreWhitespaces(true);
+        setEnterHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
+        setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
         putHandler('(', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler('{', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler(OutputTargetState.OUTPUT_REDIRECT_CHAR, GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
