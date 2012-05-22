@@ -204,7 +204,10 @@ public class PersistentBundlesIntegration implements PersistentBundlesHandler {
                 final List<ModelNode> deploymentNodes = depmodel.asList();
                 for (ModelNode node : deploymentNodes) {
                     Property property = node.asProperty();
-                    result.add(property.getName());
+                    ModelNode enabled = property.getValue().get(ModelDescriptionConstants.ENABLED);
+                    if (enabled.isDefined() && enabled.asBoolean()) {
+                        result.add(property.getName());
+                    }
                 }
                 LOGGER.tracef("Expecting initial deployments: %s", result);
             }
