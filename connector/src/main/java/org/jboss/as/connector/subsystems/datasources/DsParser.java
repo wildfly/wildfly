@@ -114,6 +114,7 @@ import org.jboss.as.connector.util.AbstractParser;
 import org.jboss.as.connector.util.ParserException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;
+import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
@@ -318,7 +319,7 @@ public class DsParser extends AbstractParser {
         String poolName = null;
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
-        boolean enabled = ENABLED.getDefaultValue().asBoolean();
+        boolean enabled = Defaults.ENABLED.booleanValue();
         // Don't persist the enabled flag unless the user set it
         boolean persistEnabled = false;
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
@@ -546,7 +547,7 @@ public class DsParser extends AbstractParser {
         String poolName = null;
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
-        boolean enabled = ENABLED.getDefaultValue().asBoolean();
+        boolean enabled = Defaults.ENABLED.booleanValue();
         // Don't persist the enabled flag unless the user set it
         boolean persistEnabled = false;
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
