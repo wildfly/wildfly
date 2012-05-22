@@ -25,10 +25,10 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.DefaultStateWithEndCharacter;
-import org.jboss.as.cli.parsing.EscapeCharacterState;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 import org.jboss.as.cli.parsing.ParsingContext;
 import org.jboss.as.cli.parsing.QuotesState;
+import org.jboss.as.cli.parsing.WordCharacterHandler;
 
 /**
  *
@@ -47,7 +47,6 @@ public class HeaderValueState extends DefaultParsingState {
         enterState('[', new DefaultStateWithEndCharacter("BRACKETS", ']', true, true, enterStateHandlers));
         enterState('(', new DefaultStateWithEndCharacter("PARENTHESIS", ')', true, true, enterStateHandlers));
         enterState('{', new DefaultStateWithEndCharacter("BRACES", '}', true, true, enterStateHandlers));
-        enterState('\\', EscapeCharacterState.INSTANCE);
         setEnterHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
@@ -55,7 +54,7 @@ public class HeaderValueState extends DefaultParsingState {
                     ctx.getCallbackHandler().character(ctx);
                 }
             }});
-        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
         setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         setIgnoreWhitespaces(true);
     }

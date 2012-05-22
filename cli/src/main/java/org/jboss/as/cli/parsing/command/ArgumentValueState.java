@@ -26,10 +26,9 @@ import org.jboss.as.cli.Util;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.DefaultStateWithEndCharacter;
-import org.jboss.as.cli.parsing.EscapeCharacterState;
-import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 import org.jboss.as.cli.parsing.ParsingContext;
 import org.jboss.as.cli.parsing.QuotesState;
+import org.jboss.as.cli.parsing.WordCharacterHandler;
 
 /**
  *
@@ -49,22 +48,22 @@ public class ArgumentValueState extends DefaultParsingState {
                     getHandler(ctx.getCharacter()).handle(ctx);
                 }
             }});
-        putHandler(' ', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         enterState('[', new DefaultStateWithEndCharacter("BRACKETS", ']', false, true, enterStateHandlers));
         enterState('(', new DefaultStateWithEndCharacter("PARENTHESIS", ')', false, true, enterStateHandlers));
         enterState('{', new DefaultStateWithEndCharacter("BRACES", '}', false, true, enterStateHandlers));
+        setLeaveOnWhitespace(true);
         if(!Util.isWindows()) {
             // on windows we don't escape, this would mess up file system paths for example.
-            enterState('\\', EscapeCharacterState.INSTANCE);
+            setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
             enterState('"', QuotesState.QUOTES_INCLUDED);
         } else {
+            setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_OFF);
             enterState('"', new QuotesState(true, false));
         }
-        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
         setReturnHandler(new CharacterHandler() {
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
-                if(ctx.isEndOfContent() || ctx.getCharacter() == '\n' && ctx.getInput().charAt(ctx.getLocation() - 1) == '\\') {
+                if(ctx.isEndOfContent()) {
                     ctx.leaveState();
                 }
             }});
