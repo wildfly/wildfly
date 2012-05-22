@@ -63,12 +63,12 @@ public class WeakCheckState implements State {
         State retryState = stateValues.isSilentOrNonInteractive() ? null : new PromptNewUserState(theConsole, stateValues);
 
         if (Arrays.equals(stateValues.getUserName().toCharArray(), stateValues.getPassword())) {
-            return new ErrorState(theConsole, MESSAGES.usernamePasswordMatch(), retryState);
+            return new ErrorState(theConsole, MESSAGES.usernamePasswordMatch(), retryState, stateValues);
         }
 
         for (char currentChar : stateValues.getUserName().toCharArray()) {
             if ((!isValidPunctuation(currentChar)) && (Character.isLetter(currentChar) || Character.isDigit(currentChar)) == false) {
-                return new ErrorState(theConsole, MESSAGES.usernameNotAlphaNumeric(), retryState);
+                return new ErrorState(theConsole, MESSAGES.usernameNotAlphaNumeric(), retryState, stateValues);
             }
         }
 

@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.jboss.as.domain.management.security.state.ErrorState;
 import org.jboss.as.domain.management.security.state.PropertyFileFinder;
 import org.jboss.as.domain.management.security.state.PropertyFilePrompt;
 import org.jboss.as.domain.management.security.state.State;
@@ -77,7 +78,7 @@ public class AddPropertiesUser {
         nextState = new PropertyFilePrompt(theConsole, stateValues);
     }
 
-    private AddPropertiesUser(ConsoleWrapper console, final boolean management, final String user, final char[] password, final String realm) {
+    private AddPropertiesUser(ConsoleWrapper console, final boolean management, final String user, final String password, final String realm) {
         StateValues stateValues = new StateValues();
         stateValues.setJbossHome(System.getenv("JBOSS_HOME"));
 
@@ -95,8 +96,18 @@ public class AddPropertiesUser {
         if (theConsole.getConsole() == null) {
             throw MESSAGES.noConsoleAvailable();
         }
+        // Username should not be null or empty.
+        if (user == null || user.isEmpty()) {
+            nextState = new ErrorState(theConsole, MESSAGES.noUsernameExiting(), null, stateValues);
+            return;
+        }
         stateValues.setUserName(user);
-        stateValues.setPassword(password);
+        // Password should not be null or empty.
+        if (password == null || password.isEmpty()) {
+            nextState = new ErrorState(theConsole, MESSAGES.noPasswordExiting(), null, stateValues);
+            return;
+        }
+        stateValues.setPassword(password.toCharArray());
         stateValues.setRealm(realm);
         stateValues.setManagement(management);
         stateValues.setRoles(argsCliProps.getProperty(CommandLineArgument.ROLE.key()));
@@ -104,7 +115,7 @@ public class AddPropertiesUser {
         nextState = new PropertyFileFinder(theConsole, stateValues);
     }
 
-    private AddPropertiesUser(ConsoleWrapper consoleWrapper, boolean management, final String user, final char[] password) {
+    private AddPropertiesUser(ConsoleWrapper consoleWrapper, boolean management, final String user, final String password) {
         this(consoleWrapper, management, user, password, management ? DEFAULT_MANAGEMENT_REALM : DEFAULT_APPLICATION_REALM);
     }
 
@@ -175,9 +186,9 @@ public class AddPropertiesUser {
             }
         }
 
-        if (argsCliProps.containsKey(CommandLineArgument.PASSWORD.key()) && argsCliProps.containsKey(CommandLineArgument.USER.key())) {
-            char[] password = argsCliProps.getProperty(CommandLineArgument.PASSWORD.key()).toCharArray();
-            String user = argsCliProps.getProperty(CommandLineArgument.USER.key());
+        if (argsCliProps.containsKey(CommandLineArgument.PASSWORD.key()) || argsCliProps.containsKey(CommandLineArgument.USER.key())) {
+            final String password = argsCliProps.getProperty(CommandLineArgument.PASSWORD.key());
+            final String user = argsCliProps.getProperty(CommandLineArgument.USER.key());
             if (argsCliProps.contains(CommandLineArgument.REALM.key())) {
                 new AddPropertiesUser(javaConsole, management, user, password, argsCliProps.getProperty(CommandLineArgument.REALM.key())).run();
             } else {
