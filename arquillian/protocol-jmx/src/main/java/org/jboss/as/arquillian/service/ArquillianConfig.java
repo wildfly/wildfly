@@ -28,14 +28,13 @@ import java.util.Set;
 
 import org.jboss.arquillian.testenricher.msc.ServiceTargetAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
-import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -64,7 +63,6 @@ class ArquillianConfig implements Service<ArquillianConfig> {
     private final List<String> testClasses = new ArrayList<String>();
 
     private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
-    private ServiceContainer serviceContainer;
     private ServiceTarget serviceTarget;
 
     static ServiceName getServiceName(DeploymentUnit depUnit) {
@@ -111,7 +109,7 @@ class ArquillianConfig implements Service<ArquillianConfig> {
             throw new ClassNotFoundException("Class '" + className + "' not found in: " + testClasses);
 
         Module module = depUnit.getAttachment(Attachments.MODULE);
-        Deployment osgiDep = OSGiDeploymentAttachment.getDeployment(depUnit);
+        Deployment osgiDep = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
         if (module == null && osgiDep == null)
             throw new IllegalStateException("Cannot determine deployment type: " + depUnit);
         if (module != null && osgiDep != null)
@@ -131,7 +129,6 @@ class ArquillianConfig implements Service<ArquillianConfig> {
 
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        serviceContainer = context.getController().getServiceContainer();
         serviceTarget = context.getChildTarget();
         arqService.registerArquillianConfig(this);
         for(String testClass : testClasses) {
