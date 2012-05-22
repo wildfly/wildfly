@@ -37,6 +37,7 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
+import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -106,14 +107,12 @@ public class ArchiveTestCase {
         }
         cliArchiveFile = new File(tempDir + File.separator + "archive.cli");
         new ZipExporterImpl(cliArchive).exportTo(cliArchiveFile, true);
-
-        AbstractCliTestBase.initCLI();
     }
 
     @Test
     public void testDeployArchive() throws Exception {
 
-        final CommandContext ctx = CommandContextFactory.getInstance().newCommandContext();
+        final CommandContext ctx = CLITestUtil.getCommandContext();
         try {
             ctx.connectController();
             ctx.handle("deploy " + cliArchiveFile.getAbsolutePath() + " --script=install.scr");
@@ -138,7 +137,6 @@ public class ArchiveTestCase {
     @AfterClass
     public static void after() throws Exception {
         cliArchiveFile.delete();
-        AbstractCliTestBase.closeCLI();
     }
 
     protected final String getBaseURL(URL url) throws MalformedURLException {
