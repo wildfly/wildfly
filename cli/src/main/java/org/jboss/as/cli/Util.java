@@ -660,4 +660,8 @@ public class Util {
         }
         return response.get(RESULT);
     }
+
+    public static String getLineSeparator() {
+        return SecurityActions.getSystemProperty("line.separator");
+    }
 }

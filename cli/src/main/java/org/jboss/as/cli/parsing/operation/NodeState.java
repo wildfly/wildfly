@@ -24,10 +24,10 @@ package org.jboss.as.cli.parsing.operation;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
-import org.jboss.as.cli.parsing.EscapeCharacterState;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 import org.jboss.as.cli.parsing.ParsingContext;
 import org.jboss.as.cli.parsing.QuotesState;
+import org.jboss.as.cli.parsing.WordCharacterHandler;
 
 /**
  *
@@ -50,11 +50,11 @@ public class NodeState extends DefaultParsingState {
                     ctx.leaveState();
                 } else {
                     getHandler(ctx.getCharacter()).handle(ctx);
-                    //GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER.handle(ctx);
                 }
             }});
 
-        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        setIgnoreWhitespaces(true);
+        setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
 
         putHandler('=', new CharacterHandler(){
             @Override
@@ -73,6 +73,5 @@ public class NodeState extends DefaultParsingState {
         putHandler(':', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
 
         enterState('"', QuotesState.QUOTES_EXCLUDED);
-        enterState('\\', EscapeCharacterState.INSTANCE);
     }
 }
