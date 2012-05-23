@@ -119,6 +119,76 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.xnio</groupId>
+            <artifactId>xnio-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.xnio</groupId>
+            <artifactId>xnio-nio</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jgroups</groupId>
+            <artifactId>jgroups</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openid4java</groupId>
+            <artifactId>openid4java-consumer</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.picketbox</groupId>
+            <artifactId>picketbox</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.picketbox</groupId>
+            <artifactId>picketbox-commons</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.picketbox</groupId>
+            <artifactId>picketbox-infinispan</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.picketlink</groupId>
+            <artifactId>picketlink-consolidated-social</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectodd.stilts</groupId>
+            <artifactId>stilts-stomplet-server-bundle</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scannotation</groupId>
+            <artifactId>scannotation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-ext</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-dmr</artifactId>
         </dependency>
@@ -588,6 +658,21 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcmail-jdk15on</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcpkix-jdk15on</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcprov-jdk15on</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-core-asl</artifactId>
                 </dependency>
@@ -623,8 +708,48 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>javax.jdo</groupId>
+                    <artifactId>jdo-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.datanucleus</groupId>
+                    <artifactId>datanucleus-core</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.datanucleus</groupId>
+                    <artifactId>datanucleus-api-jdo</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.datanucleus</groupId>
+                    <artifactId>datanucleus-api-jpa</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>com.google.appengine.orm</groupId>
+                    <artifactId>datanucleus-appengine</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.datanucleus</groupId>
+                    <artifactId>datanucleus-cache</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.hibernate</groupId>
                     <artifactId>hibernate-core</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-engine</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-infinispan</artifactId>
                 </dependency>
 
                 <dependency>
@@ -693,6 +818,16 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.infinispan</groupId>
+                    <artifactId>infinispan-query</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.infinispan</groupId>
+                    <artifactId>infinispan-lucene-directory</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.javassist</groupId>
                     <artifactId>javassist</artifactId>
                 </dependency>
@@ -725,6 +860,11 @@
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-config-assembly</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-capedwarf</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1598,6 +1738,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>jivesoftware</groupId>
+                    <artifactId>smack</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.osgi</groupId>
                     <artifactId>org.osgi.core</artifactId>
                 </dependency>
@@ -1697,6 +1842,110 @@
                     <artifactId>xom</artifactId>
                 </dependency>
 
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-admin</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-appidentity</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-blobstore</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-bytecode</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-capabilities</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-channel</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-cluster</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-common</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-datastore</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-environment</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-files</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-images</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-log</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-mail</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-memcache</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-oauth</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-urlfetch</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-tasks</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-users</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-xmpp</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>com.google.appengine</groupId>
+                    <artifactId>appengine-api-1.0-sdk</artifactId>
+                </dependency>
             </dependencies>
 
             <properties>

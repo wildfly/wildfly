@@ -5,7 +5,7 @@
    <subsystem xmlns="urn:jboss:domain:messaging:1.2">
        <hornetq-server>
            <?CLUSTERED?>
-           <persistence-enabled>true</persistence-enabled>
+           <persistence-enabled>false</persistence-enabled>
            <journal-file-size>102400</journal-file-size>
            <journal-min-files>2</journal-min-files>
 
@@ -81,11 +81,30 @@
                    </entries>
                </pooled-connection-factory>
            </jms-connection-factories>
+           <jms-destinations>
+               <jms-queue name="testQueue">
+                   <entry name="queue/test"/>
+                   <entry name="java:jboss/exported/jms/queue/test"/>
+               </jms-queue>
+               <jms-queue name="capedwarfQueue">
+                   <entry name="queue/capedwarf"/>
+                   <entry name="java:jboss/exported/jms/queue/capedwarf"/>
+               </jms-queue>
+               <jms-queue name="indexingQueue">
+                   <entry name="queue/indexing"/>
+                   <entry name="java:jboss/exported/jms/queue/indexing"/>
+               </jms-queue>
+               <jms-topic name="testTopic">
+                   <entry name="topic/test"/>
+                   <entry name="java:jboss/exported/jms/topic/test"/>
+               </jms-topic>
+           </jms-destinations>
        </hornetq-server>
    </subsystem>
    <supplement name="ha">
        <replacement placeholder="CLUSTERED">
            <clustered>true</clustered>
+           <cluster-password>abc123</cluster-password>
        </replacement>
        <replacement placeholder="BROADCAST-GROUPS">
            <broadcast-groups>

@@ -316,6 +316,10 @@
             <maven-resource group="ch.qos.cal10n" artifact="cal10n-api"/>
         </module-def>
 
+        <module-def name="com.google.appengine">
+            <maven-resource group="com.google.appengine" artifact="appengine-api-1.0-sdk" />
+        </module-def>
+
         <module-def name="com.google.guava">
             <maven-resource group="com.google.guava" artifact="guava" />
         </module-def>
@@ -389,6 +393,10 @@
 
         <module-def name="javax.interceptor.api">
             <maven-resource group="org.jboss.spec.javax.interceptor" artifact="jboss-interceptors-api_1.1_spec"/>
+        </module-def>
+
+        <module-def name="javax.jdo.api">
+            <maven-resource group="javax.jdo" artifact="jdo-api"/>
         </module-def>
 
         <module-def name="javax.jms.api">
@@ -481,6 +489,10 @@
             <maven-resource group="net.jcip" artifact="jcip-annotations"/>
         </module-def>
 
+        <module-def name="org.apache.avro">
+            <maven-resource group="org.apache.avro" artifact="avro"/>
+        </module-def>
+
         <module-def name="org.apache.commons.beanutils">
             <maven-resource group="commons-beanutils" artifact="commons-beanutils"/>
         </module-def>
@@ -567,6 +579,14 @@
             <maven-resource group="org.apache.juddi" artifact="uddi-ws"/>
         </module-def>
 
+        <module-def name="org.apache.lucene">
+            <maven-resource group="org.apache.lucene" artifact="lucene-core"/>
+        </module-def>
+
+        <module-def name="org.apache.log4j">
+            <maven-resource group="log4j" artifact="log4j"/>
+        </module-def>
+
         <module-def name="org.apache.neethi">
             <maven-resource group="org.apache.neethi" artifact="neethi"/>
         </module-def>
@@ -604,6 +624,18 @@
             <maven-resource group="org.apache.ws.security" artifact="wss4j"/>
         </module-def>
 
+    	<module-def name="org.bouncycastle.bcmail">
+            <maven-resource group="org.bouncycastle" artifact="bcmail-jdk15on"/>
+        </module-def>
+
+    	<module-def name="org.bouncycastle.bcpkix">
+            <maven-resource group="org.bouncycastle" artifact="bcpkix-jdk15on"/>
+        </module-def>
+
+    	<module-def name="org.bouncycastle.bcprov">
+            <maven-resource group="org.bouncycastle" artifact="bcprov-jdk15on"/>
+        </module-def>
+
         <module-def name="org.codehaus.woodstox">
             <maven-resource group="org.codehaus.woodstox" artifact="woodstox-core-asl" />
             <maven-resource group="org.codehaus.woodstox" artifact="stax2-api" />
@@ -629,6 +661,17 @@
             <maven-resource group="org.codehaus.jettison" artifact="jettison" />
         </module-def>
 
+        <module-def name="org.datanucleus">
+            <maven-resource group="org.datanucleus" artifact="datanucleus-core" />
+            <maven-resource group="org.datanucleus" artifact="datanucleus-api-jdo" />
+            <maven-resource group="org.datanucleus" artifact="datanucleus-api-jpa" />
+            <maven-resource group="org.datanucleus" artifact="datanucleus-cache" />
+        </module-def>
+
+        <module-def name="org.datanucleus.appengine">
+            <maven-resource group="com.google.appengine.orm" artifact="datanucleus-appengine" />
+        </module-def>
+
         <module-def name="org.hibernate">
             <maven-resource group="org.hibernate" artifact="hibernate-core" />
             <maven-resource group="org.hibernate" artifact="hibernate-entitymanager" />
@@ -642,6 +685,13 @@
         <module-def name="org.hibernate.envers">
             <maven-resource group="org.hibernate" artifact="hibernate-envers"/>
         </module-def>
+
+        <module-def name="org.hibernate.search">
+            <maven-resource group="org.hibernate" artifact="hibernate-search-engine"/>
+            <maven-resource group="org.hibernate" artifact="hibernate-search-infinispan"/>
+            <maven-resource group="org.infinispan" artifact="infinispan-lucene-directory"/>
+        </module-def>
+
         <module-def name="org.hibernate.validator">
             <maven-resource group="org.hibernate" artifact="hibernate-validator"/>
         </module-def>
@@ -671,6 +721,10 @@
             <maven-resource group="org.infinispan" artifact="infinispan-client-hotrod" />
         </module-def>
 
+        <module-def name="org.infinispan.query">
+            <maven-resource group="org.infinispan" artifact="infinispan-query"/>
+        </module-def>
+
         <module-def name="org.jacorb">
             <maven-resource group="org.jacorb" artifact="jacorb"/>
         </module-def>
@@ -695,6 +749,10 @@
 
         <module-def name="org.jboss.as.console">
             <maven-resource-with-classifier group="org.jboss.as" artifact="jboss-as-console" classifier="resources"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.capedwarf">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-capedwarf"/>
         </module-def>
 
         <module-def name="org.jboss.as.cli">
@@ -897,6 +955,33 @@
         </module-def>
         <module-def name="org.jboss.as.xts">
             <maven-resource group="org.jboss.as" artifact="jboss-as-xts"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.threads">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
+        </module-def>
+
+        <module-def name="org.jboss.capedwarf">
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-admin"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-appidentity"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-blobstore"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-bytecode"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-capabilities"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-channel"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-cluster"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-common"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-datastore"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-environment"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-files"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-images"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-log"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-mail"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-memcache"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-oauth"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-tasks"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-urlfetch"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-users"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-xmpp"/>
         </module-def>
 
         <module-def name="org.jboss.classfilewriter">
@@ -1138,11 +1223,21 @@
             <maven-resource group="org.jgroups" artifact="jgroups"/>
         </module-def>
 
+        <module-def name="org.jivesoftware.smack">
+            <maven-resource group="jivesoftware" artifact="smack"/>
+        </module-def>
+
         <module-def name="org.joda.time">
             <maven-resource group="joda-time" artifact="joda-time"/>
         </module-def>
 
         <module-def name="org.omg.api" />
+
+        <module-def name="org.openid4java">
+            <maven-resource group="org.openid4java" artifact="openid4java-consumer"/>
+            <maven-resource group="org.openid4java" artifact="openid4java-nodeps"/>
+            <maven-resource group="commons-httpclient" artifact="commons-httpclient"/>
+        </module-def>
 
         <module-def name="org.osgi.core">
             <maven-resource group="org.osgi" artifact="org.osgi.core"/>
@@ -1161,6 +1256,10 @@
 
         <module-def name="org.python.jython.standalone">
             <maven-resource group="org.python" artifact="jython-standalone"/>
+        </module-def>
+
+        <module-def name="org.picketlink.social">
+            <maven-resource group="org.picketlink" artifact="picketlink-consolidated-social"/>
         </module-def>
 
         <module-def name="org.slf4j.jcl-over-slf4j">

@@ -22,8 +22,11 @@
 
 package org.jboss.as.jpa.persistenceprovider;
 
-import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
+import org.jboss.as.jpa.JpaMessages;
+import org.jboss.modules.ModuleClassLoader;
 
+import javax.persistence.spi.PersistenceProvider;
+import javax.persistence.spi.PersistenceProviderResolver;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,11 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.persistence.spi.PersistenceProvider;
-import javax.persistence.spi.PersistenceProviderResolver;
-
-import org.jboss.as.jpa.JpaMessages;
-import org.jboss.modules.ModuleClassLoader;
+import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
 
 /**
  * Implementation of PersistenceProviderResolver
