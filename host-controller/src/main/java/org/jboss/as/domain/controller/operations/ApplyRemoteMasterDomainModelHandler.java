@@ -56,7 +56,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -65,8 +64,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.extension.ExtensionResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.ServerIdentity;
@@ -78,9 +75,6 @@ import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 
 /**
  * Step handler responsible for taking in a domain model and updating the local domain model to match.
@@ -90,20 +84,16 @@ import org.jboss.modules.ModuleLoadException;
 public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler, DescriptionProvider {
     public static final String OPERATION_NAME = "apply-remote-domain-model";
 
-    private final Set<String> appliedExtensions = new HashSet<String>();
     private final HostFileRepository fileRepository;
     private final ContentRepository contentRepository;
-    private final ExtensionRegistry extensionRegistry;
     private final IgnoredDomainResourceRegistry ignoredResourceRegistry;
 
     private final LocalHostControllerInfo localHostInfo;
 
-    public ApplyRemoteMasterDomainModelHandler(final ExtensionRegistry extensionRegistry,
-                                               final HostFileRepository fileRepository,
+    public ApplyRemoteMasterDomainModelHandler(final HostFileRepository fileRepository,
                                                final ContentRepository contentRepository,
                                                final LocalHostControllerInfo localHostInfo,
                                                final IgnoredDomainResourceRegistry ignoredResourceRegistry) {
-        this.extensionRegistry = extensionRegistry;
         this.fileRepository = fileRepository;
         this.contentRepository = contentRepository;
         this.localHostInfo = localHostInfo;
@@ -133,16 +123,9 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             }
 
             final Resource resource = getResource(resourceAddress, rootResource, context);
-            try {
-                if (resourceAddress.size() == 1 && resourceAddress.getElement(0).getKey().equals(EXTENSION)) {
-                    final String module = resourceAddress.getElement(0).getValue();
-                    if (!appliedExtensions.contains(module)) {
-                        appliedExtensions.add(module);
-                        initializeExtension(module);
-                    }
-                }
-            } catch (Exception e) {
-                throw new OperationFailedException("Could not find resource for address '"+resourceAddress+"'");
+            if (resourceAddress.size() == 1 && resourceAddress.getElement(0).getKey().equals(EXTENSION)) {
+                // Extensions are handled in ApplyExtensionsHandler
+                continue;
             }
             resource.writeModel(resourceDescription.get("domain-resource-model"));
 
@@ -201,12 +184,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
 
             final Map<String, ProxyController> serverProxies = DomainServerUtils.getServerProxies(localHostInfo.getLocalHostName(), domainRootResource, context.getResourceRegistration());
 
-            final ModelNode startExtensions = startRoot.get(EXTENSION);
-            final ModelNode finishExtensions = endRoot.get(EXTENSION);
-            if (!startExtensions.equals(finishExtensions)) {
-                // This affects all servers
-                affectedServers.addAll(DomainServerUtils.getAllRunningServers(hostModel, localHostInfo.getLocalHostName(), serverProxies));
-            }
+            // Extensions are handled in ApplyExtensionsHandler
 
             final ModelNode startPaths = startRoot.get(PATH);
             final ModelNode endPaths = endRoot.get(PATH);
@@ -348,26 +326,8 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         context.completeStep();
     }
 
-    protected void initializeExtension(String module) {
-        try {
-            for (final Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {
-                ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(extension.getClass());
-                try {
-                    extension.initializeParsers(extensionRegistry.getExtensionParsingContext(module, null));
-                    extension.initialize(extensionRegistry.getExtensionContext(module));
-                } finally {
-                    SecurityActions.setThreadContextClassLoader(oldTccl);
-                }
-            }
-        } catch (ModuleLoadException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private void clearDomain(final Resource rootResource) {
-        for(Resource.ResourceEntry entry : rootResource.getChildren(EXTENSION)) {
-            rootResource.removeChild(entry.getPathElement());
-        }
+        // Extensions are handled in ApplyExtensionsHandler
         for(Resource.ResourceEntry entry : rootResource.getChildren(ModelDescriptionConstants.PATH)) {
             rootResource.removeChild(entry.getPathElement());
         }
@@ -403,9 +363,8 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
                 if (idx == 0) {
                     String type = element.getKey();
                     if (type.equals(EXTENSION)) {
-                        // Needs a specialized resource type
-                        temp = new ExtensionResource(element.getValue(), extensionRegistry);
-                        context.addResource(resourceAddress, temp);
+                        // Extensions are handled in ApplyExtensionsHandler
+                        continue;
                     } else if (type.equals(MANAGEMENT_CLIENT_CONTENT) && element.getValue().equals(ROLLOUT_PLANS)) {
                         // Needs a specialized resource type
                         temp = new ManagedDMRContentTypeResource(element, ROLLOUT_PLAN, null, contentRepository);
@@ -550,7 +509,6 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             ModelNode model = server.getModel();
             result.add(model.get(GROUP).asString());
         }
-
         return result;
     }
 

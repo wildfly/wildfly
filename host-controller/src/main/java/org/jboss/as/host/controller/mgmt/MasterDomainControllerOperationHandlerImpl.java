@@ -24,6 +24,7 @@ import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 import java.io.DataInput;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Executor;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.domain.controller.DomainController;
@@ -49,9 +50,11 @@ import org.jboss.dmr.ModelNode;
 class MasterDomainControllerOperationHandlerImpl implements ManagementRequestHandlerFactory {
 
     private final DomainController domainController;
+    private final Executor asyncExecutor;
 
-    public MasterDomainControllerOperationHandlerImpl(final DomainController domainController) {
+    public MasterDomainControllerOperationHandlerImpl(final DomainController domainController, final Executor asyncExecutor) {
         this.domainController = domainController;
+        this.asyncExecutor = asyncExecutor;
     }
 
     @Override
@@ -73,7 +76,7 @@ class MasterDomainControllerOperationHandlerImpl implements ManagementRequestHan
 
         @Override
         void handleRequest(String hostId, DataInput input, ManagementRequestContext<Void> context) throws IOException {
-            domainController.unregisterRemoteHost(hostId);
+            domainController.unregisterRemoteHost(hostId, null);
             final FlushableDataOutput os = writeGenericResponseHeader(context);
             try {
                 os.write(ManagementProtocol.RESPONSE_END);
@@ -86,6 +89,8 @@ class MasterDomainControllerOperationHandlerImpl implements ManagementRequestHan
     }
 
     private class GetFileOperation extends AbstractHostRequestHandler {
+
+        private final DomainRemoteFileRequestAndHandler remoteSupport = new DomainRemoteFileRequestAndHandler(asyncExecutor);
 
         @Override
         void handleRequest(String hostId, DataInput input, ManagementRequestContext<Void> context) throws IOException {
@@ -110,7 +115,8 @@ class MasterDomainControllerOperationHandlerImpl implements ManagementRequestHan
                     }
                 }
             };
-            DomainRemoteFileRequestAndHandler.INSTANCE.handleRequest(input, reader, context);
+
+            remoteSupport.handleRequest(input, reader, context);
         }
     }
 

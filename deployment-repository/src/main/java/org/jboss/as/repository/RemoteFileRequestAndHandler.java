@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -51,9 +52,15 @@ import org.jboss.logging.BasicLogger;
 public abstract class RemoteFileRequestAndHandler {
 
     private final RemoteFileProtocolIdMapper protocol;
+    private final Executor asyncExecutor;
 
     protected RemoteFileRequestAndHandler(RemoteFileProtocolIdMapper protocol) {
+        this(protocol, null);
+    }
+
+    protected RemoteFileRequestAndHandler(RemoteFileProtocolIdMapper protocol, Executor asyncExecutor) {
         this.protocol = protocol;
+        this.asyncExecutor = asyncExecutor;
     }
 
     public void sendRequest(FlushableDataOutput output, byte rootId, String filePath) throws IOException{
@@ -124,7 +131,7 @@ public abstract class RemoteFileRequestAndHandler {
         expectHeader(input, protocol.paramFilePath());
         final String filePath = input.readUTF();
 
-        context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
+        ManagementRequestContext.AsyncTask<Void> task = new ManagementRequestContext.AsyncTask<Void>() {
             @Override
             public void execute(ManagementRequestContext<Void> context) throws Exception {
                 final File localPath = reader.readRootFile(rootId, filePath);
@@ -137,7 +144,13 @@ public abstract class RemoteFileRequestAndHandler {
                     StreamUtils.safeClose(output);
                 }
             }
-        });
+        };
+
+        if (asyncExecutor == null) {
+            context.executeAsync(task);
+        } else {
+            context.executeAsync(task, asyncExecutor);
+        }
     }
 
     private void writeResponse(final File localPath, final FlushableDataOutput output) throws IOException {
