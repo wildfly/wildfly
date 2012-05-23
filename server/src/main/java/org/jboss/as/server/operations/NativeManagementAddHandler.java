@@ -53,7 +53,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.remoting3.RemotingOptions;
 import org.xnio.OptionMap;
+import org.xnio.Options;
 
 
 /**
@@ -172,13 +174,15 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
 
         ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.server.temp.dir");
         RemotingServices.installSecurityServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_CONNECTOR, realmSvcName, null, tmpDirPath, verificationHandler, newControllers);
+//        final OptionMap options = OptionMap.builder().set(RemotingOptions.HEARTBEAT_INTERVAL, 30000).set(Options.READ_TIMEOUT, 65000).getMap();
+        final OptionMap options = OptionMap.EMPTY;
         if (socketBindingServiceName == null) {
             ManagementRemotingServices.installConnectorServicesForNetworkInterfaceBinding(serviceTarget, endpointName,
-                    ManagementRemotingServices.MANAGEMENT_CONNECTOR, interfaceSvcName, port, OptionMap.EMPTY, verificationHandler, newControllers);
+                    ManagementRemotingServices.MANAGEMENT_CONNECTOR, interfaceSvcName, port, options, verificationHandler, newControllers);
         } else {
             ManagementRemotingServices.installConnectorServicesForSocketBinding(serviceTarget, endpointName,
                     ManagementRemotingServices.MANAGEMENT_CONNECTOR,
-                    socketBindingServiceName, OptionMap.EMPTY, verificationHandler, newControllers);
+                    socketBindingServiceName, options, verificationHandler, newControllers);
         }
     }
 

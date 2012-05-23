@@ -259,9 +259,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
         modelNodeRegistration.registerProxyController(pe, hostControllerClient);
         hostProxies.put(hostName, hostControllerClient);
-        if (pinger != null) {
-            pinger.schedulePing(SlaveHostPinger.STD_TIMEOUT, SlaveHostPinger.STD_INTERVAL);
-        }
+//        if (pinger != null) {
+//            pinger.schedulePing(SlaveHostPinger.STD_TIMEOUT, SlaveHostPinger.STD_INTERVAL);
+//        }
     }
 
     @Override
