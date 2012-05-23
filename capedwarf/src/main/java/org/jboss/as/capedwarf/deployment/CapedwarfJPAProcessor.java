@@ -22,6 +22,8 @@
 
 package org.jboss.as.capedwarf.deployment;
 
+import java.util.List;
+
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.processor.JpaAttachments;
@@ -30,8 +32,6 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-
-import java.util.List;
 
 /**
  * Fix CapeDwarf JPA usage - ignore PU service.
@@ -47,6 +47,9 @@ public class CapedwarfJPAProcessor extends CapedwarfPersistenceProcessor {
             if (pus != null && pus.isEmpty() == false) {
                 for (PersistenceUnitMetadata pumd : pus) {
                     final String providerClass = pumd.getPersistenceProviderClassName();
+
+                    CapedwarfDeploymentMarker.addPersistenceProvider(unit, providerClass);
+
                     if (Configuration.PROVIDER_CLASS_DATANUCLEUS.equals(providerClass) || Configuration.PROVIDER_CLASS_DATANUCLEUS_GAE.equals(providerClass)) {
                         unit.addToAttachmentList(JpaAttachments.IGNORED_PU_SERVICES, pumd.getPersistenceUnitName());
 

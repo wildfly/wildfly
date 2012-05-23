@@ -96,7 +96,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        CapedwarfDefinition.APPENGINE_API.validateAndSet(operation,model);
+        CapedwarfDefinition.APPENGINE_API.validateAndSet(operation, model);
     }
 
     /**
@@ -107,8 +107,8 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
                                 ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers)
             throws OperationFailedException {
 
-        final ModelNode appEngineModel = CapedwarfDefinition.APPENGINE_API.resolveModelAttribute(context,model);
-        final String appengineAPI = appEngineModel.isDefined()?appEngineModel.asString():null;
+        final ModelNode appEngineModel = CapedwarfDefinition.APPENGINE_API.resolveModelAttribute(context, model);
+        final String appengineAPI = appEngineModel.isDefined() ? appEngineModel.asString() : null;
 
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
@@ -130,7 +130,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.PARSE, Phase.PARSE_WELD_WEB_INTEGRATION - 10, new CapedwarfWeldParseProcessor()); // before Weld web integration
                 processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.DEPENDENCIES, Phase.DEPENDENCIES_WELD - 10, new CapedwarfWeldProcessor()); // before Weld
                 processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA - 10, new CapedwarfJPAProcessor()); // before default JPA processor
-                processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE + 10, new CapedwarfDeploymentProcessor(appengineAPI));
+                processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA - 5, new CapedwarfDeploymentProcessor(appengineAPI));
                 processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.POST_MODULE, Phase.POST_MODULE_APP_NAMING_CONTEXT + 10, new CapedwarfDependenciesProcessor()); // adjust order as needed
                 processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.POST_MODULE, Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS + 10, new CapedwarfCDIExtensionProcessor()); // after Weld portable extensions lookup
                 processorTarget.addDeploymentProcessor(Constants.CAPEDWARF, Phase.INSTALL, Phase.INSTALL_MODULE_JNDI_BINDINGS - 1, new CapedwarfMuxIdProcessor()); // adjust order as needed

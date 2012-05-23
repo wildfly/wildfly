@@ -22,6 +22,10 @@
 
 package org.jboss.as.capedwarf.deployment;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
 
@@ -36,6 +40,7 @@ public class CapedwarfDeploymentMarker {
     private boolean bundledAppEngineApi;
     private boolean cdiApp;
     private String appId;
+    private Set<String> persistenceProviders;
 
     private CapedwarfDeploymentMarker() {
     }
@@ -108,7 +113,7 @@ public class CapedwarfDeploymentMarker {
     /**
      * Set app id info.
      *
-     * @param unit the deployment unit
+     * @param unit  the deployment unit
      * @param appId the app id
      */
     public static void setAppId(DeploymentUnit unit, String appId) {
@@ -126,5 +131,31 @@ public class CapedwarfDeploymentMarker {
     public static String getAppId(DeploymentUnit unit) {
         final CapedwarfDeploymentMarker marker = unit.getAttachment(MARKER);
         return marker != null ? marker.appId : null;
+    }
+
+    /**
+     * Add persistence provider.
+     *
+     * @param unit                the deployment unit
+     * @param persistenceProvider the persistence provider
+     */
+    public static void addPersistenceProvider(DeploymentUnit unit, String persistenceProvider) {
+        final CapedwarfDeploymentMarker marker = unit.getAttachment(MARKER);
+        if (marker != null) {
+            if (marker.persistenceProviders == null)
+                marker.persistenceProviders = new HashSet<String>();
+            marker.persistenceProviders.add(persistenceProvider);
+        }
+    }
+
+    /**
+     * Get persistence providers.
+     *
+     * @param unit the deployment unit
+     * @return the persistence providers or empty set if none
+     */
+    public static Set<String> getPersistenceProviders(DeploymentUnit unit) {
+        final CapedwarfDeploymentMarker marker = unit.getAttachment(MARKER);
+        return marker != null ? marker.persistenceProviders : Collections.<String>emptySet();
     }
 }
