@@ -697,13 +697,14 @@ class CommandContextImpl implements CommandContext {
                 ModelControllerClient newClient = null;
 
                 CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
+                long beforeConnect = System.currentTimeMillis();
                 ModelControllerClient tempClient = ModelControllerClient.Factory.create(host, port, cbh, sslContext);
                 switch (initialConnection(tempClient)) {
                     case SUCCESS:
                         newClient = tempClient;
                         break;
                     case CONNECTION_FAILURE:
-                        throw new CommandLineException("The controller is not available at " + host + ":" + port);
+                    throw new CommandLineException("The controller is not available at " + host + ":" + port + ", connect failed after " + (System.currentTimeMillis() - beforeConnect) + ")");
                     case AUTHENTICATION_FAILURE:
                         throw new CommandLineException("Unable to authenticate against controller at " + host + ":" + port);
                     case SSL_FAILURE:

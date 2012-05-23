@@ -84,6 +84,7 @@ public class CliScriptTestBase {
         }
 
         final ProcessBuilder builder = new ProcessBuilder();
+        builder.redirectErrorStream(true);
         final List<String> command = new ArrayList<String>();
         command.add("java");
         TestSuiteEnvironment.getIpv6Args(command);
