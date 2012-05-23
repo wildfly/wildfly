@@ -119,7 +119,7 @@ public class CliArgumentsTestCase extends CliScriptTestBase {
 
     @Test
     public void testWrongControler() throws Exception {
-        int exitCode = execute(TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() - 1, true, "quit", false);
+        int exitCode = execute(TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() - 1, true, "quit", true);
         assertTrue(exitCode != 0);
     }
 }
