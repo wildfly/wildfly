@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.ejb.entity.cmp.commerce;
 
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Set;
 import javax.ejb.CreateException;
 import javax.ejb.EJBLocalHome;
@@ -37,6 +38,10 @@ public interface OrderHome extends EJBLocalHome {
     Collection findByStatus(String status) throws FinderException;
 
     Collection findAll() throws FinderException;
+
+    Collection findCollectionSortedByStatus() throws FinderException;
+
+    Enumeration findEnumerationSortedByStatus() throws FinderException;
 
     Collection findDoubleJoin(int a, int b) throws FinderException;
 

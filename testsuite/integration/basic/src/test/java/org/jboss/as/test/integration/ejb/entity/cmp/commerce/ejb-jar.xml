@@ -329,6 +329,28 @@
             </query-method>
             <ejb-ql><!-- define in jbosscmp --></ejb-ql>
          </query>
+         <query>
+            <query-method>
+               <method-name>findCollectionSortedByStatus</method-name>
+               <method-params/>
+            </query-method>
+            <ejb-ql>
+               SELECT OBJECT(o)
+               FROM OrderX o
+               ORDER BY o.orderStatus
+            </ejb-ql>
+         </query>
+         <query>
+            <query-method>
+               <method-name>findEnumerationSortedByStatus</method-name>
+               <method-params/>
+            </query-method>
+            <ejb-ql>
+               SELECT OBJECT(o)
+               FROM OrderX o
+               ORDER BY o.orderStatus
+            </ejb-ql>
+         </query>
       </entity>
       <entity>
          <description>Address</description>
