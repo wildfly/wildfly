@@ -21,6 +21,8 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
+import java.util.concurrent.Executor;
+
 import org.jboss.as.repository.RemoteFileRequestAndHandler;
 
 /**
@@ -55,10 +57,10 @@ public class DomainRemoteFileRequestAndHandler extends RemoteFileRequestAndHandl
         }
     };
 
-    public static final DomainRemoteFileRequestAndHandler INSTANCE = new DomainRemoteFileRequestAndHandler(MAPPER);
+    public static final DomainRemoteFileRequestAndHandler INSTANCE = new DomainRemoteFileRequestAndHandler(null);
 
-    private DomainRemoteFileRequestAndHandler(RemoteFileProtocolIdMapper mapper) {
-        super(mapper);
+    public DomainRemoteFileRequestAndHandler(Executor asyncExecutor) {
+        super(MAPPER, asyncExecutor);
     }
 
 }

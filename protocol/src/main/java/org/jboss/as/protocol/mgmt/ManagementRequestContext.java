@@ -25,6 +25,7 @@ package org.jboss.as.protocol.mgmt;
 import org.jboss.remoting3.Channel;
 
 import java.io.IOException;
+import java.util.concurrent.Executor;
 
 /**
  * The context for handling request.
@@ -63,11 +64,21 @@ public interface ManagementRequestContext<A> {
     ManagementProtocolHeader getRequestHeader();
 
     /**
-     * Execute async.
+     * Execute an async task. Basically everything waiting for a response cannot block a remoting thread and
+     * has to be executed asynchronous.
      *
      * @param task the task
      */
     void executeAsync(final AsyncTask<A> task);
+
+    /**
+     * Execute an async task. Basically everything waiting for a response cannot block a remoting thread and
+     * has to be executed asynchronous.
+     *
+     * @param task the task
+     * @param executor the executor
+     */
+    void executeAsync(final AsyncTask<A> task, Executor executor);
 
     /**
      * Write a new message.

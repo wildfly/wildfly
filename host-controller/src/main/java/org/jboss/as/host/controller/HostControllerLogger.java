@@ -348,7 +348,7 @@ public interface HostControllerLogger extends BasicLogger {
     void unregisteredAtRemoteHostController();
 
     @LogMessage(level = Level.WARN)
-    @Message(id = 10929, value = "Connection to remote host \"%s\" closed unexpected")
+    @Message(id = 10929, value = "Connection to remote host \"%s\" closed unexpectedly")
     void lostConnectionToRemoteHost(String hostId);
 
     @LogMessage(level = Level.WARN)
@@ -380,4 +380,20 @@ public interface HostControllerLogger extends BasicLogger {
     @LogMessage(level = Level.WARN)
     @Message(id = 10935, value = "Graceful shutdown of the handler used for messages from other Host Controllers did not complete within [%d] ms but shutdown of the underlying communication channel is proceeding")
     void gracefulManagementChannelHandlerShutdownTimedOut(int timeout);
+
+    @LogMessage(level = Level.INFO)
+    @Message(id=10936, value="The master host controller has been restarted. Re-registering this slave host controller with the new master.")
+    void masterHostControllerChanged();
+
+    @LogMessage(level = Level.WARN)
+    @Message(id=10937, value="The master host controller could not be reached in the last [%d] milliseconds. Re-connecting.")
+    void masterHostControllerUnreachable(long timeout);
+
+    @LogMessage(level = Level.INFO)
+    @Message(id=10938, value="The slave host controller \"%s\" has been restarted or is attempting to reconnect. Unregistering the current connection to this slave.")
+    void slaveHostControllerChanged(String hostName);
+
+    @LogMessage(level = Level.WARN)
+    @Message(id=10939, value="The slave host controller \"%s\"  could not be reached in the last [%d] milliseconds. Unregistering.")
+    void slaveHostControllerUnreachable(String hostName, long timeout);
 }
