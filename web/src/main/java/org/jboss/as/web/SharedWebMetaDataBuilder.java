@@ -170,7 +170,7 @@ class SharedWebMetaDataBuilder {
         initParams.add(createParameter("checkInterval", config.require(CHECK_INTERVAL).asString()));
         initParams.add(createParameter("modificationTestInterval", config.require(MODIFICATION_TEST_INTERVAL).asString()));
         initParams.add(createParameter("recompileOnFail", config.require(RECOMPILE_ON_FAIL).asString()));
-        initParams.add(createParameter("suppressSmap", config.require(SMAP).asString()));
+        initParams.add(createParameter("suppressSmap", Boolean.toString(!config.require(SMAP).asBoolean())));
         initParams.add(createParameter("dumpSmap", config.require(DUMP_SMAP).asString()));
         initParams.add(createParameter("genStringAsCharArray", config.require(GENERATE_STRINGS_AS_CHAR_ARRAYS).asString()));
         initParams.add(createParameter("errorOnUseBeanInvalidClassAttribute", config.require(ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE).asString()));
