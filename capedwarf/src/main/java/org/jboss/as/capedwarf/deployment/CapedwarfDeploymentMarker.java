@@ -142,9 +142,12 @@ public class CapedwarfDeploymentMarker {
     public static void addPersistenceProvider(DeploymentUnit unit, String persistenceProvider) {
         final CapedwarfDeploymentMarker marker = unit.getAttachment(MARKER);
         if (marker != null) {
-            if (marker.persistenceProviders == null)
-                marker.persistenceProviders = new HashSet<String>();
-            marker.persistenceProviders.add(persistenceProvider);
+            //noinspection SynchronizationOnLocalVariableOrMethodParameter
+            synchronized (marker) {
+                if (marker.persistenceProviders == null)
+                    marker.persistenceProviders = new HashSet<String>();
+                marker.persistenceProviders.add(persistenceProvider);
+            }
         }
     }
 
@@ -156,6 +159,14 @@ public class CapedwarfDeploymentMarker {
      */
     public static Set<String> getPersistenceProviders(DeploymentUnit unit) {
         final CapedwarfDeploymentMarker marker = unit.getAttachment(MARKER);
-        return marker != null ? marker.persistenceProviders : Collections.<String>emptySet();
+        if (marker != null) {
+            //noinspection SynchronizationOnLocalVariableOrMethodParameter
+            synchronized (marker) {
+                if (marker.persistenceProviders != null) {
+                    return Collections.unmodifiableSet(marker.persistenceProviders);
+                }
+            }
+        }
+        return Collections.emptySet();
     }
 }
