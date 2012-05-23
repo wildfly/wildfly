@@ -27,6 +27,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,9 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
  * @author Alexey Loubyansky
  */
 public class CliScriptTestBase {
+
+    private static final int CLI_PROC_TIMEOUT = 10000;
+    private static final int STATUS_CHECK_INTERVAL = 2000;
 
     private String cliOutput;
 
@@ -100,22 +104,35 @@ public class CliScriptTestBase {
         } catch (IOException e) {
             fail("Failed to start CLI process: " + e.getLocalizedMessage());
         }
+
+        final InputStream cliStream = cliProc.getInputStream();
+        final StringBuilder cliOutBuf = new StringBuilder();
+        boolean wait = true;
+        int runningTime = 0;
         int exitCode = 0;
-        try {
-            exitCode = cliProc.waitFor();
-        } catch (InterruptedException e) {
-            fail("Interrupted waiting for the CLI process.");
-        }
-        try {
-            int bytesTotal = cliProc.getInputStream().available();
-            if (bytesTotal > 0) {
-                final byte[] bytes = new byte[bytesTotal];
-                cliProc.getInputStream().read(bytes);
-                cliOutput = new String(bytes);
+        do {
+            try {
+                Thread.sleep(STATUS_CHECK_INTERVAL);
+            } catch (InterruptedException e) {
             }
-        } catch (IOException e) {
-            fail("Failed to read command's output: " + e.getLocalizedMessage());
-        }
+            runningTime += STATUS_CHECK_INTERVAL;
+            readStream(cliOutBuf, cliStream);
+            try {
+                exitCode = cliProc.exitValue();
+                wait = false;
+                readStream(cliOutBuf, cliStream);
+            } catch(IllegalThreadStateException e) {
+                // cli still working
+            }
+            if(runningTime >= CLI_PROC_TIMEOUT) {
+                readStream(cliOutBuf, cliStream);
+                cliProc.destroy();
+                wait = false;
+            }
+        } while(wait);
+
+        cliOutput = cliOutBuf.toString();
+
         if (logFailure && exitCode != 0) {
             System.out.println("Failed to execute '" + cmd + "'");
             System.out.println("Command's output: '" + cliOutput + "'");
@@ -133,5 +150,18 @@ public class CliScriptTestBase {
             }
         }
         return exitCode;
+    }
+
+    protected void readStream(final StringBuilder cliOutBuf, InputStream cliStream) {
+        try {
+            int bytesTotal = cliStream.available();
+            if (bytesTotal > 0) {
+                final byte[] bytes = new byte[bytesTotal];
+                cliStream.read(bytes);
+                cliOutBuf.append(new String(bytes));
+            }
+        } catch (IOException e) {
+            fail("Failed to read command's output: " + e.getLocalizedMessage());
+        }
     }
 }
