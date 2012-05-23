@@ -21,27 +21,21 @@
  */
 package org.jboss.as.test.integration.management.cli;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author Alexey Loubyansky
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class CommandsArgumentTestCase {
+public class CommandsExitCodeTestCase extends CliScriptTestBase {
 
     private static final String PROP_NAME = "cli-arg-test";
     private static final String SET_PROP_COMMAND = "/system-property=" + PROP_NAME + ":add(value=set)";
@@ -99,77 +93,5 @@ public class CommandsArgumentTestCase {
         assertSuccess(GET_PROP_COMMAND);
         execute(REMOVE_PROP_COMMAND, true);
         assertTrue(exitCode != 0);
-    }
-
-    protected void assertSuccess(String cmd) {
-        assertEquals(0, execute(cmd, true));
-    }
-
-    protected void assertFailure(String cmd) {
-        assertTrue(execute(cmd, false) != 0);
-    }
-
-    protected int execute(String cmd, boolean logFailure) {
-        final String jbossDist = System.getProperty("jboss.dist");
-        if (jbossDist == null) {
-            fail("jboss.dist system property is not set");
-        }
-        final String modulePath = System.getProperty("module.path");
-        if (modulePath == null) {
-            fail("module.path system property is not set");
-        }
-
-        final ProcessBuilder builder = new ProcessBuilder();
-        final List<String> command = new ArrayList<String>();
-        command.add("java");
-        TestSuiteEnvironment.getIpv6Args(command);
-        command.add("-jar");
-        command.add(jbossDist + File.separatorChar + "jboss-modules.jar");
-        command.add("-mp");
-        command.add(modulePath);
-        command.add("org.jboss.as.cli");
-        command.add("-c");
-        command.add("--controller=" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getServerPort());
-        command.add(cmd);
-        builder.command(command);
-        Process cliProc = null;
-        try {
-            cliProc = builder.start();
-        } catch (IOException e) {
-            fail("Failed to start CLI process: " + e.getLocalizedMessage());
-        }
-        int exitCode = 0;
-        try {
-            exitCode = cliProc.waitFor();
-        } catch (InterruptedException e) {
-            fail("Interrupted waiting for the CLI process.");
-        }
-        if (logFailure && exitCode != 0) {
-            System.out.println("Failed to execute '" + cmd + "'");
-            try {
-                int bytesTotal = cliProc.getInputStream().available();
-                if (bytesTotal > 0) {
-                    final byte[] bytes = new byte[bytesTotal];
-                    cliProc.getInputStream().read(bytes);
-                    System.out.println("Command's output: '" + new String(bytes) + "'");
-                }
-            } catch (IOException e) {
-                fail("Failed to read command's output: " + e.getLocalizedMessage());
-            }
-
-            try {
-                int bytesTotal = cliProc.getErrorStream().available();
-                if (bytesTotal > 0) {
-                    final byte[] bytes = new byte[bytesTotal];
-                    cliProc.getErrorStream().read(bytes);
-                    System.out.println("Command's error log: '" + new String(bytes) + "'");
-                } else {
-                    System.out.println("No output data for the command.");
-                }
-            } catch (IOException e) {
-                fail("Failed to read command's error output: " + e.getLocalizedMessage());
-            }
-        }
-        return exitCode;
     }
 }

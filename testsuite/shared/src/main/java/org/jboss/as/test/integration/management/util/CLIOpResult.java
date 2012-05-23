@@ -21,7 +21,16 @@
  */
 package org.jboss.as.test.integration.management.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 
 /**
@@ -33,6 +42,47 @@ public class CLIOpResult {
     private boolean isOutcomeSuccess;
     private Object result;
     private Object serverGroups;
+
+    public CLIOpResult() {}
+
+    public CLIOpResult(ModelNode node) {
+        final Map<String, Object> map = toMap(node);
+        isOutcomeSuccess = "success".equals(map.get("outcome"));
+        result = map.get("result");
+        serverGroups = map.get("server-groups");
+    }
+
+    protected Map<String, Object> toMap(ModelNode node) {
+        final Set<String> keys = node.keys();
+        Map<String,Object> map = new HashMap<String,Object>(keys.size());
+        for(String key : keys) {
+            map.put(key, toObject(node.get(key)));
+        }
+        return map;
+    }
+
+    protected List<Object> toList(ModelNode node) {
+        final List<ModelNode> nodeList = node.asList();
+        final List<Object> list = new ArrayList<Object>(nodeList.size());
+        for(ModelNode item : nodeList) {
+            list.add(toObject(item));
+        }
+        return list;
+    }
+
+    protected Object toObject(ModelNode node) {
+        final ModelType type = node.getType();
+        if(type.equals(ModelType.LIST)) {
+            return toList(node);
+        } else if(type.equals(ModelType.OBJECT)) {
+            return toMap(node);
+        } else if(type.equals(ModelType.PROPERTY)) {
+            final Property prop = node.asProperty();
+            return Collections.singletonMap(prop.getName(), toObject(prop.getValue()));
+        } else {
+            return node.asString();
+        }
+    }
 
     public boolean isIsOutcomeSuccess() {
         return isOutcomeSuccess;

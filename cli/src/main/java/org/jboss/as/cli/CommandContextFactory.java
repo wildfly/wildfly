@@ -21,6 +21,9 @@
  */
 package org.jboss.as.cli;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
 /**
  *
  * @author Alexey Loubyansky
@@ -55,4 +58,8 @@ public abstract class CommandContextFactory {
 
     public abstract CommandContext newCommandContext(String controllerHost, int controllerPort,
             String username, char[] password, boolean initConsole) throws CliInitializationException;
+
+    public abstract CommandContext newCommandContext(String controllerHost, int controllerPort,
+            String username, char[] password,
+            InputStream consoleInput, OutputStream consoleOutput) throws CliInitializationException;
 }

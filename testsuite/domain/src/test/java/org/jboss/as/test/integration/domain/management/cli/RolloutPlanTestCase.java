@@ -75,13 +75,13 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
 
         // start main-two
         cli.sendLine("/host=master/server-config=main-two:start");
-        CLIOpResult res = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIOpResult res = cli.readAllAsOpResult();
         Assert.assertTrue(res.isIsOutcomeSuccess());
         waitUntilState("main-two", "STARTED");
 
         // start test-one
         cli.sendLine("/host=master/server-config=test-one:start");
-        res = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        res = cli.readAllAsOpResult();
         Assert.assertTrue(res.isIsOutcomeSuccess());
         waitUntilState("test-one", "STARTED");
     }
@@ -91,13 +91,13 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
 
         // stop test-one
         cli.sendLine("/host=master/server-config=test-one:stop");
-        CLIOpResult res = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIOpResult res = cli.readAllAsOpResult();
         Assert.assertTrue(res.isIsOutcomeSuccess());
         waitUntilState("test-one", "STOPPED");
 
         // stop main-two
         cli.sendLine("/host=master/server-config=main-two:stop");
-        res = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        res = cli.readAllAsOpResult();
         Assert.assertTrue(res.isIsOutcomeSuccess());
         waitUntilState("main-two", "DISABLED");
 
@@ -130,13 +130,12 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         // check they are listed
         cli.sendLine("cd /management-client-content=rollout-plans/rollout-plan");
         cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        String ls = cli.readOutput();
         Assert.assertTrue(ls.contains("testPlan"));
         Assert.assertTrue(ls.contains("testPlan2"));
 
         // deploy using 1st prepared rollout plan
         cli.sendLine("deploy " + warFile.getAbsolutePath() + " --all-server-groups --headers={rollout id=testPlan}");
-        cli.waitForPrompt(WAIT_TIMEOUT);
 
         // check that the apps were deployed in correct order
         // get application deployment times from servers
@@ -153,11 +152,9 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
 
         // undeploy apps
         cli.sendLine("undeploy RolloutPlanTestCase.war --all-relevant-server-groups");
-        cli.waitForPrompt(WAIT_TIMEOUT);
 
         // deploy using 2nd plan
         cli.sendLine("deploy " + warFile.getAbsolutePath() + " --all-server-groups --headers={rollout id=testPlan2}");
-        cli.waitForPrompt(WAIT_TIMEOUT);
 
         // check that the apps were deployed in reversed order
         mainOneTime = Long.valueOf(checkURL("main-one", false));
@@ -173,7 +170,6 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
 
         // undeploy apps
         cli.sendLine("undeploy RolloutPlanTestCase.war --all-relevant-server-groups");
-        cli.waitForPrompt(WAIT_TIMEOUT);
 
         // remove rollout plans
         cli.sendLine("rollout-plan remove --name=testPlan");
@@ -182,7 +178,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         // check plans are no more listed
         cli.sendLine("cd /management-client-content=rollout-plans");
         cli.sendLine("ls");
-        ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        ls = cli.readOutput();
         Assert.assertFalse(ls.contains("testPlan"));
         Assert.assertFalse(ls.contains("testPlan2"));
 
@@ -196,7 +192,6 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
 
         // deploy helper servlets
         cli.sendLine("deploy " + warFile.getAbsolutePath() + " --all-server-groups");
-        cli.waitForPrompt(WAIT_TIMEOUT);
 
         checkURL("main-one", false, "/RolloutPlanTestCase/RolloutServlet");
         checkURL("main-two", false, "/RolloutPlanTestCase/RolloutServlet");
@@ -265,7 +260,6 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
 
         // deploy helper servlets
         cli.sendLine("deploy " + warFile.getAbsolutePath() + " --all-server-groups");
-        cli.waitForPrompt(WAIT_TIMEOUT);
 
         // prepare socket binding
         cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test-binding:add(interface=public,port=" + TEST_PORT + ")");
@@ -325,7 +319,6 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
     public void testRollbackAcrossGroupsRolloutPlan() throws Exception {
         // deploy helper servlets
         cli.sendLine("deploy " + warFile.getAbsolutePath() + " --all-server-groups");
-        cli.waitForPrompt(WAIT_TIMEOUT);
 
         checkURL("main-one", false, "/RolloutPlanTestCase/RolloutServlet");
         checkURL("main-two", false, "/RolloutPlanTestCase/RolloutServlet");
@@ -368,18 +361,16 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
     }
 
     private CLIOpResult testAddConnector(String rolloutPlanId) throws Exception {
-        cli.flush();
         cli.sendLine("/profile=default/subsystem=web/connector=test-http:add" +
                 "(socket-binding=test-binding, scheme=http, protocol=\"HTTP/1.1\", enabled=true)"
-                + "{rollout id=" + rolloutPlanId + "}");
-        return cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+                + "{rollout id=" + rolloutPlanId + "}", true);
+        return cli.readAllAsOpResult();
     }
 
     private CLIOpResult testRemoveConnector(String rolloutPlanId) throws Exception {
-        cli.flush();
         cli.sendLine("/profile=default/subsystem=web/connector=test-http:remove" +
                 "{rollout id=" + rolloutPlanId + "}");
-        return cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        return cli.readAllAsOpResult();
     }
 
 
@@ -437,7 +428,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         taskExecutor.retryTask(new Callable() {
             public Object call() throws Exception {
                 cli.sendLine("/host=" + serverHost + "/server-config=" + serverName + ":read-attribute(name=status)");
-                CLIOpResult res = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+                CLIOpResult res = cli.readAllAsOpResult();
                 if (! res.getResult().equals(state)) throw new Exception("Server not in state.");
                 return null;
             }

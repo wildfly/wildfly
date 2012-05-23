@@ -22,14 +22,11 @@
 package org.jboss.as.test.integration.management.cli;
 
 import java.net.URL;
-import java.util.Hashtable;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import junit.framework.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -40,7 +37,6 @@ import org.jboss.as.test.integration.common.JndiServlet;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -101,12 +97,11 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         // check the data source is listed
         cli.sendLine("cd /subsystem=datasources/data-source");
         cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        String ls = cli.readOutput();
         assertTrue(ls.contains("TestDS"));
 
         // enable data source
         cli.sendLine("data-source enable --name=TestDS");
-        cli.waitForPrompt(WAIT_TIMEOUT);
 
         // check that it is available through JNDI
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/datasources/TestDS");
@@ -126,7 +121,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         //check the data source is not listed
         cli.sendLine("cd /subsystem=datasources/data-source");
         cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        String ls = cli.readOutput();
         assertFalse(ls.contains("java:jboss/datasources/TestDS"));
 
         // check that it is not available through JNDI
@@ -147,7 +142,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
         // check that datasource was modified
         cli.sendLine("/subsystem=datasources/data-source=TestDS:read-resource(recursive=true)");
-        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIOpResult result = cli.readAllAsOpResult();
         assertTrue(result.getResult().toString(), result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
         Map dsProps = (Map) result.getResult();
@@ -163,7 +158,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         //check the data source is listed
         cli.sendLine("cd /subsystem=datasources/xa-data-source");
         cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        String ls = cli.readOutput();
         assertTrue(ls.contains("TestXADS"));
 
         // add URL property
@@ -172,7 +167,6 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
         // enable data source
         cli.sendLine("xa-data-source enable --name=TestXADS");
-        cli.waitForPrompt(WAIT_TIMEOUT);
 
         // check that it is available through JNDI
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/datasources/TestXADS");
@@ -189,8 +183,8 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         //check the data source is not listed
         cli.sendLine("cd /subsystem=datasources/xa-data-source");
         cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        assertFalse(ls.contains("TestXADS"));
+        String ls = cli.readOutput();
+        Assert.assertNull(ls);
 
         // check that it is no more available through JNDI
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/datasources/TestXADS");
@@ -210,10 +204,10 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
         // check that datasource was modified
         cli.sendLine("/subsystem=datasources/xa-data-source=TestXADS:read-resource(recursive=true)");
-        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIOpResult result = cli.readAllAsOpResult();
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
-        Map dsProps = (Map) result.getResult();
+        Map<String,Object> dsProps = (Map<String, Object>) result.getResult();
         for (String[] props : DS_PROPS) assertTrue(dsProps.get(props[0]).equals(props[1]));
 
     }

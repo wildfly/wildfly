@@ -63,8 +63,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>jline</groupId>
-            <artifactId>jline</artifactId>
+            <groupId>org.jboss.jreadline</groupId>
+            <artifactId>jreadline</artifactId>
         </dependency>
 
         <dependency>
