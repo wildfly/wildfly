@@ -98,10 +98,12 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Endpoint;
+import org.jboss.remoting3.RemotingOptions;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 import org.jboss.threads.JBossThreadFactory;
 import org.xnio.OptionMap;
+import org.xnio.Options;
 
 /**
  * Establishes the connection from a slave {@link org.jboss.as.domain.controller.DomainController} to the master
@@ -284,7 +286,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
             // Include additional local host information when registering at the DC
             final ModelNode hostInfo = createLocalHostHostInfo(localHostInfo, productConfig);
-            final OptionMap options = OptionMap.EMPTY;
+            final OptionMap options = OptionMap.builder().set(RemotingOptions.HEARTBEAT_INTERVAL, 15000).set(Options.READ_TIMEOUT, 45000).getMap();
 
             // Gather the required information to connect to the remote DC
             final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
@@ -393,6 +395,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                 }
             }
         }, RemoteDomainConnectionService.class.getSimpleName() + " ExecutorService Shutdown Thread");
+
         executorShutdown.start();
     }
 

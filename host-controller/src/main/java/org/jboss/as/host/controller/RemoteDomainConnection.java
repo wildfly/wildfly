@@ -360,7 +360,7 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
     }
 
     void registered() {
-        schedule(new PingTask());
+//        schedule(new PingTask());
         callback.registrationComplete(channelHandler);
     }
 
