@@ -404,13 +404,12 @@ class Plugin(object):
             if filespec not in self.copyPaths:
                 self.copyPaths.append((filespec, sub))
 
-    def callExtProg(self, prog):
+    def callExtProg(self, prog, timeout=300):
         """Execute a command independantly of the output gathering part of
         sosreport.
         """
         # pylint: disable-msg = W0612
-        status, shout, runtime = sosGetCommandOutput(prog)
-        return (status, shout, runtime)
+        return sosGetCommandOutput(prog, timeout)
 
     def checkExtprog(self, prog):
         """Execute a command independently of the output gathering part of
