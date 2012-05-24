@@ -1812,11 +1812,11 @@ public interface ControllerMessages {
     String subsystemBootOperationFailed(String name);
 
     /**
-     * A message indicating a failure executing subsystem boot operations, but no individual operation failed.
+     * A message indicating a failure executing subsystem boot operations.
      *
      * @return the message.
      */
-    @Message(id = 14784, value = "Failed executing subsystem %s boot operations but no individual operation failed")
+    @Message(id = 14784, value = "Failed executing subsystem %s boot operations")
     String subsystemBootOperationFailedExecuting(String name);
 
     /**
