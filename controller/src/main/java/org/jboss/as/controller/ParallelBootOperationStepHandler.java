@@ -301,6 +301,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
 
         @Override
         public void run() {
+            boolean interrupted = false;
             try {
                 final OperationContext operationContext = new ParallelBootOperationContext(transactionControl, processState,
                         primaryContext, runtimeOps, controllingThread);
@@ -309,12 +310,13 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                     operationContext.addStep(op.response, op.operation, osh, executionStage);
                 }
                 operationContext.completeStep();
-            } catch (Exception e) {
-                MGMT_OP_LOGGER.failedSubsystemBootOperations(e, subsystemName);
+            } catch (Throwable t) {
+                interrupted = (t instanceof InterruptedException);
+                MGMT_OP_LOGGER.failedSubsystemBootOperations(t, subsystemName);
                 if (!transactionControl.signalled) {
                     ModelNode failure = new ModelNode();
                     failure.get(ModelDescriptionConstants.SUCCESS).set(false);
-                    failure.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).set(e.toString());
+                    failure.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).set(t.toString());
                     transactionControl.operationFailed(failure);
                 }
             } finally {
@@ -327,13 +329,19 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                         }
                     }
                     if (!transactionControl.signalled) {
-                        // TODO this is really debugging
                         ModelNode failure = new ModelNode();
                         failure.get(ModelDescriptionConstants.SUCCESS).set(false);
                         failure.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).set(MESSAGES.subsystemBootOperationFailedExecuting(subsystemName));
+                        transactionControl.operationFailed(failure);
                     }
+                } else {
+                    transactionControl.operationCompleted(transactionControl.response);
                 }
-                transactionControl.operationCompleted(transactionControl.response);
+
+                if (interrupted) {
+                    Thread.currentThread().interrupt();
+                }
+
             }
         }
     }
