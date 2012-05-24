@@ -1,9 +1,12 @@
+JBoss Java EE 6 with Hibernate
+==============================
+
 This BOM builds on the Java EE full profile BOM, adding Hibernate Community projects including Hibernate ORM, Hibernate Search and Hibernate Validator.
 
 It also provides tool projects such as Hibernate JPA Model Gen and Hibernate Validator Annotation Processor.
 
 Usage
-=====
+-----
 
 To use the BOM, import into your dependency management:
 

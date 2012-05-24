@@ -1,7 +1,10 @@
+JBoss Java EE 6 with Errai
+==========================
+
 This BOM builds on the Java EE full profile BOM, adding the Errai framework and the Google Web Toolkit plus its Maven plugin.
  
 Usage
-=====
+-----
 
 To use the BOM, import into your dependency management:
 
