@@ -108,7 +108,9 @@ public abstract class AbstractChannelOpenListenerService<T> implements Service<V
         // When the server/host is stopping we don't accept new connections
         // this should be using the graceful shutdown control
         if(closed) {
-            throw MESSAGES.channelShuttingDown();
+            log.debugf("server shutting down, closing channel %s.", channel);
+            channel.closeAsync();
+            return;
         }
         final T createdChannel = createChannel(channel);
         channels.add(createdChannel);
