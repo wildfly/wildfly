@@ -38,7 +38,10 @@ import org.jboss.msc.inject.Injector;
  */
 public class PersistenceUnitRegistryImpl implements PersistenceUnitServiceRegistry {
 
+    public static final PersistenceUnitRegistryImpl INSTANCE = new PersistenceUnitRegistryImpl();
+
     private final Map<String, PersistenceUnitService> registry = Collections.synchronizedMap(new HashMap<String, PersistenceUnitService>());
+
 
     public Injector<PersistenceUnitService> getInjector() {
         return new PersistenceUnitInjector();
