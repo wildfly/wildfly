@@ -27,7 +27,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.framework.Services;
 import org.osgi.service.startlevel.StartLevel;
 

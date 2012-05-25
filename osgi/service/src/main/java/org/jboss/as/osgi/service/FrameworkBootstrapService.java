@@ -31,6 +31,7 @@ import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MOD
 import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_PACKAGES;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 import static org.jboss.osgi.framework.Constants.JBOSGI_PREFIX;
+import static org.jboss.osgi.repository.XRepository.MODULE_IDENTITY_NAMESPACE;
 
 import java.io.File;
 import java.net.InetSocketAddress;
@@ -89,6 +90,13 @@ import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.framework.SystemPathsProvider;
 import org.jboss.osgi.framework.SystemServicesProvider;
 import org.jboss.osgi.framework.internal.FrameworkBuilder;
+import org.jboss.osgi.repository.RepositoryStorage;
+import org.jboss.osgi.repository.RepositoryStorageException;
+import org.jboss.osgi.repository.RepositoryStorageFactory;
+import org.jboss.osgi.repository.XRepository;
+import org.jboss.osgi.repository.core.FileBasedRepositoryStorage;
+import org.jboss.osgi.repository.core.XRepositoryBuilder;
+import org.jboss.osgi.resolver.XResource;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -149,8 +157,6 @@ public class FrameworkBootstrapService implements Service<Void> {
             FrameworkModuleIntegration.addService(serviceTarget, props);
             JAXPServiceProvider.addService(serviceTarget);
             ModuleLoaderIntegration.addService(serviceTarget);
-            ModuleIdentityArtifactProvider.addService(serviceTarget);
-            RepositoryProvider.addService(serviceTarget);
             ResolverService.addService(serviceTarget);
             SystemServicesIntegration.addService(serviceTarget, resource);
 
@@ -249,6 +255,7 @@ public class FrameworkBootstrapService implements Service<Void> {
 
     private static final class SystemServicesIntegration implements Service<SystemServicesProvider>, SystemServicesProvider {
 
+        private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
         private final InjectedValue<ModelController> injectedModelController = new InjectedValue<ModelController>();
         private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
         private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
@@ -261,6 +268,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             SystemServicesIntegration service = new SystemServicesIntegration(resource);
             ServiceBuilder<SystemServicesProvider> builder = target.addService(IntegrationServices.SYSTEM_SERVICES_PROVIDER, service);
             builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, service.injectedModelController);
+            builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
             builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
             builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, service.injectedBundleManager);
             builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedBundleContext);
@@ -318,9 +326,34 @@ public class FrameworkBootstrapService implements Service<Void> {
                 builder.install();
             }
 
+            // Register the {@link ModelControllerClient} service
             ModelController modelController = injectedModelController.getValue();
             ModelControllerClient client = modelController.createClient(Executors.newSingleThreadExecutor());
             syscontext.registerService(ModelControllerClient.class.getName(), client, null);
+
+            // Register the {@link XRepository} service
+            final ServerEnvironment serverenv = injectedServerEnvironment.getValue();
+            final File storageDir = new File(serverenv.getServerDataDir().getPath() + File.separator + "repository");
+            RepositoryStorageFactory factory = new RepositoryStorageFactory() {
+                @Override
+                public RepositoryStorage create(XRepository repository) {
+                    return new FileBasedRepositoryStorage(repository, storageDir) {
+                        @Override
+                        public XResource addResource(XResource res) throws RepositoryStorageException {
+                            // Do not add modules to repository storage
+                            if (res.getCapabilities(MODULE_IDENTITY_NAMESPACE).isEmpty()) {
+                                return super.addResource(res);
+                            } else {
+                                return res;
+                            }
+                        }
+                    };
+                }
+            };
+            XRepositoryBuilder builder = XRepositoryBuilder.create(syscontext);
+            builder.addRepository(new ModuleIdentityRepository(serverenv));
+            builder.addRepositoryStorage(factory);
+            builder.addDefaultRepositories();
         }
 
         @Override

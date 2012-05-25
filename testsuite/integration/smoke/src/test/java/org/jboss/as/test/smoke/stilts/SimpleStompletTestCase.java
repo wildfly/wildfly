@@ -38,7 +38,8 @@ import org.jboss.as.test.smoke.stilts.bundle.SimpleStompletActivator;
 import org.jboss.as.test.smoke.stilts.bundle.StompletServerActivator;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.osgi.resolver.XRequirementBuilder;
+import org.jboss.osgi.repository.XRequirementBuilder;
+import org.jboss.osgi.resolver.XRequirement;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -183,7 +184,7 @@ public class SimpleStompletTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivator(StompletServerActivator.class);
-                builder.addImportPackages(XRequirementBuilder.class, Requirement.class, Repository.class);
+                builder.addImportPackages(XRequirementBuilder.class, XRequirement.class, Requirement.class, Repository.class);
                 builder.addImportPackages(BundleActivator.class, PackageAdmin.class, ModuleIdentifier.class);
                 return builder.openStream();
             }

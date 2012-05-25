@@ -34,6 +34,7 @@ import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.as.test.osgi.OSGiFrameworkUtils;
+import org.jboss.osgi.spi.ManifestBuilder;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -42,6 +43,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
@@ -141,9 +143,9 @@ public class SimpleServerDeploymentTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BAD_BUNDLE_VERSION);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
-                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleManifestVersion(2);
-                builder.addBundleSymbolicName(archive.getName());
+                ManifestBuilder builder = ManifestBuilder.newInstance();
+                builder.addManifestHeader(Constants.BUNDLE_MANIFESTVERSION, "2");
+                builder.addManifestHeader(Constants.BUNDLE_SYMBOLICNAME, archive.getName());
                 builder.addManifestHeader(BUNDLE_VERSION, "bogus");
                 return builder.openStream();
             }

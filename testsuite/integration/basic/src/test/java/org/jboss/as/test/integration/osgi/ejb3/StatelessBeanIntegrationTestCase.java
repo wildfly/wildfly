@@ -39,6 +39,7 @@ import org.jboss.as.test.integration.osgi.xservice.api.Echo;
 import org.jboss.as.test.integration.osgi.xservice.bundle.TargetBundleActivator;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
+import org.jboss.osgi.spi.ManifestBuilder;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -113,7 +114,7 @@ public class StatelessBeanIntegrationTestCase {
         archive.addClass(SimpleStatelessSessionBean.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
-                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                ManifestBuilder builder = ManifestBuilder.newInstance();
                 builder.addManifestHeader("Dependencies", "org.osgi.core,deployment.ejb3-osgi-target:0.0.0");
                 return builder.openStream();
             }

@@ -21,10 +21,8 @@
  */
 package org.jboss.as.osgi.service;
 
-import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
-import static org.jboss.osgi.resolver.XResourceConstants.MODULE_IDENTITY_NAMESPACE;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -33,31 +31,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Dictionary;
-import java.util.Hashtable;
 import java.util.List;
 
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.Constants;
-import org.jboss.osgi.framework.Services;
-import org.jboss.osgi.repository.ArtifactProviderPlugin;
 import org.jboss.osgi.repository.RepositoryResolutionException;
-import org.jboss.osgi.repository.URLBasedResourceBuilder;
-import org.jboss.osgi.resolver.XResource;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
+import org.jboss.osgi.repository.URLResourceBuilderFactory;
+import org.jboss.osgi.repository.spi.AbstractRepository;
+import org.jboss.osgi.resolver.XResourceBuilder;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
@@ -67,36 +48,12 @@ import org.osgi.resource.Requirement;
  * @author thomas.diesler@jboss.com
  * @since 20-Jan-2012
  */
-final class ModuleIdentityArtifactProvider extends AbstractService<Void> implements ArtifactProviderPlugin {
+final class ModuleIdentityRepository extends AbstractRepository {
 
-    public static final ServiceName SERVICE_NAME = SERVICE_BASE_NAME.append("artifact.provider");
+    private final File modulesDir;
+    private final File bundlesDir;
 
-    private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
-    private final InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
-    private ServiceRegistration registration;
-    private File modulesDir;
-    private File bundlesDir;
-
-    static ServiceController<?> addService(final ServiceTarget target) {
-        ModuleIdentityArtifactProvider service = new ModuleIdentityArtifactProvider();
-        ServiceBuilder<?> builder = target.addService(SERVICE_NAME, service);
-        builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedEnvironment);
-        builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedSystemContext);
-        builder.addDependency(Services.FRAMEWORK_CREATE);
-        builder.setInitialMode(Mode.PASSIVE);
-        return builder.install();
-    }
-
-    private ModuleIdentityArtifactProvider() {
-    }
-
-    @Override
-    public void start(StartContext context) throws StartException {
-        BundleContext syscontext = injectedSystemContext.getValue();
-        Dictionary<String, Object> props = new Hashtable<String, Object>();
-        props.put(Constants.SERVICE_RANKING, Integer.MAX_VALUE);
-        registration = syscontext.registerService(ArtifactProviderPlugin.class.getName(), this, props);
-        ServerEnvironment serverEnvironment = injectedEnvironment.getValue();
+    ModuleIdentityRepository(ServerEnvironment serverEnvironment) {
         bundlesDir = serverEnvironment.getBundlesDir();
         if (bundlesDir.isDirectory() == false)
             throw MESSAGES.illegalStateArtifactBaseLocation(bundlesDir);
@@ -106,36 +63,24 @@ final class ModuleIdentityArtifactProvider extends AbstractService<Void> impleme
     }
 
     @Override
-    public void stop(StopContext context) {
-        if (registration != null) {
-            registration.unregister();
-            registration = null;
-        }
-    }
-
-    @Override
     public Collection<Capability> findProviders(Requirement req) {
         String namespace = req.getNamespace();
         List<Capability> result = new ArrayList<Capability>();
         if (MODULE_IDENTITY_NAMESPACE.equals(namespace)) {
-            String strval = (String) req.getAttributes().get(MODULE_IDENTITY_NAMESPACE);
-            ModuleIdentifier moduleIdentifier = ModuleIdentifier.fromString(strval);
+            String moduleId = (String) req.getAttributes().get(MODULE_IDENTITY_NAMESPACE);
+            ModuleIdentifier moduleIdentifier = ModuleIdentifier.fromString(moduleId);
             try {
                 File contentFile = getRepositoryEntry(bundlesDir, moduleIdentifier);
                 if (contentFile != null) {
-                    URL baseURL = bundlesDir.toURI().toURL();
-                    String contentPath = contentFile.toURI().toURL().toExternalForm();
-                    contentPath = contentPath.substring(baseURL.toExternalForm().length());
-                    XResource resource = URLBasedResourceBuilder.createResource(baseURL, contentPath);
-                    result.add(resource.getIdentityCapability());
+                    URL contentURL = contentFile.toURI().toURL();
+                    XResourceBuilder builder = URLResourceBuilderFactory.create(contentURL, null, true);
+                    result.add(builder.addGenericCapability(MODULE_IDENTITY_NAMESPACE, moduleId));
                 } else {
                     contentFile = getRepositoryEntry(modulesDir, moduleIdentifier);
                     if (contentFile != null) {
-                        URL baseURL = modulesDir.toURI().toURL();
-                        String contentPath = contentFile.toURI().toURL().toExternalForm();
-                        contentPath = contentPath.substring(baseURL.toExternalForm().length());
-                        XResource resource = URLBasedResourceBuilder.createResource(baseURL, contentPath);
-                        result.add(resource.getIdentityCapability());
+                        URL contentURL = contentFile.toURI().toURL();
+                        XResourceBuilder builder = URLResourceBuilderFactory.create(contentURL, null, true);
+                        result.add(builder.addGenericCapability(MODULE_IDENTITY_NAMESPACE, moduleId));
                     }
                 }
             } catch (RepositoryResolutionException ex) {
@@ -180,10 +125,5 @@ final class ModuleIdentityArtifactProvider extends AbstractService<Void> impleme
         }
 
         return entryFile;
-    }
-
-    @Override
-    public String toString() {
-        return ModuleIdentityArtifactProvider.class.getSimpleName();
     }
 }

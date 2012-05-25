@@ -16,11 +16,21 @@
  */
 package org.jboss.as.test.smoke.osgi;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.InputStream;
+import java.util.Collection;
+
+import javax.inject.Inject;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.osgi.repository.XRepository;
+import org.jboss.osgi.repository.XRequirementBuilder;
 import org.jboss.osgi.resolver.MavenCoordinates;
 import org.jboss.osgi.resolver.XIdentityCapability;
-import org.jboss.osgi.resolver.XRequirementBuilder;
+import org.jboss.osgi.resolver.XRequirement;
 import org.jboss.osgi.resolver.XResource;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -34,18 +44,9 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 import org.osgi.service.repository.RepositoryContent;
-
-import javax.inject.Inject;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.Collections;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Test that the EventAdmin can be installed through the Repository bundle.
@@ -69,7 +70,7 @@ public class SimpleRepositoryTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(BundleActivator.class, Repository.class, Resource.class);
-                builder.addImportPackages(XRequirementBuilder.class);
+                builder.addImportPackages(XRequirementBuilder.class, XRequirement.class);
                 return builder.openStream();
             }
         });
@@ -79,15 +80,17 @@ public class SimpleRepositoryTestCase {
     @Test
     public void testRepositoryService() throws Exception {
 
-        Repository repo = getRepository();
+        XRepository repo = getRepository();
         MavenCoordinates coordinates = MavenCoordinates.parse("org.apache.felix:org.apache.felix.eventadmin:1.2.6");
-        Requirement req = XRequirementBuilder.createArtifactRequirement(coordinates);
+        XRequirement req = XRequirementBuilder.create(coordinates).getRequirement();
         assertNotNull("Requirement not null", req);
 
-        Collection<Capability> caps = repo.findProviders(Collections.singleton(req)).get(req);
+        Collection<Capability> caps = repo.findProviders(req);
         assertEquals("Capability not null", 1, caps.size());
 
-        XIdentityCapability xcap = (XIdentityCapability) caps.iterator().next();
+        Capability cap = caps.iterator().next();
+        XResource resource = (XResource) cap.getResource();
+        XIdentityCapability xcap = resource.getIdentityCapability();
         assertEquals("org.apache.felix.eventadmin", xcap.getSymbolicName());
         InputStream content = ((RepositoryContent)xcap.getResource()).getContent();
         try {
@@ -105,8 +108,8 @@ public class SimpleRepositoryTestCase {
         }
     }
 
-    private Repository getRepository() {
-        ServiceReference sref = context.getServiceReference(Repository.class.getName());
-        return (Repository) context.getService(sref);
+    private XRepository getRepository() {
+        ServiceReference sref = context.getServiceReference(XRepository.class.getName());
+        return (XRepository) context.getService(sref);
     }
 }
