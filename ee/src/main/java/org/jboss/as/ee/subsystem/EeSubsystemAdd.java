@@ -105,6 +105,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
         GlobalModulesDefinition.INSTANCE.validateAndSet(operation, model);
         EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.validateAndSet(operation, model);
         EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.validateAndSet(operation, model);
+        EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.validateAndSet(operation, model);
     }
 
     protected void performBoottime(OperationContext context, final ModelNode operation, final ModelNode model,
