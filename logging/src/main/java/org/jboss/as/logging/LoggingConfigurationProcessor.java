@@ -153,9 +153,7 @@ public class LoggingConfigurationProcessor implements DeploymentUnitProcessor {
      * Preference is for {@literal logging.properties} or {@literal jboss-logging.properties}.
      *
      * @param resourceRoot the resource to check.
-     *
      * @return the configuration file if found, otherwise {@code null}.
-     *
      * @throws DeploymentUnitProcessingException
      *          if an error occurs.
      */
@@ -203,7 +201,7 @@ public class LoggingConfigurationProcessor implements DeploymentUnitProcessor {
 
         @Override
         public boolean accepts(final VirtualFile file) {
-            return file.isDirectory() || configFiles.contains(file.getName());
+            return configFiles.contains(file.getName());
         }
     }
 }
