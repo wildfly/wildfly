@@ -32,6 +32,7 @@
     </resources>
 
     <dependencies>
+        <module name="javax.xml.stream.api"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.osgi.framework"/>

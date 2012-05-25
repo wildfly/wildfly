@@ -45,7 +45,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Version;
-import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
@@ -81,8 +80,8 @@ public class SimpleModuleRegistrationTestCase {
 
         // Build a package requirement
         XResourceBuilder builder = XResourceBuilderFactory.create();
-        builder.addIdentityCapability("somename", null, IdentityNamespace.TYPE_UNKNOWN, null, null);
-        XPackageRequirement req = builder.addPackageRequirement(SimpleService.class.getPackage().getName(), null, null);
+        builder.addIdentityCapability("somename");
+        XPackageRequirement req = builder.addPackageRequirement(SimpleService.class.getPackage().getName());
 
         // Find the providers for the requirement
         List<Capability> caps = getEnvironment().findProviders(req);
@@ -101,8 +100,8 @@ public class SimpleModuleRegistrationTestCase {
 
         // Build a resource with a package requirement
         XResourceBuilder builder = XResourceBuilderFactory.create();
-        builder.addIdentityCapability("somename", null, IdentityNamespace.TYPE_UNKNOWN, null, null);
-        builder.addPackageRequirement(SimpleService.class.getPackage().getName(), null, null);
+        builder.addIdentityCapability("somename");
+        builder.addPackageRequirement(SimpleService.class.getPackage().getName());
         Resource resource = builder.getResource();
 
         // Setup the resolve context

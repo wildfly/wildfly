@@ -17,21 +17,20 @@
 package org.jboss.as.test.smoke.stilts.bundle;
 
 
-import java.net.URL;
-import java.util.Collections;
+import java.io.InputStream;
 
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.osgi.resolver.XRequirementBuilder;
-import org.jboss.osgi.resolver.XResourceConstants;
+import org.jboss.osgi.repository.XRepository;
+import org.jboss.osgi.repository.XRequirementBuilder;
+import org.jboss.osgi.resolver.XRequirement;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
 import org.osgi.service.packageadmin.PackageAdmin;
-import org.osgi.service.repository.Repository;
+import org.osgi.service.repository.RepositoryContent;
 
 
 public class StompletServerActivator implements BundleActivator {
@@ -47,16 +46,16 @@ public class StompletServerActivator implements BundleActivator {
     }
 
     private Bundle installSupportBundle(BundleContext context, ModuleIdentifier moduleid) throws BundleException {
-        Repository repository = getRepository(context);
-        Requirement req = XRequirementBuilder.createArtifactRequirement(moduleid);
-        Capability cap = repository.findProviders(Collections.singleton(req)).get(req).iterator().next();
-        URL location = (URL) cap.getAttributes().get(XResourceConstants.CONTENT_URL);
-        return context.installBundle(location.toExternalForm());
+        XRepository repository = getRepository(context);
+        XRequirement req = XRequirementBuilder.create(moduleid).getRequirement();
+        Capability cap = repository.findProviders(req).iterator().next();
+        InputStream input = ((RepositoryContent)cap.getResource()).getContent();
+        return context.installBundle(moduleid.toString(), input);
     }
 
-    private Repository getRepository(BundleContext context) {
-        ServiceReference sref = context.getServiceReference(Repository.class.getName());
-        return (Repository) context.getService(sref);
+    private XRepository getRepository(BundleContext context) {
+        ServiceReference sref = context.getServiceReference(XRepository.class.getName());
+        return (XRepository) context.getService(sref);
     }
 
     @Override
