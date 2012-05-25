@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.cli.ArgumentValueConverter;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineFormat;
@@ -588,13 +589,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
                 throw new OperationFormatException("The argument name is not specified: '" + propName + "'");
             if(value == null || value.trim().isEmpty())
                 throw new OperationFormatException("The argument value is not specified for " + propName + ": '" + value + "'");
-            ModelNode toSet = null;
-            try {
-                toSet = ModelNode.fromString(value);
-            } catch (Exception e) {
-                // just use the string
-                toSet = new ModelNode().set(value);
-            }
+            final ModelNode toSet = ArgumentValueConverter.DEFAULT.fromString(value);
             request.get(propName).set(toSet);
         }
 
