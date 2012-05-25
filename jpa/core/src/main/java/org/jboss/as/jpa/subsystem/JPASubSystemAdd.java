@@ -29,7 +29,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
@@ -56,32 +55,23 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 /**
  * Add the JPA subsystem directive.
  * <p/>
- * TODO:  add subsystem configuration properties
  *
  * @author Scott Marlow
  */
 
 class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
 
-
-    static ModelNode getAddOperation(ModelNode address, ModelNode currentModel) {
-        ModelNode addOp = Util.getEmptyOperation(OPERATION_NAME, address);
-        addOp.get(CommonAttributes.DEFAULT_DATASOURCE).set(currentModel.get(CommonAttributes.DEFAULT_DATASOURCE));
-        return addOp;
-    }
+    public static JPASubSystemAdd INSTANCE = new JPASubSystemAdd();
 
     static final String OPERATION_NAME = ADD;
 
     private ParametersValidator modelValidator = new ParametersValidator();
     private ParametersValidator runtimeValidator = new ParametersValidator();
-    private final PersistenceUnitRegistryImpl persistenceUnitRegistry;
 
-    public JPASubSystemAdd(final PersistenceUnitRegistryImpl persistenceUnitRegistry) {
+    public JPASubSystemAdd() {
         modelValidator.registerValidator(CommonAttributes.DEFAULT_DATASOURCE, new StringLengthValidator(0, Integer.MAX_VALUE, true, true));
         runtimeValidator.registerValidator(CommonAttributes.DEFAULT_DATASOURCE, new StringLengthValidator(0, Integer.MAX_VALUE, true, false));
-        this.persistenceUnitRegistry = persistenceUnitRegistry;
     }
-
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         modelValidator.validate(operation);
@@ -115,7 +105,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 // handles deploying a persistence provider
                 processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_PERSISTENCE_PROVIDER, new PersistenceProviderProcessor());
                 // handles pu deployment (starts pu service)
-                processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_PERSISTENTUNIT, new PersistenceUnitDeploymentProcessor(persistenceUnitRegistry));
+                processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_PERSISTENTUNIT, new PersistenceUnitDeploymentProcessor(PersistenceUnitRegistryImpl.INSTANCE));
             }
         }, OperationContext.Stage.RUNTIME);
 
