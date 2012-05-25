@@ -46,11 +46,11 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.jpa.config.Configuration;
@@ -76,12 +76,20 @@ public class JPAExtension implements Extension {
 
     private static final JPASubsystemElementParser parser = new JPASubsystemElementParser();
 
+    private static final String RESOURCE_NAME = JPAExtension.class.getPackage().getName() + ".LocalDescriptions";
+
     private static final DescriptionProvider DESCRIPTION = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return JPADescriptions.getSubsystemDescription(locale);
         }
     };
+
+    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+        String prefix = SUBSYSTEM_NAME + (keyPrefix == null ? "" : "." + keyPrefix);
+        return new StandardResourceDescriptionResolver(prefix, RESOURCE_NAME, JPAExtension.class.getClassLoader(), true, false);
+    }
+
 
     private static ModelNode createAddOperation(String defaultDatasource) {
         final ModelNode update = new ModelNode();
@@ -98,13 +106,8 @@ public class JPAExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION);
-        final ManagementResourceRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
-        PersistenceUnitRegistryImpl persistenceUnitRegistry = new PersistenceUnitRegistryImpl();
-        JPASubSystemAdd subsystemAdd = new JPASubSystemAdd(persistenceUnitRegistry);
-        nodeRegistration.registerOperationHandler(JPASubSystemAdd.OPERATION_NAME, subsystemAdd, subsystemAdd, false);
-        nodeRegistration.registerOperationHandler(JPASubSystemRemove.OPERATION_NAME, JPASubSystemRemove.INSTANCE, JPASubSystemRemove.INSTANCE, false);
+        final ManagementResourceRegistration nodeRegistration = registration.registerSubsystemModel(JPADefinition.INSTANCE);
         nodeRegistration.registerOperationHandler(DESCRIBE, JPADescribeHandler.INSTANCE, JPADescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        nodeRegistration.registerReadWriteAttribute(CommonAttributes.DEFAULT_DATASOURCE, null, JPADefaultDatasourceWriteHandler.INSTANCE, Storage.CONFIGURATION);
         registration.registerXMLElementWriter(parser);
 
         try {
@@ -137,7 +140,7 @@ public class JPAExtension implements Extension {
 
                 final ManagementResourceRegistration jpaSubsystemDeployments = registration.registerDeploymentModel(JPA_SUBSYSTEM);
 
-                managementAdaptor.register(jpaSubsystemDeployments, persistenceUnitRegistry);
+                managementAdaptor.register(jpaSubsystemDeployments, PersistenceUnitRegistryImpl.INSTANCE);
             }
         } catch (ModuleLoadException e) {
             JPA_LOGGER.errorPreloadingDefaultProviderAdaptor(e);
