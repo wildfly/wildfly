@@ -53,7 +53,6 @@ import static org.junit.Assert.*;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(ArchiveValidationDeploymentTestCase.ArchiveValidationDeploymentTestCaseSetup.class)
-@Ignore("AS7-4188")
 public class ArchiveValidationDeploymentTestCase extends JcaMgmtBase {
 
     private static Logger log = Logger.getLogger("ArchiveValidationDeploymentTestCase");
