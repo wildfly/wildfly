@@ -1020,6 +1020,11 @@ class SecuritySubsystemDescriptions {
             op.get(OPERATION_NAME).set(Constants.FLUSH_CACHE);
             op.get(DESCRIPTION).set(bundle.getString("flush-cache"));
 
+            op.get(REQUEST_PROPERTIES, Constants.PRINCIPAL_ARGUMENT, DESCRIPTION).set(bundle.getString("principal"));
+            op.get(REQUEST_PROPERTIES, Constants.PRINCIPAL_ARGUMENT, TYPE).set(ModelType.STRING);
+            op.get(REQUEST_PROPERTIES, Constants.PRINCIPAL_ARGUMENT, REQUIRED).set(false);
+
+
             return op;
         }
 
