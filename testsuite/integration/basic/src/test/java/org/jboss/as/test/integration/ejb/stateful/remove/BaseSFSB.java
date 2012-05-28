@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,30 +23,24 @@
 package org.jboss.as.test.integration.ejb.stateful.remove;
 
 import javax.ejb.Remove;
-import javax.ejb.Stateful;
 
 /**
- * User: jpai
+ * @author Jaikiran Pai
  */
-@Stateful
-public class SFSBWithRemoveMethods extends BaseSFSB {
-
-    @Remove
-    public void remove() {
-        // do nothing
-    }
+public class BaseSFSB {
 
     @Remove(retainIfException = true)
-    public void retainIfAppException() {
+    public void baseRetainIfAppException() {
         throw new SimpleAppException();
     }
 
     @Remove
-    public void removeEvenIfAppException() {
+    public void baseRemoveEvenIfAppException() {
         throw new SimpleAppException();
     }
 
-    public void doNothing() {
-
+    @Remove
+    public void baseJustRemove() {
+        // do nothing
     }
 }
