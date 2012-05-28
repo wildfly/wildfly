@@ -45,6 +45,7 @@ import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -58,6 +59,8 @@ import org.jboss.sasl.callback.VerifyPasswordCallback;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class JaasCallbackHandler implements Service<CallbackHandlerService>, CallbackHandlerService, CallbackHandler {
+
+    private static final Logger logger = Logger.getLogger(JaasCallbackHandler.class);
 
     public static final String SERVICE_SUFFIX = "jaas";
 
@@ -159,6 +162,7 @@ public class JaasCallbackHandler implements Service<CallbackHandlerService>, Cal
                     subjectCallback.setSubject(subject);
                 }
             } catch (SecurityException e) {
+                logger.debug("Failed to verify password in JAAS callbackhandler " + this.name, e);
                 verifyPasswordCallback.setVerified(false);
             } finally {
                 securityManager.pop();
@@ -190,6 +194,7 @@ public class JaasCallbackHandler implements Service<CallbackHandlerService>, Cal
                     subjectCallback.setSubject(subject);
                 }
             } catch (LoginException e) {
+                logger.debug("Login failed in JAAS callbackhandler " + this.name, e);
                 verifyPasswordCallback.setVerified(false);
             }
         }
