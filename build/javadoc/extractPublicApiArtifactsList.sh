@@ -20,6 +20,8 @@ mkdir -p $TARGET;
 
 #####  With exported dependencies, converted from module names to groupIDs:
 
+echo -e "\n\n===  Printing modules which don't have value=\"private\" and are not aliases.\n"
+
 echo '' > $TARGET/packages.tmp.txt
 for i in `find $PROJECT_ROOT_DIR/build/src/main/resources/modules/ -name module.xml` ;  do
   FILE=`grep 'value="private"' --files-without-match  $i`;
@@ -41,20 +43,39 @@ sort $TARGET/packages.tmp.txt | uniq > $TARGET/modules.tmp2.txt
 
 ###  Now we have a list of public API modules, e.g. javax.management.j2ee.api
 ###  Let's convert it into a list of groupIDs.
+echo -e "\n\n===  Converting list of public API modules into list of groupID:artifactID.\n"
+
 echo > $TARGET/groupIDs.tmp.txt
 while read -r MODULE ; do
-  echo "Artefacts for module: $MODULE"
+  echo "Artefacts for module $MODULE :"
   GROUP_ID=`xsltproc --stringparam moduleName "$MODULE"  $DIRNAME/convertModuleNameToGroupID.xsl $PROJECT_ROOT_DIR/build/build.xml`
-  echo "  GroupID: $GROUP_ID"
+  echo "  GroupID:ArtifactID = $GROUP_ID"
   echo $GROUP_ID >> $TARGET/groupIDs.tmp.txt
 done < $TARGET/modules.tmp2.txt
 cat $TARGET/groupIDs.tmp.txt | sort | uniq > $TARGET/groupIDs.tmp-sorted.txt
 
 ###  Wrap it as includes for pom.xml.
+echo -e "\n\n===  Wrapping list of groupID:artifactID into <include> tags.\n"
 cat $TARGET/groupIDs.tmp-sorted.txt | sed 's#.*#<include>\0</include>#'
 
 
 
+###  This was intended to list where certain package comes from, but it would need extracting versions. Disabled now.
+FILTER="$1";
+M2_REPO="$2";
+
+if [ "DISABLED" == "" -a "$M2_REPO" != "" ] ; then
+  echo -e "\n\n===  Listing packages contained in public artifacts.\n"
+  if [ "$FILTER" == "" ] ; then FILTER="cat" ;
+  else FILTER="grep $FILTER"; fi
+
+  for JAR_PATH in `cat $TARGET/groupIDs.tmp-sorted.txt | tr .: / `; do
+    echo "=== Contents of $M2_REPO/$JAR_PATH :" 
+    jar -tf $M2_REPO/$JAR_PATH | $FILTER | sed 's#.*#        \0#'
+  done
+fi
+###  Instead, one can do:
+# for i in `find ../target/jboss-as-7.2.0.Alpha1-SNAPSHOT/modules/ -name *.jar`; do echo "====== $i"; jar -tf $i | grep $FILTER; done
 
 
 
