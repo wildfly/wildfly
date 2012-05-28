@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.jboss.as.security.remoting.RemotingLoginModule;
 import org.jboss.security.ClientLoginModule;
+import org.jboss.security.auth.spi.AnonLoginModule;
 import org.jboss.security.auth.spi.BaseCertLoginModule;
 import org.jboss.security.auth.spi.CertRolesLoginModule;
 import org.jboss.security.auth.spi.DatabaseCertLoginModule;
@@ -88,6 +89,7 @@ public interface ModulesMap {
             put("RealmUsersRoles", RealmUsersRolesLoginModule.class.getName());
             put("RealmDirect", RealmDirectLoginModule.class.getName());
             put("Disabled", DisabledLoginModule.class.getName());
+            put("Anon", AnonLoginModule.class.getName());
             // Authentication only modules
             put("PropertiesUsers", PropertiesUsersLoginModule.class.getName());
             put("SimpleUsers", SimpleUsersLoginModule.class.getName());
