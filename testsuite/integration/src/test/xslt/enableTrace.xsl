@@ -41,7 +41,7 @@
                 </xsl:copy>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:copy copy-namespaces="false" inherit-namespaces="false">
+                <xsl:copy>
                     <xsl:attribute name="name">
                         <xsl:value-of select="'CONSOLE'"/>
                     </xsl:attribute>
@@ -60,7 +60,7 @@
                 </xsl:copy>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:copy copy-namespaces="false" inherit-namespaces="false">
+                <xsl:copy>
                     <xsl:attribute name="name">
                         <xsl:value-of select="'FILE'"/>
                     </xsl:attribute>
