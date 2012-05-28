@@ -83,6 +83,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         return publish(null, context, loader, urlPatternToClassNameMap, null);
     }
 
+    @Override
     public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap, WebservicesMetaData metadata) throws Exception {
         return publish(null, context, loader, urlPatternToClassNameMap, metadata);
     }
