@@ -49,7 +49,7 @@ public class RootLoggerLevelChange extends AbstractModelUpdateHandler {
 
     @Override
     protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        LEVEL.validateAndSet(operation, model.get(ROOT_LOGGER));
+        LEVEL.validateAndSet(operation, model);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class RootLoggerLevelChange extends AbstractModelUpdateHandler {
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
         @SuppressWarnings("unchecked")
         final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.ROOT_LOGGER);
-        final ModelNode level = LEVEL.resolveModelAttribute(context, model.get(ROOT_LOGGER));
+        final ModelNode level = LEVEL.resolveModelAttribute(context, model);
         if (controller != null && level.isDefined()) {
             controller.getValue().setLevel(ModelParser.parseLevel(level));
         }
