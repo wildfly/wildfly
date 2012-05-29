@@ -30,6 +30,8 @@ import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.ProtocolConnectionConfiguration;
+import org.jboss.as.protocol.ProtocolMessages;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -82,7 +84,7 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
                                                    final Map<String, String> saslOptions,
                                                    final SSLContext sslContext,
                                                    final CloseHandler<Channel> closeHandler) {
-        return new Establishing(setup, saslOptions, cbHandler, sslContext, handler, closeHandler);
+        return new Establishing(setup.getConfiguration(), saslOptions, cbHandler, sslContext, handler, closeHandler);
     }
 
     /**
@@ -91,138 +93,57 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
     private static class Existing extends ManagementClientChannelStrategy {
         // The underlying channel
         private final Channel channel;
-
+        private volatile boolean closed = false;
         private Existing(final Channel channel) {
             this.channel = channel;
         }
 
         @Override
-        public Channel getChannel() {
+        public Channel getChannel() throws IOException {
+            if(closed) {
+                throw ProtocolMessages.MESSAGES.channelClosed();
+            }
             return channel;
         }
 
         @Override
         public void close() {
-            // closing is not our responsibility
+            this.closed = true;
+            // closing the channel is not our responsibility
         }
+    }
+
+    private static ProtocolConnectionConfiguration createConfiguration(final ProtocolConnectionConfiguration configuration,
+                                                                       final Map<String, String> saslOptions, final CallbackHandler callbackHandler,
+                                                                       final SSLContext sslContext) {
+        final ProtocolConnectionConfiguration config = ProtocolConnectionConfiguration.copy(configuration);
+        config.setCallbackHandler(callbackHandler);
+        config.setSslContext(sslContext);
+        config.setSaslOptions(saslOptions);
+        return config;
     }
 
     /**
      * When getting the underlying channel this strategy is trying to automatically (re-)connect
      * when either the connection or channel was closed.
      */
-    private static class Establishing extends ManagementClientChannelStrategy {
+    private static class Establishing extends FutureManagementChannel.Establishing {
 
-        private final String channelName;
-        private final Map<String,String> saslOptions;
-        private final CallbackHandler callbackHandler;
-        private final SSLContext sslContext;
-        private final Channel.Receiver receiver;
-        private final ProtocolChannelClient setup;
-        private final CloseHandler<Channel> closeHandlerDelegate;
-
-        volatile Connection connection;
-        volatile Channel channel;
-
-        public Establishing(final ProtocolChannelClient setup, final Map<String, String> saslOptions,
-                            final CallbackHandler callbackHandler, final SSLContext sslContext, final ManagementMessageHandler handler,
-                            final CloseHandler<Channel> closeHandler) {
-            this(DEFAULT_CHANNEL_SERVICE_TYPE, setup, saslOptions, callbackHandler, sslContext, handler, closeHandler);
-        }
-
-        public Establishing(final String channelName, final ProtocolChannelClient setup, final Map<String, String> saslOptions,
-                            final CallbackHandler callbackHandler, final SSLContext sslContext, final ManagementMessageHandler handler,
-                            final CloseHandler<Channel> closeHandler) {
-            this.channelName = channelName;
-            this.saslOptions = saslOptions;
-            this.sslContext = sslContext;
-            this.setup = setup;
-            this.callbackHandler = callbackHandler;
-            this.closeHandlerDelegate = closeHandler;
-            // Basic management channel receiver, which delegates messages to a {@code ManagementMessageHandler}
-            // Additionally legacy bye-bye messages result in resetting the current channel
-            this.receiver = new ManagementChannelReceiver() {
-
-                @Override
-                public void handleMessage(final Channel channel, final DataInput input, final ManagementProtocolHeader header) throws IOException {
-                    handler.handleMessage(channel, input, header);
-                }
-
-                @Override
-                protected void handleChannelReset(Channel channel) {
-                    resetChannel(channel);
-                }
-
-            };
+        private final CloseHandler<Channel> closeHandler;
+        private Establishing(final ProtocolConnectionConfiguration configuration, final Map<String, String> saslOptions,
+                                final CallbackHandler callbackHandler, final SSLContext sslContext, final ManagementMessageHandler handler,
+                                final CloseHandler<Channel> closeHandler) {
+            super(DEFAULT_CHANNEL_SERVICE_TYPE, ManagementChannelReceiver.createDelegating(handler), createConfiguration(configuration, saslOptions, callbackHandler, sslContext));
+            this.closeHandler = closeHandler;
         }
 
         @Override
-        public Channel getChannel() throws IOException {
-            boolean ok = false;
-            try {
-                synchronized (this) {
-                    if (connection == null) {
-                        // Connect with the configured timeout
-                        this.connection = setup.connectSync(callbackHandler, saslOptions, sslContext);
-                        this.connection.addCloseHandler(new CloseHandler<Connection>() {
-                            @Override
-                            public void handleClose(Connection closed, IOException exception) {
-                                synchronized (Establishing.this) {
-                                    if(connection == closed) {
-                                        connection = null;
-                                    }
-                                }
-                            }
-                        });
-                    }
-                    if (channel == null) {
-                        channel = connection.openChannel(channelName, OptionMap.EMPTY).get();
-                        channel.addCloseHandler(new CloseHandler<Channel>() {
-                            @Override
-                            public void handleClose(Channel closed, IOException exception) {
-                                synchronized (Establishing.this) {
-                                    if(channel == closed) {
-                                        channel = null;
-                                    }
-                                }
-                                if(closeHandlerDelegate != null) {
-                                    closeHandlerDelegate.handleClose(closed, exception);
-                                }
-                            }
-                        });
-                        channel.receiveMessage(receiver);
-                    }
-                    ok = true;
-                }
-            } finally {
-                if (! ok) {
-                    StreamUtils.safeClose(connection);
-                    StreamUtils.safeClose(channel);
-                }
-            }
+        protected Channel openChannel(final Connection connection, final String serviceType, final OptionMap options) throws IOException {
+            final Channel channel = super.openChannel(connection, serviceType, options);
+            channel.addCloseHandler(closeHandler);
             return channel;
         }
 
-        private void resetChannel(final Channel old) {
-            boolean reset = false;
-            synchronized (this) {
-                if(channel == old) {
-                    channel = null;
-                    reset = true;
-                }
-            }
-            // Since this is used by older clients to signal that they are about to close the channel
-            // we just close it to make sure that we don't leak it
-            if(reset) {
-                old.closeAsync();
-            }
-        }
-
-        @Override
-        public void close() {
-            StreamUtils.safeClose(channel);
-            StreamUtils.safeClose(connection);
-        }
     }
 
 }
