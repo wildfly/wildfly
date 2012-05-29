@@ -9,6 +9,7 @@
       <subsystem>configuration/subsystems/ee.xml</subsystem>
       <subsystem>configuration/subsystems/ejb3.xml</subsystem>
       <subsystem>configuration/subsystems/infinispan.xml</subsystem>
+      <subsystem>configuration/subsystems/jacorb.xml</subsystem>
       <subsystem>configuration/subsystems/jaxrs.xml</subsystem>
       <subsystem>configuration/subsystems/jca.xml</subsystem>
       <subsystem>configuration/subsystems/jdr.xml</subsystem>
