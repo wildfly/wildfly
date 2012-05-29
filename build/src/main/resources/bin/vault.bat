@@ -34,6 +34,7 @@ set JBOSS_VAULT_CLASSPATH=%MODULEPATH%\org\picketbox\main\*
 set JBOSS_VAULT_CLASSPATH=%JBOSS_VAULT_CLASSPATH%;%MODULEPATH%\org\jboss\logging\main\*
 set JBOSS_VAULT_CLASSPATH=%JBOSS_VAULT_CLASSPATH%;%MODULEPATH%\org\jboss\common-core\main\*
 set JBOSS_VAULT_CLASSPATH=%JBOSS_VAULT_CLASSPATH%;%MODULEPATH%\org\jboss\as\security\main\*
+set JBOSS_VAULT_CLASSPATH=%JBOSS_VAULT_CLASSPATH%;%MODULEPATH%\org\apache\commons\cli\main\*
 
 
 rem Display our environment
@@ -49,7 +50,7 @@ echo   VAULT Classpath: %JBOSS_VAULT_CLASSPATH%
 echo =========================================================================
 echo.
 
-%JAVA% -classpath %JBOSS_VAULT_CLASSPATH% org.jboss.as.security.vault.VaultTool
+%JAVA% -classpath %JBOSS_VAULT_CLASSPATH% org.jboss.as.security.vault.VaultTool %*
 
 ENDLOCAL
 
