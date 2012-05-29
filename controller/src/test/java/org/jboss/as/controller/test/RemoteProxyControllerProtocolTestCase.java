@@ -37,7 +37,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -519,26 +518,17 @@ public class RemoteProxyControllerProtocolTestCase {
             @Override
             public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
                 try {
-                    channels.getClientChannel().writeShutdown();
+                    channels.getClientChannel().closeAsync();
                     channels.getClientChannel().awaitClosed();
                 } catch (InterruptedException e) {
                     // closing a channel will cancel the controller.execute()
                 } catch (Exception e) {
                     errorRef.set(e);
-                    throw new RuntimeException();
                 } finally {
                     latch.countDown();
+                    // Ensure the channels are closed
+                    IoUtils.safeClose(channels.getClientChannel());
                 }
-                try {
-                    channels.getServerChannel().writeShutdown();
-                    channels.getServerChannel().awaitClosed();
-
-                } catch (Exception e) {
-                    errorRef.set(e);
-                }
-                // Ensure the channels are closed
-                IoUtils.safeClose(channels.getClientChannel());
-                IoUtils.safeClose(channels.getServerChannel());
                 return new ModelNode();
             }
         };
