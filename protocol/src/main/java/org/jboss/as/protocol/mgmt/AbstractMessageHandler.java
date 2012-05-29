@@ -38,6 +38,7 @@ import org.jboss.as.protocol.ProtocolLogger;
 import org.jboss.as.protocol.ProtocolMessages;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageOutputStream;
 import org.jboss.threads.AsyncFuture;
 import org.xnio.Cancellable;
@@ -47,7 +48,7 @@ import org.xnio.Cancellable;
  *
  * @author Emanuel Muckenhuber
  */
-public abstract class AbstractMessageHandler extends ActiveOperationSupport implements ManagementMessageHandler {
+public abstract class AbstractMessageHandler extends ActiveOperationSupport implements ManagementMessageHandler, CloseHandler<Channel> {
 
     private final ExecutorService executorService;
     private final AtomicInteger requestID = new AtomicInteger();
@@ -358,6 +359,11 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
     @Override
     public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
         return super.awaitCompletion(timeout, unit);
+    }
+
+    @Override
+    public void handleClose(final Channel closed, final IOException exception) {
+        handleChannelClosed(closed, exception);
     }
 
     /**

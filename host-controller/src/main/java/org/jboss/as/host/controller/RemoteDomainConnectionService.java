@@ -183,10 +183,9 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         final long endTime = System.currentTimeMillis() + timeout;
         int retries = 0;
         while (!connected) {
-            RemoteDomainConnection.RegistrationResult result = null;
             try {
                 // Try to connect to the domain controller
-                result = connection.connect();
+                connection.connect();
                 connected = true;
             } catch (IOException e) {
                 Throwable cause = e;
@@ -196,6 +195,8 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                         throw MESSAGES.authenticationFailureUnableToConnect(cause);
                     } else if (cause instanceof SSLHandshakeException) {
                         throw MESSAGES.sslFailureUnableToConnect(cause);
+                    } else if (cause instanceof SlaveRegistrationException) {
+                        throw new IOException(cause);
                     }
                 }
                 if (System.currentTimeMillis() > endTime) {
@@ -207,15 +208,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                     retries++;
                 } catch (InterruptedException ie) {
                     throw MESSAGES.connectionToMasterInterrupted();
-                }
-            }
-            // If it's not ok
-            if(result != null && ! result.isOK()) {
-                switch (result.getCode()) {
-                    case HOST_ALREADY_EXISTS:
-                        throw new HostAlreadyExistsException(result.getMessage());
-                    default:
-                        throw new IOException(new SlaveRegistrationException(result.getCode(), result.getMessage()).marshal());
                 }
             }
         }
@@ -319,7 +311,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                 }
             });
             // Setup the management channel handler
-            handler = connection.getHandler();
+            handler = connection.getChannelHandler();
         } catch (Exception e) {
             throw new StartException(e);
         } finally {
