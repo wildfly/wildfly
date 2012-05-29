@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.jpa.datasourcedefintion;
+package org.jboss.as.test.integration.jpa.datasourcedefinition;
 
 import javax.annotation.Resource;
 import javax.ejb.Stateful;
