@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.jpa.datasourcedefintion;
+package org.jboss.as.test.integration.jpa.datasourcedefinition;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -74,7 +74,6 @@ public class SLSB1 {
 	 * JTA transaction is rolled back and no database changes should occur.
 	 */
 	public String failInFirstCall() throws Exception {
-		// List<Employee> initialList = getEmployees();
 		int[] initialList = getEmployeeIDsNoEM();
 
 		try {
@@ -161,7 +160,14 @@ public class SLSB1 {
 	 * Persisting existing entity, should throws EntityExistsException
 	 */
 	public void performFailCall() {
-		Employee emp = em.find(Employee.class, 1);
+		Employee emp = em.find(Employee.class, 1212);
+				
+		if(emp == null){
+			emp = createEmployee("Mr. Problem", "Brno ", 1212);
+			em.persist(emp);
+			em.flush();
+		}
+		
 		em.persist(createEmployee(emp.getName(), emp.getAddress(), emp.getId()));
 	}
 

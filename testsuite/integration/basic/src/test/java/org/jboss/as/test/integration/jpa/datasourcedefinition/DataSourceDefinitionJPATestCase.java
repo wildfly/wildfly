@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.jpa.datasourcedefintion;
+package org.jboss.as.test.integration.jpa.datasourcedefinition;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -142,7 +142,7 @@ public class DataSourceDefinitionJPATestCase {
         SLSB1 slsb1 = lookup("SLSB1", SLSB1.class);
         slsb1.addEmployee();
 
-        String message = slsb1.failAfterCalls();
+        String message = slsb1.failInFirstCall();
         assertEquals("DB should be unchanged, which we indicate by returning 'success'", "success", message);
 
         message = slsb1.failInSecondCall();

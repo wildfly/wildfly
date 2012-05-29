@@ -20,47 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.jpa.datasourcedefintion;
+package org.jboss.as.test.integration.jpa.datasourcedefinition;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.annotation.Resource;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateful;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 /**
- * Employee entity class
+ * stateful session bean
  *
  * @author Scott Marlow
  */
-@Entity
-public class Employee {
-    @Id
-    private int id;
+@Stateful
+@TransactionManagement(TransactionManagementType.CONTAINER)
+public class SFSBCMT {
+    @PersistenceContext(unitName = "mypc")
+        EntityManager em;
 
-    private String name;
+    @Resource
+    SessionContext sessionContext;
 
-    private String address;
-
-    public String getName() {
-        return name;
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public Employee queryEmployeeNameRequireNewTX(int id) {
+        Query q = em.createQuery("SELECT e FROM Employee e where id=?");
+        q.setParameter(1,new Integer(id));
+        return (Employee)q.getSingleResult();
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public int getId() {
-
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 }
