@@ -44,6 +44,7 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
         EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.marshallAsElement(eeSubSystem, writer);
         GlobalModulesDefinition.INSTANCE.marshallAsElement(eeSubSystem, writer);
         EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.marshallAsElement(eeSubSystem, writer);
+        EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.marshallAsElement(eeSubSystem, writer);
         writer.writeEndElement();
 
     }
