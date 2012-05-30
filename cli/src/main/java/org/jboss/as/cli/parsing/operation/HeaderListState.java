@@ -24,8 +24,8 @@ package org.jboss.as.cli.parsing.operation;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
-import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
+import org.jboss.as.cli.parsing.LineBreakHandler;
 import org.jboss.as.cli.parsing.ParsingContext;
 
 
@@ -42,10 +42,14 @@ public class HeaderListState extends DefaultParsingState {
         this(HeaderState.INSTANCE);
     }
 
-    HeaderListState(HeaderState headerState) {
+    HeaderListState(final HeaderState headerState) {
         super(ID);
         putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        setDefaultHandler(new EnterStateCharacterHandler(headerState));
+        setDefaultHandler(new LineBreakHandler(false, false){
+            protected void doHandle(ParsingContext ctx) throws CommandFormatException {
+                ctx.enterState(headerState);
+            }
+        });
         setReturnHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {

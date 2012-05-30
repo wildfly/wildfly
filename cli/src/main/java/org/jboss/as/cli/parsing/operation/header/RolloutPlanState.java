@@ -25,6 +25,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
+import org.jboss.as.cli.parsing.LineBreakHandler;
 import org.jboss.as.cli.parsing.ParsingContext;
 import org.jboss.as.cli.parsing.operation.PropertyListState;
 
@@ -46,9 +47,9 @@ public class RolloutPlanState extends DefaultParsingState {
         super(ID);
         this.setIgnoreWhitespaces(true);
         //setEnterHandler(new EnterStateCharacterHandler(sgList));
-        setEnterHandler(new CharacterHandler(){
+        setEnterHandler(new LineBreakHandler(false, false){
             @Override
-            public void handle(ParsingContext ctx) throws CommandFormatException {
+            public void doHandle(ParsingContext ctx) throws CommandFormatException {
                 final String input = ctx.getInput();
                 if(input.startsWith("id", ctx.getLocation()) &&
                         input.length() > ctx.getLocation() + 2 &&

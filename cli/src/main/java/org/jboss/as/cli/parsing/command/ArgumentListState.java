@@ -25,8 +25,8 @@ package org.jboss.as.cli.parsing.command;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
-import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
+import org.jboss.as.cli.parsing.LineBreakHandler;
 import org.jboss.as.cli.parsing.OutputTargetState;
 import org.jboss.as.cli.parsing.ParsingContext;
 
@@ -44,7 +44,7 @@ public class ArgumentListState extends DefaultParsingState {
         this(ArgumentState.INSTANCE, ArgumentValueState.INSTANCE, OutputTargetState.INSTANCE);
     }
 
-    ArgumentListState(ArgumentState argState, ArgumentValueState valueState, OutputTargetState outputTarget) {
+    ArgumentListState(ArgumentState argState, final ArgumentValueState valueState, OutputTargetState outputTarget) {
         super(ID);
         setEnterHandler(new CharacterHandler(){
             @Override
@@ -55,8 +55,22 @@ public class ArgumentListState extends DefaultParsingState {
                 }
             }});
         enterState('-', argState);
-        setDefaultHandler(new EnterStateCharacterHandler(valueState));
+        setDefaultHandler(new LineBreakHandler(false, false){
+            @Override
+            protected void doHandle(ParsingContext ctx) throws CommandFormatException {
+                ctx.enterState(valueState);
+            }
+        });
         putHandler(OutputTargetState.OUTPUT_REDIRECT_CHAR, GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         setIgnoreWhitespaces(true);
+        setReturnHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(ctx.isEndOfContent()) {
+                    ctx.leaveState();
+                } else {
+                    getHandler(ctx.getCharacter()).handle(ctx);
+                }
+            }});
     }
 }

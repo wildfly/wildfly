@@ -46,4 +46,9 @@ public class OperationFormat implements CommandLineFormat {
     public String getPropertyListEnd() {
         return ")";
     }
+
+    @Override
+    public boolean isPropertySeparator(char ch) {
+        return ch == ',';
+    }
 }

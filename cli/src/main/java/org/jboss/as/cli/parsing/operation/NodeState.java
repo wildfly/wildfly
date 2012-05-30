@@ -74,4 +74,9 @@ public class NodeState extends DefaultParsingState {
 
         enterState('"', QuotesState.QUOTES_EXCLUDED);
     }
+
+    @Override
+    public boolean lockValueIndex() {
+        return true;
+    }
 }
