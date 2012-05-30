@@ -60,10 +60,12 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
     private static final int heartbeatInterval = 15000;
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
     private static final int WINDOW_SIZE = ProtocolChannelClient.Configuration.WINDOW_SIZE;
-    private static final OptionMap options = OptionMap.builder().set(RemotingOptions.RECEIVE_WINDOW_SIZE, WINDOW_SIZE)
-                                                .set(RemotingOptions.TRANSMIT_WINDOW_SIZE, WINDOW_SIZE)
-                                                .set(RemotingOptions.HEARTBEAT_INTERVAL, heartbeatInterval)
-                                                .set(Options.READ_TIMEOUT, 45000).getMap();
+
+    private static final OptionMap SERVICE_OPTIONS = OptionMap.create(RemotingOptions.TRANSMIT_WINDOW_SIZE, WINDOW_SIZE,
+                                                        RemotingOptions.RECEIVE_WINDOW_SIZE, WINDOW_SIZE);
+
+    private static final OptionMap CONNECTION_OPTIONS = OptionMap.create(RemotingOptions.HEARTBEAT_INTERVAL, heartbeatInterval,
+                                                        Options.READ_TIMEOUT, 45000);
 
     private final LocalHostControllerInfoImpl hostControllerInfo;
 
@@ -94,7 +96,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
 
         ManagementChannelRegistryService.addService(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT);
         ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                hostControllerInfo.getLocalHostName(), EndpointService.EndpointType.MANAGEMENT, options, null, null);
+                hostControllerInfo.getLocalHostName(), EndpointService.EndpointType.MANAGEMENT, CONNECTION_OPTIONS, null, null);
 
         final boolean onDemand = context.isBooting();
         installNativeManagementServices(serviceTarget, hostControllerInfo, verificationHandler, newControllers, onDemand);
@@ -123,11 +125,11 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
                 NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(hostControllerInfo.getNativeManagementInterface());
 
         ManagementRemotingServices.installDomainConnectorServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), realmSvcName, options, verificationHandler, newControllers);
+                nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), realmSvcName, CONNECTION_OPTIONS, verificationHandler, newControllers);
 
         ManagementRemotingServices.installManagementChannelOpenListenerService(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
                 ManagementRemotingServices.SERVER_CHANNEL,
-                ServerToHostOperationHandlerFactoryService.SERVICE_NAME, options, verificationHandler, newControllers, onDemand);
+                ServerToHostOperationHandlerFactoryService.SERVICE_NAME, SERVICE_OPTIONS, verificationHandler, newControllers, onDemand);
 
         ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
                 new ModelControllerClientOperationHandlerFactoryService(),
