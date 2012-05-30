@@ -41,8 +41,10 @@ import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.AbstractCacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.lock.impl.SharedLocalYieldingClusterLockManagerService;
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.clustering.registry.RegistryService;
 import org.jboss.as.clustering.web.BatchingManager;
@@ -56,11 +58,13 @@ import org.jboss.as.clustering.web.impl.TransactionBatchingManager;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 
@@ -135,9 +139,11 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
                 return null;
             }
         };
-        target.addService(cacheServiceName, new CacheService<Object, Object>(cacheName, dependencies))
+        Service<Cache<Object, Object>> service = new CacheService<Object, Object>(cacheName, dependencies);
+        target.addService(cacheServiceName, new AsynchronousService<Cache<Object, Object>>(service))
                 .addDependency(cacheConfigurationServiceName)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheContainer)
+                .addDependency(DependencyType.OPTIONAL, ChannelService.getServiceName(containerName))
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;

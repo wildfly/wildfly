@@ -27,9 +27,11 @@ import javax.transaction.xa.XAResource;
 import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.jboss.tm.XAResourceRecovery;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 
@@ -37,7 +39,7 @@ import org.jboss.tm.XAResourceRecoveryRegistry;
  * @author Paul Ferraro
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class CacheService<K, V> extends AsynchronousService<Cache<K, V>> {
+public class CacheService<K, V> implements Service<Cache<K, V>> {
 
     private final Dependencies dependencies;
     private final String name;
@@ -70,7 +72,7 @@ public class CacheService<K, V> extends AsynchronousService<Cache<K, V>> {
     }
 
     @Override
-    protected void start() {
+    public void start(StartContext context) {
         EmbeddedCacheManager container = this.dependencies.getCacheContainer();
 
         this.cache = container.getCache(this.name);
@@ -85,7 +87,7 @@ public class CacheService<K, V> extends AsynchronousService<Cache<K, V>> {
     }
 
     @Override
-    protected void stop() {
+    public void stop(StopContext context) {
         if ((this.cache != null) && this.cache.getStatus().allowInvocations()) {
             if (this.recovery != null) {
                 this.dependencies.getRecoveryRegistry().removeXAResourceRecovery(this.recovery);

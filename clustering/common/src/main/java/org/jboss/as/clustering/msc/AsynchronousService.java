@@ -34,26 +34,31 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossThreadFactory;
 
 /**
- * Base service class that executes service start/stop asynchronously.
+ * Service decorator that optionally starts/stops a service asynchronously.
  * @author Paul Ferraro
  */
-public abstract class AsynchronousService<T> implements Service<T> {
-
+public final class AsynchronousService<T> implements Service<T> {
+    final Service<T> service;
     private final Executor executor;
     private final boolean startAsynchronously;
     private final boolean stopAsynchronously;
 
-    protected AsynchronousService() {
-        this(true, false);
+    public AsynchronousService(Service<T> service) {
+        this(service, true, false);
     }
 
-    protected AsynchronousService(boolean startAsynchronously, boolean stopAsynchronously) {
+    public AsynchronousService(Service<T> service, boolean startAsynchronously, boolean stopAsynchronously) {
+        this.service = service;
         this.startAsynchronously = startAsynchronously;
         this.stopAsynchronously = stopAsynchronously;
-        // TODO Use org.jboss.as.server.Services#addServerExecutorDependency to inject a shared executor
-        final ThreadFactory factory =  new JBossThreadFactory(new ThreadGroup(String.format("%s lifecycle", this.getClass().getSimpleName())),
-                Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
-        this. executor = Executors.newCachedThreadPool(factory);
+        final ThreadGroup group = new ThreadGroup(String.format("%s lifecycle", service.getClass().getSimpleName()));
+        final ThreadFactory factory = new JBossThreadFactory(group, Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+        this.executor = Executors.newCachedThreadPool(factory);
+    }
+
+    @Override
+    public T getValue() {
+        return this.service.getValue();
     }
 
     @Override
@@ -63,9 +68,11 @@ public abstract class AsynchronousService<T> implements Service<T> {
                 @Override
                 public void run() {
                     try {
-                        AsynchronousService.this.start();
+                        AsynchronousService.this.service.start(context);
                         context.complete();
-                    } catch (Exception e) {
+                    } catch (StartException e) {
+                        context.failed(e);
+                    } catch (Throwable e) {
                         context.failed(new StartException(e));
                     }
                 }
@@ -73,11 +80,7 @@ public abstract class AsynchronousService<T> implements Service<T> {
             context.asynchronous();
             this.executor.execute(task);
         } else {
-            try {
-                this.start();
-            } catch (Exception e) {
-                throw new StartException(e);
-            }
+            this.service.start(context);
         }
     }
 
@@ -88,7 +91,7 @@ public abstract class AsynchronousService<T> implements Service<T> {
                 @Override
                 public void run() {
                     try {
-                        AsynchronousService.this.stop();
+                        AsynchronousService.this.service.stop(context);
                     } finally {
                         context.complete();
                     }
@@ -97,11 +100,7 @@ public abstract class AsynchronousService<T> implements Service<T> {
             context.asynchronous();
             this.executor.execute(task);
         } else {
-            this.stop();
+            this.service.stop(context);
         }
     }
-
-    protected abstract void start() throws Exception;
-
-    protected abstract void stop();
 }

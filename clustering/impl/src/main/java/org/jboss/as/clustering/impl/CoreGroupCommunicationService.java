@@ -62,7 +62,6 @@ import org.jboss.as.clustering.SerializableStateTransferResult;
 import org.jboss.as.clustering.StateTransferProvider;
 import org.jboss.as.clustering.StateTransferResult;
 import org.jboss.as.clustering.StreamStateTransferResult;
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
@@ -73,6 +72,7 @@ import org.jboss.marshalling.Unmarshaller;
 import org.jboss.marshalling.reflect.ReflectiveCreator;
 import org.jboss.marshalling.reflect.SunReflectiveCreator;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -117,9 +117,7 @@ import static org.jboss.as.clustering.impl.ClusteringImplMessages.MESSAGES;
  * @author <a href="mailto:galder.zamarreno@jboss.com">Galder Zamarreno</a>
  * @author Paul Ferraro
  */
-public class CoreGroupCommunicationService extends AsynchronousService<CoreGroupCommunicationService> implements GroupRpcDispatcher, GroupMembershipNotifier, GroupStateTransferService {
-    // Constants -----------------------------------------------------
-
+public class CoreGroupCommunicationService implements Service<CoreGroupCommunicationService>, GroupRpcDispatcher, GroupMembershipNotifier, GroupStateTransferService {
     private static final byte NULL_VALUE = 0;
     private static final byte SERIALIZABLE_VALUE = 1;
 

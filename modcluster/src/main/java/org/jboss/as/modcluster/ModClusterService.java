@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.catalina.Engine;
 import org.apache.catalina.connector.Connector;
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.web.WebServer;
@@ -48,6 +47,8 @@ import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -55,7 +56,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Jean-Frederic Clere
  */
-class ModClusterService extends AsynchronousService<ModCluster> implements ModCluster, Service<ModCluster> {
+class ModClusterService implements Service<ModCluster>, ModCluster {
 
     static final ServiceName NAME = ServiceName.JBOSS.append("mod-cluster");
 
@@ -72,13 +73,12 @@ class ModClusterService extends AsynchronousService<ModCluster> implements ModCl
     private org.jboss.modcluster.ModClusterService service;
 
     ModClusterService(ModClusterConfig config, LoadBalanceFactorProvider load) {
-        super(true, true);
         this.config = config;
         this.load = load;
     }
 
     @Override
-    protected void start() {
+    public void start(StartContext context) {
         ROOT_LOGGER.debugf("Starting Mod_cluster Extension");
 
         boolean isMulticast = isMulticastEnabled(bindingManager.getValue().getDefaultInterfaceBinding().getNetworkInterfaces());
@@ -130,7 +130,7 @@ class ModClusterService extends AsynchronousService<ModCluster> implements ModCl
     }
 
     @Override
-    protected void stop() {
+    public void stop(StopContext context) {
         if (adapter != null) {
             adapter.stop();
             adapter = null;
