@@ -29,16 +29,18 @@ import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
 import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
 
 /**
  * @author Paul Ferraro
  */
 @Listener
-public class EmbeddedCacheManagerService extends AsynchronousService<EmbeddedCacheManager> {
+public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager> {
 
     private static final Logger log = Logger.getLogger(EmbeddedCacheManagerService.class.getPackage().getName());
     private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(InfinispanExtension.SUBSYSTEM_NAME);
@@ -55,12 +57,12 @@ public class EmbeddedCacheManagerService extends AsynchronousService<EmbeddedCac
     }
 
     @Override
-    public EmbeddedCacheManager getValue() throws IllegalStateException, IllegalArgumentException {
+    public EmbeddedCacheManager getValue() {
         return this.container;
     }
 
     @Override
-    protected void start() {
+    public void start(StartContext context) {
         EmbeddedCacheManagerConfiguration config = this.config.getValue();
         this.container = new DefaultEmbeddedCacheManager(config.getGlobalConfiguration(), config.getDefaultCache());
         this.container.addListener(this);
@@ -69,7 +71,7 @@ public class EmbeddedCacheManagerService extends AsynchronousService<EmbeddedCac
     }
 
     @Override
-    protected void stop() {
+    public void stop(StopContext context) {
         if ((this.container != null) && this.container.getStatus().allowInvocations()) {
             this.container.stop();
             this.container.removeListener(this);

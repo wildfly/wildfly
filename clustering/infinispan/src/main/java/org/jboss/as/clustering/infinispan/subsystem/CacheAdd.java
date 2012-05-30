@@ -40,6 +40,8 @@ import org.infinispan.util.TypedProperties;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.clustering.infinispan.RemoteCacheStore;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -62,7 +64,9 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -197,7 +201,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         log.debugf("Cache configuration service for %s installed for container %s", cacheName, containerName);
 
         // now install the corresponding cache service (starts a configured cache)
-        controllers.add(this.installCacheService(target, containerName, cacheName, defaultCache, initialMode, builder, config, verificationHandler));
+        controllers.add(this.installCacheService(target, containerName, cacheName, defaultCache, initialMode, config, verificationHandler));
 
         // install a name service entry for the cache
         controllers.add(this.installJndiService(target, containerName, cacheName, jndiName, verificationHandler));
@@ -243,11 +247,10 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     ServiceController<?> installCacheConfigurationService(ServiceTarget target, String containerName, String cacheName, String defaultCache, ModuleIdentifier moduleId,
             ConfigurationBuilder builder, Configuration config, List<Dependency<?>> dependencies, ServiceVerificationHandler verificationHandler) {
 
-        InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
-        CacheConfigurationDependencies cacheConfigurationDependencies = new CacheConfigurationDependencies(container);
-        CacheConfigurationService cacheConfigurationService = new CacheConfigurationService(cacheName, builder, moduleId, cacheConfigurationDependencies);
-
-        ServiceBuilder<?> configBuilder = target.addService(CacheConfigurationService.getServiceName(containerName, cacheName), cacheConfigurationService)
+        final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
+        final CacheConfigurationDependencies cacheConfigurationDependencies = new CacheConfigurationDependencies(container);
+        final Service<Configuration> service = new CacheConfigurationService(cacheName, builder, moduleId, cacheConfigurationDependencies);
+        final ServiceBuilder<?> configBuilder = target.addService(CacheConfigurationService.getServiceName(containerName, cacheName), service)
                 .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), EmbeddedCacheManager.class, container)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, cacheConfigurationDependencies.getModuleLoaderInjector())
                 .setInitialMode(ServiceController.Mode.PASSIVE)
@@ -273,42 +276,40 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     }
 
     ServiceController<?> installCacheService(ServiceTarget target, String containerName, String cacheName, String defaultCache, ServiceController.Mode initialMode,
-            ConfigurationBuilder builder, Configuration config, ServiceVerificationHandler verificationHandler) {
+            Configuration config, ServiceVerificationHandler verificationHandler) {
 
-        InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
-        CacheDependencies cacheDependencies = new CacheDependencies(container);
-        CacheService<Object, Object> cacheService = new CacheService<Object, Object>(cacheName, cacheDependencies);
-
-        ServiceBuilder<?> cacheBuilder = target.addService(CacheService.getServiceName(containerName, cacheName), cacheService)
+        final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
+        final CacheDependencies cacheDependencies = new CacheDependencies(container);
+        final Service<Cache<Object, Object>> service = new CacheService<Object, Object>(cacheName, cacheDependencies);
+        final ServiceBuilder<?> builder = target.addService(CacheService.getServiceName(containerName, cacheName), new AsynchronousService<Cache<Object, Object>>(service))
                 .addDependency(CacheConfigurationService.getServiceName(containerName, cacheName))
                 .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), EmbeddedCacheManager.class, container)
+                .addDependency(config.clustering().cacheMode().isClustered() ? DependencyType.REQUIRED : DependencyType.OPTIONAL, ChannelService.getServiceName(containerName))
                 .setInitialMode(initialMode)
         ;
         if (config.transaction().recovery().enabled()) {
-            cacheBuilder.addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, cacheDependencies.getRecoveryRegistryInjector());
+            builder.addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, cacheDependencies.getRecoveryRegistryInjector());
         }
 
         // add an alias for the default cache
         if (cacheName.equals(defaultCache)) {
-            cacheBuilder.addAliases(CacheService.getServiceName(containerName, null));
+            builder.addAliases(CacheService.getServiceName(containerName, null));
         }
 
         if (initialMode == ServiceController.Mode.ACTIVE) {
-            cacheBuilder.addListener(verificationHandler);
+            builder.addListener(verificationHandler);
         }
 
-        return cacheBuilder.install();
+        return builder.install();
     }
 
     @SuppressWarnings("rawtypes")
     ServiceController<?> installJndiService(ServiceTarget target, String containerName, String cacheName, String jndiNameString, ServiceVerificationHandler verificationHandler) {
 
-        String jndiName = InfinispanJndiName.createCacheJndiNameOrDefault(jndiNameString, containerName, cacheName);
-
-        ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
-        ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
-
-        BinderService binder = new BinderService(bindInfo.getBindName());
+        final String jndiName = InfinispanJndiName.createCacheJndiNameOrDefault(jndiNameString, containerName, cacheName);
+        final ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+        final BinderService binder = new BinderService(bindInfo.getBindName());
         return target.addService(bindInfo.getBinderServiceName(), binder)
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
                 .addDependency(cacheServiceName, Cache.class, new ManagedReferenceInjector<Cache>(binder.getManagedObjectInjector()))
@@ -319,8 +320,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     }
 
     private <T> void addDependency(ServiceBuilder<?> builder, Dependency<T> dependency) {
-        ServiceName name = dependency.getName();
-        Injector<T> injector = dependency.getInjector();
+        final ServiceName name = dependency.getName();
+        final Injector<T> injector = dependency.getInjector();
         if (injector != null) {
             builder.addDependency(name, dependency.getType(), injector);
         } else {

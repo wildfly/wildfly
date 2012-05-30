@@ -43,7 +43,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
@@ -52,7 +52,7 @@ import org.jboss.msc.value.InjectedValue;
  * Decorates an MSC service ensuring that it is only started on one node in the cluster at any given time.
  * @author Paul Ferraro
  */
-public class SingletonService<T extends Serializable> extends AsynchronousService<T> implements ServiceProviderRegistry.Listener, SingletonRpcHandler<T>, Singleton {
+public class SingletonService<T extends Serializable> implements Service<T>, ServiceProviderRegistry.Listener, SingletonRpcHandler<T>, Singleton {
 
     public static final String DEFAULT_CONTAINER = "cluster";
 
@@ -90,20 +90,15 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
         }
         target.addService(this.serviceName, this.service).setInitialMode(ServiceController.Mode.NEVER).install();
         target.addService(this.singletonServiceName.append("singleton"), new ValueService<Singleton>(new ImmediateValue<Singleton>(this))).addDependency(this.singletonServiceName).setInitialMode(ServiceController.Mode.PASSIVE).install();
-        return target.addService(this.singletonServiceName, this)
+        return target.addService(this.singletonServiceName, new AsynchronousService<T>(this))
             .addDependency(ServiceProviderRegistryService.getServiceName(container), ServiceProviderRegistry.class, this.registryRef)
             .addDependency(ServiceName.JBOSS.append(DEFAULT_CONTAINER, container), GroupRpcDispatcher.class, this.dispatcherRef)
         ;
     }
 
     @Override
-    public void start(final StartContext context) throws StartException {
+    public void start(final StartContext context) {
         this.container = context.getController().getServiceContainer();
-        super.start(context);
-    }
-
-    @Override
-    protected void start() {
         this.dispatcher = this.dispatcherRef.getValue();
         this.registry = this.registryRef.getValue();
         final String name = this.singletonServiceName.getCanonicalName();
@@ -114,7 +109,7 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
     }
 
     @Override
-    protected void stop() {
+    public void stop(StopContext context) {
         this.started = false;
         String name = this.singletonServiceName.getCanonicalName();
         this.registry.unregister(name);

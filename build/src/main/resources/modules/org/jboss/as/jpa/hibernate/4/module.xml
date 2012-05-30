@@ -39,6 +39,8 @@
         <module name="org.hibernate" services="import"/>
         <module name="org.hibernate.validator"/>
         <module name="org.infinispan"/>
+        <module name="org.jboss.as.clustering.common"/>
+        <module name="org.jboss.as.clustering.jgroups"/>
         <module name="org.jboss.as.clustering.infinispan"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.jpa.spi"/>

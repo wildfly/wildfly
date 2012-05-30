@@ -29,6 +29,10 @@ import java.util.Properties;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelLookup;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
+import org.jboss.as.clustering.msc.ServiceContainerHelper;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartException;
 import org.jgroups.Channel;
 
 /**
@@ -38,10 +42,10 @@ public class ChannelProvider implements JGroupsChannelLookup {
 
     private static final String CHANNEL = "channel";
 
-    public static void init(TransportConfigurationBuilder builder, Channel channel) {
+    public static void init(TransportConfigurationBuilder builder, ServiceName channel) {
         Properties properties = new Properties();
         properties.setProperty(JGroupsTransport.CHANNEL_LOOKUP, ChannelProvider.class.getName());
-        properties.put(CHANNEL, channel);
+        properties.setProperty(CHANNEL, channel.getCanonicalName());
         builder.transport().defaultTransport().withProperties(properties);
     }
 
@@ -51,12 +55,17 @@ public class ChannelProvider implements JGroupsChannelLookup {
      */
     @Override
     public Channel getJGroupsChannel(Properties properties) {
-        Channel channel = (Channel) properties.get(CHANNEL);
-
+        String channel = properties.getProperty(CHANNEL);
         if (channel == null) {
             throw MESSAGES.invalidTransportProperty(CHANNEL, properties);
         }
-        return channel;
+        ServiceName name = ServiceName.parse(channel);
+        ServiceController<?> service = ServiceContainerHelper.getCurrentServiceContainer().getRequiredService(name);
+        try {
+            return ServiceContainerHelper.getValue(service, Channel.class);
+        } catch (StartException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /**

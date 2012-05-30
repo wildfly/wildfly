@@ -39,7 +39,7 @@ public class GranularWebFailoverTestCase extends ClusteredWebFailoverAbstractCas
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "granular-distributable.war");
         war.addClass(SimpleServlet.class);
         // Take web.xml from the managed test.
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
@@ -51,7 +51,7 @@ public class GranularWebFailoverTestCase extends ClusteredWebFailoverAbstractCas
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "granular-distributable.war");
         war.addClass(SimpleServlet.class);
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
         war.addAsWebInfResource(ClusteredWebSimpleTestCase.class.getPackage(), "jboss-web_granular.xml", "jboss-web.xml");
