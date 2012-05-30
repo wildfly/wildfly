@@ -30,10 +30,7 @@ import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Handler;
 
@@ -54,22 +51,18 @@ import org.jboss.msc.service.ServiceRegistry;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public abstract class AbstractLogHandlerWriteAttributeHandler<T extends Handler> extends AbstractWriteAttributeHandler<T> {
-    private final Map<String, AttributeDefinition> attributes;
+    public static final AttributeDefinition[] DEFAULT_ATTRIBUTES = {
+            LEVEL,
+            FILTER,
+            FORMATTER,
+            ENCODING,
+            FILTER
+    };
+    private final AttributeDefinition[] attributes;
 
     protected AbstractLogHandlerWriteAttributeHandler(final AttributeDefinition... attributes) {
-        this(Arrays.asList(attributes));
-    }
-
-    protected AbstractLogHandlerWriteAttributeHandler(final Collection<AttributeDefinition> attributes) {
-        this.attributes = new HashMap<String, AttributeDefinition>();
-        this.attributes.put(LEVEL.getName(), LEVEL);
-        this.attributes.put(FILTER.getName(), FILTER);
-        this.attributes.put(FORMATTER.getName(), FORMATTER);
-        this.attributes.put(ENCODING.getName(), ENCODING);
-        this.attributes.put(FILTER.getName(), FILTER);
-        for (AttributeDefinition attr : attributes) {
-            this.attributes.put(attr.getName(), attr);
-        }
+        super(joinUnique(attributes, DEFAULT_ATTRIBUTES));
+        this.attributes = joinUnique(attributes, DEFAULT_ATTRIBUTES);
     }
 
     @Override
@@ -129,7 +122,8 @@ public abstract class AbstractLogHandlerWriteAttributeHandler<T extends Handler>
      * @param context       the context for the operation.
      * @param operation     the operation
      * @param attributeName the name of the attribute being modified
-     * @param resolvedValue the new value for the attribute, after {@link org.jboss.dmr.ModelNode#resolve()} has been called on it
+     * @param resolvedValue the new value for the attribute, after {@link org.jboss.dmr.ModelNode#resolve()} has been
+     *                      called on it
      * @param currentValue  the existing value for the attribute
      * @param handlerName   the name of the handler.
      * @param handler       the {@link java.util.logging.Handler handler} to apply the changes to.
@@ -155,35 +149,39 @@ public abstract class AbstractLogHandlerWriteAttributeHandler<T extends Handler>
      */
     protected abstract void doRevertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, String handlerName, T handler) throws OperationFailedException;
 
-    @Override
-    protected final void validateResolvedValue(final String name, final ModelNode value) throws OperationFailedException {
-        if (attributes.containsKey(name)) {
-            attributes.get(name).getValidator().validateResolvedParameter(name, value);
-        } else {
-            super.validateResolvedValue(name, value);
-        }
-    }
-
-    @Override
-    protected final void validateUnresolvedValue(final String name, final ModelNode value) throws OperationFailedException {
-        if (attributes.containsKey(name)) {
-            attributes.get(name).getValidator().validateParameter(name, value);
-        } else {
-            super.validateUnresolvedValue(name, value);
-        }
-    }
-
-    @Override
-    protected AttributeDefinition getAttributeDefinition(final String attributeName) {
-        return attributes == null ? null : attributes.get(attributeName);
-    }
-
     /**
      * Returns a collection of attributes used for the write attribute.
      *
      * @return a collection of attributes.
      */
-    public final Collection<AttributeDefinition> getAttributes() {
-        return Collections.unmodifiableCollection(attributes.values());
+    public final AttributeDefinition[] getAttributes() {
+        return attributes;
+    }
+
+    /**
+     * Joins the two arrays and guarantees a unique array.
+     * <p/>
+     * The array returned may contain fewer attributes than the two arrays combined. Any duplicate attributes are
+     * ignored.
+     *
+     * @param supplied the supplied attributes
+     * @param added    the attributes to add
+     *
+     * @return an array of the attributes
+     */
+    protected static AttributeDefinition[] joinUnique(final AttributeDefinition[] supplied, final AttributeDefinition... added) {
+        final Map<String, AttributeDefinition> result = new LinkedHashMap<String, AttributeDefinition>();
+        if (supplied != null) {
+            for (AttributeDefinition attr : supplied) {
+                result.put(attr.getName(), attr);
+            }
+        }
+        if (added != null) {
+            for (AttributeDefinition attr : added) {
+                if (!result.containsKey(attr.getName()))
+                    result.put(attr.getName(), attr);
+            }
+        }
+        return result.values().toArray(new AttributeDefinition[result.size()]);
     }
 }
