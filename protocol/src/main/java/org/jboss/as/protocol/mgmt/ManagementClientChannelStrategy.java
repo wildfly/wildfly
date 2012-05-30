@@ -84,7 +84,19 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
                                                    final Map<String, String> saslOptions,
                                                    final SSLContext sslContext,
                                                    final CloseHandler<Channel> closeHandler) {
-        return new Establishing(setup.getConfiguration(), saslOptions, cbHandler, sslContext, handler, closeHandler);
+        return create(createConfiguration(setup.getConfiguration(), saslOptions, cbHandler, sslContext), ManagementChannelReceiver.createDelegating(handler), closeHandler);
+    }
+
+    /**
+     * Create a new establishing management client channel-strategy
+     *
+     * @param configuration the connection configuration
+     * @param receiver the channel receiver
+     * @param closeHandler the close handler
+     * @return the management client channel strategy
+     */
+    public static ManagementClientChannelStrategy create(final ProtocolConnectionConfiguration configuration, final Channel.Receiver receiver, final CloseHandler<Channel> closeHandler) {
+        return new Establishing(configuration, receiver, closeHandler);
     }
 
     /**
@@ -130,10 +142,8 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
     private static class Establishing extends FutureManagementChannel.Establishing {
 
         private final CloseHandler<Channel> closeHandler;
-        private Establishing(final ProtocolConnectionConfiguration configuration, final Map<String, String> saslOptions,
-                                final CallbackHandler callbackHandler, final SSLContext sslContext, final ManagementMessageHandler handler,
-                                final CloseHandler<Channel> closeHandler) {
-            super(DEFAULT_CHANNEL_SERVICE_TYPE, ManagementChannelReceiver.createDelegating(handler), createConfiguration(configuration, saslOptions, callbackHandler, sslContext));
+        private Establishing(final ProtocolConnectionConfiguration configuration, final Channel.Receiver receiver, final CloseHandler<Channel> closeHandler) {
+            super(DEFAULT_CHANNEL_SERVICE_TYPE, receiver, configuration);
             this.closeHandler = closeHandler;
         }
 
