@@ -314,6 +314,7 @@ public class RaOperationUtil {
             for (ServiceName name : jndiServices) {
                 context.removeService(name);
             }
+            service.getJndiServices().clear();
         }
 
 

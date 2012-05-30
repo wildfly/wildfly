@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ironjacamar>
+	<bootstrap-context>customContext1</bootstrap-context>
+	<connection-definitions>
+		<connection-definition
+			class-name="org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactory1"
+			jndi-name="java:jboss/CF1">
+		</connection-definition>
+	</connection-definitions>
+	<admin-objects>
+		<admin-object
+			class-name="org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl"
+			jndi-name="java:jboss/A1">
+		</admin-object>
+	</admin-objects>
+</ironjacamar>
