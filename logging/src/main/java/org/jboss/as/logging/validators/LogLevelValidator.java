@@ -46,7 +46,7 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public final class LogLevelValidator extends ModelTypeValidator implements AllowedValuesValidator {
-    private static final Level[] LEVELS = {
+    public static final Level[] LEVELS = {
             org.jboss.logmanager.Level.ALL,
             org.jboss.logmanager.Level.CONFIG,
             org.jboss.logmanager.Level.DEBUG,
