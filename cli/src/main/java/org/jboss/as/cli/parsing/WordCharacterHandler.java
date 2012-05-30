@@ -22,42 +22,24 @@
 package org.jboss.as.cli.parsing;
 
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.Util;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class WordCharacterHandler implements CharacterHandler {
+public class WordCharacterHandler extends LineBreakHandler {
 
     public static final WordCharacterHandler IGNORE_LB_ESCAPE_ON = new WordCharacterHandler(false, true);
     public static final WordCharacterHandler IGNORE_LB_ESCAPE_OFF = new WordCharacterHandler(false, false);
-
-    private static final String LN_SEP = Util.getLineSeparator();
-    private final boolean fallbackToEscape;
-    private final boolean leaveOnLnBreak;
+    public static final WordCharacterHandler LB_LEAVE_ESCAPE_ON = new WordCharacterHandler(true, true);
 
     public WordCharacterHandler(boolean leaveOnLnBreak, boolean fallbackToEscape) {
-        this.leaveOnLnBreak = leaveOnLnBreak;
-        this.fallbackToEscape = fallbackToEscape;
+        super(leaveOnLnBreak, fallbackToEscape);
     }
 
     @Override
-    public void handle(ParsingContext ctx) throws CommandFormatException {
+    public void doHandle(ParsingContext ctx) throws CommandFormatException {
         //System.out.println("word: '" + ctx.getCharacter() + "'");
-        if(ctx.getCharacter() == '\\') {
-            if(ctx.getInput().regionMatches(ctx.getLocation() + 1, LN_SEP, 0, LN_SEP.length())) {
-                System.err.println("line break in '" + ctx.getInput().substring(0, ctx.getLocation()) + "'");
-                if(leaveOnLnBreak) {
-                    ctx.leaveState();
-                }
-            } else if(fallbackToEscape){
-                ctx.enterState(EscapeCharacterState.INSTANCE);
-            } else {
-                ctx.getCallbackHandler().character(ctx);
-            }
-        } else {
-            ctx.getCallbackHandler().character(ctx);
-        }
+        ctx.getCallbackHandler().character(ctx);
     }
 }

@@ -34,6 +34,7 @@ public class DefaultParsingState extends BaseParsingState {
     private final CharacterHandlerMap handlers;
     private boolean ignoreWhitespaces;
     private boolean leaveOnWhitespace;
+    private CharacterHandler wsHandler;
 
     private CharacterHandler defaultHandler = GlobalCharacterHandlers.NOOP_CHARACTER_HANDLER;
 
@@ -109,11 +110,22 @@ public class DefaultParsingState extends BaseParsingState {
         }
     }
 
+    public void setWhitespaceHandler(CharacterHandler handler) {
+        wsHandler = handler;
+    }
+
+    public CharacterHandler getWhitespaceHandler() {
+        return wsHandler;
+    }
+
     /* (non-Javadoc)
      * @see org.jboss.as.cli.operation.parsing.ParsingState#getHandler(char)
      */
     @Override
     public CharacterHandler getHandler(char ch) {
+        if(wsHandler != null && Character.isWhitespace(ch)) {
+            return wsHandler;
+        }
 
         if(ignoreWhitespaces && Character.isWhitespace(ch)) {
             return GlobalCharacterHandlers.NOOP_CHARACTER_HANDLER;

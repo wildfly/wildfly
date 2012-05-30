@@ -68,4 +68,9 @@ public class ArgumentValueState extends DefaultParsingState {
                 }
             }});
     }
+
+    @Override
+    public boolean lockValueIndex() {
+        return true;
+    }
 }

@@ -61,4 +61,9 @@ public class PropertyValueState extends DefaultParsingState {
         setIgnoreWhitespaces(true);
         setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
     }
+
+    @Override
+    public boolean lockValueIndex() {
+        return true;
+    }
 }

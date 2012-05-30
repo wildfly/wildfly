@@ -92,4 +92,14 @@ abstract class BaseParsingState implements ParsingState {
         }
         leaveHandler = handler;
     }
+
+    @Override
+    public boolean updateValueIndex() {
+        return true;
+    }
+
+    @Override
+    public boolean lockValueIndex() {
+        return false;
+    }
 }

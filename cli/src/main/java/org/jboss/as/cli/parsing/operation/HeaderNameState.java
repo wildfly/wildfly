@@ -39,7 +39,7 @@ public final class HeaderNameState extends DefaultParsingState {
         super(ID);
         setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
         setLeaveOnWhitespace(true);
-        setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
+        setDefaultHandler(WordCharacterHandler.LB_LEAVE_ESCAPE_ON);
         putHandler(';', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler('=', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);

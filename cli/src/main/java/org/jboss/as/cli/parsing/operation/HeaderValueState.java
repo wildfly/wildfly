@@ -58,4 +58,9 @@ public class HeaderValueState extends DefaultParsingState {
         setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         setIgnoreWhitespaces(true);
     }
+
+    @Override
+    public boolean lockValueIndex() {
+        return true;
+    }
 }

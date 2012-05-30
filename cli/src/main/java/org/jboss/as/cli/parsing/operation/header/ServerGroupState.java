@@ -26,6 +26,7 @@ import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
+import org.jboss.as.cli.parsing.LineBreakHandler;
 import org.jboss.as.cli.parsing.ParsingContext;
 import org.jboss.as.cli.parsing.operation.PropertyListState;
 
@@ -52,9 +53,9 @@ public class ServerGroupState extends DefaultParsingState {
         putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler(';', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler('(', new EnterStateCharacterHandler(propList));
-        setDefaultHandler(new CharacterHandler(){
+        setDefaultHandler(new LineBreakHandler(false, false){
             @Override
-            public void handle(ParsingContext ctx) throws CommandFormatException {
+            protected void doHandle(ParsingContext ctx) throws CommandFormatException {
                 final char ch = ctx.getCharacter();
                 if(ch == '(') {
                     ctx.enterState(propList);
