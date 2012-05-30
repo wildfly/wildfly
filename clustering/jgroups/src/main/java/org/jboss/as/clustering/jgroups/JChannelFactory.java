@@ -69,6 +69,11 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
     }
 
     @Override
+    public ProtocolStackConfiguration getProtocolStackConfiguration() {
+        return this.configuration;
+    }
+
+    @Override
     public Channel createChannel(String id) throws Exception {
         JChannel channel = new MuxChannel(this);
 

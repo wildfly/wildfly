@@ -28,6 +28,7 @@ import org.infinispan.manager.CacheContainer;
 
 import javax.annotation.ManagedBean;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -39,13 +40,19 @@ public class InfinispanBean {
     static final String CONTAINER_REF_NAME = "mycontainer";
     private static final String CONTAINER_JNDI_NAME = "java:comp/env/" + CONTAINER_REF_NAME;
 
+    // This is gets injected via web.xml
     private CacheContainer container;
     private Cache<Integer, Object> cache;
 
     @PostConstruct
     public void start() {
-        this.container.start();
         this.cache = this.container.getCache();
+        this.cache.start();
+    }
+
+    @PreDestroy
+    public void stop() {
+        this.cache.stop();
     }
 
     public void test() {

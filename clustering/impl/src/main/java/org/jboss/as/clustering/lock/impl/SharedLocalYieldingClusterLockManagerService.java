@@ -25,14 +25,17 @@ package org.jboss.as.clustering.lock.impl;
 import org.jboss.as.clustering.impl.ClusteringImplLogger;
 import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
-import org.jboss.as.clustering.msc.AsynchronousService;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
 
 /**
  * @author Paul Ferraro
  */
-public class SharedLocalYieldingClusterLockManagerService extends AsynchronousService<SharedLocalYieldingClusterLockManager> {
+public class SharedLocalYieldingClusterLockManagerService implements Service<SharedLocalYieldingClusterLockManager> {
 
     public static ServiceName getServiceName(String name) {
         return CoreGroupCommunicationService.getServiceName(name).append("lock");
@@ -57,14 +60,18 @@ public class SharedLocalYieldingClusterLockManagerService extends AsynchronousSe
     }
 
     @Override
-    protected void start() throws Exception {
+    public void start(StartContext context) throws StartException {
         CoreGroupCommunicationService service = this.service.getValue();
         this.lockManager = new SharedLocalYieldingClusterLockManager(this.name, service, service);
-        this.lockManager.start();
+        try {
+            this.lockManager.start();
+        } catch (Exception e) {
+            throw new StartException(e);
+        }
     }
 
     @Override
-    protected void stop() {
+    public void stop(StopContext context) {
         if (this.lockManager != null) {
             try {
                 this.lockManager.stop();

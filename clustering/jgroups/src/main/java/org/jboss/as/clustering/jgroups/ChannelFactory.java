@@ -36,5 +36,8 @@ public interface ChannelFactory {
      */
     Channel createChannel(String id) throws Exception;
 
+    @Deprecated
     ServerEnvironment getServerEnvironment();
+
+    ProtocolStackConfiguration getProtocolStackConfiguration();
 }

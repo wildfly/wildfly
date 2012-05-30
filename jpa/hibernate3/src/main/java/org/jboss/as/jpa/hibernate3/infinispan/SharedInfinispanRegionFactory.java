@@ -22,16 +22,13 @@
 
 package org.jboss.as.jpa.hibernate3.infinispan;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Properties;
 
 import org.hibernate.cache.infinispan.impl.ClassLoaderAwareCache;
 import org.infinispan.AdvancedCache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
@@ -53,7 +50,7 @@ public class SharedInfinispanRegionFactory extends InfinispanRegionFactory {
     protected EmbeddedCacheManager createCacheManager(Properties properties) {
         String container = properties.getProperty(CACHE_CONTAINER, DEFAULT_CACHE_CONTAINER);
         ServiceName serviceName = EmbeddedCacheManagerService.getServiceName(container);
-        ServiceRegistry registry = currentServiceContainer();
+        ServiceRegistry registry = ServiceContainerHelper.getCurrentServiceContainer();
         return (EmbeddedCacheManager) registry.getRequiredService(serviceName).getValue();
     }
 
@@ -67,15 +64,5 @@ public class SharedInfinispanRegionFactory extends InfinispanRegionFactory {
     @Override
     public void stop() {
         // Do not attempt to stop our cache manager because it wasn't created by this region factory.
-    }
-
-
-    private static ServiceContainer currentServiceContainer() {
-        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
-            @Override
-            public ServiceContainer run() {
-                return CurrentServiceContainer.getServiceContainer();
-            }
-        });
     }
 }
