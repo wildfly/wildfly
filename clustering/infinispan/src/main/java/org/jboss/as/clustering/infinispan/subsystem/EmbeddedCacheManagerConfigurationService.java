@@ -37,6 +37,8 @@ import org.jboss.as.clustering.infinispan.ChannelProvider;
 import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.io.SimpleExternalizer;
+import org.jboss.as.clustering.jgroups.ChannelFactory;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -46,8 +48,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jgroups.Channel;
-import org.jgroups.util.TopologyUUID;
 
 /**
  * @author Paul Ferraro
@@ -59,7 +59,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
 
     interface TransportConfiguration {
         Long getLockTimeout();
-        Channel getChannel();
+        ChannelFactory getChannelFactory();
         Executor getExecutor();
     }
 
@@ -132,26 +132,23 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
         TransportConfigurationBuilder transportBuilder = builder.transport();
 
         if (transport != null) {
-            // See ISPN-1675
-            // transportBuilder.transport(new ChannelTransport(transport.getChannel()));
-            ChannelProvider.init(transportBuilder, transport.getChannel());
+            ChannelProvider.init(transportBuilder, ChannelService.getServiceName(this.name));
             Long timeout = transport.getLockTimeout();
             if (timeout != null) {
                 transportBuilder.distributedSyncTimeout(timeout.longValue());
             }
             // Topology is retrieved from the channel
-            Channel channel = transport.getChannel();
-            if(channel.getAddress() instanceof TopologyUUID) {
-                TopologyUUID topologyAddress = (TopologyUUID) channel.getAddress();
-                String site = topologyAddress.getSiteId();
+            org.jboss.as.clustering.jgroups.TransportConfiguration.Topology topology = transport.getChannelFactory().getProtocolStackConfiguration().getTransport().getTopology();
+            if (topology != null) {
+                String site = topology.getSite();
                 if (site != null) {
                     transportBuilder.siteId(site);
                 }
-                String rack = topologyAddress.getRackId();
+                String rack = topology.getRack();
                 if (rack != null) {
                     transportBuilder.rackId(rack);
                 }
-                String machine = topologyAddress.getMachineId();
+                String machine = topology.getMachine();
                 if (machine != null) {
                     transportBuilder.machineId(machine);
                 }

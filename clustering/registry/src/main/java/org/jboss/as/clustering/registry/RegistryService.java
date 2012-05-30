@@ -40,14 +40,16 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.as.clustering.msc.AsynchronousService;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
 
 /**
  * @author Paul Ferraro
  */
 @org.infinispan.notifications.Listener(sync = false)
-public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> implements Registry<K, V> {
+public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<K, V> {
 
     static final Address LOCAL_ADDRESS = new Address() {};
 
@@ -109,7 +111,7 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
     }
 
     @Override
-    protected void start() {
+    public void start(StartContext context) {
         this.refreshLocalEntry();
         Cache<Address, Map.Entry<K, V>> cache = this.cache.getValue();
         cache.getCacheManager().addListener(this);
@@ -145,7 +147,7 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
     }
 
     @Override
-    protected void stop() {
+    public void stop(StopContext context) {
         Cache<Address, Map.Entry<K, V>> cache = this.cache.getValue();
         cache.removeListener(this);
         cache.getCacheManager().removeListener(this);

@@ -111,17 +111,19 @@ public class CacheTestCase extends AbstractMgmtTestBase {
         op.get("jndi-name").set("java:jboss/caches/TestCache");
         executeOperation(op);
 
-        // check that it is available through JNDI
-        String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
-        Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
-
-        // remove local cache
-        op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/local-cache=" + TEST_CACHE,
-                ModelDescriptionConstants.REMOVE);
-        executeOperation(op);
-
+        try {
+            // check that it is available through JNDI
+            String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
+            Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
+        } finally {
+            // remove local cache
+            op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/local-cache=" + TEST_CACHE,
+                    ModelDescriptionConstants.REMOVE);
+            executeOperation(op);
+        }
+        
         // check that it is unregistered
-        jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
+        String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
         Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);
     }
 
@@ -137,18 +139,19 @@ public class CacheTestCase extends AbstractMgmtTestBase {
         op.get("jndi-name").set("java:jboss/caches/TestCache");
         executeOperation(op);
 
-
-        // check that it is available through JNDI
-        String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
-        Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
-
-        // remove local cache
-        op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/distributed-cache=" + TEST_CACHE,
-                ModelDescriptionConstants.REMOVE);
-        executeOperation(op);
-
+        try {
+            // check that it is available through JNDI
+            String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
+            Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
+        } finally {
+            // remove local cache
+            op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/distributed-cache=" + TEST_CACHE,
+                    ModelDescriptionConstants.REMOVE);
+            executeOperation(op);
+        }
+        
         // check that it is unregistered
-        jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
+        String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
         Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);
     }
 
@@ -163,17 +166,19 @@ public class CacheTestCase extends AbstractMgmtTestBase {
         op.get("jndi-name").set("java:jboss/caches/TestCache");
         executeOperation(op);
 
-        // check that it is available through JNDI
-        String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
-        Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
-
-        // remove local cache
-        op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/replicated-cache=" + TEST_CACHE,
-                ModelDescriptionConstants.REMOVE);
-        executeOperation(op);
+        try {
+            // check that it is available through JNDI
+            String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
+            Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
+        } finally {
+            // remove local cache
+            op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/replicated-cache=" + TEST_CACHE,
+                    ModelDescriptionConstants.REMOVE);
+            executeOperation(op);
+        }
 
         // check that it is unregistered
-        jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
+        String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
         Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);
     }
 
@@ -188,17 +193,18 @@ public class CacheTestCase extends AbstractMgmtTestBase {
         op.get("jndi-name").set("java:jboss/caches/TestCache");
         executeOperation(op);
 
-        // check that it is available through JNDI
-        String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
-        Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
-
-        // remove local cache
-        op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/invalidation-cache=" + TEST_CACHE,
-                ModelDescriptionConstants.REMOVE);
-        executeOperation(op);
-
+        try {
+            // check that it is available through JNDI
+            String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
+            Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
+        } finally {
+            // remove local cache
+            op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/invalidation-cache=" + TEST_CACHE,
+                    ModelDescriptionConstants.REMOVE);
+            executeOperation(op);
+        }
         // check that it is unregistered
-        jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
+        String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
         Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);
     }
 

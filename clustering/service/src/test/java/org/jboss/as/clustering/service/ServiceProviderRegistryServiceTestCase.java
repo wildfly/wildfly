@@ -1,4 +1,4 @@
-package org.jboss.as.cluster.service;
+package org.jboss.as.clustering.service;
 
 public class ServiceProviderRegistryServiceTestCase {
 

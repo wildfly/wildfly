@@ -24,11 +24,13 @@ package org.jboss.as.jpa.hibernate3;
 
 import org.hibernate.cfg.Environment;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.jpa.hibernate3.infinispan.InfinispanRegionFactory;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 
 import java.util.Properties;
 
@@ -45,7 +47,10 @@ public class HibernateSecondLevelCache {
 
         if (properties.getProperty(Environment.CACHE_REGION_PREFIX) == null) {
             // cache entries for this PU will be identified by scoped pu name + Entity class name
-            properties.put(Environment.CACHE_REGION_PREFIX, pu.getScopedPersistenceUnitName());
+            String name = pu.getScopedPersistenceUnitName();
+            if (name != null) {
+                properties.setProperty(Environment.CACHE_REGION_PREFIX, name);
+            }
         }
         String regionFactory = properties.getProperty(Environment.CACHE_REGION_FACTORY);
         if (regionFactory == null) {
@@ -59,14 +64,17 @@ public class HibernateSecondLevelCache {
                 container = InfinispanRegionFactory.DEFAULT_CACHE_CONTAINER;
                 properties.setProperty(InfinispanRegionFactory.CACHE_CONTAINER, container);
             }
+            builder.addDependency(DependencyType.OPTIONAL, ChannelService.getServiceName(container));
             String entity = properties.getProperty(InfinispanRegionFactory.ENTITY_CACHE_RESOURCE_PROP, InfinispanRegionFactory.DEF_ENTITY_RESOURCE);
             String collection = properties.getProperty(InfinispanRegionFactory.COLLECTION_CACHE_RESOURCE_PROP, InfinispanRegionFactory.DEF_ENTITY_RESOURCE);
-            String query = properties.getProperty(InfinispanRegionFactory.QUERY_CACHE_RESOURCE_PROP, InfinispanRegionFactory.DEF_QUERY_RESOURCE);
-            String timestamps = properties.getProperty(InfinispanRegionFactory.TIMESTAMPS_CACHE_RESOURCE_PROP, InfinispanRegionFactory.DEF_QUERY_RESOURCE);
             builder.addDependency(CacheConfigurationService.getServiceName(container, entity));
             builder.addDependency(CacheConfigurationService.getServiceName(container, collection));
-            builder.addDependency(CacheConfigurationService.getServiceName(container, timestamps));
-            builder.addDependency(CacheConfigurationService.getServiceName(container, query));
+            if (Boolean.parseBoolean(properties.getProperty(Environment.USE_QUERY_CACHE))) {
+                String query = properties.getProperty(InfinispanRegionFactory.QUERY_CACHE_RESOURCE_PROP, InfinispanRegionFactory.DEF_QUERY_RESOURCE);
+                String timestamps = properties.getProperty(InfinispanRegionFactory.TIMESTAMPS_CACHE_RESOURCE_PROP, InfinispanRegionFactory.DEF_QUERY_RESOURCE);
+                builder.addDependency(CacheConfigurationService.getServiceName(container, timestamps));
+                builder.addDependency(CacheConfigurationService.getServiceName(container, query));
+            }
         }
     }
 
