@@ -40,7 +40,6 @@ public class ProtocolConnectionConfiguration {
 
     public static final int DEFAULT_WINDOW_SIZE = 0x8000;
 
-    private static final OptionMap DEFAULT_OPTIONS = OptionMap.create(RemotingOptions.TRANSMIT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
     private static final long DEFAULT_CONNECT_TIMEOUT = 5000;
 
     private URI uri;
@@ -88,7 +87,7 @@ public class ProtocolConnectionConfiguration {
     }
 
     public void setOptionMap(OptionMap optionMap) {
-        this.optionMap = OptionMap.builder().addAll(DEFAULT_OPTIONS).addAll(optionMap).getMap();
+        this.optionMap = optionMap;
     }
 
     public long getConnectionTimeout() {

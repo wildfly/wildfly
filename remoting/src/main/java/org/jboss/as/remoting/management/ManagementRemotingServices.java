@@ -149,7 +149,8 @@ public final class ManagementRemotingServices extends RemotingServices {
             final ServiceVerificationHandler verificationHandler,
             final List<ServiceController<?>> newControllers) {
 
-        final OptionMap options = OptionMap.create(RemotingOptions.RECEIVE_WINDOW_SIZE, ProtocolChannelClient.Configuration.WINDOW_SIZE, RemotingOptions.TRANSMIT_WINDOW_SIZE, ProtocolChannelClient.Configuration.WINDOW_SIZE);
+        final OptionMap options = OptionMap.create(RemotingOptions.RECEIVE_WINDOW_SIZE, ProtocolChannelClient.Configuration.WINDOW_SIZE,
+                RemotingOptions.TRANSMIT_WINDOW_SIZE, ProtocolChannelClient.Configuration.WINDOW_SIZE);
         final ServiceName operationHandlerName = endpointName.append(channelName).append(ModelControllerClientOperationHandlerFactoryService.OPERATION_HANDLER_NAME_SUFFIX);
 
         final ServiceBuilder<?> builder = serviceTarget.addService(operationHandlerName, operationHandlerService)
