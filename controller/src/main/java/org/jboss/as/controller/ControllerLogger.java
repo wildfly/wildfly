@@ -350,7 +350,7 @@ public interface ControllerLogger extends BasicLogger {
      * @param nis the matching nics
      */
     @LogMessage(level = Logger.Level.WARN)
-    @Message(id = 14622, value = "Value '%s' for interface selection criteria 'inet-address' is ambiguous, as more than one address or network interface available on the machine matches it. Because of this ambiguity, no address will be selected as a match. Matching addresses: %s.  Matching network interfaces: %s.")
+    @Message(id = 14622, value = "Value '%s' for interface selection criteria 'inet-address' is ambiguous, as more than one address or network interface available on the machine matches it. In spite of the ambiguity, one of the addresses will be selected. Matching addresses: %s.  Matching network interfaces: %s.")
     void multipleMatchingAddresses(String toMatch, Set<InetAddress> addresses, Set<String> nis);
 
     /**
