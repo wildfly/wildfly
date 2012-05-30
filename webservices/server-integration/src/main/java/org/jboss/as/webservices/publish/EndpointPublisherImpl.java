@@ -80,16 +80,18 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
 
     @Override
     public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap) throws Exception {
-        return publish(null, context, loader, urlPatternToClassNameMap, null);
+        return publish(null, context, loader, urlPatternToClassNameMap, null, null);
     }
 
     @Override
     public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap, WebservicesMetaData metadata) throws Exception {
-        return publish(null, context, loader, urlPatternToClassNameMap, metadata);
+        return publish(null, context, loader, urlPatternToClassNameMap, null, metadata);
     }
 
-    public Context publish(ServiceTarget target, String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap, WebservicesMetaData metadata) throws Exception {
-        WSEndpointDeploymentUnit unit = new WSEndpointDeploymentUnit(loader, context, urlPatternToClassNameMap, metadata);
+    public Context publish(ServiceTarget target, String context, ClassLoader loader,
+            Map<String, String> urlPatternToClassNameMap, JBossWebMetaData jbwmd, WebservicesMetaData metadata)
+            throws Exception {
+        WSEndpointDeploymentUnit unit = new WSEndpointDeploymentUnit(loader, context, urlPatternToClassNameMap, jbwmd, metadata);
         return new Context(context, publish(target, unit));
     }
 
@@ -206,15 +208,16 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
             try {
                 SecurityActions.setContextClassLoader(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
-                final ServiceTarget target = deployment.getAttachment(ServiceTarget.class);
                 // TODO: [JBWS-3426] fix this. START workaround
-                if (target == null) {
+                try {
                     SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
                     EndpointRegistryFactory factory = spiProvider.getSPI(EndpointRegistryFactory.class);
                     EndpointRegistry registry = factory.getEndpointRegistry();
                     for (final Endpoint endpoint : deployment.getService().getEndpoints()) {
                         registry.unregister(endpoint);
                     }
+                } catch (IllegalStateException e) {
+                    //ignore; there will be no need for unregistering here once 3426 is solved
                 }
                 // END workaround
                 DeploymentAspectManager dam = new DeploymentAspectManagerImpl();

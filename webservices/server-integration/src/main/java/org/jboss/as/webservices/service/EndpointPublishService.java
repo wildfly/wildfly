@@ -29,6 +29,7 @@ import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.webservices.publish.EndpointPublisherImpl;
 import org.jboss.as.webservices.util.WSServices;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
@@ -56,16 +57,18 @@ public final class EndpointPublishService implements Service<Context> {
     private final ClassLoader loader;
     private final String context;
     private final Map<String,String> urlPatternToClassName;
+    private final JBossWebMetaData jbwmd;
     private final WebservicesMetaData wsmd;
 
     private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<VirtualHost>();
 
     private EndpointPublishService(final String context, final ClassLoader loader,
-            final Map<String,String> urlPatternToClassName, WebservicesMetaData wsmd) {
+            final Map<String,String> urlPatternToClassName, JBossWebMetaData jbwmd, WebservicesMetaData wsmd) {
         this.name = WSServices.ENDPOINT_PUBLISH_SERVICE.append(context);
         this.loader = loader;
         this.context = context;
         this.urlPatternToClassName = urlPatternToClassName;
+        this.jbwmd = jbwmd;
         this.wsmd = wsmd;
     }
 
@@ -87,7 +90,7 @@ public final class EndpointPublishService implements Service<Context> {
         ROOT_LOGGER.starting(name);
         try {
             EndpointPublisherImpl publisher = new EndpointPublisherImpl(hostInjector.getValue().getHost());
-            wsctx = publisher.publish(context, loader, urlPatternToClassName, wsmd);
+            wsctx = publisher.publish(ctx.getChildTarget(), context, loader, urlPatternToClassName, jbwmd, wsmd);
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -106,12 +109,13 @@ public final class EndpointPublishService implements Service<Context> {
 
     public static ServiceBuilder<Context> createServiceBuilder(final ServiceTarget serviceTarget, final String context,
             final ClassLoader loader, final String hostName, final Map<String,String> urlPatternToClassName) {
-        return createServiceBuilder(serviceTarget, context, loader, hostName, urlPatternToClassName, null);
+        return createServiceBuilder(serviceTarget, context, loader, hostName, urlPatternToClassName, null, null);
     }
 
     public static ServiceBuilder<Context> createServiceBuilder(final ServiceTarget serviceTarget, final String context,
-            final ClassLoader loader, final String hostName, final Map<String,String> urlPatternToClassName, WebservicesMetaData wsmd) {
-        final EndpointPublishService service = new EndpointPublishService(context, loader, urlPatternToClassName, wsmd);
+            final ClassLoader loader, final String hostName, final Map<String, String> urlPatternToClassName,
+            JBossWebMetaData jbwmd, WebservicesMetaData wsmd) {
+        final EndpointPublishService service = new EndpointPublishService(context, loader, urlPatternToClassName, jbwmd, wsmd);
         final ServiceBuilder<Context> builder = serviceTarget.addService(service.getName(), service);
         builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE);
         builder.addDependency(DependencyType.REQUIRED, WSServices.REGISTRY_SERVICE);
@@ -122,12 +126,12 @@ public final class EndpointPublishService implements Service<Context> {
 
     public static void install(final ServiceTarget serviceTarget, final String context, final ClassLoader loader,
             final String hostName, final Map<String,String> urlPatternToClassName) {
-        install(serviceTarget, context, loader, hostName, urlPatternToClassName, null);
+        install(serviceTarget, context, loader, hostName, urlPatternToClassName, null, null);
     }
 
     public static void install(final ServiceTarget serviceTarget, final String context, final ClassLoader loader,
-            final String hostName, final Map<String,String> urlPatternToClassName, WebservicesMetaData wsmd) {
-        ServiceBuilder<Context> builder = createServiceBuilder(serviceTarget, context, loader, hostName, urlPatternToClassName, wsmd);
+            final String hostName, final Map<String,String> urlPatternToClassName, JBossWebMetaData jbwmd, WebservicesMetaData wsmd) {
+        ServiceBuilder<Context> builder = createServiceBuilder(serviceTarget, context, loader, hostName, urlPatternToClassName, jbwmd, wsmd);
         builder.setInitialMode(Mode.ACTIVE);
         builder.install();
     }
