@@ -40,6 +40,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 import org.jboss.as.cli.gui.ManagementModelNode.UserObject;
@@ -86,7 +87,7 @@ public class OperationDialog extends JDialog {
 
         contentPane.add(makeButtonPanel(), BorderLayout.SOUTH);
         pack();
-        setResizable(false);
+        setResizable(true);
     }
 
     @Override
@@ -132,7 +133,7 @@ public class OperationDialog extends JDialog {
         }
     }
 
-    private JPanel makeInputPanel() {
+    private JScrollPane makeInputPanel() {
         boolean hasRequiredFields = false;
         JPanel inputPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbConst = new GridBagConstraints();
@@ -157,7 +158,7 @@ public class OperationDialog extends JDialog {
             inputPanel.add(new JLabel(" * = Required Field"));
         }
 
-        return inputPanel;
+        return new JScrollPane(inputPanel);
     }
 
     private JPanel makeButtonPanel() {
