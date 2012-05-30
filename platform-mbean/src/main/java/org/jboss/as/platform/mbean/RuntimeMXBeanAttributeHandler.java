@@ -23,7 +23,10 @@
 package org.jboss.as.platform.mbean;
 
 import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
+import java.util.Random;
 import java.util.TreeMap;
 
 import org.jboss.as.controller.OperationContext;
@@ -97,7 +100,20 @@ public class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttribut
         if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(name)) {
             store.set(ManagementFactory.RUNTIME_MXBEAN_NAME);
         } else if (ModelDescriptionConstants.NAME.equals(name)) {
-            store.set(ManagementFactory.getRuntimeMXBean().getName());
+           String runtimeName;
+           try {
+              runtimeName = ManagementFactory.getRuntimeMXBean().getName();
+           } catch (ArrayIndexOutOfBoundsException e) {
+              // Workaround for OSX issue
+              String localAddr;
+              try {
+                 localAddr = InetAddress.getByName(null).toString();
+              } catch (UnknownHostException uhe) {
+                 localAddr = "localhost";
+              }
+              runtimeName = new Random().nextInt() + "@" + localAddr;
+           }
+           store.set(runtimeName);
         } else if (PlatformMBeanConstants.VM_NAME.equals(name)) {
             store.set(ManagementFactory.getRuntimeMXBean().getVmName());
         } else if (PlatformMBeanConstants.VM_VENDOR.equals(name)) {
