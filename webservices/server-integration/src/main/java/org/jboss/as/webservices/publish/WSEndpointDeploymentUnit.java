@@ -41,10 +41,17 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
     private String deploymentName;
 
     public WSEndpointDeploymentUnit(ClassLoader loader, String context, Map<String,String> urlPatternToClassName, WebservicesMetaData metadata) {
+        this(loader, context, urlPatternToClassName, new JBossWebMetaData(), metadata);
+    }
+
+    public WSEndpointDeploymentUnit(ClassLoader loader, String context, Map<String, String> urlPatternToClassName,
+            JBossWebMetaData jbossWebMetaData, WebservicesMetaData metadata) {
         this.deploymentName = context + ".deployment";
 
-        JBossWebMetaData jbossWebMetaData = new JBossWebMetaData();
         JAXWSDeployment jaxwsDeployment = new JAXWSDeployment();
+        if (jbossWebMetaData == null) {
+            jbossWebMetaData = new JBossWebMetaData();
+        }
         jbossWebMetaData.setContextRoot(context);
         for (String urlPattern : urlPatternToClassName.keySet()) {
             addEndpoint(jbossWebMetaData, jaxwsDeployment, urlPatternToClassName.get(urlPattern), urlPattern);
@@ -52,7 +59,9 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
         this.putAttachment(WSAttachmentKeys.CLASSLOADER_KEY, loader);
         this.putAttachment(WSAttachmentKeys.JAXWS_ENDPOINTS_KEY, jaxwsDeployment);
         this.putAttachment(WSAttachmentKeys.JBOSSWEB_METADATA_KEY, jbossWebMetaData);
-        this.putAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY, metadata);
+        if (metadata != null) {
+            this.putAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY, metadata);
+        }
     }
 
     private void addEndpoint(JBossWebMetaData jbossWebMetaData, JAXWSDeployment jaxwsDeployment, String className, String urlPattern) {
