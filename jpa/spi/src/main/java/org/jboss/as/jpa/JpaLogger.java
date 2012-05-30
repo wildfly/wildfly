@@ -115,4 +115,14 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 11405, value = "Could not load default persistence provider module.  ")
     void errorPreloadingDefaultProvider(@Cause Throwable cause);
 
+    /**
+     * Logs an error message indicating the persistence unit was not stopped
+     *
+     * @param cause       the cause of the error.
+     * @param name        name of the persistence unit
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11406, value = "Failed to stop persistence unit service %s")
+    void failedToStopPUService(@Cause Throwable cause, String name);
+
 }

@@ -24,6 +24,7 @@ package org.jboss.as.jpa.processor;
 
 import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import static org.jboss.as.server.Services.addServerExecutorDependency;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -59,7 +60,6 @@ import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
-import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.subsystem.PersistenceUnitRegistryImpl;
 import org.jboss.as.jpa.validator.SerializableValidatorFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -375,8 +375,12 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
             builder.setInitialMode(ServiceController.Mode.ACTIVE)
                 .addInjection(service.getPropertiesInjector(), properties)
-                .addInjection(persistenceUnitRegistry.getInjector())
-                .install();
+                .addInjection(persistenceUnitRegistry.getInjector());
+
+            // get async executor from Services.addServerExecutorDependency
+            addServerExecutorDependency(builder, service.getExecutorInjector(), false);
+
+            builder.install();
 
             JPA_LOGGER.tracef("added PersistenceUnitService for '%s'.  PU is ready for injector action.", puServiceName);
             addManagementConsole(deploymentUnit, pu, adaptor);
