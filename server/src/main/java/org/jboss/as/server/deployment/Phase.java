@@ -259,6 +259,7 @@ public enum Phase {
     public static final int PARSE_MANAGED_BEAN_ANNOTATION               = 0x2900;
     public static final int PARSE_EE_ANNOTATIONS                        = 0x2901;
     public static final int PARSE_JAXRS_ANNOTATIONS                     = 0x2A00;
+    public static final int PARSE_CDI_ANNOTATIONS                       = 0x2A10;
     public static final int PARSE_WELD_DEPLOYMENT                       = 0x2B00;
     public static final int PARSE_WELD_WEB_INTEGRATION                  = 0x2B10;
     public static final int PARSE_DATA_SOURCE_DEFINITION_ANNOTATION     = 0x2D00;
