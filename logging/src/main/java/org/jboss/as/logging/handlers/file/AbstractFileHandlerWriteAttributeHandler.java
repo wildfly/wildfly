@@ -26,11 +26,6 @@ import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -46,7 +41,7 @@ import org.jboss.logmanager.handlers.FileHandler;
 public abstract class AbstractFileHandlerWriteAttributeHandler<T extends FileHandler> extends AbstractLogHandlerWriteAttributeHandler<T> {
 
     protected AbstractFileHandlerWriteAttributeHandler(final AttributeDefinition... attributes) {
-        super(join(attributes, APPEND, AUTOFLUSH, FILE));
+        super(joinUnique(attributes, APPEND, AUTOFLUSH, FILE));
     }
 
     @Override
@@ -72,12 +67,5 @@ public abstract class AbstractFileHandlerWriteAttributeHandler<T extends FileHan
         } else if (FILE.getName().equals(attributeName)) {
             FileHandlers.revertFileChange(context, valueToRestore, handlerName);
         }
-    }
-
-    private static List<AttributeDefinition> join(final AttributeDefinition[] supplied, final AttributeDefinition... added) {
-        final List<AttributeDefinition> result = new ArrayList<AttributeDefinition>();
-        Collections.addAll(result, added);
-        result.addAll(Arrays.asList(supplied));
-        return result;
     }
 }
