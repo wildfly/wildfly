@@ -1885,6 +1885,9 @@
                                         <include>xalan:xalan</include>
                                         <include>xerces:xercesImpl</include>
                                     </dependencySourceIncludes>
+                                    <dependencySourceExcludes>
+                                        <exclude>org.jboss.weld:weld-core</exclude>
+                                    </dependencySourceExcludes>
                                     
                                     <groups>
                                         <group>
