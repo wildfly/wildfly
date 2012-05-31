@@ -240,6 +240,28 @@
                     <entry name="java:/JmsXA"/>
                  </entries>
               </pooled-connection-factory>
+              <pooled-connection-factory name="hornetq-ra-local"> 
+                 <user>alice</user>
+                 <password>alicepassword</password>
+                 <transaction mode="local"/>
+                 <connectors>
+                    <connector-ref connector-name="in-vm"/>
+                 </connectors>
+                 <entries>
+                    <entry name="java:/JmsLocal"/>
+                 </entries>
+              </pooled-connection-factory>
+              <pooled-connection-factory name="hornetq-ra-none">
+                 <user>alice</user>
+                 <password>alicepassword</password>
+                 <transaction mode="none"/>
+                 <connectors>
+                    <connector-ref connector-name="in-vm"/>
+                 </connectors>
+                 <entries>
+                    <entry name="java:/JmsNone"/>
+                 </entries>
+              </pooled-connection-factory>
            </jms-connection-factories>
 
            <jms-destinations>
