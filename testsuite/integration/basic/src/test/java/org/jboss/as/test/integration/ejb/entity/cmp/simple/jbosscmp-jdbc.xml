@@ -73,6 +73,9 @@
                WHERE s.byteArrayValue = ?1
             </jboss-ql>
          </query>
+          <audit>
+
+          </audit>
       </entity>
    </enterprise-beans>
 </jbosscmp-jdbc>
