@@ -2061,16 +2061,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     }
 
     private void writeTransactionTypeAttribute(final XMLExtendedStreamWriter writer, final Element attr, final ModelNode value) throws XMLStreamException {
-        String xaType = value.asString();
-        final String txSupport;
-        if(LOCAL_TX.equals(xaType)) {
-            txSupport = CommonAttributes.LOCAL;
-        } else if (CommonAttributes.NONE.equals(xaType)) {
-             txSupport = CommonAttributes.NONE;
-        } else {
-            txSupport = CommonAttributes.XA;
-        }
-        writer.writeAttribute(attr.getLocalName(), txSupport);
+        writer.writeAttribute(attr.getLocalName(), value.asString());
     }
 
     static void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
