@@ -58,36 +58,52 @@ public final class JDBCAuditMetaData {
 
     public JDBCAuditMetaData(JDBCEntityMetaData entityMetaData, ParsedAudit audit) {
         final ParsedCmpField createdBy = audit.getCreatedBy();
-        if (entityMetaData.getCMPFieldByName(createdBy.getFieldName()) != null) {
-            createdPrincipalField = entityMetaData.getCMPFieldByName(createdBy.getFieldName());
+        if (createdBy != null) {
+            if (entityMetaData.getCMPFieldByName(createdBy.getFieldName()) != null) {
+                createdPrincipalField = entityMetaData.getCMPFieldByName(createdBy.getFieldName());
+            } else {
+                createdPrincipalField = new JDBCCMPFieldMetaData(entityMetaData, createdBy.getFieldName(), String.class, createdBy.getColumnName(),
+                        createdBy.getJdbcType() != null ? createdBy.getJdbcType() : Integer.MAX_VALUE,
+                        createdBy.getSqlType() != null ? createdBy.getSqlType() : null);
+            }
         } else {
-            createdPrincipalField = new JDBCCMPFieldMetaData(entityMetaData, createdBy.getFieldName(), String.class, createdBy.getColumnName(),
-                    createdBy.getJdbcType() != null ? createdBy.getJdbcType() : Integer.MAX_VALUE,
-                    createdBy.getSqlType() != null ? createdBy.getSqlType() : null);
+            createdPrincipalField = null;
         }
         final ParsedCmpField createdTime = audit.getCreatedTime();
-        if (entityMetaData.getCMPFieldByName(createdTime.getFieldName()) != null) {
-            this.createdTimeField = entityMetaData.getCMPFieldByName(createdTime.getFieldName());
-        } else {
-            this.createdTimeField = new JDBCCMPFieldMetaData(entityMetaData, createdTime.getFieldName(), Date.class, createdTime.getColumnName(),
-                    createdTime.getJdbcType() != null ? createdTime.getJdbcType() : Integer.MAX_VALUE,
-                    createdTime.getSqlType() != null ? createdTime.getSqlType() : null);
+        if (createdTime != null) {
+            if (entityMetaData.getCMPFieldByName(createdTime.getFieldName()) != null) {
+                this.createdTimeField = entityMetaData.getCMPFieldByName(createdTime.getFieldName());
+            } else {
+                this.createdTimeField = new JDBCCMPFieldMetaData(entityMetaData, createdTime.getFieldName(), Date.class, createdTime.getColumnName(),
+                        createdTime.getJdbcType() != null ? createdTime.getJdbcType() : Integer.MAX_VALUE,
+                        createdTime.getSqlType() != null ? createdTime.getSqlType() : null);
+            }
+        } else  {
+            createdTimeField = null;
         }
         final ParsedCmpField updatedBy = audit.getUpdatedBy();
-        if (entityMetaData.getCMPFieldByName(updatedBy.getFieldName()) != null) {
-            this.updatedPrincipalField = entityMetaData.getCMPFieldByName(updatedBy.getFieldName());
+        if (updatedBy != null) {
+            if (entityMetaData.getCMPFieldByName(updatedBy.getFieldName()) != null) {
+                this.updatedPrincipalField = entityMetaData.getCMPFieldByName(updatedBy.getFieldName());
+            } else {
+                this.updatedPrincipalField = new JDBCCMPFieldMetaData(entityMetaData, updatedBy.getFieldName(), String.class, updatedBy.getColumnName(),
+                        updatedBy.getJdbcType() != null ? updatedBy.getJdbcType() : Integer.MAX_VALUE,
+                        updatedBy.getSqlType() != null ? updatedBy.getSqlType() : null);
+            }
         } else {
-            this.updatedPrincipalField = new JDBCCMPFieldMetaData(entityMetaData, updatedBy.getFieldName(), String.class, updatedBy.getColumnName(),
-                    updatedBy.getJdbcType() != null ? updatedBy.getJdbcType() : Integer.MAX_VALUE,
-                    updatedBy.getSqlType() != null ? updatedBy.getSqlType() : null);
+            updatedPrincipalField = null;
         }
         final ParsedCmpField updatedTime = audit.getUpdatedTime();
-        if (entityMetaData.getCMPFieldByName(updatedTime.getFieldName()) != null) {
-            this.updatedTimeField = entityMetaData.getCMPFieldByName(updatedTime.getFieldName());
+        if (updatedTime != null) {
+            if (entityMetaData.getCMPFieldByName(updatedTime.getFieldName()) != null) {
+                this.updatedTimeField = entityMetaData.getCMPFieldByName(updatedTime.getFieldName());
+            } else {
+                this.updatedTimeField = new JDBCCMPFieldMetaData(entityMetaData, updatedTime.getFieldName(), String.class, updatedTime.getColumnName(),
+                        updatedTime.getJdbcType() != null ? updatedTime.getJdbcType() : Integer.MAX_VALUE,
+                        updatedTime.getSqlType() != null ? updatedTime.getSqlType() : null);
+            }
         } else {
-            this.updatedTimeField = new JDBCCMPFieldMetaData(entityMetaData, updatedTime.getFieldName(), String.class, updatedTime.getColumnName(),
-                    updatedTime.getJdbcType() != null ? updatedTime.getJdbcType() : Integer.MAX_VALUE,
-                    updatedTime.getSqlType() != null ? updatedTime.getSqlType() : null);
+            updatedTimeField = null;
         }
     }
 
