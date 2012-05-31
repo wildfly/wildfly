@@ -24,12 +24,14 @@ package org.jboss.as.clustering.jgroups;
 import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jgroups.util.ThreadDecorator;
 import org.jgroups.util.ThreadFactory;
@@ -43,7 +45,7 @@ import org.jgroups.util.TimeScheduler;
  */
 public class TimerSchedulerAdapter implements TimeScheduler {
 
-    final ScheduledExecutorService executor;
+    private final ScheduledExecutorService executor;
 
     public TimerSchedulerAdapter(ScheduledExecutorService executor) {
         this.executor = executor;
@@ -65,24 +67,25 @@ public class TimerSchedulerAdapter implements TimeScheduler {
     }
 
     @Override
-    public Future<?> schedule(Runnable command, long delay, TimeUnit unit) {
+    public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
         return this.executor.schedule(command, delay, unit);
     }
 
     @Override
-    public Future<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
+    public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
         return this.executor.scheduleWithFixedDelay(command, initialDelay, delay, unit);
     }
 
     @Override
-    public Future<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
+    public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
         return this.executor.scheduleAtFixedRate(command, initialDelay, period, unit);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Future<?> scheduleWithDynamicInterval(final Task task) {
+    public ScheduledFuture<?> scheduleWithDynamicInterval(final Task task) {
 
-        final Future<?> future = this.executor.schedule(task, task.nextInterval(), TimeUnit.MILLISECONDS);
+        final MutableScheduledFuture<Object> future = new MutableScheduledFuture<Object>((ScheduledFuture<Object>) this.schedule(task, task.nextInterval(), TimeUnit.MILLISECONDS));
         final long nextInterval = task.nextInterval();
         if (nextInterval > 0) {
             Runnable scheduleTask = new Runnable() {
@@ -91,11 +94,9 @@ public class TimerSchedulerAdapter implements TimeScheduler {
                     try {
                         future.get();
                         long interval = nextInterval;
-                        while ((interval > 0) && !future.isCancelled() && !Thread.currentThread().isInterrupted()) {
-                            try {
-                                TimerSchedulerAdapter.this.executor.schedule(task, interval, TimeUnit.MILLISECONDS).get();
-                            } catch (ExecutionException e) {
-                            }
+                        while ((interval > 0) && !Thread.currentThread().isInterrupted()) {
+                            future.setFuture((ScheduledFuture<Object>) TimerSchedulerAdapter.this.schedule(task, interval, TimeUnit.MILLISECONDS));
+                            future.get();
                             interval = task.nextInterval();
                         }
                     } catch (InterruptedException e) {
@@ -205,5 +206,52 @@ public class TimerSchedulerAdapter implements TimeScheduler {
         }
         Class<?> superClass = targetClass.getSuperclass();
         return (superClass != null) && fieldClass.isAssignableFrom(superClass) ? getField(superClass.asSubclass(fieldClass), fieldClass) : null;
+    }
+
+    private static class MutableScheduledFuture<T> implements ScheduledFuture<T> {
+        private volatile ScheduledFuture<T> future;
+
+        MutableScheduledFuture(ScheduledFuture<T> future) {
+            this.setFuture(future);
+        }
+
+        void setFuture(ScheduledFuture<T> future) {
+            this.future = future;
+        }
+
+        @Override
+        public long getDelay(TimeUnit unit) {
+            return this.future.getDelay(unit);
+        }
+
+        @Override
+        public int compareTo(Delayed delayed) {
+            return this.future.compareTo(delayed);
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return this.future.cancel(mayInterruptIfRunning);
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return this.future.isCancelled();
+        }
+
+        @Override
+        public boolean isDone() {
+            return this.future.isDone();
+        }
+
+        @Override
+        public T get() throws InterruptedException, ExecutionException {
+            return this.future.get();
+        }
+
+        @Override
+        public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return this.future.get(timeout, unit);
+        }
     }
 }
