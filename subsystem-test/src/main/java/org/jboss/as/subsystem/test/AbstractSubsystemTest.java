@@ -734,6 +734,8 @@ public abstract class AbstractSubsystemTest {
                         subsystemWriter.writeContent(writer, new SubsystemMarshallingContext(subsystem, writer));
                     }
                 }
+            }catch (Throwable t){
+                Assert.fail("could not marshal subsystem xml "+t);
             } finally {
                 writer.setDefaultNamespace(defaultNamespace);
             }
