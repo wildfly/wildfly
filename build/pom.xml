@@ -1774,12 +1774,12 @@
                                     <!-- To prevent problems with author names written in non-UTF-8:
                                     <encoding>ISO-8859-1</encoding>
                                     -->
-                                    
+
                                     <windowtitle>${javadoc.branding} public API</windowtitle>
                                     <doctitle>${javadoc.branding} public API</doctitle>
                                     <header>${javadoc.branding}</header>
                                     <footer>${javadoc.branding}</footer>
-                                    
+
                                     <includeDependencySources>true</includeDependencySources>
                                     <dependencySourceIncludes>
                                         <include>com.h2database:*</include>

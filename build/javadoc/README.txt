@@ -29,8 +29,10 @@ This will print out a list of javadoc groups in XML format:
 
     Put these group definitions into build/pom.xml to the "javadocDist" profile.
 
-5) cd <AS>/build; mvn javadoc:aggregate -PjavadocDist;
+5) cd <AS>/build; mvn javadoc:aggregate -PjavadocDist -Djavadoc.branding='JBoss Enterprise Application Platform 6.0.0.CR1 public API';
+"javadoc.branding" will be used for page titles, headers, footers etc. Default is "JBoss Application Server public API - ${version}".
 This will fail because of AS7-4557 - Javadoc tool fails on certain AS dependencies' sources.
+
 
 Workaround: Find which artifacts cause this issue and remove them from the set of <include>'s.
 
