@@ -33,6 +33,7 @@ import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Service responsible for creating and destroying a {@code javax.jms.Topic}.
@@ -42,7 +43,7 @@ import java.util.concurrent.Executor;
 public class JMSTopicService implements Service<Void> {
 
     private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
-    private final InjectedValue<Executor> executorInjector = new InjectedValue<Executor>();
+    private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
 
 
     private final String name;
@@ -99,7 +100,7 @@ public class JMSTopicService implements Service<Void> {
         return jmsServer;
     }
 
-    public InjectedValue<Executor> getExecutorInjector() {
+    public InjectedValue<ExecutorService> getExecutorInjector() {
         return executorInjector;
     }
 }

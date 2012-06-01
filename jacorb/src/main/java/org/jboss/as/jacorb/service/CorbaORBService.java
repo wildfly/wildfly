@@ -26,6 +26,7 @@ import java.net.InetSocketAddress;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.jacorb.JacORBLogger;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
@@ -56,6 +57,8 @@ public class CorbaORBService implements Service<ORB> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jacorb", "orb-service");
 
     private static final Properties properties = new Properties();
+
+    private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
 
     private final InjectedValue<SocketBinding> jacORBSocketBindingInjector = new InjectedValue<SocketBinding>();
 
@@ -147,8 +150,8 @@ public class CorbaORBService implements Service<ORB> {
         JacORBLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
         // stop the ORB asynchronously.
         context.asynchronous();
-        Thread destroyThread = SecurityActions.createThread(new ORBDestroyer(this.orb, context), "ORB Destroy Thread");
-        destroyThread.start();
+        ORBDestroyer destroyer = new ORBDestroyer(this.orb, context);
+        executorInjector.getValue().execute(destroyer);
     }
 
     @Override
@@ -178,6 +181,18 @@ public class CorbaORBService implements Service<ORB> {
      */
     public Injector<SocketBinding> getJacORBSSLSocketBindingInjector() {
         return this.jacORBSSLSocketBindingInjector;
+    }
+
+    /**
+     * <p>
+     * Obtains a reference to the executor service injector. This injector is used to inject a
+     * {@link ExecutorService} for use in blocking tasks during startup or shutdown.
+     * </p>
+     *
+     * @return a reference to the {@code Injector<Executor>} used to inject the executor service.
+     */
+    public InjectedValue<ExecutorService> getExecutorInjector() {
+        return executorInjector;
     }
 
     /**

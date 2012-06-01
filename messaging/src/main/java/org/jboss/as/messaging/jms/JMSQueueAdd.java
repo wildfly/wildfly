@@ -24,7 +24,6 @@ package org.jboss.as.messaging.jms;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.Executor;
 
 import org.hornetq.jms.server.JMSServerManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -108,16 +107,15 @@ public class JMSQueueAdd extends AbstractAddStepHandler implements DescriptionPr
         final JMSQueueService service = new JMSQueueService(name, selector, durable, jndiBindings);
 
         final ServiceName serviceName = JMSServices.getJmsQueueBaseServiceName(hqServiceName).append(name);
-        final ServiceBuilder<Void> serviceBuilder = serviceTarget.addService(serviceName, service);
+        final ServiceBuilder<Void> serviceBuilder = serviceTarget.addService(serviceName, service)
+                .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName), JMSServerManager.class, service.getJmsServer())
+                .setInitialMode(Mode.ACTIVE);
+        org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.getExecutorInjector(), false);
         if (verificationHandler != null) {
             serviceBuilder.addListener(verificationHandler);
         }
 
-        final ServiceController<Void> controller = serviceBuilder
-                .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName), JMSServerManager.class, service.getJmsServer())
-                .addDependency(MessagingServices.getHornetQStartupPoolServiceName(hqServiceName), Executor.class, service.getExecutorInjector())
-                .setInitialMode(Mode.ACTIVE)
-                .install();
+        final ServiceController<Void> controller = serviceBuilder.install();
         if (newControllers != null) {
             newControllers.add(controller);
         }

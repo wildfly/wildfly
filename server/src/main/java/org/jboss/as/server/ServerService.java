@@ -92,6 +92,7 @@ import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
@@ -115,11 +116,11 @@ public final class ServerService extends AbstractControllerService {
 
     private final InjectedValue<ExternalModuleService> injectedExternalModuleService = new InjectedValue<ExternalModuleService>();
     private final InjectedValue<PathManager> injectedPathManagerService = new InjectedValue<PathManager>();
+
     private final Bootstrap.Configuration configuration;
     private final BootstrapListener bootstrapListener;
     private final ControlledProcessState processState;
     private final RunningModeControl runningModeControl;
-    private volatile ExecutorService queuelessExecutor;
     private volatile ExtensibleConfigurationPersister extensibleConfigurationPersister;
     private final AbstractVaultReader vaultReader;
     private final RemoteFileRepository remoteFileRepository;
@@ -171,6 +172,17 @@ public final class ServerService extends AbstractControllerService {
     public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration,
                                   final ControlledProcessState processState, final BootstrapListener bootstrapListener,
                                   final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader, final RemoteFileRepository remoteFileRepository) {
+
+        final ThreadGroup threadGroup = new ThreadGroup("ServerService ThreadGroup");
+        final String namePattern = "ServerService Thread Pool -- %t";
+        final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null, AccessController.getContext());
+
+        // TODO determine why QueuelessThreadPoolService makes boot take > 35 secs
+//        final QueuelessThreadPoolService serverExecutorService = new QueuelessThreadPoolService(Integer.MAX_VALUE, false, new TimeSpec(TimeUnit.SECONDS, 5));
+//        serverExecutorService.getThreadFactoryInjector().inject(threadFactory);
+        final ServerExecutorService serverExecutorService = new ServerExecutorService(threadFactory);
+        serviceTarget.addService(Services.JBOSS_SERVER_EXECUTOR, serverExecutorService).install();
+
         ServerService service = new ServerService(configuration, processState, null, bootstrapListener, runningModeControl, vaultReader, remoteFileRepository);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
         serviceBuilder.addDependency(DeploymentMountProvider.SERVICE_NAME,DeploymentMountProvider.class, service.injectedDeploymentRepository);
@@ -179,30 +191,19 @@ public final class ServerService extends AbstractControllerService {
         serviceBuilder.addDependency(Services.JBOSS_EXTERNAL_MODULE_SERVICE, ExternalModuleService.class,
                 service.injectedExternalModuleService);
         serviceBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.injectedPathManagerService);
+        if (configuration.getServerEnvironment().isAllowModelControllerExecutor()) {
+            serviceBuilder.addDependency(Services.JBOSS_SERVER_EXECUTOR, ExecutorService.class, service.getExecutorServiceInjector());
+        }
+
         serviceBuilder.install();
     }
 
     public synchronized void start(final StartContext context) throws StartException {
         ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
-        initializeExecutorService(serverEnvironment);
-
         Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = configuration.getConfigurationPersisterFactory();
         extensibleConfigurationPersister = configurationPersisterFactory.createConfigurationPersister(serverEnvironment, getExecutorServiceInjector().getOptionalValue());
         setConfigurationPersister(extensibleConfigurationPersister);
         super.start(context);
-    }
-
-    private void initializeExecutorService(ServerEnvironment serverEnvironment) {
-        if (serverEnvironment.isAllowModelControllerExecutor()) {
-            final ThreadGroup threadGroup = new ThreadGroup("ModelController ThreadGroup");
-            final String namePattern = "ServerService Thread Pool -- %t";
-            final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null, AccessController.getContext());
-            queuelessExecutor = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
-                                      5L, TimeUnit.SECONDS,
-                                      new SynchronousQueue<Runnable>(),
-                                      threadFactory);
-            getExecutorServiceInjector().inject(queuelessExecutor);
-        }
     }
 
     protected void boot(final BootContext context) throws ConfigurationPersistenceException {
@@ -300,22 +301,6 @@ public final class ServerService extends AbstractControllerService {
 
         configuration.getExtensionRegistry().clear();
         configuration.getServerEnvironment().resetProvidedProperties();
-
-        if (queuelessExecutor != null) {
-            context.asynchronous();
-            Thread executorShutdown = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        queuelessExecutor.shutdown();
-                    } finally {
-                        queuelessExecutor = null;
-                        context.complete();
-                    }
-                }
-            }, "Controller ExecutorService Shutdown Thread");
-            executorShutdown.start();
-        }
     }
 
     @Override
@@ -323,7 +308,8 @@ public final class ServerService extends AbstractControllerService {
         ServerControllerModelUtil.updateCoreModel(rootResource.getModel(), configuration.getServerEnvironment());
         ServerControllerModelUtil.initOperations(rootRegistration, injectedContentRepository.getValue(),
                 extensibleConfigurationPersister, configuration.getServerEnvironment(), processState,
-                runningModeControl, vaultReader, configuration.getExtensionRegistry(), queuelessExecutor != null, remoteFileRepository,
+                runningModeControl, vaultReader, configuration.getExtensionRegistry(),
+                getExecutorServiceInjector().getOptionalValue() != null, remoteFileRepository,
                 (PathManagerService)injectedPathManagerService.getValue());
 
         // TODO maybe make creating of empty nodes part of the MNR description
@@ -334,5 +320,47 @@ public final class ServerService extends AbstractControllerService {
 
         // Platform MBeans
         rootResource.registerChild(PlatformMBeanConstants.ROOT_PATH, new RootPlatformMBeanResource());
+    }
+
+    /** Temporary replacement for QueuelessThreadPoolService */
+    private static class ServerExecutorService implements Service<ExecutorService> {
+
+        private final ThreadFactory threadFactory;
+        private ExecutorService executorService;
+
+        private ServerExecutorService(ThreadFactory threadFactory) {
+            this.threadFactory = threadFactory;
+        }
+
+        @Override
+        public synchronized void start(StartContext context) throws StartException {
+            executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 20L, TimeUnit.SECONDS,
+                    new SynchronousQueue<Runnable>(), threadFactory);
+        }
+
+        @Override
+        public synchronized void stop(final StopContext context) {
+
+            if (executorService != null) {
+                context.asynchronous();
+                Thread executorShutdown = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            executorService.shutdown();
+                        } finally {
+                            executorService = null;
+                            context.complete();
+                        }
+                    }
+                }, "ServerExecutorService Shutdown Thread");
+                executorShutdown.start();
+            }
+        }
+
+        @Override
+        public synchronized ExecutorService getValue() throws IllegalStateException, IllegalArgumentException {
+            return executorService;
+        }
     }
 }

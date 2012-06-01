@@ -65,10 +65,6 @@ public class MessagingServices {
       return JBOSS_MESSAGING.append(serverName);
    }
 
-    public static ServiceName getHornetQStartupPoolServiceName(ServiceName hqServiceName) {
-      return hqServiceName.append(STARTUP_POOL);
-   }
-
    public static ServiceName getQueueBaseServiceName(ServiceName hornetqServiceName) {
        return hornetqServiceName.append(CORE_QUEUE_BASE);
    }
