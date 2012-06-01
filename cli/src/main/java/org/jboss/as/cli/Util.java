@@ -40,6 +40,8 @@ import org.jboss.dmr.Property;
  */
 public class Util {
 
+    public static final String LINE_SEPARATOR = Util.getLineSeparator();
+
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
     public static final String ADDRESS = "address";
@@ -106,6 +108,7 @@ public class Util {
     public static final String REPLY_PROPERTIES = "reply-properties";
     public static final String REQUEST_PROPERTIES = "request-properties";
     public static final String REQUIRED = "required";
+    public static final String RESPONSE_HEADERS = "response-headers";
     public static final String RESTART_REQUIRED = "restart-required";
     public static final String RESULT = "result";
     public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";
