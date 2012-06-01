@@ -50,6 +50,7 @@ public abstract class AsynchronousService<T> implements Service<T> {
     protected AsynchronousService(boolean startAsynchronously, boolean stopAsynchronously) {
         this.startAsynchronously = startAsynchronously;
         this.stopAsynchronously = stopAsynchronously;
+        // TODO Use org.jboss.as.server.Services#addServerExecutorDependency to inject a shared executor
         final ThreadFactory factory =  new JBossThreadFactory(new ThreadGroup(String.format("%s lifecycle", this.getClass().getSimpleName())),
                 Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
         this. executor = Executors.newCachedThreadPool(factory);

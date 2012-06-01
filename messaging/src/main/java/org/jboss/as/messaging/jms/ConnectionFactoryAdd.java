@@ -25,7 +25,6 @@ package org.jboss.as.messaging.jms;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -43,6 +42,7 @@ import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingMessages;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -122,12 +122,12 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         final ConnectionFactoryConfiguration configuration = createConfiguration(context, name, model);
         final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
         final ServiceName serviceName = JMSServices.getConnectionFactoryBaseServiceName(hqServiceName).append(name);
-        newControllers.add(context.getServiceTarget().addService(serviceName, service)
+        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(serviceName, service)
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName), JMSServerManager.class, service.getJmsServer())
-                .addDependency(MessagingServices.getHornetQStartupPoolServiceName(hqServiceName), Executor.class, service.getExecutorInjector())
                 .addListener(verificationHandler)
-                .setInitialMode(Mode.ACTIVE)
-                .install());
+                .setInitialMode(Mode.ACTIVE);
+        org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.getExecutorInjector(), false);
+        newControllers.add(serviceBuilder.install());
     }
 
     static ConnectionFactoryConfiguration createConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {

@@ -22,8 +22,12 @@
 
 package org.jboss.as.server;
 
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -47,6 +51,11 @@ public final class Services {
     public static final ServiceName JBOSS_SERVER_CONTROLLER = JBOSS_AS.append("server-controller");
 
     /**
+     * The service corresponding to the {@link java.util.concurrent.ExecutorService} for this instance.
+     */
+    static final ServiceName JBOSS_SERVER_EXECUTOR = JBOSS_AS.append("server-executor");
+
+    /**
      * The service corresponding to the {@link ServiceModuleLoader} for this instance.
      */
     public static final ServiceName JBOSS_SERVICE_MODULE_LOADER = JBOSS_AS.append("service-module-loader");
@@ -60,4 +69,9 @@ public final class Services {
      * The service that caches system module jandex indexes
      */
     public static final ServiceName JBOSS_MODULE_INDEX_SERVICE = JBOSS_AS.append("module-index-service");
+
+    public static void addServerExecutorDependency(ServiceBuilder<?> builder, Injector<ExecutorService> injector, boolean optional) {
+        ServiceBuilder.DependencyType type = optional ? ServiceBuilder.DependencyType.OPTIONAL : ServiceBuilder.DependencyType.REQUIRED;
+        builder.addDependency(type, JBOSS_SERVER_EXECUTOR, ExecutorService.class, injector);
+    }
 }

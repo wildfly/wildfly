@@ -33,7 +33,7 @@ import org.jboss.msc.value.InjectedValue;
 import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Service responsible for creating and destroying a {@code javax.jms.Queue}.
@@ -43,7 +43,7 @@ import java.util.concurrent.Executor;
 public class JMSQueueService implements Service<Void> {
 
     private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
-    private final InjectedValue<Executor> executorInjector = new InjectedValue<Executor>();
+    private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
 
 
     private final String queueName;
@@ -105,7 +105,7 @@ public class JMSQueueService implements Service<Void> {
         return jmsServer;
     }
 
-    public Injector<Executor> getExecutorInjector() {
+    public Injector<ExecutorService> getExecutorInjector() {
         return executorInjector;
     }
 

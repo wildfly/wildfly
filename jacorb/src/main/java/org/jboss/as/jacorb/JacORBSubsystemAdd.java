@@ -140,6 +140,7 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
         CorbaORBService orbService = new CorbaORBService(props);
         final ServiceBuilder<ORB> builder = context.getServiceTarget().addService(
                 CorbaORBService.SERVICE_NAME, orbService);
+        org.jboss.as.server.Services.addServerExecutorDependency(builder, orbService.getExecutorInjector(), false);
 
         // if a security domain has been specified, add a dependency to the domain service.
         String securityDomain = props.getProperty(JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN);
