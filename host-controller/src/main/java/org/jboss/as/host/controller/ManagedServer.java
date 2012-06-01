@@ -272,18 +272,25 @@ class ManagedServer {
         finishTransition(InternalState.PROCESS_STARTING, InternalState.PROCESS_STARTED);
     }
 
-    protected synchronized void channelRegistered(final ManagementChannelHandler channelAssociation) {
-        internalSetState(new TransitionTask() {
-            @Override
-            public void execute(final ManagedServer server) throws Exception {
-
-                server.proxyController = TransformingProxyController.Factory.create(channelAssociation,
-                        Transformers.Factory.create(transformationTarget),
-                        PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerName), serverPath),
-                        ProxyOperationAddressTranslator.SERVER);
-            }
-        // TODO we just check that we are in the correct state, perhaps introduce a new state
-        }, InternalState.SERVER_STARTING, InternalState.SERVER_STARTING);
+    protected synchronized ProxyController channelRegistered(final ManagementChannelHandler channelAssociation) {
+        final InternalState current = this.internalState;
+        final TransformingProxyController proxy = TransformingProxyController.Factory.create(channelAssociation,
+                                Transformers.Factory.create(transformationTarget),
+                                PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerName), serverPath),
+                                ProxyOperationAddressTranslator.SERVER);
+        // TODO better handling for server :reload operation
+        if(current == InternalState.SERVER_STARTED && proxyController == null) {
+            this.proxyController = proxy;
+        } else {
+            internalSetState(new TransitionTask() {
+                @Override
+                public void execute(final ManagedServer server) throws Exception {
+                    server.proxyController = proxy;
+                }
+            // TODO we just check that we are in the correct state, perhaps introduce a new state
+            }, InternalState.SERVER_STARTING, InternalState.SERVER_STARTING);
+        }
+        return proxyController;
     }
 
     protected synchronized void serverStarted(final TransitionTask task) {
@@ -297,8 +304,10 @@ class ManagedServer {
     /**
      * Unregister the mgmt channel.
      */
-    protected synchronized void callbackUnregistered() {
-        this.proxyController = null;
+    protected synchronized void callbackUnregistered(final ProxyController old) {
+        if(proxyController == old) {
+            this.proxyController = null;
+        }
     }
 
     /**
@@ -380,7 +389,7 @@ class ManagedServer {
         transition();
     }
 
-    private void internalSetState(final TransitionTask task, final InternalState current, final InternalState next) {
+    private boolean internalSetState(final TransitionTask task, final InternalState current, final InternalState next) {
         assert Thread.holdsLock(this); // Call under lock
         final InternalState internalState = this.internalState;
         if(internalState == current) {
@@ -389,6 +398,7 @@ class ManagedServer {
                     task.execute(this);
                 }
                 this.internalState = next;
+                return true;
             } catch (final Exception e) {
                 ROOT_LOGGER.debugf(e, "transition (%s > %s) failed for server \"%s\"", current, next, serverName);
                 transitionFailed(current);
@@ -396,6 +406,7 @@ class ManagedServer {
                 notifyAll();
             }
         }
+        return false;
     }
 
     private TransitionTask getTransitionTask(final InternalState next) {
@@ -489,13 +500,6 @@ class ManagedServer {
      * The managed server boot configuration.
      */
     public static interface ManagedServerBootConfiguration {
-        /**
-         * Get a list of boot updates.
-         *
-         * @return the boot updates
-         */
-        List<ModelNode> getBootUpdates();
-
         /**
          * Get the server launch environment.
          *
@@ -603,7 +607,7 @@ class ManagedServer {
         public void execute(ManagedServer server) throws Exception {
             assert Thread.holdsLock(ManagedServer.this); // Call under lock
             // Get the standalone boot updates
-            final List<ModelNode> bootUpdates = bootConfiguration.getBootUpdates();
+            final List<ModelNode> bootUpdates = Collections.emptyList(); // bootConfiguration.getBootUpdates();
             final Map<String, String> launchProperties = parseLaunchProperties(bootConfiguration.getServerLaunchCommand());
             // Send std.in
             final ServiceActivator hostControllerCommActivator = HostCommunicationServices.createServerCommunicationActivator(managementSocket, serverName, serverProcessName, authKey, bootConfiguration.isManagementSubsystemEndpoint());

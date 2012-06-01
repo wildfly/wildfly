@@ -44,7 +44,7 @@ public class ContentAdd extends AbstractAddStepHandler {
         if(remoteRepository != null) {
             remoteRepository.getDeploymentFiles(hash);
         }
-        if(!contentRepository.hasContent(hash)) {
+        if(!contentRepository.syncContent(hash)) {
             throw ServerMessages.MESSAGES.noSuchDeploymentContent(Arrays.toString(hash));
         }
     }

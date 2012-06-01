@@ -79,12 +79,8 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
         this.vaultReader = vaultReader;
     }
 
-    public static DeploymentReplaceHandler createForStandalone(ContentRepository contentRepository, final AbstractVaultReader vaultReader) {
+    public static DeploymentReplaceHandler create(ContentRepository contentRepository, final AbstractVaultReader vaultReader) {
         return new DeploymentReplaceHandler(contentRepository, vaultReader);
-    }
-
-    public static DeploymentReplaceHandler createForDomainServer(ContentRepository contentRepository, DeploymentFileRepository remoteFileRepository, final AbstractVaultReader vaultReader) {
-        return new DomainServerDeploymentReplaceHandler(contentRepository, remoteFileRepository, vaultReader);
     }
 
     @Override
@@ -159,22 +155,8 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
     }
 
     protected void addFromHash(byte[] hash) throws OperationFailedException {
-        if (!contentRepository.hasContent(hash)) {
+        if (!contentRepository.syncContent(hash)) {
             throw ServerMessages.MESSAGES.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
-        }
-    }
-
-    private static class DomainServerDeploymentReplaceHandler extends DeploymentReplaceHandler {
-        final DeploymentFileRepository remoteFileRepository;
-        public DomainServerDeploymentReplaceHandler(final ContentRepository contentRepository, final DeploymentFileRepository remoteFileRepository, final AbstractVaultReader vaultReader) {
-            super(contentRepository, vaultReader);
-            assert remoteFileRepository != null : "Null remoteFileRepository";
-            this.remoteFileRepository = remoteFileRepository;
-        }
-
-        protected void addFromHash(byte[] hash) throws OperationFailedException {
-            remoteFileRepository.getDeploymentFiles(hash);
-            super.addFromHash(hash);
         }
     }
 

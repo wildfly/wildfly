@@ -84,6 +84,15 @@ public interface ContentRepository {
     boolean hasContent(byte[] hash);
 
     /**
+     * Synchronize content with the given hash. This may be used in favor of {@linkplain #hasContent(byte[])}
+     * to explicitly allow additional operations to synchronize the content.
+     *
+     * @param hash the hash. Cannot be {@code null}
+     * @return {@code true} if the repository has content with the given hash
+     */
+    boolean syncContent(byte[] hash);
+
+    /**
      * Remove the given content from the repository.
      *
      * @param hash the hash. Cannot be {@code null}
@@ -179,6 +188,11 @@ public interface ContentRepository {
                 if (hash == null)
                     throw DeploymentRepositoryMessages.MESSAGES.nullVar("hash");
                 return VFS.getChild(getDeploymentContentFile(hash, true).toURI());
+            }
+
+            @Override
+            public boolean syncContent(final byte[] hash) {
+                return hasContent(hash);
             }
 
             @Override

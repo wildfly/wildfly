@@ -306,7 +306,7 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     @Override
-    public void serverCommunicationRegistered(final String serverProcessName, final ManagementChannelHandler channelAssociation) {
+    public ProxyController serverCommunicationRegistered(final String serverProcessName, final ManagementChannelHandler channelAssociation) {
         if(shutdown || connectionFinished) {
             throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
         }
@@ -314,30 +314,33 @@ public class ServerInventoryImpl implements ServerInventory {
         final ManagedServer server = servers.get(serverName);
         if(server == null) {
             ROOT_LOGGER.noServerAvailable(serverName);
-            return;
+            return null;
         }
         try {
+            final ProxyController proxy = server.channelRegistered(channelAssociation);
             final Channel channel = channelAssociation.getChannel();
             channel.addCloseHandler(new CloseHandler<Channel>() {
 
                 public void handleClose(final Channel closed, final IOException exception) {
-                    server.callbackUnregistered();
+                    server.callbackUnregistered(proxy);
                     domainController.unregisterRunningServer(server.getServerName());
                 }
             });
+            return proxy;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        server.channelRegistered(channelAssociation);
     }
 
     @Override
     public boolean serverReconnected(String serverProcessName, ManagementChannelHandler channelHandler) {
         // For now just reuse the existing register and started notification
-        serverCommunicationRegistered(serverProcessName, channelHandler);
+        final ProxyController controller = serverCommunicationRegistered(serverProcessName, channelHandler);
         serverStarted(serverProcessName);
-        // TODO propagate the restart-required flag to the reconnecting server
-        return true;
+        domainController.registerRunningServer(controller);
+        final boolean inSync = true;
+        // TODO determine whether the server is in sync
+        return inSync;
     }
 
     @Override
@@ -371,15 +374,7 @@ public class ServerInventoryImpl implements ServerInventory {
             ROOT_LOGGER.noServerAvailable(serverName);
             return;
         }
-        server.serverStarted(new ManagedServer.TransitionTask() {
-            @Override
-            public void execute(ManagedServer server) throws Exception {
-                final ProxyController proxy = server.getProxyController();
-                if(proxy != null) {
-                    domainController.registerRunningServer(proxy);
-                }
-            }
-        });
+        server.serverStarted(null);
         synchronized (shutdownCondition) {
             shutdownCondition.notifyAll();
         }
@@ -480,7 +475,7 @@ public class ServerInventoryImpl implements ServerInventory {
     private ManagedServer createManagedServer(final String serverName, final ModelNode domainModel) {
         final String hostControllerName = domainController.getLocalHostInfo().getLocalHostName();
         final ModelNode hostModel = domainModel.require(HOST).require(hostControllerName);
-        final ModelCombiner combiner = new ModelCombiner(serverName, domainModel, hostModel, domainController, environment);
+        final ManagedServerBootCmdFactory combiner = new ManagedServerBootCmdFactory(serverName, domainModel, hostModel, environment);
         final ManagedServer.ManagedServerBootConfiguration configuration = combiner.createConfiguration();
         final ModelNode subsystems = resolveSubsystems(extensionRegistry);
         final TransformationTarget target = TransformationTargetImpl.create(extensionRegistry.getTransformerRegistry(), ModelVersion.create(Version.MANAGEMENT_MAJOR_VERSION, Version.MANAGEMENT_MINOR_VERSION, Version.MANAGEMENT_MICRO_VERSION), subsystems, TransformationTarget.TransformationTargetType.SERVER);
