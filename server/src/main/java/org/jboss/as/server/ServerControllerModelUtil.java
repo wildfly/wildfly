@@ -66,7 +66,6 @@ import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.domain.management.security.WhoAmIOperation;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.ServerEnvironment.LaunchType;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
@@ -200,7 +199,6 @@ public class ServerControllerModelUtil {
                                       final AbstractVaultReader vaultReader,
                                       final ExtensionRegistry extensionRegistry,
                                       final boolean parallelBoot,
-                                      final DeploymentFileRepository remoteFileRepository,
                                       final PathManagerService pathManager) {
 
         boolean isDomain = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
@@ -252,11 +250,10 @@ public class ServerControllerModelUtil {
         root.registerOperationHandler(DeploymentUploadURLHandler.OPERATION_NAME, duuh, duuh, false);
         DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(contentRepository);
         root.registerOperationHandler(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, dush, dush, false);
-        final DeploymentReplaceHandler drh = isDomain ? DeploymentReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository, vaultReader)
-                : DeploymentReplaceHandler.createForStandalone(contentRepository, vaultReader);
+
+        final DeploymentReplaceHandler drh = DeploymentReplaceHandler.create(contentRepository, vaultReader);
         root.registerOperationHandler(DeploymentReplaceHandler.OPERATION_NAME, drh, drh, false);
-        DeploymentFullReplaceHandler dfrh = isDomain ? DeploymentFullReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository, vaultReader)
-                : DeploymentFullReplaceHandler.createForStandalone(contentRepository, vaultReader);
+        DeploymentFullReplaceHandler dfrh = DeploymentFullReplaceHandler.create(contentRepository, vaultReader);
         root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh, false);
 
         if (!isDomain) {
@@ -355,8 +352,8 @@ public class ServerControllerModelUtil {
 
         // Deployments
         ManagementResourceRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
-        DeploymentAddHandler dah = isDomain ? DeploymentAddHandler.createForDomainServer(contentRepository, remoteFileRepository, vaultReader)
-                : DeploymentAddHandler.createForStandalone(contentRepository, vaultReader);
+
+        DeploymentAddHandler dah = DeploymentAddHandler.create(contentRepository, vaultReader);
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah, false);
         DeploymentRemoveHandler dremh = new DeploymentRemoveHandler(contentRepository, vaultReader);
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, dremh, dremh, false);
@@ -370,11 +367,7 @@ public class ServerControllerModelUtil {
 
         //deployment overlays
         final ManagementResourceRegistration contentOverrides = root.registerSubModel(DeploymentOverlayDefinition.INSTANCE);
-        if (isDomain) {
-            contentOverrides.registerSubModel(new ContentDefinition(contentRepository, remoteFileRepository));
-        } else {
-            contentOverrides.registerSubModel(new ContentDefinition(contentRepository, null));
-        }
+        contentOverrides.registerSubModel(new ContentDefinition(contentRepository, null));
 
         //deployment overlay links
         root.registerSubModel(new DeploymentOverlayLinkDefinition(DeploymentOverlayPriority.SERVER));

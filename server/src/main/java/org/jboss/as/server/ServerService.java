@@ -93,7 +93,6 @@ import org.jboss.as.server.deployment.reflect.CleanupReflectionIndexProcessor;
 import org.jboss.as.server.deployment.reflect.InstallReflectionIndexProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorDependencyProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
-import org.jboss.as.server.mgmt.domain.RemoteFileRepository;
 import org.jboss.as.server.moduleservice.ExtensionIndexService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -130,7 +129,6 @@ public final class ServerService extends AbstractControllerService {
     private final RunningModeControl runningModeControl;
     private volatile ExtensibleConfigurationPersister extensibleConfigurationPersister;
     private final AbstractVaultReader vaultReader;
-    private final RemoteFileRepository remoteFileRepository;
 
     public static final String SERVER_NAME = "server";
 
@@ -142,7 +140,7 @@ public final class ServerService extends AbstractControllerService {
      */
     ServerService(final Bootstrap.Configuration configuration, final ControlledProcessState processState,
                   final OperationStepHandler prepareStep, final BootstrapListener bootstrapListener,
-                  final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader, final RemoteFileRepository remoteFileRepository) {
+                  final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader) {
         super(getProcessType(configuration.getServerEnvironment()), runningModeControl, null, processState,
                 ServerDescriptionProviders.ROOT_PROVIDER, prepareStep, new RuntimeExpressionResolver(vaultReader));
         this.configuration = configuration;
@@ -150,7 +148,6 @@ public final class ServerService extends AbstractControllerService {
         this.processState = processState;
         this.runningModeControl = runningModeControl;
         this.vaultReader = vaultReader;
-        this.remoteFileRepository = remoteFileRepository;
     }
 
     static ProcessType getProcessType(ServerEnvironment serverEnvironment) {
@@ -178,7 +175,7 @@ public final class ServerService extends AbstractControllerService {
      */
     public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration,
                                   final ControlledProcessState processState, final BootstrapListener bootstrapListener,
-                                  final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader, final RemoteFileRepository remoteFileRepository) {
+                                  final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader) {
 
         final ThreadGroup threadGroup = new ThreadGroup("ServerService ThreadGroup");
         final String namePattern = "ServerService Thread Pool -- %t";
@@ -190,7 +187,7 @@ public final class ServerService extends AbstractControllerService {
         final ServerExecutorService serverExecutorService = new ServerExecutorService(threadFactory);
         serviceTarget.addService(Services.JBOSS_SERVER_EXECUTOR, serverExecutorService).install();
 
-        ServerService service = new ServerService(configuration, processState, null, bootstrapListener, runningModeControl, vaultReader, remoteFileRepository);
+        ServerService service = new ServerService(configuration, processState, null, bootstrapListener, runningModeControl, vaultReader);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
         serviceBuilder.addDependency(DeploymentMountProvider.SERVICE_NAME,DeploymentMountProvider.class, service.injectedDeploymentRepository);
         serviceBuilder.addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.injectedContentRepository);
@@ -333,7 +330,7 @@ public final class ServerService extends AbstractControllerService {
         ServerControllerModelUtil.initOperations(rootRegistration, injectedContentRepository.getValue(),
                 extensibleConfigurationPersister, configuration.getServerEnvironment(), processState,
                 runningModeControl, vaultReader, configuration.getExtensionRegistry(),
-                getExecutorServiceInjector().getOptionalValue() != null, remoteFileRepository,
+                getExecutorServiceInjector().getOptionalValue() != null,
                 (PathManagerService)injectedPathManagerService.getValue());
 
         // TODO maybe make creating of empty nodes part of the MNR description

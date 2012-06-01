@@ -35,7 +35,7 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.deployment.DeploymentMountProvider;
-import org.jboss.as.server.mgmt.domain.RemoteFileRepository;
+import org.jboss.as.server.mgmt.domain.RemoteFileRepositoryService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ModuleIndexService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -130,15 +130,19 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         final BootstrapListener bootstrapListener = new BootstrapListener(container, startTime, serviceTarget, futureContainer, prettyVersion);
         serviceTarget.addListener(ServiceListener.Inheritance.ALL, bootstrapListener);
         myController.addListener(bootstrapListener);
-        RemoteFileRepository remoteFileRepository = standalone ? null : RemoteFileRepository.addService(serviceTarget, serverEnvironment.getServerContentDir());
-        ContentRepository.Factory.addService(serviceTarget, serverEnvironment.getServerContentDir());
+        // Install either a local or remote content repository
+        if(standalone) {
+            ContentRepository.Factory.addService(serviceTarget, serverEnvironment.getServerContentDir());
+        } else {
+            RemoteFileRepositoryService.addService(serviceTarget, serverEnvironment.getServerContentDir());
+        }
         DeploymentMountProvider.Factory.addService(serviceTarget);
         ServiceModuleLoader.addService(serviceTarget, configuration);
         ExternalModuleService.addService(serviceTarget);
         ModuleIndexService.addService(serviceTarget);
         final AbstractVaultReader vaultReader = service(AbstractVaultReader.class);
         AS_ROOT_LOGGER.debugf("Using VaultReader %s", vaultReader);
-        ServerService.addService(serviceTarget, configuration, processState, bootstrapListener, runningModeControl, vaultReader, remoteFileRepository);
+        ServerService.addService(serviceTarget, configuration, processState, bootstrapListener, runningModeControl, vaultReader);
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             @Override
             public ServiceTarget getServiceTarget() {

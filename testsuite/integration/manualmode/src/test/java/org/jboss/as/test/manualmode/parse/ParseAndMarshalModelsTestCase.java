@@ -720,7 +720,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(ProcessType.STANDALONE_SERVER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 ServerControllerModelUtil.updateCoreModel(model, null);
-                ServerControllerModelUtil.initOperations(rootRegistration, new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, new MockFileRepository(), MOCK_PATH_MANAGER);
+                ServerControllerModelUtil.initOperations(rootRegistration, new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, MOCK_PATH_MANAGER);
             }
         });
 
@@ -1057,6 +1057,11 @@ public class ParseAndMarshalModelsTestCase {
         @Override
         public VirtualFile getContent(byte[] hash) {
             return null;
+        }
+
+        @Override
+        public boolean syncContent(byte[] hash) {
+            return hasContent(hash);
         }
 
         @Override

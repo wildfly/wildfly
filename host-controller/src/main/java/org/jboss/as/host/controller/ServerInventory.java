@@ -26,6 +26,7 @@ import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
 
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
@@ -175,8 +176,9 @@ public interface ServerInventory {
      *
      * @param serverProcessName the name of the server process
      * @param channelHandler remoting channel to use for communicating with the server
+     * @return the server proxy
      */
-    void serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler);
+    ProxyController serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler);
 
     /**
      * Notification that a server has been reconnected.

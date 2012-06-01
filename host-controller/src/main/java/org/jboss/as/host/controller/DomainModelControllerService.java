@@ -89,6 +89,7 @@ import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepo
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.mgmt.HostControllerRegistrationHandler;
 import org.jboss.as.host.controller.mgmt.MasterDomainControllerOperationHandlerService;
+import org.jboss.as.host.controller.mgmt.ServerToHostProtocolHandler;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
 import org.jboss.as.host.controller.mgmt.SlaveHostPinger;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
@@ -462,7 +463,12 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
             if (ok) {
                 // Install the server > host operation handler
-                ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME, proxyExecutor, localFileRepository);
+                ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME, proxyExecutor, new ServerToHostProtocolHandler.OperationExecutor() {
+                    @Override
+                    public ModelNode execute(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler step) {
+                        return internalExecute(operation, handler, control, attachments, step);
+                    }
+                }, this);
 
                 // demand native mgmt services
                 serviceTarget.addService(ServiceName.JBOSS.append("native-mgmt-startup"), Service.NULL)
@@ -598,8 +604,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     private class DelegatingServerInventory implements ServerInventory {
-        public void serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler) {
-            serverInventory.serverCommunicationRegistered(serverProcessName, channelHandler);
+        public ProxyController serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler) {
+            return serverInventory.serverCommunicationRegistered(serverProcessName, channelHandler);
         }
 
         public boolean serverReconnected(String serverProcessName, ManagementChannelHandler channelHandler) {

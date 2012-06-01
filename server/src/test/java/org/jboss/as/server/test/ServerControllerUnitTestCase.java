@@ -286,7 +286,7 @@ public class ServerControllerUnitTestCase {
             final ServerEnvironment environment = new ServerEnvironment(hostControllerName, properties, new HashMap<String, String>(), null, null, ServerEnvironment.LaunchType.DOMAIN, null, new ProductConfig(Module.getBootModuleLoader(), "."));
             final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL));
             ServerControllerModelUtil.initOperations(rootRegistration, MockRepository.INSTANCE, persister, environment,
-                    processState, null, null, extensionRegistry, false, MockRepository.INSTANCE, MOCK_PATH_MANAGER);
+                    processState, null, null, extensionRegistry, false, MOCK_PATH_MANAGER);
         }
 
         @Override
@@ -418,6 +418,11 @@ public class ServerControllerUnitTestCase {
         @Override
         public byte[] addContent(InputStream stream) throws IOException {
             return null;
+        }
+
+        @Override
+        public boolean syncContent(byte[] hash) {
+            return hasContent(hash);
         }
 
         @Override

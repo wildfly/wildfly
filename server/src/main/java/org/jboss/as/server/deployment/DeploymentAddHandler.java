@@ -113,12 +113,8 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         this.vaultReader = vaultReader;
     }
 
-    public static DeploymentAddHandler createForStandalone(final ContentRepository contentRepository, final AbstractVaultReader vaultReader) {
+    public static DeploymentAddHandler create(final ContentRepository contentRepository, final AbstractVaultReader vaultReader) {
         return new DeploymentAddHandler(contentRepository, vaultReader);
-    }
-
-    public static DeploymentAddHandler createForDomainServer(final ContentRepository contentRepository, final DeploymentFileRepository remoteFileRepository, final AbstractVaultReader vaultReader) {
-        return new DomainServerDeploymentAddHandler(contentRepository, remoteFileRepository, vaultReader);
     }
 
     @Override
@@ -169,7 +165,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
     }
 
     DeploymentHandlerUtil.ContentItem addFromHash(byte[] hash, String deploymentName, OperationContext context) throws OperationFailedException {
-        if (!contentRepository.hasContent(hash)) {
+        if (!contentRepository.syncContent(hash)) {
             if (context.isBooting()) {
                 if (context.getRunningMode() == RunningMode.ADMIN_ONLY) {
                     // The deployment content is missing, which would be a fatal boot error if we were going to actually
@@ -213,24 +209,4 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         return new DeploymentHandlerUtil.ContentItem(path, relativeTo, archive);
     }
 
-    private static class DomainServerDeploymentAddHandler extends DeploymentAddHandler {
-        final DeploymentFileRepository remoteFileRepository;
-
-        DomainServerDeploymentAddHandler(ContentRepository contentRepository, DeploymentFileRepository remoteFileRepository, final AbstractVaultReader vaultReader) {
-            super(contentRepository, vaultReader);
-            assert remoteFileRepository != null : "Null remoteFileRepository";
-            this.remoteFileRepository = remoteFileRepository;
-        }
-
-        @Override
-        DeploymentHandlerUtil.ContentItem addFromHash(byte[] hash, String deploymentName, OperationContext context) throws OperationFailedException {
-            remoteFileRepository.getDeploymentFiles(hash);
-            return super.addFromHash(hash, deploymentName, context);
-        }
-
-        @Override
-        DeploymentHandlerUtil.ContentItem addFromContentAdditionParameter(OperationContext context, ModelNode contentItemNode) throws OperationFailedException {
-            throw MESSAGES.onlyHashAllowedForDeploymentFullReplaceInDomainServer(contentItemNode);
-        }
-    }
 }

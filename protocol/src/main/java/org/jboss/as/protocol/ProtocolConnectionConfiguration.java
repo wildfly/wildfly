@@ -122,6 +122,10 @@ public class ProtocolConnectionConfiguration {
         this.sslContext = sslContext;
     }
 
+    public ProtocolConnectionConfiguration copy() {
+        return copy(this);
+    }
+
     public static ProtocolConnectionConfiguration create(final Endpoint endpoint, final URI uri) {
         return create(endpoint, uri, OptionMap.EMPTY);
     }

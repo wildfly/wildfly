@@ -28,24 +28,36 @@ import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.ObjectInputValidation;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.server.mgmt.domain.ServerBootOperationsService;
+import org.jboss.as.server.mgmt.domain.HostControllerClient;
+import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
 import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.AsyncFuture;
 
 /**
@@ -112,7 +124,29 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         final ProductConfig productConfig = new ProductConfig(Module.getBootModuleLoader(), home);
         // Create server environment on the server, so that the system properties are getting initialized on the right side
         final ServerEnvironment providedEnvironment = new ServerEnvironment(hostControllerName, properties,
-                SecurityActions.getSystemEnvironment(), null, null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL, productConfig);
+
+        SecurityActions.getSystemEnvironment(), null, null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL, productConfig);
+
+        // TODO perhaps have ConfigurationPersisterFactory as a Service
+        final List<ServiceActivator> services = new ArrayList<ServiceActivator>(startServices);
+        final ServerBootOperationsService service = new ServerBootOperationsService();
+        // ModelController.boot() will block on this future in order to get the boot updates.
+        final Future<ModelNode> bootOperations = service.getFutureResult();
+        final ServiceActivator activator = new ServiceActivator() {
+            @Override
+            public void activate(ServiceActivatorContext serviceActivatorContext) throws ServiceRegistryException {
+                final ServiceTarget target = serviceActivatorContext.getServiceTarget();
+                target.addService(ServiceName.JBOSS.append("server-boot-operations"), service)
+                        .addDependency(Services.JBOSS_AS)
+                        .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.getServerController())
+                        .addDependency(HostControllerConnectionService.SERVICE_NAME, HostControllerClient.class, service.getClientInjector())
+                        .addDependency(Services.JBOSS_SERVER_EXECUTOR, Executor.class, service.getExecutorInjector())
+                        .setInitialMode(ServiceController.Mode.ACTIVE)
+                        .install();
+            }
+        };
+        services.add(activator);
+
         final Bootstrap.Configuration configuration = new Bootstrap.Configuration(providedEnvironment);
         final ExtensionRegistry extensionRegistry = configuration.getExtensionRegistry();
         final Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = new Bootstrap.ConfigurationPersisterFactory() {
@@ -138,7 +172,12 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
                     @Override
                     public List<ModelNode> load() throws ConfigurationPersistenceException {
-                        return updates;
+                        try {
+                            final ModelNode operations = bootOperations.get();
+                            return operations.asList();
+                        } catch (Exception e) {
+                            throw new ConfigurationPersistenceException(e);
+                        }
                     }
                 };
                 extensionRegistry.setWriterRegistry(persister);
@@ -146,7 +185,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
             }
         };
         configuration.setConfigurationPersisterFactory(configurationPersisterFactory);
-        return bootstrap.bootstrap(configuration, startServices);
+        return bootstrap.bootstrap(configuration, services);
     }
 
     @Override
@@ -178,4 +217,5 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
             properties.setProperty(key, launchProperties.get(key));
         }
     }
+
 }
