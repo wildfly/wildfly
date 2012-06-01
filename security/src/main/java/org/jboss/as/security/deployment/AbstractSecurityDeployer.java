@@ -42,6 +42,9 @@ public abstract class AbstractSecurityDeployer<T> {
         if (deploymentUnit.getParent() == null) {
             standalone = Boolean.TRUE;
         }
+        else {
+            contextId = deploymentUnit.getParent().getName() + "!" + contextId;
+        }
         return createService(contextId, metaData, standalone);
     }
 
