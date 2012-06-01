@@ -147,7 +147,10 @@ public class SecurityContextAssociationValve extends ValveBase {
                 WebLogger.WEB_SECURITY_LOGGER.debug("Failed to determine servlet", e);
             }
             // set JACC contextID
-            PolicyContext.setContextID(deploymentUnit.getName());
+            String contextId = deploymentUnit.getName();
+            if (deploymentUnit.getParent() != null)
+                contextId = deploymentUnit.getParent().getName() + "!" + contextId;
+            PolicyContext.setContextID(contextId);
 
             // Perform the request
             getNext().invoke(request, response);
