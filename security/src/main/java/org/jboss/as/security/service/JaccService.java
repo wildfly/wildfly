@@ -81,12 +81,10 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
             PolicyConfigurationFactory pcf = PolicyConfigurationFactory.getPolicyConfigurationFactory();
             synchronized (pcf) { // synchronize on the factory
                 policyConfiguration = pcf.getPolicyConfiguration(contextId, false);
-                if (standalone) {
-                    if (metaData != null) {
-                        createPermissions(metaData, policyConfiguration);
-                    } else {
-                        log.debugf("Cannot create permissions with 'null' metaData for id=" + contextId);
-                    }
+                if (metaData != null) {
+                    createPermissions(metaData, policyConfiguration);
+                } else {
+                    log.debugf("Cannot create permissions with 'null' metaData for id=" + contextId);
                 }
                 if (!standalone) {
                     PolicyConfiguration parent = parentPolicy.getValue();
