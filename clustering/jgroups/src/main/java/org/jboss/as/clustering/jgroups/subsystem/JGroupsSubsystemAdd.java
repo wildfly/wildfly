@@ -107,9 +107,11 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
 
     protected ServiceController<ProtocolDefaults> installProtocolDefaultsService(ServiceTarget target,
                                                                            ServiceVerificationHandler verificationHandler) {
+        final ProtocolDefaultsService service = new ProtocolDefaultsService();
         ServiceBuilder<ProtocolDefaults> protocolDefaultsBuilder =
-                target.addService(ProtocolDefaultsService.SERVICE_NAME, new ProtocolDefaultsService())
+                target.addService(ProtocolDefaultsService.SERVICE_NAME, service)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND) ;
+        org.jboss.as.server.Services.addServerExecutorDependency(protocolDefaultsBuilder, service.getExecutorInjector(), false);
 
         return protocolDefaultsBuilder.install() ;
     }
