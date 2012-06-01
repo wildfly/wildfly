@@ -2,7 +2,7 @@
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:d="urn:jboss:domain:1.3"
                 xmlns:l="urn:jboss:domain:logging:1.1"
-                exclude-result-prefixes="l d xmlns"
+                exclude-result-prefixes="l d"
         >
 
     <!--
@@ -41,7 +41,7 @@
                 </xsl:copy>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:copy copy-namespaces="false" inherit-namespaces="false">
+                <xsl:copy>
                     <xsl:attribute name="name">
                         <xsl:value-of select="'CONSOLE'"/>
                     </xsl:attribute>
@@ -60,7 +60,7 @@
                 </xsl:copy>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:copy copy-namespaces="false" inherit-namespaces="false">
+                <xsl:copy>
                     <xsl:attribute name="name">
                         <xsl:value-of select="'FILE'"/>
                     </xsl:attribute>
