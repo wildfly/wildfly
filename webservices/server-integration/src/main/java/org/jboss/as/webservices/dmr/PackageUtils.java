@@ -22,10 +22,14 @@
 
 package org.jboss.as.webservices.dmr;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.wsf.spi.management.ServerConfig;
+import org.jboss.wsf.spi.metadata.config.CommonConfig;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -39,6 +43,16 @@ final class PackageUtils {
     static ServerConfig getServerConfig(final OperationContext context) {
         final ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
         return configService != null ? (ServerConfig)configService.getValue() : null;
+    }
+
+    static Collection<? extends CommonConfig> getConfigs(ServerConfig serverConfig, String confType) {
+        if (Constants.ENDPOINT_CONFIG.equals(confType)) {
+            return serverConfig.getEndpointConfigs();
+        } else if (Constants.CLIENT_CONFIG.equals(confType)) {
+            return serverConfig.getClientConfigs();
+        } else {
+            return Collections.emptyList();
+        }
     }
 
 }

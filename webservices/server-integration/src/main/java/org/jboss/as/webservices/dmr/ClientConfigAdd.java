@@ -22,9 +22,6 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
-import static org.jboss.as.webservices.dmr.PackageUtils.getConfigs;
 import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
 
 import java.util.List;
@@ -33,23 +30,26 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.wsf.spi.management.ServerConfig;
-import org.jboss.wsf.spi.metadata.config.CommonConfig;
+import org.jboss.wsf.spi.metadata.config.ClientConfig;
 
 /**
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
-final class PropertyAdd extends AbstractAddStepHandler {
+final class ClientConfigAdd extends AbstractAddStepHandler {
 
-    static final PropertyAdd INSTANCE = new PropertyAdd();
+    static final ClientConfigAdd INSTANCE = new ClientConfigAdd();
 
-    private PropertyAdd() {
+    private ClientConfigAdd() {
         // forbidden instantiation
+    }
+
+    @Override
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        // does nothing
     }
 
     @Override
@@ -57,29 +57,15 @@ final class PropertyAdd extends AbstractAddStepHandler {
         final ServerConfig config = getServerConfig(context);
         if (config != null) {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            final String propertyName = address.getElement(address.size() - 1).getValue();
-            final PathElement confElem = address.getElement(address.size() - 2);
-            final String configType = confElem.getKey();
-            final String configName = confElem.getValue();
-            final String propertyValue = operation.has(VALUE) ? operation.get(VALUE).asString() : null;
-            for (final CommonConfig cfg : getConfigs(config, configType)) {
-                if (configName.equals(cfg.getConfigName())) {
-                    cfg.setProperty(propertyName, propertyValue);
-                    if (!context.isBooting()) {
-                        context.restartRequired();
-                    }
-                    return;
-                }
+            final String name = address.getLastElement().getValue();
+
+            ClientConfig clientConfig = new ClientConfig();
+            clientConfig.setConfigName(name);
+            config.addClientConfig(clientConfig);
+            if (!context.isBooting()) {
+                context.restartRequired();
             }
-            throw MESSAGES.missingConfig(configName);
         }
     }
 
-    @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        if (operation.hasDefined(VALUE)) {
-            final ModelNode propertyValue = operation.get(VALUE);
-            model.get(VALUE).set(propertyValue);
-        }
-    }
 }

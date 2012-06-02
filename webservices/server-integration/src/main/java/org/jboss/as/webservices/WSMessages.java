@@ -151,8 +151,8 @@ public interface WSMessages {
     @Message(id = 15536, value = "@WebServiceRef attribute 'type' is required for class level annotations.")
     DeploymentUnitProcessingException requiredServiceRefType();
 
-    @Message(id = 15585, value = "Endpoint config %s doesn't exist")
-    OperationFailedException missingEndpointConfig(String configName);
+    @Message(id = 15585, value = "Config %s doesn't exist")
+    OperationFailedException missingConfig(String configName);
 
     @Message(id = 15586, value = "Attributes %s, %s and %s are mutually exclusive")
     OperationFailedException mutuallyExclusiveHandlerChainAttributes(String attr1, String attr2, String attr3);
@@ -163,10 +163,10 @@ public interface WSMessages {
     @Message(id = 15588, value = "Cannot add new handler chain of type %s with id %s. This id is already used in config %s for another chain.")
     OperationFailedException multipleHandlerChainsWithSameId(String chainType, String handlerChainId, String configId);
 
-    @Message(id = 15589, value = "Endpoint config %s: %s handler chain with id %s doesn't exist")
+    @Message(id = 15589, value = "Config %s: %s handler chain with id %s doesn't exist")
     OperationFailedException missingHandlerChain(String configName, String handlerChainType, String handlerChainId);
 
-    @Message(id = 15590, value = "Endpoint config %s, %s handler chain %s: doesn't contain handler with name %s")
+    @Message(id = 15590, value = "Config %s, %s handler chain %s: doesn't contain handler with name %s")
     OperationFailedException missingHandler(String configName, String handlerChainType, String handlerChainId, String handlerName);
 
     /**

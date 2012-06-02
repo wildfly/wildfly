@@ -42,6 +42,7 @@ public final class Constants {
     public static final String ENDPOINT_TYPE = "type";
     public static final String ENDPOINT_WSDL = "wsdl-url";
     public static final String ENDPOINT_CONFIG = "endpoint-config";
+    public static final String CLIENT_CONFIG = "client-config";
     public static final String CONFIG_NAME = "config-name";
     public static final String NAME = "name";
     public static final String PROPERTY="property";

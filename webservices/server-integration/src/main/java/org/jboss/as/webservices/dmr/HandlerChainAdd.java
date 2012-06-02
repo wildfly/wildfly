@@ -27,6 +27,7 @@ import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
 import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
+import static org.jboss.as.webservices.dmr.PackageUtils.getConfigs;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -35,15 +36,17 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.wsf.spi.management.ServerConfig;
-import org.jboss.wsf.spi.metadata.config.EndpointConfig;
+import org.jboss.wsf.spi.metadata.config.CommonConfig;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
 final class HandlerChainAdd extends AbstractAddStepHandler {
 
@@ -59,23 +62,25 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
         if (config != null) {
             final String protocolBindings = getAttributeValue(operation, PROTOCOL_BINDINGS);
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            final String configName = address.getElement(address.size() - 2).getValue();
+            final PathElement confElem = address.getElement(address.size() - 2);
+            final String configType = confElem.getKey();
+            final String configName = confElem.getValue();
             final String handlerChainType = address.getElement(address.size() - 1).getKey();
             final String handlerChainId = address.getElement(address.size() - 1).getValue();
-            for (final EndpointConfig endpointConfig : config.getEndpointConfigs()) {
-                if (configName.equals(endpointConfig.getConfigName())) {
+            for (final CommonConfig commonConfig : getConfigs(config, configType)) {
+                if (configName.equals(commonConfig.getConfigName())) {
                     List<UnifiedHandlerChainMetaData> handlerChains;
                     if (PRE_HANDLER_CHAIN.equals(handlerChainType)) {
-                        handlerChains = endpointConfig.getPreHandlerChains();
+                        handlerChains = commonConfig.getPreHandlerChains();
                         if (handlerChains == null) {
                             handlerChains = new LinkedList<UnifiedHandlerChainMetaData>();
-                            endpointConfig.setPreHandlerChains(handlerChains);
+                            commonConfig.setPreHandlerChains(handlerChains);
                         }
                     } else if (POST_HANDLER_CHAIN.equals(handlerChainType)) {
-                        handlerChains = endpointConfig.getPostHandlerChains();
+                        handlerChains = commonConfig.getPostHandlerChains();
                         if (handlerChains == null) {
                             handlerChains = new LinkedList<UnifiedHandlerChainMetaData>();
-                            endpointConfig.setPostHandlerChains(handlerChains);
+                            commonConfig.setPostHandlerChains(handlerChains);
                         }
                     } else {
                         throw MESSAGES.wrongHandlerChainType(handlerChainType, PRE_HANDLER_CHAIN, POST_HANDLER_CHAIN);
@@ -94,7 +99,7 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
                     return;
                 }
             }
-            throw MESSAGES.missingEndpointConfig(configName);
+            throw MESSAGES.missingConfig(configName);
         }
     }
 

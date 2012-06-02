@@ -1,0 +1,24 @@
+<subsystem xmlns="urn:jboss:domain:webservices:1.2">
+	<modify-wsdl-address>true</modify-wsdl-address>
+	<wsdl-host>localhost</wsdl-host>
+	<wsdl-port>9090</wsdl-port>
+	<wsdl-secure-port>9443</wsdl-secure-port>
+	<endpoint-config name="Standard-Endpoint-Config"/> 
+    <endpoint-config name="Recording-Endpoint-Config"> 
+        <pre-handler-chain name="recording-handlers" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
+            <handler name="RecordingHandler" class="org.jboss.ws.common.invocation.RecordingServerHandler"/>
+        </pre-handler-chain>
+        <post-handler-chain name="recording-handlers2" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
+            <handler name="RecordingHandler2" class="org.jboss.ws.common.invocation.RecordingServerHandler"/>
+        </post-handler-chain>
+        <property name="foo" value="bar"/> 
+    </endpoint-config>
+    <client-config name="My-Client-Config"> 
+        <pre-handler-chain name="my-handlers" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
+            <handler name="MyHandler" class="org.jboss.ws.common.invocation.MyHandler"/>
+        </pre-handler-chain>
+        <post-handler-chain name="my-handlers2" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
+            <handler name="MyHandler2" class="org.jboss.ws.common.invocation.MyHandler2"/>
+        </post-handler-chain>
+    </client-config>
+</subsystem>

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -27,7 +27,7 @@ import java.util.Map;
 /**
  * WS configuration elements.
  *
- * @author alessio.soldano@jboss.com
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 enum Element {
@@ -39,6 +39,7 @@ enum Element {
     WSDL_HOST(Constants.WSDL_HOST),
     WSDL_PORT(Constants.WSDL_PORT),
     WSDL_SECURE_PORT(Constants.WSDL_SECURE_PORT),
+    CLIENT_CONFIG(Constants.CLIENT_CONFIG),
     ENDPOINT_CONFIG(Constants.ENDPOINT_CONFIG),
     CONFIG_NAME(Constants.CONFIG_NAME),
     PROPERTY(Constants.PROPERTY),
