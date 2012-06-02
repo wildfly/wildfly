@@ -22,56 +22,51 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
-import static org.jboss.as.webservices.dmr.PackageUtils.getConfigs;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
 import org.jboss.wsf.spi.management.ServerConfig;
-import org.jboss.wsf.spi.metadata.config.CommonConfig;
+import org.jboss.wsf.spi.metadata.config.ClientConfig;
 
 /**
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
- * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
+ * OperationHandler to remove the client configuration
+ *
+ * @author <a href="alessio.soldano@jboss.com">Alessio Soldano</a>
  */
-final class PropertyRemove extends AbstractRemoveStepHandler {
+final class ClientConfigRemove extends AbstractRemoveStepHandler {
 
-    static final PropertyRemove INSTANCE = new PropertyRemove();
+    static final ClientConfigRemove INSTANCE = new ClientConfigRemove();
 
-    private PropertyRemove() {
+    private ClientConfigRemove() {
         // forbidden instantiation
     }
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final ServerConfig config = getServerConfig(context);
         if (config != null) {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            final String propertyName = address.getElement(address.size() - 1).getValue();
-            PathElement confElem = address.getElement(address.size() - 2);
-            final String configType = confElem.getKey();
-            final String configName = confElem.getValue();
-            for (final CommonConfig commonConfig : getConfigs(config, configType)) {
-                if (configName.equals(commonConfig.getConfigName())) {
-                    if (commonConfig.getProperties().containsKey(propertyName)) {
-                        commonConfig.getProperties().remove(propertyName);
-                        context.restartRequired();
-                    }
-                    return;
+            final String name = address.getLastElement().getValue();
+
+            ClientConfig target = null;
+            for (ClientConfig clConfig : config.getClientConfigs()) {
+                if (clConfig.getConfigName().equals(name)) {
+                    target = clConfig;
                 }
             }
-            throw MESSAGES.missingConfig(configName);
+            if (target != null) {
+                config.getClientConfigs().remove(target);
+                context.restartRequired();
+            }
         }
     }
 
     @Override
-    protected void recoverServices(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        PropertyAdd.INSTANCE.performRuntime(context, operation, model, null, null);
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        ClientConfigAdd.INSTANCE.performRuntime(context, operation, model, null, null);
     }
-
 }

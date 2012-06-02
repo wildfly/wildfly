@@ -37,6 +37,8 @@ enum Namespace {
 
     WEBSERVICES_1_1("urn:jboss:domain:webservices:1.1"),
 
+    WEBSERVICES_1_2("urn:jboss:domain:webservices:1.2"),
+
     JAVAEE("http://java.sun.com/xml/ns/javaee"),
 
     JAXWSCONFIG("urn:jboss:jbossws-jaxws-config:4.0");
@@ -44,7 +46,7 @@ enum Namespace {
     /**
      * The current namespace version.
      */
-    static final Namespace CURRENT = WEBSERVICES_1_1;
+    static final Namespace CURRENT = WEBSERVICES_1_2;
 
     private final String name;
 

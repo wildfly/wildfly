@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.dmr.Constants.CLASS;
+import static org.jboss.as.webservices.dmr.Constants.CLIENT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
@@ -47,6 +48,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
 final class WSSubsystemDescribe implements OperationStepHandler {
 
@@ -67,66 +69,73 @@ final class WSSubsystemDescribe implements OperationStepHandler {
         result.add(subsystemAdd);
 
         if (wsSubsystem.hasDefined(ENDPOINT_CONFIG)) {
-            final ModelNode endpointConfigs = wsSubsystem.get(ENDPOINT_CONFIG);
-            for (final String configName : endpointConfigs.keys()) {
-                final ModelNode endpointConfig = endpointConfigs.get(configName);
-                final ModelNode endpointConfigAddress = wsSubsystemAddress.clone().add(ENDPOINT_CONFIG, configName);
-                final ModelNode endpointConfigAdd = getEndpointConfigAddOperation(endpointConfigAddress);
-                result.add(endpointConfigAdd);
-
-                if (endpointConfig.hasDefined(PRE_HANDLER_CHAIN)) {
-                    final ModelNode preHandlerChains = endpointConfig.get(PRE_HANDLER_CHAIN);
-                    for (final String preHandlerChainName : preHandlerChains.keys()) {
-                        final ModelNode preHandlerChain = preHandlerChains.get(preHandlerChainName);
-                        final ModelNode preHandlerChainAddress = endpointConfigAddress.clone().add(PRE_HANDLER_CHAIN, preHandlerChainName);
-                        final ModelNode preHandlerChainAdd = getHandlerChainAddOperation(preHandlerChainAddress, preHandlerChain);
-                        result.add(preHandlerChainAdd);
-
-                        if (preHandlerChain.hasDefined(HANDLER)) {
-                            final ModelNode handlers = preHandlerChain.get(HANDLER);
-                            for (final String handlerName : handlers.keys()) {
-                                final ModelNode handler = handlers.get(handlerName);
-                                final ModelNode handlerAddress = preHandlerChainAddress.clone().add(HANDLER, handlerName);
-                                final ModelNode handlerAdd = getHandlerAddOperation(handlerAddress, handler);
-                                result.add(handlerAdd);
-                            }
-                        }
-                    }
-                }
-
-                if (endpointConfig.hasDefined(POST_HANDLER_CHAIN)) {
-                    final ModelNode postHandlerChains = endpointConfig.get(POST_HANDLER_CHAIN);
-                    for (final String postHandlerChainName : postHandlerChains.keys()) {
-                        final ModelNode postHandlerChain = postHandlerChains.get(postHandlerChainName);
-                        final ModelNode postHandlerChainAddress = endpointConfigAddress.clone().add(POST_HANDLER_CHAIN, postHandlerChainName);
-                        final ModelNode postHandlerChainAdd = getHandlerChainAddOperation(postHandlerChainAddress, postHandlerChain);
-                        result.add(postHandlerChainAdd);
-
-                        if (postHandlerChain.hasDefined(HANDLER)) {
-                            final ModelNode handlers = postHandlerChain.get(HANDLER);
-                            for (final String handlerName : handlers.keys()) {
-                                final ModelNode handler = handlers.get(handlerName);
-                                final ModelNode handlerAddress = postHandlerChainAddress.clone().add(HANDLER, handlerName);
-                                final ModelNode handlerAdd = getHandlerAddOperation(handlerAddress, handler);
-                                result.add(handlerAdd);
-                            }
-                        }
-                    }
-                }
-
-                if (endpointConfig.hasDefined(PROPERTY)) {
-                    final ModelNode properties = endpointConfig.get(PROPERTY);
-                    for (final String propertyName : properties.keys()) {
-                        final ModelNode property = properties.get(propertyName);
-                        final ModelNode propertyAddress = endpointConfigAddress.clone().add(PROPERTY, propertyName);
-                        final ModelNode propertyAdd = getPropertyAddOperation(propertyAddress, property);
-                        result.add(propertyAdd);
-                    }
-                }
-            }
+            processConfig(wsSubsystem, ENDPOINT_CONFIG, wsSubsystemAddress, result);
+        }
+        if (wsSubsystem.hasDefined(CLIENT_CONFIG)) {
+            processConfig(wsSubsystem, CLIENT_CONFIG, wsSubsystemAddress, result);
         }
 
         context.completeStep();
+    }
+
+    private static void processConfig(final ModelNode wsSubsystem, final String elementName, final ModelNode wsSubsystemAddress, final ModelNode result) {
+        final ModelNode configs = wsSubsystem.get(elementName);
+        for (final String configName : configs.keys()) {
+            final ModelNode config = configs.get(configName);
+            final ModelNode configAddress = wsSubsystemAddress.clone().add(elementName, configName);
+            final ModelNode configAdd = getConfigAddOperation(configAddress);
+            result.add(configAdd);
+
+            if (config.hasDefined(PRE_HANDLER_CHAIN)) {
+                final ModelNode preHandlerChains = config.get(PRE_HANDLER_CHAIN);
+                for (final String preHandlerChainName : preHandlerChains.keys()) {
+                    final ModelNode preHandlerChain = preHandlerChains.get(preHandlerChainName);
+                    final ModelNode preHandlerChainAddress = configAddress.clone().add(PRE_HANDLER_CHAIN, preHandlerChainName);
+                    final ModelNode preHandlerChainAdd = getHandlerChainAddOperation(preHandlerChainAddress, preHandlerChain);
+                    result.add(preHandlerChainAdd);
+
+                    if (preHandlerChain.hasDefined(HANDLER)) {
+                        final ModelNode handlers = preHandlerChain.get(HANDLER);
+                        for (final String handlerName : handlers.keys()) {
+                            final ModelNode handler = handlers.get(handlerName);
+                            final ModelNode handlerAddress = preHandlerChainAddress.clone().add(HANDLER, handlerName);
+                            final ModelNode handlerAdd = getHandlerAddOperation(handlerAddress, handler);
+                            result.add(handlerAdd);
+                        }
+                    }
+                }
+            }
+
+            if (config.hasDefined(POST_HANDLER_CHAIN)) {
+                final ModelNode postHandlerChains = config.get(POST_HANDLER_CHAIN);
+                for (final String postHandlerChainName : postHandlerChains.keys()) {
+                    final ModelNode postHandlerChain = postHandlerChains.get(postHandlerChainName);
+                    final ModelNode postHandlerChainAddress = configAddress.clone().add(POST_HANDLER_CHAIN, postHandlerChainName);
+                    final ModelNode postHandlerChainAdd = getHandlerChainAddOperation(postHandlerChainAddress, postHandlerChain);
+                    result.add(postHandlerChainAdd);
+
+                    if (postHandlerChain.hasDefined(HANDLER)) {
+                        final ModelNode handlers = postHandlerChain.get(HANDLER);
+                        for (final String handlerName : handlers.keys()) {
+                            final ModelNode handler = handlers.get(handlerName);
+                            final ModelNode handlerAddress = postHandlerChainAddress.clone().add(HANDLER, handlerName);
+                            final ModelNode handlerAdd = getHandlerAddOperation(handlerAddress, handler);
+                            result.add(handlerAdd);
+                        }
+                    }
+                }
+            }
+
+            if (config.hasDefined(PROPERTY)) {
+                final ModelNode properties = config.get(PROPERTY);
+                for (final String propertyName : properties.keys()) {
+                    final ModelNode property = properties.get(propertyName);
+                    final ModelNode propertyAddress = configAddress.clone().add(PROPERTY, propertyName);
+                    final ModelNode propertyAdd = getPropertyAddOperation(propertyAddress, property);
+                    result.add(propertyAdd);
+                }
+            }
+        }
     }
 
     private static ModelNode getSubsystemAddOperation(final ModelNode wsSubsystemAddress, final ModelNode wsSubsystem) {
@@ -148,11 +157,11 @@ final class WSSubsystemDescribe implements OperationStepHandler {
         return wsSubsystemAdd;
     }
 
-    private static ModelNode getEndpointConfigAddOperation(final ModelNode endpointConfigAddress) {
-        final ModelNode endpointConfigAdd = new ModelNode();
-        endpointConfigAdd.get(OP).set(ADD);
-        endpointConfigAdd.get(OP_ADDR).set(endpointConfigAddress);
-        return endpointConfigAdd;
+    private static ModelNode getConfigAddOperation(final ModelNode configAddress) {
+        final ModelNode configAdd = new ModelNode();
+        configAdd.get(OP).set(ADD);
+        configAdd.get(OP_ADDR).set(configAddress);
+        return configAdd;
     }
 
     private static ModelNode getPropertyAddOperation(final ModelNode propertyAddress, final ModelNode property) {
