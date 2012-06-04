@@ -25,7 +25,7 @@ package org.jboss.as.jpa.interceptor;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.jpa.container.ReferenceCountedEntityManager;
+import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.container.SFSBCallStack;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
@@ -45,9 +45,9 @@ public class SFSBInvocationInterceptor implements Interceptor {
 
     public static final InterceptorFactory FACTORY = new Factory();
 
-    private final Map<String, ReferenceCountedEntityManager> entityManagers;
+    private final Map<String, ExtendedEntityManager> entityManagers;
 
-    protected SFSBInvocationInterceptor(final Map<String, ReferenceCountedEntityManager> entityManagers) {
+    protected SFSBInvocationInterceptor(final Map<String, ExtendedEntityManager> entityManagers) {
         this.entityManagers = entityManagers;
     }
 
@@ -66,7 +66,7 @@ public class SFSBInvocationInterceptor implements Interceptor {
 
         @Override
         public Interceptor create(final InterceptorFactoryContext context) {
-            return new SFSBInvocationInterceptor((Map<String, ReferenceCountedEntityManager>) ((AtomicReference<ManagedReference>) context.getContextData().get(CONTEXT_KEY)).get().getInstance());
+            return new SFSBInvocationInterceptor((Map<String, ExtendedEntityManager>) ((AtomicReference<ManagedReference>) context.getContextData().get(CONTEXT_KEY)).get().getInstance());
         }
     }
 }

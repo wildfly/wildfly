@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.jpa.container.ReferenceCountedEntityManager;
+import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.container.CreatedEntityManagers;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
@@ -45,17 +45,20 @@ import org.jboss.msc.value.ImmediateValue;
  */
 public class SFSBCreateInterceptor implements Interceptor {
 
-    private final Map<String, ReferenceCountedEntityManager> entityManagers;
+    private final Map<String, ExtendedEntityManager> entityManagers;
 
-    private SFSBCreateInterceptor(final Map<String, ReferenceCountedEntityManager> entityManagers) {
+    private SFSBCreateInterceptor(final Map<String, ExtendedEntityManager> entityManagers) {
         this.entityManagers = entityManagers;
     }
 
     @Override
     public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
-        final List<ReferenceCountedEntityManager> ems = CreatedEntityManagers.getDeferredEntityManagers();
-        for (ReferenceCountedEntityManager e : ems) {
-            entityManagers.put(e.getEntityManager().getScopedPuName(), e);
+        // Get all of the extended persistence contexts in use by the bean (some of which may of been inherited from
+        // other beans).
+
+        final List<ExtendedEntityManager> ems = CreatedEntityManagers.getDeferredEntityManagers();
+        for (ExtendedEntityManager e : ems) {
+            entityManagers.put(e.getScopedPuName(), e);
         }
         return interceptorContext.proceed();
     }
@@ -66,11 +69,11 @@ public class SFSBCreateInterceptor implements Interceptor {
 
         @Override
         public Interceptor create(final InterceptorFactoryContext context) {
-            HashMap<String, ReferenceCountedEntityManager> entityManagers;
+            HashMap<String, ExtendedEntityManager> entityManagers;
             if (context.getContextData().containsKey(SFSBInvocationInterceptor.CONTEXT_KEY)) {
-                entityManagers = (HashMap<String, ReferenceCountedEntityManager>) ((AtomicReference<ManagedReference>) context.getContextData().get(SFSBInvocationInterceptor.CONTEXT_KEY)).get().getInstance();
+                entityManagers = (HashMap<String, ExtendedEntityManager>) ((AtomicReference<ManagedReference>) context.getContextData().get(SFSBInvocationInterceptor.CONTEXT_KEY)).get().getInstance();
             } else {
-                entityManagers = new HashMap<String, ReferenceCountedEntityManager>();
+                entityManagers = new HashMap<String, ExtendedEntityManager>();
                 context.getContextData().put(SFSBInvocationInterceptor.CONTEXT_KEY, new AtomicReference<ManagedReference>(new ValueManagedReference(new ImmediateValue<Object>(entityManagers))));
             }
             return new SFSBCreateInterceptor(entityManagers);

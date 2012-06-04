@@ -94,6 +94,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     private void handleJarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!isEarDeployment(deploymentUnit) && !isWarDeployment(deploymentUnit)) {
+
             // handle META-INF/persistence.xml
             // ordered list of PUs
             List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
@@ -116,6 +117,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     private void handleWarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isWarDeployment(deploymentUnit)) {
+
             int puCount;
             // ordered list of PUs
             List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
@@ -155,6 +157,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     private void handleEarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isEarDeployment(deploymentUnit)) {
+
             int puCount = 0;
             // ordered list of PUs
             List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);

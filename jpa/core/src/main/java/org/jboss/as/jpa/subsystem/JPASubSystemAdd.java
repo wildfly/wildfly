@@ -29,11 +29,14 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.jpa.config.JPADeploymentSettings;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
 import org.jboss.as.jpa.processor.JPAAnnotationProcessor;
 import org.jboss.as.jpa.processor.JPAClassFileTransformerProcessor;
 import org.jboss.as.jpa.processor.JPADependencyProcessor;
 import org.jboss.as.jpa.processor.JPAInterceptorProcessor;
+import org.jboss.as.jpa.processor.JPAJarJBossAllParser;
+import org.jboss.as.jpa.processor.JpaAttachments;
 import org.jboss.as.jpa.processor.PersistenceBeginInstallProcessor;
 import org.jboss.as.jpa.processor.PersistenceCompleteInstallProcessor;
 import org.jboss.as.jpa.processor.PersistenceRefProcessor;
@@ -43,6 +46,7 @@ import org.jboss.as.jpa.service.JPAUserTransactionListenerService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -81,6 +85,9 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
                 // set Hibernate persistence provider as the default provider
                 javax.persistence.spi.PersistenceProviderResolverHolder.setPersistenceProviderResolver(
                     PersistenceProviderResolverImpl.getInstance());
+
+                processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER,
+                        new JBossAllXmlParserRegisteringProcessor<JPADeploymentSettings>(JPAJarJBossAllParser.ROOT_ELEMENT, JpaAttachments.DEPLOYMENT_SETTINGS_KEY, new JPAJarJBossAllParser()));
 
                 // handles parsing of persistence.xml
                 processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_PERSISTENCE_UNIT, new PersistenceUnitParseProcessor());
