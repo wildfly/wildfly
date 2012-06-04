@@ -136,14 +136,13 @@ class ProcessWrapper {
         public void run() {
             final InputStream source = this.source;
             try {
-                final BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(source)));
-                String s;
-                while ((s = reader.readLine()) != null) {
-                    if(writeOutput) {
-                        target.println(s);
-                    }
-                }
-                source.close();
+               byte[] buf = new byte[32];
+               int num;
+               // Do not try reading a line cos it considers '\r' end of line
+               while((num = source.read(buf)) != -1){
+                  if (writeOutput)
+                     System.out.write(buf, 0, num);
+               }
             } catch (IOException e) {
                 if(! ProcessWrapper.this.stopped) {
                     e.printStackTrace(target);
