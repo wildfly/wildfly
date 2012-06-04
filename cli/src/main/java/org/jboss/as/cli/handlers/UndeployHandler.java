@@ -195,7 +195,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
             return;
         }
 
-        final ModelNode request = buildRequest(ctx);
+        final ModelNode request = buildRequestWOValidation(ctx);
         addHeaders(ctx, request);
 
         final ModelNode result;
