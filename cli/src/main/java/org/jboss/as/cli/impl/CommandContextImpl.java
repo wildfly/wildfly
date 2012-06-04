@@ -540,7 +540,13 @@ class CommandContextImpl implements CommandContext {
         try {
             handle(line);
         } catch (CommandLineException e) {
-            error(e.getLocalizedMessage());
+            final StringBuilder buf = new StringBuilder();
+            buf.append(e.getLocalizedMessage());
+            Throwable t = e.getCause();
+            while(t != null) {
+                buf.append(": ").append(t.getLocalizedMessage());
+            }
+            error(buf.toString());
         }
     }
 

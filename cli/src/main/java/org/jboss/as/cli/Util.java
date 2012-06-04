@@ -90,6 +90,7 @@ public class Util {
     public static final String OUTCOME = "outcome";
     public static final String PATH = "path";
     public static final String PERSISTENT = "persistent";
+    public static final String PROBLEM = "problem";
     public static final String PRODUCT_NAME = "product-name";
     public static final String PRODUCT_VERSION = "product-version";
     public static final String PROFILE = "profile";
