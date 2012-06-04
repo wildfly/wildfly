@@ -325,18 +325,18 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         @Override
         public void run() {
             final InputStream stream = process.getInputStream();
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
             final boolean writeOutput = getContainerConfiguration().isOutputToConsole();
 
-            String line = null;
-            try {
-                while ((line = reader.readLine()) != null) {
-                    if (writeOutput) {
-                        System.out.println(line);
-                    }
-                }
-            } catch (IOException e) {
-            }
+           try {
+              byte[] buf = new byte[32];
+              int num;
+              // Do not try reading a line cos it considers '\r' end of line
+              while((num = stream.read(buf)) != -1){
+                 if (writeOutput)
+                    System.out.write(buf, 0, num);
+              }
+           } catch (IOException e) {
+           }
         }
 
     }
