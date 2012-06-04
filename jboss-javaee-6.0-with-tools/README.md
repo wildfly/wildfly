@@ -96,7 +96,7 @@ Apart from setting a container, you need to choose a testing framework (e.g. JUn
     </dependency>
 
 *Note: Don't forget to set JBOSS_HOME environment variable so Arquillian will be able to find your container location.
-If you want to experiment with Arquillian settings, you can find plenty of information at <http://arqpreview-alrubinger.rhcloud.com/>*
+If you want to experiment with Arquillian settings, you can find plenty of information at <http://arquillian.org/>*
 
 Arquillian allows you to setup two distinct protocols for communication between Arquillian and application server, a Servlet
 based and a JMX based one. In order to have a protocol activated, you need to add its artifact into `<dependencies>` section and configure
