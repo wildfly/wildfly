@@ -34,6 +34,7 @@ import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_MEMORY_MEAS
 import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_MEMORY_WARNING_THRESHOLD;
 import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
+import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PERCENTAGE;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
@@ -444,7 +445,10 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .build();
 
-    SimpleAttributeDefinition PATH = new SimpleAttributeDefinition("path", ModelType.STRING, false);
+    SimpleAttributeDefinition PATH = create("path", ModelType.STRING)
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .build();
 
     SimpleAttributeDefinition PERF_BLAST_PAGES = new SimpleAttributeDefinition("perf-blast-pages",
             new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_PERF_BLAST_PAGES), ModelType.INT,  true,
