@@ -22,30 +22,19 @@
 
 package org.jboss.as.ee.subsystem;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * JBossAS domain extension used to initialize the ee subsystem handlers and associated classes.
@@ -57,6 +46,8 @@ public class EeExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "ee";
     private static final String RESOURCE_NAME = EeExtension.class.getPackage().getName() + ".LocalDescriptions";
+
+    protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, EeExtension.class.getClassLoader(), true, false);
@@ -73,7 +64,7 @@ public class EeExtension implements Extension {
         final ManagementResourceRegistration rootResource = subsystem.registerSubsystemModel(EeSubsystemRootResource.INSTANCE);
 
         // Mandatory describe operation
-        rootResource.registerOperationHandler(DESCRIBE, EESubsystemDescribeHandler.INSTANCE, EESubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        rootResource.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         subsystem.registerXMLElementWriter(EESubsystemParser11.INSTANCE);
     }
@@ -86,39 +77,4 @@ public class EeExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_0.getUriString(), EESubsystemParser10.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_1.getUriString(), EESubsystemParser11.INSTANCE);
     }
-
-    static ModelNode createEESubSystemAddOperation() {
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
-        return subsystem;
-    }
-
-
-    private static class EESubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
-        static final EESubsystemDescribeHandler INSTANCE = new EESubsystemDescribeHandler();
-
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-            final ModelNode model = Resource.Tools.readModel(resource);
-            final ModelNode op = createEESubSystemAddOperation();
-            if (model.hasDefined(GlobalModulesDefinition.GLOBAL_MODULES)) {
-                op.get(GlobalModulesDefinition.GLOBAL_MODULES).set(model.get(GlobalModulesDefinition.GLOBAL_MODULES));
-            }
-            if (model.hasDefined(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName())) {
-                op.get(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName()).set(model.get(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName()));
-            }
-            if (model.hasDefined(Element.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.getLocalName())) {
-                op.get(Element.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.getLocalName()).set(model.get(Element.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.getLocalName()));
-            }
-            context.getResult().add(op);
-            context.completeStep();
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return CommonDescriptions.getSubsystemDescribeOperation(locale);
-        }
-    }
-
 }

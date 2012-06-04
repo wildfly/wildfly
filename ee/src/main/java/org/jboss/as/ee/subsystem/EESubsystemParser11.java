@@ -7,6 +7,8 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -57,7 +59,7 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
         // EE subsystem doesn't have any attributes, so make sure that the xml doesn't have any
         requireNoAttributes(reader);
 
-        final ModelNode eeSubSystem = EeExtension.createEESubSystemAddOperation();
+        final ModelNode eeSubSystem = Util.createAddOperation(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM));
         // add the subsystem to the ModelNode(s)
         list.add(eeSubSystem);
 

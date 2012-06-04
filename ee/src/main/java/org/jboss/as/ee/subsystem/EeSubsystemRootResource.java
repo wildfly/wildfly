@@ -24,6 +24,7 @@ package org.jboss.as.ee.subsystem;
 import java.util.EnumSet;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -70,7 +71,7 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
     private final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor = new DescriptorPropertyReplacementProcessor(Attachments.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT);
 
     private EeSubsystemRootResource() {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, EeExtension.SUBSYSTEM_NAME),
+        super(EeExtension.PATH_SUBSYSTEM,
                 EeExtension.getResourceDescriptionResolver(EeExtension.SUBSYSTEM_NAME));
     }
 
@@ -84,7 +85,7 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
         final DescriptionProvider subsystemAddDescription = new DefaultResourceAddDescriptionProvider(rootResourceRegistration, rootResolver);
         rootResourceRegistration.registerOperationHandler(ADD, subsystemAdd, subsystemAddDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
         final DescriptionProvider subsystemRemoveDescription = new DefaultResourceRemoveDescriptionProvider(rootResolver);
-        rootResourceRegistration.registerOperationHandler(REMOVE, EeSubsystemRemove.INSTANCE, subsystemRemoveDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
+        rootResourceRegistration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, subsystemRemoveDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
 
     }
 
