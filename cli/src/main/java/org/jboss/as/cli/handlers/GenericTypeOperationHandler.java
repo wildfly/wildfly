@@ -972,7 +972,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                     if(argName.equals(GenericTypeOperationHandler.this.name.getFullName())) {
                         continue;
                     }
-                    throw new CommandFormatException("Unrecognized argument " + argName + " for command '" + operation + "'.");
+                    throw new CommandFormatException("Unrecognized argument " + argName + " for command '" + opName + "'.");
                 }
 
                 final String propName;

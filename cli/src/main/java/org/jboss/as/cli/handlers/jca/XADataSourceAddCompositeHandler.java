@@ -55,6 +55,10 @@ public class XADataSourceAddCompositeHandler extends ResourceCompositeOperationH
         xaProps = new ArgumentWithValue(this, null, ArgumentValueConverter.PROPERTIES, "--" + XA_DATASOURCE_PROPERTIES);
     }
 
+    protected void recognizeArguments(CommandContext ctx) throws CommandFormatException {
+        // argument validation is performed during request construction
+    }
+
     @Override
     protected Map<String, CommandArgument> loadArguments(CommandContext ctx) {
         final Map<String, CommandArgument> args = super.loadArguments(ctx);
