@@ -207,13 +207,13 @@ class HornetQServerAdd implements OperationStepHandler {
 
                 // Create path services
 
-                String bindingsPath = getPath(DEFAULT_BINDINGS_DIR, model.get(PATH, BINDINGS_DIRECTORY));
+                String bindingsPath = getPath(DEFAULT_BINDINGS_DIR, CommonAttributes.PATH.resolveModelAttribute(context, model.get(PATH, BINDINGS_DIRECTORY)));
                 String bindingsRelativeToPath = getRelativeToPath(model.get(PATH, BINDINGS_DIRECTORY));
-                String journalPath = getPath(DEFAULT_JOURNAL_DIR, model.get(PATH, JOURNAL_DIRECTORY));
+                String journalPath = getPath(DEFAULT_JOURNAL_DIR, CommonAttributes.PATH.resolveModelAttribute(context, model.get(PATH, JOURNAL_DIRECTORY)));
                 String journalRelativeToPath = getRelativeToPath(model.get(PATH, JOURNAL_DIRECTORY));
-                String largeMessagePath = getPath(DEFAULT_LARGE_MESSAGE_DIR, model.get(PATH, LARGE_MESSAGES_DIRECTORY));
+                String largeMessagePath = getPath(DEFAULT_LARGE_MESSAGE_DIR, CommonAttributes.PATH.resolveModelAttribute(context, model.get(PATH, LARGE_MESSAGES_DIRECTORY)));
                 String largeMessageRelativeToPath = getRelativeToPath(model.get(PATH, LARGE_MESSAGES_DIRECTORY));
-                String pagingPath = getPath(DEFAULT_PAGING_DIR, model.get(PATH, PAGING_DIRECTORY));
+                String pagingPath = getPath(DEFAULT_PAGING_DIR, CommonAttributes.PATH.resolveModelAttribute(context, model.get(PATH, PAGING_DIRECTORY)));
                 String pagingRelativeToPath = getRelativeToPath(model.get(PATH, PAGING_DIRECTORY));
 
                 // Create the HornetQ Service
@@ -456,7 +456,7 @@ class HornetQServerAdd implements OperationStepHandler {
     * @return the path
     */
     static String getPath(final String name, final ModelNode path) {
-        return path.hasDefined(PATH) ? path.get(PATH).asString() : DEFAULT_PATH + name;
+        return path.isDefined() ? path.asString() : DEFAULT_PATH + name;
     }
 
     /**
