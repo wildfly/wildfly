@@ -24,8 +24,9 @@ package org.jboss.as.test.integration.management.cli;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
-import org.junit.BeforeClass;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,72 +36,30 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class MultipleLinesCommandsTestCase {
+public class CdTestCase {
 
-    private static String[] operation;
-    private static String[] command;
-
-    @BeforeClass
-    public static void init() {
-        final String lineSep = System.getProperty("line.separator");
-
-        operation = new String[]{
-                ":\\" + lineSep,
-                "read-resource(\\" + lineSep,
-                "include-defaults=true,\\" + lineSep,
-                "recursive=false)"
-        };
-
-        command = new String[]{
-                "read-attribute\\" + lineSep,
-                "product-name\\" + lineSep,
-                "--verbose"
-        };
-    }
-
-    protected void handleAsOneString(String[] arr) throws Exception {
-        final StringBuilder buf = new StringBuilder();
-        for(String line : arr) {
-            buf.append(line);
-        }
+    @Test
+    public void testValidAddress() throws Exception {
         final CommandContext ctx = CLITestUtil.getCommandContext();
         try {
             ctx.connectController();
-            ctx.handle(buf.toString());
-        } finally {
-            ctx.terminateSession();
-        }
-    }
-
-    protected void handleInPieces(String[] arr) throws Exception {
-        final CommandContext ctx = CLITestUtil.getCommandContext();
-        try {
-            ctx.connectController();
-            for(String line : arr) {
-                ctx.handle(line);
-            }
+            ctx.handle("cd subsystem=datasources");
         } finally {
             ctx.terminateSession();
         }
     }
 
     @Test
-    public void testOperationAsOneString() throws Exception {
-        handleAsOneString(operation);
-    }
-
-    @Test
-    public void testOperationInPieces() throws Exception {
-        handleInPieces(operation);
-    }
-
-    @Test
-    public void testCommandAsOneString() throws Exception {
-        handleAsOneString(command);
-    }
-
-    @Test
-    public void testCommandInPieces() throws Exception {
-        handleInPieces(command);
+    public void testInvalidAddress() throws Exception {
+        final CommandContext ctx = CLITestUtil.getCommandContext();
+        try {
+            ctx.connectController();
+            ctx.handle("cd subsystem=subsystem");
+            Assert.fail("Can't cd into a non-existing nodepath.");
+        } catch(CommandLineException e) {
+            // expected
+        } finally {
+            ctx.terminateSession();
+        }
     }
 }
