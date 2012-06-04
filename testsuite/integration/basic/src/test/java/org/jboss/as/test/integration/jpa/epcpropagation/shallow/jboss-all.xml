@@ -1,0 +1,5 @@
+<jboss>
+    <jboss-jpa xmlns="http://www.jboss.com/xml/ns/javaee">
+    <extended-persistence inheritance="SHALLOW"/>
+    </jboss-jpa>
+</jboss>

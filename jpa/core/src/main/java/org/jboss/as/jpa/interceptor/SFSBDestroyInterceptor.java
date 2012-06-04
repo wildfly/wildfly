@@ -25,7 +25,7 @@ package org.jboss.as.jpa.interceptor;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.jpa.container.ReferenceCountedEntityManager;
+import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -40,9 +40,9 @@ import org.jboss.invocation.InterceptorFactoryContext;
  */
 public class SFSBDestroyInterceptor implements Interceptor {
 
-    private final Map<String, ReferenceCountedEntityManager> entityManagers;
+    private final Map<String, ExtendedEntityManager> entityManagers;
 
-    private SFSBDestroyInterceptor(final Map<String, ReferenceCountedEntityManager> entityManagers) {
+    private SFSBDestroyInterceptor(final Map<String, ExtendedEntityManager> entityManagers) {
         this.entityManagers = entityManagers;
     }
 
@@ -51,8 +51,9 @@ public class SFSBDestroyInterceptor implements Interceptor {
         try {
             return interceptorContext.proceed();
         } finally {
-            for(Map.Entry<String, ReferenceCountedEntityManager> entry : entityManagers.entrySet()) {
-                entry.getValue().close();
+            for(Map.Entry<String, ExtendedEntityManager> entry : entityManagers.entrySet()) {
+                // close all extended persistence contexts that are referenced by the bean being destroyed
+                entry.getValue().refCountedClose();
             }
         }
     }
@@ -61,7 +62,7 @@ public class SFSBDestroyInterceptor implements Interceptor {
 
         @Override
         public Interceptor create(final InterceptorFactoryContext context) {
-            return new SFSBDestroyInterceptor((Map<String, ReferenceCountedEntityManager>) ((AtomicReference<ManagedReference>) context.getContextData().get(SFSBInvocationInterceptor.CONTEXT_KEY)).get().getInstance());
+            return new SFSBDestroyInterceptor((Map<String, ExtendedEntityManager>) ((AtomicReference<ManagedReference>) context.getContextData().get(SFSBInvocationInterceptor.CONTEXT_KEY)).get().getInstance());
         }
     }
 }
