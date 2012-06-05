@@ -33,30 +33,19 @@
     </resources>
 
     <dependencies>
-        <module name="com.sun.tools.ws" services="import" optional="true"/>
-        <module name="com.sun.xml.bind" services="import"/>
-        <module name="com.sun.xml.fastinfoset" optional="true"/>
         <module name="javax.api" />
         <module name="javax.servlet.api" />
-        <module name="javax.jws.api" />
         <module name="javax.mail.api" />
         <module name="javax.wsdl4j.api" />
-        <module name="javax.xml.bind.api" />
         <module name="javax.xml.stream.api" />
         <module name="javax.xml.rpc.api" />
-        <module name="javax.xml.ws.api" />
-        <module name="org.picketbox"/>
         <module name="org.apache.xerces" services="import"/>
-        <module name="org.apache.santuario.xmlsec" optional="true"/>
-        <module name="org.apache.ws.commons.policy" optional="true"/>
         <module name="org.javassist" />
-        <module name="org.codehaus.jettison" optional="true"/>
         <module name="org.jboss.netty" />
         <module name="org.jboss.xb" />
         <module name="org.jboss.ws.api" />
         <module name="org.jboss.ws.spi" />
         <module name="org.jboss.ws.common" />
-        <module name="org.jboss.ws.native.jbossws-native-factories" services="import"/>
         <module name="org.jboss.ws.native.jbossws-native-services" services="import"/>
         <module name="org.jboss.common-core" />
         <module name="org.jboss.logging" />

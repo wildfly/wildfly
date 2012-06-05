@@ -519,9 +519,10 @@
 
         <module-def name="org.apache.cxf">
             <maven-resource group="org.apache.cxf" artifact="cxf-api"/>
-            <maven-resource group="org.apache.cxf" artifact="cxf-common-utilities"/>
+        </module-def>
+
+        <module-def name="org.apache.cxf.impl">
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-bindings-coloc"/>
-            <maven-resource group="org.apache.cxf" artifact="cxf-rt-bindings-http"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-bindings-object"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-bindings-soap"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-bindings-xml"/>
@@ -531,11 +532,11 @@
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-frontend-jaxws"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-frontend-simple"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-management"/>
-            <maven-resource group="org.apache.cxf" artifact="cxf-rt-transports-common"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-transports-http"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-transports-jms"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-transports-local"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-ws-addr"/>
+            <maven-resource group="org.apache.cxf" artifact="cxf-rt-ws-mex"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-ws-policy"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-ws-rm"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-ws-security"/>
@@ -545,6 +546,7 @@
             <maven-resource group="org.apache.cxf" artifact="cxf-tools-wsdlto-core"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-tools-wsdlto-databinding-jaxb"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-tools-wsdlto-frontend-jaxws"/>
+            <maven-resource group="org.apache.cxf.services.sts" artifact="cxf-services-sts-core"/>
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-boolean"/>
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-dv"/>
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-ts"/>
@@ -1097,10 +1099,6 @@
             <maven-resource group="org.jboss.ws.native" artifact="jbossws-native-core"/>
         </module-def>
 
-        <module-def name="org.jboss.ws.native.jbossws-native-factories">
-            <maven-resource group="org.jboss.ws.native" artifact="jbossws-native-factories"/>
-        </module-def>
-
         <module-def name="org.jboss.ws.native.jbossws-native-services">
             <maven-resource group="org.jboss.ws.native" artifact="jbossws-native-services"/>
         </module-def>
@@ -1115,6 +1113,12 @@
 
         <module-def name="org.jboss.ws.tools.common">
             <maven-resource group="org.jboss.ws" artifact="jbossws-common-tools"/>
+        </module-def>
+
+        <module-def name="org.opensaml">
+            <maven-resource group="org.opensaml" artifact="opensaml"/>
+            <maven-resource group="org.opensaml" artifact="openws"/>
+            <maven-resource group="org.opensaml" artifact="xmltooling"/>
         </module-def>
 
         <module-def name="org.jboss.ws.saaj-impl">

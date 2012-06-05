@@ -374,17 +374,7 @@
 
                 <dependency>
                     <groupId>org.apache.cxf</groupId>
-                    <artifactId>cxf-common-utilities</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.apache.cxf</groupId>
                     <artifactId>cxf-rt-bindings-coloc</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.apache.cxf</groupId>
-                    <artifactId>cxf-rt-bindings-http</artifactId>
                 </dependency>
 
                 <dependency>
@@ -434,11 +424,6 @@
 
                 <dependency>
                     <groupId>org.apache.cxf</groupId>
-                    <artifactId>cxf-rt-transports-common</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.apache.cxf</groupId>
                     <artifactId>cxf-rt-transports-http</artifactId>
                 </dependency>
 
@@ -455,6 +440,11 @@
                 <dependency>
                     <groupId>org.apache.cxf</groupId>
                     <artifactId>cxf-rt-ws-addr</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.cxf</groupId>
+                    <artifactId>cxf-rt-ws-mex</artifactId>
                 </dependency>
 
                 <dependency>
@@ -503,6 +493,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.apache.cxf.services.sts</groupId>
+                    <artifactId>cxf-services-sts-core</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.apache.cxf.xjcplugins</groupId>
                     <artifactId>cxf-xjc-boolean</artifactId>
                 </dependency>
@@ -515,6 +510,21 @@
                 <dependency>
                     <groupId>org.apache.cxf.xjcplugins</groupId>
                     <artifactId>cxf-xjc-ts</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.opensaml</groupId>
+                    <artifactId>opensaml</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.opensaml</groupId>
+                    <artifactId>openws</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.opensaml</groupId>
+                    <artifactId>xmltooling</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1560,11 +1570,6 @@
                 <dependency>
                     <groupId>org.jboss.ws.native</groupId>
                     <artifactId>jbossws-native-core</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.ws.native</groupId>
-                    <artifactId>jbossws-native-factories</artifactId>
                 </dependency>
 
                 <dependency>
