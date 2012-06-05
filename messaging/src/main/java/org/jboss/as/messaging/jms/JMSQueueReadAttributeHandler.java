@@ -37,6 +37,7 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.messaging.ManagementUtil;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -82,12 +83,11 @@ public class JMSQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         validator.validate(operation);
         final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
 
-        String queueName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-
-        ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
-        HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
-        JMSQueueControl control = JMSQueueControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.JMS_QUEUE + queueName));
+        JMSQueueControl control = getControl(context, operation);
+        if (control == null) {
+            ManagementUtil.rollbackOperationWithNoHandler(context, operation);
+            return;
+        }
 
         if (MESSAGE_COUNT.equals(attributeName)) {
             try {
@@ -135,5 +135,15 @@ public class JMSQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         for (String metric : METRICS) {
             registration.registerMetric(metric, this);
         }
+    }
+
+    private JMSQueueControl getControl(OperationContext context, ModelNode operation) {
+        String queueName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+
+        ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
+        HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
+        JMSQueueControl control = JMSQueueControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.JMS_QUEUE + queueName));
+        return control;
     }
 }

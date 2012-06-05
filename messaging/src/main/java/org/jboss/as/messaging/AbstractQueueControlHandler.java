@@ -23,6 +23,7 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
+import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithNoHandler;
 import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
@@ -285,6 +286,11 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         DelegatingQueueControl<T> control = getQueueControl(hqServer, queueName);
+
+        if (control == null) {
+            rollbackOperationWithNoHandler(context, operation);
+            return;
+        }
 
         boolean reversible = false;
         Object handback = null;

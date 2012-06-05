@@ -33,6 +33,7 @@ import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_SUBSCRIPTION_C
 import static org.jboss.as.messaging.CommonAttributes.SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
 import static org.jboss.as.messaging.CommonAttributes.TOPIC_ADDRESS;
+import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithNoHandler;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Arrays;
@@ -90,6 +91,11 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         TopicControl control = TopicControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.JMS_TOPIC + topicName));
+
+        if (control == null) {
+            rollbackOperationWithNoHandler(context, operation);
+            return;
+        }
 
         if (MESSAGE_COUNT.equals(attributeName)) {
             try {
