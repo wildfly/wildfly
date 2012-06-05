@@ -33,6 +33,7 @@ import java.util.Locale;
 import org.hornetq.api.core.management.HornetQComponentControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -240,13 +241,18 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
      * @param operation the operation
      * @param forWrite {@code true} if this operation will modify the runtime; {@code false} if not.
      * @return the control object
+     * @throws OperationFailedException
      */
-    protected final T getHornetQComponentControl(final OperationContext context, final ModelNode operation, final boolean forWrite) {
+    protected final T getHornetQComponentControl(final OperationContext context, final ModelNode operation, final boolean forWrite) throws OperationFailedException {
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> hqService = context.getServiceRegistry(forWrite).getService(hqServiceName);
         HornetQServer server = HornetQServer.class.cast(hqService.getValue());
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        return getHornetQComponentControl(server, address);
+         T control = getHornetQComponentControl(server, address);
+         if (control == null) {
+             throw new OperationFailedException(ControllerMessages.MESSAGES.noHandler(READ_ATTRIBUTE_OPERATION, PathAddress.pathAddress(operation.require(OP_ADDR))));
+         }
+         return control;
 
     }
 }

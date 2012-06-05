@@ -26,6 +26,7 @@ import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.INITIAL_MESSAGE_PACKET_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.NAME;
+import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithNoHandler;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Arrays;
@@ -82,6 +83,11 @@ public class ConnectionFactoryReadAttributeHandler extends AbstractRuntimeOnlyHa
         ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         ConnectionFactoryControl control = ConnectionFactoryControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.JMS_CONNECTION_FACTORY + factoryName));
+
+        if (control == null) {
+            rollbackOperationWithNoHandler(context, operation);
+            return;
+        }
 
         if (HA.getName().equals(attributeName)) {
             context.getResult().set(control.isHA());
