@@ -29,13 +29,10 @@
 
     <dependencies>
         <module name="javax.api" export="true"/>
-        <module name="javax.xml.rpc.api" export="true"/>
         <module name="javax.wsdl4j.api" export="true"/>
-        <module name="com.sun.xml.bind" services="export" export="true"/>
         <module name="org.jboss.ws.api" export="true"/>
         <module name="org.jboss.ws.spi" export="true"/>
         <module name="org.jboss.ws.common" services="import" export="true"/>
-        <module name="org.jboss.ws.native.jbossws-native-factories" services="export" export="true"/>
         <module name="org.jboss.ws.native.jbossws-native-core" services="export" export="true">
           <imports>
             <include path="META-INF"/>
@@ -49,7 +46,6 @@
           </exports>
         </module>
         <module name="org.jboss.ws.native.jbossws-native-services" services="export" export="true"/>
-        <module name="org.apache.xalan" services="export" export="true"/>
         <module name="org.apache.xerces" services="export" export="true"/>
         <module name="org.jboss.as.webservices" services="export" export="true"/>
     </dependencies>

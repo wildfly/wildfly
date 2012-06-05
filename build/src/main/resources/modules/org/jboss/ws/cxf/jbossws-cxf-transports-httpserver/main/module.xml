@@ -38,7 +38,7 @@
         <module name="javax.annotation.api" />
         <module name="javax.xml.ws.api" />
         <module name="org.jboss.ws.jaxws-jboss-httpserver-httpspi" />
-        <module name="org.apache.cxf" services="import">
+        <module name="org.apache.cxf.impl" services="import">
           <imports>
             <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
             <include path="META-INF/"/>
