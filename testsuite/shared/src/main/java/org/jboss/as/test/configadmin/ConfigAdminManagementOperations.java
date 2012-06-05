@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.configadmin.parser.ModelConstants;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.ManagementOperations;
@@ -41,14 +42,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ConfigAdminManagementOperations {
     public static boolean addConfiguration(ModelControllerClient client, String pid, Map<String, String> entries) throws IOException, MgmtOperationException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=configadmin/configuration=" + pid, ModelDescriptionConstants.ADD);
-        ModelNode en = new ModelNode();
-        for (Map.Entry<String, String> entry : entries.entrySet()) {
-            en.get(entry.getKey()).set(entry.getValue());
-        }
-        op.get("entries").set(en);
-        ModelNode result = executeOperation(client, op, false);
-        return ModelDescriptionConstants.SUCCESS.equals(result.get(ModelDescriptionConstants.OUTCOME).asString());
+        return addOrUpdateConfiguration(client, pid, entries, ModelDescriptionConstants.ADD);
     }
 
     public static List<String> listConfigurations(ModelControllerClient client) throws IOException, MgmtOperationException {
@@ -69,6 +63,22 @@ public class ConfigAdminManagementOperations {
 
     public static boolean removeConfiguration(ModelControllerClient client, String pid) throws IOException, MgmtOperationException {
         return removeResource(client, "configuration", pid);
+    }
+
+    public static boolean updateConfiguration(ModelControllerClient client, String pid, Map<String, String> entries)  throws IOException, MgmtOperationException {
+        return addOrUpdateConfiguration(client, pid, entries, ModelConstants.UPDATE);
+    }
+
+    private static boolean addOrUpdateConfiguration(ModelControllerClient client, String pid, Map<String, String> entries, String operation)
+            throws IOException, MgmtOperationException {
+        ModelNode op = ModelUtil.createOpNode("subsystem=configadmin/configuration=" + pid, operation);
+        ModelNode en = new ModelNode();
+        for (Map.Entry<String, String> entry : entries.entrySet()) {
+            en.get(entry.getKey()).set(entry.getValue());
+        }
+        op.get("entries").set(en);
+        ModelNode result = executeOperation(client, op, false);
+        return ModelDescriptionConstants.SUCCESS.equals(result.get(ModelDescriptionConstants.OUTCOME).asString());
     }
 
     private static ModelNode executeOperation(final ModelControllerClient client, ModelNode op, boolean unwrapResult) throws IOException, MgmtOperationException {

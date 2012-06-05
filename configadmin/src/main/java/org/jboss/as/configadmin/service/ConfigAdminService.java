@@ -34,8 +34,16 @@ import org.jboss.msc.service.ServiceName;
  * @since 29-Nov-2010
  */
 public interface ConfigAdminService extends Service<ConfigAdminService> {
+    // The SOURCE_PROPERTY_KEY is a private property used on the Config Admin entries to
+    // avoid inifinite loops. There are multiple potential sources of configuration updates:
+    // 1. The DMR API
+    // 2. The OSGi Configuration Admin Service
+    // 3. The MSC Config Admin Sevice
+    // Since updates from the DMR need to be propagated to the services and vice versa
+    // this source property is used to stop the system from looping around forever.
     String SOURCE_PROPERTY_KEY = ".org.jboss.source";
     String FROM_DMR_SOURCE_VALUE = "fromdmr";
+    String FROM_NONDMR_SOURCE_VALUE = "notfromdmr";
 
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("configadmin");
 
