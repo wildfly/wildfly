@@ -94,6 +94,11 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler implements
 
     private void handleReadAttribute(OperationContext context, ModelNode operation) {
         final AddressControl addressControl = getAddressControl(context, operation);
+        if (addressControl == null) {
+            ManagementUtil.rollbackOperationWithNoHandler(context, operation);
+            return;
+        }
+
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         try {

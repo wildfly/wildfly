@@ -23,6 +23,7 @@
 package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithNoHandler;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Locale;
@@ -92,6 +93,10 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
 
         final String operationName = operation.require(OP).asString();
         final JMSServerControl serverControl = getServerControl(context, operation);
+        if (serverControl == null) {
+            rollbackOperationWithNoHandler(context, operation);
+            return;
+        }
 
         try {
             if (LIST_CONNECTIONS_AS_JSON.equals(operationName)) {
