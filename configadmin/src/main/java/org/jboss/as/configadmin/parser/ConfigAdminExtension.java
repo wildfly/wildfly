@@ -63,8 +63,6 @@ public class ConfigAdminExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
 
-        boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
-
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(ConfigAdminProviders.SUBSYSTEM);
@@ -76,7 +74,8 @@ public class ConfigAdminExtension implements Extension {
         ManagementResourceRegistration configuration = registration.registerSubModel(PathElement.pathElement(ModelConstants.CONFIGURATION), ConfigAdminProviders.CONFIGURATION_DESCRIPTION);
         configuration.registerOperationHandler(ModelDescriptionConstants.ADD, ConfigurationAdd.INSTANCE, ConfigurationAdd.DESCRIPTION, false);
         configuration.registerOperationHandler(ModelDescriptionConstants.REMOVE, ConfigurationRemove.INSTANCE, ConfigurationRemove.DESCRIPTION, false);
-        configuration.registerReadOnlyAttribute(ModelConstants.ENTRIES,null, AttributeAccess.Storage.CONFIGURATION);
+        configuration.registerOperationHandler(ModelConstants.UPDATE, ConfigurationUpdate.INSTANCE, ConfigurationUpdate.DESCRIPTION, false);
+        configuration.registerReadOnlyAttribute(ModelConstants.ENTRIES, null, AttributeAccess.Storage.CONFIGURATION);
 
         subsystem.registerXMLElementWriter(ConfigAdminWriter.INSTANCE);
     }

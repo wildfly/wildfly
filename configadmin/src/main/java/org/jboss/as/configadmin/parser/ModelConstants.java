@@ -33,4 +33,5 @@ public interface ModelConstants {
 
     String CONFIGURATION = "configuration";
     String ENTRIES = "entries";
+    String UPDATE = "update";
 }
