@@ -168,7 +168,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
     }
 
     public void launchServices(OperationContext context, String securityDomain, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final ApplicationPolicy applicationPolicy = createApplicationPolicy(securityDomain, model);
+        final ApplicationPolicy applicationPolicy = createApplicationPolicy(context, securityDomain, model);
         final JSSESecurityDomain jsseSecurityDomain = createJSSESecurityDomain(context, securityDomain, model);
         final String cacheType = getAuthenticationCacheType(model);
 
@@ -208,23 +208,25 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         }
     }
 
-    private ApplicationPolicy createApplicationPolicy(String securityDomain, final ModelNode model) {
+    private ApplicationPolicy createApplicationPolicy(OperationContext context, String securityDomain, final ModelNode model)
+            throws OperationFailedException {
         final ApplicationPolicy applicationPolicy = new ApplicationPolicy(securityDomain);
 
         boolean create;
 
-        create  = processClassicAuth(securityDomain, model, applicationPolicy);
-        create |= processJASPIAuth(securityDomain, model, applicationPolicy);
-        create |= processAuthorization(securityDomain, model,applicationPolicy);
-        create |= processACL(securityDomain, model, applicationPolicy);
-        create |= processAudit(securityDomain, model, applicationPolicy);
-        create |= processIdentityTrust(securityDomain, model, applicationPolicy);
-        create |= processMapping(securityDomain, model, applicationPolicy);
+        create  = processClassicAuth(context, securityDomain, model, applicationPolicy);
+        create |= processJASPIAuth(context, securityDomain, model, applicationPolicy);
+        create |= processAuthorization(context, securityDomain, model,applicationPolicy);
+        create |= processACL(context, securityDomain, model, applicationPolicy);
+        create |= processAudit(context, securityDomain, model, applicationPolicy);
+        create |= processIdentityTrust(context, securityDomain, model, applicationPolicy);
+        create |= processMapping(context, securityDomain, model, applicationPolicy);
 
         return create ? applicationPolicy : null;
     }
 
-    private boolean processMapping(String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy) {
+    private boolean processMapping(OperationContext context, String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy)
+            throws OperationFailedException {
         node = peek(node, MAPPING, CLASSIC);
         if (node == null)
             return false;
@@ -241,7 +243,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             else
                 mappingType = MappingType.ROLE.toString();
 
-            Map<String, Object> options = extractOptions(module);
+            Map<String, Object> options = extractOptions(context, module);
             MappingModuleEntry entry = new MappingModuleEntry(codeName, options, mappingType);
             mappingInfo.add(entry);
             applicationPolicy.setMappingInfo(mappingType, mappingInfo);
@@ -255,7 +257,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         return true;
     }
 
-    private boolean processIdentityTrust(String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy) {
+    private boolean processIdentityTrust(OperationContext context, String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy)
+            throws OperationFailedException{
         node = peek(node, IDENTITY_TRUST, CLASSIC);
         if (node == null)
             return false;
@@ -265,7 +268,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         for (ModelNode module : modules) {
             String codeName = module.require(CODE).asString();
             ControlFlag controlFlag = ControlFlag.valueOf(module.require(FLAG).asString());
-            Map<String, Object> options = extractOptions(module);
+            Map<String, Object> options = extractOptions(context, module);
             IdentityTrustModuleEntry entry = new IdentityTrustModuleEntry(codeName, options);
             entry.setControlFlag(controlFlag);
             identityTrustInfo.add(entry);
@@ -279,7 +282,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         return true;
     }
 
-    private boolean processAudit(String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy) {
+    private boolean processAudit(OperationContext context, String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy)
+            throws OperationFailedException {
         node = peek(node, AUDIT, CLASSIC);
         if (node == null)
             return false;
@@ -288,7 +292,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         List<ModelNode> modules = node.get(PROVIDER_MODULES).asList();
         for (ModelNode module : modules) {
             String codeName = module.require(CODE).asString();
-            Map<String, Object> options = extractOptions(module);
+            Map<String, Object> options = extractOptions(context, module);
             AuditProviderEntry entry = new AuditProviderEntry(codeName, options);
             auditInfo.add(entry);
 
@@ -301,7 +305,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         return true;
     }
 
-    private boolean processACL(String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy) {
+    private boolean processACL(OperationContext context, String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy)
+            throws OperationFailedException {
         node = peek(node, ACL, CLASSIC);
         if (node == null)
             return false;
@@ -311,7 +316,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         for (ModelNode module : modules) {
             String codeName = module.require(CODE).asString();
             ControlFlag controlFlag = ControlFlag.valueOf(module.require(FLAG).asString());
-            Map<String, Object> options = extractOptions(module);
+            Map<String, Object> options = extractOptions(context, module);
             ACLProviderEntry entry = new ACLProviderEntry(codeName, options);
             entry.setControlFlag(controlFlag);
             aclInfo.add(entry);
@@ -326,7 +331,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         return true;
     }
 
-    private boolean processAuthorization(String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy) {
+    private boolean processAuthorization(OperationContext context, String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy)
+            throws OperationFailedException {
         node = peek(node, AUTHORIZATION, CLASSIC);
         if (node == null)
             return false;
@@ -336,7 +342,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         for (ModelNode module : modules) {
             String codeName = this.extractCode(module, ModulesMap.AUTHORIZATION_MAP);
             ControlFlag controlFlag = ControlFlag.valueOf(module.require(FLAG).asString());
-            Map<String, Object> options = extractOptions(module);
+            Map<String, Object> options = extractOptions(context, module);
             AuthorizationModuleEntry authzModuleEntry = new AuthorizationModuleEntry(codeName, options);
             authzModuleEntry.setControlFlag(controlFlag);
             authzInfo.add(authzModuleEntry);
@@ -351,7 +357,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         return true;
     }
 
-    private boolean processJASPIAuth(String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy) {
+    private boolean processJASPIAuth(OperationContext context, String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy)
+            throws OperationFailedException {
         node = peek(node, AUTHENTICATION, JASPI);
         if (node == null)
             return false;
@@ -367,7 +374,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             holders.put(name, holder);
             authenticationInfo.add(holder);
             if (stackNode.hasDefined(LOGIN_MODULES)) {
-                processLoginModules(stackNode.get(LOGIN_MODULES), authenticationInfo, new LoginModuleContainer() {
+                processLoginModules(context, stackNode.get(LOGIN_MODULES), authenticationInfo, new LoginModuleContainer() {
                     public void addAppConfigurationEntry(AppConfigurationEntry entry) {
                         holder.addAppConfigurationEntry(entry);
                     }
@@ -380,7 +387,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             String loginStackRef = null;
             if (authModule.hasDefined(LOGIN_MODULE_STACK_REF))
                 loginStackRef = authModule.get(LOGIN_MODULE_STACK_REF).asString();
-            Map<String, Object> options = extractOptions(authModule) ;
+            Map<String, Object> options = extractOptions(context, authModule) ;
             AuthModuleEntry entry = new AuthModuleEntry(code, options, loginStackRef);
             if (authModule.hasDefined(FLAG)) {
                 entry.setControlFlag(ControlFlag.valueOf(authModule.get(FLAG).asString()));
@@ -421,14 +428,15 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         return node;
     }
 
-    private boolean processClassicAuth(String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy) {
+    private boolean processClassicAuth(OperationContext context, String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy)
+            throws OperationFailedException {
         node = peek(node, AUTHENTICATION, CLASSIC);
         if (node == null)
             return false;
 
         final AuthenticationInfo authenticationInfo = new AuthenticationInfo(securityDomain);
         if (node.hasDefined(Constants.LOGIN_MODULES)) {
-            processLoginModules(node.get(LOGIN_MODULES), authenticationInfo, new LoginModuleContainer() {
+            processLoginModules(context, node.get(LOGIN_MODULES), authenticationInfo, new LoginModuleContainer() {
                 public void addAppConfigurationEntry(AppConfigurationEntry entry) {
                     authenticationInfo.add(entry);
                 }
@@ -444,13 +452,14 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         void addAppConfigurationEntry(AppConfigurationEntry entry);
     }
 
-    private void processLoginModules(ModelNode node, BaseAuthenticationInfo authInfo, LoginModuleContainer container) {
+    private void processLoginModules(OperationContext context, ModelNode node, BaseAuthenticationInfo authInfo, LoginModuleContainer container)
+            throws OperationFailedException {
         List<ModelNode> modules;
         modules = node.asList();
         for (ModelNode module : modules) {
             String codeName = extractCode(module, ModulesMap.AUTHENTICATION_MAP);
             LoginModuleControlFlag controlFlag = getControlFlag(module.require(FLAG).asString());
-            Map<String, Object> options = extractOptions(module);
+            Map<String, Object> options = extractOptions(context, module);
             AppConfigurationEntry entry = new AppConfigurationEntry(codeName, controlFlag, options);
             container.addAppConfigurationEntry(entry);
             String moduleName = module.get(MODULE).asString();
@@ -460,11 +469,11 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         }
     }
 
-    private Map<String, Object> extractOptions(ModelNode module) {
+    private Map<String, Object> extractOptions(OperationContext context, ModelNode module) throws OperationFailedException {
         Map<String, Object> options = new HashMap<String, Object>();
         if (module.hasDefined(MODULE_OPTIONS)) {
             for (Property prop : module.get(MODULE_OPTIONS).asPropertyList()) {
-                options.put(prop.getName(), prop.getValue().asString());
+                options.put(prop.getName(), context.resolveExpressions(prop.getValue()).asString());
             }
         }
         return options;
