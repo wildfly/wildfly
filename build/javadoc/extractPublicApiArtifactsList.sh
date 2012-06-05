@@ -15,7 +15,7 @@ if [ ! `which xsltproc` ]; then
   exit 2;
 fi
 
-mkdir $TARGET;
+mkdir -p $TARGET;
 
 
 #####  With exported dependencies, converted from module names to groupIDs:
@@ -33,12 +33,9 @@ for i in `find $PROJECT_ROOT_DIR/build/src/main/resources/modules/ -name module.
   echo $PKG >> $TARGET/packages.tmp.txt
 
   ##  Exported dependencies.
-  #grep '<module name="' $FILE | grep 'export="true"' | sed 's#<module name="\([^"]*\).*"#\1#' | sed 's#/\?>##' | sed 's#\s*\(.*\)\s*#\1#' | sed 's#.*#    Exported dep: \0#'
-  #grep '<module name="' $FILE | grep 'export="true"' | sed 's#<module name="\([^"]*\).*"#\1#' | sed 's#/\?>##' | sed 's#\s*\(.*\)\s*#\1#' >> $TARGET/packages.tmp.txt
   grep '<module name="' $FILE | grep 'export="true"' | sed 's#<module name="\([^"]*\).*"#\1#' | sed 's#/\?>##' | sed 's#\s*\(.*\)\s*#\1#' | tee --append $TARGET/packages.tmp.txt | sed 's#.*#        Exported dep: \0#'
 done
 sort $TARGET/packages.tmp.txt | uniq > $TARGET/modules.tmp2.txt
-#cat $TARGET/packages.tmp2.txt | sed 's#.*#<include>\0:*</include>#'
 
 
 
@@ -57,15 +54,6 @@ cat $TARGET/groupIDs.tmp.txt | sort | uniq > $TARGET/groupIDs.tmp-sorted.txt
 cat $TARGET/groupIDs.tmp-sorted.txt | sed 's#.*#<include>\0</include>#'
 
 
-
-###
-###  Also print out the groups of packages from artifacts grouped by module; see build.xml for "groups definition".
-###
-
-###  Get the groups of artifacts in format:
-###  MODULE:  org.foo.bar
-###      ARTIFACT:  org.foo:bar
-xsltproc $DIRNAME/printModulesInPlainText.xsl $PROJECT_ROOT_DIR/build/build.xml
 
 
 

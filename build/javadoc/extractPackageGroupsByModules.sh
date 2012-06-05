@@ -16,19 +16,20 @@ if [ ! `which xsltproc` ]; then
 fi
 
 M2_REPO=~/.m2/repository
-#for i in `find $PROJECT_ROOT_DIR/build/src/main/resources/modules/ -name module.xml` ;  do
 
 mkdir -p $TARGET;
 rm $TARGET/listedPackages.tmp.txt
 touch $TARGET/listedPackages.tmp.txt
 
 ###
-###  Also print out the groups of packages from artifacts grouped by module; see build.xml for "groups definition".
+###  Print out the groups of packages from artifacts grouped by module; see build.xml for "groups definition".
 ###
 
-###  Get the groups of artifacts in format:
+###  Get the list of modules and their artifacts in this format:
 ###  MODULE:  org.foo.bar
-###      ARTIFACT:  org.foo:bar
+###  org.foo:bar
+###  org.foo:baz
+###  ...
 xsltproc $DIRNAME/printModulesInPlainText.xsl $PROJECT_ROOT_DIR/build/build.xml > $TARGET/modulesList.tmp.txt
 
 echo "<groups>"
@@ -39,11 +40,6 @@ echo "<groups>"
     #echo $LINE;
     ##  If it's a module name, create the <group>.
     if [[ $LINE == MODULE:* ]] ; then
-      if [ "" != "$MOD_NAME" ] ; then     ##  This is here for the case we wanted to grab packages from the list of artifacts from packagesGroups.tmp.txt.
-        #echo "    <packages>$PACKAGES</packages>"
-        echo "  </group>";
-        MOD_NAME="";
-      fi;
       MOD_NAME=${LINE#MODULE: }
       MOD_PATH=`echo $MOD_NAME | tr . /`
       PACKAGES="";
@@ -69,6 +65,7 @@ echo "<groups>"
       echo "  <group>"
       echo "    <title>Module $MOD_NAME</title>"
       echo "    <packages>${PACKAGES#:}</packages>";  ## Remove first colon.
+      echo "  </group>";
       continue;
     fi;
 
@@ -79,9 +76,9 @@ echo "<groups>"
 
 echo "</groups>"
 
-#    <!-- To includes java.lang, java.lang.ref, java.lang.reflect and only java.util (i.e. not java.util.jar) -->
+#    <!-- Includes java.lang, java.lang.ref, java.lang.reflect and only java.util (i.e. not java.util.jar) -->
 #    <packages>java.lang*:java.util</packages>
-#     <!-- To include javax.accessibility, javax.crypto, ... (among others) -->
+#    <!-- Includes javax.accessibility, javax.crypto, ... (among others) -->
 #    <packages>javax.*</packages>
 
 
