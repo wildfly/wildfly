@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,6 +22,18 @@
 
 package org.jboss.as.test.integration.osgi.configadmin;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.InputStream;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import javax.inject.Inject;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.osgi.xservice.bundle.ConfiguredService;
@@ -36,6 +48,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.cm.ConfigurationEvent;
@@ -43,21 +56,11 @@ import org.osgi.service.cm.ConfigurationListener;
 import org.osgi.service.cm.ManagedService;
 import org.osgi.service.startlevel.StartLevel;
 
-import javax.inject.Inject;
-import java.io.InputStream;
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 /**
  * A test that shows how an OSGi {@link ManagedService} can be configured through the {@link ConfigurationAdmin}.
  *
  * @author Thomas.Diesler@jboss.com
+ * @author David Bosschaert
  * @since 11-Dec-2010
  */
 @RunWith(Arquillian.class)
@@ -132,6 +135,22 @@ public class ConfigurationAdminTestCase {
         finally
         {
             config.delete();
+        }
+    }
+
+    @Test
+    public void testManagedServiceConfiguredFromXML() throws Exception {
+        ConfiguredService ms = new ConfiguredService();
+
+        Dictionary<String, Object> props = new Hashtable<String, Object>();
+        props.put(Constants.SERVICE_PID, "a.test.pid");
+        // This configuration is present in the standalone.xml used for this test
+
+        ServiceRegistration reg = context.registerService(ManagedService.class.getName(), ms, props);
+        try {
+            assertEquals("test value", ms.getValue("testkey"));
+        } finally {
+            reg.unregister();
         }
     }
 }
