@@ -111,15 +111,28 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
             ModelNode securityRealm = operation.require(SECURITY_REALM);
             dc.get(REMOTE, SECURITY_REALM).set(securityRealm);
             hostControllerInfo.setRemoteDomainControllerSecurityRealm(securityRealm.resolve().asString());
+        } else {
+            remoteDC.get(SECURITY_REALM).clear();
         }
 
         if (dc.has(LOCAL)) {
             dc.remove(LOCAL);
         }
 
-        initializeDomain(context, remoteDC);
+        if (context.isBooting()) {
+            initializeDomain(context, remoteDC);
+        } else {
+            context.reloadRequired();
+        }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                if (!context.isBooting()) {
+                    context.revertReloadRequired();
+                }
+            }
+        });
     }
 
     protected void initializeDomain(OperationContext context, ModelNode remoteDC) throws OperationFailedException {
@@ -137,16 +150,9 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
                 contentRepository, fileRepository, hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry, pathManager);
     }
 
-    //Done by DomainModelControllerService
-//    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-//        final ModelNode hostModel = context.readModel(PathAddress.EMPTY_ADDRESS);
-//        final ServiceTarget serviceTarget = context.getServiceTarget();
-//        newControllers.add(installRemoteDomainControllerConnection(hostModel, serviceTarget, fileRepository));
-//        newControllers.addAll(installLocalDomainController(hostModel, serviceTarget, true, verificationHandler));
-//    }
-
     @Override
     public ModelNode getModelDescription(final Locale locale) {
+        // TODO replace this with a generated description
         return HostRootDescription.getRemoteDomainControllerAdd(locale);
     }
 }
