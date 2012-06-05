@@ -72,8 +72,8 @@
                                 <goals><goal>test</goal></goals>
                                 <configuration>
                                     <includes>
-                                        <include>org/jboss/as/test/smoke/jms/**/*Test.java</include>
-                                        <include>org/jboss/as/test/smoke/messaging/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/smoke/jms/**/*Test*.java</include>
+                                        <include>org/jboss/as/test/smoke/messaging/**/*Test*.java</include>
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
