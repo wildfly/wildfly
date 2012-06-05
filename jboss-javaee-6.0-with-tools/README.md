@@ -37,7 +37,7 @@ Unfortunately, Maven doesn't allow you to specify plugin versions this way. To u
             <plugin>
                 <groupId>org.jboss.as.plugins</groupId>
                 <artifactId>jboss-as-maven-plugin</artifactId>
-                <version>7.1.0.Final</version>
+                <version>7.1.1.Final</version>
             </plugin>
         </plugins>
     </pluginManagement>
