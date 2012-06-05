@@ -43,7 +43,7 @@ update()
 {
 cd $DIR
 echo "Updating versions from $OLDVERSION TO $NEWVERSION for all Java, Markdown and XML files under $PWD"
-perl -pi -e "s/${OLDVERSION}/${NEWVERSION}/g" `find . -name \*.xml -or -name \*.java -or- -name \*.md`
+perl -pi -e "s/${OLDVERSION}/${NEWVERSION}/g" `find . -name \*.xml -or -name \*.java -or -name \*.md`
 }
 
 snapshot()
