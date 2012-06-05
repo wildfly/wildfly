@@ -1010,6 +1010,9 @@ class SecuritySubsystemDescriptions {
             op.get(OPERATION_NAME).set(Constants.LIST_CACHED_PRINCIPALS);
             op.get(DESCRIPTION).set(bundle.getString("list-cached-principals"));
 
+            op.get(REPLY_PROPERTIES, DESCRIPTION).set("list-cached-principals.return");
+            op.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
+
             return op;
         }
 
