@@ -2,7 +2,9 @@
     <security-domains>
         <security-domain name="other" cache-type="default">
             <authentication>
-                <login-module code="UsersRoles" flag="required" />
+                <login-module code="UsersRoles" flag="required">
+                    <module-option name="env.option" value="${env.value:myvalue}"/>
+                </login-module>
             </authentication>
             <jsse keystore-password="${keystore-password:changeit}"
                   keystore-type="${keystore-type:JKS}"
