@@ -60,18 +60,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROCESS_STATE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -82,7 +83,9 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.host.controller.DirectoryGrouping;
 import org.jboss.as.host.controller.operations.HostShutdownHandler;
+import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
+import org.jboss.as.host.controller.operations.RemoteDomainControllerRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -320,7 +323,7 @@ public class HostRootDescription {
 
         final ModelNode result = new ModelNode();
 
-        result.get(OPERATION_NAME).set(RemoteDomainControllerAddHandler.OPERATION_NAME);
+        result.get(OPERATION_NAME).set(LocalDomainControllerAddHandler.OPERATION_NAME);
         result.get(DESCRIPTION).set(bundle.getString("host.domain-controller.local.add"));
 
         result.get(REQUEST_PROPERTIES).setEmptyObject();
@@ -348,6 +351,31 @@ public class HostRootDescription {
         result.get(REQUEST_PROPERTIES, PORT, MIN).set(1);
         result.get(REQUEST_PROPERTIES, PORT, MAX).set(65535);
 
+        result.get(REQUEST_PROPERTIES, USERNAME, TYPE).set(ModelType.STRING);
+        result.get(REQUEST_PROPERTIES, USERNAME, DESCRIPTION).set(bundle.getString("host.domain-controller.remote.username"));
+        result.get(REQUEST_PROPERTIES, USERNAME, REQUIRED).set(false);
+        result.get(REQUEST_PROPERTIES, USERNAME, EXPRESSIONS_ALLOWED).set(true);
+        result.get(REQUEST_PROPERTIES, USERNAME, MIN_LENGTH).set(1);
+
+        result.get(REQUEST_PROPERTIES, SECURITY_REALM, TYPE).set(ModelType.STRING);
+        result.get(REQUEST_PROPERTIES, SECURITY_REALM, DESCRIPTION).set(bundle.getString("host.domain-controller.remote.security-realm"));
+        result.get(REQUEST_PROPERTIES, SECURITY_REALM, REQUIRED).set(false);
+        result.get(REQUEST_PROPERTIES, SECURITY_REALM, EXPRESSIONS_ALLOWED).set(false);
+        result.get(REQUEST_PROPERTIES, SECURITY_REALM, MIN_LENGTH).set(1);
+
+        result.get(REPLY_PROPERTIES).setEmptyObject();
+        return result;
+    }
+
+    public static ModelNode getRemoteDomainControllerRemove(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = new ModelNode();
+
+        result.get(OPERATION_NAME).set(RemoteDomainControllerRemoveHandler.OPERATION_NAME);
+        result.get(DESCRIPTION).set(bundle.getString("host.domain-controller.remote.remove"));
+
+        result.get(REQUEST_PROPERTIES).setEmptyObject();
         result.get(REPLY_PROPERTIES).setEmptyObject();
         return result;
     }
