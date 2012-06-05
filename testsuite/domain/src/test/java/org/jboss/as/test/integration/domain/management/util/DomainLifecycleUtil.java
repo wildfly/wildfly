@@ -386,7 +386,7 @@ public class DomainLifecycleUtil {
     public synchronized DomainClient getDomainClient() {
         return DomainClient.Factory.create(internalGetOrCreateClient());
     }
-    
+
     private synchronized DomainTestClient internalGetOrCreateClient() {
         // Perhaps get rid of the shared client...
         if (domainClient == null) {
@@ -414,6 +414,7 @@ public class DomainLifecycleUtil {
                     case RUNNING:
                         continue;
                     default:
+                        log.log(Level.INFO, entry.getKey() + " status is " + entry.getValue());
                         return false;
                 }
             }
