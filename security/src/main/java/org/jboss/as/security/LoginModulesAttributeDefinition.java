@@ -157,7 +157,7 @@ public class LoginModulesAttributeDefinition extends ListAttributeDefinition {
 
         final ModelNode module = valueType.get(Constants.MODULE);
         module.get(TYPE).set(ModelType.STRING);
-        module.get(NILLABLE).set(false);
+        module.get(NILLABLE).set(true);
 
         final ModelNode moduleOptions = valueType.get(Constants.MODULE_OPTIONS);
         moduleOptions.get(DESCRIPTION);  // placeholder
