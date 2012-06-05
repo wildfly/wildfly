@@ -207,23 +207,23 @@ public final class VaultSession {
     }
 
     /**
-     * Add password to specified vault block and attribute name. This method can be called only after successful
+     * Add secured attribute to specified vault block. This method can be called only after successful
      * startVaultSession() call.
      *
      * @param vaultBlock
      * @param attributeName
-     * @param password
+     * @param attributeValue
      */
-    public void addPassword(String vaultBlock, String attributeName, char[] password) throws Exception {
+    public void addSecuredAttribute(String vaultBlock, String attributeName, char[] attributeValue) throws Exception {
         if (handshakeKey == null) {
-            throw new Exception("addPassword method has to be called after successful startVaultSession() call.");
+            throw new Exception("addSecuredAttribute method has to be called after successful startVaultSession() call.");
         }
-        vault.store(vaultBlock, attributeName, password, handshakeKey);
-        passwordCreatedDisplay(vaultBlock, attributeName);
+        vault.store(vaultBlock, attributeName, attributeValue, handshakeKey);
+        attributeCreatedDisplay(vaultBlock, attributeName);
     }
 
     /**
-     * Check whether password is already set for given vault block and attribute name. This method can be called only after
+     * Check whether secured attribute is already set for given vault block and attribute name. This method can be called only after
      * successful startVaultSession() call.
      *
      * @param vaultBlock
@@ -231,21 +231,21 @@ public final class VaultSession {
      * @return true is password already exists for given vault block and attribute name.
      * @throws Exception
      */
-    public boolean checkPassword(String vaultBlock, String attributeName) throws Exception {
+    public boolean checkSecuredAttribute(String vaultBlock, String attributeName) throws Exception {
         if (handshakeKey == null) {
-            throw new Exception("checkPassword method has to be called after successful startVaultSession() call.");
+            throw new Exception("checkSecuredAttribute method has to be called after successful startVaultSession() call.");
         }
         return vault.exists(vaultBlock, attributeName);
     }
 
     /**
-     * Display info about stored masked password.
+     * Display info about stored secured attribute.
      *
      * @param vaultBlock
      * @param attributeName
      */
-    private void passwordCreatedDisplay(String vaultBlock, String attributeName) {
-        System.out.println("Password has been stored in vault. ");
+    private void attributeCreatedDisplay(String vaultBlock, String attributeName) {
+        System.out.println("Secured attribute value has been stored in vault. ");
         System.out.println("Please make note of the following:");
         System.out.println("********************************************");
         System.out.println("Vault Block:" + vaultBlock);
