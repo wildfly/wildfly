@@ -28,11 +28,11 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 public class RemoteDomainControllerRemoveHandler implements OperationStepHandler, DescriptionProvider {
 
@@ -41,9 +41,9 @@ public class RemoteDomainControllerRemoveHandler implements OperationStepHandler
     public static final RemoteDomainControllerRemoveHandler INSTANCE = new RemoteDomainControllerRemoveHandler();
 
     /**
-     * Create the InterfaceRemoveHandler
+     * Create the RemoteDomainControllerRemoveHandler
      */
-    protected RemoteDomainControllerRemoveHandler() {
+    private RemoteDomainControllerRemoveHandler() {
     }
 
     @Override
@@ -51,12 +51,17 @@ public class RemoteDomainControllerRemoveHandler implements OperationStepHandler
         final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         final ModelNode model = resource.getModel();
         model.get(DOMAIN_CONTROLLER).setEmptyObject();
-        context.completeStep();
+        context.reloadRequired();
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                context.revertReloadRequired();
+            }
+        });
     }
 
     @Override
     public ModelNode getModelDescription(final Locale locale) {
-        // TODO - Add the ModelDescription
-        return new ModelNode();
+        return HostRootDescription.getRemoteDomainControllerRemove(locale);
     }
 }

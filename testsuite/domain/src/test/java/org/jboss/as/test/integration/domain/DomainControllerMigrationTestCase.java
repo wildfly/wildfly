@@ -22,31 +22,18 @@
 package org.jboss.as.test.integration.domain;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.NoSuchAlgorithmException;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import junit.framework.Assert;
-import org.apache.commons.io.FileUtils;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.cli.operation.OperationFormatException;
-import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.process.ProcessController;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.test.http.util.HttpClientUtils;
-import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
-import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.as.test.integration.management.util.WebUtil;
@@ -60,70 +47,65 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * FailoverTestCase
+ * Test of migration of the domain controller from one host to another
  *
  * @author <a href="dpospisi@redhat.com">Dominik Pospisil</a>
  */
 
-@Ignore // Breaks IPv6
 public class DomainControllerMigrationTestCase {
-    
+
     private static final Logger log = Logger.getLogger(DomainControllerMigrationTestCase.class);
-    
+
     private static String[] SERVERS = new String[] {"failover-one", "failover-two", "failover-three"};
     private static String[] HOSTS = new String[] {"failover1", "failover2", "failover3"};
-    private static int[] MGMT_PORTS = new int[] {9999, 9989, 9979};
-    private static int[] SERVER_PORT_OFFSETS = new int[] {0, 150, 300};
-    private static String masterAddress = System.getProperty("jboss.test.host.master.address", "127.0.0.1");
-    private static String slaveAddress = System.getProperty("jboss.test.host.slave.address", "127.0.0.1");       
+    private static int[] MGMT_PORTS = new int[] {9999, 9989, 19999};
+    private static int[] SERVER_PORT_OFFSETS = new int[] {0, 350, 550};
+    private static String masterAddress = System.getProperty("jboss.test.host.master.address");
+    private static String slaveAddress = System.getProperty("jboss.test.host.slave.address");
     private static final String DEPLOYMENT_NAME = "SimpleServlet.war";
-    
-    private ManagementClient failover1client;
+
     private static DomainLifecycleUtil[] hostUtils = new DomainLifecycleUtil[3];
-    
-    private static WebArchive war;
-    private static File warFile;    
-    
+
+    private static File warFile;
+
     @BeforeClass
-    public static void setupDomain() throws Exception {                
+    public static void setupDomain() throws Exception {
         for (int k = 0; k<3; k++) {
             hostUtils[k] = new DomainLifecycleUtil(getHostConfiguration(k+1));
             hostUtils[k].start();
         }
-        
-        war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
+
+        WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
         war.addClass(SimpleServlet.class);
         war.addAsWebResource(new StringAsset("Version1"), "page.html");
         String tempDir = System.getProperty("java.io.tmpdir");
         warFile = new File(tempDir + File.separator + DEPLOYMENT_NAME);
         new ZipExporterImpl(war).exportTo(warFile, true);
-        
+
     }
-    
+
     @AfterClass
     public static void shutdownDomain() {
         hostUtils[1].stop();
         hostUtils[2].stop();
-        
-        Assert.assertTrue(warFile.delete());        
+
+        Assert.assertTrue(warFile.delete());
     }
-        
+
     private static JBossAsManagedConfiguration getHostConfiguration(int host) throws Exception {
 
-        final String testName = DomainControllerMigrationTestCase.class.getSimpleName();        
+        final String testName = DomainControllerMigrationTestCase.class.getSimpleName();
         File domains = new File("target" + File.separator + "domains" + File.separator + testName);
         final File hostDir = new File(domains, "failover" + String.valueOf(host));
-        final String hostDirPath = hostDir.getAbsolutePath();
         final File hostConfigDir = new File(hostDir, "configuration");
-        hostConfigDir.mkdirs();        
+        hostConfigDir.mkdirs();
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         final JBossAsManagedConfiguration hostConfig = new JBossAsManagedConfiguration();
-        hostConfig.setHostControllerManagementAddress(masterAddress);
+        hostConfig.setHostControllerManagementAddress(host == 1 ? masterAddress : slaveAddress);
         hostConfig.setHostCommandLineProperties("-Djboss.test.host.master.address=" + masterAddress + " -Djboss.test.host.slave.address=" + slaveAddress);
         URL url = tccl.getResource("domain-configs/domain-standard.xml");
         hostConfig.setDomainConfigFile(new File(url.toURI()).getAbsolutePath());
@@ -140,12 +122,12 @@ public class DomainControllerMigrationTestCase {
         PrintWriter pw = new PrintWriter(fos);
         pw.println("slave=" + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm", "slave_user_password".toCharArray()));
         pw.close();
-        fos.close();        
+        fos.close();
 
-        
+
         return hostConfig;
-    }    
-    
+    }
+
     @Test
     /**
      * Test setup: 3 hosts which each having exactly one server defined - failover1, failover2, failover3
@@ -158,44 +140,50 @@ public class DomainControllerMigrationTestCase {
      * 6) verify that failover2 is the new domain controller managing both failover2 and failover3 hosts
      */
     public void testDCFailover() throws Exception {
-        
+
         // check that the failover1 is acting as domain controller and all three servers are registered
         Set<String> hosts = getHosts(hostUtils[0]);
         Assert.assertTrue(hosts.contains(HOSTS[0]));
         Assert.assertTrue(hosts.contains(HOSTS[1]));
         Assert.assertTrue(hosts.contains(HOSTS[2]));
-        
+
         // kill the domain process controller on failover1
         log.info("Stopping the domain controller on failover1.");
-        hostUtils[0].stop();        
+        hostUtils[0].stop();
         log.info("Domain controller on failover1 stopped.");
-        
-        // check that the failover2 hc sees only its own server
+
+        // check that the failover2 hc sees only itself
         hosts = getHosts(hostUtils[1]);
         Assert.assertTrue(hosts.contains(HOSTS[1]));
         Assert.assertEquals(hosts.size(), 1);
-        
-        // reload failover2 host so it acts as domain controller
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();        
-        URL url = tccl.getResource("host-configs/host-failover2-v2.xml");
-        File cfgFile = new File(url.toURI());
-        FileUtils.copyFile(cfgFile, new File(getHostConfigDir(2), "testing-host-failover2.xml"));
-        
+
+        // Reconfigure failover2 host so it acts as domain controller
+        ModelNode becomeMasterOp = new ModelNode();
+        becomeMasterOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.HOST, "failover2");
+        becomeMasterOp.get(ModelDescriptionConstants.OP).set("write-local-domain-controller");
+
+        hostUtils[1].executeForResult(becomeMasterOp);
+
         ModelNode restartOp = new ModelNode();
         restartOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.HOST, "failover2");
         restartOp.get(ModelDescriptionConstants.OP).set("reload");
         restartOp.get(ModelDescriptionConstants.RESTART_SERVERS).set(false);
-        
+
         log.info("Reloading failover2 to act as the domain controller.");
         hostUtils[1].executeAwaitConnectionClosed(restartOp);
-        
+
         waitUntilHostControllerReady(hostUtils[1]);
-        
-        // reload failover3 to point to the new domain controller
-        url = tccl.getResource("host-configs/host-failover3-v2.xml");
-        cfgFile = new File(url.toURI());
-        FileUtils.copyFile(cfgFile, new File(getHostConfigDir(3), "testing-host-failover3.xml"));
-        
+
+        // Reconfigure failover3 to point to the new domain controller
+        ModelNode changeMasterOp = new ModelNode();
+        changeMasterOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.HOST, HOSTS[2]);
+        changeMasterOp.get(ModelDescriptionConstants.OP).set("write-remote-domain-controller");
+        changeMasterOp.get(ModelDescriptionConstants.HOST).set("${jboss.test.host.slave.address}");
+        changeMasterOp.get(ModelDescriptionConstants.PORT).set(MGMT_PORTS[1]);
+        changeMasterOp.get(ModelDescriptionConstants.SECURITY_REALM).set("ManagementRealm");
+
+        hostUtils[2].executeForResult(changeMasterOp);
+
         restartOp = new ModelNode();
         restartOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.HOST, HOSTS[2]);
         restartOp.get(ModelDescriptionConstants.OP).set("reload");
@@ -205,17 +193,17 @@ public class DomainControllerMigrationTestCase {
         hostUtils[2].executeAwaitConnectionClosed(restartOp);
 
         waitUntilHostControllerReady(hostUtils[2]);
-        
+
         // test some management ops on failover3 using new domain controller on failover2
-        
+
         Operation deployOp = buildDeployOperation();
-        hostUtils[1].executeForResult(deployOp);        
-        
+        hostUtils[1].executeForResult(deployOp);
+
         hosts = getHosts(hostUtils[1]);
         Assert.assertTrue(hosts.contains(HOSTS[1]));
         Assert.assertTrue(hosts.contains(HOSTS[2]));
         Assert.assertEquals(hosts.size(), 2);
-        
+
         // stop failover3 server using new dc
         String testUrl = new URL("http", slaveAddress, 8080 + SERVER_PORT_OFFSETS[2], "/SimpleServlet/SimpleServlet").toString();
         Assert.assertTrue(WebUtil.testHttpURL(testUrl));
@@ -225,24 +213,15 @@ public class DomainControllerMigrationTestCase {
         stopOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.STOP);
         hostUtils[1].executeForResult(stopOp);
         DomainTestUtils.waitUntilState(hostUtils[1].getDomainClient(), HOSTS[2], SERVERS[2], "STOPPED");
-        Assert.assertFalse(WebUtil.testHttpURL(testUrl));        
+        Assert.assertFalse(WebUtil.testHttpURL(testUrl));
     }
 
     private Set<String> getHosts(DomainLifecycleUtil hostUtil) throws IOException {
         ModelNode readOp = new ModelNode();
-        readOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);        
+        readOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
         ModelNode domain = hostUtil.executeForResult(readOp);
         Assert.assertTrue(domain.get("host").isDefined());
         return domain.get("host").keys();
-    }
-        
-    private File getHostConfigDir(int host) {
-        final String testName = DomainControllerMigrationTestCase.class.getSimpleName();        
-        File domains = new File("target" + File.separator + "domains" + File.separator + testName);
-        final File hostDir = new File(domains, "failover" + String.valueOf(host));
-        final String hostDirPath = hostDir.getAbsolutePath();
-        final File hostConfigDir = new File(hostDir, "configuration");
-        return hostConfigDir;
     }
 
     private void waitUntilHostControllerReady(final DomainLifecycleUtil dcUtil) throws TimeoutException {
@@ -255,9 +234,9 @@ public class DomainControllerMigrationTestCase {
                 return dcUtil.executeForResult(readOp);
             }
         });
-        
+
     }
-    
+
     private Operation buildDeployOperation() throws IOException, OperationFormatException {
 
         ModelNode addDeploymentOp = new ModelNode();
@@ -281,5 +260,5 @@ public class DomainControllerMigrationTestCase {
 
         return ob.build();
     }
-    
+
 }
