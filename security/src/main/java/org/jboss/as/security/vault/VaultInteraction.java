@@ -49,15 +49,15 @@ public class VaultInteraction {
 
         Scanner in = new Scanner(System.in);
         while (true) {
-            String commandStr = "Please enter a Digit::   0: Store a password " + " 1: Check whether password exists "
+            String commandStr = "Please enter a Digit::   0: Store a secured attribute " + " 1: Check whether a secured attribute exists "
                     + " 2: Exit";
 
             System.out.println(commandStr);
             int choice = in.nextInt();
             switch (choice) {
                 case 0:
-                    System.out.println("Task:  Store a password");
-                    char[] attributeValue = VaultInteractiveSession.getSensitiveValue("Please enter password");
+                    System.out.println("Task: Store a secured attribute");
+                    char[] attributeValue = VaultInteractiveSession.getSensitiveValue("Please enter secured attribute value (such as password)");
                     String vaultBlock = null;
 
                     while (vaultBlock == null || vaultBlock.length() == 0) {
@@ -70,13 +70,13 @@ public class VaultInteraction {
                         attributeName = console.readLine("Enter Attribute Name:");
                     }
                     try {
-                        vaultNISession.addPassword(vaultBlock, attributeName, attributeValue);
+                        vaultNISession.addSecuredAttribute(vaultBlock, attributeName, attributeValue);
                     } catch (Exception e) {
                         System.out.println("Exception occurred:" + e.getLocalizedMessage());
                     }
                     break;
                 case 1:
-                    System.out.println("Task: Verify whether a password exists");
+                    System.out.println("Task: Verify whether a secured attribute exists");
                     try {
                         vaultBlock = null;
 
@@ -89,7 +89,7 @@ public class VaultInteraction {
                         while (attributeName == null || attributeName.length() == 0) {
                             attributeName = console.readLine("Enter Attribute Name:");
                         }
-                        if (!vaultNISession.checkPassword(vaultBlock, attributeName))
+                        if (!vaultNISession.checkSecuredAttribute(vaultBlock, attributeName))
                             System.out.println("No value has been store for (" + vaultBlock + ", " + attributeName + ")");
                         else
                             System.out.println("A value exists for (" + vaultBlock + ", " + attributeName + ")");

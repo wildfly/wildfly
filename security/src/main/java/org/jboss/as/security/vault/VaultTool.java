@@ -50,8 +50,8 @@ public class VaultTool {
     public static final String ALIAS_PARAM = "alias";
     public static final String VAULT_BLOCK_PARAM = "vault-block";
     public static final String ATTRIBUTE_PARAM = "attribute";
-    public static final String PASSWORD_PARAM = "password";
-    public static final String CHECK_PWD_EXISTS_PARAM = "check-password-exists";
+    public static final String SEC_ATTR_VALUE_PARAM = "sec-attr";
+    public static final String CHECK_SEC_ATTR_EXISTS_PARAM = "check-sec-attr";
     public static final String HELP_PARAM = "help";
 
     private VaultInteractiveSession session = null;
@@ -78,7 +78,8 @@ public class VaultTool {
             try {
                 tool = new VaultTool(args);
                 returnVal = tool.execute();
-                tool.summary();
+                if (returnVal != 100)
+                    tool.summary();
             } catch (Exception e) {
                 System.err.println("Problem occured:");
                 e.printStackTrace(System.err);
@@ -158,8 +159,8 @@ public class VaultTool {
         options.addOption("a", ATTRIBUTE_PARAM, true, "Attribute name");
 
         OptionGroup og = new OptionGroup();
-        Option x = new Option("x", PASSWORD_PARAM, true, "Password to store");
-        Option c = new Option("c", CHECK_PWD_EXISTS_PARAM, false, "Check whether the password already exists in the vault");
+        Option x = new Option("x", SEC_ATTR_VALUE_PARAM, true, "Secured attribute value (such as password) to store");
+        Option c = new Option("c", CHECK_SEC_ATTR_EXISTS_PARAM, false, "Check whether the secured attribute already exists in the vault");
         Option h = new Option("h", HELP_PARAM, false, "Help");
         og.addOption(x);
         og.addOption(c);
@@ -172,7 +173,7 @@ public class VaultTool {
 
         if (cmdLine.hasOption(HELP_PARAM)) {
             printUsage();
-            return 0;
+            return 100;
         }
 
         String keystoreURL = cmdLine.getOptionValue(KEYSTORE_PARAM, "vault.keystore");
@@ -188,9 +189,9 @@ public class VaultTool {
         String vaultBlock = cmdLine.getOptionValue(VAULT_BLOCK_PARAM, "vb");
         String attributeName = cmdLine.getOptionValue(ATTRIBUTE_PARAM, "password");
 
-        if (cmdLine.hasOption(CHECK_PWD_EXISTS_PARAM)) {
+        if (cmdLine.hasOption(CHECK_SEC_ATTR_EXISTS_PARAM)) {
             // check password
-            if (nonInteractiveSession.checkPassword(vaultBlock, attributeName)) {
+            if (nonInteractiveSession.checkSecuredAttribute(vaultBlock, attributeName)) {
                 System.out.println("Password already exists.");
                 return 0;
             } else {
@@ -200,7 +201,7 @@ public class VaultTool {
         } else {
             // add password
             String password = cmdLine.getOptionValue(ATTRIBUTE_PARAM, "password");
-            nonInteractiveSession.addPassword(vaultBlock, attributeName, password.toCharArray());
+            nonInteractiveSession.addSecuredAttribute(vaultBlock, attributeName, password.toCharArray());
             return 0;
         }
     }
