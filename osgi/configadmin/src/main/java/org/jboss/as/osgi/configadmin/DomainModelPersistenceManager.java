@@ -38,6 +38,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.util.tracker.ServiceTracker;
@@ -53,6 +54,7 @@ import org.osgi.util.tracker.ServiceTracker;
 public class DomainModelPersistenceManager implements PersistenceManager, BundleActivator, ConfigAdminListener {
     private ConfigAdminService jbossConfigAdminService;
     private ServiceTracker osgiConfigAdminServiceTracker;
+    private ServiceRegistration serviceRegistration;
 
     @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -70,11 +72,20 @@ public class DomainModelPersistenceManager implements PersistenceManager, Bundle
         // Register the PersistenceManager
         Hashtable props = new Hashtable();
         props.put(Constants.SERVICE_RANKING, Integer.MAX_VALUE);
-        context.registerService(PersistenceManager.class.getName(), this, props);
+        serviceRegistration = context.registerService(PersistenceManager.class.getName(), this, props);
+
+        // Provide config admin with the configuration from this persistence manager.
+        ConfigurationAdmin osgiConfigAdminService = (ConfigurationAdmin) osgiConfigAdminServiceTracker.waitForService(10000);
+        for(String pid : jbossConfigAdminService.getConfigurations()) {
+            // Looking up the configuration object is enough to trigger the lookup from this PersistenceManager
+            osgiConfigAdminService.getConfiguration(pid, null);
+        }
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
+        serviceRegistration.unregister();
+
         jbossConfigAdminService.removeListener(this);
         jbossConfigAdminService = null;
 
@@ -128,6 +139,12 @@ public class DomainModelPersistenceManager implements PersistenceManager, Bundle
     }
 
     private Dictionary<String, String> addStandardProperties(final String pid, final Dictionary<String, String> source) {
+        Dictionary<String, String> copy = getModifiableDictionary(source);
+        copy.put(Constants.SERVICE_PID, pid);
+        return copy;
+    }
+
+    private Dictionary<String, String> getModifiableDictionary(final Dictionary<String, String> source) {
         Dictionary<String, String> copy = new Hashtable<String, String>();
         if (source != null) {
             Enumeration<String> keys = source.keys();
@@ -136,7 +153,6 @@ public class DomainModelPersistenceManager implements PersistenceManager, Bundle
                 copy.put(key, source.get(key));
             }
         }
-        copy.put(Constants.SERVICE_PID, pid);
         return copy;
     }
 
@@ -149,10 +165,18 @@ public class DomainModelPersistenceManager implements PersistenceManager, Bundle
         }
 
         try {
-            Configuration configuration = osgiConfigAdminService.getConfiguration(pid, null);
-            if (ConfigAdminService.FROM_DMR_SOURCE_VALUE.equals(dictionary.get(ConfigAdminService.SOURCE_PROPERTY_KEY))) {
+            if (dictionary == null) {
+                // If the OSGi Configuration Admin Service has any configuration objects for this PID, delete them.
+                Configuration[] configs = osgiConfigAdminService.listConfigurations("(" + Constants.SERVICE_PID + "=" + pid + ")");
+                if (configs != null) {
+                    for (Configuration config : configs) {
+                        config.delete();
+                    }
+                }
+            } else if (ConfigAdminService.FROM_DMR_SOURCE_VALUE.equals(dictionary.get(ConfigAdminService.SOURCE_PROPERTY_KEY))) {
                 // Only call update if the change did not come from the OSGi Config Admin Service,
-                // otherwise we end up in an infinite loop
+                // otherwise we end up in an infinite loop.
+                Configuration configuration = osgiConfigAdminService.getConfiguration(pid, null);
                 configuration.update(dictionary);
             }
         } catch (Exception e) {
