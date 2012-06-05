@@ -34,6 +34,7 @@ import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_MEMORY_MEAS
 import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_MEMORY_WARNING_THRESHOLD;
 import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
+import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PERCENTAGE;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
@@ -127,7 +128,9 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CLIENT_FAILURE_CHECK_PERIOD = new SimpleAttributeDefinition("client-failure-check-period",
             new ModelNode().set(HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD), ModelType.INT,  true, MeasurementUnit.MILLISECONDS);
 
-    SimpleAttributeDefinition CLIENT_ID = new SimpleAttributeDefinition("client-id",  ModelType.STRING, true);
+    SimpleAttributeDefinition CLIENT_ID = create("client-id", ModelType.STRING)
+            .setAllowNull(true)
+            .build();
 
     SimpleAttributeDefinition CLUSTERED = new SimpleAttributeDefinition("clustered",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTERED), ModelType.BOOLEAN,  true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
@@ -628,7 +631,9 @@ public interface CommonAttributes {
     String CORE_ADDRESS ="core-address";
     String CORE_QUEUE ="core-queue";
     String CORE_QUEUES ="core-queues";
+    String DEFAULT ="default";
     String DELIVERING_COUNT ="delivering-count";
+    String DESTINATION ="destination";
     String DISCOVERY_GROUP = "discovery-group";
     String DISCOVERY_GROUPS = "discovery-groups";
     String DISCOVERY_GROUP_REF ="discovery-group-ref";
@@ -645,6 +650,7 @@ public interface CommonAttributes {
     String INITIAL_MESSAGE_PACKET_SIZE = "initial-message-packet-size";
     String IN_VM_ACCEPTOR ="in-vm-acceptor";
     String IN_VM_CONNECTOR ="in-vm-connector";
+    String JMS_BRIDGE ="jms-bridge";
     String JMS_CONNECTION_FACTORIES ="jms-connection-factories";
     String JMS_DESTINATIONS = "jms-destinations";
     String JMS_QUEUE ="jms-queue";
@@ -766,6 +772,4 @@ public interface CommonAttributes {
     AttributeDefinition[] CONNECTOR_SERVICE_ATTRIBUTES = { FACTORY_CLASS };
 
     String[] PATHS = new String[] {CommonAttributes.BINDINGS_DIRECTORY, CommonAttributes.JOURNAL_DIRECTORY, CommonAttributes.LARGE_MESSAGES_DIRECTORY, CommonAttributes.PAGING_DIRECTORY};
-
-
 }

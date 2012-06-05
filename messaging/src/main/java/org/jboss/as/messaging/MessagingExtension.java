@@ -22,6 +22,16 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE;
+import static org.jboss.as.messaging.Namespace.MESSAGING_1_0;
+import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
+import static org.jboss.as.messaging.Namespace.MESSAGING_1_2;
+import static org.jboss.as.messaging.Namespace.MESSAGING_1_3;
+
 import java.util.EnumSet;
 
 import org.jboss.as.controller.Extension;
@@ -59,15 +69,7 @@ import org.jboss.as.messaging.jms.JMSTopicRemove;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryRemove;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryWriteAttributeHandler;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.messaging.CommonAttributes.QUEUE;
-import static org.jboss.as.messaging.Namespace.MESSAGING_1_0;
-import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
-import static org.jboss.as.messaging.Namespace.MESSAGING_1_2;
+import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 
 /**
  * Domain extension that integrates HornetQ.
@@ -107,13 +109,15 @@ public class MessagingExtension implements Extension {
     static final PathElement SECURITY_ROLE = PathElement.pathElement(CommonAttributes.ROLE);
     static final PathElement SECURITY_SETTING = PathElement.pathElement(CommonAttributes.SECURITY_SETTING);
 
-    static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+    public static final PathElement JMS_BRIDGE_PATH = PathElement.pathElement(CommonAttributes.JMS_BRIDGE);
+
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, true);
     }
 
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 1);
-        subsystem.registerXMLElementWriter(Messaging12SubsystemParser.getInstance());
+        subsystem.registerXMLElementWriter(Messaging13SubsystemParser.getInstance());
         boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
         // Root resource
@@ -336,12 +340,16 @@ public class MessagingExtension implements Extension {
             JMSTopicConfigurationRuntimeHandler.INSTANCE.registerAttributes(deploymentTopics);
 
         }
+
+        // JMS Bridges
+        rootRegistration.registerSubModel(new JMSBridgeDefinition());
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_0.getUriString(), MessagingSubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_1.getUriString(), MessagingSubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_2.getUriString(), Messaging12SubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_3.getUriString(), Messaging13SubsystemParser.getInstance());
     }
 
     static void createParamRegistration(final ManagementResourceRegistration parent) {

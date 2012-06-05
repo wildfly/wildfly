@@ -41,6 +41,7 @@ import org.jboss.as.messaging.jms.ConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.JMSQueueAdd;
 import org.jboss.as.messaging.jms.JMSTopicAdd;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryAdd;
+import org.jboss.as.messaging.jms.bridge.JMSBridgeAdd;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -76,6 +77,13 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler, Descrip
                 PathAddress serverAddress = rootAddress.append(PathElement.pathElement(CommonAttributes.HORNETQ_SERVER, prop.getName()));
                 serverAdd.get(OP_ADDR).set(serverAddress.toModelNode());
                 addHornetQServer(prop.getValue(), serverAdd, serverAddress, result);
+            }
+        }
+
+        if (subModel.hasDefined(CommonAttributes.JMS_BRIDGE)) {
+            for (Property prop : subModel.get(CommonAttributes.JMS_BRIDGE).asPropertyList()) {
+                PathAddress jmsBridgeAddress = rootAddress.append(PathElement.pathElement(CommonAttributes.JMS_BRIDGE, prop.getName()));
+                result.add(JMSBridgeAdd.getAddOperation(jmsBridgeAddress.toModelNode(), prop.getValue()));
             }
         }
 
