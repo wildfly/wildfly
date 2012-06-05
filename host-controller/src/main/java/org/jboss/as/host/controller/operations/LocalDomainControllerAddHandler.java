@@ -102,9 +102,20 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
             dc.remove(REMOTE);
         }
 
-        initializeDomain();
+        if (context.isBooting()) {
+            initializeDomain();
+        } else {
+            context.reloadRequired();
+        }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                if (!context.isBooting()) {
+                    context.revertReloadRequired();
+                }
+            }
+        });
     }
 
     protected void initializeDomain() {
