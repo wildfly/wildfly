@@ -70,7 +70,7 @@
        <local/>
     </domain-controller>
     -->
-    
+
     <interfaces>
         <interface name="management">
             <inet-address value="${jboss.test.host.slave.address}"/>
@@ -90,7 +90,7 @@
         <server name="failover-two" group="main-server-group">
             <!-- server-two avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
-            <socket-bindings port-offset="150"/>
+            <socket-bindings port-offset="350"/>
             <jvm name="default">
                 <heap size="64m" max-size="256m"/>
             </jvm>
