@@ -761,7 +761,14 @@ public abstract class AbstractSubsystemTest {
     }
 
     private String removeNamespace(String xml) {
-        return xml.replaceFirst(" xmlns=\".*\"", "");
+        int start = xml.indexOf(" xmlns=\"");
+        int end = xml.indexOf('"', start + "xmlns=\"".length() + 1);
+        if (start != -1) {
+            StringBuilder sb = new StringBuilder(xml.substring(0, start));
+            sb.append(xml.substring(end + 1));
+            return sb.toString();
+        }
+        return xml;
     }
 
     static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {
@@ -842,7 +849,7 @@ public abstract class AbstractSubsystemTest {
 
                 List<ModelNode> transformedBootOperations = new ArrayList<ModelNode>();
                 for (ModelNode op : bootOperations) {
-                    ModelNode transformed = kernelServices.transformOperation(entry.getKey(), op);
+                    ModelNode transformed = kernelServices.transformOperation(entry.getKey(), op).getTransformedOperation();
                     if (transformed != null) {
                         transformedBootOperations.add(transformed);
                     }
@@ -916,7 +923,7 @@ public abstract class AbstractSubsystemTest {
 
         @Override
         public LegacyKernelServicesInitializer addMavenResourceURL(String artifactGav) throws MalformedURLException {
-            ChildFirstClassLoader.createMavenGavURL(artifactGav);
+            classloaderURLs.add(ChildFirstClassLoader.createMavenGavURL(artifactGav));
             return this;
         }
 

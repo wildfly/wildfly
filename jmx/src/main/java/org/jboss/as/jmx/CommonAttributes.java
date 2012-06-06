@@ -28,12 +28,20 @@ package org.jboss.as.jmx;
 interface CommonAttributes {
 
     String CONNECTOR = "connector";
+    String DEFAULT_EXPRESSION_DOMAIN = "jboss.as.expr";
+    String DEFAULT_RESOLVED_DOMAIN = "jboss.as";
+    String DOMAIN_NAME = "domain-name";
+    String EXPRESSION = "expression";
     String JMX = "jmx";
     String NAME = "name";
+    String SHOW_EXPRESSION_MODEL = "show-expression-model";
     String SHOW_MODEL = "show-model";
-    String SERVER_BINDING = "server-binding";
+    String SHOW_RESOLVED_MODEL = "show-resolved-model";
+    String PROPER_PROPERTY_FORMAT = "proper-property-format";
     String REGISTRY_BINDING = "registry-binding";
     String REMOTING_CONNECTOR = "remoting-connector";
+    String RESOLVED = "resolved";
+    String SERVER_BINDING = "server-binding";
     String JMX_CONNECTOR = "jmx-connector";
     String USE_MANAGEMENT_ENDPOINT = "use-management-endpoint";
     String VALUE = "value";

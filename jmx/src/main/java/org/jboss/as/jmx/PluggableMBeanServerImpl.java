@@ -265,7 +265,9 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         Set<ObjectInstance> result = new HashSet<ObjectInstance>();
         if (delegates.size() > 0) {
             for (MBeanServerPlugin delegate : delegates) {
-                result.addAll(delegate.queryMBeans(name, query));
+                if (name == null || (name.getDomain() != null && delegate.accepts(name))) {
+                    result.addAll(delegate.queryMBeans(name, query));
+                }
             }
         }
         result.addAll(rootMBeanServer.queryMBeans(name, query));
@@ -277,7 +279,9 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         Set<ObjectName> result = new HashSet<ObjectName>();
         if (delegates.size() > 0) {
             for (MBeanServerPlugin delegate : delegates) {
-                result.addAll(delegate.queryNames(name, query));
+                if (name == null || (name.getDomain() != null && delegate.accepts(name))) {
+                    result.addAll(delegate.queryNames(name, query));
+                }
             }
         }
         result.addAll(rootMBeanServer.queryNames(name, query));

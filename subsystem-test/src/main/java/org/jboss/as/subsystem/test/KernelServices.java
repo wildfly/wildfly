@@ -1,6 +1,5 @@
 package org.jboss.as.subsystem.test;
 
-import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
@@ -22,6 +21,7 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -30,6 +30,9 @@ import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationTransformerRegistry;
 import org.jboss.as.controller.services.path.PathManagerService;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.server.Services;
@@ -153,6 +156,36 @@ public class KernelServices {
     }
 
     /**
+     * Execute an operation in the  controller containg the passed in version of the subsystem.
+     * The operation and results will be translated from the format for the main controller to the
+     * legacy controller's format.
+     *
+     * @param modelVersion the subsystem model version of the legacy subsystem model controller
+     * @param operation the operation for the main controller
+     * @throws IllegalStateException if this is not the test's main model controller
+     * @throws IllegalStateException if there is no legacy controller containing the version of the subsystem
+     */
+    public ModelNode executeOperation(ModelVersion modelVersion, TransformedOperation op) {
+        if (legacyServices == null) {
+            throw new IllegalStateException("Can only be called for the main controller");
+        }
+        KernelServices legacy = legacyServices.get(modelVersion);
+        if (legacy == null) {
+            throw new IllegalStateException("No legacy subsystem controller was found for model version " + modelVersion);
+        }
+
+        ModelNode result = new ModelNode();
+        if (op.getTransformedOperation() != null) {
+            result = legacy.executeOperation(op.getTransformedOperation());
+        }
+        OperationResultTransformer resultTransformer = op.getResultTransformer();
+        if (resultTransformer != null) {
+            result = resultTransformer.transformResult(result);
+        }
+        return result;
+    }
+
+    /**
      * Transforms an operation in the main controller to the format expected by the model controller containing
      * the legacy subsystem
      *
@@ -161,7 +194,7 @@ public class KernelServices {
      * @return the transformed operation
      * @throws IllegalStateException if this is not the test's main model controller
      */
-    public ModelNode transformOperation(ModelVersion modelVersion, ModelNode operation) throws OperationFailedException {
+    public TransformedOperation transformOperation(ModelVersion modelVersion, ModelNode operation) throws OperationFailedException {
         if (legacyServices == null) {
             throw new IllegalStateException("Can only be called for the main controller");
         }
@@ -175,10 +208,15 @@ public class KernelServices {
 
             //TODO Initialise this
             TransformationContext transformationContext = null;
-            return registry.resolveOperationTransformer(address, operation.get(OP).asString()).getTransformer().transformOperation(transformationContext, address, operation).getTransformedOperation();
+
+            OperationTransformer operationTransformer = registry.resolveOperationTransformer(address, operation.get(OP).asString()).getTransformer();
+            if (operationTransformer != null) {
+                return operationTransformer.transformOperation(transformationContext, address, operation);
+            }
         }
-        return operation;
+        return null;
     }
+
 
     /**
      * Reads the persisted subsystem xml
