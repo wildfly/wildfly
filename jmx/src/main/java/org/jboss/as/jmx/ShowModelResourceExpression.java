@@ -19,24 +19,26 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.jmx.model;
+package org.jboss.as.jmx;
 
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class Constants {
+public class ShowModelResourceExpression extends ShowModelResource{
+    static final SimpleAttributeDefinition DOMAIN_NAME = SimpleAttributeDefinitionBuilder.create(CommonAttributes.DOMAIN_NAME, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(CommonAttributes.DEFAULT_EXPRESSION_DOMAIN))
+            .build();
 
-    public static final String DOMAIN = "jboss.as";
-    public static final ObjectName ROOT_MODEL_NAME;
-    static {
-        try {
-            ROOT_MODEL_NAME = ObjectName.getInstance(Constants.DOMAIN, "management-root", "server");
-        } catch (MalformedObjectNameException e) {
-            throw new RuntimeException(e);
-        }
+    static final ShowModelResourceExpression INSTANCE = new ShowModelResourceExpression();
+
+    ShowModelResourceExpression() {
+        super(CommonAttributes.EXPRESSION, DOMAIN_NAME);
     }
 }

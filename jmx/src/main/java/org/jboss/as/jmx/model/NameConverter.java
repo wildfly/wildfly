@@ -29,7 +29,7 @@ import org.jboss.as.controller.PathElement;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class NameConverter {
+class NameConverter {
 
     public static String createValidAddOperationName(PathElement childElement) {
         return createValidName(ADD, childElement.getKey(), childElement.getValue());
@@ -38,6 +38,19 @@ public class NameConverter {
     public static String convertToCamelCase(String word) {
         StringBuilder sb = new StringBuilder();
         appendCamelCaseWord(sb, true, word.split("-"));
+        return sb.toString();
+    }
+
+    public static String convertFromCamelCase(String word) {
+        StringBuilder sb = new StringBuilder();
+        for (char ch : word.toCharArray()) {
+            if (Character.isLowerCase(ch)) {
+                sb.append(ch);
+            } else {
+                sb.append("-");
+                sb.append(Character.toLowerCase(ch));
+            }
+        }
         return sb.toString();
     }
 

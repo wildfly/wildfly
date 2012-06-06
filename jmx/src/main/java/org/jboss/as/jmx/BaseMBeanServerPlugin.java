@@ -34,7 +34,6 @@ import javax.management.OperationsException;
 import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 
-import org.jboss.as.jmx.model.Constants;
 import org.jboss.as.server.jmx.MBeanServerPlugin;
 
 /**
@@ -44,23 +43,23 @@ import org.jboss.as.server.jmx.MBeanServerPlugin;
 public abstract class BaseMBeanServerPlugin implements MBeanServerPlugin {
     public ObjectInstance createMBean(String className, ObjectName name, Object[] params, String[] signature)
             throws ReflectionException, InstanceAlreadyExistsException, MBeanException, NotCompliantMBeanException {
-        throw new NotCompliantMBeanException("You can't create mbeans under the reserved domain '" + Constants.DOMAIN + "'");
+        throw new NotCompliantMBeanException("You can't create mbeans under the reserved domain '" + name.getDomain() + "'");
     }
 
     public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName, Object[] params,
             String[] signature) throws ReflectionException, InstanceAlreadyExistsException, MBeanException,
             NotCompliantMBeanException, InstanceNotFoundException {
-        throw new NotCompliantMBeanException("You can't create mbeans under the reserved domain '" + Constants.DOMAIN + "'");
+        throw new NotCompliantMBeanException("You can't create mbeans under the reserved domain '" + name.getDomain() + "'");
     }
 
     public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName) throws ReflectionException,
             InstanceAlreadyExistsException, MBeanException, NotCompliantMBeanException, InstanceNotFoundException {
-        throw new NotCompliantMBeanException("You can't create mbeans under the reserved domain '" + Constants.DOMAIN + "'");
+        throw new NotCompliantMBeanException("You can't create mbeans under the reserved domain '" + name.getDomain() + "'");
     }
 
     public ObjectInstance createMBean(String className, ObjectName name) throws ReflectionException,
             InstanceAlreadyExistsException, MBeanException, NotCompliantMBeanException {
-        throw new NotCompliantMBeanException("You can't create mbeans under the reserved domain '" + Constants.DOMAIN + "'");
+        throw new NotCompliantMBeanException("You can't create mbeans under the reserved domain '" + name.getDomain() + "'");
     }
 
     @Deprecated
@@ -108,12 +107,12 @@ public abstract class BaseMBeanServerPlugin implements MBeanServerPlugin {
     public ObjectInstance registerMBean(Object object, ObjectName name) throws InstanceAlreadyExistsException,
             MBeanRegistrationException, NotCompliantMBeanException {
         throw new MBeanRegistrationException(new RuntimeException("You can't register mbeans under the reserved domain '"
-                + Constants.DOMAIN + "'"));
+                + name.getDomain() + "'"));
     }
 
     public void unregisterMBean(ObjectName name) throws InstanceNotFoundException, MBeanRegistrationException {
         throw new MBeanRegistrationException(new RuntimeException("You can't unregister mbeans under the reserved domain '"
-                + Constants.DOMAIN + "'"));
+                + name.getDomain() + "'"));
     }
 
 }

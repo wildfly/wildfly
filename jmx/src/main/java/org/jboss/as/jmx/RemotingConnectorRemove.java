@@ -39,11 +39,6 @@ class RemotingConnectorRemove extends AbstractRemoveStepHandler {
     private RemotingConnectorRemove() {
         //
     }
-
-    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) {
-
-    }
-
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
         final String name = address.getLastElement().getValue();

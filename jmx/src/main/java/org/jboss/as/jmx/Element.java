@@ -34,6 +34,8 @@ enum Element {
 
     JMX_CONNECTOR(CommonAttributes.JMX_CONNECTOR),
     SHOW_MODEL(CommonAttributes.SHOW_MODEL),
+    SHOW_RESOLVED_MODEL(CommonAttributes.SHOW_RESOLVED_MODEL),
+    SHOW_EXPRESSION_MODEL(CommonAttributes.SHOW_EXPRESSION_MODEL),
     REMOTING_CONNECTOR(CommonAttributes.REMOTING_CONNECTOR),
     ;
 
