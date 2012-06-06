@@ -53,7 +53,7 @@ public class PropertyFileFinder implements State {
     private ConsoleWrapper theConsole;
     private final StateValues stateValues;
 
-    public PropertyFileFinder(ConsoleWrapper theConsole,final StateValues stateValues) {
+    public PropertyFileFinder(ConsoleWrapper theConsole, final StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
         if ((stateValues != null && stateValues.isSilent() == false) && theConsole.getConsole() == null) {
@@ -99,14 +99,10 @@ public class PropertyFileFinder implements State {
         }
         stateValues.setKnownUsers(foundUsers);
 
-        if (stateValues == null) {
-            return new PromptNewUserState(theConsole);
-        } else {
-            return new PromptNewUserState(theConsole, stateValues);
-        }
+        return new PromptNewUserState(theConsole, stateValues);
     }
 
-    private Map<String,String> loadAllRoles(List<File> foundRoleFiles) throws StartException, IOException {
+    private Map<String, String> loadAllRoles(List<File> foundRoleFiles) throws StartException, IOException {
         Map<String, String> loadedRoles = new HashMap<String, String>();
         for (File file : foundRoleFiles) {
             PropertiesFileLoader propertiesLoad = null;
@@ -114,8 +110,8 @@ public class PropertyFileFinder implements State {
                 propertiesLoad = new UserPropertiesFileHandler(file.getCanonicalPath());
                 propertiesLoad.start(null);
                 loadedRoles.putAll((Map) propertiesLoad.getProperties());
-            }  finally {
-                if (propertiesLoad!=null) {
+            } finally {
+                if (propertiesLoad != null) {
                     propertiesLoad.stop(null);
                 }
             }
@@ -128,15 +124,12 @@ public class PropertyFileFinder implements State {
         if (standaloneProps.exists()) {
             foundFiles.add(standaloneProps);
         }
-        File domainProps = buildFilePath(jbossHome, DOMAIN_CONFIG_USER_DIR,DOMAIN_CONFIG_DIR, DOMAIN_BASE_DIR, "domain", fileName);
+        File domainProps = buildFilePath(jbossHome, DOMAIN_CONFIG_USER_DIR, DOMAIN_CONFIG_DIR, DOMAIN_BASE_DIR, "domain", fileName);
         if (domainProps.exists()) {
             foundFiles.add(domainProps);
         }
 
-        if (foundFiles.size() == 0) {
-            return false;
-        }
-        return true;
+        return !foundFiles.isEmpty();
     }
 
     private File buildFilePath(final String jbossHome, final String serverCofigUserDirPropertyName, final String serverConfigDirPropertyName,
@@ -145,8 +138,8 @@ public class PropertyFileFinder implements State {
         String configUserDirConfiguredPath = System.getProperty(serverCofigUserDirPropertyName);
         String configDirConfiguredPath = configUserDirConfiguredPath != null ? configUserDirConfiguredPath : System.getProperty(serverConfigDirPropertyName);
 
-        File configDir =  configDirConfiguredPath != null ? new File(configDirConfiguredPath) : null;
-        if(configDir == null) {
+        File configDir = configDirConfiguredPath != null ? new File(configDirConfiguredPath) : null;
+        if (configDir == null) {
             String baseDirConfiguredPath = System.getProperty(serverBaseDirPropertyName);
             File baseDir = baseDirConfiguredPath != null ? new File(baseDirConfiguredPath) : new File(jbossHome, defaultBaseDir);
             configDir = new File(baseDir, "configuration");

@@ -24,13 +24,13 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.jboss.as.domain.management.security.state.ErrorState;
 import org.jboss.as.domain.management.security.state.PropertyFileFinder;
 import org.jboss.as.domain.management.security.state.PropertyFilePrompt;
 import org.jboss.as.domain.management.security.state.State;
@@ -40,6 +40,7 @@ import org.jboss.as.domain.management.security.state.StateValues;
  * A command line utility to add new users to the mgmt-users.properties files.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author <a href="mailto:g.grossetie@gmail.com">Guillaume Grossetie</a>
  */
 public class AddPropertiesUser {
 
@@ -57,11 +58,8 @@ public class AddPropertiesUser {
     public static final String MGMT_USERS_PROPERTIES = "mgmt-users.properties";
     public static final String APPLICATION_USERS_PROPERTIES = "application-users.properties";
     public static final String APPLICATION_ROLES_PROPERTIES = "application-roles.properties";
-    public static final String APPLICATION_USERS_SWITCH = "-a";
-    public static final String DOMAIN_CONFIG_DIR_USERS_SWITCH = "-dc";
-    public static final String SERVER_CONFIG_DIR_USERS_SWITCH = "-sc";
 
-    public static final String NEW_LINE = "\n";
+    public static final String NEW_LINE = String.format("%n");
     public static final String SPACE = " ";
     private static final Properties argsCliProps = new Properties();
 
@@ -69,8 +67,8 @@ public class AddPropertiesUser {
 
     protected State nextState;
 
-    protected AddPropertiesUser() {
-        theConsole = new JavaConsole();
+    protected AddPropertiesUser(ConsoleWrapper console) {
+        theConsole = console;
         StateValues stateValues = new StateValues();
         stateValues.setJbossHome(System.getenv("JBOSS_HOME"));
 
@@ -80,43 +78,45 @@ public class AddPropertiesUser {
         nextState = new PropertyFilePrompt(theConsole, stateValues);
     }
 
-    protected AddPropertiesUser(ConsoleWrapper console) {
-        this.theConsole = console;
+    private AddPropertiesUser(ConsoleWrapper console, final boolean management, final String user, final String password, final String realm) {
         StateValues stateValues = new StateValues();
         stateValues.setJbossHome(System.getenv("JBOSS_HOME"));
-        nextState = new PropertyFilePrompt(theConsole,stateValues);
-    }
 
-    private AddPropertiesUser(final boolean management, final String user, final char[] password, final String realm) {
-        boolean silent = false;
-        StateValues stateValues = new StateValues();
-        stateValues.setJbossHome(System.getenv("JBOSS_HOME"));
-        String valueSilent = argsCliProps.getProperty("silent");
-
-        if (valueSilent != null) {
-            silent = Boolean.valueOf(valueSilent);
-        }
+        final Interactiveness howInteractive;
+        boolean silent = Boolean.valueOf(argsCliProps.getProperty(CommandLineArgument.SILENT.key()));
         if (silent) {
-            stateValues.setHowInteractive(Interactiveness.SILENT);
+            howInteractive = Interactiveness.SILENT;
         } else {
-            stateValues.setHowInteractive(Interactiveness.NON_INTERACTIVE);
+            howInteractive = Interactiveness.NON_INTERACTIVE;
         }
+        stateValues.setHowInteractive(howInteractive);
 
         // Silent modes still need to be able to output an error on failure.
-        theConsole = new JavaConsole();
+        theConsole = console;
         if (theConsole.getConsole() == null) {
             throw MESSAGES.noConsoleAvailable();
         }
+        // Username should not be null or empty.
+        if (user == null || user.isEmpty()) {
+            nextState = new ErrorState(theConsole, MESSAGES.noUsernameExiting(), null, stateValues);
+            return;
+        }
         stateValues.setUserName(user);
-        stateValues.setPassword(password);
+        // Password should not be null or empty.
+        if (password == null || password.isEmpty()) {
+            nextState = new ErrorState(theConsole, MESSAGES.noPasswordExiting(), null, stateValues);
+            return;
+        }
+        stateValues.setPassword(password.toCharArray());
         stateValues.setRealm(realm);
         stateValues.setManagement(management);
+        stateValues.setRoles(argsCliProps.getProperty(CommandLineArgument.ROLE.key()));
 
         nextState = new PropertyFileFinder(theConsole, stateValues);
     }
 
-    private AddPropertiesUser(boolean management, final String user, final char[] password) {
-        this(management, user, password, management ? DEFAULT_MANAGEMENT_REALM : DEFAULT_APPLICATION_REALM);
+    private AddPropertiesUser(ConsoleWrapper consoleWrapper, boolean management, final String user, final String password) {
+        this(consoleWrapper, management, user, password, management ? DEFAULT_MANAGEMENT_REALM : DEFAULT_APPLICATION_REALM);
     }
 
     protected void run() {
@@ -129,57 +129,273 @@ public class AddPropertiesUser {
      */
     public static void main(String[] args) {
 
-        List<String> argsList = new LinkedList<String>();
-        String[] argsArray = null;
-        StringReader stringReader = null;
         boolean management = true;
-
-        int realArgsLength;
+        JavaConsole javaConsole = new JavaConsole();
 
         if (args.length >= 1) {
 
-            for (String temp : args) {
-                if (temp.startsWith("--")) {
-                    try {
-                        stringReader = new StringReader(temp.substring(2));
-                        argsCliProps.load(stringReader);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } finally {
-                        safeClose(stringReader);
-                    }
-                } else if (temp.equals(APPLICATION_USERS_SWITCH)) {
+            Iterator<String> it = Arrays.asList(args).iterator();
+            String temp;
+            while (it.hasNext()) {
+                temp = it.next();
+                if (CommandLineArgument.HELP.match(temp)) {
+                    usage(javaConsole);
+                    return;
+                }
+                if (CommandLineArgument.DOMAIN_CONFIG_DIR_USERS.match(temp)) {
+                    System.setProperty(DOMAIN_CONFIG_DIR, it.next());
+                } else if (CommandLineArgument.SERVER_CONFIG_DIR_USERS.match(temp)) {
+                    System.setProperty(SERVER_CONFIG_DIR, it.next());
+                } else if (CommandLineArgument.APPLICATION_USERS.match(temp)) {
                     management = false;
-                } else if (temp.indexOf(DOMAIN_CONFIG_DIR_USERS_SWITCH)>=0) {
-                    System.setProperty(DOMAIN_CONFIG_DIR,temp.substring(3));
-                } else if (temp.indexOf(SERVER_CONFIG_DIR)>=0) {
-                    System.setProperty(SERVER_CONFIG_DIR,temp.substring(3));
                 } else {
-                    argsList.add(temp);
+                    // Find the command-line option
+                    CommandLineArgument commandLineArgument = findCommandLineOption(temp);
+                    if (commandLineArgument != null) {
+                        final String value;
+                        if (CommandLineArgument.SILENT.equals(commandLineArgument)) {
+                            value = Boolean.TRUE.toString();
+                        } else {
+                            value = it.hasNext() ? it.next() : null;
+                        }
+                        if (value != null) {
+                            argsCliProps.setProperty(commandLineArgument.key(), value);
+                        }
+                    } else {
+                        // By default, the first arg without option is the username,
+                        final String userKey = CommandLineArgument.USER.key();
+                        if (!argsCliProps.containsKey(userKey)) {
+                            argsCliProps.setProperty(userKey, temp);
+                        }
+                        // the second arg is the password and,
+                        else {
+                            final String passwordKey = CommandLineArgument.PASSWORD.key();
+                            if (!argsCliProps.containsKey(passwordKey)) {
+                                argsCliProps.setProperty(passwordKey, temp);
+                            }
+                            // the third one is the realm.
+                            else {
+                                final String realmKey = CommandLineArgument.REALM.key();
+                                if (!argsCliProps.containsKey(realmKey)) {
+                                    argsCliProps.setProperty(realmKey, temp);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
-        argsArray = argsList.toArray(new String[0]);
-        realArgsLength = argsArray.length;
-        if (realArgsLength == 3) {
-            new AddPropertiesUser(management, argsArray[0], argsArray[1].toCharArray(), argsArray[2]).run();
-        } else if (realArgsLength == 2) {
-            new AddPropertiesUser(management, argsArray[0], argsArray[1].toCharArray()).run();
+
+        if (argsCliProps.containsKey(CommandLineArgument.PASSWORD.key()) || argsCliProps.containsKey(CommandLineArgument.USER.key())) {
+            final String password = argsCliProps.getProperty(CommandLineArgument.PASSWORD.key());
+            final String user = argsCliProps.getProperty(CommandLineArgument.USER.key());
+            if (argsCliProps.contains(CommandLineArgument.REALM.key())) {
+                new AddPropertiesUser(javaConsole, management, user, password, argsCliProps.getProperty(CommandLineArgument.REALM.key())).run();
+            } else {
+                new AddPropertiesUser(javaConsole, management, user, password).run();
+            }
         } else {
-            new AddPropertiesUser().run();
+            new AddPropertiesUser(javaConsole).run();
         }
     }
 
-    private static void safeClose(Closeable c) {
-        if (c != null) {
-            try {
-                c.close();
-            } catch (IOException e) {
-            }
-        }
+    private static void usage(ConsoleWrapper consoleWrapper) {
+        CommandLineArgument.printUsage(consoleWrapper);
     }
 
     public enum Interactiveness {
         SILENT, NON_INTERACTIVE, INTERACTIVE
+    }
+
+    /**
+     * Find the command-line arg corresponding to the parameter {@code arg}.
+     *
+     * @param arg
+     * @return The corresponding arg or null.
+     */
+    private static CommandLineArgument findCommandLineOption(String arg) {
+        for (CommandLineArgument commandLineArgument : CommandLineArgument.values()) {
+            if (commandLineArgument.match(arg)) {
+                return commandLineArgument;
+            }
+        }
+        return null;
+    }
+
+    protected enum CommandLineArgument {
+
+        APPLICATION_USERS("-a") {
+            @Override
+            public String instructions() {
+                return MESSAGES.argApplicationUsers();
+            }
+        },
+        DOMAIN_CONFIG_DIR_USERS("-dc") {
+            @Override
+            public String argumentExample() {
+                return super.argumentExample().concat(" <value>");
+            }
+
+            @Override
+            public String instructions() {
+                return MESSAGES.argDomainConfigDirUsers();
+            }
+        },
+        SERVER_CONFIG_DIR_USERS("-sc") {
+            @Override
+            public String argumentExample() {
+                return super.argumentExample().concat(" <value>");
+            }
+
+            @Override
+            public String instructions() {
+                return MESSAGES.argServerConfigDirUsers();
+            }
+        },
+        PASSWORD("-p", "--password") {
+            @Override
+            public String argumentExample() {
+                return super.argumentExample().concat(" <value>");
+            }
+
+            @Override
+            public String instructions() {
+                return MESSAGES.argPassword();
+            }
+        },
+        USER("-u", "--user") {
+            @Override
+            public String argumentExample() {
+                return super.argumentExample().concat(" <value>");
+            }
+
+            @Override
+            public String instructions() {
+                return MESSAGES.argUser();
+            }
+        },
+        REALM("-r", "--realm") {
+            @Override
+            public String argumentExample() {
+                return super.argumentExample().concat(" <value>");
+            }
+
+            @Override
+            public String instructions() {
+                return MESSAGES.argRealm();
+            }
+        },
+        SILENT("-s", "--silent") {
+            @Override
+            public String instructions() {
+                return MESSAGES.argSilent();
+            }
+        },
+        ROLE("-ro", "--role") {
+            @Override
+            public String argumentExample() {
+                return super.argumentExample().concat(" <value>");
+            }
+
+            @Override
+            public String instructions() {
+                return MESSAGES.argRole();
+            }
+        },
+        HELP("-h", "--help") {
+            @Override
+            public String instructions() {
+                return MESSAGES.argHelp();
+            }
+        };
+
+        private static String USAGE;
+        private String shortArg;
+        private String longArg;
+
+        private CommandLineArgument(String option) {
+            this.shortArg = option;
+        }
+
+        private CommandLineArgument(String shortArg, String longArg) {
+            this.shortArg = shortArg;
+            this.longArg = longArg;
+        }
+
+        public String key() {
+            return longArg != null ? longArg.substring(2) : shortArg.substring(1);
+        }
+
+        public boolean match(String option) {
+            return option.equals(shortArg) || option.equals(longArg);
+        }
+
+        public String getShortArg() {
+            return shortArg;
+        }
+
+        public String getLongArg() {
+            return longArg;
+        }
+
+        /**
+         * An example of how the argument is used.
+         *
+         * @return the example.
+         */
+        public String argumentExample() {
+            return (null != getShortArg() ? getShortArg() : "").concat(null != getLongArg() ? ", " + getLongArg() : "");
+        }
+
+        /**
+         * The argument instructions.
+         *
+         * @return the instructions.
+         */
+        public abstract String instructions();
+
+        @Override
+        public String toString() {
+            final List<String> instructions = new ArrayList<String>();
+            segmentInstructions(instructions(), instructions);
+            StringBuilder sb = new StringBuilder(String.format("    %-35s %s", argumentExample(), instructions.get(0)));
+            for (int i = 1; i < instructions.size(); i++) {
+                sb.append(NEW_LINE);
+                sb.append(String.format("%-40s%s", " ", instructions.get(i)));
+            }
+            sb.append(NEW_LINE);
+            return sb.toString();
+        }
+
+        private static void segmentInstructions(String instructions, List<String> segments) {
+            if (instructions.length() <= 40) {
+                segments.add(instructions);
+            } else {
+                String testFragment = instructions.substring(0, 40);
+                int lastSpace = testFragment.lastIndexOf(' ');
+                if (lastSpace < 0) {
+                    // degenerate case; we just have to chop not at a space
+                    lastSpace = 39;
+                }
+                segments.add(instructions.substring(0, lastSpace + 1));
+                segmentInstructions(instructions.substring(lastSpace + 1), segments);
+            }
+        }
+
+        public static void printUsage(ConsoleWrapper consoleWrapper) {
+            consoleWrapper.printf(usage());
+        }
+
+        public static String usage() {
+            if (USAGE == null) {
+                final StringBuilder sb = new StringBuilder();
+                sb.append(MESSAGES.argUsage()).append(NEW_LINE);
+                for (CommandLineArgument arg : CommandLineArgument.values()) {
+                    sb.append(arg.toString()).append(NEW_LINE);
+                }
+                USAGE = sb.toString();
+            }
+            return USAGE;
+        }
     }
 }
