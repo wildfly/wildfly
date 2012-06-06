@@ -22,6 +22,9 @@
 
 package org.jboss.as.jmx;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import javax.management.ObjectName;
 
 import org.jboss.logging.BasicLogger;
@@ -31,11 +34,10 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.WARN;
-
 /**
  * Date: 05.11.2011
+ *
+ * Reserved logging id ranges from: http://community.jboss.org/wiki/LoggingIds: 11300 - 11329
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
