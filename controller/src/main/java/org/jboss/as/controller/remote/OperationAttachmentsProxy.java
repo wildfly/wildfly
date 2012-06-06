@@ -22,6 +22,14 @@
 
 package org.jboss.as.controller.remote;
 
+import java.io.DataInput;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.StreamUtils;
@@ -31,15 +39,6 @@ import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
-
-import java.io.DataInput;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * A attachment proxy, lazily initializing the streams.
@@ -89,7 +88,7 @@ class OperationAttachmentsProxy implements OperationAttachments {
 
         private final int index;
         private final int batchId;
-        private final PipedInputStream pipe = new PipedInputStream(BUFFER_SIZE);
+        private volatile Pipe pipe;
         private final ManagementChannelAssociation channelAssociation;
 
         private volatile boolean initialized;
@@ -106,7 +105,7 @@ class OperationAttachmentsProxy implements OperationAttachments {
         public int read() throws IOException {
             if(! initialized && error == null) {
                 synchronized (this) {
-                    if(! initialized) {
+                    if(!initialized) {
                         initializeBytes();
                     }
                 }
@@ -117,14 +116,15 @@ class OperationAttachmentsProxy implements OperationAttachments {
                 }
                 throw new IOException(error);
             }
-            return pipe.read();
+            return pipe.getIn().read();
         }
 
         void initializeBytes() {
-            if (! initialized) {
+            if (!initialized) {
+                pipe = new Pipe(BUFFER_SIZE);
                 initialized = true;
                 try {
-                    final PipedOutputStream os = new PipedOutputStream(pipe);
+                    final OutputStream os = pipe.getOut();
                     // Execute the async request
                     channelAssociation.executeRequest(batchId, new AbstractManagementRequest<Object, Object>() {
 
@@ -173,7 +173,21 @@ class OperationAttachmentsProxy implements OperationAttachments {
 
         @Override
         public void close() throws IOException {
-            pipe.close();
+            IOException ex = null;
+            try {
+                pipe.getOut().close();
+            } catch (IOException e) {
+                ex = e;
+            }
+            try {
+                pipe.getIn().close();
+            } catch (IOException e) {
+                ex = e;
+            }
+            if (ex != null) {
+                throw ex;
+            }
+            initialized = false;
         }
     }
 }

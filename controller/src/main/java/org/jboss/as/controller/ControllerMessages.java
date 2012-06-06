@@ -2481,4 +2481,10 @@ public interface ControllerMessages {
      */
     @Message(id = 14863, value = "Operation cancelled asynchronously")
     OperationCancellationException operationCancelledAsynchronously();
+
+    @Message(id = 14864, value = "Stream was killed")
+    IOException streamWasKilled();
+
+    @Message(id = 14865, value = "Stream was closed")
+    IOException streamWasClosed();
 }
