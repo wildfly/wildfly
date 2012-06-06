@@ -54,7 +54,7 @@ import static org.junit.Assert.*;
 * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
 */
 public class AssertConsoleBuilder {
-    private static String NEW_LINE = "\n";
+    private static String NEW_LINE = String.format("%n");
 
     private enum Type {
         DISPLAY, INPUT
