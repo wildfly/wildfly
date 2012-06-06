@@ -31,15 +31,20 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -63,16 +68,25 @@ public class SarExtension implements Extension {
 
     public static final String NAMESPACE = "urn:jboss:domain:sar:1.0";
     public static final String SUBSYSTEM_NAME = "sar";
-    static final SarSubsystemParser parser = new SarSubsystemParser();
+
+    private static final SarSubsystemParser parser = new SarSubsystemParser();
+
+    private static final String RESOURCE_NAME = SarExtension.class.getPackage().getName() + ".LocalDescriptions";
+    private static final ResourceDescriptionResolver RESOLVER = new StandardResourceDescriptionResolver("sar", RESOURCE_NAME, SarExtension.class.getClassLoader());
+    private static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SarExtension.SUBSYSTEM_NAME);
+    private static final ResourceDefinition RESOURCE_DEFINITION = new SimpleResourceDefinition(PATH, RESOLVER,
+                            SarSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE,
+                            OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
+
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
 
     /** {@inheritDoc} */
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SarSubsystemProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, SarSubsystemAdd.INSTANCE, SarSubsystemProviders.SUBSYSTEM_ADD, false);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(RESOURCE_DEFINITION);
         registration.registerOperationHandler(DESCRIBE, SarDescribeHandler.INSTANCE, SarDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, SarSubsystemProviders.SUBSYSTEM_REMOVE, false);
         subsystem.registerXMLElementWriter(parser);
         PropertyEditors.init();
     }
@@ -110,7 +124,6 @@ public class SarExtension implements Extension {
         }
 
     }
-
 
     private static class SarDescribeHandler implements OperationStepHandler, DescriptionProvider {
         static final SarDescribeHandler INSTANCE = new SarDescribeHandler();
