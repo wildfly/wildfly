@@ -88,7 +88,7 @@ class OperationAttachmentsProxy implements OperationAttachments {
 
         private final int index;
         private final int batchId;
-        private volatile Pipe pipe;
+        private volatile Pipe pipe = new Pipe(BUFFER_SIZE);
         private final ManagementChannelAssociation channelAssociation;
 
         private volatile boolean initialized;
@@ -121,7 +121,6 @@ class OperationAttachmentsProxy implements OperationAttachments {
 
         void initializeBytes() {
             if (!initialized) {
-                pipe = new Pipe(BUFFER_SIZE);
                 initialized = true;
                 try {
                     final OutputStream os = pipe.getOut();
@@ -187,7 +186,6 @@ class OperationAttachmentsProxy implements OperationAttachments {
             if (ex != null) {
                 throw ex;
             }
-            initialized = false;
         }
     }
 }
