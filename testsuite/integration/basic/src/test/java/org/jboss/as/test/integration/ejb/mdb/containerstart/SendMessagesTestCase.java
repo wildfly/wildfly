@@ -22,7 +22,13 @@
 
 package org.jboss.as.test.integration.ejb.mdb.containerstart;
 
-import java.util.SortedSet;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.test.integration.common.jms.JMSOperationsProvider.getInstance;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -30,15 +36,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
@@ -67,13 +72,8 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.jms.DeliveryMode.NON_PERSISTENT;
-import static org.jboss.as.test.integration.common.jms.JMSOperationsProvider.getInstance;
 
 /**
  * Part of migration EJB testsuite (JBAS-7922) to AS7 [JIRA JBQA-5483]. This test covers jira AS7-687 which aims to migrate this
@@ -94,11 +94,10 @@ public class SendMessagesTestCase {
     private static ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private static String QUEUE_SEND = "queue/sendMessage";
-    private static String QUEUE_REPLY = "queue/replyMessage";
 
     private static final int WAIT_S = TimeoutUtil.adjust(10);
     private static final int THREAD_WAIT_MS = TimeoutUtil.adjust(1000);
-    private static final int SEND_TIMEOUT_S = TimeoutUtil.adjust(1);
+    private static final int RECEIVE_WAIT_S = TimeoutUtil.adjust(30);
     
     @ContainerResource
     private ManagementClient managementClient;
@@ -108,14 +107,12 @@ public class SendMessagesTestCase {
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             final JMSOperations operations = getInstance(managementClient);
             operations.createJmsQueue(QUEUE_SEND, "java:jboss/exported/" + QUEUE_SEND);
-            operations.createJmsQueue(QUEUE_REPLY, "java:jboss/exported/" + QUEUE_REPLY);
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             final JMSOperations operations = getInstance(managementClient);
             operations.removeJmsQueue(QUEUE_SEND);
-            operations.removeJmsQueue(QUEUE_REPLY);
         }
     }
 
@@ -168,48 +165,48 @@ public class SendMessagesTestCase {
 
     private static void sendMessage(Session session, MessageProducer sender, Queue replyQueue, String txt) throws JMSException {
         TextMessage msg = session.createTextMessage(txt);
-        msg.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
         msg.setJMSReplyTo(replyQueue);
-        sender.send(msg, NON_PERSISTENT, SEND_TIMEOUT_S, SECONDS.toMillis(WAIT_S));
+        msg.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
+        sender.send(msg);
     }
 
     @Test
     public void testShutdown(@ArquillianResource @OperateOnDeployment("singleton") ManagementClient client) throws Exception {
-        Session session = null;
-        MessageProducer sender = null;
-        MessageConsumer receiver = null;
-        QueueConnection connection = null;
+        Connection connection = null;
 
         try {
             deployer.deploy("mdb");
             
-            QueueConnectionFactory qcf = (QueueConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
+            ConnectionFactory cf = (ConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
             Queue queue = (Queue) ctx.lookup(QUEUE_SEND);
-            Queue replyQueue = (Queue) ctx.lookup(QUEUE_REPLY);
 
-            connection = qcf.createQueueConnection("guest", "guest");
+            connection = cf.createConnection("guest", "guest");
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            Queue replyQueue = session.createTemporaryQueue();
+
+            MessageProducer sender = session.createProducer(queue);
+            MessageConsumer receiver = session.createConsumer(replyQueue);
+
             connection.start();
-            session = connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
 
-            sender = session.createProducer(queue);
-            receiver = session.createConsumer(replyQueue);
-
-            SortedSet<String> expected = new TreeSet<String>();
+            // we do not assume message order since the 1st message will be redelivered
+            // after redeployment (as the MDB is interrupted on 1st delivery)
+            Set<String> expected = new TreeSet<String>();
             sendMessage(session, sender, replyQueue, "await");
             expected.add("Reply: await");
 
             int awaitInt = awaitSingleton("first test"); // receive of first
             log.debug("testsuite: awaitSingleton() returned: " + awaitInt);
+
             Future<?> undeployed = executor.submit(undeployTask());
             // We want to wait for MDB.stop going into the semaphore
             Thread.sleep(THREAD_WAIT_MS);
+
             for (int i = 0; i < 50; i++) {
                 String msg = "Do not lose! (" + i + ")";
                 sendMessage(session, sender, replyQueue, msg); // should be bounced by BlockContainerShutdownInterceptor
                 expected.add("Reply: " + msg);
             }
-            awaitInt = awaitSingleton("second test"); // finalizing first
-            log.debug("testsuite: awaitSingleton()2 returned:: " + awaitInt);
 
             undeployed.get(WAIT_S, SECONDS);
 
@@ -226,33 +223,21 @@ public class SendMessagesTestCase {
             }
             log.debug("Some more messages sent");
 
-            SortedSet<String> received = new TreeSet<String>();
+            Set<String> received = new TreeSet<String>();
             for (int i = 0; i < (1 + 50 + 10); i++) {
-                Message msg = receiver.receive(SECONDS.toMillis(WAIT_S));
-                Assert.assertNotNull(msg);
+                Message msg = receiver.receive(SECONDS.toMillis(RECEIVE_WAIT_S));
+                assertNotNull("did not receive message " + i, msg);
                 String text = ((TextMessage) msg).getText();
                 received.add(text);
                 log.info(i + ": " + text);
             }
+            assertNull(receiver.receiveNoWait());
 
-            Assert.assertEquals(expected, received);
+            assertEquals(expected, received);
 
-            connection.stop();
         } finally {
             if(connection != null) {
                 connection.close();
-            }
-            if(session != null) {
-                session.close();
-            }
-            if(sender != null) {
-                sender.close();
-            }
-            if(receiver != null) {
-                receiver.close();
-            }
-            if(executor != null) {
-                executor.shutdown();
             }
             deployer.undeploy("mdb");
         }
