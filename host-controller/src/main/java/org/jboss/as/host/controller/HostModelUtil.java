@@ -84,6 +84,7 @@ import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
+import org.jboss.as.domain.controller.operations.DomainSocketBindingGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.HostProcessReloadHandler;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
@@ -220,6 +221,7 @@ public class HostModelUtil {
         RunningModeReadHandler.createAndRegister(runningModeControl, hostRegistration);
 
         DomainServerLifecycleHandlers.initializeServerInventory(serverInventory);
+        DomainSocketBindingGroupRemoveHandler.INSTANCE.initializeServerInventory(serverInventory);
 
         hostRegistration.registerOperationHandler(SpecifiedInterfaceResolveHandler.OPERATION_NAME, SpecifiedInterfaceResolveHandler.INSTANCE, SpecifiedInterfaceResolveHandler.INSTANCE);
         ValidateOperationHandler validateOperationHandler = hostControllerInfo.isMasterDomainController() ? ValidateOperationHandler.INSTANCE : ValidateOperationHandler.SLAVE_HC_INSTANCE;

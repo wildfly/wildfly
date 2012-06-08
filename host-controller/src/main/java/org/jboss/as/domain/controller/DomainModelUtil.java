@@ -74,7 +74,6 @@ import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
 import org.jboss.as.controller.operations.common.SnapshotListHandler;
 import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
-import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyValueWriteAttributeHandler;
@@ -94,13 +93,14 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
-import org.jboss.as.domain.controller.descriptions.DomainAttributes;
 import org.jboss.as.controller.transform.SubsystemDescriptionDump;
+import org.jboss.as.domain.controller.descriptions.DomainAttributes;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
 import org.jboss.as.domain.controller.operations.ApplyExtensionsHandler;
 import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
+import org.jboss.as.domain.controller.operations.DomainSocketBindingGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.LocalHostNameOperationHandler;
 import org.jboss.as.domain.controller.operations.ProcessTypeHandler;
 import org.jboss.as.domain.controller.operations.ProfileAddHandler;
@@ -265,7 +265,7 @@ public class DomainModelUtil {
 
         root.registerSubModel(PathResourceDefinition.createNamed(pathManager));
 
-        final ManagementResourceRegistration socketBindingGroup = root.registerSubModel(new SocketBindingGroupResourceDefinition(SocketBindingGroupAddHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, true));
+        final ManagementResourceRegistration socketBindingGroup = root.registerSubModel(new SocketBindingGroupResourceDefinition(SocketBindingGroupAddHandler.INSTANCE, DomainSocketBindingGroupRemoveHandler.INSTANCE, true));
         socketBindingGroup.registerSubModel(SocketBindingResourceDefinition.INSTANCE);
         // outbound-socket-binding (for remote destination)
         socketBindingGroup.registerSubModel(RemoteDestinationOutboundSocketBindingResourceDefinition.INSTANCE);
