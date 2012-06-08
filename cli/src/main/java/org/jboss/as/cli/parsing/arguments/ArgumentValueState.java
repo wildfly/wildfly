@@ -24,6 +24,7 @@ package org.jboss.as.cli.parsing.arguments;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
+import org.jboss.as.cli.parsing.EscapeCharacterState;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 import org.jboss.as.cli.parsing.ParsingContext;
 
@@ -50,6 +51,7 @@ public class ArgumentValueState extends DefaultParsingState {
         enterState('=', NameValueSeparatorState.INSTANCE);
         enterState(',', ListItemSeparatorState.INSTANCE);
         enterState('[', new ListState(this));
+        enterState('\\', EscapeCharacterState.INSTANCE);
         //leaveState(',');
         leaveState(']');
         enterState('{', this);

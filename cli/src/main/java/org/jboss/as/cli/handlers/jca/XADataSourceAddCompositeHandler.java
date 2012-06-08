@@ -68,7 +68,7 @@ public class XADataSourceAddCompositeHandler extends ResourceCompositeOperationH
 
         final String xaPropsStr = xaProps.getValue(ctx.getParsedCommandLine());
         if(xaPropsStr != null) {
-            final List<Property> propsList = xaProps.getValueConverter().fromString(xaPropsStr).asPropertyList();
+            final List<Property> propsList = xaProps.getValueConverter().fromString(ctx, xaPropsStr).asPropertyList();
             for(Property prop : propsList) {
                 final ModelNode address = this.buildOperationAddress(ctx);
                 address.add(XA_DATASOURCE_PROPERTIES, prop.getName());

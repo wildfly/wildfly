@@ -589,7 +589,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
                 throw new OperationFormatException("The argument name is not specified: '" + propName + "'");
             if(value == null || value.trim().isEmpty())
                 throw new OperationFormatException("The argument value is not specified for " + propName + ": '" + value + "'");
-            final ModelNode toSet = ArgumentValueConverter.DEFAULT.fromString(value);
+            final ModelNode toSet = ArgumentValueConverter.DEFAULT.fromString(ctx, value);
             request.get(propName).set(toSet);
         }
 

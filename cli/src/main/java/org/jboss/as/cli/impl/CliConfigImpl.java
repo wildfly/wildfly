@@ -58,6 +58,7 @@ class CliConfigImpl implements CliConfig {
     private static final String HOST = "host";
     private static final String MAX_SIZE = "max-size";
     private static final String PORT = "port";
+    private static final String RESOLVE_PARAMETER_VALUES = "resolve-parameter-values";
     private static final String VALIDATE_OPERATION_REQUESTS = "validate-operation-requests";
 
     static CliConfig load(final CommandContext ctx) throws CliInitializationException {
@@ -115,6 +116,10 @@ class CliConfigImpl implements CliConfig {
         return str;
     }
 
+    private static boolean resolveBoolean(String str) throws XMLStreamException {
+        return Boolean.parseBoolean(resolveString(str));
+    }
+
     private CliConfigImpl() {
         defaultControllerHost = "localhost";
         defaultControllerPort = 9999;
@@ -134,6 +139,7 @@ class CliConfigImpl implements CliConfig {
     private int historyMaxSize;
 
     private boolean validateOperationRequests = true;
+    private boolean resolveParameterValues = false;
 
     private SSLConfig sslConfig;
 
@@ -170,6 +176,11 @@ class CliConfigImpl implements CliConfig {
     @Override
     public boolean isValidateOperationRequests() {
         return validateOperationRequests;
+    }
+
+    @Override
+    public boolean isResolveParameterValues() {
+        return resolveParameterValues;
     }
 
     @Override
@@ -285,8 +296,9 @@ class CliConfigImpl implements CliConfig {
                         }
                         config.sslConfig = sslConfig;
                     } else if(localName.equals(VALIDATE_OPERATION_REQUESTS)) {
-                        final String resolved = resolveString(reader.getElementText());
-                        config.validateOperationRequests = Boolean.parseBoolean(resolved);
+                        config.validateOperationRequests = resolveBoolean(reader.getElementText());
+                    } else if(localName.equals(RESOLVE_PARAMETER_VALUES)) {
+                        config.resolveParameterValues = resolveBoolean(reader.getElementText());
                     } else {
                         throw new XMLStreamException("Unexpected element: " + localName);
                     }

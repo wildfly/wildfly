@@ -321,8 +321,6 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                                     } else {
                                         valueConverter = ArgumentValueConverter.LIST;
                                     }
-                                } else if(ModelType.OBJECT == type) {
-                                    valueConverter = ArgumentValueConverter.OBJECT;
                                 }
                             }
                         }
@@ -390,8 +388,6 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                                 } else {
                                     valueConverter = ArgumentValueConverter.LIST;
                                 }
-                            } else if(ModelType.OBJECT == type) {
-                                valueConverter = ArgumentValueConverter.OBJECT;
                             }
                         }
                     }
@@ -911,7 +907,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 builder.addProperty(Util.NAME, propName);
 
                 final String valueString = args.getPropertyValue(argName);
-                ModelNode nodeValue = arg.getValueConverter().fromString(valueString);
+                ModelNode nodeValue = arg.getValueConverter().fromString(ctx, valueString);
                 builder.getModelNode().get(Util.VALUE).set(nodeValue);
 
                 steps.add(builder.buildRequest());
@@ -983,7 +979,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 }
 
                 final String valueString = parsedArgs.getPropertyValue(argName);
-                ModelNode nodeValue = arg.getValueConverter().fromString(valueString);
+                ModelNode nodeValue = arg.getValueConverter().fromString(ctx, valueString);
                 request.get(propName).set(nodeValue);
             }
             return request;

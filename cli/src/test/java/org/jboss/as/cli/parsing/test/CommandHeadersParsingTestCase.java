@@ -41,12 +41,13 @@ import org.junit.Test;
  */
 public class CommandHeadersParsingTestCase {
 
+    private final MockCommandContext ctx = new MockCommandContext();
     private final DefaultCallbackHandler handler = new DefaultCallbackHandler();
-    private final HeadersArgumentValueConverter converter = new HeadersArgumentValueConverter(new MockCommandContext());
+    private final HeadersArgumentValueConverter converter = HeadersArgumentValueConverter.INSTANCE;
 
     @Test
     public void testSingleHeader() throws Exception {
-        final ModelNode headers = converter.fromString("{rollback-on-runtime-failure=false}");
+        final ModelNode headers = converter.fromString(ctx, "{rollback-on-runtime-failure=false}");
         final ModelNode expected = new ModelNode();
         expected.get("rollback-on-runtime-failure").set("false");
         assertEquals(expected, headers);
@@ -54,7 +55,7 @@ public class CommandHeadersParsingTestCase {
 
     @Test
     public void testTwoHeaders() throws Exception {
-        final ModelNode headers = converter.fromString("{rollback-on-runtime-failure=false;allow-resource-service-restart=true}");
+        final ModelNode headers = converter.fromString(ctx, "{rollback-on-runtime-failure=false;allow-resource-service-restart=true}");
         final ModelNode expected = new ModelNode();
         expected.get("rollback-on-runtime-failure").set("false");
         expected.get("allow-resource-service-restart").set("true");
@@ -64,7 +65,7 @@ public class CommandHeadersParsingTestCase {
     @Test
     public void testArgumentValueConverter() throws Exception {
 
-        final ModelNode node = converter.fromString("{ rollout groupA rollback-across-groups; rollback-on-runtime-failure=false}");
+        final ModelNode node = converter.fromString(ctx, "{ rollout groupA rollback-across-groups; rollback-on-runtime-failure=false}");
 
         final ModelNode expectedHeaders = new ModelNode();
         final ModelNode rolloutPlan = expectedHeaders.get(Util.ROLLOUT_PLAN);
@@ -99,7 +100,7 @@ public class CommandHeadersParsingTestCase {
 
         final String headers = handler.getPropertyValue("--headers");
         assertNotNull(headers);
-        final ModelNode node = converter.fromString(headers);
+        final ModelNode node = converter.fromString(ctx, headers);
         assertTrue(node.hasDefined(Util.ROLLOUT_PLAN));
         assertTrue(node.hasDefined(Util.ROLLBACK_ON_RUNTIME_FAILURE));
         assertEquals("tr", node.get(Util.ALLOW_RESOURCE_SERVICE_RESTART).asString());

@@ -70,4 +70,9 @@ public class MockCliConfig implements CliConfig {
     public boolean isValidateOperationRequests() {
         return true;
     }
+
+    @Override
+    public boolean isResolveParameterValues() {
+        return false;
+    }
 }

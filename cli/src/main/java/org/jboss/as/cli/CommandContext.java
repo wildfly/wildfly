@@ -319,4 +319,28 @@ public interface CommandContext {
      * @param dir  the new default directory
      */
     void setCurrentDir(File dir);
+
+    /**
+     * Command argument or operation parameter values may contain system properties.
+     * If this method returns true then the CLI will try to resolve
+     * the system properties before sending the operation request to the controller.
+     * Otherwise, the resolution will happen on the server side.
+     *
+     * @return true if system properties in the operation parameter values
+     * should be resolved by the CLI before the request is sent to the controller,
+     * false if system properties should be resolved on the server side.
+     */
+    boolean isResolveParameterValues();
+
+    /**
+     * Command argument or operation parameter values may contain system properties.
+     * If this property is set to true then the CLI will try to resolve
+     * the system properties before sending the operation request to the controller.
+     * Otherwise, the resolution will happen on the server side.
+     *
+     * @param resolve  true if system properties in the operation parameter values
+     * should be resolved by the CLI before the request is sent to the controller,
+     * false if system properties should be resolved on the server side.
+     */
+    void setResolveParameterValues(boolean resolve);
 }

@@ -39,23 +39,16 @@ import org.jboss.dmr.ModelNode;
 */
 public final class HeadersArgumentValueConverter extends DMRWithFallbackConverter {
 
+    public static final HeadersArgumentValueConverter INSTANCE = new HeadersArgumentValueConverter();
+
     private final DefaultCallbackHandler callback = new DefaultCallbackHandler();
     private final DefaultParsingState initialState = new DefaultParsingState("INITIAL_STATE");
     {
         initialState.enterState('{', HeaderListState.INSTANCE);
     }
 
-    private final CommandContext ctx;
-
-    public HeadersArgumentValueConverter(CommandContext ctx) {
-        if(ctx == null) {
-            throw new IllegalArgumentException("The command context can't be null.");
-        }
-        this.ctx = ctx;
-    }
-
     @Override
-    protected ModelNode fromNonDMRString(String value) throws CommandFormatException {
+    protected ModelNode fromNonDMRString(CommandContext ctx, String value) throws CommandFormatException {
         callback.reset();
         ParserUtil.parse(value, callback, initialState);
         final Collection<ParsedOperationRequestHeader> headers = callback.getHeaders();

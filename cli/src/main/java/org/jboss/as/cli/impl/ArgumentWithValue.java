@@ -39,7 +39,7 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
     private final ArgumentValueConverter valueConverter;
 
     public ArgumentWithValue(CommandHandlerWithArguments handler, String fullName) {
-        this(handler, fullName, null);
+        this(handler, null, ArgumentValueConverter.DEFAULT, fullName, null);
     }
 
     public ArgumentWithValue(CommandHandlerWithArguments handler, CommandLineCompleter valueCompleter, String fullName) {
@@ -49,10 +49,6 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
     public ArgumentWithValue(CommandHandlerWithArguments handler, CommandLineCompleter valueCompleter,
             ArgumentValueConverter valueConverter, String fullName) {
         this(handler, valueCompleter, valueConverter, fullName, null);
-    }
-
-    public ArgumentWithValue(CommandHandlerWithArguments handler, String fullName, String shortName) {
-        this(handler, null, ArgumentValueConverter.DEFAULT, fullName, shortName);
     }
 
     public ArgumentWithValue(CommandHandlerWithArguments handler, int index, String fullName) {
