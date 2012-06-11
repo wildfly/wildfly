@@ -42,7 +42,7 @@
                 <xs:element ref="validate-operation-requests" minOccurs="0"/>
                 <xs:element ref="history" minOccurs="0"/>
 
-                <xs:element name="resolve-parameter-values" type="xs:boolean" minOccurs=0 maxOccurs="1" default="false">
+                <xs:element name="resolve-parameter-values" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false">
                     <xs:annotation>
                         <xs:documentation>
                             Whether to resolve system properties specified as command argument (or operation parameter)
