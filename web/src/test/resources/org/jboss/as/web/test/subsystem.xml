@@ -16,6 +16,10 @@
                     ca-certificate-password="changeit"
                     keystore-type="PKCS12" truststore-type="JKS" />
             </connector>
+            <connector name="http-vs" scheme="http" protocol="HTTP/1.1" socket-binding="http" >
+                <virtual-server name="vs1" />
+                <virtual-server name="vs2" />
+            </connector>
             <virtual-server name="default-host" enable-welcome-root="true">
                <alias name="localhost" />
                <alias name="example.com" />
@@ -29,4 +33,6 @@
                </rewrite>
                <sso domain="mydomain" reauthenticate="true" />
             </virtual-server>
+            <virtual-server name="vs1" />
+            <virtual-server name="vs2" />
         </subsystem>

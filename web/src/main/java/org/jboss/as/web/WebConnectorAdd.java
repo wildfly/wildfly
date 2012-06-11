@@ -34,6 +34,7 @@ import static org.jboss.as.web.Constants.VIRTUAL_SERVER;
 import static org.jboss.as.web.WebConnectorDefinition.CONNECTOR_ATTRIBUTES;
 import static org.jboss.as.web.WebExtension.SSL_PATH;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -75,6 +76,7 @@ class WebConnectorAdd extends AbstractAddStepHandler {
         for (SimpleAttributeDefinition def : CONNECTOR_ATTRIBUTES) {
             def.validateAndSet(operation, model);
         }
+        WebConnectorDefinition.VIRTUAL_SERVER.validateAndSet(operation,model);
     }
 
     @Override
@@ -110,7 +112,11 @@ class WebConnectorAdd extends AbstractAddStepHandler {
             service.setMaxConnections(WebConnectorDefinition.MAX_CONNECTIONS.resolveModelAttribute(context, fullModel).asInt());
         }
         if (operation.hasDefined(VIRTUAL_SERVER)) {
-            service.setVirtualServers(operation.get(VIRTUAL_SERVER).clone());
+            List<String> vServers = new LinkedList<String>();
+            for (ModelNode vServer:WebConnectorDefinition.VIRTUAL_SERVER.resolveModelAttribute(context,fullModel).asList()){
+                vServers.add(vServer.asString());
+            }
+            service.setVirtualServers(vServers);
         }
         if (fullModel.get(SSL_PATH.getKey(), SSL_PATH.getValue()).isDefined()) {
             service.setSsl(resolveExpressions(context, fullModel.get(SSL_PATH.getKey(), SSL_PATH.getValue())));
