@@ -4,6 +4,7 @@
 		xmlns="urn:jboss:domain:1.3"
 		xmlns:d="urn:jboss:domain:1.3"
         xmlns:ws11="urn:jboss:domain:webservices:1.1"
+        xmlns:ws12="urn:jboss:domain:webservices:1.2"
         xmlns:xts="urn:jboss:domain:xts:1.0"
                 >
 
@@ -85,6 +86,9 @@
 
     <!-- Change WSDL host. -->
     <xsl:template match="//ws11:wsdl-host">
+        <xsl:copy>${jboss.bind.address:<xsl:value-of select="$publicIPAddress"/>}</xsl:copy>
+    </xsl:template>
+    <xsl:template match="//ws12:wsdl-host">
         <xsl:copy>${jboss.bind.address:<xsl:value-of select="$publicIPAddress"/>}</xsl:copy>
     </xsl:template>
 
