@@ -21,11 +21,9 @@
  */
 package org.jboss.as.cli.parsing.operation;
 
-import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
-import org.jboss.as.cli.parsing.ParsingContext;
+import org.jboss.as.cli.parsing.WordCharacterHandler;
 
 
 /**
@@ -39,17 +37,9 @@ public final class HeaderNameState extends DefaultParsingState {
 
     public HeaderNameState() {
         super(ID);
-        //setIgnoreWhitespaces(true);
         setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-        setDefaultHandler(new CharacterHandler(){
-            @Override
-            public void handle(ParsingContext ctx) throws CommandFormatException {
-                if(Character.isWhitespace(ctx.getCharacter())) {
-                    ctx.leaveState();
-                } else {
-                    ctx.getCallbackHandler().character(ctx);
-                }
-            }});
+        setLeaveOnWhitespace(true);
+        setDefaultHandler(WordCharacterHandler.LB_LEAVE_ESCAPE_ON);
         putHandler(';', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler('=', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);

@@ -30,4 +30,6 @@ public interface CommandLineFormat {
     String getPropertyListStart();
 
     String getPropertyListEnd();
+
+    boolean isPropertySeparator(char ch);
 }

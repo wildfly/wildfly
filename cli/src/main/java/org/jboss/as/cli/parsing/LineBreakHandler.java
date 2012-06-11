@@ -19,37 +19,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.parsing.operation.header;
+package org.jboss.as.cli.parsing;
 
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.parsing.DefaultParsingState;
-import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
-import org.jboss.as.cli.parsing.LineBreakHandler;
-import org.jboss.as.cli.parsing.ParsingContext;
-
+import org.jboss.as.cli.Util;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class ServerGroupSeparatorState extends DefaultParsingState {
+public class LineBreakHandler implements CharacterHandler {
 
-    public static final ServerGroupSeparatorState INSTANCE = new ServerGroupSeparatorState();
-    public static final String ID = "SG_SEPARATOR";
+    private static final String LN_SEP = Util.getLineSeparator();
+    private final boolean fallbackToEscape;
+    private final boolean leaveOnLnBreak;
 
-    ServerGroupSeparatorState() {
-        this(ServerGroupState.INSTANCE);
+    public LineBreakHandler(boolean leaveOnLnBreak, boolean fallbackToEscape) {
+        this.leaveOnLnBreak = leaveOnLnBreak;
+        this.fallbackToEscape = fallbackToEscape;
     }
 
-    ServerGroupSeparatorState(final ServerGroupState sg) {
-        super(ID);
-        setIgnoreWhitespaces(true);
-        setDefaultHandler(new LineBreakHandler(false, false){
-            @Override
-            protected void doHandle(ParsingContext ctx) throws CommandFormatException {
-                ctx.enterState(sg);
+    @Override
+    public void handle(ParsingContext ctx) throws CommandFormatException {
+        if(ctx.getCharacter() == '\\') {
+            if(ctx.getInput().regionMatches(ctx.getLocation() + 1, LN_SEP, 0, LN_SEP.length())) {
+                if(leaveOnLnBreak) {
+                    ctx.leaveState();
+                }
+            } else if(fallbackToEscape){
+                ctx.enterState(EscapeCharacterState.INSTANCE);
+            } else {
+                doHandle(ctx);
             }
-        });
-        setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        } else {
+            doHandle(ctx);
+        }
     }
+
+    protected void doHandle(ParsingContext ctx) throws CommandFormatException {}
 }

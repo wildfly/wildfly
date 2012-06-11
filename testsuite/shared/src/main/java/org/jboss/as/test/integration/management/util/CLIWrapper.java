@@ -22,41 +22,31 @@
 package org.jboss.as.test.integration.management.util;
 
 
-import java.io.BufferedReader;
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.StreamTokenizer;
-import java.io.StringReader;
-import java.text.ParseException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.io.InputStream;
 
+import junit.framework.Assert;
+
+import org.jboss.as.cli.CliInitializationException;
+import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandContextFactory;
+import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.test.http.Authentication;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.dmr.ModelNode;
+
 
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
+ * @author Alexey Loubyansky <olubyans@redhat.com>
  */
-public class CLIWrapper implements Runnable {
+public class CLIWrapper {
 
-    private static String cliCommand = null;
-    private static final String OUT_THREAD_NAME = "CLI-out";
-    private static final String ERR_THREAD_NAME = "CLI-err";
-    private Process cliProcess;
-    private PrintWriter writer;
-    private BufferedReader outputReader;
-    private BufferedReader errorReader;
-    private BlockingQueue<String> outputQueue = new LinkedBlockingQueue<String>();
-    private boolean running = false;
+    private final CommandContext ctx;
+
+    private ByteArrayOutputStream consoleOut;
 
     /**
      * Creates new CLI wrapper.
@@ -72,35 +62,11 @@ public class CLIWrapper implements Runnable {
      * <code>connect</code> command.
      *
      * @param connect indicates if the CLI should connect to server automatically.
-     * @throws IOException
-     */
-    public CLIWrapper(boolean connect) throws IOException {
-        this(connect, null, null);
-    }
-
-    /**
-     * Creates new CLI wrapper. If the connect parameter is set to true the CLI will connect to the server using
-     * <code>connect</code> command.
-     *
-     * @param connect indicates if the CLI should connect to server automatically.
-     * @param cliAddress The default name of the property containing the cli address. If null the value of the {@code node0} property is
-     * used, and if that is absent {@code localhost} is used
-     * @throws Exception
-     */
-    public CLIWrapper(boolean connect, String cliAddress) throws Exception {
-        this(connect, cliAddress, null);
-    }
-
-    /**
-     * Creates new CLI wrapper. If the connect parameter is set to true the CLI will connect to the server using
-     * <code>connect</code> command.
-     *
-     * @param connect indicates if the CLI should connect to server automatically.
      * @param cliArgs specifies additional CLI command line arguments
      * @throws Exception
      */
-    public CLIWrapper(boolean connect, String[] cliArgs) throws Exception {
-        this(connect, null, cliArgs);
+    public CLIWrapper(boolean connect) throws Exception {
+        this(connect, null);
     }
 
     /**
@@ -112,32 +78,26 @@ public class CLIWrapper implements Runnable {
      * used, and if that is absent {@code localhost} is used
      * @param cliArgs specifies additional CLI command line arguments
      */
-    public CLIWrapper(boolean connect, String cliAddress, String[] cliArgs) throws IOException {
-        init(cliArgs);
+    public CLIWrapper(boolean connect, String cliAddress) throws CliInitializationException {
+
+        consoleOut = new ByteArrayOutputStream();
+        final char[] password = getPassword() == null ? null : getPassword().toCharArray();
+        ctx = CommandContextFactory.getInstance().newCommandContext(
+                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), getUsername(), password,
+                createConsoleInput(), consoleOut);
+
         if (!connect) {
             return;
         }
+        Assert.assertTrue(sendConnect(cliAddress));
+    }
 
-        //connect
+    protected InputStream createConsoleInput() {
+        return null;
+    }
 
-        // wait for cli welcome message
-        String line = readLine(30000);
-
-        while (!line.contains("You are disconnected")) {
-            line = readLine(10000);
-        }
-
-        sendConnect(cliAddress);
-        line = readLine(5000);
-
-        if (!(line.indexOf("disconnected") >= 0)) {
-            throw new CLIException("Disconnect check failed. Line received: " + line);
-        }
-        sendLine("version", false);
-        line = readLine(5000);
-        if (! ((line.indexOf("[standalone@") >= 0) || (line.indexOf("[domain@") >= 0)) ) {
-            throw new CLIException("Connect failed. Line received: " + line);
-        }
+    public boolean isConnected() {
+        return ctx.getModelControllerClient() != null;
     }
 
     /**
@@ -145,8 +105,8 @@ public class CLIWrapper implements Runnable {
      * and use that as the address. If the system property is not set {@code localhost} will
      * be used
      */
-    public void sendConnect() throws Exception {
-        sendConnect(null);
+    public boolean sendConnect() {
+        return sendConnect(null);
     }
 
     /**
@@ -155,10 +115,15 @@ public class CLIWrapper implements Runnable {
      * property and use that as the address. If the system property is not set {@code localhost} will
      * be used
      */
-    public void sendConnect(String cliAddress) {
+    public boolean sendConnect(String cliAddress) {
         String addr = cliAddress != null ? cliAddress : TestSuiteEnvironment.getServerAddress();
-        sendLine("connect " + addr + ":" + TestSuiteEnvironment.getServerPort(), false);
-
+        try {
+            ctx.connectController(addr, TestSuiteEnvironment.getServerPort());
+            return true;
+        } catch (CommandLineException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
@@ -168,28 +133,19 @@ public class CLIWrapper implements Runnable {
      * @param readEcho if set to true reads the echo response form the CLI.
      * @throws Exception
      */
-    public void sendLine(String line, boolean readEcho)  {
-        System.out.println("[CLI-inp] " + line);
-        writer.println(line);
-        writer.flush();
-
-        if (!readEcho) {
-            return;
-        }
-
-        boolean found = false;
-        StringBuilder lines = new StringBuilder();
-        while (!found) {
-            String eLine = readLine(5000);
-            if (eLine == null) {
-                throw new RuntimeException("CLI command failed. Sent:" + line + ", received:" + lines.toString());
-            }
-            lines.append(eLine);
-            lines.append(System.getProperty("line.separator"));
-            if (eLine.indexOf(line) >= 0) {
-                found = true;
+    public boolean sendLine(String line, boolean ignoreError)  {
+        consoleOut.reset();
+        if(ignoreError) {
+            ctx.handleSafe(line);
+            return ctx.getExitCode() == 0;
+        } else {
+            try {
+                ctx.handle(line);
+            } catch (CommandLineException e) {
+                Assert.fail("Failed to execute line '" + line + "': " + e.getLocalizedMessage());
             }
         }
+        return true;
     }
 
     /**
@@ -199,169 +155,33 @@ public class CLIWrapper implements Runnable {
      * @throws Exception
      */
     public void sendLine(String line) {
-        sendLine(line, true);
-    }
-
-    public void waitForPrompt(long timeout) throws Exception {
-        sendLine("", false);
-        String line = readLine(timeout);
-        if (! ((line.indexOf("[standalone@") >= 0) || (line.indexOf("[domain@") >= 0)) ) {
-            throw new CLIException("Wait for prompt failed." + line);
-        }
+        sendLine(line, false);
     }
 
     /**
-     * Non blocking read from CLI output.
+     * Reads the last command's output.
      *
-     * @return next line from CLI output or null if the output is empty
-     */
-    public String readLine() {
-        return outputQueue.poll();
-    }
-
-    /**
-     * Blocking read from CLI output.
-     *
-     * @param timeout number of milliseconds to wait for line
      * @return next line from CLI output
-     * @throws Exception is thrown if there is no output available and timeout expired
      */
-    public String readLine(long timeout)  {
-        String line = null;
-        try {
-            line = outputQueue.poll(timeout, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException ioe) {
+    public String readOutput()  {
+        if(consoleOut.size() <= 0) {
+            return null;
         }
-        if (line == null) {
-            throw new RuntimeException("CLI read timeout.");
-        }
-        return line;
-    }
-
-    /**
-     * Consumes all available output from CLI.
-     *
-     * @param timeout number of milliseconds to wait for first line
-     * @param lineTimeout number of milliseconds to wait for each subsequent line
-     * @return array of CLI output lines
-     */
-    public String[] readAll(long timeout, long lineTimeout) {
-        Vector<String> lines = new Vector<String>();
-        try {
-            String line = outputQueue.poll(timeout, TimeUnit.MILLISECONDS);
-            while (line != null) {
-                lines.add(line);
-                line = outputQueue.poll(lineTimeout, TimeUnit.MILLISECONDS);
-            }
-        } catch (InterruptedException ioe) {
-        }
-
-        return lines.toArray(new String[]{});
-    }
-
-    /**
-     * Consumes all available output from CLI.
-     *
-     * @param timeout number of milliseconds to wait for first line
-     * @param lineTimeout number of milliseconds to wait for each subsequent line
-     * @return array of CLI output lines
-     */
-    public String readAllUnformated(long timeout, long lineTimeout) {
-        String[] lines = readAll(timeout, lineTimeout);
-        StringBuilder buf = new StringBuilder();
-        for (String line : lines) {
-            buf.append(line + " ");
-        }
-        return buf.toString();
-
+        return new String(consoleOut.toByteArray());
     }
 
     /**
      * Consumes all available output from CLI and converts the output to ModelNode operation format
      *
-     * @param timeout number of milliseconds to wait for first line
-     * @param lineTimeout number of milliseconds to wait for each subsequent line
      * @return array of CLI output lines
      */
-    public CLIOpResult readAllAsOpResult(long timeout, long lineTimeout) throws IOException {
-        String output = readAllUnformated(timeout, lineTimeout);
-        StreamTokenizer st = new StreamTokenizer(new StringReader(output));
-        st.resetSyntax();
-        st.whitespaceChars(' ', ' ');
-        st.wordChars('#', '+');
-        st.wordChars('-', 'Z');
-        st.wordChars('a', 'z');
-        st.quoteChar('"');
-
-        int token = st.nextToken();
-        if (token != '{') {
-            throw new CLIException("Parse error. '{' expected, received: '" + token + "'.");
+    public CLIOpResult readAllAsOpResult() throws IOException {
+        final String response = readOutput();
+        if(response == null) {
+            return new CLIOpResult();
         }
-        Map<String, Object> compound = parseCompound(st);
-        CLIOpResult res = new CLIOpResult();
-        res.setIsOutcomeSuccess("success".equals(compound.get("outcome")));
-        res.setResult(compound.get("result"));
-        res.setServerGroups(compound.get("server-groups"));
-        return res;
-    }
-
-    private Map<String, Object> parseCompound(StreamTokenizer st) throws IOException {
-        Map<String, Object> map = new HashMap<String, Object>();
-
-        int token = st.nextToken();
-        while (token != '}') {
-            String key = st.sval;
-            st.nextToken();
-            if (!"=>".equals(st.sval)) {
-                throw new IllegalStateException(new ParseException("=> expected, got:" + st.sval, st.lineno()));
-            }
-            token = st.nextToken();
-            if (token == '{') {
-                // compound attribute
-                map.put(key, parseCompound(st));
-            } else if (token == '[') {
-                // list attribute
-                map.put(key, parseList(st));
-            } else {
-                // primitive attribute
-                map.put(key, st.sval);
-            }
-            token = st.nextToken();
-            if (token == ',') {
-                token = st.nextToken();
-            }
-        }
-        return map;
-    }
-
-    private List parseList(StreamTokenizer st) throws IOException {
-        List list = new LinkedList();
-
-        int token = st.nextToken();
-        while (token != ']') {
-            if (token == '{') {
-                // compound attribute
-                list.add(parseCompound(st));
-            } else if (token == '[') {
-                // list attribute
-                list.add(parseList(st));
-            } else {
-                // primitive attribute
-                list.add(st.sval);
-            }
-            token = st.nextToken();
-            if (token == ',') {
-                token = st.nextToken();
-            }
-        }
-        return list;
-    }
-
-    /**
-     * Discards all CLI output.
-     */
-    public void flush() {
-        outputQueue.clear();
+        final ModelNode node = ModelNode.fromString(response);
+        return new CLIOpResult(node);
     }
 
     /**
@@ -370,16 +190,7 @@ public class CLIWrapper implements Runnable {
      * @throws Exception
      */
     public synchronized void quit() {
-        sendLine("quit", false);
-        long timeout = System.currentTimeMillis() + 10000;
-        while ( running && (System.currentTimeMillis() < timeout) ) {
-            try {
-                wait(1000);
-            } catch (InterruptedException ie) {
-            }
-        }
-        if ((outputReader != null) || (errorReader != null))
-            throw new CLIException ("CLI did not quit properly.");
+        ctx.terminateSession();
     }
 
     /**
@@ -388,101 +199,14 @@ public class CLIWrapper implements Runnable {
      * @return true if and only if the CLI has finished.
      */
     public boolean hasQuit() {
-        return !running;
+        return ctx.isTerminated();
     }
 
-    private void init(String[] cliArgs) throws IOException {
-
-        StringBuilder cmd = new StringBuilder(getCliCommand());
-        if (cliArgs != null)
-            for (String arg : cliArgs) {
-                cmd.append(" ");
-                cmd.append(arg);
-            }
-        String cmdString = cmd.toString();
-
-        System.out.println("CLI command:" + cmdString);
-
-        cliProcess = Runtime.getRuntime().exec(cmdString);
-        writer = new PrintWriter(cliProcess.getOutputStream());
-        outputReader = new BufferedReader(new InputStreamReader(cliProcess.getInputStream()));
-        errorReader = new BufferedReader(new InputStreamReader(cliProcess.getErrorStream()));
-
-        running = true;
-
-        Thread readOutputThread = new Thread(this, OUT_THREAD_NAME);
-        readOutputThread.start();
-        Thread readErrorThread = new Thread(this, ERR_THREAD_NAME);
-        readErrorThread.start();
-
+    protected String getUsername() {
+        return Authentication.USERNAME;
     }
 
-    protected Process getCliProcess() {
-        return cliProcess;
-    }
-
-    protected String getCliCommand() {
-        if (cliCommand != null) {
-            return cliCommand;
-        }
-
-        String asDist = System.getProperty("jboss.dist");
-        String asInst = System.getProperty("jboss.inst");
-
-        String javaExec = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java";
-        if (javaExec.contains(" ")) {
-            javaExec = "\"" + javaExec + "\"";
-        }
-
-        cliCommand = javaExec + " -Djboss.home.dir=" + asInst
-                + " -Djboss.modules.dir=" + asDist + "/modules"
-                + " -Djline.WindowsTerminal.directConsole=false"
-                + " -jar " + asDist + "/jboss-modules.jar"
-                + " -mp " + asDist + "/modules"
-                + " org.jboss.as.cli"
-                + " --user=" + Authentication.USERNAME
-                + " --password=" + Authentication.PASSWORD;
-        return cliCommand;
-    }
-
-    /**
-     *
-     */
-    public void run() {
-        String threadName = Thread.currentThread().getName();
-        BufferedReader reader = threadName.equals(OUT_THREAD_NAME) ? outputReader : errorReader;
-        try {
-            String line = reader.readLine();
-            while (line != null) {
-                if (threadName.equals(OUT_THREAD_NAME)) {
-                    outputLineReceived(line);
-                } else {
-                    errorLineReceived(line);
-                }
-                line = reader.readLine();
-            }
-        } catch (Exception e) {
-        } finally {
-            synchronized (this) {
-                if (threadName.equals(OUT_THREAD_NAME)) {
-                    outputReader = null;
-                } else {
-                    errorReader = null;
-                }
-                running = ((outputReader != null) || (errorReader != null));
-                notifyAll();
-            }
-        }
-    }
-
-    private synchronized void outputLineReceived(String line) {
-        System.out.println("[" + OUT_THREAD_NAME + "] " + line);
-        outputQueue.add(line);
-        notifyAll();
-    }
-
-    private synchronized void errorLineReceived(String line) {
-        System.out.println("[" + OUT_THREAD_NAME + "] " + line);
-        notifyAll();
+    protected String getPassword() {
+        return Authentication.PASSWORD;
     }
 }

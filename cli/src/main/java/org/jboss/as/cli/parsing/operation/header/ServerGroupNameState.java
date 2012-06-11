@@ -23,6 +23,7 @@ package org.jboss.as.cli.parsing.operation.header;
 
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
+import org.jboss.as.cli.parsing.WordCharacterHandler;
 
 
 /**
@@ -37,12 +38,12 @@ public class ServerGroupNameState extends DefaultParsingState {
     ServerGroupNameState() {
         super(ID);
         setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        setDefaultHandler(WordCharacterHandler.LB_LEAVE_ESCAPE_ON);
         putHandler('(', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler(',', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler('^', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler(';', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler(' ', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        setLeaveOnWhitespace(true);
     }
 }

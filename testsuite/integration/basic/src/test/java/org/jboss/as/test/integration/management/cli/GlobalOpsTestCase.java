@@ -82,7 +82,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
 
     private void testReadResource(boolean recursive) throws Exception {
         cli.sendLine("/subsystem=web:read-resource(recursive="+ String.valueOf(recursive) +")");
-        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
@@ -105,7 +105,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
     @Test
     public void testReadAttribute() throws Exception {
         cli.sendLine("/subsystem=web:read-attribute(name=native)");
-        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult().equals("true") || result.getResult().equals("false"));
@@ -119,7 +119,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
     @Test
     public void testReadResourceDescription() throws Exception {
         cli.sendLine("/subsystem=web:read-resource-description");
-        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
@@ -132,7 +132,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
     @Test
     public void testReadOperationNames() throws Exception {
         cli.sendLine("/subsystem=web:read-operation-names");
-        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof List);
@@ -153,7 +153,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
     @Test
     public void testReadOperationDescription() throws Exception {
         cli.sendLine("/subsystem=web:read-operation-description(name=add)");
-        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
@@ -167,7 +167,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
     @Test
     public void testReadChildrenTypes() throws Exception {
         cli.sendLine("/subsystem=web:read-children-types");
-        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof List);
@@ -180,7 +180,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
     @Test
     public void testReadChildrenNames() throws Exception {
         cli.sendLine("/subsystem=web:read-children-names(child-type=connector)");
-        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof List);
@@ -192,7 +192,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
     @Test
     public void testReadChildrenResources() throws Exception {
         cli.sendLine("/subsystem=web:read-children-resources(child-type=connector)");
-        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
@@ -208,11 +208,11 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
 
         // add new connector
         cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test:add(port=8181)");
-        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        CLIOpResult result = cli.readAllAsOpResult();
         assertTrue(result.isIsOutcomeSuccess());
 
         cli.sendLine("/subsystem=web/connector=test-connector:add(socket-binding=test, scheme=http, protocol=\"HTTP/1.1\", enabled=true)");
-        result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        result = cli.readAllAsOpResult();
         assertTrue(result.isIsOutcomeSuccess());
 
         // check that the connector is live
@@ -224,11 +224,11 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
 
         // remove connector
         cli.sendLine("/subsystem=web/connector=test-connector:remove");
-        result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        result = cli.readAllAsOpResult();
         assertTrue(result.isIsOutcomeSuccess());
 
         cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test:remove");
-        result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        result = cli.readAllAsOpResult();
         assertTrue(result.isIsOutcomeSuccess());
 
         // check that the connector is no longer live

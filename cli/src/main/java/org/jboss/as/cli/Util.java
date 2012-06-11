@@ -40,6 +40,8 @@ import org.jboss.dmr.Property;
  */
 public class Util {
 
+    public static final String LINE_SEPARATOR = Util.getLineSeparator();
+
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
     public static final String ADDRESS = "address";
@@ -88,6 +90,7 @@ public class Util {
     public static final String OUTCOME = "outcome";
     public static final String PATH = "path";
     public static final String PERSISTENT = "persistent";
+    public static final String PROBLEM = "problem";
     public static final String PRODUCT_NAME = "product-name";
     public static final String PRODUCT_VERSION = "product-version";
     public static final String PROFILE = "profile";
@@ -106,9 +109,12 @@ public class Util {
     public static final String REPLY_PROPERTIES = "reply-properties";
     public static final String REQUEST_PROPERTIES = "request-properties";
     public static final String REQUIRED = "required";
+    public static final String RESPONSE_HEADERS = "response-headers";
     public static final String RESTART_REQUIRED = "restart-required";
     public static final String RESULT = "result";
+    public static final String ROLLED_BACK = "rolled-back";
     public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";
+    public static final String ROLLBACK_FAILURE_DESCRIPTION = "rollback-failure-description";
     public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
     public static final String ROLLING_TO_SERVERS = "rolling-to-servers";
     public static final String ROLLOUT_PLAN = "rollout-plan";
@@ -155,6 +161,19 @@ public class Util {
         }
         if(descr.hasDefined(Util.DOMAIN_FAILURE_DESCRIPTION)) {
             descr = descr.get(Util.DOMAIN_FAILURE_DESCRIPTION);
+        }
+        if(descr.hasDefined(Util.ROLLED_BACK)) {
+            final StringBuilder buf = new StringBuilder();
+            buf.append(descr.asString());
+            if(descr.get(Util.ROLLED_BACK).asBoolean()) {
+                buf.append("(The operation was rolled back)");
+            } else if(descr.hasDefined(Util.ROLLBACK_FAILURE_DESCRIPTION)){
+                buf.append(descr.get(Util.ROLLBACK_FAILURE_DESCRIPTION).asString());
+            } else {
+                buf.append("(The operation also failed to rollback, failure description is not available.)");
+            }
+        } else {
+            return descr.asString();
         }
         return descr.asString();
     }
@@ -659,5 +678,9 @@ public class Util {
             throw new CommandFormatException("Operation response is missing result.");
         }
         return response.get(RESULT);
+    }
+
+    public static String getLineSeparator() {
+        return SecurityActions.getSystemProperty("line.separator");
     }
 }

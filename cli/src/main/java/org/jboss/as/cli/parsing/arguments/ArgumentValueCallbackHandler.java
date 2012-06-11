@@ -58,6 +58,8 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
                 } else {
                     currentState = new DefaultValueState(currentState.isList());
                 }
+            } else if(ctx.getCharacter() == '{') {
+                currentState = new DefaultValueState(false, true);
             } else {
                 currentState = new DefaultValueState(false);
             }
@@ -164,6 +166,9 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         }
         @Override
         public void itemSeparator() {
+            if(buf.length() == 0) {
+                return;
+            }
             if(wrapper == null) {
                 wrapper = new ModelNode();
             }

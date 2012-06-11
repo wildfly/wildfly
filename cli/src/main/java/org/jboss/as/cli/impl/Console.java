@@ -26,8 +26,10 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.List;
@@ -35,6 +37,7 @@ import java.util.Locale;
 
 import jline.Completor;
 
+import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
@@ -69,7 +72,12 @@ public interface Console {
     String readLine(String prompt, Character mask);
 
     static final class Factory {
-        public static Console getConsole(final CommandContext ctx) {
+
+        public static Console getConsole(CommandContext ctx) throws CliInitializationException {
+            return getConsole(ctx, null, null);
+        }
+
+        public static Console getConsole(final CommandContext ctx, InputStream is, OutputStream os) throws CliInitializationException {
 
             final String bindingsName;
             final String osName = SecurityActions.getSystemProperty("os.name").toLowerCase(Locale.ENGLISH);
@@ -81,25 +89,36 @@ public interface Console {
                 bindingsName = "keybindings/jline-default-bindings.properties";
             }
 
+            if(is == null) {
+                is = new FileInputStream(FileDescriptor.in);
+            }
+            if(os == null) {
+                os = System.out;
+            }
+            final Writer writer;
+            try {
+                String encoding = SecurityActions.getSystemProperty("jline.WindowsTerminal.output.encoding");
+                if(encoding == null) {
+                    encoding = SecurityActions.getSystemProperty("file.encoding");
+                }
+                writer = new PrintWriter(new OutputStreamWriter(os, encoding));
+            } catch (UnsupportedEncodingException e) {
+                throw new CliInitializationException("Failed to initialize console writer.", e);
+            }
+
             ClassLoader cl = SecurityActions.getClassLoader(Factory.class);
             InputStream bindingsIs = cl.getResourceAsStream(bindingsName);
             final jline.ConsoleReader jlineConsole;
             if(bindingsIs == null) {
                 System.err.println("Failed to locate key bindings for OS '" + osName +"': " + bindingsName);
                 try {
-                    jlineConsole = new jline.ConsoleReader();
+                    jlineConsole = new jline.ConsoleReader(is, writer);
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to initialize console reader", e);
                 }
             } else {
                 try {
-                    final InputStream in = new FileInputStream(FileDescriptor.in);
-                    String encoding = SecurityActions.getSystemProperty("jline.WindowsTerminal.output.encoding");
-                    if(encoding == null) {
-                        encoding = SecurityActions.getSystemProperty("file.encoding");
-                    }
-                    final Writer out = new PrintWriter(new OutputStreamWriter(System.out, encoding));
-                    jlineConsole = new jline.ConsoleReader(in, out, bindingsIs);
+                    jlineConsole = new jline.ConsoleReader(is, writer, bindingsIs);
                 } catch(Exception e) {
                     throw new IllegalStateException("Failed to initialize console reader", e);
                 } finally {

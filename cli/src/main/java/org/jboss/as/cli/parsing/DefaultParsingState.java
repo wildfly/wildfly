@@ -33,6 +33,8 @@ public class DefaultParsingState extends BaseParsingState {
     protected final CharacterHandlerMap enterStateHandlers;
     private final CharacterHandlerMap handlers;
     private boolean ignoreWhitespaces;
+    private boolean leaveOnWhitespace;
+    private CharacterHandler wsHandler;
 
     private CharacterHandler defaultHandler = GlobalCharacterHandlers.NOOP_CHARACTER_HANDLER;
 
@@ -62,6 +64,14 @@ public class DefaultParsingState extends BaseParsingState {
 
     public boolean isIgnoreWhitespaces() {
         return this.ignoreWhitespaces;
+    }
+
+    public void setLeaveOnWhitespace(boolean leaveOnWhitespace) {
+        this.leaveOnWhitespace = leaveOnWhitespace;
+    }
+
+    public boolean isLeaveOnWhitespace() {
+        return this.leaveOnWhitespace;
     }
 
     public void setDefaultHandler(CharacterHandler handler) {
@@ -100,14 +110,29 @@ public class DefaultParsingState extends BaseParsingState {
         }
     }
 
+    public void setWhitespaceHandler(CharacterHandler handler) {
+        wsHandler = handler;
+    }
+
+    public CharacterHandler getWhitespaceHandler() {
+        return wsHandler;
+    }
+
     /* (non-Javadoc)
      * @see org.jboss.as.cli.operation.parsing.ParsingState#getHandler(char)
      */
     @Override
     public CharacterHandler getHandler(char ch) {
+        if(wsHandler != null && Character.isWhitespace(ch)) {
+            return wsHandler;
+        }
 
         if(ignoreWhitespaces && Character.isWhitespace(ch)) {
             return GlobalCharacterHandlers.NOOP_CHARACTER_HANDLER;
+        }
+
+        if(leaveOnWhitespace && Character.isWhitespace(ch)) {
+            return GlobalCharacterHandlers.LEAVE_STATE_HANDLER;
         }
 
         CharacterHandler handler = enterStateHandlers.getHandler(ch);

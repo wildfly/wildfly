@@ -28,6 +28,7 @@ import org.jboss.as.cli.parsing.DefaultStateWithEndCharacter;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 import org.jboss.as.cli.parsing.ParsingContext;
 import org.jboss.as.cli.parsing.QuotesState;
+import org.jboss.as.cli.parsing.WordCharacterHandler;
 
 /**
  *
@@ -53,8 +54,13 @@ public class HeaderValueState extends DefaultParsingState {
                     ctx.getCallbackHandler().character(ctx);
                 }
             }});
-        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
         setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         setIgnoreWhitespaces(true);
+    }
+
+    @Override
+    public boolean lockValueIndex() {
+        return true;
     }
 }
