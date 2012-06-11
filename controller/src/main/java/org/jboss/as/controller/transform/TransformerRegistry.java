@@ -1,17 +1,16 @@
 package org.jboss.as.controller.transform;
 
 import org.jboss.as.controller.ControllerLogger;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.registry.GlobalOperationTransformerRegistry;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.LegacyResourceDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +29,7 @@ public final class TransformerRegistry {
     private static TransformerRegistry INSTANCE;
     private final SimpleFullModelTransformer modelTransformer;
     private final ExtensionRegistry extensionRegistry;
+    private final GlobalOperationTransformerRegistry subsystemOperationTransformers = new GlobalOperationTransformerRegistry();
 
     static {
         AS_7_1_1_SUBSYSTEM_VERSIONS.add("cmp", "1.0");
@@ -74,6 +74,10 @@ public final class TransformerRegistry {
 
     public static TransformerRegistry getInstance() { //todo this is ugly!
         return INSTANCE;
+    }
+
+    public GlobalOperationTransformerRegistry getSubsystemOperationTransformers() {
+        return subsystemOperationTransformers;
     }
 
     private static ModelNode getSubsystemDefinitionForVersion(final String subsystemName, int majorVersion, int minorVersion) {
