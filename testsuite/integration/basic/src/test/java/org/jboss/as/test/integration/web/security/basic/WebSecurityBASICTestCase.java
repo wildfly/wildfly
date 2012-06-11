@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.web.security.basic;
 
+import static org.junit.Assert.assertEquals;
+
 import java.net.URL;
 
 import org.apache.http.HttpEntity;
@@ -43,11 +45,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-
 /**
  * Unit Test the BASIC authentication
- *
+ * 
  * @author Anil Saldhana
  */
 @RunWith(Arquillian.class)
@@ -73,6 +73,7 @@ public class WebSecurityBASICTestCase extends WebSecurityPasswordBasedBase {
     @ArquillianResource
     private URL url;
 
+    @Override
     protected void makeCall(String user, String pass, int expectedStatusCode) throws Exception {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {
@@ -99,10 +100,5 @@ public class WebSecurityBASICTestCase extends WebSecurityPasswordBasedBase {
             // immediate deallocation of all system resources
             httpclient.getConnectionManager().shutdown();
         }
-    }
-
-    @Override
-    public String getContextPath() {
-        return "web-secure-basic";
     }
 }

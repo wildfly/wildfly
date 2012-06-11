@@ -21,35 +21,31 @@
  */
 package org.jboss.as.test.integration.web.security;
 
+import org.apache.log4j.Logger;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 
 /**
  * Base class for web security tests that are based on passwords
- *
+ * 
  * @author Anil Saldhana
  */
 public abstract class WebSecurityPasswordBasedBase {
 
-    /**
-     * Obtain the context path of the {@link WebArchive}
-     *
-     * @return
-     */
-    public abstract String getContextPath();
+    private static Logger LOGGER = Logger.getLogger(WebSecurityPasswordBasedBase.class);
 
     /**
      * Print the contents of the {@link WebArchive}
-     *
+     * 
      * @param war
      */
     public static void printWar(WebArchive war) {
-        System.out.println(war.toString(true));
+        LOGGER.info(war.toString(true));
     }
 
     /**
      * Test with user "anil" who has the right password and the right role to access the servlet
-     *
+     * 
      * @throws Exception
      */
     @Test
@@ -64,7 +60,7 @@ public abstract class WebSecurityPasswordBasedBase {
      * <p>
      * Should be a HTTP/403
      * </p>
-     *
+     * 
      * @throws Exception
      */
     @Test
@@ -74,7 +70,7 @@ public abstract class WebSecurityPasswordBasedBase {
 
     /**
      * Method that needs to be overridden with the HTTPClient code
-     *
+     * 
      * @param user username
      * @param pass password
      * @param expectedCode http status code
