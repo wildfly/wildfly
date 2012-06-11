@@ -22,6 +22,7 @@
 
 package org.jboss.as.web;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -91,9 +92,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 writer.writeStartElement(Element.CONNECTOR.getLocalName());
                 writer.writeAttribute(NAME, connector.getName());
                 for (SimpleAttributeDefinition attr : WebConnectorDefinition.CONNECTOR_ATTRIBUTES) {
-                    if (attr != WebConnectorDefinition.VIRTUAL_SERVER) {
-                        attr.marshallAsAttribute(config, false, writer);
-                    }
+                    attr.marshallAsAttribute(config, false, writer);
+
                 }
                 if (config.get(SSL_PATH.getKey(), SSL_PATH.getValue()).isDefined()) {
                     ModelNode sslConfig = config.get(SSL_PATH.getKey(), SSL_PATH.getValue());

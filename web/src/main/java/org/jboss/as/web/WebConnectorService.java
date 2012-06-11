@@ -28,6 +28,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.Executor;
 
 import org.apache.catalina.connector.Connector;
@@ -62,7 +63,7 @@ class WebConnectorService implements Service<Connector> {
     private Integer maxSavePostSize = null;
     private Integer maxConnections = null;
     private ModelNode ssl;
-    private ModelNode virtualServers;
+    private List<String> virtualServers;
 
     private Connector connector;
 
@@ -131,8 +132,8 @@ class WebConnectorService implements Service<Connector> {
             }
             if (virtualServers != null) {
                 HashSet<String> virtualServersList = new HashSet<String>();
-                for (final ModelNode virtualServer : virtualServers.asList()) {
-                    virtualServersList.add(virtualServer.asString());
+                for (final String virtualServer : virtualServers) {
+                    virtualServersList.add(virtualServer);
                 }
                 connector.setAllowedHosts(virtualServersList);
             }
@@ -306,7 +307,7 @@ class WebConnectorService implements Service<Connector> {
         this.ssl = ssl;
     }
 
-    void setVirtualServers(ModelNode virtualServers) {
+    void setVirtualServers(List<String> virtualServers) {
         this.virtualServers = virtualServers;
     }
 
