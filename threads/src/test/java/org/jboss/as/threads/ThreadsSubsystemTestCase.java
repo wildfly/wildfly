@@ -25,6 +25,8 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.ModelVersionRange;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -53,6 +55,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import org.jboss.as.controller.transform.TransformersRegistry;
 import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
 import static org.jboss.as.threads.CommonAttributes.BLOCKING_BOUNDED_QUEUE_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.BLOCKING_QUEUELESS_THREAD_POOL;
@@ -1261,6 +1264,11 @@ public class ThreadsSubsystemTestCase {
                 @Override
                 public void registerSubsystemTransformer(SubsystemTransformer subsystemTransformer) {
 
+                }
+
+                @Override
+                public TransformersRegistry registerModelTransformers(ModelVersionRange version) {
+                    return null;  //To change body of implemented methods use File | Settings | File Templates.
                 }
             };
         }

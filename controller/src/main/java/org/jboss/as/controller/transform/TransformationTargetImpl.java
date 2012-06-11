@@ -4,6 +4,7 @@ import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.SubsystemInformation;
+import org.jboss.as.controller.registry.OperationTransformerRegistry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -21,6 +22,7 @@ public class TransformationTargetImpl implements TransformationTarget {
     private final ExtensionRegistry extensionRegistry;
     private final TransformerRegistry transformerRegistry;
     private final Map<String, String> subsystemVersions = Collections.synchronizedMap(new HashMap<String, String>());
+    private final OperationTransformerRegistry operationTransformers;
 
     private TransformationTargetImpl(final int majorManagementVersion, final int minorManagementVersion,
                                      final int microManagementVersion, final ModelNode subsystemVersions) {
@@ -32,6 +34,7 @@ public class TransformationTargetImpl implements TransformationTarget {
         for (Property p : subsystemVersions.asPropertyList()) {
             this.subsystemVersions.put(p.getName(), p.getValue().asString());
         }
+        this.operationTransformers = transformerRegistry.getSubsystemOperationTransformers().resolve(major, minor, subsystemVersions);
     }
 
     public static TransformationTargetImpl create(final int majorManagementVersion, final int minorManagementVersion,
@@ -71,7 +74,11 @@ public class TransformationTargetImpl implements TransformationTarget {
 
     @Override
     public OperationTransformer resolveTransformer(PathAddress address, String operationName) {
-        return null;
+        OperationTransformerRegistry.TransformerEntry entry = operationTransformers.resolveTransformer(address, operationName);
+        if(entry.getPolicy() == OperationTransformerRegistry.TransformationPolicy.DISCARD) {
+            return null;
+        }
+        return entry.getTransformer();
     }
 
     @Override
