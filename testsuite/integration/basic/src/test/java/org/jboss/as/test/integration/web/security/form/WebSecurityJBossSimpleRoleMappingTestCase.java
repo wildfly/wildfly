@@ -21,13 +21,9 @@
  */
 package org.jboss.as.test.integration.web.security.form;
 
-import java.net.URL;
-
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
@@ -39,21 +35,15 @@ import org.junit.runner.RunWith;
 
 /**
  * Unit Test web security
- *
+ * 
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(WebSimpleRoleMappingSecurityDomainSetup.class)
-public class WebSecurityJBossSimpleRoleMappingTestCase extends WebSecurityFORMTestCase {
+public class WebSecurityJBossSimpleRoleMappingTestCase extends AbstractWebSecurityFORMTestCase {
 
-    public static final String deploymentName = "web-secure.war";
-
-    @ArquillianResource
-    @OperateOnDeployment(deploymentName)
-    URL deploymentUrl;
-
-    @Deployment(name = deploymentName, order = 1, testable = false)
+    @Deployment(testable = false)
     public static WebArchive deployment() throws Exception {
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure.war");
@@ -62,7 +52,8 @@ public class WebSecurityJBossSimpleRoleMappingTestCase extends WebSecurityFORMTe
         war.addAsWebResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "login.jsp", "login.jsp");
         war.addAsWebResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "error.jsp", "error.jsp");
 
-        war.addAsWebInfResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "jboss-web-role-mapping.xml", "jboss-web.xml");
+        war.addAsWebInfResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "jboss-web-role-mapping.xml",
+                "jboss-web.xml");
         war.addAsWebInfResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "web.xml", "web.xml");
 
         war.addAsResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "users.properties", "users.properties");
@@ -71,19 +62,9 @@ public class WebSecurityJBossSimpleRoleMappingTestCase extends WebSecurityFORMTe
         return war;
     }
 
-
-    /**
-     * Negative test as marcus doesn't have proper role in module mapping created.
-     */
-    @Override
-    @Test
-    public void testPasswordBasedUnsuccessfulAuth() throws Exception {
-        makeCall("marcus", "marcus", 403);
-    }
-
     /**
      * At this time peter can go through because he has role mapped in the map-module option.
-     *
+     * 
      * @throws Exception
      */
     @Test
