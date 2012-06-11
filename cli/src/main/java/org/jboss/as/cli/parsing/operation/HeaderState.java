@@ -26,6 +26,7 @@ import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
+import org.jboss.as.cli.parsing.LineBreakHandler;
 import org.jboss.as.cli.parsing.ParsingContext;
 
 
@@ -60,16 +61,21 @@ public class HeaderState extends DefaultParsingState {
                 final char ch = ctx.getCharacter();
                 if(ch == '=') {
                     ctx.enterState(nameValueSep);
-                } else if (!Character.isWhitespace(ch)) {
+                } else if (!Character.isWhitespace(ch) && ch != '\\') {
                     ctx.leaveState();
                 }
             }});
     }
 
     private static class NameValueSeparatorState extends DefaultParsingState {
-        NameValueSeparatorState(HeaderValueState valueState) {
+        NameValueSeparatorState(final HeaderValueState valueState) {
             super("NAME_VALUE_SEPARATOR");
-            setDefaultHandler(new EnterStateCharacterHandler(valueState));
+            setDefaultHandler(new LineBreakHandler(false, false){
+                @Override
+                protected void doHandle(ParsingContext ctx) throws CommandFormatException {
+                    ctx.enterState(valueState);
+                }
+            });
             setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
             setIgnoreWhitespaces(true);
         }

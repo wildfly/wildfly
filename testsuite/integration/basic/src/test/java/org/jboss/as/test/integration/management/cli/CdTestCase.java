@@ -21,49 +21,45 @@
  */
 package org.jboss.as.test.integration.management.cli;
 
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.management.util.CLIWrapper;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandLineException;
+import org.jboss.as.test.integration.management.util.CLITestUtil;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 /**
  *
- * @author Dominik Pospisil <dpospisi@redhat.com>
+ * @author Alexey Loubyansky
  */
 @RunWith(Arquillian.class)
-public class BasicOpsTestCase {
+@RunAsClient
+public class CdTestCase {
 
     @Test
-    public void testConnect() throws Exception {
-        CLIWrapper cli = new CLIWrapper(false);
-
-        assertFalse(cli.isConnected());
-        cli.sendLine("connect " + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getServerPort());
-        assertTrue(cli.isConnected());
-
-        cli.quit();
+    public void testValidAddress() throws Exception {
+        final CommandContext ctx = CLITestUtil.getCommandContext();
+        try {
+            ctx.connectController();
+            ctx.handle("cd subsystem=datasources");
+        } finally {
+            ctx.terminateSession();
+        }
     }
 
     @Test
-    public void testLs() throws Exception {
-        CLIWrapper cli = new CLIWrapper(true);
-        cli.sendLine("ls");
-        String ls = cli.readOutput();
-
-        assertTrue(ls.contains("subsystem"));
-        assertTrue(ls.contains("interface"));
-        assertTrue(ls.contains("extension"));
-        assertTrue(ls.contains("subsystem"));
-        assertTrue(ls.contains("core-service"));
-        assertTrue(ls.contains("system-property"));
-        assertTrue(ls.contains("socket-binding-group"));
-        assertTrue(ls.contains("deployment"));
-        assertTrue(ls.contains("path"));
-
-        cli.quit();
+    public void testInvalidAddress() throws Exception {
+        final CommandContext ctx = CLITestUtil.getCommandContext();
+        try {
+            ctx.connectController();
+            ctx.handle("cd subsystem=subsystem");
+            Assert.fail("Can't cd into a non-existing nodepath.");
+        } catch(CommandLineException e) {
+            // expected
+        } finally {
+            ctx.terminateSession();
+        }
     }
 }

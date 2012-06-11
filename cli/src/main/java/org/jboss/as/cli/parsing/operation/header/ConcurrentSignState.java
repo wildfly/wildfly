@@ -21,9 +21,11 @@
  */
 package org.jboss.as.cli.parsing.operation.header;
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.DefaultParsingState;
-import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
+import org.jboss.as.cli.parsing.LineBreakHandler;
+import org.jboss.as.cli.parsing.ParsingContext;
 
 
 /**
@@ -39,10 +41,15 @@ public class ConcurrentSignState extends DefaultParsingState {
         this(ServerGroupState.INSTANCE);
     }
 
-    ConcurrentSignState(ServerGroupState sg) {
+    ConcurrentSignState(final ServerGroupState sg) {
         super(ID);
         setIgnoreWhitespaces(true);
-        setDefaultHandler(new EnterStateCharacterHandler(sg));
+        setDefaultHandler(new LineBreakHandler(false, false){
+            @Override
+            protected void doHandle(ParsingContext ctx) throws CommandFormatException {
+                ctx.enterState(sg);
+            }
+        });
         setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
     }
 }

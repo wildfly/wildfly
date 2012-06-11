@@ -216,6 +216,11 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
 
     @Override
     public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
+        recognizeArguments(ctx);
+        return buildRequestWOValidation(ctx);
+    }
+
+    protected ModelNode buildRequestWOValidation(CommandContext ctx) throws CommandFormatException {
         final ModelNode request = buildRequestWithoutHeaders(ctx);
         addHeaders(ctx, request);
         return request;

@@ -80,9 +80,7 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
     public void testDeploy() throws Exception {
 
         // deploy to all servers
-        cli.sendLine("deploy --all-server-groups " + warFile.getAbsolutePath(), true);
-        cli.waitForPrompt(WAIT_TIMEOUT);
-
+        cli.sendLine("deploy --all-server-groups " + warFile.getAbsolutePath());
 
         // check that the deployment is available on all servers
         checkURL("/SimpleServlet/SimpleServlet", "SimpleServlet");
@@ -101,14 +99,10 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
 
 
         // redeploy to all servers
-        cli.sendLine("deploy --all-server-groups " + warFile.getAbsolutePath(), true);
-        String line = cli.readLine(WAIT_TIMEOUT);
-        // check that this fails
-        assertFalse("Deployment failed: " + line, line.indexOf("deployed successfully") >= 0);
+        assertFalse(cli.sendLine("deploy --all-server-groups " + warFile.getAbsolutePath(), true));
 
         // force redeploy
-        cli.sendLine("deploy " + warFile.getAbsolutePath() + " --force", true);
-        cli.waitForPrompt(WAIT_TIMEOUT);
+        cli.sendLine("deploy " + warFile.getAbsolutePath() + " --force");
 
         // check that new version is running
         checkURL("/SimpleServlet/page.html", "Version2");
@@ -117,8 +111,7 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
     public void testUndeploy() throws Exception {
 
         //undeploy
-        cli.sendLine("undeploy --all-relevant-server-groups SimpleServlet.war", true);
-        cli.waitForPrompt(WAIT_TIMEOUT);
+        cli.sendLine("undeploy --all-relevant-server-groups SimpleServlet.war");
 
         // check undeployment
         checkURL("/SimpleServlet/SimpleServlet" , "SimpleServlet", true);
@@ -147,5 +140,4 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
             }
         }
     }
-
 }

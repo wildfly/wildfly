@@ -267,7 +267,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         }
 
         if (isCliArchive(f)) {
-            final ModelNode request = buildRequest(ctx);
+            final ModelNode request = buildRequestWOValidation(ctx);
             if(request == null) {
                 throw new CommandFormatException("Operation request wasn't built.");
             }

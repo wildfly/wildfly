@@ -98,6 +98,11 @@ public class EchoDMRHandler extends CommandHandlerWithHelp {
             };
     }
 
+    @Override
+    protected void recognizeArguments(CommandContext ctx) throws CommandFormatException {
+        // allow arbitrary arguments, it's up to the command or operation handler to validate them
+    }
+
     /* (non-Javadoc)
      * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
      */
