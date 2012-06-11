@@ -112,7 +112,7 @@ public class MessagingExtension implements Extension {
     }
 
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 1);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 2);
         subsystem.registerXMLElementWriter(Messaging12SubsystemParser.getInstance());
         boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
