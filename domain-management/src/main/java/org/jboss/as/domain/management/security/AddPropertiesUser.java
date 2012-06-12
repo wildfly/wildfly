@@ -189,7 +189,7 @@ public class AddPropertiesUser {
         if (argsCliProps.containsKey(CommandLineArgument.PASSWORD.key()) || argsCliProps.containsKey(CommandLineArgument.USER.key())) {
             final String password = argsCliProps.getProperty(CommandLineArgument.PASSWORD.key());
             final String user = argsCliProps.getProperty(CommandLineArgument.USER.key());
-            if (argsCliProps.contains(CommandLineArgument.REALM.key())) {
+            if (argsCliProps.containsKey(CommandLineArgument.REALM.key())) {
                 new AddPropertiesUser(javaConsole, management, user, password, argsCliProps.getProperty(CommandLineArgument.REALM.key())).run();
             } else {
                 new AddPropertiesUser(javaConsole, management, user, password).run();
