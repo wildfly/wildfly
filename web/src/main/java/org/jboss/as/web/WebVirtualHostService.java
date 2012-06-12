@@ -81,7 +81,7 @@ public class WebVirtualHostService implements Service<VirtualHost> {
             host.addAlias(alias);
         }
         if(accessLog != null) {
-            host.addValve(createAccessLogValve(host, pathManagerInjector.getValue().resolveRelativePathEntry(accessLogPath, accessLogRelativeTo), accessLog));
+            host.addValve(createAccessLogValve(pathManagerInjector.getValue().resolveRelativePathEntry(accessLogPath, accessLogRelativeTo), accessLog));
             callbackHandle = pathManagerInjector.getValue().registerCallback(accessLogRelativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
         }
         if(rewrite != null) {
@@ -160,11 +160,17 @@ public class WebVirtualHostService implements Service<VirtualHost> {
         return ssoManager;
     }
 
-    static Valve createAccessLogValve(final Container container, final String logDirectory, final ModelNode element) {
+    static Valve createAccessLogValve(final String logDirectory, final ModelNode element) {
+        //todo this should all use AD.resolveModelAttribute()
         boolean extended = false;
         if (element.hasDefined(Constants.EXTENDED)) {
             extended = element.get(Constants.EXTENDED).asBoolean();
         }
+        String pattern = null;
+        if (element.hasDefined(Constants.PATTERN)) {
+            pattern = element.get(Constants.PATTERN).asString();
+        }
+
         final AccessLogValve log;
         if (extended) {
             log = new ExtendedAccessLogValve();
@@ -174,11 +180,16 @@ public class WebVirtualHostService implements Service<VirtualHost> {
         log.setDirectory(logDirectory);
         if (element.hasDefined(Constants.RESOLVE_HOSTS)) log.setResolveHosts(element.get(Constants.RESOLVE_HOSTS).asBoolean());
         if (element.hasDefined(Constants.ROTATE)) log.setRotatable(element.get(Constants.ROTATE).asBoolean());
-        if (element.hasDefined(Constants.PATTERN)) {
-            log.setPattern(element.get(Constants.PATTERN).asString());
+        if (pattern != null) {
+            log.setPattern(pattern);
         } else {
-            log.setPattern("common");
+            if (extended) {
+                log.setPattern("time cs-method cs-uri sc-status sc(Referer)");
+            } else {
+                log.setPattern("common");
+            }
         }
+
         if (element.hasDefined(Constants.PREFIX)) log.setPrefix(element.get(Constants.PREFIX).asString());
         return log;
     }
