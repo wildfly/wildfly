@@ -90,9 +90,9 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
         }
         target.addService(this.serviceName, this.service).setInitialMode(ServiceController.Mode.NEVER).install();
         target.addService(this.singletonServiceName.append("singleton"), new ValueService<Singleton>(new ImmediateValue<Singleton>(this))).addDependency(this.singletonServiceName).setInitialMode(ServiceController.Mode.PASSIVE).install();
-        return target.addService(this.singletonServiceName, new AsynchronousService<T>(this))
-            .addDependency(ServiceProviderRegistryService.getServiceName(container), ServiceProviderRegistry.class, this.registryRef)
-            .addDependency(ServiceName.JBOSS.append(DEFAULT_CONTAINER, container), GroupRpcDispatcher.class, this.dispatcherRef)
+        return AsynchronousService.addService(target, this.singletonServiceName, this)
+                .addDependency(ServiceProviderRegistryService.getServiceName(container), ServiceProviderRegistry.class, this.registryRef)
+                .addDependency(ServiceName.JBOSS.append(DEFAULT_CONTAINER, container), GroupRpcDispatcher.class, this.dispatcherRef)
         ;
     }
 

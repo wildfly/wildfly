@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -34,7 +35,6 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -90,7 +90,6 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
         if (newControllers != null) {
             newControllers.add(dcfsController);
         }
-
     }
 
     protected void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model)
@@ -105,29 +104,20 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
         context.removeService(defaultChannelFactoryService);
     }
 
-    protected ServiceController<ProtocolDefaults> installProtocolDefaultsService(ServiceTarget target,
-                                                                           ServiceVerificationHandler verificationHandler) {
-        final ProtocolDefaultsService service = new ProtocolDefaultsService();
-        ServiceBuilder<ProtocolDefaults> protocolDefaultsBuilder =
-                target.addService(ProtocolDefaultsService.SERVICE_NAME, service)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND) ;
-        org.jboss.as.server.Services.addServerExecutorDependency(protocolDefaultsBuilder, service.getExecutorInjector(), false);
-
-        return protocolDefaultsBuilder.install() ;
+    protected ServiceController<ProtocolDefaults> installProtocolDefaultsService(ServiceTarget target, ServiceVerificationHandler verificationHandler) {
+        return AsynchronousService.addService(target, ProtocolDefaultsService.SERVICE_NAME, new ProtocolDefaultsService())
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install()
+        ;
     }
 
-    protected ServiceController<ChannelFactory> installDefaultChannelFactoryService(ServiceTarget target,
-                                                                                    String stack,
-                                                                                    ServiceVerificationHandler verificationHandler) {
-        InjectedValue<ChannelFactory> factory = new InjectedValue<ChannelFactory>();
-        ValueService<ChannelFactory> service = new ValueService<ChannelFactory>(factory);
-
-        ServiceBuilder<ChannelFactory> channelFactoryBuilder =
-                target.addService(ChannelFactoryService.getServiceName(null), service)
+    protected ServiceController<ChannelFactory> installDefaultChannelFactoryService(ServiceTarget target, String stack, ServiceVerificationHandler verificationHandler) {
+        final InjectedValue<ChannelFactory> factory = new InjectedValue<ChannelFactory>();
+        return target.addService(ChannelFactoryService.getServiceName(null), new ValueService<ChannelFactory>(factory))
                 .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, factory)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
-
-        return channelFactoryBuilder.install() ;
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install()
+        ;
     }
 
     protected boolean requiresRuntimeVerification() {
