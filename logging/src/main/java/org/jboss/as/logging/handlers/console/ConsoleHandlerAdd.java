@@ -24,6 +24,7 @@ package org.jboss.as.logging.handlers.console;
 
 import static org.jboss.as.logging.CommonAttributes.TARGET;
 
+import java.util.List;
 import java.util.logging.Handler;
 
 import org.jboss.as.controller.OperationContext;
@@ -31,6 +32,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.logging.handlers.FlushingHandlerAddProperties;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -50,8 +52,8 @@ public class ConsoleHandlerAdd extends FlushingHandlerAddProperties<ConsoleHandl
     }
 
     @Override
-    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final ConsoleHandlerService service, final ModelNode model) throws OperationFailedException {
-        super.updateRuntime(context, serviceBuilder, name, service, model);
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final ConsoleHandlerService service, final ModelNode model, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+        super.updateRuntime(context, serviceBuilder, name, service, model, newControllers);
         final ModelNode target = TARGET.resolveModelAttribute(context, model);
         if (target.isDefined()) {
             service.setTarget(Target.fromString(target.asString()));

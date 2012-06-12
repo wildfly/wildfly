@@ -117,7 +117,7 @@ public abstract class HandlerAddProperties<T extends HandlerService> extends Abs
             service.setFilter(ModelParser.parseFilter(context, filter));
         }
 
-        updateRuntime(context, serviceBuilder, name, service, model);
+        updateRuntime(context, serviceBuilder, name, service, model, newControllers);
 
         serviceBuilder.addListener(verificationHandler);
         serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
@@ -126,7 +126,7 @@ public abstract class HandlerAddProperties<T extends HandlerService> extends Abs
 
     protected abstract T createHandlerService(OperationContext context, ModelNode model) throws OperationFailedException;
 
-    protected abstract void updateRuntime(OperationContext context, ServiceBuilder<Handler> serviceBuilder, String name, T service, ModelNode model) throws OperationFailedException;
+    protected abstract void updateRuntime(OperationContext context, ServiceBuilder<Handler> serviceBuilder, String name, T service, ModelNode model, final List<ServiceController<?>> newControllers) throws OperationFailedException;
 
     /**
      * Copies the attribute, represented by the {@code name} parameter, from one {@link ModelNode} to another if the

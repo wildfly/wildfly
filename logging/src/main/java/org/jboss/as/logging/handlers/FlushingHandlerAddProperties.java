@@ -34,6 +34,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Date: 23.09.2011
@@ -51,7 +52,7 @@ public abstract class FlushingHandlerAddProperties<T extends FlushingHandlerServ
     }
 
     @Override
-    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final T service, final ModelNode model) throws OperationFailedException {
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final T service, final ModelNode model, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ModelNode autoflush = AUTOFLUSH.resolveModelAttribute(context, model);
         if (autoflush.isDefined()) {
             service.setAutoflush(autoflush.asBoolean());

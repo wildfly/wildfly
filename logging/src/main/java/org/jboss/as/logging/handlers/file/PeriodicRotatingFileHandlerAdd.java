@@ -26,6 +26,7 @@ import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 
+import java.util.List;
 import java.util.logging.Handler;
 
 import org.jboss.as.controller.OperationContext;
@@ -33,6 +34,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.logging.handlers.FlushingHandlerAddProperties;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -52,11 +54,11 @@ public class PeriodicRotatingFileHandlerAdd extends FlushingHandlerAddProperties
     }
 
     @Override
-    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final PeriodicRotatingFileHandlerService service, final ModelNode model) throws OperationFailedException {
-        super.updateRuntime(context, serviceBuilder, name, service, model);
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final PeriodicRotatingFileHandlerService service, final ModelNode model, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+        super.updateRuntime(context, serviceBuilder, name, service, model, newControllers);
         final ModelNode file = FILE.resolveModelAttribute(context, model);
         if (file.isDefined()) {
-            FileHandlers.addFile(context, serviceBuilder, service, file, name);
+            newControllers.add(FileHandlers.addFile(context, serviceBuilder, service, file, name));
         }
         final ModelNode append = APPEND.resolveModelAttribute(context, model);
         if (append.isDefined()) {
