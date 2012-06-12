@@ -197,7 +197,7 @@ public class CliLauncher {
                 } else {
                     // assume it's commands
                     if(file != null) {
-                        argError = "Only one of '--file', '--commands' or '--command' can appear as the argument at a time.";
+                        argError = "Only one of '--file', '--commands' or '--command' can appear as the argument at a time: " + arg;
                         break;
                     }
                     if(commands != null) {

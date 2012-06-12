@@ -49,6 +49,8 @@ import org.jboss.staxmapper.XMLMapper;
  */
 class CliConfigImpl implements CliConfig {
 
+    private static final String JBOSS_XML_CONFIG = "jboss.cli.config";
+
     private static final String DEFAULT_CONTROLLER = "default-controller";
     private static final String ENABLED = "enabled";
     private static final String FILE_DIR = "file-dir";
@@ -62,12 +64,19 @@ class CliConfigImpl implements CliConfig {
     private static final String VALIDATE_OPERATION_REQUESTS = "validate-operation-requests";
 
     static CliConfig load(final CommandContext ctx) throws CliInitializationException {
-        final String jbossHome = SecurityActions.getEnvironmentVariable("JBOSS_HOME");
-        if(jbossHome == null) {
-            System.err.println("WARN: can't load the config file because JBOSS_HOME environment variable is not set.");
-            return new CliConfigImpl();
+        final String jbossCliConfig = SecurityActions.getSystemProperty(JBOSS_XML_CONFIG);
+        final File jbossCliFile;
+        if(jbossCliConfig == null) {
+            final String jbossHome = SecurityActions.getEnvironmentVariable("JBOSS_HOME");
+            if(jbossHome == null) {
+                System.err.println("WARN: can't load the config file because JBOSS_HOME environment variable is not set.");
+                return new CliConfigImpl();
+            }
+            jbossCliFile = new File(jbossHome + File.separatorChar + "bin", "jboss-cli.xml");
+        } else {
+            jbossCliFile = new File(jbossCliConfig);
         }
-        return parse(ctx, new File(jbossHome + File.separatorChar + "bin", "jboss-cli.xml"));
+        return parse(ctx, jbossCliFile);
     }
 
     static CliConfig parse(final CommandContext ctx, File f) throws CliInitializationException {
