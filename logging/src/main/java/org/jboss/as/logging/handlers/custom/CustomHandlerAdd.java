@@ -27,6 +27,7 @@ import static org.jboss.as.logging.CommonAttributes.MODULE;
 import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Handler;
 
 import org.jboss.as.controller.OperationContext;
@@ -34,6 +35,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.logging.handlers.HandlerAddProperties;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Date: 03.08.2011
@@ -56,7 +58,7 @@ public class CustomHandlerAdd extends HandlerAddProperties<CustomHandlerService>
     }
 
     @Override
-    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final CustomHandlerService service, final ModelNode model) throws OperationFailedException {
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final CustomHandlerService service, final ModelNode model, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ModelNode properties = model.get(PROPERTIES);
         if (properties.isDefined()) {
             service.addProperties(properties.asPropertyList());

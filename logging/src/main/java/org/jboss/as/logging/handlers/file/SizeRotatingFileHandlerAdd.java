@@ -27,6 +27,7 @@ import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 
+import java.util.List;
 import java.util.logging.Handler;
 
 import org.jboss.as.controller.OperationContext;
@@ -35,6 +36,7 @@ import org.jboss.as.logging.handlers.FlushingHandlerAddProperties;
 import org.jboss.as.logging.util.ModelParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -54,15 +56,15 @@ public class SizeRotatingFileHandlerAdd extends FlushingHandlerAddProperties<Siz
     }
 
     @Override
-    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final SizeRotatingFileHandlerService service, final ModelNode model) throws OperationFailedException {
-        super.updateRuntime(context, serviceBuilder, name, service, model);
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final SizeRotatingFileHandlerService service, final ModelNode model, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+        super.updateRuntime(context, serviceBuilder, name, service, model, newControllers);
         final ModelNode append = APPEND.resolveModelAttribute(context, model);
         if (append.isDefined()) {
             service.setAppend(append.asBoolean());
         }
         final ModelNode file = FILE.resolveModelAttribute(context, model);
         if (file.isDefined()) {
-            FileHandlers.addFile(context, serviceBuilder, service, file, name);
+            newControllers.add(FileHandlers.addFile(context, serviceBuilder, service, file, name));
         }
         final ModelNode maxBackupIndex = MAX_BACKUP_INDEX.resolveModelAttribute(context, model);
         if (maxBackupIndex.isDefined()) {

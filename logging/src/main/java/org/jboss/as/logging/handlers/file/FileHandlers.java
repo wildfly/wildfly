@@ -49,7 +49,8 @@ import org.jboss.msc.service.ServiceTarget;
  */
 class FileHandlers {
 
-    static void addFile(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final AbstractFileHandlerService service, final ModelNode file, final String name) throws OperationFailedException {
+    static ServiceController<?> addFile(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final AbstractFileHandlerService service, final ModelNode file, final String name) throws OperationFailedException {
+        ServiceController<?> result = null;
         if (file.isDefined()) {
             final ModelNode path = PATH.resolveModelAttribute(context, file);
             final ModelNode relativeTo = RELATIVE_TO.resolveModelAttribute(context, file);
@@ -60,9 +61,10 @@ class FileHandlers {
             final HandlerFileService fileService = new HandlerFileService(path.asString(), relativeTo.isDefined() ? relativeTo.asString() : null);
             final ServiceBuilder<?> fileBuilder = serviceTarget.addService(serviceName, fileService);
             fileBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, fileService.getPathManagerInjector());
-            fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-            serviceBuilder.addDependency(LogServices.handlerFileName(name), String.class, service.getFileNameInjector());
+            result = fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+            serviceBuilder.addDependency(serviceName, String.class, service.getFileNameInjector());
         }
+        return result;
     }
 
     static boolean changeFile(final OperationContext context, final ModelNode oldFile, final ModelNode newFile, final String name) throws OperationFailedException {

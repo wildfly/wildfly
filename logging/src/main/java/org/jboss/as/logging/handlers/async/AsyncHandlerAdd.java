@@ -38,6 +38,7 @@ import org.jboss.as.logging.util.LogServices;
 import org.jboss.as.logging.util.ModelParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -53,7 +54,7 @@ public class AsyncHandlerAdd extends HandlerAddProperties<AsyncHandlerService> {
     }
 
     @Override
-    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final AsyncHandlerService service, final ModelNode model) throws OperationFailedException {
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final AsyncHandlerService service, final ModelNode model, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final List<InjectedValue<Handler>> list = new ArrayList<InjectedValue<Handler>>();
         final ModelNode subhandlers = SUBHANDLERS.resolveModelAttribute(context, model);
         if (subhandlers.isDefined()) {
