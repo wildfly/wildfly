@@ -22,16 +22,18 @@
 
 package org.jboss.as.clustering.msc;
 
-import java.security.AccessController;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ExecutorService;
 
+import org.jboss.as.server.Services;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.threads.JBossThreadFactory;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
 /**
  * Service decorator that optionally starts/stops a service asynchronously.
@@ -39,21 +41,30 @@ import org.jboss.threads.JBossThreadFactory;
  */
 public final class AsynchronousService<T> implements Service<T> {
     final Service<T> service;
-    private final Executor executor;
+    private final Value<ExecutorService> executor;
     private final boolean startAsynchronously;
     private final boolean stopAsynchronously;
 
-    public AsynchronousService(Service<T> service) {
-        this(service, true, false);
+    public static <T> ServiceBuilder<T> addService(ServiceTarget target, ServiceName name, Service<T> service) {
+        return addService(target, name, service, true, false);
     }
 
-    public AsynchronousService(Service<T> service, boolean startAsynchronously, boolean stopAsynchronously) {
+    public static <T> ServiceBuilder<T> addService(ServiceTarget target, ServiceName name, Service<T> service, boolean startAsynchronously, boolean stopAsynchronously) {
+        final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
+        final ServiceBuilder<T> builder = target.addService(name, new AsynchronousService<T>(service, executor, startAsynchronously, stopAsynchronously));
+        Services.addServerExecutorDependency(builder, executor, false);
+        return builder;
+    }
+
+    public AsynchronousService(Service<T> service, Value<ExecutorService> executor) {
+        this(service, executor, true, false);
+    }
+
+    public AsynchronousService(Service<T> service, Value<ExecutorService> executor, boolean startAsynchronously, boolean stopAsynchronously) {
         this.service = service;
+        this.executor = executor;
         this.startAsynchronously = startAsynchronously;
         this.stopAsynchronously = stopAsynchronously;
-        final ThreadGroup group = new ThreadGroup(String.format("%s lifecycle", service.getClass().getSimpleName()));
-        final ThreadFactory factory = new JBossThreadFactory(group, Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
-        this.executor = Executors.newCachedThreadPool(factory);
     }
 
     @Override
@@ -78,7 +89,7 @@ public final class AsynchronousService<T> implements Service<T> {
                 }
             };
             context.asynchronous();
-            this.executor.execute(task);
+            this.executor.getValue().execute(task);
         } else {
             this.service.start(context);
         }
@@ -98,7 +109,7 @@ public final class AsynchronousService<T> implements Service<T> {
                 }
             };
             context.asynchronous();
-            this.executor.execute(task);
+            this.executor.getValue().execute(task);
         } else {
             this.service.stop(context);
         }

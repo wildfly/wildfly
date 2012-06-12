@@ -58,7 +58,6 @@ import org.jboss.as.clustering.web.impl.TransactionBatchingManager;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -139,8 +138,7 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
                 return null;
             }
         };
-        Service<Cache<Object, Object>> service = new CacheService<Object, Object>(cacheName, dependencies);
-        target.addService(cacheServiceName, new AsynchronousService<Cache<Object, Object>>(service))
+        AsynchronousService.addService(target, cacheServiceName, new CacheService<Object, Object>(cacheName, dependencies))
                 .addDependency(cacheConfigurationServiceName)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheContainer)
                 .addDependency(DependencyType.OPTIONAL, ChannelService.getServiceName(containerName))
