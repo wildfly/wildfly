@@ -25,6 +25,7 @@ package org.jboss.as.logging.handlers.file;
 import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 
+import java.util.List;
 import java.util.logging.Handler;
 
 import org.jboss.as.controller.OperationContext;
@@ -32,6 +33,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.logging.handlers.FlushingHandlerAddProperties;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -52,8 +54,8 @@ public class FileHandlerAdd extends FlushingHandlerAddProperties<FileHandlerServ
     }
 
     @Override
-    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final FileHandlerService service, final ModelNode model) throws OperationFailedException {
-        super.updateRuntime(context, serviceBuilder, name, service, model);
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final FileHandlerService service, final ModelNode model, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+        super.updateRuntime(context, serviceBuilder, name, service, model, newControllers);
         final ModelNode append = APPEND.resolveModelAttribute(context, model);
         if (append.isDefined()) {
             service.setAppend(append.asBoolean());
@@ -61,7 +63,7 @@ public class FileHandlerAdd extends FlushingHandlerAddProperties<FileHandlerServ
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final ModelNode file = FILE.resolveModelAttribute(context, model);
         if (file.isDefined()) {
-            FileHandlers.addFile(context, serviceBuilder, service, file, name);
+            newControllers.add(FileHandlers.addFile(context, serviceBuilder, service, file, name));
         }
     }
 }
