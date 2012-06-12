@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.management.cli;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +46,9 @@ import static org.junit.Assert.fail;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class FileArgumentTestCase {
+
+    private static final int CLI_PROC_TIMEOUT = 10000;
+    private static final int STATUS_CHECK_INTERVAL = 2000;
 
     private static final String PROP_NAME = "cli-arg-test";
     private static final String SET_PROP_COMMAND = "/system-property=" + PROP_NAME + ":add(value=set)";
@@ -163,6 +167,7 @@ public class FileArgumentTestCase {
         }
 
         final ProcessBuilder builder = new ProcessBuilder();
+        builder.redirectErrorStream(true);
         final List<String> command = new ArrayList<String>();
         command.add("java");
         TestSuiteEnvironment.getIpv6Args(command);
@@ -181,25 +186,35 @@ public class FileArgumentTestCase {
         } catch (IOException e) {
             fail("Failed to start CLI process: " + e.getLocalizedMessage());
         }
-        int exitCode = 0;
-        try {
-            exitCode = cliProc.waitFor();
-        } catch (InterruptedException e) {
-            fail("Interrupted waiting for the CLI process.");
-        }
-        if (logFailure && exitCode != 0) {
-            System.out.println("Failed to execute " + f.getAbsolutePath());
-            try {
-                int bytesTotal = cliProc.getInputStream().available();
-                if (bytesTotal > 0) {
-                    final byte[] bytes = new byte[bytesTotal];
-                    cliProc.getInputStream().read(bytes);
-                    System.out.println("Command's output: '" + new String(bytes) + "'");
-                }
-            } catch(Exception e) {
-                System.out.println("Failed to read command's output: " + e.getLocalizedMessage());
-            }
 
+        final InputStream cliStream = cliProc.getInputStream();
+        final StringBuilder cliOutBuf = new StringBuilder();
+        boolean wait = true;
+        int runningTime = 0;
+        int exitCode = 0;
+        do {
+            try {
+                Thread.sleep(STATUS_CHECK_INTERVAL);
+            } catch (InterruptedException e) {
+            }
+            runningTime += STATUS_CHECK_INTERVAL;
+            readStream(cliOutBuf, cliStream);
+            try {
+                exitCode = cliProc.exitValue();
+                wait = false;
+                readStream(cliOutBuf, cliStream);
+            } catch(IllegalThreadStateException e) {
+                // cli still working
+            }
+            if(runningTime >= CLI_PROC_TIMEOUT) {
+                readStream(cliOutBuf, cliStream);
+                cliProc.destroy();
+                wait = false;
+            }
+        } while(wait);
+
+        if (logFailure && exitCode != 0) {
+            System.out.println("Command's output: '" + cliOutBuf + "'");
             try {
                 int bytesTotal = cliProc.getErrorStream().available();
                 if (bytesTotal > 0) {
@@ -209,10 +224,23 @@ public class FileArgumentTestCase {
                 } else {
                     System.out.println("No output data for the command.");
                 }
-            } catch(Exception e) {
-                System.out.println("Failed to read command's error output: " + e.getLocalizedMessage());
+            } catch (IOException e) {
+                fail("Failed to read command's error output: " + e.getLocalizedMessage());
             }
         }
         return exitCode;
+    }
+
+    protected void readStream(final StringBuilder cliOutBuf, InputStream cliStream) {
+        try {
+            int bytesTotal = cliStream.available();
+            if (bytesTotal > 0) {
+                final byte[] bytes = new byte[bytesTotal];
+                cliStream.read(bytes);
+                cliOutBuf.append(new String(bytes));
+            }
+        } catch (IOException e) {
+            fail("Failed to read command's output: " + e.getLocalizedMessage());
+        }
     }
 }
