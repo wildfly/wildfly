@@ -44,7 +44,6 @@ import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.metric.LoadMetric;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -88,7 +87,7 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
         final String connector = CONNECTOR.resolveModelAttribute(context, modelConfig).asString();
         // Add mod_cluster service
         final ModClusterService service = new ModClusterService(config, loadProvider);
-        final ServiceBuilder<ModCluster> serviceBuilder = context.getServiceTarget().addService(ModClusterService.NAME, new AsynchronousService<ModCluster>(service, true, true))
+        final ServiceBuilder<ModCluster> builder = AsynchronousService.addService(context.getServiceTarget(), ModClusterService.NAME, service, true, true)
                 .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer())
                 .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getBindingManager())
                 .addDependency(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(connector), Connector.class, service.getConnectorInjector())
@@ -98,9 +97,9 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
         final ModelNode bindingRefNode = ADVERTISE_SOCKET.resolveModelAttribute(context, modelConfig);
         final String bindingRef = bindingRefNode.isDefined() ? bindingRefNode.asString() : null;
         if (bindingRef != null) {
-            serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding());
+            builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding());
         }
-        newControllers.add(serviceBuilder.install());
+        newControllers.add(builder.install());
     }
 
     /*

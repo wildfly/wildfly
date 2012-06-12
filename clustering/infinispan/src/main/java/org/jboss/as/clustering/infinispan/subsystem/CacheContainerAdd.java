@@ -218,10 +218,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
     ServiceController<?> installChannelService(ServiceTarget target, String containerName, String cluster, String stack, ServiceVerificationHandler verificationHandler) {
 
-        final ServiceName channelServiceName = ChannelService.getServiceName(containerName);
         final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
-        final Service<Channel> service = new ChannelService(cluster, channelFactory);
-        return target.addService(channelServiceName, new AsynchronousService<Channel>(service))
+        return AsynchronousService.addService(target, ChannelService.getServiceName(containerName), new ChannelService(cluster, channelFactory))
                 .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
                 .addDependency(EmbeddedCacheManagerService.getServiceName(containerName))
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
