@@ -360,7 +360,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
     void processManagement(final DeploymentUnit unit, JBossWebMetaData metaData) {
         for (final JBossServletMetaData servlet : metaData.getServlets()) {
             try {
-                final String name = servlet.getName().replace(' ', '_');
+                final String name = servlet.getName();
                 final ModelNode node = unit.createDeploymentSubModel("web", PathElement.pathElement("servlet", name));
                 node.get("servlet-class").set(servlet.getServletClass());
                 node.get("servlet-name").set(servlet.getServletName());
