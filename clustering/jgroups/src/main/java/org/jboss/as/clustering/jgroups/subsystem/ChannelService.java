@@ -52,20 +52,12 @@ public class ChannelService implements Service<Channel> {
         }
         // Validate view
         String localName = this.channel.getName();
-        System.out.println(String.format("Channel.getName() = %s", this.channel.getName()));
         Address localAddress = this.channel.getAddress();
-        System.out.println(String.format("Channel.getAddress() = %s", this.channel.getAddress()));
         for (Address address: this.channel.getView()) {
             String name = this.channel.getName(address);
-            if (name == null) {
-                System.out.println(String.format("Channel.getName(%s) = null", address));
-                System.out.println(String.format("Channel.isOpen()", this.channel.isOpen()));
-                System.out.println(String.format("Channel.isConnected()", this.channel.isConnected()));
-            } else {
-                if (name.equals(localName) && !address.equals(localAddress)) {
-                    this.channel.close();
-                    throw JGroupsMessages.MESSAGES.duplicateNodeName(factory.getProtocolStackConfiguration().getEnvironment().getNodeName());
-                }
+            if (name.equals(localName) && !address.equals(localAddress)) {
+                this.channel.close();
+                throw JGroupsMessages.MESSAGES.duplicateNodeName(factory.getProtocolStackConfiguration().getEnvironment().getNodeName());
             }
         }
     }
