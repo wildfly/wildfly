@@ -132,6 +132,7 @@ import org.jboss.as.cli.parsing.operation.OperationFormat;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jreadline.console.settings.Settings;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.util.HexConverter;
 
@@ -292,10 +293,19 @@ class CommandContextImpl implements CommandContext {
     }
 
     protected void initBasicConsole(InputStream consoleInput, OutputStream consoleOutput) throws CliInitializationException {
-        this.console = Console.Factory.getConsole(this, consoleInput, consoleOutput);
-        console.setUseHistory(config.isHistoryEnabled());
-        console.setHistoryFile(new File(config.getHistoryFileDir(), config.getHistoryFileName()));
-        console.getHistory().setMaxSize(config.getHistoryMaxSize());
+        copyConfigSettingsToConsole(consoleInput, consoleOutput);
+        this.console = Console.Factory.getConsole(this);
+    }
+
+    private void copyConfigSettingsToConsole(InputStream consoleInput, OutputStream consoleOutput) {
+        if(consoleInput != null)
+            Settings.getInstance().setInputStream(consoleInput);
+        if(consoleOutput != null)
+            Settings.getInstance().setOutputStream(consoleOutput);
+
+        Settings.getInstance().setHistoryDisabled(!config.isHistoryEnabled());
+        Settings.getInstance().setHistoryFile(new File(config.getHistoryFileDir(), config.getHistoryFileName()));
+        Settings.getInstance().setHistorySize(config.getHistoryMaxSize());
     }
 
     private void initCommands() {

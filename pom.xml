@@ -99,7 +99,8 @@
         <version.javax.validation>1.0.0.GA</version.javax.validation>
         <version.jaxen>1.1.3</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA</version.jboss.jaxbintros>
-        <version.jline>0.9.94</version.jline>
+        <version.jreadline>0.17</version.jreadline>
+        <version.jansi>1.8</version.jansi>
         <version.joda-time>1.6.2</version.joda-time>
         <version.junit>4.10</version.junit>
         <version.log4j>1.2.16</version.log4j>
@@ -1450,15 +1451,21 @@
             </dependency>
 
             <dependency>
-                <groupId>jline</groupId>
-                <artifactId>jline</artifactId>
-                <version>${version.jline}</version>
+                <groupId>org.jboss.jreadline</groupId>
+                <artifactId>jreadline</artifactId>
+                <version>${version.jreadline}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>junit</groupId>
                         <artifactId>junit</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.fusesource.jansi</groupId>
+                <artifactId>jansi</artifactId>
+                <version>${version.jansi}</version>
             </dependency>
 
             <dependency>
