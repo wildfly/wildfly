@@ -68,7 +68,8 @@ public class ConfigAdminExtension implements Extension {
         ManagementResourceRegistration configuration = registration.registerSubModel(PathElement.pathElement(ModelConstants.CONFIGURATION), ConfigAdminProviders.CONFIGURATION_DESCRIPTION);
         configuration.registerOperationHandler(ModelDescriptionConstants.ADD, ConfigurationAdd.INSTANCE, ConfigurationAdd.DESCRIPTION, false);
         configuration.registerOperationHandler(ModelDescriptionConstants.REMOVE, ConfigurationRemove.INSTANCE, ConfigurationRemove.DESCRIPTION, false);
-        configuration.registerOperationHandler(ModelConstants.UPDATE, ConfigurationUpdate.INSTANCE, ConfigurationUpdate.DESCRIPTION, false);
+        // The update operation is marked private on the 7.1 branch to not change the public API. On the master branch (7.2 and onwards) this operation should be public
+        configuration.registerOperationHandler(ModelConstants.UPDATE, ConfigurationUpdate.INSTANCE, ConfigurationUpdate.DESCRIPTION, false, OperationEntry.EntryType.PRIVATE);
         configuration.registerReadOnlyAttribute(ModelConstants.ENTRIES, null, AttributeAccess.Storage.CONFIGURATION);
 
         subsystem.registerXMLElementWriter(ConfigAdminWriter.INSTANCE);
