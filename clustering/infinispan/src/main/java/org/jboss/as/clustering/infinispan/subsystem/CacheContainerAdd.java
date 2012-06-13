@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -35,12 +36,9 @@ import javax.management.MBeanServer;
 
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
-import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
-import org.jboss.as.clustering.lock.impl.SharedLocalYieldingClusterLockManagerService;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -67,7 +65,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
-import org.jgroups.Channel;
 
 /**
  * @author Paul Ferraro
@@ -76,7 +73,6 @@ import org.jgroups.Channel;
  */
 public class CacheContainerAdd extends AbstractAddStepHandler {
 
-    private static final short GROUP_COMMUNICATION_SERVICE_SCOPE = 222;
     private static final Logger log = Logger.getLogger(CacheContainerAdd.class.getPackage().getName());
 
     public static final CacheContainerAdd INSTANCE = new CacheContainerAdd();
@@ -167,12 +163,11 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             transportConfig = new Transport() ;
             transportConfig.setLockTimeout(lockTimeout);
 
-            // install a name service entry for the cache container
             controllers.add(this.installChannelService(target, name, cluster, stack, verificationHandler));
 
-            controllers.add(this.installGroupCommunicationService(target, name, verificationHandler));
-
-            controllers.add(this.installLockManager(target, name, verificationHandler));
+            for (ChannelDependentServiceProvider provider: ServiceLoader.load(ChannelDependentServiceProvider.class, ChannelDependentServiceProvider.class.getClassLoader())) {
+                controllers.add(provider.install(target, name));
+            }
         }
 
         // install the cache container configuration service
@@ -210,8 +205,9 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         final ServiceName channelServiceName = ChannelService.getServiceName(containerName) ;
         final ServiceController<?> channelServiceController = context.getServiceRegistry(false).getService(channelServiceName);
         if (channelServiceController != null) {
-            context.removeService(SharedLocalYieldingClusterLockManagerService.getServiceName(containerName));
-            context.removeService(CoreGroupCommunicationService.getServiceName(containerName));
+            for (ChannelDependentServiceProvider provider: ServiceLoader.load(ChannelDependentServiceProvider.class, ChannelDependentServiceProvider.class.getClassLoader())) {
+                context.removeService(provider.getServiceName(containerName));
+            }
             context.removeService(channelServiceName);
         }
     }
@@ -222,30 +218,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         return AsynchronousService.addService(target, ChannelService.getServiceName(containerName), new ChannelService(cluster, channelFactory))
                 .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
                 .addDependency(EmbeddedCacheManagerService.getServiceName(containerName))
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
-        ;
-    }
-
-    ServiceController<?> installGroupCommunicationService(ServiceTarget target, String containerName, ServiceVerificationHandler verificationHandler) {
-        final InjectedValue<Channel> channel = new InjectedValue<Channel>();
-        final InjectedValue<ModuleLoader> loader = new InjectedValue<ModuleLoader>();
-        final Service<CoreGroupCommunicationService> service = new CoreGroupCommunicationService(GROUP_COMMUNICATION_SERVICE_SCOPE, channel, loader);
-        return target.addService(CoreGroupCommunicationService.getServiceName(containerName), service)
-                // AS7-3906 Ensure that the cache manager's rpc dispatcher starts before GroupCommunicationService's (since channel doesn't start until 1st cache starts)
-                .addDependency(CacheService.getServiceName(containerName, null))
-                .addDependency(ChannelService.getServiceName(containerName), Channel.class, channel)
-                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, loader)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
-        ;
-    }
-
-    ServiceController<?> installLockManager(ServiceTarget target, String containerName, ServiceVerificationHandler verificationHandler) {
-        final InjectedValue<CoreGroupCommunicationService> groupService = new InjectedValue<CoreGroupCommunicationService>();
-        final Service<SharedLocalYieldingClusterLockManager> service = new SharedLocalYieldingClusterLockManagerService(containerName, groupService);
-        return target.addService(SharedLocalYieldingClusterLockManagerService.getServiceName(containerName), service)
-                .addDependency(CoreGroupCommunicationService.getServiceName(containerName), CoreGroupCommunicationService.class, groupService)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
