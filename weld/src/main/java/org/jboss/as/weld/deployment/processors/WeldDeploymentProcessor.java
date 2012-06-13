@@ -21,21 +21,11 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.enterprise.inject.spi.Extension;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
-import javax.validation.ValidatorFactory;
-
 import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
+import org.jboss.as.jpa.processor.JpaAttachments;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.security.service.SimpleSecurityManager;
@@ -79,6 +69,16 @@ import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.injection.spi.EjbInjectionServices;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
 import org.jboss.weld.validation.spi.ValidationServices;
+
+import javax.enterprise.inject.spi.Extension;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
+import javax.validation.ValidatorFactory;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Deployment processor that installs the weld services and all other required services
@@ -211,18 +211,19 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     private void getJpaDependencies(final DeploymentUnit deploymentUnit, final Set<ServiceName> jpaServices) {
+        final List<String> pus = deploymentUnit.getAttachmentList(JpaAttachments.IGNORED_PU_SERVICES);
         for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
-
             final PersistenceUnitMetadataHolder persistenceUnits = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
             if (persistenceUnits != null && persistenceUnits.getPersistenceUnits() != null) {
                 for (final PersistenceUnitMetadata pu : persistenceUnits.getPersistenceUnits()) {
-                    final ServiceName serviceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
-                    jpaServices.add(serviceName);
+                    if (pus == null || pus.contains(pu.getPersistenceUnitName()) == false) {
+                        final ServiceName serviceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
+                        jpaServices.add(serviceName);
+                    }
                 }
             }
         }
     }
-
 
     private ServiceName installSecurityService(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit,
                                                WeldService weldService, ServiceBuilder<WeldContainer> weldServiceBuilder) {
