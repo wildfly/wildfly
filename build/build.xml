@@ -475,8 +475,12 @@
             <maven-resource group="org.jboss.spec.javax.xml.ws" artifact="jboss-jaxws-api_2.2_spec"/>
         </module-def>
 
-        <module-def name="jline">
-            <maven-resource group="jline" artifact="jline"/>
+        <module-def name="org.jboss.jreadline">
+            <maven-resource group="org.jboss.jreadline" artifact="jreadline"/>
+        </module-def>
+
+        <module-def name="org.fusesource.jansi">
+            <maven-resource group="org.fusesource.jansi" artifact="jansi"/>
         </module-def>
 
         <module-def name="net.jcip">

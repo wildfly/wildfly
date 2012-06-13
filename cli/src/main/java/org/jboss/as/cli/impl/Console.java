@@ -22,26 +22,21 @@
 package org.jboss.as.cli.impl;
 
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
-
-import jline.Completor;
 
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.protocol.StreamUtils;
+
+import org.jboss.jreadline.complete.CompleteOperation;
+import org.jboss.jreadline.complete.Completion;
+import org.jboss.jreadline.console.Config;
+import org.jboss.jreadline.console.settings.Settings;
 
 /**
  *
@@ -79,77 +74,40 @@ public interface Console {
 
         public static Console getConsole(final CommandContext ctx, InputStream is, OutputStream os) throws CliInitializationException {
 
-            final String bindingsName;
-            final String osName = SecurityActions.getSystemProperty("os.name").toLowerCase(Locale.ENGLISH);
-            if(osName.indexOf("windows") >= 0) {
-                bindingsName = "keybindings/jline-windows-bindings.properties";
-            } else if(osName.startsWith("mac")) {
-                bindingsName = "keybindings/jline-mac-bindings.properties";
-            } else {
-                bindingsName = "keybindings/jline-default-bindings.properties";
-            }
-
-            if(is == null) {
-                is = new FileInputStream(FileDescriptor.in);
-            }
-            if(os == null) {
-                os = System.out;
-            }
-            final Writer writer;
+            org.jboss.jreadline.console.Console jReadlineConsole = null;
             try {
-                String encoding = SecurityActions.getSystemProperty("jline.WindowsTerminal.output.encoding");
-                if(encoding == null) {
-                    encoding = SecurityActions.getSystemProperty("file.encoding");
-                }
-                writer = new PrintWriter(new OutputStreamWriter(os, encoding));
-            } catch (UnsupportedEncodingException e) {
-                throw new CliInitializationException("Failed to initialize console writer.", e);
+                jReadlineConsole = new org.jboss.jreadline.console.Console();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
-            ClassLoader cl = SecurityActions.getClassLoader(Factory.class);
-            InputStream bindingsIs = cl.getResourceAsStream(bindingsName);
-            final jline.ConsoleReader jlineConsole;
-            if(bindingsIs == null) {
-                System.err.println("Failed to locate key bindings for OS '" + osName +"': " + bindingsName);
-                try {
-                    jlineConsole = new jline.ConsoleReader(is, writer);
-                } catch (IOException e) {
-                    throw new IllegalStateException("Failed to initialize console reader", e);
-                }
-            } else {
-                try {
-                    jlineConsole = new jline.ConsoleReader(is, writer, bindingsIs);
-                } catch(Exception e) {
-                    throw new IllegalStateException("Failed to initialize console reader", e);
-                } finally {
-                    StreamUtils.safeClose(bindingsIs);
-                }
-            }
-
+            final org.jboss.jreadline.console.Console finalJReadlineConsole = jReadlineConsole;
             return new Console() {
 
                 private CommandContext cmdCtx = ctx;
-                private jline.ConsoleReader console = jlineConsole;
+                private org.jboss.jreadline.console.Console console = finalJReadlineConsole;
                 private CommandHistory history = new HistoryImpl();
 
                 @Override
                 public void addCompleter(final CommandLineCompleter completer) {
-                    console.addCompletor(new Completor(){
-                        @SuppressWarnings({ "rawtypes", "unchecked" })
+                    console.addCompletion(new Completion() {
                         @Override
-                        public int complete(String buffer, int cursor, List candidates) {
-                            return completer.complete(cmdCtx, buffer, cursor, candidates);
-                        }});
+                        public void complete(CompleteOperation co) {
+                            int offset =  completer.complete(cmdCtx,
+                                    co.getBuffer(), co.getCursor(), co.getCompletionCandidates());
+                            co.setOffset(offset);
+                        }
+                    });
                 }
 
                 @Override
                 public boolean isUseHistory() {
-                    return jlineConsole.getUseHistory();
+                    return !Settings.getInstance().isHistoryDisabled();
                 }
 
                 @Override
                 public void setUseHistory(boolean useHistory) {
-                    jlineConsole.setUseHistory(useHistory);
+                    Settings.getInstance().setHistoryDisabled(!useHistory);
                 }
 
                 @Override
@@ -159,21 +117,13 @@ public interface Console {
 
                 @Override
                 public void setHistoryFile(File f) {
-                    try {
-                        console.getHistory().setHistoryFile(f);
-                    } catch (IOException e) {
-                        System.err.println("Failed to setup the history file: " + f.getAbsolutePath());
-                        e.printStackTrace();
-                    }
+                    Settings.getInstance().setHistoryFile(f);
                 }
 
                 @Override
                 public void clearScreen() {
                     try {
-                        console.setDefaultPrompt("");// it has to be reset apparently
-                                                     // because otherwise it'll be printed
-                                                     // twice
-                        console.clearScreen();
+                        console.clear();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -181,8 +131,12 @@ public interface Console {
 
                 @Override
                 public void printColumns(Collection<String> list) {
+                    String[] newList = new String[list.size()];
+                    list.toArray(newList);
                     try {
-                        console.printColumns(list);
+                        console.pushToConsole(
+                                org.jboss.jreadline.util.Parser.formatCompletions(newList,
+                                        console.getTerminalHeight(), console.getTerminalWidth()));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -191,7 +145,7 @@ public interface Console {
                 @Override
                 public void print(String line) {
                     try {
-                        console.printString(line);
+                        console.pushToConsole(line);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -200,7 +154,7 @@ public interface Console {
                 @Override
                 public void printNewLine() {
                     try {
-                        console.printNewline();
+                        console.pushToConsole(Config.getLineSeparator());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -209,7 +163,7 @@ public interface Console {
                 @Override
                 public String readLine(String prompt) {
                     try {
-                        return console.readLine(prompt);
+                        return console.read(prompt);
                     } catch (IOException e) {
                         e.printStackTrace();
                         return null;
@@ -219,7 +173,7 @@ public interface Console {
                 @Override
                 public String readLine(String prompt, Character mask) {
                     try {
-                        return console.readLine(prompt, mask);
+                        return console.read(prompt, mask);
                     } catch (IOException e) {
                         e.printStackTrace();
                         return null;
@@ -231,17 +185,17 @@ public interface Console {
                 @SuppressWarnings("unchecked")
                 @Override
                 public List<String> asList() {
-                    return console.getHistory().getHistoryList();
+                    return console.getHistory().getAll();
                 }
 
                 @Override
                 public boolean isUseHistory() {
-                    return console.getUseHistory();
+                    return !Settings.getInstance().isHistoryDisabled();
                 }
 
                 @Override
                 public void setUseHistory(boolean useHistory) {
-                    console.setUseHistory(useHistory);
+                    Settings.getInstance().setHistoryDisabled(!useHistory);
                 }
 
                 @Override
@@ -251,12 +205,12 @@ public interface Console {
 
                 @Override
                 public void setMaxSize(int maxSize) {
-                    console.getHistory().setMaxSize(maxSize);
+                    Settings.getInstance().setHistorySize(maxSize);
                 }
 
                 @Override
                 public int getMaxSize() {
-                    return console.getHistory().getMaxSize();
+                    return Settings.getInstance().getHistorySize();
                 }
             }};
         }
