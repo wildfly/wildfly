@@ -22,10 +22,7 @@
 package org.jboss.as.test.integration.domain.suites;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.cli.BasicOpsTestCase;
@@ -55,12 +52,12 @@ import org.junit.runners.Suite;
 public class CLITestSuite {
 
     private static DomainTestSupport domainSupport;
-    public static final Map<String, String[]> hostServers = new HashMap<String, String[]>();
-    public static final Map<String, String> hostAddresses = new HashMap<String, String>();
-    public static final Map<String, String[]> serverGroups = new HashMap<String, String[]>();
-    public static final Map<String, Integer> portOffsets = new HashMap<String, Integer>();
-    public static final Map<String, String[]> serverProfiles = new HashMap<String, String[]>();
-    public static final Map<String, Boolean> serverStatus = new HashMap<String, Boolean>();
+    public static final Map<String, String[]> hostServers = new TreeMap<String, String[]>();
+    public static final Map<String, String> hostAddresses = new TreeMap<String, String>();
+    public static final Map<String, String[]> serverGroups = new TreeMap<String, String[]>();
+    public static final Map<String, Integer> portOffsets = new TreeMap<String, Integer>();
+    public static final Map<String, String[]> serverProfiles = new TreeMap<String, String[]>();
+    public static final Map<String, Boolean> serverStatus = new TreeMap<String, Boolean>();
 
     @BeforeClass
     public static void initSuite() throws Exception {
