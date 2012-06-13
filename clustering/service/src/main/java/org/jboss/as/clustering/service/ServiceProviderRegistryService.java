@@ -41,15 +41,12 @@ import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
 import org.jboss.as.clustering.infinispan.atomic.AtomicMapCache;
 import org.jboss.as.clustering.infinispan.invoker.BatchOperation;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
 /**
  * @author Paul Ferraro
@@ -62,18 +59,16 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
     }
 
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<Cache> cacheRef = new InjectedValue<Cache>();
-    private final InjectedValue<GroupMembershipNotifier> notifierRef = new InjectedValue<GroupMembershipNotifier>();
+    private final Value<Cache> cacheRef;
+    private final Value<GroupMembershipNotifier> notifierRef;
     private final Map<String, Listener> listeners = new ConcurrentHashMap<String, Listener>();
 
     private volatile GroupMembershipNotifier notifier;
     private volatile Cache<String, Map<ClusterNode, Void>> cache;
 
-    public ServiceBuilder<ServiceProviderRegistry> build(ServiceTarget target, String container) {
-        return target.addService(getServiceName(container), this)
-            .addDependency(CacheService.getServiceName(container, null), Cache.class, this.cacheRef)
-            .addDependency(CoreGroupCommunicationService.getServiceName(container), GroupMembershipNotifier.class, this.notifierRef)
-        ;
+    public ServiceProviderRegistryService(@SuppressWarnings("rawtypes") Value<Cache> cacheRef, Value<GroupMembershipNotifier> notifierRef) {
+        this.cacheRef = cacheRef;
+        this.notifierRef = notifierRef;
     }
 
     @Override

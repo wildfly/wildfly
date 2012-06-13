@@ -45,12 +45,10 @@ public class SimpleServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession(true);
-        System.out.println("Handling request for " + (session.isNew() ? "new" : "existing") + " session");
         Custom custom = (Custom) session.getAttribute("test");
         if (custom == null) {
             custom = new Custom(1);
             session.setAttribute("test", custom);
-            session.setAttribute("static", new Custom(-1));
         } else {
             custom.increment();
         }
@@ -90,21 +88,14 @@ public class SimpleServlet extends HttpServlet {
             return this.serialized;
         }
 
-        @Override
-        public String toString() {
-            return String.valueOf(this.value);
-        }
-
         private void writeObject(java.io.ObjectOutputStream out) throws IOException {
             out.defaultWriteObject();
             this.serialized = true;
-            System.out.println("writeObject(" + this + ")");
         }
 
         private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
             in.defaultReadObject();
             this.serialized = true;
-            System.out.println("readObject(" + this + ")");
         }
     }
 }

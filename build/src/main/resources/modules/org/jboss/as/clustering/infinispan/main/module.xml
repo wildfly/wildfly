@@ -40,8 +40,9 @@
         <module name="org.infinispan.cachestore.remote" />
         <module name="org.jboss.as.clustering.api"/>
         <module name="org.jboss.as.clustering.common"/>
-        <module name="org.jboss.as.clustering.impl"/>
+        <module name="org.jboss.as.clustering.impl" services="import"/>
         <module name="org.jboss.as.clustering.jgroups" optional="true"/>
+        <module name="org.jboss.as.clustering.service" services="import"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.jmx"/>
