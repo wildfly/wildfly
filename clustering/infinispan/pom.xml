@@ -40,7 +40,7 @@
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-clustering-impl</artifactId>
+            <artifactId>jboss-as-clustering-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>

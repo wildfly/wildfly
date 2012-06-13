@@ -38,10 +38,10 @@ import org.jboss.as.clustering.service.ServiceProviderRegistry;
 import org.jboss.as.clustering.service.ServiceProviderRegistryService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.ValueService;
@@ -77,17 +77,11 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
         this.singletonServiceName = serviceName;
     }
 
-    public ServiceBuilder<T> build(ServiceContainer target) {
+    public ServiceBuilder<T> build(ServiceTarget target) {
         return this.build(target, DEFAULT_CONTAINER);
     }
 
-    public ServiceBuilder<T> build(ServiceContainer target, String container) {
-        ServiceName registryName = ServiceProviderRegistryService.getServiceName(container);
-        synchronized (target) {
-            if (target.getService(registryName) == null) {
-                new ServiceProviderRegistryService().build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-            }
-        }
+    public ServiceBuilder<T> build(ServiceTarget target, String container) {
         target.addService(this.serviceName, this.service).setInitialMode(ServiceController.Mode.NEVER).install();
         target.addService(this.singletonServiceName.append("singleton"), new ValueService<Singleton>(new ImmediateValue<Singleton>(this))).addDependency(this.singletonServiceName).setInitialMode(ServiceController.Mode.PASSIVE).install();
         return AsynchronousService.addService(target, this.singletonServiceName, this)

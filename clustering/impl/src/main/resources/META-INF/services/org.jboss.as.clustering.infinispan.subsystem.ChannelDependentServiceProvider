@@ -1,0 +1,2 @@
+org.jboss.as.clustering.impl.CoreGroupCommunicationServiceProvider
+org.jboss.as.clustering.lock.impl.SharedLocalYieldingClusterLockManagerServiceProvider
