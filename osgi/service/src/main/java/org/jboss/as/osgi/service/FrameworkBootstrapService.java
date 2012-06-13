@@ -45,7 +45,9 @@ import java.util.Hashtable;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import javax.management.MBeanServer;
 import javax.naming.spi.ObjectFactory;
@@ -121,7 +123,8 @@ public class FrameworkBootstrapService implements Service<Void> {
     private final InjectedValue<SocketBinding> httpServerPortBinding = new InjectedValue<SocketBinding>();
     private final OSGiRuntimeResource resource;
 
-    public static ServiceController<Void> addService(final ServiceTarget target, OSGiRuntimeResource resource, final ServiceVerificationHandler verificationHandler) {
+    public static ServiceController<Void> addService(final ServiceTarget target, OSGiRuntimeResource resource,
+            final ServiceVerificationHandler verificationHandler) {
         FrameworkBootstrapService service = new FrameworkBootstrapService(resource);
         ServiceBuilder<Void> builder = target.addService(FRAMEWORK_BOOTSTRAP, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
@@ -135,6 +138,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         this.resource = resource;
     }
 
+    @Override
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
         LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
@@ -175,6 +179,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         }
     }
 
+    @Override
     public synchronized void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
         LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
@@ -263,12 +268,15 @@ public class FrameworkBootstrapService implements Service<Void> {
         private final OSGiRuntimeResource resource;
         private ServiceContainer serviceContainer;
         private JNDIServiceListener jndiServiceListener;
+        private ExecutorService controllerThreadExecutor;
 
         public static ServiceController<?> addService(final ServiceTarget target, OSGiRuntimeResource resource) {
             SystemServicesIntegration service = new SystemServicesIntegration(resource);
-            ServiceBuilder<SystemServicesProvider> builder = target.addService(IntegrationServices.SYSTEM_SERVICES_PROVIDER, service);
+            ServiceBuilder<SystemServicesProvider> builder = target.addService(IntegrationServices.SYSTEM_SERVICES_PROVIDER,
+                    service);
             builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, service.injectedModelController);
-            builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
+            builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class,
+                    service.injectedServerEnvironment);
             builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
             builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, service.injectedBundleManager);
             builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedBundleContext);
@@ -311,6 +319,7 @@ public class FrameworkBootstrapService implements Service<Void> {
                 ServiceTarget serviceTarget = context.getChildTarget();
                 ServiceName serviceName = IntegrationServices.SYSTEM_SERVICES_PROVIDER.append("BINDINGS");
                 ServiceBuilder<Void> builder = serviceTarget.addService(serviceName, new AbstractService<Void>() {
+                    @Override
                     public void start(StartContext context) throws StartException {
                         for (ServiceName serviceName : socketBindingNames) {
                             SocketBinding binding = (SocketBinding) serviceContainer.getRequiredService(serviceName).getValue();
@@ -326,9 +335,20 @@ public class FrameworkBootstrapService implements Service<Void> {
                 builder.install();
             }
 
+            // The ExecutorService that is used by the ModelControllerClient service
+            controllerThreadExecutor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable run) {
+                    Thread thread = new Thread(run);
+                    thread.setName("OSGi ModelControllerClient Thread");
+                    thread.setDaemon(true);
+                    return thread;
+                }
+            });
+
             // Register the {@link ModelControllerClient} service
             ModelController modelController = injectedModelController.getValue();
-            ModelControllerClient client = modelController.createClient(Executors.newSingleThreadExecutor());
+            ModelControllerClient client = modelController.createClient(controllerThreadExecutor);
             syscontext.registerService(ModelControllerClient.class.getName(), client, null);
 
             // Register the {@link XRepository} service
@@ -362,6 +382,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
             injectedBundleContext.getValue().removeServiceListener(jndiServiceListener);
             resource.getInjectedBundleManager().uninject();
+            controllerThreadExecutor.shutdown();
         }
 
         @Override
@@ -443,7 +464,8 @@ public class FrameworkBootstrapService implements Service<Void> {
                 modid = modid.trim();
                 if (modid.length() > 0) {
                     ModuleIdentifier identifier = ModuleIdentifier.create(modid);
-                    specBuilder.addDependency(DependencySpec.createModuleDependencySpec(acceptAll, acceptAll, bootLoader, identifier, false));
+                    specBuilder.addDependency(DependencySpec.createModuleDependencySpec(acceptAll, acceptAll, bootLoader,
+                            identifier, false));
                 }
             }
 
@@ -470,7 +492,8 @@ public class FrameworkBootstrapService implements Service<Void> {
         }
     }
 
-    // This listener registers OSGi Services that are registered under javax.naming.spi.ObjectFactory with the AS7 naming system.
+    // This listener registers OSGi Services that are registered under javax.naming.spi.ObjectFactory with the AS7 naming
+    // system.
     private static class JNDIServiceListener implements org.osgi.framework.ServiceListener {
         private static final String OSGI_JNDI_URL_SCHEME = "osgi.jndi.url.scheme";
         private final BundleContext bundleContext;
