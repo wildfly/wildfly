@@ -36,6 +36,7 @@ import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.Reference;
+import javax.naming.Referenceable;
 import javax.naming.event.EventContext;
 import javax.naming.event.NamingListener;
 import javax.naming.spi.NamingManager;
@@ -218,6 +219,9 @@ public class NamingContext implements EventContext {
     public void bind(final Name name, Object object) throws NamingException {
         if(namingStore instanceof WritableNamingStore) {
             final Name absoluteName = getAbsoluteName(name);
+            if (object instanceof Referenceable) {
+                object = ((Referenceable) object).getReference();
+            }
             getWritableNamingStore().bind(absoluteName, object);
         } else {
             throw MESSAGES.readOnlyNamingContext();
@@ -234,6 +238,9 @@ public class NamingContext implements EventContext {
     public void rebind(final Name name, Object object) throws NamingException {
         if(namingStore instanceof WritableNamingStore) {
             final Name absoluteName = getAbsoluteName(name);
+            if (object instanceof Referenceable) {
+                object = ((Referenceable) object).getReference();
+            }
             getWritableNamingStore().rebind(absoluteName, object);
         } else {
             throw MESSAGES.readOnlyNamingContext();
