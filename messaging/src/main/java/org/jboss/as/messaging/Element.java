@@ -211,6 +211,7 @@ public enum Element {
    TRANSACTION_BATH_SIZE(CommonAttributes.TRANSACTION_BATCH_SIZE),
    USER(CommonAttributes.USER),
    USE_DUPLICATE_DETECTION(getDuplicateDetectionDefinitions()),
+   USE_AUTO_RECOVERY(CommonAttributes.USE_AUTO_RECOVERY),
    USE_GLOBAL_POOLS(CommonAttributes.USE_GLOBAL_POOLS),
    POOLED_CONNECTION_FACTORY(CommonAttributes.POOLED_CONNECTION_FACTORY),
    TRANSACTION(CommonAttributes.TRANSACTION),
