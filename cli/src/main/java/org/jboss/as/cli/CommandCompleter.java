@@ -29,6 +29,7 @@ import org.jboss.as.cli.impl.CommandCandidatesProvider;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
+import org.jboss.as.cli.parsing.command.CommandFormat;
 
 
 /**
@@ -82,19 +83,13 @@ public class CommandCompleter implements CommandLineCompleter {
             }
         }
 
-        OperationCandidatesProvider candidatesProvider = cmdProvider;
-        if(!buffer.isEmpty()) {
-            int cmdFirstIndex = 0;
-            while(cmdFirstIndex < buffer.length()) {
-                final char ch = buffer.charAt(cmdFirstIndex++);
-                if(!Character.isWhitespace(ch)) {
-                    if(ch == '.' || ch == ':' || ch == '/') {
-                        candidatesProvider = ctx.getOperationCandidatesProvider();
-                    }
-                    break;
-                }
-            }
+        final OperationCandidatesProvider candidatesProvider;
+        if(buffer.isEmpty() || parsedCmd.getFormat() == CommandFormat.INSTANCE) {
+            candidatesProvider = cmdProvider;
+        } else  {
+            candidatesProvider = ctx.getOperationCandidatesProvider();
         }
+
         int result = OperationRequestCompleter.INSTANCE.complete(ctx, parsedCmd, candidatesProvider, buffer, cursor, candidates);
         if(result <= 0) {
             return result;
