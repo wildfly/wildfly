@@ -30,7 +30,6 @@ import org.jboss.as.cli.Util;
  */
 public class LineBreakHandler implements CharacterHandler {
 
-    private static final String LN_SEP = Util.getLineSeparator();
     private final boolean fallbackToEscape;
     private final boolean leaveOnLnBreak;
 
@@ -42,7 +41,7 @@ public class LineBreakHandler implements CharacterHandler {
     @Override
     public void handle(ParsingContext ctx) throws CommandFormatException {
         if(ctx.getCharacter() == '\\') {
-            if(ctx.getInput().regionMatches(ctx.getLocation() + 1, LN_SEP, 0, LN_SEP.length())) {
+            if(ctx.getInput().regionMatches(ctx.getLocation() + 1, Util.LINE_SEPARATOR, 0, Util.LINE_SEPARATOR.length())) {
                 if(leaveOnLnBreak) {
                     ctx.leaveState();
                 }
