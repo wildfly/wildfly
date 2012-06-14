@@ -330,7 +330,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
 
     void oneOffScan(final DeploymentOperations deploymentOperations) {
-            scan(true, deploymentOperations);
+        this.establishDeployedContentList(this.deploymentDir);
+        scan(true, deploymentOperations);
     }
 
     void scan() {
