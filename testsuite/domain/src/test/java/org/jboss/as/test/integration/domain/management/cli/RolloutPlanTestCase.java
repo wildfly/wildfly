@@ -53,6 +53,8 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
     private static WebArchive war;
     private static File warFile;
     private static final int TEST_PORT = 8081;
+    
+    private static final String[] serverGroups = new String[] {"main-server-group", "other-server-group", "test-server-group"};
 
     @BeforeClass
     public static void before() throws Exception {
@@ -106,8 +108,6 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
 
     @Test
     public void testInSeriesRolloutPlan() throws Exception {
-
-        String[] serverGroups = CLITestSuite.serverGroups.keySet().toArray(new String[]{});
 
         // create rollout plans
 
@@ -202,8 +202,6 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test-binding:add(interface=public,port=" + TEST_PORT + ")");
 
 
-        String[] serverGroups = CLITestSuite.serverGroups.keySet().toArray(new String[]{});
-
         // create plan with max fail server set to 1
         RolloutPlanBuilder planBuilder = new RolloutPlanBuilder();
         planBuilder.addGroup(serverGroups[0], new RolloutPlanBuilder.RolloutPolicy(true, null, 1));
@@ -264,8 +262,6 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         // prepare socket binding
         cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test-binding:add(interface=public,port=" + TEST_PORT + ")");
 
-
-        String[] serverGroups = CLITestSuite.serverGroups.keySet().toArray(new String[]{});
 
         // create plan with max fail server percentage set to 40%
         RolloutPlanBuilder planBuilder = new RolloutPlanBuilder();
@@ -328,8 +324,6 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         // prepare socket binding
         cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test-binding:add(interface=public,port=" + TEST_PORT + ")");
 
-
-        String[] serverGroups = CLITestSuite.serverGroups.keySet().toArray(new String[]{});
 
         // create plan with max fail server set to 1
         RolloutPlanBuilder planBuilder = new RolloutPlanBuilder();
