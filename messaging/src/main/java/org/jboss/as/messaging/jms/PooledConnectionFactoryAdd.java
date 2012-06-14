@@ -35,6 +35,7 @@ import static org.jboss.as.messaging.CommonAttributes.NONE;
 import static org.jboss.as.messaging.CommonAttributes.NO_TX;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
 import static org.jboss.as.messaging.CommonAttributes.XA_TX;
+import static org.jboss.as.messaging.jms.PooledConnectionFactoryAttribute.getDefinitions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +73,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         operation.get(OP).set(ADD);
         operation.get(OP_ADDR).set(address);
 
-        for(final AttributeDefinition attribute : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
+        for(final AttributeDefinition attribute : getDefinitions(JMSServices.POOLED_CONNECTION_FACTORY_ATTRS)) {
             final String attrName = attribute.getName();
             if(subModel.has(attrName)) {
                 operation.get(attrName).set(subModel.get(attrName));
@@ -86,7 +87,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        for(final AttributeDefinition attribute : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
+        for(final AttributeDefinition attribute : getDefinitions(JMSServices.POOLED_CONNECTION_FACTORY_ATTRS)) {
             attribute.validateAndSet(operation, model);
         }
 
@@ -100,7 +101,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         final String name = address.getLastElement().getValue();
 
         final ModelNode resolvedModel = model.clone();
-        for(final AttributeDefinition attribute : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
+        for(final AttributeDefinition attribute : getDefinitions(JMSServices.POOLED_CONNECTION_FACTORY_ATTRS)) {
             resolvedModel.get(attribute.getName()).set(attribute.resolveModelAttribute(context, resolvedModel ));
         }
 
@@ -164,22 +165,18 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
     }
     static List<PooledConnectionFactoryConfigProperties> getAdapterParams(ModelNode model, OperationContext context) throws OperationFailedException {
         List<PooledConnectionFactoryConfigProperties> configs = new ArrayList<PooledConnectionFactoryConfigProperties>();
-        for (JMSServices.PooledCFAttribute nodeAttribute : JMSServices.POOLED_CONNECTION_FACTORY_METHOD_ATTRS)
+        for (PooledConnectionFactoryAttribute nodeAttribute : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS)
         {
-            if (ADAPTER_PARAMS_IGNORE.contains(nodeAttribute.getName()))
+            if (!nodeAttribute.isResourceAdapterProperty())
                 continue;
 
             AttributeDefinition definition = nodeAttribute.getDefinition();
             ModelNode node = definition.resolveModelAttribute(context, model);
             if (node.isDefined()) {
                 String value = node.asString();
-                configs.add(new PooledConnectionFactoryConfigProperties(nodeAttribute.getMethodName(), value, nodeAttribute.getClassType()));
+                configs.add(new PooledConnectionFactoryConfigProperties(nodeAttribute.getPropertyName(), value, nodeAttribute.getClassType()));
             }
         }
         return configs;
-    }
-    static List<String> ADAPTER_PARAMS_IGNORE = new ArrayList<String>();
-    static {
-        ADAPTER_PARAMS_IGNORE.add(DISCOVERY_GROUP_NAME.getName());
     }
 }
