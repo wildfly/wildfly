@@ -47,6 +47,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+//todo replace with   SimpleListAttributeDefinition
 public class LogHandlerListAttributeDefinition extends ListAttributeDefinition {
     private final SimpleAttributeDefinition valueType;
 

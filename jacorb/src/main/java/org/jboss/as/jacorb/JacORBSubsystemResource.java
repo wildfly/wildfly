@@ -28,19 +28,11 @@ public class JacORBSubsystemResource extends SimpleResourceDefinition {
 
     private JacORBSubsystemResource() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME),
-                JacORBExtension.getResourceDescriptionResolver(JacORBExtension.SUBSYSTEM_NAME));
+                JacORBExtension.getResourceDescriptionResolver(JacORBExtension.SUBSYSTEM_NAME),
+                JacORBSubsystemAdd.INSTANCE,
+                ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
-
-    @Override
-    public void registerOperations(final ManagementResourceRegistration rootResourceRegistration) {
-        final ResourceDescriptionResolver rootResolver = getResourceDescriptionResolver();
-        // Ops to add and remove the root resource
-        final DescriptionProvider subsystemAddDescription = new DefaultResourceAddDescriptionProvider(rootResourceRegistration, rootResolver);
-        rootResourceRegistration.registerOperationHandler(ADD, JacORBSubsystemAdd.INSTANCE, subsystemAddDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
-        final DescriptionProvider subsystemRemoveDescription = new DefaultResourceRemoveDescriptionProvider(rootResolver);
-        rootResourceRegistration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, subsystemRemoveDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
-    }
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration registry) {

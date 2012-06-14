@@ -22,11 +22,9 @@
 package org.jboss.as.jaxr.extension;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.jaxr.JAXRConfiguration;
 import org.jboss.as.jaxr.ModelConstants;
@@ -41,8 +39,8 @@ import org.jboss.dmr.ModelType;
  */
 public class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
-    static SimpleAttributeDefinition CONNECTION_FACTORY_ATTRIBUTE = new JAXRAttributeDefinition(ModelConstants.CONNECTION_FACTORY);
-    static SimpleAttributeDefinition CONNECTION_FACTORY_IMPL_ATTRIBUTE = new JAXRAttributeDefinition(ModelConstants.CONNECTION_FACTORY_IMPL);
+    static SimpleAttributeDefinition CONNECTION_FACTORY_ATTRIBUTE = new SimpleAttributeDefinition(ModelConstants.CONNECTION_FACTORY, ModelType.STRING, true);
+    static SimpleAttributeDefinition CONNECTION_FACTORY_IMPL_ATTRIBUTE = new SimpleAttributeDefinition(ModelConstants.CONNECTION_FACTORY_IMPL, ModelType.STRING, true);
 
     private final JAXRConfiguration config;
 
@@ -72,9 +70,5 @@ public class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Voi
         }
     }
 
-    private static class JAXRAttributeDefinition extends SimpleAttributeDefinition {
-        JAXRAttributeDefinition(String name) {
-            super(name, ModelType.STRING, true);
-        }
-    }
+
 }

@@ -44,9 +44,9 @@ import org.jboss.dmr.ModelNode;
  * @author Richard Achmatowicz (c) 2012 RedHat Inc.
  */
 public class SimpleListAttributeDefinition extends ListAttributeDefinition {
-    private final SimpleAttributeDefinition valueType;
+    private final AttributeDefinition valueType;
 
-    private SimpleListAttributeDefinition(final String name, final String xmlName, final SimpleAttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
+    private SimpleListAttributeDefinition(final String name, final String xmlName, final AttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
         super(name, xmlName, allowNull, minSize, maxSize, valueType.getValidator(), alternatives, requires, flags);
         this.valueType = valueType;
     }
@@ -174,7 +174,7 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
 
     public static class Builder {
         private final String name;
-        private final SimpleAttributeDefinition valueType;
+        private final AttributeDefinition valueType;
         private String xmlName;
         private boolean allowNull;
         private int minSize;
@@ -183,12 +183,12 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
         private String[] requires;
         private AttributeAccess.Flag[] flags;
 
-        public Builder(final String name, final SimpleAttributeDefinition valueType) {
+        public Builder(final String name, final AttributeDefinition valueType) {
             this.name = name;
             this.valueType = valueType;
         }
 
-        public static Builder of(final String name, final SimpleAttributeDefinition valueType) {
+        public static Builder of(final String name, final AttributeDefinition valueType) {
             return new Builder(name, valueType);
         }
 
