@@ -21,15 +21,10 @@
 */
 package org.jboss.as.host.controller.model.jvm;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -41,6 +36,12 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -85,7 +86,7 @@ public class JvmAttributes {
             .build();
 
     public static final AttributeDefinition ENVIRONMENT_VARIABLES =
-            new EnvironmentVariableAttributeDefinition(JvmAttributes.JVM_ENV_VARIABLES, Element.VARIABLE.getLocalName());
+            new PropertiesAttributeDefinition(JvmAttributes.JVM_ENV_VARIABLES, Element.VARIABLE.getLocalName(), true);
 
     public static final SimpleAttributeDefinition JAVA_AGENT =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_JAVA_AGENT, ModelType.STRING, true)
@@ -99,7 +100,7 @@ public class JvmAttributes {
             .build();
 
     public static final AttributeDefinition OPTIONS =
-            new JVMOptionsAttributeDefiniton(JvmAttributes.JVM_OPTIONS, Element.OPTION.getLocalName());
+            new JVMOptionsAttributeDefiniton(JvmAttributes.JVM_OPTIONS);
 
     public static final SimpleAttributeDefinition STACK_SIZE =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_STACK, ModelType.STRING, true)
@@ -199,10 +200,10 @@ public class JvmAttributes {
         abstract void writeList(List<ModelNode> list, XMLStreamWriter writer) throws XMLStreamException;
     }
 
-    static class EnvironmentVariableAttributeDefinition extends AbstractJvmListAttributeDefinition {
+    /*static class EnvironmentVariableAttributeDefinition extends PropertiesAttributeDefinition {
 
         EnvironmentVariableAttributeDefinition(String name, String elementName) {
-            super(name, elementName, new PropertyValidator(false, new StringLengthValidator(1)));
+            super(name, elementName, false, new PropertyValidator(false, new StringLengthValidator(1)));
         }
 
         void setValueType(ModelNode node) {
@@ -217,24 +218,28 @@ public class JvmAttributes {
                 writer.writeAttribute(ModelDescriptionConstants.VALUE, child.asProperty().getValue().asString());
             }
         }
-    }
+    }*/
 
-    static class JVMOptionsAttributeDefiniton extends AbstractJvmListAttributeDefinition {
+    static class JVMOptionsAttributeDefiniton extends PrimitiveListAttributeDefinition {
 
-        JVMOptionsAttributeDefiniton(String name, String elementName) {
-            super(name, elementName, new StringLengthValidator(1, false));
-        }
-
-        void setValueType(ModelNode node) {
-            node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+        JVMOptionsAttributeDefiniton(String name) {
+            super(name, name, true, ModelType.STRING, new StringLengthValidator(1, false));
         }
 
         @Override
-        void writeList(List<ModelNode> list, XMLStreamWriter writer) throws XMLStreamException {
-            for (ModelNode child : list) {
-                writer.writeEmptyElement(elementName);
-                writer.writeAttribute(ModelDescriptionConstants.VALUE, child.asString());
+        public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
+            if (resourceModel.hasDefined(getName())) {
+                List<ModelNode> list = resourceModel.get(getName()).asList();
+                if (list.size() > 0) {
+                    writer.writeStartElement(getName());
+                    for (ModelNode child : list) {
+                        writer.writeEmptyElement(Element.OPTION.getLocalName());
+                        writer.writeAttribute(ModelDescriptionConstants.VALUE, child.asString());
+                    }
+                    writer.writeEndElement();
+                }
             }
         }
+
     }
 }

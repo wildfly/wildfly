@@ -33,6 +33,7 @@ import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -89,28 +90,8 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
-    public static final ListAttributeDefinition DECLARED_ROLES = new ListAttributeDefinition("declared-roles", true,
-            new StringLengthValidator(1), AttributeAccess.Flag.STORAGE_RUNTIME) {
-        @Override
-        protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
-            node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
-        }
-
-        @Override
-        protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-            node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
-        }
-
-        @Override
-        protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-            node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
-        }
-
-        @Override
-        public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
-            throw MESSAGES.runtimeAttributeNotMarshallable(getName());
-        }
-    };
+    public static final ListAttributeDefinition DECLARED_ROLES = new PrimitiveListAttributeDefinition("declared-roles", true, ModelType.STRING,
+            new StringLengthValidator(1), AttributeAccess.Flag.STORAGE_RUNTIME) ;
 
     // Pool attributes
 

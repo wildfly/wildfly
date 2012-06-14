@@ -92,9 +92,9 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
             attrDefinition.validateAndSet(operation, model);
         }
         // if generic properties have been specified, add them to the model as well.
-        String properties = JacORBSubsystemConstants.PROPERTIES;
+       /* String properties = JacORBSubsystemConstants.PROPERTIES;
         if (operation.hasDefined(properties))
-            model.get(properties).set(operation.get(properties));
+            model.get(properties).set(operation.get(properties));*/
     }
 
     @Override

@@ -32,6 +32,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -46,7 +47,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class JndiEntriesAttribute extends ListAttributeDefinition {
+public class JndiEntriesAttribute extends PrimitiveListAttributeDefinition {
 
     public static final JndiEntriesAttribute DESTINATION = new JndiEntriesAttribute(true);
 
@@ -57,7 +58,7 @@ public class JndiEntriesAttribute extends ListAttributeDefinition {
     private final boolean forDestination;
 
     private JndiEntriesAttribute(final boolean forDestination) {
-        super(CommonAttributes.ENTRIES_STRING, CommonAttributes.ENTRIES_STRING, false, 1, Integer.MAX_VALUE, new StringLengthValidator(1));
+        super(CommonAttributes.ENTRIES_STRING, CommonAttributes.ENTRIES_STRING, false, ModelType.STRING, 1, Integer.MAX_VALUE, new StringLengthValidator(1));
         this.forDestination = forDestination;
     }
 
@@ -82,25 +83,6 @@ public class JndiEntriesAttribute extends ListAttributeDefinition {
                 }
             }
         }
-    }
-
-    @Override
-    protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
-        setValueType(node);
-    }
-
-    @Override
-    protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-        setValueType(node);
-    }
-
-    @Override
-    protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-        setValueType(node);
-    }
-
-    private void setValueType(ModelNode node) {
-        node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
     }
 
     public static String[] getJndiBindings(final ModelNode node) {

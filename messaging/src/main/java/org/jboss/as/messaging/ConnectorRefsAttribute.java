@@ -29,6 +29,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -40,7 +41,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ConnectorRefsAttribute extends ListAttributeDefinition {
+public class ConnectorRefsAttribute extends PrimitiveListAttributeDefinition {
 
     public static final ConnectorRefsAttribute CLUSTER_CONNECTION_CONNECTORS = new ConnectorRefsAttribute(CommonAttributes.STATIC_CONNECTORS, false, true);
 
@@ -51,7 +52,7 @@ public class ConnectorRefsAttribute extends ListAttributeDefinition {
     private final boolean wrap;
 
     private ConnectorRefsAttribute(final String name, boolean wrap, boolean allowNull) {
-        super(name, CommonAttributes.CONNECTOR_REF_STRING, allowNull, 1, Integer.MAX_VALUE, new StringLengthValidator(1));
+        super(name, CommonAttributes.CONNECTOR_REF_STRING, allowNull, ModelType.STRING, 1, Integer.MAX_VALUE, new StringLengthValidator(1));
         this.wrap = wrap;
     }
 
@@ -76,24 +77,5 @@ public class ConnectorRefsAttribute extends ListAttributeDefinition {
                 }
             }
         }
-    }
-
-    @Override
-    protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
-        setValueType(node);
-    }
-
-    @Override
-    protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-        setValueType(node);
-    }
-
-    @Override
-    protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-        setValueType(node);
-    }
-
-    private void setValueType(ModelNode node) {
-        node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
     }
 }

@@ -21,27 +21,22 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * @author Paul Ferraro
@@ -76,54 +71,22 @@ public class CacheFactoryResourceDefinition extends SimpleResourceDefinition {
             resourceRegistration.registerReadWriteAttribute(attribute,  null, handler);
         }
     }
+    @Deprecated
+    private static class StringListAttributeDefinition extends org.jboss.as.controller.StringListAttributeDefinition {
 
-    private static class StringListAttributeDefinition extends ListAttributeDefinition {
-
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         StringListAttributeDefinition(String name, String xmlName, boolean allowNull) {
-            super(name, xmlName, allowNull, 0, Integer.MAX_VALUE, new StringLengthValidator(1));
+            super(name, xmlName, allowNull);
         }
 
-        /**
-         * {@inheritDoc}
-         * @see org.jboss.as.controller.ListAttributeDefinition#addValueTypeDescription(org.jboss.dmr.ModelNode, java.util.ResourceBundle)
-         */
-        @Override
-        protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
-            this.setValueType(node);
-        }
 
-        /**
-         * {@inheritDoc}
-         * @see org.jboss.as.controller.ListAttributeDefinition#addAttributeValueTypeDescription(org.jboss.dmr.ModelNode, org.jboss.as.controller.descriptions.ResourceDescriptionResolver, java.util.Locale, java.util.ResourceBundle)
-         */
-        @Override
-        protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-            this.setValueType(node);
-        }
-
-        /**
-         * {@inheritDoc}
-         * @see org.jboss.as.controller.ListAttributeDefinition#addOperationParameterValueTypeDescription(org.jboss.dmr.ModelNode, java.lang.String, org.jboss.as.controller.descriptions.ResourceDescriptionResolver, java.util.Locale, java.util.ResourceBundle)
-         */
-        @Override
-        protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-            this.setValueType(node);
-        }
-
-        private void setValueType(ModelNode node) {
-            node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
-        }
-
-        /**
-         * {@inheritDoc}
-         * @see org.jboss.as.controller.AttributeDefinition#marshallAsElement(org.jboss.dmr.ModelNode, javax.xml.stream.XMLStreamWriter)
-         */
         @Override
         public void marshallAsElement(ModelNode model, XMLStreamWriter writer) throws XMLStreamException {
             if (model.hasDefined(this.getName())) {
                 StringBuilder builder = new StringBuilder();
-                for (ModelNode alias: model.get(this.getName()).asList()) {
+                for (ModelNode alias : model.get(this.getName()).asList()) {
                     if (builder.length() > 0) {
                         builder.append(' ');
                     }

@@ -37,6 +37,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -58,38 +59,8 @@ import org.jboss.dmr.ModelType;
  */
 public class ExtensionSubsystemResourceDefinition extends SimpleResourceDefinition {
 
-    public static final ListAttributeDefinition XML_NAMESPACES =
-            new ListAttributeDefinition("xml-namespaces", false,
-                    new StringLengthValidator(1, Integer.MAX_VALUE, false, false), AttributeAccess.Flag.STORAGE_RUNTIME) {
-        @Override
-        protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
-            setValueType(node);
-        }
-
-        @Override
-        protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-            setValueType(node);
-        }
-
-        @Override
-        protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-            setValueType(node);
-        }
-
-        @Override
-        public boolean isMarshallable(ModelNode resourceModel) {
-            return false;
-        }
-
-        @Override
-        public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
-            // no-op
-        }
-
-        private void setValueType(ModelNode node) {
-            node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
-        }
-    };
+    public static final ListAttributeDefinition XML_NAMESPACES = new PrimitiveListAttributeDefinition("xml-namespaces", false, ModelType.STRING,
+                    new StringLengthValidator(1, Integer.MAX_VALUE, false, false), AttributeAccess.Flag.STORAGE_RUNTIME);
 
     public static final SimpleAttributeDefinition MAJOR_VERSION = new SimpleAttributeDefinitionBuilder(MANAGEMENT_MAJOR_VERSION, ModelType.INT, true)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
