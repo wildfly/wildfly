@@ -23,12 +23,13 @@
 package org.jboss.as.osgi.service;
 
 import static org.jboss.as.network.SocketBinding.JBOSS_BINDING_NAME;
-import static org.jboss.as.osgi.OSGiConstants.FRAMEWORK_BASE_NAME;
+import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
 import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA;
 import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_PACKAGES;
+import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 import static org.jboss.osgi.framework.Constants.JBOSGI_PREFIX;
 
 import java.io.File;
@@ -43,11 +44,16 @@ import java.util.Hashtable;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import javax.management.MBeanServer;
 import javax.naming.spi.ObjectFactory;
 
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.naming.InitialContext;
 import org.jboss.as.network.SocketBinding;
@@ -101,7 +107,7 @@ import org.osgi.framework.ServiceReference;
  */
 public class FrameworkBootstrapService implements Service<Void> {
 
-    static final ServiceName FRAMEWORK_BOOTSTRAP = FRAMEWORK_BASE_NAME.append("bootstrap");
+    static final ServiceName FRAMEWORK_BOOTSTRAP = SERVICE_BASE_NAME.append("framework", "bootstrap");
     static final String MAPPED_OSGI_SOCKET_BINDINGS = "org.jboss.as.osgi.socket.bindings";
 
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
@@ -123,6 +129,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         this.resource = resource;
     }
 
+    @Override
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
         LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
@@ -141,6 +148,7 @@ public class FrameworkBootstrapService implements Service<Void> {
 
             ServiceTarget serviceTarget = context.getChildTarget();
             AutoInstallIntegration.addService(serviceTarget);
+            BundleInstallIntegration.addService(serviceTarget);
             FrameworkModuleIntegration.addService(serviceTarget, props);
             JAXPServiceProvider.addService(serviceTarget);
             ModuleLoaderIntegration.addService(serviceTarget);
@@ -164,6 +172,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         }
     }
 
+    @Override
     public synchronized void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
         LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
@@ -202,6 +211,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             buffer.append("javax.inject.api,");
             buffer.append("org.apache.xerces,");
             buffer.append("org.jboss.as.configadmin,");
+            buffer.append("org.jboss.as.controller-client,");
             buffer.append("org.jboss.as.osgi,");
             buffer.append("org.jboss.logging,");
             buffer.append("org.jboss.modules,");
@@ -221,7 +231,10 @@ public class FrameworkBootstrapService implements Service<Void> {
             sysPackages.add("javax.inject");
             sysPackages.add("org.apache.xerces.jaxp");
             sysPackages.add("org.jboss.as.configadmin.service");
-            sysPackages.add("org.jboss.as.osgi.service");
+            sysPackages.add("org.jboss.as.controller.client");
+            sysPackages.add("org.jboss.as.controller.client.helpers");
+            sysPackages.add("org.jboss.as.controller.client.helpers.domain");
+            sysPackages.add("org.jboss.as.controller.client.helpers.standalone");
             sysPackages.add("org.jboss.logging;version=3.1.0");
             sysPackages.add("org.jboss.osgi.repository;version=1.0");
             sysPackages.add("org.osgi.service.repository;version=1.0");
@@ -240,16 +253,19 @@ public class FrameworkBootstrapService implements Service<Void> {
 
     private static final class SystemServicesIntegration implements Service<SystemServicesProvider>, SystemServicesProvider {
 
+        private final InjectedValue<ModelController> injectedModelController = new InjectedValue<ModelController>();
         private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
         private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
         private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
         private final OSGiRuntimeResource resource;
         private ServiceContainer serviceContainer;
         private JNDIServiceListener jndiServiceListener;
+        private ExecutorService controllerThreadExecutor;
 
         public static ServiceController<?> addService(final ServiceTarget target, OSGiRuntimeResource resource) {
             SystemServicesIntegration service = new SystemServicesIntegration(resource);
             ServiceBuilder<SystemServicesProvider> builder = target.addService(IntegrationServices.SYSTEM_SERVICES_PROVIDER, service);
+            builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, service.injectedModelController);
             builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
             builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, service.injectedBundleManager);
             builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedBundleContext);
@@ -292,6 +308,7 @@ public class FrameworkBootstrapService implements Service<Void> {
                 ServiceTarget serviceTarget = context.getChildTarget();
                 ServiceName serviceName = IntegrationServices.SYSTEM_SERVICES_PROVIDER.append("BINDINGS");
                 ServiceBuilder<Void> builder = serviceTarget.addService(serviceName, new AbstractService<Void>() {
+                    @Override
                     public void start(StartContext context) throws StartException {
                         for (ServiceName serviceName : socketBindingNames) {
                             SocketBinding binding = (SocketBinding) serviceContainer.getRequiredService(serviceName).getValue();
@@ -306,6 +323,22 @@ public class FrameworkBootstrapService implements Service<Void> {
                 builder.addDependencies(serviceNameArray);
                 builder.install();
             }
+
+            // The ExecutorService that is used by the ModelControllerClient service
+            controllerThreadExecutor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable run) {
+                    Thread thread = new Thread(run);
+                    thread.setName("OSGi ModelControllerClient Thread");
+                    thread.setDaemon(true);
+                    return thread;
+                }
+            });
+
+            // Register the {@link ModelControllerClient} service
+            ModelController modelController = injectedModelController.getValue();
+            ModelControllerClient client = modelController.createClient(controllerThreadExecutor);
+            syscontext.registerService(ModelControllerClient.class.getName(), client, null);
         }
 
         @Override
@@ -314,6 +347,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
             injectedBundleContext.getValue().removeServiceListener(jndiServiceListener);
             resource.getInjectedBundleManager().uninject();
+            controllerThreadExecutor.shutdown();
         }
 
         @Override

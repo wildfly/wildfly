@@ -23,7 +23,6 @@ package org.jboss.as.osgi.parser;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -43,7 +42,6 @@ import org.jboss.as.osgi.deployment.OSGiManifestStructureProcessor;
 import org.jboss.as.osgi.deployment.OSGiXServiceParseProcessor;
 import org.jboss.as.osgi.management.OSGiRuntimeResource;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
-import org.jboss.as.osgi.service.BundleInstallIntegration;
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
 import org.jboss.as.osgi.service.PersistentBundlesIntegration;
 import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
@@ -95,9 +93,8 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new OperationStepHandler() {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                newControllers.add(BundleInstallIntegration.addService(serviceTarget));
-                newControllers.add(FrameworkBootstrapService.addService(serviceTarget, resource, verificationHandler));
                 newControllers.add(PersistentBundlesIntegration.addService(serviceTarget, deploymentTracker));
+                newControllers.add(FrameworkBootstrapService.addService(serviceTarget, resource, verificationHandler));
                 context.completeStep();
             }
         }, OperationContext.Stage.RUNTIME);
