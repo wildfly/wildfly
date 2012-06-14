@@ -22,10 +22,14 @@
 package org.jboss.as.cli;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -40,7 +44,7 @@ import org.jboss.dmr.Property;
  */
 public class Util {
 
-    public static final String LINE_SEPARATOR = Util.getLineSeparator();
+    public static final String LINE_SEPARATOR = SecurityActions.getSystemProperty("line.separator");
 
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
@@ -680,7 +684,58 @@ public class Util {
         return response.get(RESULT);
     }
 
-    public static String getLineSeparator() {
-        return SecurityActions.getSystemProperty("line.separator");
+    private static final Map<Character,Character> wrappingPairs = new HashMap<Character, Character>();
+    static {
+        wrappingPairs.put('(', ')');
+        wrappingPairs.put('{', '}');
+        wrappingPairs.put('[', ']');
+        wrappingPairs.put('\"', '\"');
+    }
+    public static List<String> splitCommands(String line) {
+
+        List<String> commands = null;
+        int nextOpIndex = 0;
+        Character expectedClosing = null;
+        Deque<Character> expectedClosingStack = null;
+        int i = 0;
+        while(i < line.length()) {
+            final char ch = line.charAt(i);
+            if(ch == '\\') {
+                ++i;//escape
+            } else if(expectedClosing != null && expectedClosing == ch) {
+                if(expectedClosingStack != null && !expectedClosingStack.isEmpty()) {
+                    expectedClosing = expectedClosingStack.pop();
+                } else {
+                    expectedClosing = null;
+                }
+            } else {
+                final Character matchingClosing = wrappingPairs.get(ch);
+                if(matchingClosing != null) {
+                    if(expectedClosing == null) {
+                        expectedClosing = matchingClosing;
+                    } else {
+                        if(expectedClosingStack == null) {
+                            expectedClosingStack = new ArrayDeque<Character>();
+                        }
+                        expectedClosingStack.push(expectedClosing);
+                        expectedClosing = matchingClosing;
+                    }
+                } else if(expectedClosing == null && ch == ',') {
+                    if(commands == null) {
+                        commands = new ArrayList<String>();
+                    }
+                    commands.add(line.substring(nextOpIndex, i));
+                    nextOpIndex = i + 1;
+                }
+            }
+            ++i;
+        }
+
+        if(commands == null) {
+            commands = Collections.singletonList(line);
+        } else {
+            commands.add(line.substring(nextOpIndex, i));
+        }
+        return commands;
     }
 }
