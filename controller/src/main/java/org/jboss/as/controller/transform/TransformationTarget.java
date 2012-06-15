@@ -54,6 +54,13 @@ public interface TransformationTarget {
     int getMinorManagementVersion();
 
     /**
+     * Get the model management micro version.
+     *
+     * @return the management micro version
+     */
+    int getMicroManagementVersion();
+
+    /**
      * Get the subsystem version.
      *
      * @param subsystemName the subsystem name

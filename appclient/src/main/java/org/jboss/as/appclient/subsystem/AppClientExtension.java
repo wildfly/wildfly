@@ -53,11 +53,15 @@ public class AppClientExtension implements Extension {
 
     public static final String NAMESPACE_1_0 = "urn:jboss:domain:appclient:1.0";
 
+    private static final int MAJOR_VERSION = 1;
+    private static final int MINOR_VERSION = 0;
+    private static final int MICRO_VERSION = 0;
+
     private static final ApplicationClientSubsystemParser parser = new ApplicationClientSubsystemParser();
 
     @Override
     public void initialize(final ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(Constants.SUBSYSTEM_NAME, 1, 0);
+        final SubsystemRegistration subsystem = context.registerSubsystem(Constants.SUBSYSTEM_NAME, MAJOR_VERSION, MINOR_VERSION, MICRO_VERSION);
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(AppClientSubsystemProviders.SUBSYSTEM);
 
         // register the operations
