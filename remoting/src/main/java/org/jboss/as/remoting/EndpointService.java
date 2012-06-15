@@ -70,7 +70,8 @@ public final class EndpointService implements Service<Endpoint> {
             boolean ok = false;
             endpoint = Remoting.createEndpoint(endpointName, optionMap);
             try {
-                endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.EMPTY);
+                // Reuse the options for the remote connection factory for now
+                endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), optionMap);
                 ok = true;
             } finally {
                 if (! ok) {

@@ -27,6 +27,8 @@ import java.net.URISyntaxException;
 
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
 import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.remoting3.RemotingOptions;
+import org.xnio.OptionMap;
 
 /**
  * Transformation class of the model controller client configuration to the
@@ -36,10 +38,14 @@ import org.jboss.as.protocol.ProtocolChannelClient;
  */
 class ProtocolConfigurationFactory {
 
+    private static final OptionMap DEFAULT_OPTIONS = OptionMap.create(RemotingOptions.TRANSMIT_WINDOW_SIZE, ProtocolChannelClient.Configuration.DEFAULT_WINDOW_SIZE,
+            RemotingOptions.RECEIVE_WINDOW_SIZE, ProtocolChannelClient.Configuration.DEFAULT_WINDOW_SIZE);
+
     static ProtocolChannelClient.Configuration create(final ModelControllerClientConfiguration client) throws URISyntaxException {
         final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
 
         configuration.setUri(new URI("remote://" + formatPossibleIpv6Address(client.getHost()) +  ":" + client.getPort()));
+        configuration.setOptionMap(DEFAULT_OPTIONS);
         final long timeout = client.getConnectionTimeout();
         if(timeout > 0) {
             configuration.setConnectionTimeout(timeout);
