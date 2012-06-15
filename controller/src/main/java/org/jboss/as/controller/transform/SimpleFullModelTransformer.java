@@ -44,12 +44,13 @@ public class SimpleFullModelTransformer {
                 String[] version = subsystemVersions.get(subsystemName).split("\\.");
                 int major = Integer.parseInt(version[0]);
                 int minor = Integer.parseInt(version[1]);
+                int micro = version.length == 3 ? Integer.parseInt(version[2]) : 0;
                 SubsystemInformation info = extensionRegistry.getSubsystemInfo(subsystemName);
                 if (info.getManagementInterfaceMajorVersion() == major && info.getManagementInterfaceMinorVersion() == minor) {
                     return resource; //no need to transform
                 }
                 log.trace("transforming subsystem: " + subsystem + ", to model version: " + subsystemVersions.get(subsystemName));
-                SubsystemTransformer transformer = extensionRegistry.getTransformerRegistry().getSubsystemTransformer(subsystemName, major, minor);
+                SubsystemTransformer transformer = extensionRegistry.getTransformerRegistry().getSubsystemTransformer(subsystemName, major, minor, micro);
                 if (transformer != null) {
                     ResourceDefinition rd = TransformerRegistry.loadSubsystemDefinition(subsystemName, major, minor);
                     ManagementResourceRegistration targetDefinition = ManagementResourceRegistration.Factory.create(rd);

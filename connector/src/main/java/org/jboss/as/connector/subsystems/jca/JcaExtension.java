@@ -83,6 +83,7 @@ public class JcaExtension implements Extension {
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     @Override
     public void initialize(final ExtensionContext context) {
@@ -90,7 +91,8 @@ public class JcaExtension implements Extension {
 
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
+                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JcaSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, JcaSubsystemAdd.INSTANCE, JcaSubsystemProviders.SUBSYSTEM_ADD_DESC, false);

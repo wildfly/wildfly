@@ -72,12 +72,17 @@ public class JMXExtension implements Extension {
     static final JMXSubsystemParser_1_1 parserCurrent = new JMXSubsystemParser_1_1();
     static final JMXSubsystemParser_1_0 parser10 = new JMXSubsystemParser_1_0();
 
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+
     /**
      * {@inheritDoc}
      */
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
+        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
+                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new JMXSubsystemRootResource());
         subsystem.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);

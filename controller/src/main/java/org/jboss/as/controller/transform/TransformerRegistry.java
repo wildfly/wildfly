@@ -165,18 +165,19 @@ public final class TransformerRegistry {
     }
 
     public Resource getTransformedSubsystemResource(Resource resource, final ImmutableManagementResourceRegistration resourceRegistration,
-                                                    final String subsystemName, int majorVersion, int minorVersion) {
+                                                    final String subsystemName, int majorVersion, int minorVersion, int microVersion) {
         Map<String, String> versions = new HashMap<String, String>();
-        versions.put(subsystemName, majorVersion + "." + minorVersion);
+        versions.put(subsystemName, majorVersion + "." + minorVersion + "." + microVersion);
         return getTransformedResource(resource, resourceRegistration, versions);
 
     }
 
-    public SubsystemTransformer getSubsystemTransformer(final String name, final int majorVersion, int minorVersion) {
+    public SubsystemTransformer getSubsystemTransformer(final String name, final int majorVersion, int minorVersion, int microVersion) {
         List<SubsystemTransformer> transformers = subsystemTransformers.get(name);
         if (transformers == null) { return null; }
         for (SubsystemTransformer t : transformers) {
-            if (t.getMajorManagementVersion() == majorVersion && t.getMinorManagementVersion() == minorVersion) {
+            if (t.getMajorManagementVersion() == majorVersion && t.getMinorManagementVersion() == minorVersion
+                    && t.getMicroManagementVersion() == microVersion) {
                 return t;
             }
         }

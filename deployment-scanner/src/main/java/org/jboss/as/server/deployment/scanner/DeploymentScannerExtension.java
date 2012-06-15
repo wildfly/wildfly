@@ -46,6 +46,9 @@ public class DeploymentScannerExtension implements Extension {
     static final String DEFAULT_SCANNER_NAME = "default"; // we actually need a scanner name to make it addressable
     private static final String RESOURCE_NAME = DeploymentScannerExtension.class.getPackage().getName() + ".LocalDescriptions";
 
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, DeploymentScannerExtension.class.getClassLoader(), true, false);
@@ -58,7 +61,8 @@ public class DeploymentScannerExtension implements Extension {
     public void initialize(ExtensionContext context) {
         ROOT_LOGGER.debug("Initializing Deployment Scanner Extension");
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(CommonAttributes.DEPLOYMENT_SCANNER, 1, 0);
+        final SubsystemRegistration subsystem = context.registerSubsystem(CommonAttributes.DEPLOYMENT_SCANNER, MANAGEMENT_API_MAJOR_VERSION,
+                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         subsystem.registerXMLElementWriter(DeploymentScannerParser_1_1.INSTANCE);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new DeploymentScannerSubsystemDefinition());

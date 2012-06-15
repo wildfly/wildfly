@@ -73,6 +73,7 @@ public class InfinispanExtension implements Extension {
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 4;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     /**
      * {@inheritDoc}
@@ -81,7 +82,8 @@ public class InfinispanExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         // IMPORTANT: Management API version != xsd version! Not all Management API changes result in XSD changes
-        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION);
+        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
+                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         subsystem.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
 
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(InfinispanSubsystemProviders.SUBSYSTEM);
