@@ -47,7 +47,6 @@ import static org.jboss.as.messaging.CommonAttributes.IN_VM_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
-import static org.jboss.as.messaging.CommonAttributes.LIVE_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
@@ -249,8 +248,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     parseDirectory(reader, CommonAttributes.LARGE_MESSAGES_DIRECTORY, address, list);
                     break;
                 case LIVE_CONNECTOR_REF: {
-                    String string = readStringAttributeElement(reader, CommonAttributes.CONNECTOR_NAME);
-                    LIVE_CONNECTOR_REF.parseAndSetParameter(string, operation, reader);
+                    MessagingLogger.ROOT_LOGGER.deprecatedXMLElement(element.toString());
+                    skipElementText(reader);
                     break;
                 }
                 case PAGING_DIRECTORY:
@@ -297,6 +296,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         throw unexpectedEndElement(reader);
                     }
                     break;
+                case CLUSTERED:
+                    MessagingLogger.ROOT_LOGGER.deprecatedXMLElement(element.toString());
+                    skipElementText(reader);
+                    break;
                 default:
                     if (SIMPLE_ROOT_RESOURCE_ELEMENTS.contains(element)) {
                         AttributeDefinition attributeDefinition = element.getDefinition();
@@ -307,10 +310,15 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                             throw MESSAGES.unsupportedElement(element.getLocalName());
                         }
                     } else {
-                        throw ParseUtils.unexpectedElement(reader);
+                        handleUnknownConfigurationAttribute(reader, element, operation);
                     }
             }
         } while (reader.hasNext() && localName.equals(elementName) == false);
+    }
+
+    protected void handleUnknownConfigurationAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation)
+            throws XMLStreamException {
+        throw ParseUtils.unexpectedElement(reader);
     }
 
     private static void processConnectorServices(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
@@ -433,7 +441,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 }
                 default: {
-                    throw ParseUtils.unexpectedElement(reader);
+                    handleUnknownClusterConnectionAttribute(reader, element, clusterConnectionAdd);
                 }
             }
         }
@@ -442,7 +450,20 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             missingRequired(reader, required);
         }
 
+        checkClusterConnectionConstraints(reader, seen);
+
         updates.add(clusterConnectionAdd);
+    }
+
+    protected void handleUnknownClusterConnectionAttribute(XMLExtendedStreamReader reader, Element element, ModelNode clusterConnectionAdd)
+            throws XMLStreamException {
+        throw ParseUtils.unexpectedElement(reader);
+    }
+
+    protected void checkClusterConnectionConstraints(XMLExtendedStreamReader reader, Set<Element> seen) throws XMLStreamException {
+    }
+
+    protected void checkBroadcastGroupConstraints(XMLExtendedStreamReader reader, Set<Element> seen) throws XMLStreamException {
     }
 
     private void processBridges(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
@@ -622,7 +643,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
-    static void processBroadcastGroups(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+    void processBroadcastGroups(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
         requireNoAttributes(reader);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -637,7 +658,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
-    private static void parseBroadcastGroup(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+    protected void parseBroadcastGroup(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
 
         String name = null;
 
@@ -662,8 +683,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         ModelNode broadcastGroupAdd = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.BROADCAST_GROUP, name));
 
         EnumSet<Element> required = EnumSet.of(Element.GROUP_ADDRESS, Element.GROUP_PORT);
+        Set<Element> seen = EnumSet.noneOf(Element.class);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
+            seen.add(element);
             required.remove(element);
             switch (element) {
                 case LOCAL_BIND_ADDRESS:
@@ -678,7 +701,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     handleElementText(reader, element, "broadcast-group", broadcastGroupAdd);
                     break;
                 default: {
-                    throw ParseUtils.unexpectedElement(reader);
+                    handleUnknownBroadcastGroupAttribute(reader, element, broadcastGroupAdd);
                 }
             }
         }
@@ -687,10 +710,17 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             missingRequired(reader, required);
         }
 
+        checkBroadcastGroupConstraints(reader, seen);
+
         updates.add(broadcastGroupAdd);
     }
 
-    static void processDiscoveryGroups(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+    protected void handleUnknownBroadcastGroupAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation)
+            throws XMLStreamException {
+        throw ParseUtils.unexpectedElement(reader);
+    }
+
+    void processDiscoveryGroups(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
         requireNoAttributes(reader);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -705,7 +735,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
-    private static void parseDiscoveryGroup(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+    protected void parseDiscoveryGroup(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
 
         String name = null;
 
@@ -730,9 +760,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         ModelNode discoveryGroup = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.DISCOVERY_GROUP, name));
 
         EnumSet<Element> required = EnumSet.of(Element.GROUP_ADDRESS, Element.GROUP_PORT);
+        Set<Element> seen = EnumSet.noneOf(Element.class);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             required.remove(element);
+            seen.add(element);
             switch (element) {
                 case LOCAL_BIND_ADDRESS:
                 case GROUP_ADDRESS:
@@ -743,7 +775,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     handleElementText(reader, element, discoveryGroup);
                     break;
                 default: {
-                    throw ParseUtils.unexpectedElement(reader);
+                    handleUnknownDiscoveryGroupAttribute(reader, element, discoveryGroup);
                 }
             }
         }
@@ -752,7 +784,17 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             missingRequired(reader, required);
         }
 
+        checkDiscoveryGroupConstraints(reader, seen);
+
         updates.add(discoveryGroup);
+    }
+
+    protected void handleUnknownDiscoveryGroupAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation)
+            throws XMLStreamException {
+        throw ParseUtils.unexpectedElement(reader);
+    }
+
+    protected void checkDiscoveryGroupConstraints(XMLExtendedStreamReader reader, Set<Element> seen) throws XMLStreamException {
     }
 
     void processConnectionFactories(final XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
@@ -1606,7 +1648,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 // end of pooled CF elements
                 // =========================================================
                 default: {
-                    throw ParseUtils.unexpectedElement(reader);
+                    handleUnknownConnectionFactoryAttribute(reader, element, connectionFactory, pooled);
                 }
             }
         }
@@ -1614,6 +1656,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         checkOnlyOneOfElements(reader, seen, Element.CONNECTORS, Element.DISCOVERY_GROUP_REF);
 
         return connectionFactory;
+    }
+
+    protected void handleUnknownConnectionFactoryAttribute(XMLExtendedStreamReader reader, Element element, ModelNode connectionFactory, boolean pooled) throws XMLStreamException {
+        throw ParseUtils.unexpectedElement(reader);
     }
 
     protected void checkOtherElementIsNotAlreadyDefined(XMLStreamReader reader, Set<Element> seen, Element currentElement, Element otherElement) throws XMLStreamException {

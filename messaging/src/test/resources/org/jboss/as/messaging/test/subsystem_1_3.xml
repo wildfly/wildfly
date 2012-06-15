@@ -12,7 +12,6 @@
                 <class-name>foo.bar</class-name>
                 <class-name>bar.foo</class-name>
             </remoting-interceptors>
-            <live-connector-ref connector-name="in-vm"/>
             <page-max-concurrent-io>10</page-max-concurrent-io>
             <create-journal-dir>true</create-journal-dir>
             <journal-type>NIO</journal-type>
@@ -32,6 +31,9 @@
             <server-dump-interval>8642</server-dump-interval>
             <memory-warning-threshold>1024</memory-warning-threshold>
             <memory-measure-interval>2048</memory-measure-interval>
+            <check-for-live-server>false</check-for-live-server>
+            <backup-group-name>ngname</backup-group-name>
+            <replication-clustername>repclustername</replication-clustername>
             <paging-directory path="test" relative-to="test" />
             <bindings-directory path="test" relative-to="test" />
             <journal-directory path="test" relative-to="test" />
@@ -152,6 +154,7 @@
                     <connection-ttl>1234</connection-ttl>
                     <min-large-message-size>10245</min-large-message-size>
                     <call-timeout>3456</call-timeout>
+                    <call-failover-timeout>7890</call-failover-timeout>
                     <retry-interval>987</retry-interval>
                     <retry-interval-multiplier>3.0</retry-interval-multiplier>
                     <max-retry-interval>3600</max-retry-interval>
@@ -268,6 +271,7 @@
                  <client-failure-check-period>12345</client-failure-check-period>
                  <connection-ttl>56789</connection-ttl>
                  <call-timeout>123</call-timeout>
+                 <call-failover-timeout>7890</call-failover-timeout>
                  <consumer-window-size>456</consumer-window-size>
                  <consumer-max-rate>789</consumer-max-rate>
                  <confirmation-window-size>-1</confirmation-window-size>
@@ -314,6 +318,7 @@
                  <client-failure-check-period>12345</client-failure-check-period>
                  <connection-ttl>56789</connection-ttl>
                  <call-timeout>123</call-timeout>
+                 <call-failover-timeout>123</call-failover-timeout>
                  <consumer-window-size>456</consumer-window-size>
                  <consumer-max-rate>789</consumer-max-rate>
                  <confirmation-window-size>-1</confirmation-window-size>

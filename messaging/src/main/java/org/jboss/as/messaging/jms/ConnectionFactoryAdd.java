@@ -24,6 +24,7 @@ package org.jboss.as.messaging.jms;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
@@ -106,6 +107,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         config.setCacheLargeMessagesClient(Common.CACHE_LARGE_MESSAGE_CLIENT.resolveModelAttribute(context, model).asBoolean());
         config.setCallTimeout(CALL_TIMEOUT.resolveModelAttribute(context, model).asLong());
         config.setClientFailureCheckPeriod(Common.CLIENT_FAILURE_CHECK_PERIOD.resolveModelAttribute(context, model).asInt());
+        config.setCallFailoverTimeout(CALL_FAILOVER_TIMEOUT.resolveModelAttribute(context, model).asLong());
         final ModelNode clientId = CLIENT_ID.resolveModelAttribute(context, model);
         if (clientId.isDefined()) {
             config.setClientID(clientId.asString());

@@ -33,22 +33,32 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.transform.OperationResultTransformer.ORIGINAL_RESULT;
+import static org.jboss.as.messaging.CommonAttributes.BACKUP_GROUP_NAME;
+import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
+import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
+import static org.jboss.as.messaging.CommonAttributes.CHECK_FOR_LIVE_SERVER;
+import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
+import static org.jboss.as.messaging.CommonAttributes.CLUSTER_CONNECTION;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
+import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.JGROUPS_CHANNEL;
+import static org.jboss.as.messaging.CommonAttributes.JGROUPS_STACK;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
+import static org.jboss.as.messaging.CommonAttributes.REPLICATION_CLUSTERNAME;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_0;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_2;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_3;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.RECONNECT_ATTEMPTS;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FACTORY_TYPE;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -64,7 +74,6 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
-import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -114,6 +123,9 @@ public class MessagingExtension implements Extension {
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 2;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+
+    public static final ModelVersion VERSION_1_2_0 = ModelVersion.create(1, 2, 0);
+    public static final ModelVersion VERSION_1_1_0 = ModelVersion.create(1, 1, 0);
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         return getResourceDescriptionResolver(true, keyPrefix);
@@ -242,24 +254,53 @@ public class MessagingExtension implements Extension {
     }
 
     private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
-        final ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
-        final TransformersSubRegistration transformers = subsystem.registerModelTransformers(version_1_1_0, new AbstractSubsystemTransformer(SUBSYSTEM_NAME) {
+
+        final AttributeDefinition[] transformerdPooledCFAttributes = { Pooled.INITIAL_CONNECT_ATTEMPTS,
+                Pooled.INITIAL_MESSAGE_PACKET_SIZE,
+                COMPRESS_LARGE_MESSAGES,
+                USE_AUTO_RECOVERY,
+                CALL_FAILOVER_TIMEOUT };
+
+        final TransformersSubRegistration transformers = subsystem.registerModelTransformers(VERSION_1_1_0, new AbstractSubsystemTransformer(SUBSYSTEM_NAME) {
 
             @Override
             public ModelNode transformModel(final TransformationContext context, final ModelNode model) {
                 ModelNode oldModel = model.clone();
                 if (oldModel.hasDefined(HORNETQ_SERVER)) {
                     for (Property server : oldModel.get(HORNETQ_SERVER).asPropertyList()) {
+                        if (!oldModel.get(HORNETQ_SERVER, server.getName()).hasDefined(CLUSTERED.getName())) {
+                            oldModel.get(HORNETQ_SERVER, server.getName()).get(CLUSTERED.getName()).set(false);
+                        }
+                        oldModel.get(HORNETQ_SERVER, server.getName()).remove(CHECK_FOR_LIVE_SERVER.getName());
+                        oldModel.get(HORNETQ_SERVER, server.getName()).remove(BACKUP_GROUP_NAME.getName());
+                        oldModel.get(HORNETQ_SERVER, server.getName()).remove(REPLICATION_CLUSTERNAME.getName());
+                        if (server.getValue().hasDefined(CLUSTER_CONNECTION)) {
+                            for (Property clusterConnection : server.getValue().get(CLUSTER_CONNECTION).asPropertyList()) {
+                                oldModel.get(HORNETQ_SERVER, server.getName(), CLUSTER_CONNECTION, clusterConnection.getName()).remove(CALL_FAILOVER_TIMEOUT.getName());
+                            }
+                        }
+                        if (server.getValue().hasDefined(BROADCAST_GROUP)) {
+                            for (Property broadcastGroup : server.getValue().get(BROADCAST_GROUP).asPropertyList()) {
+                                oldModel.get(HORNETQ_SERVER, server.getName(), BROADCAST_GROUP, broadcastGroup.getName()).remove(JGROUPS_STACK.getName());
+                                oldModel.get(HORNETQ_SERVER, server.getName(), BROADCAST_GROUP, broadcastGroup.getName()).remove(JGROUPS_CHANNEL.getName());
+                            }
+                        }
+                        if (server.getValue().hasDefined(DISCOVERY_GROUP)) {
+                            for (Property discoveryGroup : server.getValue().get(DISCOVERY_GROUP).asPropertyList()) {
+                                oldModel.get(HORNETQ_SERVER, server.getName(), DISCOVERY_GROUP, discoveryGroup.getName()).remove(JGROUPS_STACK.getName());
+                                oldModel.get(HORNETQ_SERVER, server.getName(), DISCOVERY_GROUP, discoveryGroup.getName()).remove(JGROUPS_CHANNEL.getName());
+                            }
+                        }
                         if (server.getValue().hasDefined(POOLED_CONNECTION_FACTORY)) {
                             for (Property pooledConnectionFactory : server.getValue().get(POOLED_CONNECTION_FACTORY).asPropertyList()) {
-                                oldModel.get(HORNETQ_SERVER, server.getName(), POOLED_CONNECTION_FACTORY, pooledConnectionFactory.getName()).remove(Pooled.INITIAL_CONNECT_ATTEMPTS.getName());
-                                oldModel.get(HORNETQ_SERVER, server.getName(), POOLED_CONNECTION_FACTORY, pooledConnectionFactory.getName()).remove(Pooled.INITIAL_MESSAGE_PACKET_SIZE.getName());
-                                oldModel.get(HORNETQ_SERVER, server.getName(), POOLED_CONNECTION_FACTORY, pooledConnectionFactory.getName()).remove(Pooled.USE_AUTO_RECOVERY.getName());
-                                oldModel.get(HORNETQ_SERVER, server.getName(), POOLED_CONNECTION_FACTORY, pooledConnectionFactory.getName()).remove(Common.COMPRESS_LARGE_MESSAGES.getName());
+                                for (AttributeDefinition attribute : transformerdPooledCFAttributes) {
+                                    oldModel.get(HORNETQ_SERVER, server.getName(), POOLED_CONNECTION_FACTORY, pooledConnectionFactory.getName()).remove(attribute.getName());
+                                }
                             }
                         }
                         if (server.getValue().hasDefined(CONNECTION_FACTORY)) {
                             for (Property connectionFactory : server.getValue().get(CONNECTION_FACTORY).asPropertyList()) {
+                                oldModel.get(HORNETQ_SERVER, server.getName(), CONNECTION_FACTORY, connectionFactory.getName()).remove(CALL_FAILOVER_TIMEOUT.getName());
                                 if (!connectionFactory.getValue().hasDefined(HA.getName())) {
                                     oldModel.get(HORNETQ_SERVER, server.getName(), CONNECTION_FACTORY, connectionFactory.getName()).get(HA.getName()).set(HA.getDefaultValue());
                                 }
@@ -274,17 +315,10 @@ public class MessagingExtension implements Extension {
             }
         });
 
-        TransformersSubRegistration server = transformers.registerSubResource(PathElement.pathElement(CommonAttributes.HORNETQ_SERVER));
-        server.registerOperationTransformer(ADD, new OperationTransformer() {
-            @Override
-            public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
-                    throws OperationFailedException {
-                if (!operation.hasDefined(ID_CACHE_SIZE.getName())) {
-                    operation.get(ID_CACHE_SIZE.getName()).set(ID_CACHE_SIZE.getDefaultValue());
-                }
-                return new TransformedOperation(operation, ORIGINAL_RESULT);
-            }
-        });
+        TransformersSubRegistration server = transformers.registerSubResource(PathElement.pathElement(HORNETQ_SERVER));
+        server.registerOperationTransformer(ADD,new OperationTransformers.MultipleOperationalTransformer(
+                new OperationTransformers.InsertDefaultValuesOperationTransformer(ID_CACHE_SIZE, CLUSTERED),
+                new OperationTransformers.RemoveAttributesOperationTransformer(CHECK_FOR_LIVE_SERVER, BACKUP_GROUP_NAME, REPLICATION_CLUSTERNAME)));
 
         RejectExpressionValuesTransformer rejectTransportParamExpressionTransformer = new RejectExpressionValuesTransformer(VALUE);
         final String[] transports = { CommonAttributes.ACCEPTOR, CommonAttributes.REMOTE_ACCEPTOR, CommonAttributes.IN_VM_ACCEPTOR,
@@ -302,16 +336,24 @@ public class MessagingExtension implements Extension {
             pathRegistration.registerOperationTransformer(ADD, rejectExpressionTransformer);
             pathRegistration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectExpressionTransformer.getWriteAttributeTransformer());
         }
+
+        TransformersSubRegistration clusterConnection = server.registerSubResource(ClusterConnectionDefinition.PATH);
+        clusterConnection.registerOperationTransformer(ADD, new OperationTransformers.RemoveAttributesOperationTransformer(CALL_FAILOVER_TIMEOUT));
+        clusterConnection.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new OperationTransformers.FailUnignoredAttributesOperationTransformer(CALL_FAILOVER_TIMEOUT));
+
+        TransformersSubRegistration connectionFactory = server.registerSubResource(ConnectionFactoryDefinition.PATH);
+        connectionFactory.registerOperationTransformer(ADD, new OperationTransformers.RemoveAttributesOperationTransformer(CALL_FAILOVER_TIMEOUT));
+        connectionFactory.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new OperationTransformers.FailUnignoredAttributesOperationTransformer(CALL_FAILOVER_TIMEOUT));
+
         TransformersSubRegistration pooledConnectionFactory = server.registerSubResource(PooledConnectionFactoryDefinition.PATH);
         pooledConnectionFactory.registerOperationTransformer(ADD, new OperationTransformer() {
             @Override
             public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
                     throws OperationFailedException {
                 final ModelNode transformedOperation = operation.clone();
-                transformedOperation.remove(Pooled.INITIAL_CONNECT_ATTEMPTS.getName());
-                transformedOperation.remove(Pooled.INITIAL_MESSAGE_PACKET_SIZE.getName());
-                transformedOperation.remove(Pooled.USE_AUTO_RECOVERY.getName());
-                transformedOperation.remove(Common.COMPRESS_LARGE_MESSAGES.getName());
+                for (AttributeDefinition attribute : transformerdPooledCFAttributes) {
+                    transformedOperation.remove(attribute.getName());
+                }
                 if (!transformedOperation.hasDefined(RECONNECT_ATTEMPTS.getName())) {
                     transformedOperation.get(RECONNECT_ATTEMPTS.getName()).set(RECONNECT_ATTEMPTS.getDefaultValue());
                 }
@@ -319,42 +361,6 @@ public class MessagingExtension implements Extension {
                 return new TransformedOperation(transformedOperation, ORIGINAL_RESULT);
             }
         });
-        pooledConnectionFactory.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new OperationTransformer() {
-            @Override
-            public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
-                    throws OperationFailedException {
-
-                OperationResultTransformer resultTransformer = ORIGINAL_RESULT;
-                final List<String> found = new ArrayList<String>();
-
-                String[] unsupportedAttributes = {
-                        Pooled.INITIAL_CONNECT_ATTEMPTS.getName(),
-                        Pooled.INITIAL_MESSAGE_PACKET_SIZE.getName(),
-                        Pooled.USE_AUTO_RECOVERY.getName(),
-                        Common.COMPRESS_LARGE_MESSAGES.getName()};
-                for (String attrName : unsupportedAttributes) {
-                    if (operation.require(NAME).asString().equals(attrName)) {
-                        if (found.size() == 0) {
-                            // Transform the result into a failure if the op wasn't ignored
-                            resultTransformer = new OperationResultTransformer() {
-                                @Override
-                                public ModelNode transformResult(ModelNode result) {
-                                    ModelNode transformed = result;
-                                    if (!IGNORED.equals(result.get(OUTCOME).asString())) {
-                                        transformed = new ModelNode();
-                                        transformed.get(OUTCOME).set(FAILED);
-                                        transformed.get(FAILURE_DESCRIPTION).set(MessagingMessages.MESSAGES.unsupportedAttributeInVersion(found.toString(), version_1_1_0));
-                                    }
-                                    return transformed;
-                                }
-                            };
-                        }
-                        found.add(attrName);
-                    }
-                }
-
-                return new TransformedOperation(operation, resultTransformer);
-            }
-        });
+        pooledConnectionFactory.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new OperationTransformers.FailUnignoredAttributesOperationTransformer(transformerdPooledCFAttributes));
     }
 }

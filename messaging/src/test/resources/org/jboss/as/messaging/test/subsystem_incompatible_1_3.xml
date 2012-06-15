@@ -12,7 +12,6 @@
                 <class-name>foo.bar</class-name>
                 <class-name>bar.foo</class-name>
             </remoting-interceptors>
-            <live-connector-ref connector-name="in-vm"/>
             <page-max-concurrent-io>10</page-max-concurrent-io>
             <create-journal-dir>true</create-journal-dir>
             <journal-type>NIO</journal-type>
@@ -32,11 +31,19 @@
             <server-dump-interval>8642</server-dump-interval>
             <memory-warning-threshold>1024</memory-warning-threshold>
             <memory-measure-interval>2048</memory-measure-interval>
+            <check-for-live-server>false</check-for-live-server>
+            <backup-group-name>ngname</backup-group-name>
+            <replication-clustername>repclustername</replication-clustername>
             <paging-directory path="${my.paging.dir:test}" relative-to="test" />
             <bindings-directory path="${my.bindings.dir:test}" relative-to="test" />
             <journal-directory path="${my.journal.dir:test}" relative-to="test" />
             <large-messages-directory path="${my.largemessages.dir:test}" relative-to="test" />
             <connectors>
+               <netty-connector name="netty" socket-binding="messaging" />
+               <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
+                  <param key="batch-delay" value="50"/>
+               </netty-connector>
+               <in-vm-connector name="in-vm" server-id="0" />
                <connector name="myconnector">
                   <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
                   <param key="host" value="192.168.1.2"/>
@@ -44,11 +51,6 @@
                   <param key="key-store-path" value="path/to/server.jks"/>
                   <param key="key-store-password" value="${VAULT::server-key::key-store-password::sharedKey}"/>
                </connector>
-               <netty-connector name="netty" socket-binding="messaging" />
-               <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
-                  <param key="batch-delay" value="50"/>
-               </netty-connector>
-               <in-vm-connector name="in-vm" server-id="0" />
             </connectors>
             <acceptors>
                <netty-acceptor name="netty" socket-binding="messaging" />
@@ -75,6 +77,10 @@
                 <broadcast-group name="groupS">
                     <socket-binding>group-s-binding</socket-binding>
                 </broadcast-group>
+                <broadcast-group name="groupT">
+                    <jgroups-stack>udp</jgroups-stack>
+                    <jgroups-channel>hq-cluster</jgroups-channel>
+                </broadcast-group>
             </broadcast-groups>
             <discovery-groups>
                 <discovery-group name="groupC">
@@ -90,6 +96,10 @@
                 </discovery-group>
                 <discovery-group name="groupT">
                     <socket-binding>group-t-binding</socket-binding>
+                </discovery-group>
+                <discovery-group name="groupU">
+                    <jgroups-stack>udp</jgroups-stack>
+                    <jgroups-channel>hq-cluster</jgroups-channel>
                 </discovery-group>
             </discovery-groups>
             <diverts>
@@ -330,9 +340,9 @@
 				 <group-id>myGroup</group-id>
               </pooled-connection-factory>
               <pooled-connection-factory name="hornetq-ra-local">
+                 <transaction mode="local"/>
                  <user>alice</user>
                  <password>alicepassword</password>
-                 <transaction mode="local"/>
                  <use-auto-recovery>true</use-auto-recovery>
                  <connectors>
                     <connector-ref connector-name="in-vm"/>

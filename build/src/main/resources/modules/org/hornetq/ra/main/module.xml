@@ -35,6 +35,7 @@
         <module name="org.hornetq"/>
         <module name="org.jboss.as.transactions"/>
         <module name="org.jboss.jboss-transaction-spi"/>
+        <module name="org.jboss.logging"/>
         <module name="javax.api"/>
         <module name="javax.jms.api" />
         <module name="org.jboss.jts"/>

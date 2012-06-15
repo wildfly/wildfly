@@ -28,16 +28,21 @@ import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
 import static org.jboss.as.messaging.CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.BACKUP;
+import static org.jboss.as.messaging.CommonAttributes.BACKUP_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
+import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
+import static org.jboss.as.messaging.CommonAttributes.CHECK_FOR_LIVE_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_PASSWORD;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_USER;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL_OVERRIDE;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_BINDINGS_DIR;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_JOURNAL_DIR;
+import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.FAILBACK_DELAY;
 import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SHUTDOWN;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.JGROUPS_CHANNEL;
+import static org.jboss.as.messaging.CommonAttributes.JGROUPS_STACK;
 import static org.jboss.as.messaging.CommonAttributes.JMX_DOMAIN;
 import static org.jboss.as.messaging.CommonAttributes.JMX_MANAGEMENT_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_BUFFER_SIZE;
@@ -52,7 +57,6 @@ import static org.jboss.as.messaging.CommonAttributes.JOURNAL_SYNC_NON_TRANSACTI
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_SYNC_TRANSACTIONAL;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.LIVE_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.LOG_JOURNAL_WRITE_RATE;
 import static org.jboss.as.messaging.CommonAttributes.MANAGEMENT_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.MANAGEMENT_NOTIFICATION_ADDRESS;
@@ -69,6 +73,7 @@ import static org.jboss.as.messaging.CommonAttributes.PERF_BLAST_PAGES;
 import static org.jboss.as.messaging.CommonAttributes.PERSISTENCE_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
 import static org.jboss.as.messaging.CommonAttributes.PERSIST_ID_CACHE;
+import static org.jboss.as.messaging.CommonAttributes.REPLICATION_CLUSTERNAME;
 import static org.jboss.as.messaging.CommonAttributes.RUN_SYNC_SPEED_TEST;
 import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_DOMAIN;
@@ -92,15 +97,16 @@ import java.util.Set;
 
 import javax.management.MBeanServer;
 
+import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -271,15 +277,34 @@ class HornetQServerAdd implements OperationStepHandler {
                 if(broadcastGroupConfigurations != null) {
                     for(final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
                         final String name = config.getName();
-                        final ServiceName groupBinding = GroupBindingService.getBroadcastBaseServiceName(hqServiceName).append(name);
-                        serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector("broadcast" + name));
+                        final String key = "broadcast" + name;
+                        ModelNode broadcastGroupModel = model.get(BROADCAST_GROUP, name);
+
+                        if (broadcastGroupModel.hasDefined(JGROUPS_STACK.getName())) {
+                            String jgroupsStack = JGROUPS_STACK.resolveModelAttribute(context, broadcastGroupModel).asString();
+                            String channelName = JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel).asString();
+                            serviceBuilder.addDependency(ServiceName.JBOSS.append("jgroups").append("stack").append(jgroupsStack), ChannelFactory.class, hqService.getJGroupsInjector(key));
+                            hqService.getJGroupsChannels().put(key, channelName);
+                        } else {
+                            final ServiceName groupBinding = GroupBindingService.getBroadcastBaseServiceName(hqServiceName).append(name);
+                            serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector(key));
+                        }
                     }
                 }
                 if(discoveryGroupConfigurations != null) {
                     for(final DiscoveryGroupConfiguration config : discoveryGroupConfigurations.values()) {
                         final String name = config.getName();
-                        final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(hqServiceName).append(name);
-                        serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector("discovery" + name));
+                        final String key = "discovery" + name;
+                        ModelNode discoveryGroupModel = model.get(DISCOVERY_GROUP, name);
+                        if (discoveryGroupModel.hasDefined(JGROUPS_STACK.getName())) {
+                            String jgroupsStack = JGROUPS_STACK.resolveModelAttribute(context, discoveryGroupModel).asString();
+                            String channelName = JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel).asString();
+                            serviceBuilder.addDependency(ServiceName.JBOSS.append("jgroups").append("stack").append(jgroupsStack), ChannelFactory.class, hqService.getJGroupsInjector(key));
+                            hqService.getJGroupsChannels().put(key, channelName);
+                        } else {
+                            final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(hqServiceName).append(name);
+                            serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector(key));
+                        }
                     }
                 }
 
@@ -316,11 +341,10 @@ class HornetQServerAdd implements OperationStepHandler {
         configuration.setAllowAutoFailBack(ALLOW_FAILBACK.resolveModelAttribute(context, model).asBoolean());
         configuration.setEnabledAsyncConnectionExecution(ASYNC_CONNECTION_EXECUTION_ENABLED.resolveModelAttribute(context, model).asBoolean());
 
+        configuration.setBackupGroupName(BACKUP_GROUP_NAME.resolveModelAttribute(context, model).asString());
+        configuration.setReplicationClustername(REPLICATION_CLUSTERNAME.resolveModelAttribute(context, model).asString());
+        configuration.setCheckForLiveServer(CHECK_FOR_LIVE_SERVER.resolveModelAttribute(context, model).asBoolean());
         configuration.setBackup(BACKUP.resolveModelAttribute(context, model).asBoolean());
-        if(model.hasDefined(LIVE_CONNECTOR_REF.getName())) {
-            configuration.setLiveConnectorName(LIVE_CONNECTOR_REF.resolveModelAttribute(context, model).asString());
-        }
-        configuration.setClustered(CLUSTERED.resolveModelAttribute(context, model).asBoolean());
         configuration.setClusterPassword(CLUSTER_PASSWORD.resolveModelAttribute(context, model).asString());
         configuration.setClusterUser(CLUSTER_USER.resolveModelAttribute(context, model).asString());
         configuration.setConnectionTTLOverride(CONNECTION_TTL_OVERRIDE.resolveModelAttribute(context, model).asInt());
