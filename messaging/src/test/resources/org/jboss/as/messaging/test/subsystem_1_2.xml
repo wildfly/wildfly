@@ -252,6 +252,7 @@
                  <entries>
                     <entry name="java:/JmsXA"/>
                  </entries>
+                 <ha>true</ha>
               </pooled-connection-factory>
               <pooled-connection-factory name="hornetq-ra-local">
                  <user>alice</user>
