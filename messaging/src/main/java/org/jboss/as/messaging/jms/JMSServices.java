@@ -294,7 +294,7 @@ public class JMSServices {
         // new PooledCFAttribute(FAILOVER_ON_SERVER_SHUTDOWN, FAILOVER_ON_SERVER_SHUTDOWN_METHOD),
         new PooledCFAttribute(GROUP_ID, GROUP_ID_METHOD),
         // TODO HornetQResourceAdapter does not have these three methods
-        // new PooledCFAttribute(HA, HA_METHOD),
+        new PooledCFAttribute(HA, HA_METHOD),
         // new PooledCFAttribute(LOAD_BALANCING_CLASS_NAME, LOAD_BALANCING_POLICY_CLASS_NAME_METHOD),
         //new PooledCFAttribute(MAX_RETRY_INTERVAL, MAX_RETRY_INTERVAL_METHOD),
         new PooledCFAttribute(MIN_LARGE_MESSAGE_SIZE, MIN_LARGE_MESSAGE_SIZE_METHOD),
