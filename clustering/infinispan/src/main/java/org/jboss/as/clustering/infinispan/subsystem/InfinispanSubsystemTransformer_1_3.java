@@ -11,7 +11,7 @@ import org.jboss.dmr.Property;
 public class InfinispanSubsystemTransformer_1_3 extends AbstractSubsystemTransformer {
 
     public InfinispanSubsystemTransformer_1_3() {
-        super(1, 3);
+        super(1, 3, 0);
     }
 
     @Override

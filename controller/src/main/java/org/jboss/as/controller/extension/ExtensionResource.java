@@ -210,6 +210,11 @@ public class ExtensionResource implements Resource.ResourceEntry {
             if (minor != null) {
                 minorNode.set(minor.intValue());
             }
+            final ModelNode microNode = model.get(ExtensionSubsystemResourceDefinition.MICRO_VERSION.getName());
+            Integer micro = subsystemInformation.getManagementInterfaceMicroVersion();
+            if (micro != null) {
+                microNode.set(micro.intValue());
+            }
 
             final ModelNode xmlNode = model.get(ExtensionSubsystemResourceDefinition.XML_NAMESPACES.getName()).setEmptyList();
             List<String> namespaces = subsystemInformation.getXMLNamespaces();

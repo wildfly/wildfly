@@ -41,11 +41,11 @@ public class ReadTransformedResourceOperation implements OperationStepHandler {
         validator.registerValidator(SUBSYSTEM, new ModelTypeValidator(ModelType.STRING, false));
     }
 
-    private ModelNode transformReadResourceResult(final ImmutableManagementResourceRegistration managementResourceRegistration, ModelNode original, String subsystem, int major, int minor) {
+    private ModelNode transformReadResourceResult(final ImmutableManagementResourceRegistration managementResourceRegistration, ModelNode original, String subsystem, int major, int minor, int micro) {
         ModelNode rootData = original.get(ModelDescriptionConstants.RESULT);
 
         Resource root = TransformerRegistry.modelToResource(managementResourceRegistration, rootData);
-        Resource transformed = TransformerRegistry.getInstance().getTransformedSubsystemResource(root, managementResourceRegistration, subsystem, major, minor);
+        Resource transformed = TransformerRegistry.getInstance().getTransformedSubsystemResource(root, managementResourceRegistration, subsystem, major, minor, micro);
 
         return Resource.Tools.readModel(transformed);
     }
@@ -55,14 +55,15 @@ public class ReadTransformedResourceOperation implements OperationStepHandler {
         final String subsystem = operation.get(ModelDescriptionConstants.SUBSYSTEM).asString();
         final int major = operation.get(ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION).asInt();
         final int minor = operation.get(ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION).asInt();
-         final ImmutableManagementResourceRegistration rr = context.getResourceRegistration();
+        final int micro = operation.get(ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION).asInt();
+        final ImmutableManagementResourceRegistration rr = context.getResourceRegistration();
         // Add a step to transform the result of a READ_RESOURCE.
         // Do this first, Stage.IMMEDIATE
         final ModelNode readResourceResult = new ModelNode();
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                ModelNode transformed = transformReadResourceResult(rr, readResourceResult, subsystem, major, minor);
+                ModelNode transformed = transformReadResourceResult(rr, readResourceResult, subsystem, major, minor, micro);
                 context.getResult().set(transformed);
                 context.completeStep();
             }

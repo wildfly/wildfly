@@ -35,6 +35,20 @@ import org.jboss.as.controller.services.path.PathManager;
 public interface ExtensionContext {
 
     /**
+     * Convenience variant of {@link #registerSubsystem(String, int, int, int)} that uses {@code 0}
+     * as the {@code microVersion}.
+     *
+     * @param name the name of the subsystem
+     * @param majorVersion the major version of the subsystem's management interface
+     * @param minorVersion the minor version of the subsystem's management interface
+     *
+     * @return the {@link SubsystemRegistration}
+     *
+     * @throws IllegalStateException if the subsystem name has already been registered
+     */
+    SubsystemRegistration registerSubsystem(String name, int majorVersion, int minorVersion);
+
+    /**
      * Register a new subsystem type.  The returned registration object should be used
      * to configure XML parsers, operation handlers, and other subsystem-specific constructs
      * for the new subsystem.  If the subsystem registration is deemed invalid by the time the
@@ -48,12 +62,13 @@ public interface ExtensionContext {
      * @param name the name of the subsystem
      * @param majorVersion the major version of the subsystem's management interface
      * @param minorVersion the minor version of the subsystem's management interface
+     * @param minorVersion the micro version of the subsystem's management interface
      *
      * @return the {@link SubsystemRegistration}
      *
      * @throws IllegalStateException if the subsystem name has already been registered
      */
-    SubsystemRegistration registerSubsystem(String name, int majorVersion, int minorVersion);
+    SubsystemRegistration registerSubsystem(String name, int majorVersion, int minorVersion, int microVersion);
 
     /**
      * Gets the type of the current process.

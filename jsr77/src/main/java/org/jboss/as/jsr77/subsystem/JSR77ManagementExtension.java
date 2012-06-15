@@ -65,6 +65,10 @@ public class JSR77ManagementExtension  implements Extension {
     private static final J2EEManagementSubsystemParser parser = new J2EEManagementSubsystemParser();
     private static final String RESOURCE_NAME = JSR77ManagementExtension.class.getPackage().getName() + ".LocalDescriptions";
 
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, JSR77ManagementExtension.class.getClassLoader(), true, true);
     }
@@ -74,7 +78,8 @@ public class JSR77ManagementExtension  implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
+                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
         // Register the root subsystem resource.
         final ManagementResourceRegistration rootResource = subsystem.registerSubsystemModel(JSR77ManagementRootResource.INSTANCE);

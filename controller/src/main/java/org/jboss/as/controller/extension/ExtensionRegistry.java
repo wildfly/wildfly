@@ -436,12 +436,18 @@ public class ExtensionRegistry {
 
         @Override
         public SubsystemRegistration registerSubsystem(String name, int majorVersion, int minorVersion) throws IllegalArgumentException, IllegalStateException {
+            return registerSubsystem(name, majorVersion, minorVersion, 0);
+        }
+
+        @Override
+        public SubsystemRegistration registerSubsystem(String name, int majorVersion, int minorVersion, int microVersion) {
             assert name != null : "name is null";
             this.subsystemName = name;
             checkNewSubystem(extension.extensionModuleName, name);
             SubsystemInformationImpl info = extension.getSubsystemInfo(name);
             info.setMajorVersion(majorVersion);
             info.setMinorVersion(minorVersion);
+            info.setMicroVersion(microVersion);
             subsystemsInfo.put(name, info);
             return new SubsystemRegistrationImpl(name);
         }
@@ -474,6 +480,7 @@ public class ExtensionRegistry {
 
         private Integer majorVersion;
         private Integer minorVersion;
+        private Integer microVersion;
         private final List<String> parsingNamespaces = new ArrayList<String>();
 
         @Override
@@ -501,6 +508,15 @@ public class ExtensionRegistry {
 
         private void setMinorVersion(Integer minorVersion) {
             this.minorVersion = minorVersion;
+        }
+
+        @Override
+        public Integer getManagementInterfaceMicroVersion() {
+            return microVersion;
+        }
+
+        private void setMicroVersion(Integer microVersion) {
+            this.microVersion = microVersion;
         }
     }
 

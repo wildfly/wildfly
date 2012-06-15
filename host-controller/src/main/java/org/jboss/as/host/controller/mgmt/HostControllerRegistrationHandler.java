@@ -34,6 +34,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
@@ -57,7 +58,6 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
-import org.jboss.as.protocol.mgmt.ManagementPongRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
@@ -371,7 +371,8 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             // Initialize the transformers
             final int major = hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt();
             final int minor = hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt();
-            final TransformationTarget target = TransformationTargetImpl.create(major, minor, subsystems);
+            final int micro = hostInfo.hasDefined(MANAGEMENT_MICRO_VERSION) ? hostInfo.get(MANAGEMENT_MICRO_VERSION).asInt() : 0;
+            final TransformationTarget target = TransformationTargetImpl.create(major, minor, micro, subsystems);
             final Transformers transformers = Transformers.Factory.create(target);
             this.transformers = transformers;
             return transformers;
