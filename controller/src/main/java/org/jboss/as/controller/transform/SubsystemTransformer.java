@@ -17,4 +17,6 @@ public interface SubsystemTransformer extends ResourceTransformer, OperationTran
     int getMajorManagementVersion();
 
     int getMinorManagementVersion();
+
+    int getMicroManagementVersion();
 }

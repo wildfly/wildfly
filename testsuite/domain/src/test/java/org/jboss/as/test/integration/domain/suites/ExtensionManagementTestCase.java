@@ -123,9 +123,11 @@ public class ExtensionManagementTestCase {
             ModelNode value = subsystem.getValue();
             Assert.assertEquals(subsystemName + " has major version", ModelType.INT, value.get("management-major-version").getType());
             Assert.assertEquals(subsystemName + " has minor version", ModelType.INT, value.get("management-minor-version").getType());
+            Assert.assertEquals(subsystemName + " has micro version", ModelType.INT, value.get("management-micro-version").getType());
             Assert.assertEquals(subsystemName + " has namespaces", ModelType.LIST, value.get("xml-namespaces").getType());
             Assert.assertEquals(subsystemName + " has correct major version", version, value.get("management-major-version").asInt());
             Assert.assertEquals(subsystemName + " has correct minor version", version, value.get("management-minor-version").asInt());
+            Assert.assertEquals(subsystemName + " has correct micro version", version, value.get("management-micro-version").asInt());
             Assert.assertTrue(subsystemName + " has more than zero namespaces", value.get("xml-namespaces").asInt() > 0);
         }
     }

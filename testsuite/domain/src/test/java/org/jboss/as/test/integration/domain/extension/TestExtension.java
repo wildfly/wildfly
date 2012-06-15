@@ -58,11 +58,11 @@ public class TestExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration one = context.registerSubsystem("1", 1, 1);
+        SubsystemRegistration one = context.registerSubsystem("1", 1, 1, 1);
         one.registerXMLElementWriter(parserOne);
         one.registerSubsystemModel(new Subsystem("1"));
 
-        SubsystemRegistration two = context.registerSubsystem("2", 2, 2);
+        SubsystemRegistration two = context.registerSubsystem("2", 2, 2, 2);
         two.registerXMLElementWriter(parserTwo);
         two.registerSubsystemModel(new Subsystem("2"));
     }
