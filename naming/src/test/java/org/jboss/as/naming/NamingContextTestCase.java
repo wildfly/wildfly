@@ -35,9 +35,13 @@ import javax.naming.Name;
 import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 import javax.naming.Reference;
+import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
 import javax.naming.spi.ObjectFactory;
+
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -167,6 +171,15 @@ public class NamingContextTestCase {
     }
 
     @Test
+    public void testBindReferenceable() throws Exception {
+        final Name name = new CompositeName("test");
+        final TestObjectReferenceable referenceable = new TestObjectReferenceable("addr");
+        namingContext.bind(name, referenceable);
+        final Object result = namingContext.lookup(name);
+        assertEquals(referenceable.addr, result);
+    }
+    
+    @Test
     public void testUnbind() throws Exception {
         final Name name = new CompositeName("test");
         final Object value = new Object();
@@ -193,6 +206,17 @@ public class NamingContextTestCase {
         assertEquals(newValue, namingStore.lookup(name));
     }
 
+    @Test
+    public void testRebindReferenceable() throws Exception {
+        final Name name = new CompositeName("test");
+        final TestObjectReferenceable referenceable = new TestObjectReferenceable("addr");
+        namingContext.bind(name, referenceable);
+        final TestObjectReferenceable newReferenceable = new TestObjectReferenceable("newAddr");
+        namingContext.rebind(name, newReferenceable);
+        final Object result = namingContext.lookup(name);
+        assertEquals(newReferenceable.addr, result);
+    }
+    
     @Test
     public void testListNameNotFound() throws Exception {
         try {
@@ -354,4 +378,23 @@ public class NamingContextTestCase {
             return new NamingContext(new CompositeName((String) reference.get(0).getContent()), null);
         }
     }
+
+    public static class TestObjectReferenceable implements Referenceable, Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private String addr;
+
+        public TestObjectReferenceable(String addr) {
+            this.addr = addr;
+        }
+
+        @Override
+        public Reference getReference() throws NamingException {
+            return new Reference(String.class.getName(), new StringRefAddr("blah", addr), TestObjectFactory.class.getName(),
+                    null);
+        }
+
+    }
+
 }
