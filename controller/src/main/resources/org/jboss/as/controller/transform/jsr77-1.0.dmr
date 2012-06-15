@@ -1,0 +1,9 @@
+{
+    "model-description" => {
+        "description" => "The configuration of the JSR-77 subsystem.",
+        "attributes" => {},
+        "operations" => undefined,
+        "children" => {}
+    },
+    "address" => [("subsystem" => "jsr77")]
+}

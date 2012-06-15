@@ -341,6 +341,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         CommonAttributes.INDEXING.validateAndSet(fromModel, toModel);
         CommonAttributes.JNDI_NAME.validateAndSet(fromModel, toModel);
         CommonAttributes.CACHE_MODULE.validateAndSet(fromModel, toModel);
+        CommonAttributes.INDEXING_PROPERTIES.validateAndSet(fromModel, toModel);
     }
 
     /**
@@ -359,10 +360,18 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
         // set the cache mode (may be modified when setting up clustering attributes)
         builder.clustering().cacheMode(this.mode);
-
+        final ModelNode indexingPropertiesModel = CommonAttributes.INDEXING_PROPERTIES.resolveModelAttribute(context, cache);
+        Properties indexingProperties = new Properties();
+        if (indexing.isEnabled() && indexingPropertiesModel.isDefined()) {
+            for (Property p : indexingPropertiesModel.asPropertyList()) {
+                String value = p.getValue().asString();
+                indexingProperties.put(p.getName(), value);
+            }
+        }
         builder.indexing()
                 .enabled(indexing.isEnabled())
                 .indexLocalOnly(indexing.isLocalOnly())
+                .withProperties(indexingProperties)
         ;
 
         // locking is a child resource

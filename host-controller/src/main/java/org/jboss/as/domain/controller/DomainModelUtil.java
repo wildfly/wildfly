@@ -331,7 +331,7 @@ public class DomainModelUtil {
             root.registerOperationHandler(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME, armdmh, armdmh, false, OperationEntry.EntryType.PRIVATE);
         } else {
             final SubsystemDescriptionDump dumper = new SubsystemDescriptionDump(extensionRegistry);
-            root.registerOperationHandler(SubsystemDescriptionDump.OPERATION_NAME, dumper, SubsystemDescriptionDump.DESCRIPTION, false, OperationEntry.EntryType.PRIVATE, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+            root.registerOperationHandler(SubsystemDescriptionDump.DEFINITION, dumper, false);
         }
     }
 

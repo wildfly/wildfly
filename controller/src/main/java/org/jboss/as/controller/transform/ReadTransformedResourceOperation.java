@@ -55,7 +55,7 @@ public class ReadTransformedResourceOperation implements OperationStepHandler {
         final String subsystem = operation.get(ModelDescriptionConstants.SUBSYSTEM).asString();
         final int major = operation.get(ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION).asInt();
         final int minor = operation.get(ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION).asInt();
-        final ImmutableManagementResourceRegistration rr = context.getResourceRegistration();
+         final ImmutableManagementResourceRegistration rr = context.getResourceRegistration();
         // Add a step to transform the result of a READ_RESOURCE.
         // Do this first, Stage.IMMEDIATE
         final ModelNode readResourceResult = new ModelNode();
