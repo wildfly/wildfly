@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_HOST_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN;
@@ -136,7 +137,13 @@ public class DomainRootDescription {
         root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, TYPE).set(ModelType.INT);
         root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, REQUIRED).set(true);
         root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, NILLABLE).set(false);
-        root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, MIN).set(1);
+        root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, MIN).set(0);
+
+        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, DESCRIPTION).set(bundle.getString("domain.management-micro-version"));
+        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, TYPE).set(ModelType.INT);
+        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, REQUIRED).set(true);
+        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, NILLABLE).set(false);
+        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, MIN).set(0);
 
         root.get(ATTRIBUTES, LOCAL_HOST_NAME, DESCRIPTION).set(bundle.getString("domain.local-host-name"));
         root.get(ATTRIBUTES, LOCAL_HOST_NAME, TYPE).set(ModelType.STRING);

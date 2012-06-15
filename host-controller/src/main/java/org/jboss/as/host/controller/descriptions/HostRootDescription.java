@@ -34,6 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX;
@@ -160,7 +161,13 @@ public class HostRootDescription {
         root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, TYPE).set(ModelType.INT);
         root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, REQUIRED).set(true);
         root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, NILLABLE).set(false);
-        root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, MIN).set(1);
+        root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, MIN).set(0);
+
+        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, DESCRIPTION).set(bundle.getString("host.management-micro-version"));
+        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, TYPE).set(ModelType.INT);
+        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, REQUIRED).set(true);
+        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, NILLABLE).set(false);
+        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, MIN).set(0);
 
         root.get(ATTRIBUTES, PROCESS_STATE, DESCRIPTION).set(bundle.getString("host.state"));
         root.get(ATTRIBUTES, PROCESS_STATE, TYPE).set(ModelType.STRING);

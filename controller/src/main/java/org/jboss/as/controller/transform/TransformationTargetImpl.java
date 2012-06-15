@@ -6,7 +6,6 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.SubsystemInformation;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,13 +17,16 @@ import java.util.Map;
 public class TransformationTargetImpl implements TransformationTarget {
     private final int major;
     private final int minor;
+    private final int micro;
     private final ExtensionRegistry extensionRegistry;
     private final TransformerRegistry transformerRegistry;
     private final Map<String, String> subsystemVersions = Collections.synchronizedMap(new HashMap<String, String>());
 
-    private TransformationTargetImpl(final int majorManagementVersion, final int minorManagementVersion, final ModelNode subsystemVersions) {
+    private TransformationTargetImpl(final int majorManagementVersion, final int minorManagementVersion,
+                                     final int microManagementVersion, final ModelNode subsystemVersions) {
         this.major = majorManagementVersion;
         this.minor = minorManagementVersion;
+        this.micro = microManagementVersion;
         this.transformerRegistry = TransformerRegistry.getInstance();
         this.extensionRegistry = transformerRegistry.getExtensionRegistry();
         for (Property p : subsystemVersions.asPropertyList()) {
@@ -32,13 +34,14 @@ public class TransformationTargetImpl implements TransformationTarget {
         }
     }
 
-    public static TransformationTargetImpl create(final int majorManagementVersion, final int minorManagementVersion, final ModelNode subsystemVersions) {
-        return new TransformationTargetImpl(majorManagementVersion, minorManagementVersion, subsystemVersions);
+    public static TransformationTargetImpl create(final int majorManagementVersion, final int minorManagementVersion,
+                                                  int microManagementVersion, final ModelNode subsystemVersions) {
+        return new TransformationTargetImpl(majorManagementVersion, minorManagementVersion, microManagementVersion, subsystemVersions);
     }
 
     @Override
     public String getManagementVersion() {
-        return major + "." + minor;
+        return major + "." + minor + "." + micro;
     }
 
     @Override
@@ -49,6 +52,11 @@ public class TransformationTargetImpl implements TransformationTarget {
     @Override
     public int getMinorManagementVersion() {
         return minor;
+    }
+
+    @Override
+    public int getMicroManagementVersion() {
+        return micro;
     }
 
     @Override
@@ -76,11 +84,12 @@ public class TransformationTargetImpl implements TransformationTarget {
         String[] version = getSubsystemVersion(subsystemName).split("\\.");
         int major = Integer.parseInt(version[0]);
         int minor = Integer.parseInt(version[1]);
+        int micro = version.length == 3 ? Integer.parseInt(version[2]) : 0;
 
         if (info.getManagementInterfaceMajorVersion() == major && info.getManagementInterfaceMinorVersion() == minor) {
             return null; //no need to transform
         }
-        SubsystemTransformer t = transformerRegistry.getSubsystemTransformer(subsystemName, major, minor);
+        SubsystemTransformer t = transformerRegistry.getSubsystemTransformer(subsystemName, major, minor, micro);
         if (t == null) {
             ControllerLogger.ROOT_LOGGER.transformerNotFound(subsystemName, major, minor);
             //return defaultSubsystemTransformer?

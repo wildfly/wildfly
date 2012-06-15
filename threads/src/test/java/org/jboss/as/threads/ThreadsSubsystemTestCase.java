@@ -1217,6 +1217,12 @@ public class ThreadsSubsystemTestCase {
 
         @Override
         public SubsystemRegistration registerSubsystem(final String name, final int majorVersion, final int minorVersion) {
+            return registerSubsystem(name, majorVersion, minorVersion, 0);
+        }
+
+        @Override
+        public SubsystemRegistration registerSubsystem(final String name, final int majorVersion,
+                                                       final int minorVersion, final int microVersion) {
             return new SubsystemRegistration() {
                 @Override
                 public ManagementResourceRegistration registerSubsystemModel(final DescriptionProvider descriptionProvider) {

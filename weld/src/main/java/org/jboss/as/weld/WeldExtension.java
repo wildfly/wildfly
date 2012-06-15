@@ -69,11 +69,16 @@ public class WeldExtension implements Extension {
 
     private static final WeldSubsystemParser parser = new WeldSubsystemParser();
 
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+
     /** {@inheritDoc} */
     @Override
     public void initialize(final ExtensionContext context) {
         WeldLogger.ROOT_LOGGER.debug("Activating Weld Extension");
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
+                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SUBSYSTEM_DESCRIPTION);
         registration.registerOperationHandler(ADD, WeldSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESCRIPTION, false);
         registration.registerOperationHandler(DESCRIBE, WeldSubsystemDescribeHandler.INSTANCE, WeldSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);

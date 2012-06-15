@@ -49,6 +49,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     public static final String SUBSYSTEM_NAME = "modcluster";
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME);
     static final PathElement CONFIGURATION_PATH = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
@@ -75,7 +76,8 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     public void initialize(ExtensionContext context) {
         ROOT_LOGGER.debugf("Activating Mod_cluster Extension");
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
+                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new ModClusterDefinition(context.isRuntimeOnlyRegistrationValid()));
 
         final ManagementResourceRegistration configuration = registration.registerSubModel(new ModClusterConfigResourceDefinition());

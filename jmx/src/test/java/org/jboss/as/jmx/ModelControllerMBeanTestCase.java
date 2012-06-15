@@ -1002,7 +1002,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
             complexValueType.get("bigdecimal-value", TYPE).set(ModelType.BIG_DECIMAL);
 
 
-            final SubsystemRegistration subsystem = context.registerSubsystem("test", 1, 0);
+            final SubsystemRegistration subsystem = context.registerSubsystem("test", 1, 0, 0);
             final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new DescriptionProvider() {
 
                 @Override
@@ -1226,7 +1226,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         @Override
         public void initialize(ExtensionContext context) {
 
-            final SubsystemRegistration subsystem = context.registerSubsystem("test", 1, 0);
+            final SubsystemRegistration subsystem = context.registerSubsystem("test", 1, 0, 0);
             final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new DescriptionProvider() {
 
                 @Override

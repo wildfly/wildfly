@@ -27,4 +27,11 @@ public interface SubsystemInformation {
      * @return the minor interface version, or {@code null} if the subsystem does not have a versioned interface
      */
     Integer getManagementInterfaceMinorVersion();
+
+    /**
+     * Gets the micro version of the subsystem's management interface, if available.
+     *
+     * @return the micro interface version, or {@code null} if the subsystem does not have a versioned interface
+     */
+    Integer getManagementInterfaceMicroVersion();
 }

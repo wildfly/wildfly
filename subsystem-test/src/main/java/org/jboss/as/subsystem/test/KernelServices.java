@@ -84,7 +84,20 @@ public class KernelServices {
         return AbstractSubsystemTest.checkResultAndGetContents(result);
     }
 
+    /**
+     *
+     * @param major  the major management version
+     * @param minor  the major management version
+     * @return the transformed model
+     *
+     * @deprecated use {@link #readTransformedModel(int, int, int)}
+     */
+    @Deprecated
     public ModelNode readTransformedModel(int major,int minor) {
+        return readTransformedModel(major, minor, 0);
+    }
+
+    public ModelNode readTransformedModel(int major,int minor, int micro) {
         ModelNode op = new ModelNode();
         op.get(OP).set(READ_TRANSFORMED_RESOURCE_OPERATION);
         op.get(OP_ADDR).set(PathAddress.EMPTY_ADDRESS.toModelNode());
@@ -92,6 +105,7 @@ public class KernelServices {
         op.get(SUBSYSTEM).set(mainSubsystemName);
         op.get(ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION).set(major);
         op.get(ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION).set(minor);
+        op.get(ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION).set(micro);
         ModelNode result = executeOperation(op);
         return AbstractSubsystemTest.checkResultAndGetContents(result);
     }
