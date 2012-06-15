@@ -61,7 +61,7 @@ public class TestExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         System.out.println("Initializing TestExtension");
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
+        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0, 0);
 
         ManagementResourceRegistration root = registration.registerSubsystemModel(new DescriptionProvider() {
 

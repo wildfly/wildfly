@@ -53,10 +53,12 @@ public class ManagementVersionTestCase extends ContainerResourceMgmtTestBase {
         ModelNode result = executeOperation(op);
         ModelNode major = result.get("management-major-version");
         ModelNode minor = result.get("management-minor-version");
+        ModelNode micro = result.get("management-micro-version");
         Assert.assertEquals(ModelType.INT, major.getType());
         Assert.assertEquals(ModelType.INT, minor.getType());
         Assert.assertEquals(Version.MANAGEMENT_MAJOR_VERSION, major.asInt());
         Assert.assertEquals(Version.MANAGEMENT_MINOR_VERSION, minor.asInt());
+        Assert.assertEquals(Version.MANAGEMENT_MICRO_VERSION, micro.asInt());
     }
 
     @Test
@@ -76,9 +78,11 @@ public class ManagementVersionTestCase extends ContainerResourceMgmtTestBase {
                 ModelNode value = subsystem.getValue();
                 Assert.assertEquals(subsystemName + " has major version", ModelType.INT, value.get("management-major-version").getType());
                 Assert.assertEquals(subsystemName + " has minor version", ModelType.INT, value.get("management-minor-version").getType());
+                Assert.assertEquals(subsystemName + " has micro version", ModelType.INT, value.get("management-micro-version").getType());
                 Assert.assertEquals(subsystemName + " has namespaces", ModelType.LIST, value.get("xml-namespaces").getType());
                 Assert.assertTrue(subsystemName + " has positive major version", value.get("management-major-version").asInt() > 0);
                 Assert.assertTrue(subsystemName + " has positive minor version", value.get("management-minor-version").asInt() >= 0);
+                Assert.assertTrue(subsystemName + " has positive micro version", value.get("management-micro-version").asInt() >= 0);
                 Assert.assertTrue(subsystemName + " has more than zero namespaces", value.get("xml-namespaces").asInt() > 0);
             }
         }

@@ -25,6 +25,7 @@ package org.jboss.as.controller.extension;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.Locale;
@@ -43,6 +44,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -93,6 +95,11 @@ public class ExtensionSubsystemResourceDefinition extends SimpleResourceDefiniti
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
 
     public static final SimpleAttributeDefinition MINOR_VERSION = new SimpleAttributeDefinitionBuilder(MANAGEMENT_MINOR_VERSION, ModelType.INT, true)
+            .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, false))
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
+
+    public static final SimpleAttributeDefinition MICRO_VERSION = new SimpleAttributeDefinitionBuilder(MANAGEMENT_MICRO_VERSION, ModelType.INT, true)
+            .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, false))
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
 
     ExtensionSubsystemResourceDefinition() {
@@ -103,6 +110,7 @@ public class ExtensionSubsystemResourceDefinition extends SimpleResourceDefiniti
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadOnlyAttribute(MAJOR_VERSION, null);
         resourceRegistration.registerReadOnlyAttribute(MINOR_VERSION, null);
+        resourceRegistration.registerReadOnlyAttribute(MICRO_VERSION, null);
         resourceRegistration.registerReadOnlyAttribute(XML_NAMESPACES, null);
     }
 }

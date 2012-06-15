@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
@@ -134,7 +135,13 @@ public class ServerRootDescription {
         root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, TYPE).set(ModelType.INT);
         root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, REQUIRED).set(true);
         root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, NILLABLE).set(false);
-        root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, MIN).set(1);
+        root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, MIN).set(0);
+
+        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, DESCRIPTION).set(bundle.getString("server.management-micro-version"));
+        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, TYPE).set(ModelType.INT);
+        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, REQUIRED).set(true);
+        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, NILLABLE).set(false);
+        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, MIN).set(0);
 
         root.get(ATTRIBUTES, PROFILE_NAME, DESCRIPTION).set(bundle.getString("server.profile"));
         root.get(ATTRIBUTES, PROFILE_NAME, TYPE).set(ModelType.STRING);
