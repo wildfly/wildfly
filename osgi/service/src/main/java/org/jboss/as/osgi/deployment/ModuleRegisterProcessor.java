@@ -45,12 +45,15 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.framework.AbstractBundleRevisionAdaptor;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.metadata.OSGiMetaData;
+import org.jboss.osgi.resolver.XBundleRevision;
+import org.jboss.osgi.resolver.XBundleRevisionBuilderFactory;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResource;
 import org.jboss.osgi.resolver.XResourceBuilder;
-import org.jboss.osgi.resolver.XResourceBuilderFactory;
+import org.osgi.framework.BundleContext;
 
 /**
  * Processes deployments that have a Module attached.
@@ -89,6 +92,7 @@ public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
         private final Module module;
         private final OSGiMetaData metadata;
         private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
+        private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
         private XResource resource;
 
 
@@ -103,6 +107,7 @@ public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
             ServiceBuilder<ModuleRegisterService> builder = serviceTarget.addService(serviceName, service);
             builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, service.injectedEnvironment);
+            builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedSystemContext);
             builder.addDependency(ServiceModuleLoader.moduleServiceName(module.getIdentifier()));
             builder.install();
         }
@@ -116,25 +121,33 @@ public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
             }
         }
 
+        @Override
         public synchronized void start(StartContext context) throws StartException {
             ServiceController<?> controller = context.getController();
             LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
             LOGGER.infoRegisterModule(module);
             try {
-                XResourceBuilder builder = XResourceBuilderFactory.create();
+                final BundleContext syscontext = injectedSystemContext.getValue();
+                XBundleRevisionBuilderFactory factory = new XBundleRevisionBuilderFactory() {
+                    @Override
+                    public XBundleRevision createResource() {
+                        return new AbstractBundleRevisionAdaptor(syscontext, module);
+                    }
+                };
+                XResourceBuilder builder = XBundleRevisionBuilderFactory.create(factory);
                 if (metadata != null) {
                     builder.loadFrom(metadata);
                 } else {
                     builder.loadFrom(module);
                 }
                 resource = builder.getResource();
-                resource.addAttachment(Module.class, module);
                 injectedEnvironment.getValue().installResources(resource);
             } catch (Throwable th) {
                 throw MESSAGES.startFailedToRegisterModule(th, module);
             }
         }
 
+        @Override
         public synchronized void stop(StopContext context) {
             ServiceController<?> controller = context.getController();
             LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
