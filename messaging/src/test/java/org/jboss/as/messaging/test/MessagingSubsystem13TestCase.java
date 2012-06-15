@@ -73,7 +73,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
      */
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_1_3.xml");
+        return readResource("subsystem_incompatible_1_3.xml");
     }
 
     @Override
@@ -181,6 +181,5 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         TransformedOperation transformedOperation = mainServices.transformOperation(version_1_1_0, operation);
         final ModelNode result = mainServices.executeOperation(version_1_1_0, transformedOperation);
         Assert.assertEquals("should reject the expression", FAILED, result.get(OUTCOME).asString());
-
     }
 }

@@ -234,6 +234,7 @@ public interface ConnectionFactoryAttributes {
                 create(CLIENT_FAILURE_CHECK_PERIOD, "clientFailureCheckPeriod", true),
                 create(CONNECTION_TTL, "connectionTTL", true),
                 create(CommonAttributes.CALL_TIMEOUT, "callTimeout", true),
+                create(CommonAttributes.CALL_FAILOVER_TIMEOUT, "callFailoverTimeout", true),
                 create(CONSUMER_WINDOW_SIZE, "consumerWindowSize", true),
                 create(CommonAttributes.CONSUMER_MAX_RATE, "consumerMaxRate", true),
                 create(CONFIRMATION_WINDOW_SIZE, "confirmationWindowSize", true),

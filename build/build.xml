@@ -718,6 +718,8 @@
 
         <module-def name="org.hornetq">
             <maven-resource group="org.hornetq" artifact="hornetq-core"/>
+            <maven-resource group="org.hornetq" artifact="hornetq-commons"/>
+            <maven-resource group="org.hornetq" artifact="hornetq-journal"/>
             <maven-resource group="org.hornetq" artifact="hornetq-jms"/>
         </module-def>
 

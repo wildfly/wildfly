@@ -34,6 +34,8 @@ import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PERCENTAGE;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
+import static org.jboss.as.messaging.AttributeMarshallers.NOOP_MARSHALLER;
+import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
@@ -85,6 +87,12 @@ public interface CommonAttributes {
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CALL_TIMEOUT)).setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true).build();
 
+    SimpleAttributeDefinition CALL_FAILOVER_TIMEOUT = create("call-failover-timeout",LONG)
+            .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT))
+            .setAllowNull(true)
+            .setMeasurementUnit(MILLISECONDS)
+            .build();
+
     SimpleAttributeDefinition CHECK_PERIOD = create("check-period", LONG)
             .setDefaultValue(new ModelNode()
             .set(DEFAULT_CLIENT_FAILURE_CHECK_PERIOD))
@@ -97,9 +105,17 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .build();
 
-    SimpleAttributeDefinition CLUSTERED = new SimpleAttributeDefinition("clustered",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTERED), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition CHECK_FOR_LIVE_SERVER = create("check-for-live-server", BOOLEAN)
+            .setDefaultValue(new ModelNode(ConfigurationImpl.DEFAULT_CHECK_FOR_LIVE_SERVER))
+            .setAllowNull(true)
+            .build();
+
+    SimpleAttributeDefinition CLUSTERED = create("clustered", BOOLEAN)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(false))
+            .setDeprecated(VERSION_1_2_0)
+            .setAttributeMarshaller(NOOP_MARSHALLER)
+            .build();
 
     SimpleAttributeDefinition CLUSTER_PASSWORD = new SimpleAttributeDefinition("cluster-password", "cluster-password",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD), ModelType.STRING, true, true, null,
@@ -188,15 +204,15 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition GROUP_ADDRESS = create("group-address", ModelType.STRING)
             .setDefaultValue(null)
-            .setAllowNull(false)
-            .setAlternatives("socket-binding")
+            .setAllowNull(true)
+            .setAlternatives("socket-binding", "jgroups-stack", "jgroups-channel")
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
     SimpleAttributeDefinition GROUP_PORT = create("group-port", INT)
             .setDefaultValue(null)
-            .setAllowNull(false)
-            .setAlternatives("socket-binding")
+            .setAllowNull(true)
+            .setAlternatives("socket-binding", "jgroups-stack", "jgroups-channel")
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
@@ -255,23 +271,42 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_TYPE.toString()), ModelType.STRING, true, false,
             MeasurementUnit.NONE, JournalTypeValidator.INSTANCE, null, null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    SimpleAttributeDefinition LIVE_CONNECTOR_REF = create("live-connector-ref", ModelType.STRING)
+    AttributeDefinition LIVE_CONNECTOR_REF = create("live-connector-ref", ModelType.STRING)
             .setAllowNull(true)
-            .setAttributeMarshaller(AttributeMarshallers.LIVE_CONNECTOR_REF_MARSHALLER)
+            .setDeprecated(VERSION_1_2_0)
             .setRestartAllServices()
+            .setAttributeMarshaller(NOOP_MARSHALLER)
             .build();
 
     SimpleAttributeDefinition LOCAL_BIND_ADDRESS = create("local-bind-address", ModelType.STRING)
             .setDefaultValue(null)
             .setAllowNull(true)
-            .setAlternatives("socket-binding")
+            .setAlternatives("socket-binding", "jgroups-stack", "jgroups-channel")
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
     SimpleAttributeDefinition LOCAL_BIND_PORT = create("local-bind-port", INT)
             .setDefaultValue(new ModelNode().set(-1))
             .setAllowNull(true)
-            .setAlternatives("socket-binding")
+            .setAlternatives("socket-binding", "jgroups-stack", "jgroups-channel")
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
+
+    SimpleAttributeDefinition JGROUPS_STACK = create("jgroups-stack", ModelType.STRING)
+            .setDefaultValue(null)
+            .setAllowNull(true)
+            .setAlternatives("socket-binding",
+                    "group-address", "group-port",
+                    "local-bind-address", "local-bind-port")
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
+
+    SimpleAttributeDefinition JGROUPS_CHANNEL = create("jgroups-channel", ModelType.STRING)
+            .setDefaultValue(null)
+            .setAllowNull(true)
+            .setAlternatives("socket-binding",
+                    "group-address", "group-port",
+                    "local-bind-address", "local-bind-port")
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
@@ -344,6 +379,11 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
+    AttributeDefinition BACKUP_GROUP_NAME = create("backup-group-name", ModelType.STRING)
+            .setAllowNull(true)
+            .setRestartAllServices()
+            .build();
+
     SimpleAttributeDefinition PAGE_MAX_CONCURRENT_IO = create("page-max-concurrent-io", INT)
             .setDefaultValue(new ModelNode()
             .set(ConfigurationImpl.DEFAULT_MAX_CONCURRENT_PAGE_IO))
@@ -404,6 +444,10 @@ public interface CommonAttributes {
             })
             .build();
 
+    SimpleAttributeDefinition REPLICATION_CLUSTERNAME = create("replication-clustername", ModelType.STRING)
+            .setAllowNull(true)
+            .setRestartAllServices()
+            .build();
 
     AttributeDefinition RETRY_INTERVAL = create("retry-interval", LONG)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL))
@@ -463,7 +507,9 @@ public interface CommonAttributes {
             .setAlternatives(GROUP_ADDRESS.getName(),
                             GROUP_PORT.getName(),
                             LOCAL_BIND_ADDRESS.getName(),
-                            LOCAL_BIND_PORT.getName())
+                            LOCAL_BIND_PORT.getName(),
+                            JGROUPS_STACK.getName(),
+                            JGROUPS_CHANNEL.getName())
             .setRestartAllServices()
             .build();
 
@@ -550,7 +596,6 @@ public interface CommonAttributes {
     String INBOUND_CONFIG = "inbound-config";
     String LARGE_MESSAGES_DIRECTORY = "large-messages-directory";
     String LAST_VALUE_QUEUE = "last-value=queue";
-    String LIVE_CONNECTOR_REF_STRING = "live-connector-ref";
     String LOCAL = "local";
     String LOCAL_TX = "LocalTransaction";
     String MANAGE_XML_NAME = "manage";
@@ -607,8 +652,9 @@ public interface CommonAttributes {
             JOURNAL_BUFFER_SIZE, JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
             JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,
-    };
+            CHECK_FOR_LIVE_SERVER, BACKUP_GROUP_NAME, REPLICATION_CLUSTERNAME };
 
     AttributeDefinition[] SIMPLE_ROOT_RESOURCE_WRITE_ATTRIBUTES = { FAILOVER_ON_SHUTDOWN, MESSAGE_COUNTER_ENABLED,
             MESSAGE_COUNTER_MAX_DAY_HISTORY, MESSAGE_COUNTER_SAMPLE_PERIOD };
+
 }

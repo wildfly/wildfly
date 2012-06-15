@@ -43,6 +43,8 @@ import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular;
  */
 public class ConnectionFactoryDefinition extends SimpleResourceDefinition {
 
+    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.CONNECTION_FACTORY);
+
     static final AttributeDefinition[] concat(AttributeDefinition[] common, AttributeDefinition... specific) {
         int size = common.length + specific.length;
         AttributeDefinition[] result = new AttributeDefinition[size];
@@ -58,7 +60,7 @@ public class ConnectionFactoryDefinition extends SimpleResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     public ConnectionFactoryDefinition(final boolean registerRuntimeOnly) {
-        super(PathElement.pathElement(CommonAttributes.CONNECTION_FACTORY),
+        super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTION_FACTORY),
                 ConnectionFactoryAdd.INSTANCE,
                 ConnectionFactoryRemove.INSTANCE);

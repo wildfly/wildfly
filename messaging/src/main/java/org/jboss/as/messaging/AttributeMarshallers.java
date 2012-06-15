@@ -62,6 +62,16 @@ public final class AttributeMarshallers {
         }
     }
 
+    public static final AttributeMarshaller NOOP_MARSHALLER = new AttributeMarshaller() {
+        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+            // do nothing
+        };
+
+        public void marshallAsAttribute(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+            // do nothing
+        };
+    };
+
     public static final AttributeMarshaller CONNECTORS_MARSHALLER = new AttributeMarshaller() {
         public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
             if (resourceModel.hasDefined(Element.CONNECTOR.getLocalName())) {
@@ -82,18 +92,6 @@ public final class AttributeMarshallers {
                 String selector = resourceModel.get(attribute.getName()).asString();
                 writer.writeEmptyElement(Element.SELECTOR.getLocalName());
                 writer.writeAttribute(Attribute.STRING.getLocalName(), selector);
-            }
-        }
-    };
-
-    public static final AttributeMarshaller LIVE_CONNECTOR_REF_MARSHALLER = new AttributeMarshaller() {
-        @Override
-        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault,
-                XMLStreamWriter writer) throws XMLStreamException {
-            if (isMarshallable(attribute, resourceModel)) {
-                writer.writeStartElement(attribute.getXmlName());
-                writer.writeAttribute(Attribute.CONNECTOR_NAME.getLocalName(), resourceModel.get(attribute.getName()).asString());
-                writer.writeEndElement();
             }
         }
     };

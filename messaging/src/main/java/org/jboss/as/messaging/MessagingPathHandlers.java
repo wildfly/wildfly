@@ -55,7 +55,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author Emanuel Muckenhuber
  */
-class MessagingPathHandlers {
+public class MessagingPathHandlers {
 
     static final String DEFAULT_RELATIVE_TO = ServerEnvironment.SERVER_DATA_DIR;
 

@@ -115,7 +115,9 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
                 control.setClientFailureCheckPeriod(value.asLong());
             } else if (attributeName.equals(CommonAttributes.CALL_TIMEOUT.getName())) {
                 control.setCallTimeout(value.asLong());
-            } else if (attributeName.equals(Common.DUPS_OK_BATCH_SIZE.getName())) {
+            } else if (attributeName.equals(CommonAttributes.CALL_FAILOVER_TIMEOUT.getName())) {
+                control.setCallFailoverTimeout(value.asLong());
+            }else if (attributeName.equals(Common.DUPS_OK_BATCH_SIZE.getName())) {
                 control.setDupsOKBatchSize(value.asInt());
             } else if (attributeName.equals(CommonAttributes.CONSUMER_MAX_RATE.getName())) {
                 control.setConsumerMaxRate(value.asInt());

@@ -53,7 +53,13 @@
           </xs:documentation>
       </xs:annotation>
       <xs:all>
-          <xs:element maxOccurs="1" minOccurs="0" name="clustered" type="xs:boolean" />
+          <xs:element maxOccurs="1" minOccurs="0" name="clustered" type="xs:boolean">
+              <xs:annotation>
+                  <xs:documentation>
+                      Deprecated. A HornetQ server is clustered if it has at least one cluster-connection.
+                  </xs:documentation>
+              </xs:annotation>
+          </xs:element>
           <!-- no file system deployment in AS
           <xs:element maxOccurs="1" minOccurs="0" type="file-deployment-enabled"/>
            -->
@@ -104,7 +110,13 @@
           <xs:element maxOccurs="1" minOccurs="0" name="failover-on-shutdown" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="shared-store" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="persist-delivery-count-before-delivery" type="xs:boolean" />
-          <xs:element maxOccurs="1" minOccurs="0" name="live-connector-ref" type="live-connectorType" />
+          <xs:element maxOccurs="1" minOccurs="0" name="live-connector-ref" type="live-connectorType">
+              <xs:annotation>
+                  <xs:documentation>
+                      Deprecated.
+                  </xs:documentation>
+              </xs:annotation>
+          </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="page-max-concurrent-io" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="create-bindings-dir" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="create-journal-dir" type="xs:boolean" />
@@ -124,6 +136,9 @@
           <xs:element maxOccurs="1" minOccurs="0" name="server-dump-interval" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="memory-warning-threshold" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="memory-measure-interval" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="check-for-live-server" type="xs:boolean" />
+          <xs:element maxOccurs="1" minOccurs="0" name="backup-group-name" type="xs:string" />
+          <xs:element maxOccurs="1" minOccurs="0" name="replication-clustername" type="xs:string" />
 
           <xs:element maxOccurs="1" minOccurs="0" name="paging-directory" type="directoryType" />
           <xs:element maxOccurs="1" minOccurs="0" name="bindings-directory" type="directoryType" />
@@ -234,6 +249,16 @@
        <xs:sequence>
            <xs:choice>
                <xs:sequence>
+                  <xs:element maxOccurs="1" minOccurs="1" name="jgroups-stack" type="xs:string">
+                      <xs:annotation>
+                          <xs:documentation>
+                              The name of a stack defined in the org.jboss.as.clustering.jgroups subsystem.
+                          </xs:documentation>
+                      </xs:annotation>
+                  </xs:element>
+                  <xs:element maxOccurs="1" minOccurs="1" name="jgroups-channel" type="xs:string" />
+               </xs:sequence>
+               <xs:sequence>
                   <xs:element maxOccurs="1" minOccurs="1" name="socket-binding" type="xs:string" />
                </xs:sequence>
                <xs:sequence>
@@ -276,6 +301,16 @@
     <xs:complexType name="discovery-groupType">
         <xs:sequence>
             <xs:choice>
+               <xs:sequence>
+                  <xs:element maxOccurs="1" minOccurs="1" name="jgroups-stack" type="xs:string">
+                      <xs:annotation>
+                          <xs:documentation>
+                              The name of a stack defined in the org.jboss.as.clustering.jgroups subsystem.
+                          </xs:documentation>
+                      </xs:annotation>
+                  </xs:element>
+                  <xs:element maxOccurs="1" minOccurs="1" name="jgroups-channel" type="xs:string" />
+               </xs:sequence>
                <xs:sequence>
                   <xs:element maxOccurs="1" minOccurs="1" name="socket-binding" type="xs:string" />
                </xs:sequence>
@@ -490,6 +525,7 @@
           <xs:element maxOccurs="1" minOccurs="0" name="connection-ttl" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="min-large-message-size" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="call-timeout" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="call-failover-timeout" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="retry-interval" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="retry-interval-multiplier" type="xs:double" />
           <xs:element maxOccurs="1" minOccurs="0" name="max-retry-interval" type="xs:long" />
@@ -687,6 +723,7 @@
          <xs:element name="client-failure-check-period" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="connection-ttl" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="call-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="call-failover-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="consumer-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="consumer-max-rate" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="confirmation-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
@@ -779,6 +816,7 @@
          <xs:element name="client-failure-check-period" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="connection-ttl" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="call-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="call-failover-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="compress-large-messages" type="xs:boolean" maxOccurs="1" minOccurs="0" />
          <xs:element name="consumer-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="consumer-max-rate" type="xs:int" maxOccurs="1" minOccurs="0" />

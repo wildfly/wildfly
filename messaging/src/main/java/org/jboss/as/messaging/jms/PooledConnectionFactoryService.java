@@ -33,8 +33,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.ResourceAdapterActivatorService;
@@ -229,11 +231,17 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
             if(discoveryGroupName != null) {
                 DiscoveryGroupConfiguration discoveryGroupConfiguration = hornetQService.getValue().getConfiguration().getDiscoveryGroupConfigurations().get(discoveryGroupName);
-                properties.add(simpleProperty15(GROUP_ADDRESS, STRING_TYPE, discoveryGroupConfiguration.getGroupAddress()));
+                BroadcastEndpointFactoryConfiguration bgCfg = discoveryGroupConfiguration.getBroadcastEndpointFactoryConfiguration();
+                if (bgCfg instanceof UDPBroadcastGroupConfiguration) {
+                    UDPBroadcastGroupConfiguration udpCfg = (UDPBroadcastGroupConfiguration) bgCfg;
+                    properties.add(simpleProperty15(GROUP_ADDRESS, STRING_TYPE, udpCfg.getGroupAddress()));
+                    properties.add(simpleProperty15(GROUP_PORT, INTEGER_TYPE, "" + udpCfg.getGroupPort()));
+                    properties.add(simpleProperty15(DISCOVERY_LOCAL_BIND_ADDRESS, STRING_TYPE, "" + udpCfg.getLocalBindAddress()));
+                } else {
+                    // FIXME HORNETQ-1048 HornetQ RA does not allow to set a JGroups channel
+                }
                 properties.add(simpleProperty15(DISCOVERY_INITIAL_WAIT_TIMEOUT, LONG_TYPE, "" + discoveryGroupConfiguration.getDiscoveryInitialWaitTimeout()));
-                properties.add(simpleProperty15(GROUP_PORT, INTEGER_TYPE, "" + discoveryGroupConfiguration.getGroupPort()));
                 properties.add(simpleProperty15(REFRESH_TIMEOUT, LONG_TYPE, "" + discoveryGroupConfiguration.getRefreshTimeout()));
-                properties.add(simpleProperty15(DISCOVERY_LOCAL_BIND_ADDRESS, STRING_TYPE, "" + discoveryGroupConfiguration.getLocalBindAddress()));
             }
 
             boolean hasReconnect = false;

@@ -110,15 +110,16 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler {
         final boolean allowDirectOnly = ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY.resolveModelAttribute(context, model).asBoolean();
         final int minLargeMessageSize = CommonAttributes.MIN_LARGE_MESSAGE_SIZE.resolveModelAttribute(context, model).asInt();
         final long callTimeout = CommonAttributes.CALL_TIMEOUT.resolveModelAttribute(context, model).asLong();
+        final long callFailoverTimeout = CommonAttributes.CALL_FAILOVER_TIMEOUT.resolveModelAttribute(context, model).asLong();
 
         if (discoveryGroupName != null) {
             return new ClusterConnectionConfiguration(name, address, connectorName, minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
-                    retryInterval, retryIntervalMultiplier, maxRetryInterval, reconnectAttempts, callTimeout,
+                    retryInterval, retryIntervalMultiplier, maxRetryInterval, reconnectAttempts, callTimeout, callFailoverTimeout,
                     duplicateDetection, forwardWhenNoConsumers, maxHops, confirmationWindowSize,
                     discoveryGroupName);
         } else {
             return new ClusterConnectionConfiguration(name, address, connectorName, minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
-                    retryInterval, retryIntervalMultiplier, maxRetryInterval, reconnectAttempts, callTimeout,
+                    retryInterval, retryIntervalMultiplier, maxRetryInterval, reconnectAttempts, callTimeout, callFailoverTimeout,
                     duplicateDetection, forwardWhenNoConsumers, maxHops, confirmationWindowSize,
                     staticConnectors, allowDirectOnly);
         }
