@@ -23,10 +23,7 @@
 package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BASE_DN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_ATTRIBUTE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER_DN;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
@@ -51,7 +48,6 @@ import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.connections.ConnectionManager;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -68,7 +64,7 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
 
     public static final String SERVICE_SUFFIX = "ldap";
 
-    private static final String DEFAULT_USER_DN = "dn";
+    public static final String DEFAULT_USER_DN = "dn";
 
     private final InjectedValue<ConnectionManager> connectionManager = new InjectedValue<ConnectionManager>();
 
@@ -79,31 +75,16 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
     private final String userDn;
     protected final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
 
-    public UserLdapCallbackHandler(ModelNode userLdap) {
-        baseDn = userLdap.require(BASE_DN).asString();
-        if (userLdap.hasDefined(USERNAME_ATTRIBUTE)) {
-            usernameAttribute = userLdap.require(USERNAME_ATTRIBUTE).asString();
-            advancedFilter = null;
-        } else if (userLdap.hasDefined(ADVANCED_FILTER)) {
-            advancedFilter = userLdap.require(ADVANCED_FILTER).asString();
-            usernameAttribute = null;
-        } else {
+    public UserLdapCallbackHandler(String baseDn, String userNameAttribute, String advancedFilter, boolean recursive, String userDn) {
+        this.baseDn = baseDn;
+        if (userNameAttribute == null && advancedFilter == null) {
             throw MESSAGES.oneOfRequired(USERNAME_ATTRIBUTE, ADVANCED_FILTER);
         }
-
-        if (userLdap.hasDefined(RECURSIVE)) {
-            recursive = userLdap.require(RECURSIVE).asBoolean();
-        } else {
-            recursive = false;
-        }
-        if (userLdap.hasDefined(USER_DN)) {
-            userDn = userLdap.require(USER_DN).asString();
-        } else {
-            userDn = DEFAULT_USER_DN;
-        }
+        this.usernameAttribute = userNameAttribute;
+        this.advancedFilter = advancedFilter;
+        this.recursive = recursive;
+        this.userDn = userDn;
     }
-
-
 
     /*
      * CallbackHandlerService Methods

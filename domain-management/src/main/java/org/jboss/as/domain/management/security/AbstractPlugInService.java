@@ -22,17 +22,8 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.ModelDescriptionConstants.NAME;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.PROPERTY;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.VALUE;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -46,12 +37,14 @@ import org.jboss.msc.value.InjectedValue;
 abstract class AbstractPlugInService {
 
     private final InjectedValue<PlugInLoaderService> plugInLoader = new InjectedValue<PlugInLoaderService>();
-    private final ModelNode model;
-    private String name;
-    private Map<String, String> configurationProperties;
+    private final String realmName;
+    private final String pluginName;
+    private final Map<String, String> configurationProperties;
 
-    AbstractPlugInService(ModelNode model) {
-        this.model = model;
+    AbstractPlugInService(final String realmName, final String pluginName, final Map<String, String> properties) {
+        this.realmName = realmName;
+        this.pluginName = pluginName;
+        this.configurationProperties = properties;
     }
 
     public InjectedValue<PlugInLoaderService> getPlugInLoaderServiceValue() {
@@ -59,32 +52,17 @@ abstract class AbstractPlugInService {
     }
 
     public void start(final StartContext context) throws StartException {
-        name = model.require(NAME).asString();
-        if (model.hasDefined(PROPERTY)) {
-            List<Property> propertyList = model.require(PROPERTY).asPropertyList();
-            Map<String, String> configurationProperties = new HashMap<String, String>(propertyList.size());
-
-            for (Property current : propertyList) {
-                String propertyName = current.getName();
-                String value = null;
-                if (current.getValue().hasDefined(VALUE)) {
-                    value = current.getValue().require(VALUE).asString();
-                }
-                configurationProperties.put(propertyName, value);
-            }
-            this.configurationProperties = Collections.unmodifiableMap(configurationProperties);
-        } else {
-            configurationProperties = Collections.emptyMap();
-        }
     }
 
     public void stop(final StopContext context) {
-        name = null;
-        configurationProperties = null;
+    }
+
+    protected String getRealmName() {
+        return realmName;
     }
 
     protected String getPlugInName() {
-        return name;
+        return pluginName;
     }
 
     protected Map<String, String> getConfiguration() {

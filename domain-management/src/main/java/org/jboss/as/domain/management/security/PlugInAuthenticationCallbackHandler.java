@@ -73,15 +73,14 @@ public class PlugInAuthenticationCallbackHandler extends AbstractPlugInService i
 
     private static UsernamePasswordHashUtil hashUtil = null;
 
-    private final ModelNode model;
-    private final String realmName;
-    private AuthenticationMechanism mechanism;
+    private final AuthenticationMechanism mechanism;
 
     PlugInAuthenticationCallbackHandler(final String realmName,
-            final ModelNode model) {
-        super(model);
-        this.realmName = realmName;
-        this.model = model;
+                                        final String pluginName,
+                                        final Map<String, String> properties,
+                                        final AuthenticationMechanism mechanism) {
+        super(realmName, pluginName, properties);
+        this.mechanism = mechanism;
     }
 
     /*
@@ -89,19 +88,6 @@ public class PlugInAuthenticationCallbackHandler extends AbstractPlugInService i
      */
 
     @Override
-    public void start(final StartContext context) throws StartException {
-        super.start(context);
-        if (model.hasDefined(MECHANISM)) {
-            mechanism = AuthenticationMechanism.valueOf(model.require(MECHANISM).asString());
-        } else {
-            mechanism = AuthenticationMechanism.DIGEST;
-        }
-    }
-
-    public void stop(final StopContext context) {
-        mechanism = null;
-    }
-
     public CallbackHandlerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
@@ -157,6 +143,9 @@ public class PlugInAuthenticationCallbackHandler extends AbstractPlugInService i
         return new CallbackHandler() {
 
             public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+
+                final String realmName = getRealmName();
+
                 List<Callback> toRespondTo = new LinkedList<Callback>();
 
                 String userName = null;

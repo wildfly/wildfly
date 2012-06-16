@@ -50,8 +50,8 @@ public class PropertiesSubjectSupplemental extends PropertiesFileLoader implemen
     public static final String SERVICE_SUFFIX = "properties_authorization";
     private static final String COMMA = ",";
 
-    public PropertiesSubjectSupplemental(ModelNode properties) {
-        super(properties.require(PATH).asString());
+    public PropertiesSubjectSupplemental(final String path) {
+        super(path);
     }
 
     /*
