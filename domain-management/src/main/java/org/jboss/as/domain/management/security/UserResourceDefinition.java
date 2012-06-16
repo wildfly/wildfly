@@ -43,7 +43,9 @@ import org.jboss.dmr.ModelType;
 public class UserResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PASSWORD, ModelType.STRING, false)
-            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false)).build();
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
+            .setAllowExpression(true)
+            .build();
 
     public UserResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.USER),

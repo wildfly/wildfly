@@ -34,7 +34,6 @@ import javax.security.auth.Subject;
 
 import org.jboss.as.domain.management.plugin.AuthorizationPlugIn;
 import org.jboss.as.domain.management.plugin.PlugInConfigurationSupport;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 
 /**
@@ -46,19 +45,17 @@ public class PlugInSubjectSupplemental extends AbstractPlugInService implements 
 
     public static final String SERVICE_SUFFIX = "plug-in-authorization";
 
-    private final String realmName;
-
-    PlugInSubjectSupplemental(final String realmName, final ModelNode model) {
-        super(model);
-        this.realmName = realmName;
+    PlugInSubjectSupplemental(final String realmName, final String name, final Map<String, String> properties) {
+        super(realmName, name, properties);
     }
 
     /*
      * Service Methods
      */
 
-    // The methods in the base class are sufficient.
+    // The start/stop methods in the base class are sufficient.
 
+    @Override
     public SubjectSupplementalService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
@@ -89,7 +86,7 @@ public class PlugInSubjectSupplemental extends AbstractPlugInService implements 
 
             private Set<RealmRole> loadRoles(final RealmUser user) throws IOException {
                 Set<RealmRole> response;
-                String[] roles = ap.loadRoles(user.getName(), realmName);
+                String[] roles = ap.loadRoles(user.getName(), getRealmName());
                 response = new HashSet<RealmRole>(roles.length);
                 for (String current : roles) {
                     response.add(new RealmRole(current));

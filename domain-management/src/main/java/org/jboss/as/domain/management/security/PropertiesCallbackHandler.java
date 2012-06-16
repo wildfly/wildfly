@@ -69,14 +69,10 @@ CallbackHandlerService, CallbackHandler {
     private final String realm;
     private final boolean plainText;
 
-    public PropertiesCallbackHandler(String realm, ModelNode properties) {
-        super(properties.require(PATH).asString());
+    public PropertiesCallbackHandler(String realm, String path, boolean plainText) {
+        super(path);
         this.realm = realm;
-        if (properties.hasDefined(PLAIN_TEXT)) {
-            plainText = properties.require(PLAIN_TEXT).asBoolean();
-        } else {
-            plainText = false;
-        }
+        this.plainText = plainText;
     }
 
     /*
