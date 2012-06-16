@@ -56,29 +56,20 @@ public class PlugInLoaderService implements Service<PlugInLoaderService> {
 
     public static final String SERVICE_SUFFIX = "plug-in-loader";
 
-    private final ModelNode plugInModel;
-    private List<String> plugInNames = null;
+    private final List<String> plugInNames;
     private final Map<String, List<PlugInProvider>> cachedProviders = new HashMap<String, List<PlugInProvider>>();
     private final Map<String, PlugInProvider> authenticationProviders = new HashMap<String, PlugInProvider>();
     private final Map<String, PlugInProvider> authorizationProviders = new HashMap<String, PlugInProvider>();
 
-    public PlugInLoaderService(final ModelNode plugInModel) {
-        this.plugInModel = plugInModel;
+    public PlugInLoaderService(final List<String> plugInNames) {
+        this.plugInNames = plugInNames;
     }
 
     public void start(StartContext context) throws StartException {
-        // Convert any configuration into a usable format but don't handle the actual loads.
-        List<Property> plugIns = plugInModel.asPropertyList();
-        ArrayList<String> knownNames = new ArrayList<String>(plugIns.size());
-        for (Property current : plugIns) {
-            knownNames.add(current.getName());
-        }
-        plugInNames = knownNames;
     }
 
     public void stop(StopContext context) {
         // Clear any cached data so it can be reloaded on next start.
-        plugInNames = null;
         cachedProviders.clear();
         authenticationProviders.clear();
         authorizationProviders.clear();
