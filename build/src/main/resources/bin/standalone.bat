@@ -3,12 +3,11 @@ rem -------------------------------------------------------------------------
 rem JBoss Bootstrap Script for Windows
 rem -------------------------------------------------------------------------
 
-rem $Id$
 
 @if not "%ECHO%" == ""  echo %ECHO%
-@if "%OS%" == "Windows_NT" setlocal
 
 if "%OS%" == "Windows_NT" (
+  setlocal
   set "DIRNAME=%~dp0%"
 ) else (
   set DIRNAME=.\
@@ -43,15 +42,6 @@ if "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
 
 set DIRNAME=
 
-if "%OS%" == "Windows_NT" (
-  set "PROGNAME=%~nx0%"
-) else (
-  set "PROGNAME=standalone.bat"
-)
-
-rem Setup JBoss specific properties
-set JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%
-
 if "x%JAVA_HOME%" == "x" (
   set  JAVA=java
   echo JAVA_HOME is not set. Unexpected results may occur.
@@ -69,9 +59,7 @@ if not "%PRESERVE_JAVA_OPTS%" == "true" (
       set "JAVA_OPTS=-client %JAVA_OPTS%"
     )
   )
-)
 
-if not "%PRESERVE_JAVA_OPTS%" == "true" (
   rem Add compressed oops, if supported (64 bit VM), and not overriden
   echo "%JAVA_OPTS%" | findstr /I "\-XX:\-UseCompressedOops \-client" > nul
   if errorlevel == 1 (
@@ -80,9 +68,7 @@ if not "%PRESERVE_JAVA_OPTS%" == "true" (
       set "JAVA_OPTS=-XX:+UseCompressedOops %JAVA_OPTS%"
     )
   )
-)
 
-if not "%PRESERVE_JAVA_OPTS%" == "true" (
   rem Add tiered compilation, if supported (64 bit VM), and not overriden
   echo "%JAVA_OPTS%" | findstr /I "\-XX:\-TieredCompilation \-client" > nul
   if errorlevel == 1 (
@@ -140,14 +126,15 @@ echo.
 
 :RESTART
 "%JAVA%" %JAVA_OPTS% ^
- "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\boot.log" ^
- "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
-    -jar "%JBOSS_HOME%\jboss-modules.jar" ^
+  "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\boot.log" ^
+  "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
+  -jar "%RUNJAR%" ^
     -mp "%JBOSS_MODULEPATH%" ^
     -jaxpmodule "javax.xml.jaxp-provider" ^
-     org.jboss.as.standalone ^
-    -Djboss.home.dir="%JBOSS_HOME%" ^
-     %*
+    org.jboss.as.standalone ^
+    "-Djboss.home.dir=%JBOSS_HOME%" ^
+    "-Djboss.server.base.dir=%JBOSS_HOME%\standalone" ^
+    %*
 
 if ERRORLEVEL 10 goto RESTART
 

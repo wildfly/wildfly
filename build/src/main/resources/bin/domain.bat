@@ -43,15 +43,6 @@ if "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
 
 set DIRNAME=
 
-if "%OS%" == "Windows_NT" (
-  set "PROGNAME=%~nx0%"
-) else (
-  set "PROGNAME=domain.bat"
-)
-
-rem Setup JBoss specific properties
-set JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%
-
 if "x%JAVA_HOME%" == "x" (
   set  JAVA=java
   echo JAVA_HOME is not set. Unexpected results may occur.

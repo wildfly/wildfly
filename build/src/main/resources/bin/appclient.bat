@@ -3,12 +3,10 @@ rem -------------------------------------------------------------------------
 rem JBoss Application Client Bootstrap Script for Windows
 rem -------------------------------------------------------------------------
 
-rem $Id$
-
 @if not "%ECHO%" == ""  echo %ECHO%
-@if "%OS%" == "Windows_NT" setlocal
 
 if "%OS%" == "Windows_NT" (
+  setlocal
   set "DIRNAME=%~dp0%"
 ) else (
   set DIRNAME=.\
@@ -43,15 +41,6 @@ if "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
 
 set DIRNAME=
 
-if "%OS%" == "Windows_NT" (
-  set "PROGNAME=%~nx0%"
-) else (
-  set "PROGNAME=appclient.bat"
-)
-
-rem Setup JBoss specific properties
-set JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%
-
 if "x%JAVA_HOME%" == "x" (
   set  JAVA=java
   echo JAVA_HOME is not set. Unexpected results may occur.
@@ -66,7 +55,7 @@ if not errorlevel == 1 (
   set "JAVA_OPTS=%JAVA_OPTS% -server"
 )
 
-rem Find run.jar, or we can't continue
+rem Find jboss-modules.jar, or we can't continue
 if exist "%JBOSS_HOME%\jboss-modules.jar" (
     set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
 ) else (
@@ -87,12 +76,12 @@ if "x%JBOSS_MODULEPATH%" == "x" (
 
 
 "%JAVA%" %JAVA_OPTS% ^
- "-Dorg.jboss.boot.log.file=%JBOSS_HOME%\appclient\log\boot.log" ^
- "-Dlogging.configuration=file:%JBOSS_HOME%/appclient/configuration/logging.properties" ^
-    -jar "%JBOSS_HOME%\jboss-modules.jar" ^
+  "-Dorg.jboss.boot.log.file=%JBOSS_HOME%\appclient\log\boot.log" ^
+  "-Dlogging.configuration=file:%JBOSS_HOME%/appclient/configuration/logging.properties" ^
+  -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
     -jaxpmodule "javax.xml.jaxp-provider" ^
-     org.jboss.as.appclient ^
-    -Djboss.home.dir="%JBOSS_HOME%" ^
-    -Djboss.server.base.dir="%JBOSS_HOME%\appclient" ^
+    org.jboss.as.appclient ^
+    "-Djboss.home.dir=%JBOSS_HOME%" ^
+    "-Djboss.server.base.dir=%JBOSS_HOME%\appclient" ^
      %*

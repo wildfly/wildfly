@@ -3,12 +3,11 @@ rem -------------------------------------------------------------------------
 rem JBoss Admin CLI Script for Windows
 rem -------------------------------------------------------------------------
 
-rem $Id$
 
 @if not "%ECHO%" == ""  echo %ECHO%
-@if "%OS%" == "Windows_NT" setlocal
 
 if "%OS%" == "Windows_NT" (
+  setlocal
   set "DIRNAME=%~dp0%"
 ) else (
   set DIRNAME=.\
@@ -32,15 +31,6 @@ if "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
 
 set DIRNAME=
 
-if "%OS%" == "Windows_NT" (
-  set "PROGNAME=%~nx0%"
-) else (
-  set "PROGNAME=jboss-cli.bat"
-)
-
-rem Setup JBoss specific properties
-set JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%
-
 if "x%JAVA_HOME%" == "x" (
   set  JAVA=java
   echo JAVA_HOME is not set. Unexpected results may occur.
@@ -49,7 +39,7 @@ if "x%JAVA_HOME%" == "x" (
   set "JAVA=%JAVA_HOME%\bin\java"
 )
 
-rem Find run.jar, or we can't continue
+rem Find jboss-modules.jar, or we can't continue
 if exist "%JBOSS_HOME%\jboss-modules.jar" (
     set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
 ) else (
@@ -62,10 +52,10 @@ rem Add base package for L&F
 set JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=com.sun.java.swing
 
 "%JAVA%" %JAVA_OPTS% ^
-    -jar "%JBOSS_HOME%\jboss-modules.jar" ^
+  -jar "%RUNJAR%" ^
     -mp "%JBOSS_HOME%\modules" ^
-     org.jboss.as.cli ^
-     %*
+    org.jboss.as.cli ^
+    %*
 
 :END
 if "x%NOPAUSE%" == "x" pause
