@@ -59,9 +59,9 @@ rem Find jboss-modules.jar, or we can't continue
 if exist "%JBOSS_HOME%\jboss-modules.jar" (
     set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
 ) else (
-  echo Could not locate "%JBOSS_HOME%\jboss-modules.jar".
-  echo Please check that you are in the bin directory when running this script.
-  goto END
+    echo Could not locate "%JBOSS_HOME%\jboss-modules.jar".
+    echo Please check that you are in the bin directory when running this script.
+    goto END
 )
 
 rem Setup JBoss specific properties
@@ -78,7 +78,7 @@ if "x%JBOSS_MODULEPATH%" == "x" (
 "%JAVA%" %JAVA_OPTS% ^
   "-Dorg.jboss.boot.log.file=%JBOSS_HOME%\appclient\log\boot.log" ^
   "-Dlogging.configuration=file:%JBOSS_HOME%/appclient/configuration/logging.properties" ^
-  -jar "%JBOSS_HOME%\jboss-modules.jar" ^
+  -jar "%RUNJAR%" ^
     -mp "%JBOSS_MODULEPATH%" ^
     -jaxpmodule "javax.xml.jaxp-provider" ^
     org.jboss.as.appclient ^
