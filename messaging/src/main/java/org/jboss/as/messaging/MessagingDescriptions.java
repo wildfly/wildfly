@@ -61,7 +61,6 @@ import static org.jboss.as.messaging.CommonAttributes.CORE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DELIVERING_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
-import static org.jboss.as.messaging.CommonAttributes.DIVERT;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE_MESSAGE_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE_SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
@@ -854,38 +853,6 @@ public class MessagingDescriptions {
                 node.get(propType, attr.getName(), VALUE_TYPE).set(ModelType.STRING);
             }
         }
-    }
-
-    static ModelNode getDivertResource(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("divert"));
-        for (AttributeDefinition attr : CommonAttributes.DIVERT_ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle, "divert", root);
-        }
-
-        root.get(OPERATIONS); // placeholder
-
-        root.get(CHILDREN).setEmptyObject();
-        return root;
-    }
-
-    static ModelNode getDivertAdd(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("divert.add"));
-        for (AttributeDefinition attr : CommonAttributes.DIVERT_ATTRIBUTES) {
-            attr.addOperationParameterDescription(bundle, "divert", op);
-        }
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
-    static ModelNode getDivertRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, DIVERT);
     }
 
     static ModelNode getBroadcastGroupRemove(final Locale locale) {

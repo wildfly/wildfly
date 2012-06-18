@@ -103,7 +103,7 @@ public class MessagingExtension implements Extension {
     private static final PathElement RA_PATH = PathElement.pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
     static final PathElement BROADCAST_GROUP_PATH = PathElement.pathElement(CommonAttributes.BROADCAST_GROUP);
     static final PathElement DISCOVERY_GROUP_PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
-    private static final PathElement DIVERT_PATH = PathElement.pathElement(CommonAttributes.DIVERT);
+    static final PathElement DIVERT_PATH = PathElement.pathElement(CommonAttributes.DIVERT);
     private static final PathElement GROUPING_HANDLER_PATH = PathElement.pathElement(CommonAttributes.GROUPING_HANDLER);
     public static final PathElement JMS_BRIDGE_PATH = PathElement.pathElement(CommonAttributes.JMS_BRIDGE);
 
@@ -153,10 +153,7 @@ public class MessagingExtension implements Extension {
         serverRegistration.registerSubModel(new DiscoveryGroupDefinition(registerRuntimeOnly));
 
         // Diverts
-        final ManagementResourceRegistration diverts = serverRegistration.registerSubModel(DIVERT_PATH, MessagingSubsystemProviders.DIVERT_RESOURCE);
-        diverts.registerOperationHandler(ADD, DivertAdd.INSTANCE, DivertAdd.INSTANCE);
-        diverts.registerOperationHandler(REMOVE, DivertRemove.INSTANCE, DivertRemove.INSTANCE);
-        DivertConfigurationWriteHandler.INSTANCE.registerAttributes(diverts, registerRuntimeOnly);
+        serverRegistration.registerSubModel(new DivertDefinition(registerRuntimeOnly));
 
         // Core queues
         final ManagementResourceRegistration queue = serverRegistration.registerSubModel(PathElement.pathElement(QUEUE), MessagingSubsystemProviders.QUEUE_RESOURCE);

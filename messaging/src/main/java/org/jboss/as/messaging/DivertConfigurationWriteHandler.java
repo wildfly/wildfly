@@ -22,12 +22,7 @@
 
 package org.jboss.as.messaging;
 
-import java.util.EnumSet;
-
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * Write attribute handler for attributes that update a divert resource.
@@ -39,16 +34,6 @@ public class DivertConfigurationWriteHandler extends ReloadRequiredWriteAttribut
     public static final DivertConfigurationWriteHandler INSTANCE = new DivertConfigurationWriteHandler();
 
     private DivertConfigurationWriteHandler() {
-        super(CommonAttributes.DIVERT_ATTRIBUTES);
+        super(DivertDefinition.ATTRIBUTES);
     }
-
-    public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
-        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-        for (AttributeDefinition attr : CommonAttributes.DIVERT_ATTRIBUTES) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
-            }
-        }
-    }
-
 }

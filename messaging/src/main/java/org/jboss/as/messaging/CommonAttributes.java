@@ -233,19 +233,12 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition DISCOVERY_INITIAL_WAIT_TIMEOUT = new SimpleAttributeDefinition("discovery-initial-wait-timeout", ModelType.LONG, true, MeasurementUnit.MILLISECONDS);
 
-    SimpleAttributeDefinition DIVERT_ADDRESS = new SimpleAttributeDefinition("divert-address", "address", null, ModelType.STRING, false, false, MeasurementUnit.NONE);
-
-    SimpleAttributeDefinition DIVERT_FORWARDING_ADDRESS = new SimpleAttributeDefinition("forwarding-address", ModelType.STRING, false);
-
     SimpleAttributeDefinition DUPS_OK_BATCH_SIZE = new SimpleAttributeDefinition("dups-ok-batch-size",
             new ModelNode().set(HornetQClient.DEFAULT_ACK_BATCH_SIZE), ModelType.INT, true, MeasurementUnit.NONE);
 
     SimpleAttributeDefinition DURABLE = new SimpleAttributeDefinition("durable", new ModelNode().set(true), ModelType.BOOLEAN,  true);
 
     JndiEntriesAttribute ENTRIES = JndiEntriesAttribute.DESTINATION;
-
-    SimpleAttributeDefinition EXCLUSIVE = new SimpleAttributeDefinition("exclusive",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_DIVERT_EXCLUSIVE), ModelType.BOOLEAN,  true);
 
     SimpleAttributeDefinition FACTORY_CLASS = new SimpleAttributeDefinition("factory-class", ModelType.STRING, false);
 
@@ -520,8 +513,6 @@ public interface CommonAttributes {
     SimpleAttributeDefinition RETRY_INTERVAL_MULTIPLIER = new SimpleAttributeDefinition("retry-interval-multiplier",
             new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER), ModelType.BIG_DECIMAL, true, MeasurementUnit.NONE);
 
-    SimpleAttributeDefinition ROUTING_NAME = new SimpleAttributeDefinition("routing-name", ModelType.STRING, true);
-
     SimpleAttributeDefinition RUN_SYNC_SPEED_TEST = new SimpleAttributeDefinition("run-sync-speed-test",
             new ModelNode().set(ConfigurationImpl.DEFAULT_RUN_SYNC_SPEED_TEST), ModelType.BOOLEAN,  true,
             AttributeAccess.Flag.RESTART_ALL_SERVICES);
@@ -753,10 +744,6 @@ public interface CommonAttributes {
 
     AttributeDefinition[]  SIMPLE_ROOT_RESOURCE_WRITE_ATTRIBUTES = {
         FAILOVER_ON_SHUTDOWN, MESSAGE_COUNTER_ENABLED, MESSAGE_COUNTER_MAX_DAY_HISTORY, MESSAGE_COUNTER_SAMPLE_PERIOD
-    };
-
-    AttributeDefinition[] DIVERT_ATTRIBUTES = {
-        ROUTING_NAME, DIVERT_ADDRESS, DIVERT_FORWARDING_ADDRESS, FILTER, TRANSFORMER_CLASS_NAME, EXCLUSIVE
     };
 
     AttributeDefinition[] GROUPING_HANDLER_ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT};
