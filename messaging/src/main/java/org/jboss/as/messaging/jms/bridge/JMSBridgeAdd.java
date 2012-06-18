@@ -25,6 +25,7 @@ package org.jboss.as.messaging.jms.bridge;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.operations.common.Util.getOperation;
+import static org.jboss.as.server.Services.addServerExecutorDependency;
 
 import java.util.List;
 import java.util.Properties;
@@ -107,11 +108,13 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                         .addListener(verificationHandler)
                         .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
                         .setInitialMode(Mode.ACTIVE);
+                addServerExecutorDependency(jmsBridgeServiceBuilder, bridgeService.getExecutorInjector(), false);
                 if (dependsOnHornetQServer(context, model)) {
                     // add a dependency to the JMS Manager instead of HornetQ service since it is this service
                     // that effectively start HornetQ
                     jmsBridgeServiceBuilder.addDependency((JMSServices.getJmsManagerBaseServiceName(MessagingServices.getHornetQServiceName("default"))));
                 }
+
                 newControllers.add(jmsBridgeServiceBuilder.install());
 
                 context.completeStep();
