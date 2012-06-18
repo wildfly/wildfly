@@ -23,9 +23,9 @@ package org.jboss.as.cmp.jdbc;
 
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -103,13 +103,13 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
     private AliasManager aliasManager;
 
     // join info
-    private Set declaredPaths = new HashSet();
-    private Set ctermJoinPaths = new HashSet();
-    private Set allJoinPaths = new HashSet();
-    private Map ctermCollectionMemberJoinPaths = new HashMap();
-    private Map allCollectionMemberJoinPaths = new HashMap();
-    private Map ctermLeftJoinPaths = new HashMap();
-    private Map allLeftJoinPaths = new HashMap();
+    private Set declaredPaths = new LinkedHashSet();
+    private Set ctermJoinPaths = new LinkedHashSet();
+    private Set allJoinPaths = new LinkedHashSet();
+    private Map ctermCollectionMemberJoinPaths = new LinkedHashMap();
+    private Map allCollectionMemberJoinPaths = new LinkedHashMap();
+    private Map ctermLeftJoinPaths = new LinkedHashMap();
+    private Map allLeftJoinPaths = new LinkedHashMap();
 
     // mapping metadata
     private JDBCTypeMappingMetaData typeMapping;
@@ -468,9 +468,9 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
         // conditional term paths from the where clause are treated separately from those
         // in select, from and order by.
         // TODO come up with a nicer treatment implementation.
-        Set selectJoinPaths = new HashSet(ctermJoinPaths);
-        Map selectCollectionMemberJoinPaths = new HashMap(ctermCollectionMemberJoinPaths);
-        Map selectLeftJoinPaths = new HashMap(ctermLeftJoinPaths);
+        Set selectJoinPaths = new LinkedHashSet(ctermJoinPaths);
+        Map selectCollectionMemberJoinPaths = new LinkedHashMap(ctermCollectionMemberJoinPaths);
+        Map selectLeftJoinPaths = new LinkedHashMap(ctermLeftJoinPaths);
 
         // translate where and save results to append later
         StringBuffer where = new StringBuffer();
@@ -643,7 +643,7 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
 
         // get all the left joined paths
         if (!allLeftJoinPaths.isEmpty()) {
-            Set allLeftJoins = new HashSet();
+            Set allLeftJoins = new LinkedHashSet();
             for (Iterator iter = allLeftJoinPaths.values().iterator(); iter.hasNext(); ) {
                 allLeftJoins.addAll((Set) iter.next());
             }
@@ -721,7 +721,7 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
     }
 
     private void createThetaJoin(StringBuffer buf) {
-        Set joinedAliases = new HashSet();
+        Set joinedAliases = new LinkedHashSet();
         // add all the additional path tables
         if (!ctermJoinPaths.isEmpty()) {
             for (Iterator iter = ctermJoinPaths.iterator(); iter.hasNext(); ) {
@@ -751,7 +751,7 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
 
         // get all the left joined paths
         if (!ctermLeftJoinPaths.isEmpty()) {
-            Set allLeftJoins = new HashSet();
+            Set allLeftJoins = new LinkedHashSet();
             for (Iterator iter = ctermLeftJoinPaths.values().iterator(); iter.hasNext(); ) {
                 allLeftJoins.addAll((Set) iter.next());
             }
@@ -1648,14 +1648,14 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
     private void addLeftJoinPath(String pathStr, ASTPath path) {
         Set set = (Set) ctermLeftJoinPaths.get(pathStr);
         if (set == null) {
-            set = new HashSet();
+            set = new LinkedHashSet();
             ctermLeftJoinPaths.put(pathStr, set);
         }
         set.add(path);
 
         set = (Set) allLeftJoinPaths.get(pathStr);
         if (set == null) {
-            set = new HashSet();
+            set = new LinkedHashSet();
             allLeftJoinPaths.put(pathStr, set);
         }
         set.add(path);
