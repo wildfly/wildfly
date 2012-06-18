@@ -42,7 +42,7 @@ class UserTransactionCommitTask extends UserTransactionManagementTask {
 
     @Override
     protected void manageTransaction() throws Throwable {
-        final Transaction transaction = this.transactionsRepository.removeTransaction(this.userTransactionID);
+        final Transaction transaction = this.transactionsRepository.removeUserTransaction(this.userTransactionID);
         if(transaction != null) {
             this.resumeTransaction(transaction);
             this.transactionsRepository.getTransactionManager().commit();
