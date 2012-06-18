@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.client.helpers.MeasurementUnit.NONE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -95,7 +94,6 @@ import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
 import static org.jboss.as.messaging.CommonAttributes.TOPIC_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.TOPOLOGY;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -104,10 +102,10 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.messaging.jms.AbstractAddJndiHandler;
-import org.jboss.as.messaging.jms.ConnectionFactoryTypeValidator;
 import org.jboss.as.messaging.jms.JMSServerControlHandler;
 import org.jboss.as.messaging.jms.JMSServices;
 import org.jboss.as.messaging.jms.JMSTopicControlHandler;
+import org.jboss.as.messaging.jms.PooledConnectionFactoryAttribute;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -824,8 +822,7 @@ public class MessagingDescriptions {
 
     private static void addPooledConnectionFactoryProperties(final ResourceBundle bundle, final ModelNode node, final boolean resource) {
 
-        for (AttributeDefinition attr : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
-
+        for (AttributeDefinition attr : PooledConnectionFactoryAttribute.getDefinitions(JMSServices.POOLED_CONNECTION_FACTORY_ATTRS)) {
             if (resource) {
                 attr.addResourceAttributeDescription(bundle, "pooled-connection-factory", node);
             } else {

@@ -30,6 +30,7 @@ import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.services.resourceadapters.ResourceAdapterActivatorService;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.service.SubjectFactoryService;
@@ -113,8 +114,8 @@ import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 public class PooledConnectionFactoryService implements Service<Void> {
 
     private static final List<LocalizedXsdString> EMPTY_LOCL = Collections.emptyList();
-    private static final String CONNECTOR_CLASSNAME = "ConnectorClassName";
-    private static final String CONNECTION_PARAMETERS = "ConnectionParameters";
+    public static final String CONNECTOR_CLASSNAME = "connectorClassName";
+    public static final String CONNECTION_PARAMETERS = "connectionParameters";
     private static final String HQ_ACTIVATION = "org.hornetq.ra.inflow.HornetQActivationSpec";
     private static final String HQ_CONN_DEF = "HornetQConnectionDefinition";
     private static final String HQ_ADAPTER = "org.hornetq.ra.HornetQResourceAdapter";
@@ -132,10 +133,13 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private static final String TRY_LOCK = "UseTryLock";
     private static final String JMS_MESSAGE_LISTENER = "javax.jms.MessageListener";
     private static final String DEFAULT_MAX_RECONNECTS = "5";
-    private static final String GROUP_ADDRESS = "discoveryAddress";
-    private static final String DISCOVERY_INITIAL_WAIT_TIMEOUT = "discoveryInitialWaitTimeout";
-    private static final String GROUP_PORT = "discoveryPort";
-    private static final String REFRESH_TIMEOUT = "discoveryRefreshTimeout";
+    public static final String GROUP_ADDRESS = "discoveryAddress";
+    public static final String DISCOVERY_INITIAL_WAIT_TIMEOUT = "discoveryInitialWaitTimeout";
+    public static final String GROUP_PORT = "discoveryPort";
+    public static final String REFRESH_TIMEOUT = "discoveryRefreshTimeout";
+    public static final String DISCOVERY_LOCAL_BIND_ADDRESS = "discoveryLocalBindAddress";
+    public static final String TRANSACTION_MANAGER_LOCATOR_METHOD = "transactionManagerLocatorMethod";
+    public static final String TRANSACTION_MANAGER_LOCATOR_CLASS = "transactionManagerLocatorClass";
 
     private static final Collection<String> JMS_ACTIVATION_CONFIG_PROPERTIES = new HashSet<String>();
 
@@ -230,10 +234,11 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 properties.add(simpleProperty15(DISCOVERY_INITIAL_WAIT_TIMEOUT, LONG_TYPE, "" + discoveryGroupConfiguration.getDiscoveryInitialWaitTimeout()));
                 properties.add(simpleProperty15(GROUP_PORT, INTEGER_TYPE, "" + discoveryGroupConfiguration.getGroupPort()));
                 properties.add(simpleProperty15(REFRESH_TIMEOUT, LONG_TYPE, "" + discoveryGroupConfiguration.getRefreshTimeout()));
+                properties.add(simpleProperty15(DISCOVERY_LOCAL_BIND_ADDRESS, STRING_TYPE, "" + discoveryGroupConfiguration.getLocalBindAddress()));
             }
 
             boolean hasReconnect = false;
-            final String reconnectName = JMSServices.RECONNECT_ATTEMPTS_METHOD;
+            final String reconnectName = JMSServices.RECONNECT_ATTEMPTS_PROP_NAME;
             for (PooledConnectionFactoryConfigProperties adapterParam : adapterParams) {
                 hasReconnect |= reconnectName.equals(adapterParam.getName());
 
@@ -247,8 +252,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
             TransactionManagerLocator.container = container;
             AS7RecoveryRegistry.container = container;
-            properties.add(simpleProperty15("TransactionManagerLocatorClass", STRING_TYPE, TransactionManagerLocator.class.getName()));
-            properties.add(simpleProperty15("TransactionManagerLocatorMethod", STRING_TYPE, "getTransactionManager"));
+            properties.add(simpleProperty15(TRANSACTION_MANAGER_LOCATOR_CLASS, STRING_TYPE, TransactionManagerLocator.class.getName()));
+            properties.add(simpleProperty15(TRANSACTION_MANAGER_LOCATOR_METHOD, STRING_TYPE, "getTransactionManager"));
 
             OutboundResourceAdapter outbound = createOutbound();
             InboundResourceAdapter inbound = createInbound();

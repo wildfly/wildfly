@@ -38,12 +38,13 @@ public enum Namespace {
 
    MESSAGING_1_0("urn:jboss:domain:messaging:1.0"),
    MESSAGING_1_1("urn:jboss:domain:messaging:1.1"),
-   MESSAGING_1_2("urn:jboss:domain:messaging:1.2");
+   MESSAGING_1_2("urn:jboss:domain:messaging:1.2"),
+   MESSAGING_1_3("urn:jboss:domain:messaging:1.3");
 
    /**
     * The current namespace version.
     */
-   public static final Namespace CURRENT = MESSAGING_1_1;
+   public static final Namespace CURRENT = MESSAGING_1_3;
 
    private final String name;
 

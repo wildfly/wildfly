@@ -126,7 +126,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition CLIENT_FAILURE_CHECK_PERIOD = new SimpleAttributeDefinition("client-failure-check-period",
-            new ModelNode().set(HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD), ModelType.INT,  true, MeasurementUnit.MILLISECONDS);
+            new ModelNode().set(HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
     SimpleAttributeDefinition CLIENT_ID = new SimpleAttributeDefinition("client-id",  ModelType.STRING, true);
 
@@ -594,6 +594,11 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition USER = new SimpleAttributeDefinition("user", "user",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER), ModelType.STRING, true, true, null);
+
+    SimpleAttributeDefinition USE_AUTO_RECOVERY = create("use-auto-recovery", ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode().set(true)) // HornetQResourceAdapter.useAutoRecovery = true but is not exposed publicly
+            .build();
 
     SimpleAttributeDefinition USE_GLOBAL_POOLS = new SimpleAttributeDefinition("use-global-pools",
             new ModelNode().set(HornetQClient.DEFAULT_USE_GLOBAL_POOLS), ModelType.BOOLEAN,  true);
