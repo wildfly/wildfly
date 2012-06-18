@@ -24,7 +24,6 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,8 +33,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -50,17 +47,8 @@ public class BroadcastGroupWriteAttributeHandler extends WriteAttributeHandlers.
 
     private final Map<String, AttributeDefinition> attributes = new HashMap<String, AttributeDefinition>();
     private BroadcastGroupWriteAttributeHandler() {
-        for (AttributeDefinition attr : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
+        for (AttributeDefinition attr : BroadcastGroupDefinition.ATTRIBUTES) {
             attributes.put(attr.getName(), attr);
-        }
-    }
-
-    public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
-        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-        for (AttributeDefinition attr : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
-            }
         }
     }
 

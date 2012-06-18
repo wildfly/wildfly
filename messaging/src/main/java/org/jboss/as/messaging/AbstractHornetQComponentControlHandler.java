@@ -22,11 +22,16 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.messaging.CommonAttributes.*;
+import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
 import static org.jboss.as.messaging.CommonAttributes.NAME;
 import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.dmr.ModelType.BOOLEAN;
 
 import java.util.Locale;
 
@@ -37,6 +42,7 @@ import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -56,7 +62,9 @@ import org.jboss.msc.service.ServiceName;
  */
 public abstract class AbstractHornetQComponentControlHandler<T extends HornetQComponentControl> extends AbstractRuntimeOnlyHandler {
 
-    private static final String STOP = "stop";
+    public static final SimpleAttributeDefinition STARTED = create(CommonAttributes.STARTED, BOOLEAN)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .build();
 
     private ParametersValidator readAttributeValidator = new ParametersValidator();
 
@@ -124,15 +132,13 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
 
     public void register(final ManagementResourceRegistration registry) {
 
-        registry.registerReadOnlyAttribute(STARTED, this, AttributeAccess.Storage.RUNTIME);
-
+        registry.registerReadOnlyAttribute(STARTED, this);
         registry.registerOperationHandler(START, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getDescriptionOnlyOperation(locale, START, getDescriptionPrefix());
             }
         });
-
         registry.registerOperationHandler(STOP, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {

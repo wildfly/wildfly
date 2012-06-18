@@ -101,7 +101,7 @@ public class MessagingExtension implements Extension {
     private static final PathElement JMS_QUEUE_PATH = PathElement.pathElement(CommonAttributes.JMS_QUEUE);
     private static final PathElement TOPIC_PATH = PathElement.pathElement(CommonAttributes.JMS_TOPIC);
     private static final PathElement RA_PATH = PathElement.pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
-    private static final PathElement BROADCAST_GROUP_PATH = PathElement.pathElement(CommonAttributes.BROADCAST_GROUP);
+    static final PathElement BROADCAST_GROUP_PATH = PathElement.pathElement(CommonAttributes.BROADCAST_GROUP);
     static final PathElement DISCOVERY_GROUP_PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
     private static final PathElement DIVERT_PATH = PathElement.pathElement(CommonAttributes.DIVERT);
     private static final PathElement GROUPING_HANDLER_PATH = PathElement.pathElement(CommonAttributes.GROUPING_HANDLER);
@@ -146,13 +146,7 @@ public class MessagingExtension implements Extension {
         AddressSettingsWriteHandler.INSTANCE.registerAttributes(addressSetting, registerRuntimeOnly);
 
         // Broadcast groups
-        final ManagementResourceRegistration broadcastGroups = serverRegistration.registerSubModel(BROADCAST_GROUP_PATH, MessagingSubsystemProviders.BROADCAST_GROUP_RESOURCE);
-        broadcastGroups.registerOperationHandler(ADD, BroadcastGroupAdd.INSTANCE, BroadcastGroupAdd.INSTANCE);
-        broadcastGroups.registerOperationHandler(REMOVE, BroadcastGroupRemove.INSTANCE, BroadcastGroupRemove.INSTANCE);
-        BroadcastGroupWriteAttributeHandler.INSTANCE.registerAttributes(broadcastGroups, registerRuntimeOnly);
-        if (registerRuntimeOnly) {
-            BroadcastGroupControlHandler.INSTANCE.register(broadcastGroups);
-        }
+        serverRegistration.registerSubModel(new BroadcastGroupDefinition(registerRuntimeOnly));
         // getConnectorPairs, -- no, this is just the same as attribute connector-refs
 
         // Discovery groups
