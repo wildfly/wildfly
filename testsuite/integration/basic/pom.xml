@@ -121,6 +121,15 @@
                                         </parameter>
                                     </parameters>
                                 </transformationSet>
+                                <transformationSet>
+                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
+                                    <skipDefaultExcludes>true</skipDefaultExcludes>
+                                    <includes>
+                                        <include>standalone*.xml</include>
+                                    </includes>
+                                    <stylesheet>${basedir}/src/test/xslt/configAdminPopulate.xsl</stylesheet>
+                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                </transformationSet>
                             </transformationSets>
                         </configuration>
                     </plugin>
