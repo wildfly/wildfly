@@ -888,36 +888,6 @@ public class MessagingDescriptions {
         return getDescriptionOnlyOperation(locale, REMOVE, DIVERT);
     }
 
-
-    static ModelNode getBroadcastGroupResource(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("broadcast-group"));
-        for (AttributeDefinition attr : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle, "broadcast-group", root);
-        }
-        addResourceAttributeDescription(bundle, BROADCAST_GROUP, root.get(ATTRIBUTES), STARTED, ModelType.BOOLEAN, false, null);
-        root.get(OPERATIONS); // placeholder
-
-        root.get(CHILDREN).setEmptyObject();
-        return root;
-    }
-
-
-    static ModelNode getBroadcastGroupAdd(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("broadcast-group.add"));
-        for (AttributeDefinition attr : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
-            attr.addOperationParameterDescription(bundle, "broadcast-group", op);
-        }
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
     static ModelNode getBroadcastGroupRemove(final Locale locale) {
         return getDescriptionOnlyOperation(locale, REMOVE, BROADCAST_GROUP);
     }

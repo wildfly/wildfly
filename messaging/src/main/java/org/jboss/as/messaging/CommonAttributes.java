@@ -103,9 +103,6 @@ public interface CommonAttributes {
     SimpleAttributeDefinition BRIDGE_USE_DUPLICATE_DETECTION = new SimpleAttributeDefinition("use-duplicate-detection",
             new ModelNode().set(ConfigurationImpl.DEFAULT_BRIDGE_DUPLICATE_DETECTION), ModelType.BOOLEAN,  true);
 
-    SimpleAttributeDefinition BROADCAST_PERIOD = new SimpleAttributeDefinition("broadcast-period",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_BROADCAST_PERIOD), ModelType.LONG, true, MeasurementUnit.MILLISECONDS);
-
     SimpleAttributeDefinition CACHE_LARGE_MESSAGE_CLIENT = new SimpleAttributeDefinition("cache-large-message-client",
             new ModelNode().set(HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT), ModelType.BOOLEAN, true);
 
@@ -274,13 +271,21 @@ public interface CommonAttributes {
     SimpleAttributeDefinition GROUPING_HANDLER_ADDRESS = new SimpleAttributeDefinition("grouping-handler-address", "address",
             null, ModelType.STRING, false, false, MeasurementUnit.NONE);
 
-    SimpleAttributeDefinition GROUP_ADDRESS = new SimpleAttributeDefinition("group-address", null, ModelType.STRING, false,
-            new String[] {"socket-binding"});
+    SimpleAttributeDefinition GROUP_ADDRESS = create("group-address", ModelType.STRING)
+            .setDefaultValue(null)
+            .setAllowNull(false)
+            .setAlternatives("socket-binding")
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition GROUP_ID = new SimpleAttributeDefinition("group-id", ModelType.STRING, true);
 
-    SimpleAttributeDefinition GROUP_PORT = new SimpleAttributeDefinition("group-port", null, ModelType.INT, false,
-            new String[] {"socket-binding"});
+    SimpleAttributeDefinition GROUP_PORT = create("group-port", INT)
+            .setDefaultValue(null)
+            .setAllowNull(false)
+            .setAlternatives("socket-binding")
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition HA = new SimpleAttributeDefinition("ha", new ModelNode().set(HornetQClient.DEFAULT_HA),  ModelType.BOOLEAN, true);
 
@@ -338,11 +343,19 @@ public interface CommonAttributes {
     SimpleAttributeDefinition LOAD_BALANCING_CLASS_NAME = new SimpleAttributeDefinition("connection-load-balancing-policy-class-name",
             new ModelNode().set(HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME), ModelType.STRING, true);
 
-    SimpleAttributeDefinition LOCAL_BIND_ADDRESS = new SimpleAttributeDefinition("local-bind-address", null, ModelType.STRING, true,
-            new String[] {"socket-binding"});
+    SimpleAttributeDefinition LOCAL_BIND_ADDRESS = create("local-bind-address", ModelType.STRING)
+            .setDefaultValue(null)
+            .setAllowNull(true)
+            .setAlternatives("socket-binding")
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
-    SimpleAttributeDefinition LOCAL_BIND_PORT = new SimpleAttributeDefinition("local-bind-port", new ModelNode().set(-1), ModelType.INT, true,
-            new String[] {"socket-binding"});
+    SimpleAttributeDefinition LOCAL_BIND_PORT = create("local-bind-port", INT)
+            .setDefaultValue(new ModelNode().set(-1))
+            .setAllowNull(true)
+            .setAlternatives("socket-binding")
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition LOG_JOURNAL_WRITE_RATE = new SimpleAttributeDefinition("log-journal-write-rate",
             new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE), ModelType.BOOLEAN,  true,
@@ -552,8 +565,12 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition SOCKET_BINDING_OPTIONAL = new SimpleAttributeDefinition("socket-binding", ModelType.STRING, true);
 
-    SimpleAttributeDefinition SOCKET_BINDING_ALTERNATIVE = new SimpleAttributeDefinition("socket-binding", null, ModelType.STRING, false,
-            new String[] {"group-address", "group-port", "local-bind-address", "local-bind-port"});
+    SimpleAttributeDefinition SOCKET_BINDING_ALTERNATIVE = create("socket-binding", ModelType.STRING)
+            .setDefaultValue(null)
+            .setAllowNull(false)
+            .setAlternatives("group-address", "group-port", "local-bind-address", "local-bind-port")
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinitionBuilder("thread-pool-max-size", INT)
             .setDefaultValue(new ModelNode().set(DEFAULT_THREAD_POOL_MAX_SIZE))
@@ -740,10 +757,6 @@ public interface CommonAttributes {
 
     AttributeDefinition[] DIVERT_ATTRIBUTES = {
         ROUTING_NAME, DIVERT_ADDRESS, DIVERT_FORWARDING_ADDRESS, FILTER, TRANSFORMER_CLASS_NAME, EXCLUSIVE
-    };
-
-    AttributeDefinition[] BROADCAST_GROUP_ATTRIBUTES = { SOCKET_BINDING_ALTERNATIVE, LOCAL_BIND_ADDRESS, LOCAL_BIND_PORT, GROUP_ADDRESS, GROUP_PORT,
-            BROADCAST_PERIOD, ConnectorRefsAttribute.BROADCAST_GROUP
     };
 
     AttributeDefinition[] GROUPING_HANDLER_ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT};

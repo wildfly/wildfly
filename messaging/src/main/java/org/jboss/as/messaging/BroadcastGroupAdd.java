@@ -25,13 +25,13 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.controller.operations.common.Util.getOperation;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -40,7 +40,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.interfaces.InetAddressUtil;
 import org.jboss.as.network.NetworkInterfaceBinding;
@@ -58,16 +57,15 @@ import org.jboss.msc.value.ImmediateValue;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BroadcastGroupAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class BroadcastGroupAdd extends AbstractAddStepHandler {
 
-    private static final OperationValidator VALIDATOR = new OperationValidator.AttributeDefinitionOperationValidator(CommonAttributes.BROADCAST_GROUP_ATTRIBUTES);
+    private static final OperationValidator VALIDATOR = new OperationValidator.AttributeDefinitionOperationValidator(BroadcastGroupDefinition.ATTRIBUTES);
 
     /**
      * Create an "add" operation using the existing model
      */
     public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
-        final ModelNode operation = org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, subModel);
-        return operation;
+        return getOperation(ADD, address, subModel);
     }
 
     public static final BroadcastGroupAdd INSTANCE = new BroadcastGroupAdd();
@@ -128,11 +126,6 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler implements Descrip
         }
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getBroadcastGroupAdd(locale);
-    }
-
     static void addBroadcastGroupConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
         if (model.hasDefined(CommonAttributes.BROADCAST_GROUP)) {
             final List<BroadcastGroupConfiguration> configs = configuration.getBroadcastGroupConfigurations();
@@ -145,7 +138,7 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler implements Descrip
 
     static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
-        final long broadcastPeriod = CommonAttributes.BROADCAST_PERIOD.resolveModelAttribute(context, model).asLong();
+        final long broadcastPeriod = BroadcastGroupDefinition.BROADCAST_PERIOD.resolveModelAttribute(context, model).asLong();
         final List<String> connectorRefs = new ArrayList<String>();
         if (model.hasDefined(CommonAttributes.CONNECTORS)) {
             for (ModelNode ref : model.get(CommonAttributes.CONNECTORS).asList()) {

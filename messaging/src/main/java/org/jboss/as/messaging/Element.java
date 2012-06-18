@@ -54,7 +54,7 @@ public enum Element {
    BRIDGES(CommonAttributes.BRIDGES),
    BROADCAST_GROUP(CommonAttributes.BROADCAST_GROUP),
    BROADCAST_GROUPS(CommonAttributes.BROADCAST_GROUPS),
-   BROADCAST_PERIOD(CommonAttributes.BROADCAST_PERIOD),
+   BROADCAST_PERIOD(BroadcastGroupDefinition.BROADCAST_PERIOD),
    CLASS_NAME(CommonAttributes.CLASS_NAME),
    CLUSTERED(CommonAttributes.CLUSTERED),
    CLUSTER_CONNECTION(CommonAttributes.CLUSTER_CONNECTION),

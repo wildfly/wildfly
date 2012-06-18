@@ -1836,7 +1836,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             for(final Property property : properties) {
                 writer.writeStartElement(Element.BROADCAST_GROUP.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                for (AttributeDefinition attribute : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
+                for (AttributeDefinition attribute : BroadcastGroupDefinition.ATTRIBUTES) {
                     attribute.marshallAsElement(property.getValue(), writer);
                 }
                 writer.writeEndElement();
