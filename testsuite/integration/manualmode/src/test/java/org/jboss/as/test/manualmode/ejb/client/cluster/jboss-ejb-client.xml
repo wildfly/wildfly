@@ -32,6 +32,11 @@
                     <property name="org.xnio.Options.SASL_POLICY_NOANONYMOUS" value="true"/>
                 </connection-creation-options>
             </cluster>
+            <!-- A dummy cluster configuration. It's here to make sure that such a cluster configuration
+                which doesn't have any specific configurations, doesn't result in deployment errors like the
+                one reported in https://issues.jboss.org/browse/AS7-4943 -->
+            <cluster name="dummy">
+            </cluster>
         </clusters>
     </client-context>
 </jboss-ejb-client>
