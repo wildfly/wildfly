@@ -22,7 +22,13 @@
 
 package org.jboss.as.ejb3.remote;
 
-import org.jboss.ejb.client.TransactionID;
+import com.arjuna.ats.arjuna.common.Uid;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionImple;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.TransactionImporter;
+import org.jboss.ejb.client.UserTransactionID;
+import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -31,15 +37,19 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import javax.transaction.NotSupportedException;
+import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.Xid;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * User: jpai
+ * @author Jaikiran Pai
  */
 public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransactionsRepository> {
 
@@ -49,16 +59,14 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
 
     private final InjectedValue<UserTransaction> userTransactionInjectedValue = new InjectedValue<UserTransaction>();
 
-    private final Map<TransactionID, Transaction> transactions = Collections.synchronizedMap(new HashMap<TransactionID, Transaction>());
+    private final Map<UserTransactionID, Uid> userTransactions = Collections.synchronizedMap(new HashMap<UserTransactionID, Uid>());
 
     @Override
     public void start(StartContext context) throws StartException {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
     public void stop(StopContext context) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
@@ -70,16 +78,76 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
         return this.transactionManagerInjectedValue.getValue();
     }
 
-    public Transaction getTransaction(final TransactionID transactionID) {
-        return this.transactions.get(transactionID);
+    /**
+     * Removes any references maintained for the passed <code>{@link UserTransactionID}</code>
+     * @param userTransactionID User transaction id
+     * @return Returns the {@link Transaction} corresponding to the passed <code>userTransactionID</code>. If there
+     *          is no such transaction, then this method returns null
+     */
+    public Transaction removeUserTransaction(final UserTransactionID userTransactionID) {
+        final Uid uid = this.userTransactions.remove(userTransactionID);
+        if (uid == null) {
+            return null;
+        }
+        return TransactionImple.getTransaction(uid);
     }
 
-    public Transaction removeTransaction(final TransactionID transactionID) {
-        return this.transactions.remove(transactionID);
+    /**
+     * @param userTransactionID User transaction id
+     * @return Returns the {@link Transaction} corresponding to the passed <code>userTransactionID</code>. If there
+     *          is no such transaction, then this method returns null
+     */
+    public Transaction getUserTransaction(final UserTransactionID userTransactionID) {
+        final Uid uid = this.userTransactions.get(userTransactionID);
+        if (uid == null) {
+            return null;
+        }
+        return TransactionImple.getTransaction(uid);
     }
 
-    public void addTransaction(final TransactionID transactionID, final Transaction transaction) {
-        this.transactions.put(transactionID, transaction);
+    /**
+     * {@link javax.transaction.UserTransaction#begin() Begins} a new {@link UserTransaction} and
+     * associates it with the passed {@link UserTransactionID}.
+     * @param userTransactionID
+     * @return Returns the transaction that has begun
+     * @throws SystemException
+     * @throws NotSupportedException
+     */
+    Transaction beginUserTransaction(final UserTransactionID userTransactionID) throws SystemException, NotSupportedException {
+        this.getUserTransaction().begin();
+        // get the tx that just got created and associated with the transaction manager
+        final TransactionImple newlyAssociatedTx = TransactionImple.getTransaction();
+        final Uid uid = newlyAssociatedTx.get_uid();
+        this.userTransactions.put(userTransactionID, uid);
+        return newlyAssociatedTx;
+    }
+
+    /**
+     * Returns a {@link SubordinateTransaction} associated with the passed {@link XidTransactionID}.
+     * If there's no such transaction, then this method returns null.
+     *
+     * @param xidTransactionID The {@link XidTransactionID}
+     * @return
+     * @throws XAException
+     */
+    public SubordinateTransaction getImportedTransaction(final XidTransactionID xidTransactionID) throws XAException {
+        final Xid xid = xidTransactionID.getXid();
+        final TransactionImporter transactionImporter = SubordinationManager.getTransactionImporter();
+        return transactionImporter.getImportedTransaction(xid);
+    }
+
+    /**
+     * Imports a {@link Transaction} into the {@link SubordinationManager} and associates it with the
+     * passed {@link org.jboss.ejb.client.XidTransactionID#getXid()}  Xid}. Returns the imported transaction
+     *
+     * @param xidTransactionID The {@link XidTransactionID}
+     * @param txTimeout The transaction timeout
+     * @return
+     * @throws XAException
+     */
+    Transaction importTransaction(final XidTransactionID xidTransactionID, final int txTimeout) throws XAException {
+        final TransactionImporter transactionImporter = SubordinationManager.getTransactionImporter();
+        return transactionImporter.importTransaction(xidTransactionID.getXid(), txTimeout);
     }
 
     public UserTransaction getUserTransaction() {
