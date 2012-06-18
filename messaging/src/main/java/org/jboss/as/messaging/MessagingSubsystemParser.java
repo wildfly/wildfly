@@ -1274,7 +1274,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 }
                 case ADDRESS: {
-                    handleElementText(reader, element, CommonAttributes.DIVERT_ADDRESS.getName(), divertAdd);
+                    handleElementText(reader, element, DivertDefinition.ADDRESS.getName(), divertAdd);
                     break;
                 }
                 case FORWARDING_ADDRESS: {
@@ -1870,7 +1870,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             for(final Property property : properties) {
                 writer.writeStartElement(Element.DIVERT.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                for (AttributeDefinition attribute : CommonAttributes.DIVERT_ATTRIBUTES) {
+                for (AttributeDefinition attribute : DivertDefinition.ATTRIBUTES) {
                     if (CommonAttributes.FILTER == attribute) {
                         writeFilter(writer, property.getValue());
                     } else {

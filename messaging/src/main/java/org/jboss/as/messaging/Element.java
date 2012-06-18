@@ -43,7 +43,7 @@ public enum Element {
    UNKNOWN((String) null),
    // Messaging 1.0 elements in alpha order
    ACCEPTORS(CommonAttributes.ACCEPTORS),
-   ADDRESS(getAttributeDefinitions(CommonAttributes.QUEUE_ADDRESS, CommonAttributes.DIVERT_ADDRESS,
+   ADDRESS(getAttributeDefinitions(CommonAttributes.QUEUE_ADDRESS, DivertDefinition.ADDRESS,
            CommonAttributes.GROUPING_HANDLER_ADDRESS, CommonAttributes.CLUSTER_CONNECTION_ADDRESS)),
    ADDRESS_SETTINGS(CommonAttributes.ADDRESS_SETTINGS),
    ALLOW_FAILBACK(CommonAttributes.ALLOW_FAILBACK),
@@ -73,7 +73,7 @@ public enum Element {
    DIVERT(CommonAttributes.DIVERT),
    DIVERTS(CommonAttributes.DIVERTS),
    DURABLE(CommonAttributes.DURABLE),
-   EXCLUSIVE(CommonAttributes.EXCLUSIVE),
+   EXCLUSIVE(DivertDefinition.EXCLUSIVE),
    FAILBACK_DELAY(CommonAttributes.FAILBACK_DELAY),
    FAILOVER_ON_SHUTDOWN(CommonAttributes.FAILOVER_ON_SHUTDOWN),
    FILE_DEPLOYMENT_ENABLED(CommonAttributes.FILE_DEPLOYMENT_ENABLED),
@@ -127,7 +127,7 @@ public enum Element {
    QUEUE(CommonAttributes.QUEUE),
    REFRESH_TIMEOUT(DiscoveryGroupDefinition.REFRESH_TIMEOUT),
    REMOTING_INTERCEPTORS(CommonAttributes.REMOTING_INTERCEPTORS),
-   ROUTING_NAME(CommonAttributes.ROUTING_NAME),
+   ROUTING_NAME(DivertDefinition.ROUTING_NAME),
    RUN_SYNC_SPEED_TEST(CommonAttributes.RUN_SYNC_SPEED_TEST),
    SECURITY_DOMAIN(CommonAttributes.SECURITY_DOMAIN),
    SECURITY_ENABLED(CommonAttributes.SECURITY_ENABLED),
@@ -364,7 +364,7 @@ public enum Element {
 
     private static Map<String, AttributeDefinition> getForwardingAddressDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("divert", CommonAttributes.DIVERT_FORWARDING_ADDRESS);
+        result.put("divert", DivertDefinition.FORWARDING_ADDRESS);
         result.put("bridge", CommonAttributes.BRIDGE_FORWARDING_ADDRESS);
         return result;
 
