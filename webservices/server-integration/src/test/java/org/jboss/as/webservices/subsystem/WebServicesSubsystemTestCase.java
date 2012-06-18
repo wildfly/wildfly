@@ -1,6 +1,6 @@
 /*
 * JBoss, Home of Professional Open Source.
-* Copyright 2011, Red Hat Middleware LLC, and individual contributors
+* Copyright 2012, Red Hat Middleware LLC, and individual contributors
 * as indicated by the @author tags. See the copyright.txt file in the
 * distribution for a full listing of individual contributors.
 *
@@ -29,6 +29,7 @@ import org.jboss.as.webservices.dmr.WSExtension;
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
 public final class WebServicesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
@@ -39,7 +40,7 @@ public final class WebServicesSubsystemTestCase extends AbstractSubsystemBaseTes
     @Override
     protected String getSubsystemXml() throws IOException {
         return
-            "<subsystem xmlns=\"urn:jboss:domain:webservices:1.1\">" + 
+            "<subsystem xmlns=\"urn:jboss:domain:webservices:1.2\">" + 
             "    <modify-wsdl-address>true</modify-wsdl-address>" + 
             "    <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>" + 
             "    <wsdl-port>8080</wsdl-port>" + 
@@ -51,6 +52,7 @@ public final class WebServicesSubsystemTestCase extends AbstractSubsystemBaseTes
             "        </pre-handler-chain>" +
             "        <property name=\"foo\" value=\"bar\"/>" + 
             "    </endpoint-config>" +
+            "    <client-config name=\"Standard-Client-Config\"/>" +
             "</subsystem>";
     }
 

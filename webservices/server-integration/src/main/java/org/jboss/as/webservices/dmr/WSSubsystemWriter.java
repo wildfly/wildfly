@@ -23,6 +23,7 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.webservices.dmr.Constants.CLASS;
+import static org.jboss.as.webservices.dmr.Constants.CLIENT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
@@ -45,6 +46,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
 final class WSSubsystemWriter implements XMLElementWriter<SubsystemMarshallingContext> {
 
@@ -86,32 +88,37 @@ final class WSSubsystemWriter implements XMLElementWriter<SubsystemMarshallingCo
         if (has(subsystem, ENDPOINT_CONFIG)) {
             // write endpoint-config elements
             final ModelNode endpointConfigs = subsystem.get(ENDPOINT_CONFIG);
-            writeEndpointConfigs(writer, endpointConfigs);
+            writeConfigs(ENDPOINT_CONFIG, writer, endpointConfigs);
+        }
+        if (has(subsystem, CLIENT_CONFIG)) {
+            // write client-config elements
+            final ModelNode clientConfigs = subsystem.get(CLIENT_CONFIG);
+            writeConfigs(CLIENT_CONFIG, writer, clientConfigs);
         }
         // write ws subsystem end element
         writer.writeEndElement();
     }
 
-    private static void writeEndpointConfigs(final XMLExtendedStreamWriter writer, final ModelNode endpointConfigs) throws XMLStreamException {
-        ModelNode endpointConfig = null;
-        for (final String configName : endpointConfigs.keys()) {
-            endpointConfig = endpointConfigs.get(configName);
-            // start endpoint-config element
-            writer.writeStartElement(Constants.ENDPOINT_CONFIG);
+    private static void writeConfigs(final String elementName, final XMLExtendedStreamWriter writer, final ModelNode configs) throws XMLStreamException {
+        ModelNode config = null;
+        for (final String configName : configs.keys()) {
+            config = configs.get(configName);
+            // start config element
+            writer.writeStartElement(elementName);
             writer.writeAttribute(Constants.NAME, configName);
             // write pre-handler-chain elements
-            if (endpointConfig.hasDefined(Constants.PRE_HANDLER_CHAIN)) {
-                final ModelNode handlerChains = endpointConfig.get(Constants.PRE_HANDLER_CHAIN);
+            if (config.hasDefined(Constants.PRE_HANDLER_CHAIN)) {
+                final ModelNode handlerChains = config.get(Constants.PRE_HANDLER_CHAIN);
                 writeHandlerChains(writer, handlerChains, true);
             }
             // write post-handler-chain elements
-            if (endpointConfig.hasDefined(Constants.POST_HANDLER_CHAIN)) {
-                final ModelNode handlerChains = endpointConfig.get(Constants.POST_HANDLER_CHAIN);
+            if (config.hasDefined(Constants.POST_HANDLER_CHAIN)) {
+                final ModelNode handlerChains = config.get(Constants.POST_HANDLER_CHAIN);
                 writeHandlerChains(writer, handlerChains, false);
             }
             // write property elements
-            if (endpointConfig.hasDefined(Constants.PROPERTY)) {
-                final ModelNode properties = endpointConfig.get(PROPERTY);
+            if (config.hasDefined(Constants.PROPERTY)) {
+                final ModelNode properties = config.get(PROPERTY);
                 writeProperties(writer, properties);
             }
             // close endpoint-config element

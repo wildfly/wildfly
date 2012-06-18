@@ -31,7 +31,6 @@ import javax.management.MBeanServer;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.WSMessages;
 import org.jboss.as.webservices.security.SecurityDomainContextAdaptor;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.as.webservices.util.WebAppController;

@@ -41,6 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.webservices.dmr.Constants.CLASS;
+import static org.jboss.as.webservices.dmr.Constants.CLIENT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CLASS;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
@@ -142,87 +143,159 @@ final class WSSubsystemProviders {
         }
     };
 
-    static final DescriptionProvider PROPERTY_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider CLIENT_CONFIG_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigPropertyDescription(locale);
+            return Descriptions.getClientConfigDescription(locale);
         }
     };
 
-    static final DescriptionProvider PRE_HANDLER_CHAIN_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider ENDPOINT_PROPERTY_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigHandlerChainDescription(locale, "endpoint.config.pre.handler.chain");
+            return Descriptions.getConfigPropertyDescription(locale, "endpoint.config.property");
+        }
+    };
+
+    static final DescriptionProvider CLIENT_PROPERTY_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getConfigPropertyDescription(locale, "client.config.property");
+        }
+    };
+
+    static final DescriptionProvider ENDPOINT_PRE_HANDLER_CHAIN_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getConfigHandlerChainDescription(locale, "endpoint.config.pre.handler.chain");
+        }
+    };
+
+    static final DescriptionProvider CLIENT_PRE_HANDLER_CHAIN_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getConfigHandlerChainDescription(locale, "client.config.pre.handler.chain");
         }
     };
 
     static final DescriptionProvider HANDLER_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigHandlerDescription(locale);
+            return Descriptions.getConfigHandlerDescription(locale);
         }
     };
 
-    static final DescriptionProvider POST_HANDLER_CHAIN_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider ENDPOINT_POST_HANDLER_CHAIN_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigHandlerChainDescription(locale, "endpoint.config.post.handler.chain");
+            return Descriptions.getConfigHandlerChainDescription(locale, "endpoint.config.post.handler.chain");
+        }
+    };
+
+    static final DescriptionProvider CLIENT_POST_HANDLER_CHAIN_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getConfigHandlerChainDescription(locale, "client.config.post.handler.chain");
         }
     };
 
     static final DescriptionProvider ENDPOINT_CONFIG_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigAddDescription(locale);
+            return Descriptions.getConfigAddDescription(locale, "endpoint.config.add");
         }
     };
 
-    static final DescriptionProvider PROPERTY_ADD_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider CLIENT_CONFIG_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigPropertyAddDescription(locale);
+            return Descriptions.getConfigAddDescription(locale, "client.config.add");
         }
     };
 
-    static final DescriptionProvider PRE_HANDLER_CHAIN_ADD_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider ENDPOINT_PROPERTY_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigHandlerChainAddDescription(locale, "endpoint.config.pre.handler.chain");
+            return Descriptions.getConfigPropertyAddDescription(locale, "endpoint.config.property");
         }
     };
 
-    static final DescriptionProvider PRE_HANDLER_CHAIN_REMOVE_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider CLIENT_PROPERTY_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigHandlerChainRemoveDescription(locale, "endpoint.config.pre.handler.chain");
+            return Descriptions.getConfigPropertyAddDescription(locale, "client.config.property");
+        }
+    };
+
+    static final DescriptionProvider ENDPOINT_PRE_HANDLER_CHAIN_ADD_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getConfigHandlerChainAddDescription(locale, "endpoint.config.pre.handler.chain");
+        }
+    };
+
+    static final DescriptionProvider CLIENT_PRE_HANDLER_CHAIN_ADD_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getConfigHandlerChainAddDescription(locale, "client.config.pre.handler.chain");
+        }
+    };
+
+    static final DescriptionProvider ENDPOINT_PRE_HANDLER_CHAIN_REMOVE_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getConfigHandlerChainRemoveDescription(locale, "endpoint.config.pre.handler.chain");
+        }
+    };
+
+    static final DescriptionProvider CLIENT_PRE_HANDLER_CHAIN_REMOVE_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getConfigHandlerChainRemoveDescription(locale, "client.config.pre.handler.chain");
         }
     };
 
     static final DescriptionProvider HANDLER_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigHandlerAddDescription(locale);
+            return Descriptions.getConfigHandlerAddDescription(locale);
         }
     };
 
     static final DescriptionProvider HANDLER_REMOVE_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigHandlerRemoveDescription(locale);
+            return Descriptions.getConfigHandlerRemoveDescription(locale);
         }
     };
 
-    static final DescriptionProvider POST_HANDLER_CHAIN_ADD_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider ENDPOINT_POST_HANDLER_CHAIN_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigHandlerChainAddDescription(locale, "endpoint.config.post.handler.chain");
+            return Descriptions.getConfigHandlerChainAddDescription(locale, "endpoint.config.post.handler.chain");
         }
     };
 
-    static final DescriptionProvider POST_HANDLER_CHAIN_REMOVE_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider CLIENT_POST_HANDLER_CHAIN_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigHandlerChainRemoveDescription(locale, "endpoint.config.post.handler.chain");
+            return Descriptions.getConfigHandlerChainAddDescription(locale, "client.config.post.handler.chain");
+        }
+    };
+
+    static final DescriptionProvider ENDPOINT_POST_HANDLER_CHAIN_REMOVE_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getConfigHandlerChainRemoveDescription(locale, "endpoint.config.post.handler.chain");
+        }
+    };
+
+    static final DescriptionProvider CLIENT_POST_HANDLER_CHAIN_REMOVE_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getConfigHandlerChainRemoveDescription(locale, "client.config.post.handler.chain");
         }
     };
 
     static final DescriptionProvider ENDPOINT_CONFIG_REMOVE_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigRemoveDescription(locale);
+            return Descriptions.getConfigRemoveDescription(locale, "endpoint.config.remove");
         }
     };
 
-    static final DescriptionProvider PROPERTY_REMOVE_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider CLIENT_CONFIG_REMOVE_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigPropertyRemoveDescription(locale);
+            return Descriptions.getConfigRemoveDescription(locale, "client.config.remove");
+        }
+    };
+
+    static final DescriptionProvider ENDPOINT_PROPERTY_REMOVE_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getConfigPropertyRemoveDescription(locale, "endpoint.config.property.remove");
+        }
+    };
+
+    static final DescriptionProvider CLIENT_PROPERTY_REMOVE_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getConfigPropertyRemoveDescription(locale, "client.config.property.remove");
         }
     };
 
@@ -262,6 +335,7 @@ final class WSSubsystemProviders {
             subsystem.get(ATTRIBUTES, WSDL_SECURE_PORT, NILLABLE).set(true);
 
             subsystem.get(CHILDREN, ENDPOINT_CONFIG, DESCRIPTION).set(bundle.getString("endpoint.config"));
+            subsystem.get(CHILDREN, CLIENT_CONFIG, DESCRIPTION).set(bundle.getString("client.config"));
 
             return subsystem;
         }
@@ -419,7 +493,20 @@ final class WSSubsystemProviders {
             return node;
         }
 
-        static ModelNode getEndpointConfigHandlerChainDescription(final Locale locale, final String handlerChainName) {
+        static ModelNode getClientConfigDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode node = new ModelNode();
+
+            node.get(DESCRIPTION).set(bundle.getString("client.config"));
+            node.get(HEAD_COMMENT_ALLOWED).set(true);
+            node.get(TAIL_COMMENT_ALLOWED).set(true);
+            node.get(CHILDREN, PRE_HANDLER_CHAIN, DESCRIPTION).set(bundle.getString("client.config.pre.handler.chain"));
+            node.get(CHILDREN, POST_HANDLER_CHAIN, DESCRIPTION).set(bundle.getString("client.config.post.handler.chain"));
+            node.get(CHILDREN, PROPERTY, DESCRIPTION).set(bundle.getString("client.config.property"));
+            return node;
+        }
+
+        static ModelNode getConfigHandlerChainDescription(final Locale locale, final String handlerChainName) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
 
@@ -437,7 +524,7 @@ final class WSSubsystemProviders {
             return node;
         }
 
-        static ModelNode getEndpointConfigHandlerDescription(final Locale locale) {
+        static ModelNode getConfigHandlerDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
 
@@ -453,46 +540,46 @@ final class WSSubsystemProviders {
             return node;
         }
 
-        static ModelNode getEndpointConfigPropertyDescription(final Locale locale) {
+        static ModelNode getConfigPropertyDescription(final Locale locale, final String propertyDescription) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
 
-            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.property"));
+            node.get(DESCRIPTION).set(bundle.getString(propertyDescription));
             node.get(HEAD_COMMENT_ALLOWED).set(true);
             node.get(TAIL_COMMENT_ALLOWED).set(true);
 
             node.get(ATTRIBUTES, VALUE, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, VALUE, DESCRIPTION).set(bundle.getString("endpoint.config.property.value"));
+            node.get(ATTRIBUTES, VALUE, DESCRIPTION).set(bundle.getString(propertyDescription + ".value"));
             node.get(ATTRIBUTES, VALUE, REQUIRED).set(false);
             node.get(ATTRIBUTES, VALUE, NILLABLE).set(true);
 
             return node;
         }
 
-        static ModelNode getEndpointConfigAddDescription(final Locale locale) {
+        static ModelNode getConfigAddDescription(final Locale locale, final String addDescription) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
             node.get(OPERATION_NAME).set(ADD);
-            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.add"));
+            node.get(DESCRIPTION).set(bundle.getString(addDescription));
             node.get(REQUEST_PROPERTIES).setEmptyObject();
             node.get(REPLY_PROPERTIES).setEmptyObject();
             return node;
         }
 
-        static ModelNode getEndpointConfigPropertyAddDescription(final Locale locale) {
+        static ModelNode getConfigPropertyAddDescription(final Locale locale, final String propertyAddDescription) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
             node.get(OPERATION_NAME).set(ADD);
-            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.property.add"));
+            node.get(DESCRIPTION).set(bundle.getString(propertyAddDescription + ".add"));
             node.get(REQUEST_PROPERTIES, VALUE, TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, VALUE, DESCRIPTION).set(bundle.getString("endpoint.config.property.value"));
+            node.get(REQUEST_PROPERTIES, VALUE, DESCRIPTION).set(bundle.getString(propertyAddDescription + ".value"));
             node.get(REQUEST_PROPERTIES, VALUE, REQUIRED).set(false);
             node.get(REQUEST_PROPERTIES, VALUE, NILLABLE).set(true);
             node.get(REPLY_PROPERTIES).setEmptyObject();
             return node;
         }
 
-        static ModelNode getEndpointConfigHandlerChainAddDescription(final Locale locale, final String handlerChainName) {
+        static ModelNode getConfigHandlerChainAddDescription(final Locale locale, final String handlerChainName) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
             node.get(OPERATION_NAME).set(ADD);
@@ -508,7 +595,7 @@ final class WSSubsystemProviders {
             return node;
         }
 
-        static ModelNode getEndpointConfigHandlerChainRemoveDescription(final Locale locale, final String handlerChainName) {
+        static ModelNode getConfigHandlerChainRemoveDescription(final Locale locale, final String handlerChainName) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
             node.get(OPERATION_NAME).set(REMOVE);
@@ -518,7 +605,7 @@ final class WSSubsystemProviders {
             return node;
         }
 
-        static ModelNode getEndpointConfigHandlerAddDescription(final Locale locale) {
+        static ModelNode getConfigHandlerAddDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
             node.get(OPERATION_NAME).set(ADD);
@@ -534,7 +621,7 @@ final class WSSubsystemProviders {
             return node;
         }
 
-        static ModelNode getEndpointConfigHandlerRemoveDescription(final Locale locale) {
+        static ModelNode getConfigHandlerRemoveDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
             node.get(OPERATION_NAME).set(REMOVE);
@@ -544,21 +631,21 @@ final class WSSubsystemProviders {
             return node;
         }
 
-        static ModelNode getEndpointConfigRemoveDescription(final Locale locale) {
+        static ModelNode getConfigRemoveDescription(final Locale locale, final String configRemoveDesc) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
             node.get(OPERATION_NAME).set(REMOVE);
-            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.remove"));
+            node.get(DESCRIPTION).set(bundle.getString(configRemoveDesc));
             node.get(REQUEST_PROPERTIES).setEmptyObject();
             node.get(REPLY_PROPERTIES).setEmptyObject();
             return node;
         }
 
-        static ModelNode getEndpointConfigPropertyRemoveDescription(final Locale locale) {
+        static ModelNode getConfigPropertyRemoveDescription(final Locale locale, final String configPropRemoveDesc) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
             node.get(OPERATION_NAME).set(REMOVE);
-            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.property.remove"));
+            node.get(DESCRIPTION).set(bundle.getString(configPropRemoveDesc));
             node.get(REQUEST_PROPERTIES).setEmptyObject();
             node.get(REPLY_PROPERTIES).setEmptyObject();
             return node;

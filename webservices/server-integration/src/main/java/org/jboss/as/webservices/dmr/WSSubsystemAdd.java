@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,6 +23,7 @@ package org.jboss.as.webservices.dmr;
 
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+import static org.jboss.as.webservices.dmr.Constants.CLIENT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
@@ -56,7 +57,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- * @author alessio.soldano@jboss.com
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
@@ -95,6 +96,7 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             configValidator.validate(operation);
             submodel.get(MODIFY_WSDL_ADDRESS).set(operation.require(MODIFY_WSDL_ADDRESS));
             submodel.get(ENDPOINT_CONFIG).setEmptyObject();
+            submodel.get(CLIENT_CONFIG).setEmptyObject();
             submodel.get(ENDPOINT).setEmptyObject();
         }
     }
