@@ -256,7 +256,10 @@ public interface CommonAttributes {
     SimpleAttributeDefinition FAILOVER_ON_SHUTDOWN = new SimpleAttributeDefinition("failover-on-shutdown",
             new ModelNode().set(false /*TODO should be ConfigurationImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN but field is private*/), ModelType.BOOLEAN,  true);
 
-    SimpleAttributeDefinition FILTER = new SimpleAttributeDefinition("filter", ModelType.STRING, true);
+    SimpleAttributeDefinition FILTER = create("filter", ModelType.STRING)
+            .setAllowNull(true)
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition FORWARD_WHEN_NO_CONSUMERS = new SimpleAttributeDefinition("forward-when-no-consumers",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS), ModelType.BOOLEAN, true);
@@ -588,7 +591,10 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD), ModelType.LONG,  true,
             MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    SimpleAttributeDefinition TRANSFORMER_CLASS_NAME = new SimpleAttributeDefinition("transformer-class-name", ModelType.STRING, true);
+    SimpleAttributeDefinition TRANSFORMER_CLASS_NAME = create("transformer-class-name", ModelType.STRING)
+            .setAllowNull(true)
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition TYPE = new SimpleAttributeDefinition("type", "type",
             null, ModelType.STRING,  true, false, MeasurementUnit.NONE, GroupingHandlerTypeValidator.INSTANCE);
