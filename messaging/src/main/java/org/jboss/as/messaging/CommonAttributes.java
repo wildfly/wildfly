@@ -288,9 +288,6 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE), ModelType.INT,  true,
             MeasurementUnit.NONE, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    SimpleAttributeDefinition INITIAL_WAIT_TIMEOUT = new SimpleAttributeDefinition("initial-wait-timeout",
-            new ModelNode().set(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
-
     SimpleAttributeDefinition JMX_DOMAIN = new SimpleAttributeDefinition("jmx-domain",
             new ModelNode().set(ConfigurationImpl.DEFAULT_JMX_DOMAIN), ModelType.STRING, true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
@@ -493,9 +490,6 @@ public interface CommonAttributes {
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RECONNECT_ATTEMPTS))
             .setAllowNull(true)
             .build();
-
-    SimpleAttributeDefinition REFRESH_TIMEOUT = new SimpleAttributeDefinition("refresh-timeout",
-            new ModelNode().set(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
     SimpleAttributeDefinition REDELIVERY_DELAY = new SimpleAttributeDefinition("redelivery-delay",
             new ModelNode().set(AddressSettings.DEFAULT_REDELIVER_DELAY), ModelType.LONG, true);
@@ -750,10 +744,6 @@ public interface CommonAttributes {
 
     AttributeDefinition[] BROADCAST_GROUP_ATTRIBUTES = { SOCKET_BINDING_ALTERNATIVE, LOCAL_BIND_ADDRESS, LOCAL_BIND_PORT, GROUP_ADDRESS, GROUP_PORT,
             BROADCAST_PERIOD, ConnectorRefsAttribute.BROADCAST_GROUP
-    };
-
-    AttributeDefinition[] DISCOVERY_GROUP_ATTRIBUTES = { SOCKET_BINDING_ALTERNATIVE, LOCAL_BIND_ADDRESS, GROUP_ADDRESS, GROUP_PORT,
-            REFRESH_TIMEOUT, INITIAL_WAIT_TIMEOUT,
     };
 
     AttributeDefinition[] GROUPING_HANDLER_ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT};

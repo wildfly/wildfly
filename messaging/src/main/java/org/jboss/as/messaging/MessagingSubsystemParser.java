@@ -1853,7 +1853,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             for(final Property property : properties) {
                 writer.writeStartElement(Element.DISCOVERY_GROUP.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                for (AttributeDefinition attribute : CommonAttributes.DISCOVERY_GROUP_ATTRIBUTES) {
+                for (AttributeDefinition attribute : DiscoveryGroupDefinition.ATTRIBUTES) {
                     attribute.marshallAsElement(property.getValue(), writer);
                 }
                 writer.writeEndElement();

@@ -293,13 +293,6 @@ class MessagingSubsystemProviders {
         }
     };
 
-    public static final DescriptionProvider DISCOVERY_GROUP_RESOURCE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getDiscoveryGroupResource(locale);
-        }
-    };
-
     public static final DescriptionProvider GROUPING_HANDLER_RESOURCE = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {

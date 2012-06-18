@@ -102,7 +102,7 @@ public class MessagingExtension implements Extension {
     private static final PathElement TOPIC_PATH = PathElement.pathElement(CommonAttributes.JMS_TOPIC);
     private static final PathElement RA_PATH = PathElement.pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
     private static final PathElement BROADCAST_GROUP_PATH = PathElement.pathElement(CommonAttributes.BROADCAST_GROUP);
-    private static final PathElement DISCOVERY_GROUP_PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
+    static final PathElement DISCOVERY_GROUP_PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
     private static final PathElement DIVERT_PATH = PathElement.pathElement(CommonAttributes.DIVERT);
     private static final PathElement GROUPING_HANDLER_PATH = PathElement.pathElement(CommonAttributes.GROUPING_HANDLER);
     public static final PathElement JMS_BRIDGE_PATH = PathElement.pathElement(CommonAttributes.JMS_BRIDGE);
@@ -156,10 +156,7 @@ public class MessagingExtension implements Extension {
         // getConnectorPairs, -- no, this is just the same as attribute connector-refs
 
         // Discovery groups
-        final ManagementResourceRegistration discoveryGroups = serverRegistration.registerSubModel(DISCOVERY_GROUP_PATH, MessagingSubsystemProviders.DISCOVERY_GROUP_RESOURCE);
-        discoveryGroups.registerOperationHandler(ADD, DiscoveryGroupAdd.INSTANCE, DiscoveryGroupAdd.INSTANCE);
-        discoveryGroups.registerOperationHandler(REMOVE, DiscoveryGroupRemove.INSTANCE, DiscoveryGroupRemove.INSTANCE);
-        DiscoveryGroupWriteAttributeHandler.INSTANCE.registerAttributes(discoveryGroups, registerRuntimeOnly);
+        serverRegistration.registerSubModel(new DiscoveryGroupDefinition(registerRuntimeOnly));
 
         // Diverts
         final ManagementResourceRegistration diverts = serverRegistration.registerSubModel(DIVERT_PATH, MessagingSubsystemProviders.DIVERT_RESOURCE);
