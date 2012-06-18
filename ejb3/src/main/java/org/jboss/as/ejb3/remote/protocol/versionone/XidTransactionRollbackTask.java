@@ -50,7 +50,7 @@ class XidTransactionRollbackTask extends XidTransactionManagementTask {
 
     @Override
     protected void manageTransaction() throws Throwable {
-        final Transaction transaction = this.transactionsRepository.removeTransaction(this.xidTransactionID);
+        final Transaction transaction = this.transactionsRepository.getImportedTransaction(this.xidTransactionID);
         if(transaction == null) {
             if(EjbLogger.EJB3_INVOCATION_LOGGER.isDebugEnabled()) {
                 //this happens if no ejb invocations where made within the TX
