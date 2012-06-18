@@ -25,8 +25,11 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.jboss.as.configadmin.service.ConfigAdminService;
 import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -36,7 +39,14 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Thomas.Diesler@jboss.com
@@ -44,6 +54,8 @@ import org.jboss.msc.service.ServiceController;
  */
 public class ConfigurationAdd extends AbstractAddStepHandler {
     static final ConfigurationAdd INSTANCE = new ConfigurationAdd();
+
+    private InitializeConfigAdminService initializationService;
 
     private ConfigurationAdd() {
     }
@@ -67,6 +79,17 @@ public class ConfigurationAdd extends AbstractAddStepHandler {
         ConfigAdminServiceImpl configAdmin = ConfigAdminExtension.getConfigAdminService(context);
         if (configAdmin != null) {
             configAdmin.putConfigurationFromDMR(pid, dictionary);
+        } else {
+            synchronized (this) {
+                if (initializationService == null) {
+                    initializationService = new InitializeConfigAdminService();
+                    ServiceBuilder<Object> builder = context.getServiceTarget().addService(ServiceName.JBOSS.append("configadmin", "data_initialization"), initializationService);
+                    builder.addDependency(ConfigAdminService.SERVICE_NAME, ConfigAdminService.class, initializationService.injectedConfigAdminService);
+                    builder.install();
+                }
+            }
+
+            initializationService.putConfiguration(pid, dictionary);
         }
     }
 
@@ -97,4 +120,30 @@ public class ConfigurationAdd extends AbstractAddStepHandler {
             return node;
         }
     };
+
+    static class InitializeConfigAdminService implements Service<Object> {
+        private final Map<String, Dictionary<String, String>> configs = new ConcurrentHashMap<String, Dictionary<String,String>>();
+        private final InjectedValue<ConfigAdminService> injectedConfigAdminService = new InjectedValue<ConfigAdminService>();
+
+        @Override
+        public Object getValue() throws IllegalStateException, IllegalArgumentException {
+            return null;
+        }
+
+        public void putConfiguration(String pid, Dictionary<String, String> dictionary) {
+            configs.put(pid, dictionary);
+        }
+
+        @Override
+        public void start(StartContext context) throws StartException {
+            for (Map.Entry<String, Dictionary<String, String>> entry : configs.entrySet()) {
+                ConfigAdminServiceImpl configAdminService = (ConfigAdminServiceImpl) injectedConfigAdminService.getValue();
+                configAdminService.putConfigurationFromDMR(entry.getKey(), entry.getValue());
+            }
+        }
+
+        @Override
+        public void stop(StopContext context) {
+        }
+    }
 }

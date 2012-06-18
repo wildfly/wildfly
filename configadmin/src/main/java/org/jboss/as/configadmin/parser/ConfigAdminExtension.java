@@ -58,9 +58,6 @@ public class ConfigAdminExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-
-        boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
-
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(ConfigAdminProviders.SUBSYSTEM);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, ConfigAdminAdd.INSTANCE, ConfigAdminAdd.DESCRIPTION, false);
@@ -71,7 +68,9 @@ public class ConfigAdminExtension implements Extension {
         ManagementResourceRegistration configuration = registration.registerSubModel(PathElement.pathElement(ModelConstants.CONFIGURATION), ConfigAdminProviders.CONFIGURATION_DESCRIPTION);
         configuration.registerOperationHandler(ModelDescriptionConstants.ADD, ConfigurationAdd.INSTANCE, ConfigurationAdd.DESCRIPTION, false);
         configuration.registerOperationHandler(ModelDescriptionConstants.REMOVE, ConfigurationRemove.INSTANCE, ConfigurationRemove.DESCRIPTION, false);
-        configuration.registerReadOnlyAttribute(ModelConstants.ENTRIES,null, AttributeAccess.Storage.CONFIGURATION);
+        // The update operation is marked private on the 7.1 branch to not change the public API. On the master branch (7.2 and onwards) this operation should be public
+        configuration.registerOperationHandler(ModelConstants.UPDATE, ConfigurationUpdate.INSTANCE, ConfigurationUpdate.DESCRIPTION, false, OperationEntry.EntryType.PRIVATE);
+        configuration.registerReadOnlyAttribute(ModelConstants.ENTRIES, null, AttributeAccess.Storage.CONFIGURATION);
 
         subsystem.registerXMLElementWriter(ConfigAdminWriter.INSTANCE);
     }

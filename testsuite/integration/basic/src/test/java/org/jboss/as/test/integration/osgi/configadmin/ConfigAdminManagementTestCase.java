@@ -126,13 +126,22 @@ public class ConfigAdminManagementTestCase extends AbstractCliTestBase {
             entries.put("value", "initial");
             assertTrue(ConfigAdminManagementOperations.addConfiguration(getControllerClient(), configName, entries));
 
-            // listConfigurations
             Map<String, String> config = ConfigAdminManagementOperations.readConfiguration(getControllerClient(), configName);
             assertEquals(entries, config);
 
             // Check the specified file for the content specified in the configuration
             assertEquals("The managed service in the deployed bundle should have received the configuration and updated the file",
                     "initial", readTextFile(f));
+
+            entries.put("value", "updated");
+            assertTrue(ConfigAdminManagementOperations.updateConfiguration(getControllerClient(), configName, entries));
+
+            Map<String, String> config2 = ConfigAdminManagementOperations.readConfiguration(getControllerClient(), configName);
+            assertEquals(entries, config2);
+
+            // Check the specified file for the content specified in the configuration
+            assertEquals("The managed service in the deployed bundle should have received the configuration and updated the file",
+                    "updated", readTextFile(f));
 
             assertTrue(ConfigAdminManagementOperations.listConfigurations(getControllerClient()).contains(configName));
             assertTrue(ConfigAdminManagementOperations.removeConfiguration(getControllerClient(), configName));
@@ -158,7 +167,13 @@ public class ConfigAdminManagementTestCase extends AbstractCliTestBase {
         assertEquals("ACTIVE", OSGiManagementOperations.getBundleState(getControllerClient(), bundleId));
 
         Map<String, String> config = ConfigAdminManagementOperations.readConfiguration(getControllerClient(), pid);
-        assertEquals("hi from a bundle activator", config.get("from.activator"));
+        assertEquals("initial", config.get("from.bundle"));
+
+        assertTrue(OSGiManagementOperations.bundleStop(getControllerClient(), bundleId));
+        assertEquals("RESOLVED", OSGiManagementOperations.getBundleState(getControllerClient(), bundleId));
+
+        Map<String, String> config2 = ConfigAdminManagementOperations.readConfiguration(getControllerClient(), pid);
+        assertEquals("updated", config2.get("from.bundle"));
 
         assertTrue(ConfigAdminManagementOperations.removeConfiguration(getControllerClient(), pid));
         assertFalse(ConfigAdminManagementOperations.listConfigurations(getControllerClient()).contains(pid));
@@ -168,8 +183,21 @@ public class ConfigAdminManagementTestCase extends AbstractCliTestBase {
         return managementClient.getControllerClient();
     }
 
-    private String readTextFile(File file) throws FileNotFoundException {
-        // The following reads the file into a string
-        return new Scanner(file).useDelimiter("\\A").next();
+    private String readTextFile(File file) throws Exception {
+        int attempt = 0;
+        while (true) {
+            try {
+                // The following reads the file into a string
+                return new Scanner(file).useDelimiter("\\A").next();
+            } catch (Exception ex) {
+                if (attempt < 5) {
+                    attempt++;
+                    Thread.sleep(2000);
+                    // Sleep for a little while then retry
+                } else {
+                    throw ex;
+                }
+            }
+        }
     }
 }

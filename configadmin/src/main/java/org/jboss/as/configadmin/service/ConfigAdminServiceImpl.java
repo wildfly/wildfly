@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
@@ -96,25 +95,28 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
 
     @Override
     public Dictionary<String, String> putConfiguration(String pid, Dictionary<String, String> newConfig) {
+        // The change did not come from the DMR so we need to inform it.
+        ModelNode op;
+
         ModelNode address = getSubsystemAddress();
         address.add(new ModelNode().set(ModelConstants.CONFIGURATION, pid));
+
         Dictionary<String, String> oldConfig = getConfiguration(pid);
         if (oldConfig != null) {
-            ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, address);
-            try {
-                controllerClient.execute(op);
-            } catch (IOException ex) {
-                ROOT_LOGGER.cannotRemoveConfiguration(ex, pid);
-            }
+            op = Util.getEmptyOperation(ModelConstants.UPDATE, address);
+        } else {
+            op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
         }
+
         ModelNode entries = new ModelNode();
         Enumeration<String> keys = newConfig.keys();
         while (keys.hasMoreElements()) {
             String key = keys.nextElement();
             entries.get(key).set(newConfig.get(key));
         }
-        ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
+        entries.get(SOURCE_PROPERTY_KEY).set(FROM_NONDMR_SOURCE_VALUE);
         op.get(ModelConstants.ENTRIES).set(entries);
+
         try {
             ModelNode node = controllerClient.execute(op);
             ModelNode outcome = node.get(ModelDescriptionConstants.OUTCOME);
@@ -126,11 +128,16 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
         } catch (IOException ex) {
             ROOT_LOGGER.cannotAddConfiguration(ex, pid);
         }
+
         return oldConfig;
     }
 
     public void putConfigurationFromDMR(String pid, Dictionary<String, String> dictionary) {
-        dictionary.put(SOURCE_PROPERTY_KEY, FROM_DMR_SOURCE_VALUE);
+        if (dictionary.get(SOURCE_PROPERTY_KEY) == null) {
+            // The configuration originated in the DMR so mark it as such
+            dictionary.put(SOURCE_PROPERTY_KEY, FROM_DMR_SOURCE_VALUE);
+        }
+
         putConfigurationInternal(pid, dictionary);
     }
 
@@ -150,7 +157,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
                 ModelNode node = controllerClient.execute(op);
                 ModelNode outcome = node.get(ModelDescriptionConstants.OUTCOME);
                 if (ModelDescriptionConstants.SUCCESS.equals(outcome.asString())) {
-                    removeConfigurationInternal(pid, oldConfig);
+                    removeConfigurationInternal(pid);
                 } else {
                     ROOT_LOGGER.cannotRemoveConfiguration(pid, node);
                 }
@@ -162,28 +169,12 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
     }
 
     public void removeConfigurationFromDMR(String pid) {
-        Dictionary<String, String> dictionary = injectedSubsystemState.getValue().getConfiguration(pid);
-
-        if (!FROM_DMR_SOURCE_VALUE.equals(dictionary.get(SOURCE_PROPERTY_KEY))) {
-            // Set the FROM SOURCE value on the dictionary
-            Dictionary<String, String> copy = new Hashtable<String, String>();
-            copy.put(SOURCE_PROPERTY_KEY, FROM_DMR_SOURCE_VALUE);
-            if (dictionary != null) {
-                Enumeration<String> keys = dictionary.keys();
-                while (keys.hasMoreElements()) {
-                    String key = keys.nextElement();
-                    copy.put(key, dictionary.get(key));
-                }
-            }
-            dictionary = copy;
-        }
-
-        removeConfigurationInternal(pid, dictionary);
+        removeConfigurationInternal(pid);
     }
 
-    private void removeConfigurationInternal(String pid, Dictionary<String, String> dictionary) {
+    private void removeConfigurationInternal(String pid) {
         injectedSubsystemState.getValue().removeConfiguration(pid);
-        executor.execute(new ConfigurationModifiedService(pid, dictionary));
+        executor.execute(new ConfigurationModifiedService(pid, null));
     }
 
     @Override

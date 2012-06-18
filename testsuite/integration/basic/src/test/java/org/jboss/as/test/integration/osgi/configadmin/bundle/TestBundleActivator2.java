@@ -43,9 +43,9 @@ public class TestBundleActivator2 implements BundleActivator {
         st.open();
         try {
             ConfigurationAdmin cadmin = (ConfigurationAdmin) st.waitForService(30000);
-            Configuration configuration = cadmin.getConfiguration(getClass().getName(), null);
+            Configuration configuration = cadmin.getConfiguration(TestBundleActivator2.class.getName(), null);
             Dictionary<String, Object> dictionary = new Hashtable<String, Object>();
-            dictionary.put("from.activator", "hi from a bundle activator");
+            dictionary.put("from.bundle", "initial");
             configuration.update(dictionary);
         } finally {
             st.close();
@@ -54,5 +54,16 @@ public class TestBundleActivator2 implements BundleActivator {
 
     @Override
     public void stop(BundleContext context) throws Exception {
+        ServiceTracker st = new ServiceTracker(context, ConfigurationAdmin.class.getName(), null);
+        st.open();
+        try {
+            ConfigurationAdmin cadmin = (ConfigurationAdmin) st.waitForService(30000);
+            Configuration configuration = cadmin.getConfiguration(TestBundleActivator2.class.getName(), null);
+            Dictionary<String, Object> d = new Hashtable<String, Object>();
+            d.put("from.bundle", "updated");
+            configuration.update(d);
+        } finally {
+            st.close();
+        }
     }
 }
