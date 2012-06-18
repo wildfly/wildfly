@@ -105,17 +105,19 @@ class EJBClientCommonConnectionConfig implements EJBClientConfiguration.CommonCo
         private final ServiceRegistry serviceRegistry;
         private final String userName;
         private final String securityRealmName;
-        private final ServiceName securityRealmServiceName;
 
         CallbackHandlerProvider(final ServiceRegistry serviceRegistry, final String userName, final String securityRealm) {
             this.serviceRegistry = serviceRegistry;
             this.userName = userName;
             this.securityRealmName = securityRealm;
-            this.securityRealmServiceName = SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm);
         }
 
         CallbackHandler getCallbackHandler() {
-            final ServiceController<SecurityRealm> securityRealmController = (ServiceController<SecurityRealm>) this.serviceRegistry.getService(this.securityRealmServiceName);
+            if (this.securityRealmName == null || this.securityRealmName.trim().isEmpty()) {
+                return new AnonymousCallbackHandler();
+            }
+            final ServiceName securityRealmServiceName = SecurityRealmService.BASE_SERVICE_NAME.append(this.securityRealmName);
+            final ServiceController<SecurityRealm> securityRealmController = (ServiceController<SecurityRealm>) this.serviceRegistry.getService(securityRealmServiceName);
             if (securityRealmController == null) {
                 return new AnonymousCallbackHandler();
             }
