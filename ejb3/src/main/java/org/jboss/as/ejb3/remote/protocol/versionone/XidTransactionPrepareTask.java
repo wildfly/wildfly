@@ -36,10 +36,8 @@ import javax.transaction.HeuristicCommitException;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.SystemException;
-import javax.transaction.Transaction;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
 import java.io.IOException;
 
 /**
@@ -90,27 +88,25 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
 
 
     private int prepareTransaction() throws Throwable {
-        // first associate the tx on this thread, by resuming the tx
-        final Transaction transaction = this.transactionsRepository.getTransaction(this.xidTransactionID);
-        if(transaction == null) {
-            if(EjbLogger.EJB3_INVOCATION_LOGGER.isDebugEnabled()) {
+        final SubordinateTransaction subordinateTransaction = this.transactionsRepository.getImportedTransaction(this.xidTransactionID);
+        if (subordinateTransaction == null) {
+            if (EjbLogger.EJB3_INVOCATION_LOGGER.isDebugEnabled()) {
                 //this happens if no ejb invocations where made within the TX
                 EjbLogger.EJB3_INVOCATION_LOGGER.debug("Not preparing transaction " + this.xidTransactionID + " as is was not found on the server");
             }
             return XAResource.XA_OK;
         }
-        this.resumeTransaction(transaction);
+        // first associate the tx on this thread, by resuming the tx
+        this.resumeTransaction(subordinateTransaction);
         try {
             // now "prepare"
-            final Xid xid = this.xidTransactionID.getXid();
             // Courtesy: com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple
-            final SubordinateTransaction subordinateTransaction = SubordinationManager.getTransactionImporter().getImportedTransaction(xid);
             int result = subordinateTransaction.doPrepare();
             switch (result) {
                 case TwoPhaseOutcome.PREPARE_READONLY:
                     // TODO: Would it be fine to not remove the xid? (Need to understand how the subsequent
                     // flow works)
-                    SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
+                    SubordinationManager.getTransactionImporter().removeImportedTransaction(this.xidTransactionID.getXid());
                     return XAResource.XA_RDONLY;
 
                 case TwoPhaseOutcome.PREPARE_OK:
@@ -140,7 +136,7 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
                         xaExceptionCode = XAException.XAER_RMERR;
                     }
                     // remove the transaction
-                    SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
+                    SubordinationManager.getTransactionImporter().removeImportedTransaction(this.xidTransactionID.getXid());
                     final XAException xaException = new XAException(xaExceptionCode);
                     if (initCause != null) {
                         xaException.initCause(initCause);
