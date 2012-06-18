@@ -22,6 +22,8 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.util.List;
@@ -33,6 +35,7 @@ import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -47,11 +50,11 @@ public class ConnectorRefsAttribute extends PrimitiveListAttributeDefinition {
 
     public static final ConnectorRefsAttribute BRIDGE_CONNECTORS = new ConnectorRefsAttribute(CommonAttributes.STATIC_CONNECTORS, true, true);
 
-    public static final ConnectorRefsAttribute BROADCAST_GROUP = new ConnectorRefsAttribute(CommonAttributes.CONNECTORS, false, true);
+    public static final ConnectorRefsAttribute BROADCAST_GROUP = new ConnectorRefsAttribute(CommonAttributes.CONNECTORS, false, true, RESTART_ALL_SERVICES);
 
     private final boolean wrap;
 
-    private ConnectorRefsAttribute(final String name, boolean wrap, boolean allowNull) {
+    private ConnectorRefsAttribute(final String name, boolean wrap, boolean allowNull, Flag... flags) {
         super(name, CommonAttributes.CONNECTOR_REF_STRING, allowNull, ModelType.STRING, 1, Integer.MAX_VALUE, new StringLengthValidator(1));
         this.wrap = wrap;
     }

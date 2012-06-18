@@ -24,8 +24,6 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
-import static org.jboss.as.messaging.CommonAttributes.FILTER;
-import static org.jboss.as.messaging.CommonAttributes.TRANSFORMER_CLASS_NAME;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.STRING;
 
@@ -65,8 +63,8 @@ public class DivertDefinition extends SimpleResourceDefinition {
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
-    public static final AttributeDefinition[] ATTRIBUTES = { ROUTING_NAME, ADDRESS, FORWARDING_ADDRESS, FILTER,
-            TRANSFORMER_CLASS_NAME, EXCLUSIVE };
+    public static final AttributeDefinition[] ATTRIBUTES = { ROUTING_NAME, ADDRESS, FORWARDING_ADDRESS, CommonAttributes.FILTER,
+        CommonAttributes.TRANSFORMER_CLASS_NAME, EXCLUSIVE };
 
     private final boolean registerRuntimeOnly;
 
