@@ -25,10 +25,7 @@ package org.jboss.as.messaging.jms.bridge;
 import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
-import java.security.AccessController;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ExecutorService;
 
 import javax.transaction.TransactionManager;
 
@@ -42,7 +39,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.threads.JBossThreadFactory;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service responsible for JMS Bridges.
@@ -53,8 +50,7 @@ class JMSBridgeService implements Service<JMSBridge> {
     private final JMSBridge bridge;
     private final String bridgeName;
     private final String moduleName;
-    private final ThreadFactory THREAD_FACTORY = new JBossThreadFactory(new ThreadGroup("JMSBridge-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
-    private final Executor executor = Executors.newCachedThreadPool(THREAD_FACTORY);
+    private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
 
     public JMSBridgeService(final String moduleName, final String bridgeName, final JMSBridge bridge) {
         if(bridge == null) {
@@ -87,7 +83,7 @@ class JMSBridgeService implements Service<JMSBridge> {
             }
         };
         context.asynchronous();
-        executor.execute(r);
+        executorInjector.getValue().execute(r);
     }
 
     public void startBridge() throws Exception {
@@ -123,11 +119,15 @@ class JMSBridgeService implements Service<JMSBridge> {
             }
         };
         context.asynchronous();
-        executor.execute(r);
+        executorInjector.getValue().execute(r);
     }
 
     @Override
     public JMSBridge getValue() throws IllegalStateException {
         return bridge;
+    }
+
+    public InjectedValue<ExecutorService> getExecutorInjector() {
+        return executorInjector;
     }
 }
