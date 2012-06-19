@@ -69,20 +69,7 @@ import org.jboss.as.messaging.jms.JMSTopicRemove;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryRemove;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryWriteAttributeHandler;
-<<<<<<< HEAD
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.messaging.CommonAttributes.QUEUE;
-import static org.jboss.as.messaging.Namespace.MESSAGING_1_0;
-import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
-import static org.jboss.as.messaging.Namespace.MESSAGING_1_2;
-import static org.jboss.as.messaging.Namespace.MESSAGING_1_3;
-=======
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
->>>>>>> [AS7-4628] JMS bridge
 
 /**
  * Domain extension that integrates HornetQ.

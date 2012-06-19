@@ -25,7 +25,7 @@ package org.jboss.as.messaging.jms;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-final class SecurityActions {
+public final class SecurityActions {
 
     private SecurityActions() {
         // forbidden inheritance
@@ -36,7 +36,7 @@ final class SecurityActions {
      *
      * @return the current context classloader
      */
-    static ClassLoader getContextClassLoader() {
+    public static ClassLoader getContextClassLoader() {
         if (System.getSecurityManager() == null) {
             return Thread.currentThread().getContextClassLoader();
         } else {
@@ -54,7 +54,7 @@ final class SecurityActions {
      * @param classLoader
      *            the classloader
      */
-    static void setContextClassLoader(final ClassLoader classLoader) {
+    public static void setContextClassLoader(final ClassLoader classLoader) {
         if (System.getSecurityManager() == null) {
             Thread.currentThread().setContextClassLoader(classLoader);
         } else {

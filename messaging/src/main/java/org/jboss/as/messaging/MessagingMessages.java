@@ -474,4 +474,17 @@ public interface MessagingMessages {
     @Message(id = 11670, value = "Only one of %s or %s is required")
     String onlyOneRequired(Object obj1, Object obj2);
 
+
+    /**
+     * Create an exception indicating that a messaging resource has failed
+     * to be recovered
+     *
+     * @param cause  the cause of the error.
+     * @param name the name that failed to be recovered.
+     *
+     * @return the message.
+     */
+    @Message(id = 11671, value = "Failed to recover %s")
+    OperationFailedException failedToRecover(@Cause Throwable cause, String name);
+
 }

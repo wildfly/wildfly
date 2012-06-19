@@ -23,6 +23,7 @@
 package org.jboss.as.messaging.jms.bridge;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
@@ -36,6 +37,7 @@ import static org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition.RESUME;
 
 import org.hornetq.jms.bridge.JMSBridge;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -62,12 +64,16 @@ public class JMSBridgeHandler extends AbstractRuntimeOnlyHandler {
 
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-        final String bridgeName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)).getLastElement()
+        final String bridgeName = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement()
                 .getValue();
         final String operationName = operation.require(OP).asString();
 
         final ServiceName bridgeServiceName = MessagingServices.getJMSBridgeServiceName(bridgeName);
-        ServiceController<?> bridgeService = context.getServiceRegistry(false).getService(bridgeServiceName);
+        ServiceController<?> bridgeService = context.getServiceRegistry(true).getService(bridgeServiceName);
+        if (bridgeService == null) {
+            throw new OperationFailedException(ControllerMessages.MESSAGES.noHandler(READ_ATTRIBUTE_OPERATION, PathAddress.pathAddress(operation.require(OP_ADDR))));
+        }
+
         JMSBridge bridge = JMSBridge.class.cast(bridgeService.getValue());
 
         if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {

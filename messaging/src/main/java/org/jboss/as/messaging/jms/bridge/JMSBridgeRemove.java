@@ -27,9 +27,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.messaging.MessagingMessages;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Removes a JMS Bridge.
@@ -51,6 +56,20 @@ public class JMSBridgeRemove extends AbstractRemoveStepHandler {
         context.removeService(MessagingServices.getJMSBridgeServiceName(bridgeName));
     }
 
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String bridgeName = address.getLastElement().getValue();
+
+        final ServiceRegistry registry = context.getServiceRegistry(true);
+        final ServiceName jmsBridgeServiceName = MessagingServices.getJMSBridgeServiceName(bridgeName);
+        final ServiceController<?> jmsBridgeServiceController = registry.getService(jmsBridgeServiceName);
+        if (jmsBridgeServiceController != null && jmsBridgeServiceController.getState() == ServiceController.State.UP) {
+            JMSBridgeService jmsBridgeService = (JMSBridgeService) jmsBridgeServiceController.getService();
+            try {
+                jmsBridgeService.startBridge();
+            } catch (Exception e) {
+                throw MessagingMessages.MESSAGES.failedToRecover(e, bridgeName);
+            }
+        }
     }
 }

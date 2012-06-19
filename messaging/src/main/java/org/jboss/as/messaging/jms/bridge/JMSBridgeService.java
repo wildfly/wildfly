@@ -31,6 +31,7 @@ import javax.transaction.TransactionManager;
 
 import org.hornetq.jms.bridge.JMSBridge;
 import org.jboss.as.messaging.MessagingLogger;
+import org.jboss.as.messaging.jms.SecurityActions;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -90,14 +91,14 @@ class JMSBridgeService implements Service<JMSBridge> {
         if (moduleName == null) {
             bridge.start();
         } else {
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            ClassLoader cl = SecurityActions.getContextClassLoader();
             try {
                 ModuleIdentifier moduleID = ModuleIdentifier.create(moduleName);
                 Module module = Module.getCallerModuleLoader().loadModule(moduleID);
-                Thread.currentThread().setContextClassLoader(module.getClassLoader());
+                SecurityActions.setContextClassLoader(module.getClassLoader());
                 bridge.start();
             } finally {
-                Thread.currentThread().setContextClassLoader(cl);
+                SecurityActions.setContextClassLoader(cl);
             }
         }
         MessagingLogger.MESSAGING_LOGGER.startedService("JMS Bridge", bridgeName);
