@@ -36,13 +36,15 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
+import org.jboss.as.controller.TransformingProxyController;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 
+import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.Transformers;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 
-import org.jboss.as.host.controller.mgmt.TransformingProxyController;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -110,6 +112,7 @@ class ManagedServer {
     private final InetSocketAddress managementSocket;
     private final ProcessControllerClient processControllerClient;
     private final ManagedServer.ManagedServerBootConfiguration bootConfiguration;
+    private final TransformationTarget transformationTarget;
 
     private volatile TransformingProxyController proxyController;
 
@@ -117,7 +120,8 @@ class ManagedServer {
     private volatile InternalState internalState = InternalState.STOPPED;
 
     ManagedServer(final String hostControllerName, final String serverName, final ProcessControllerClient processControllerClient,
-            final InetSocketAddress managementSocket, final ManagedServer.ManagedServerBootConfiguration bootConfiguration) {
+            final InetSocketAddress managementSocket, final ManagedServer.ManagedServerBootConfiguration bootConfiguration,
+            final TransformationTarget transformationTarget) {
 
         assert hostControllerName  != null : "hostControllerName is null";
         assert serverName  != null : "serverName is null";
@@ -130,6 +134,7 @@ class ManagedServer {
         this.processControllerClient = processControllerClient;
         this.managementSocket = managementSocket;
         this.bootConfiguration = bootConfiguration;
+        this.transformationTarget = transformationTarget;
 
         final byte[] authKey = new byte[16];
         new Random(new SecureRandom().nextLong()).nextBytes(authKey);
@@ -271,7 +276,9 @@ class ManagedServer {
         internalSetState(new TransitionTask() {
             @Override
             public void execute(final ManagedServer server) throws Exception {
+
                 server.proxyController = TransformingProxyController.Factory.create(channelAssociation,
+                        Transformers.Factory.create(transformationTarget),
                         PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerName), serverPath),
                         ProxyOperationAddressTranslator.SERVER);
             }

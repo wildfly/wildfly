@@ -59,9 +59,9 @@ public class TransformersImpl implements Transformers {
 
     @Override
     public ModelNode transformOperation(final TransformationContext context, final ModelNode operation) {
-        if (!target.isTransformationNeeded()) {
-            return operation;
-        }
+//        if (!target.isTransformationNeeded()) {
+//            return operation;
+//        }
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String operationName = operation.require(OP).asString();

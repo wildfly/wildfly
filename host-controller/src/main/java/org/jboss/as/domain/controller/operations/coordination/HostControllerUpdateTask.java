@@ -36,7 +36,7 @@ import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROL
 
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.Transformers;
-import org.jboss.as.host.controller.mgmt.TransformingProxyController;
+import org.jboss.as.controller.TransformingProxyController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.threads.AsyncFuture;

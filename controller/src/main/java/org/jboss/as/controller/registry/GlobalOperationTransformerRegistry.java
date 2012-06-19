@@ -110,19 +110,30 @@ public class GlobalOperationTransformerRegistry {
      * @return the resolved operation registry
      */
     public OperationTransformerRegistry resolve(final int major, final int minor, final ModelNode subsystems) {
-        final PathAddress base = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(ModelDescriptionConstants.PROFILE));
+        return resolve(ModelVersion.create(major, minor), subsystems);
+    }
+
+    /**
+     * Resolve the operation transformers for a given version.
+     *
+     * @param version the model version
+     * @param subsystems the subsystems
+     * @return the resolved operation registry
+     */
+    public OperationTransformerRegistry resolve(final ModelVersion version, final ModelNode subsystems) {
+        final PathAddress base = PathAddress.EMPTY_ADDRESS;
         final Map<PathAddress, ModelVersion> versions = new HashMap<PathAddress, ModelVersion>();
         for(final Property property : subsystems.asPropertyList()) {
             final String name = property.getName();
             final PathAddress address = base.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name));
             versions.put(address, convert(property.getValue().asString()));
         }
-        return create(major, minor, versions);
+        return create(version, versions);
     }
 
-    protected OperationTransformerRegistry create(final int major, final int minor, final Map<PathAddress, ModelVersion> versions) {
+    protected OperationTransformerRegistry create(final ModelVersion version, final Map<PathAddress, ModelVersion> versions) {
         final OperationTransformerRegistry registry = new OperationTransformerRegistry();
-        process(registry, PathAddress.EMPTY_ADDRESS, ModelVersion.create(major, minor), versions);
+        process(registry, PathAddress.EMPTY_ADDRESS, version, versions);
         return registry;
     }
 
@@ -255,13 +266,15 @@ public class GlobalOperationTransformerRegistry {
     }
 
     static ModelVersion convert(final String version) {
-        int index = version.indexOf('.');
-        if(index == -1) {
-            throw new IllegalArgumentException();
+        final String[] s = version.split("\\.");
+        final int length = s.length;
+        if(length > 3) {
+            throw new IllegalStateException();
         }
-        final int major = Integer.valueOf(version.substring(0, index));
-        final int minor = Integer.valueOf(version.substring(index + 1, version.length()));
-        return ModelVersion.create(major, minor);
+        int major = Integer.valueOf(s[0]);
+        int minor = length > 1 ? Integer.valueOf(s[1]) : 0;
+        int micro = length == 3 ? Integer.valueOf(s[2]) : 0;
+        return ModelVersion.create(major, minor, micro);
     }
 
 }
