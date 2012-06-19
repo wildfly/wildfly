@@ -68,8 +68,14 @@ public class JMSBridgeHandler extends AbstractRuntimeOnlyHandler {
                 .getValue();
         final String operationName = operation.require(OP).asString();
 
+        final boolean modify;
+        if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
+            modify = false;
+        } else {
+            modify = true;
+        }
         final ServiceName bridgeServiceName = MessagingServices.getJMSBridgeServiceName(bridgeName);
-        ServiceController<?> bridgeService = context.getServiceRegistry(true).getService(bridgeServiceName);
+        ServiceController<?> bridgeService = context.getServiceRegistry(modify).getService(bridgeServiceName);
         if (bridgeService == null) {
             throw new OperationFailedException(ControllerMessages.MESSAGES.noHandler(READ_ATTRIBUTE_OPERATION, PathAddress.pathAddress(operation.require(OP_ADDR))));
         }
