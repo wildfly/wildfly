@@ -82,6 +82,7 @@ import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpContext;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpServer;
+import org.jboss.com.sun.net.httpserver.HttpsServer;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -177,7 +178,7 @@ class DomainApiHandler implements ManagementHttpHandler {
         if (headers.containsKey(ORIGIN)) {
             String origin = headers.getFirst(ORIGIN);
             String host = headers.getFirst(HOST);
-            String protocol = http.getHttpContext().getServer() instanceof HttpServer ? HTTP : HTTPS;
+            String protocol = http.getHttpContext().getServer() instanceof HttpsServer ? HTTPS : HTTP;
             //This browser set header should not need IPv6 escaping
             String allowedOrigin = protocol + "://" + host;
 
