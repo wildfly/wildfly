@@ -22,17 +22,6 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.ObjectStreamException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.InvocationType;
@@ -50,6 +39,7 @@ import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
+import org.jboss.ejb.client.TransactionID;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.AbstractClassResolver;
@@ -59,6 +49,17 @@ import org.jboss.marshalling.Unmarshaller;
 import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
 import org.xnio.IoUtils;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectStreamException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 
 /**
@@ -212,7 +213,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                             // close the channel unless this is a NotSerializableException
                             //as this does not represent a problem with the channel there is no
                             //need to close it (see AS7-3402)
-                            if(!(ioe instanceof ObjectStreamException)) {
+                            if (!(ioe instanceof ObjectStreamException)) {
                                 IoUtils.safeClose(channelAssociation.getChannel());
                             }
                             return;
@@ -241,7 +242,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                         // close the channel unless this is a NotSerializableException
                         //as this does not represent a problem with the channel there is no
                         //need to close it (see AS7-3402)
-                        if(!(ioe instanceof ObjectStreamException)) {
+                        if (!(ioe instanceof ObjectStreamException)) {
                             IoUtils.safeClose(channelAssociation.getChannel());
                         }
                         return;
@@ -264,10 +265,12 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(args);
         interceptorContext.setMethod(method);
-        interceptorContext.setContextData(new HashMap<String, Object>());
         interceptorContext.putPrivateData(Component.class, componentView.getComponent());
         interceptorContext.putPrivateData(ComponentView.class, componentView);
         interceptorContext.putPrivateData(InvocationType.class, InvocationType.REMOTE);
+        // setup the contextData on the (spec specified) InvocationContext
+        final Map<String, Object> invocationContextData = new HashMap<String, Object>();
+        interceptorContext.setContextData(invocationContextData);
         if (attachments != null) {
             // attach the attachments which were passed from the remote client
             for (final Map.Entry<String, Object> attachment : attachments.entrySet()) {
@@ -276,8 +279,15 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                 }
                 final String key = attachment.getKey();
                 final Object value = attachment.getValue();
-                // add it to the context
-                interceptorContext.putPrivateData(key, value);
+                // this is private to JBoss EJB implementation and not meant to be visible to the
+                // application, so add this attachment to the privateData of the InterceptorContext
+                if (TransactionID.PRIVATE_DATA_KEY.equals(key)) {
+                    interceptorContext.putPrivateData(key, value);
+                } else {
+                    // add it to the InvocationContext which will be visible to the target bean and the
+                    // application specific interceptors
+                    invocationContextData.put(key, value);
+                }
             }
         }
         // add the session id to the interceptor context, if it's a stateful ejb locator
@@ -294,7 +304,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                 // just invoke normally
                 return componentView.invoke(interceptorContext);
             }
-            return ((Future)componentView.invoke(interceptorContext)).get();
+            return ((Future) componentView.invoke(interceptorContext)).get();
         } else {
             return componentView.invoke(interceptorContext);
         }
