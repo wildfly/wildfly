@@ -39,10 +39,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="hornetq-server" type="hornetq-serverType" />
-<<<<<<< HEAD
-=======
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="jms-bridge" type="jms-bridgeType" />
->>>>>>> [AS7-4628] JMS bridge
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -740,10 +737,7 @@
          <xs:element name="password" type="xs:string" maxOccurs="1" minOccurs="0" />
          <xs:element name="min-pool-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="max-pool-size" type="xs:int" maxOccurs="1" minOccurs="0" />
-<<<<<<< HEAD
          <xs:element name="use-auto-recovery" type="xs:boolean" maxOccurs="1" minOccurs="0" />
-=======
->>>>>>> [AS7-4628] JMS bridge
          <!-- ============================================================== -->
          <!-- end of JMS pooled-connection-factoryType specific elements     -->
 
@@ -865,8 +859,6 @@
         </xs:restriction>
     </xs:simpleType>
 
-<<<<<<< HEAD
-=======
    <xs:complexType name="jms-bridgeType">
       <xs:annotation>
          <xs:documentation>
@@ -981,6 +973,4 @@
          <xs:element maxOccurs="unbounded" minOccurs="0" name="property" type="paramType" />
       </xs:sequence>
    </xs:complexType>
-
->>>>>>> [AS7-4628] JMS bridge
 </xs:schema>
