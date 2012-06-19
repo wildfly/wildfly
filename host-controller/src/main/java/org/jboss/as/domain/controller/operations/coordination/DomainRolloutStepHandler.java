@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
+import org.jboss.as.controller.TransformingProxyController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
@@ -42,7 +43,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.transform.Transformers;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
@@ -66,7 +66,6 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.plan.RolloutPlanController;
 import org.jboss.as.domain.controller.plan.ServerTaskExecutor;
-import org.jboss.as.host.controller.mgmt.TransformingProxyController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 

@@ -20,11 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.host.controller.mgmt;
+package org.jboss.as.controller;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.registry.Resource;
@@ -57,10 +54,10 @@ public interface TransformingProxyController extends ProxyController {
     Transformers getTransformers();
 
     public static class Factory {
-
-        public static TransformingProxyController create(final ManagementChannelHandler channelAssociation, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator) {
-            return create(channelAssociation, NOOP, pathAddress, addressTranslator);
-        }
+//
+//        public static TransformingProxyController create(final ManagementChannelHandler channelAssociation, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator) {
+//            return create(channelAssociation, NOOP, pathAddress, addressTranslator);
+//        }
 
         public static TransformingProxyController create(final ManagementChannelHandler channelAssociation, final Transformers transformers, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator) {
             final TransactionalProtocolClient client = TransactionalProtocolHandlers.createClient(channelAssociation);
@@ -124,22 +121,22 @@ public interface TransformingProxyController extends ProxyController {
             proxy.execute(operation, handler, control, attachments);
         }
     }
-
-    Transformers NOOP = new Transformers() {
-        @Override
-        public TransformationTarget getTarget() {
-            return null;
-        }
-
-        @Override
-        public ModelNode transformOperation(TransformationContext context, ModelNode operation) {
-            return operation;
-        }
-
-        @Override
-        public Resource transformResource(TransformationContext context, Resource resource) {
-            return resource;
-        }
-    };
+//
+//    Transformers NOOP = new Transformers() {
+//        @Override
+//        public TransformationTarget getTarget() {
+//            return null;
+//        }
+//
+//        @Override
+//        public ModelNode transformOperation(TransformationContext context, ModelNode operation) {
+//            return operation;
+//        }
+//
+//        @Override
+//        public Resource transformResource(TransformationContext context, Resource resource) {
+//            return resource;
+//        }
+//    };
 
 }

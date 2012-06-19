@@ -38,6 +38,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.Transformers;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -78,8 +80,21 @@ public class ProxyStepHandler implements OperationStepHandler {
                 finalResultRef.set(response);
             }
         };
-
-        proxyController.execute(operation, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
+        // Hmm...
+        if(proxyController instanceof TransformingProxyController) {
+            final TransformingProxyController transformingProxyController = (TransformingProxyController) proxyController;
+            final TransformationContext transformationContext = Transformers.Factory.getTransformationContext(context);
+            final ModelNode transformedOperation = transformingProxyController.getTransformers().transformOperation(transformationContext, operation);
+            if(transformedOperation != null) { // discard the operation
+                proxyController.execute(transformedOperation, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
+            } else {
+                //
+                context.completeStep();
+                return;
+            }
+        } else {
+            proxyController.execute(operation, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
+        }
         ModelNode finalResult = finalResultRef.get();
         if (finalResult != null) {
             // operation failed before it could commit

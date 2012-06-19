@@ -24,6 +24,9 @@ package org.jboss.as.host.controller;
 
 import org.jboss.as.controller.ProxyController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.TransformationTargetImpl;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
@@ -54,6 +57,7 @@ import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -76,6 +80,7 @@ public class ServerInventoryImpl implements ServerInventory {
     private final ProcessControllerClient processControllerClient;
     private final InetSocketAddress managementAddress;
     private final DomainController domainController;
+    private final ExtensionRegistry extensionRegistry;
 
     private volatile boolean shutdown;
     private volatile boolean connectionFinished;
@@ -86,11 +91,13 @@ public class ServerInventoryImpl implements ServerInventory {
 
     private final Object shutdownCondition = new Object();
 
-    ServerInventoryImpl(final DomainController domainController, final HostControllerEnvironment environment, final InetSocketAddress managementAddress, final ProcessControllerClient processControllerClient) {
+    ServerInventoryImpl(final DomainController domainController, final HostControllerEnvironment environment, final InetSocketAddress managementAddress,
+                        final ProcessControllerClient processControllerClient, final ExtensionRegistry extensionRegistry) {
         this.domainController = domainController;
         this.environment = environment;
         this.managementAddress = managementAddress;
         this.processControllerClient = processControllerClient;
+        this.extensionRegistry = extensionRegistry;
     }
 
     @Override
@@ -473,7 +480,17 @@ public class ServerInventoryImpl implements ServerInventory {
         final ModelNode hostModel = domainModel.require(HOST).require(hostControllerName);
         final ModelCombiner combiner = new ModelCombiner(serverName, domainModel, hostModel, domainController, environment);
         final ManagedServer.ManagedServerBootConfiguration configuration = combiner.createConfiguration();
-        return new ManagedServer(hostControllerName, serverName, processControllerClient, managementAddress, configuration);
+        final ModelNode subsystems = resolveSubsystems(extensionRegistry);
+        final TransformationTarget target = TransformationTargetImpl.create(Version.MANAGEMENT_MAJOR_VERSION, Version.MANAGEMENT_MINOR_VERSION, Version.MANAGEMENT_MICRO_VERSION, subsystems);
+        return new ManagedServer(hostControllerName, serverName, processControllerClient, managementAddress, configuration, target);
+    }
+
+    public static ModelNode resolveSubsystems(final ExtensionRegistry extensionRegistry) {
+        final ModelNode subsystems = new ModelNode();
+        for (final String extension : extensionRegistry.getExtensionModuleNames()) {
+            extensionRegistry.recordSubsystemVersions(extension, subsystems);
+        }
+        return subsystems;
     }
 
     @Override
