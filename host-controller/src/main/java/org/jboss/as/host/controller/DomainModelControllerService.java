@@ -90,7 +90,7 @@ import org.jboss.as.host.controller.mgmt.HostControllerRegistrationHandler;
 import org.jboss.as.host.controller.mgmt.MasterDomainControllerOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
 import org.jboss.as.host.controller.mgmt.SlaveHostPinger;
-import org.jboss.as.host.controller.mgmt.TransformingProxyController;
+import org.jboss.as.controller.TransformingProxyController;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.StartServersHandler;
 import org.jboss.as.process.CommandLineConstants;
@@ -294,7 +294,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    public void registerRunningServer(ProxyController serverControllerClient) {
+    public void registerRunningServer(final ProxyController serverControllerClient) {
         PathAddress pa = serverControllerClient.getProxyNodeAddress();
         PathElement pe = pa.getElement(1);
         if (modelNodeRegistration.getProxyController(pa) != null) {
@@ -390,7 +390,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
                 // Now we know our management interface configuration. Install the server inventory
                 Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, runningModeControl, environment,
-                        hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
+                        extensionRegistry, hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
 
                 if (!hostControllerInfo.isMasterDomainController() && !environment.isUseCachedDc()) {
                     serverInventory = getFuture(inventoryFuture);

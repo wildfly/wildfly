@@ -28,9 +28,12 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -44,8 +47,12 @@ import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformersRegistry;
 import org.jboss.common.beans.property.PropertyEditors;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -80,6 +87,29 @@ public class SarExtension implements Extension {
         registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, SarSubsystemProviders.SUBSYSTEM_REMOVE, false);
         subsystem.registerXMLElementWriter(parser);
         PropertyEditors.init();
+
+        registration.registerReadWriteAttribute("test", null, new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                context.completeStep();
+            }
+        }, AttributeAccess.Storage.CONFIGURATION);
+        final TransformersRegistry registry = subsystem.registerModelTransformers(ModelVersion.create(1, 0, 0));
+        registry.registerOperationTransformer(PathAddress.EMPTY_ADDRESS, "read-resource", new OperationTransformer() {
+            @Override
+            public ModelNode transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) {
+                System.out.print("transforming " + operation);
+                return operation;
+            }
+        });
+        registry.registerOperationTransformer(PathAddress.EMPTY_ADDRESS, "write-attribute", new OperationTransformer() {
+            @Override
+            public ModelNode transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
+                System.out.print("transforming write-attribute" + operation);
+                return operation;
+            }
+        });
+
     }
 
     /** {@inheritDoc} */
