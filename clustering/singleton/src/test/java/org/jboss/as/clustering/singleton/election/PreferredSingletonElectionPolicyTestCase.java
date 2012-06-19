@@ -38,30 +38,40 @@ public class PreferredSingletonElectionPolicyTestCase {
     @Test
     public void elect() {
         SingletonElectionPolicy policy = mock(SingletonElectionPolicy.class);
-        Preference preference = mock(Preference.class);
+        Preference preference1 = mock(Preference.class);
+        Preference preference2 = mock(Preference.class);
 
         ClusterNode node1 = mock(ClusterNode.class);
         ClusterNode node2 = mock(ClusterNode.class);
         ClusterNode node3 = mock(ClusterNode.class);
+        ClusterNode node4 = mock(ClusterNode.class);
 
-        when(preference.preferred(same(node1))).thenReturn(true);
-        when(preference.preferred(same(node2))).thenReturn(false);
-        when(preference.preferred(same(node3))).thenReturn(false);
+        when(preference1.preferred(same(node1))).thenReturn(true);
+        when(preference1.preferred(same(node2))).thenReturn(false);
+        when(preference1.preferred(same(node3))).thenReturn(false);
+        when(preference1.preferred(same(node4))).thenReturn(false);
 
-        assertSame(node1, new PreferredSingletonElectionPolicy(preference, policy).elect(Arrays.asList(node1, node2)));
-        assertSame(node1, new PreferredSingletonElectionPolicy(preference, policy).elect(Arrays.asList(node2, node1)));
+        when(preference2.preferred(same(node1))).thenReturn(false);
+        when(preference2.preferred(same(node2))).thenReturn(true);
+        when(preference2.preferred(same(node3))).thenReturn(false);
+        when(preference2.preferred(same(node4))).thenReturn(false);
 
-        List<ClusterNode> nodes = Arrays.asList(node2, node3);
-        when(policy.elect(nodes)).thenReturn(node2);
+        assertSame(node1, new PreferredSingletonElectionPolicy(policy, preference1, preference2).elect(Arrays.asList(node1, node2, node3, node4)));
+        assertSame(node1, new PreferredSingletonElectionPolicy(policy, preference1, preference2).elect(Arrays.asList(node4, node3, node2, node1)));
+        assertSame(node2, new PreferredSingletonElectionPolicy(policy, preference1, preference2).elect(Arrays.asList(node2, node3, node4)));
+        assertSame(node2, new PreferredSingletonElectionPolicy(policy, preference1, preference2).elect(Arrays.asList(node4, node3, node2)));
 
-        assertSame(node2, new PreferredSingletonElectionPolicy(preference, policy).elect(nodes));
-
+        List<ClusterNode> nodes = Arrays.asList(node3, node4);
         when(policy.elect(nodes)).thenReturn(node3);
 
-        assertSame(node3, new PreferredSingletonElectionPolicy(preference, policy).elect(nodes));
+        assertSame(node3, new PreferredSingletonElectionPolicy(policy, preference1, preference2).elect(nodes));
+
+        when(policy.elect(nodes)).thenReturn(node4);
+
+        assertSame(node4, new PreferredSingletonElectionPolicy(policy, preference1, preference2).elect(nodes));
 
         when(policy.elect(nodes)).thenReturn(null);
 
-        assertNull(new PreferredSingletonElectionPolicy(preference, policy).elect(nodes));
+        assertNull(new PreferredSingletonElectionPolicy(policy, preference1, preference2).elect(nodes));
     }
 }

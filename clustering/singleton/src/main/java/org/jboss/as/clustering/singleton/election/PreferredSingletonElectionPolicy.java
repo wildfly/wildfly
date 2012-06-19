@@ -21,6 +21,8 @@
  */
 package org.jboss.as.clustering.singleton.election;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.clustering.ClusterNode;
@@ -33,19 +35,26 @@ import org.jboss.as.clustering.singleton.SingletonElectionPolicy;
  * @author Paul Ferraro
  */
 public class PreferredSingletonElectionPolicy implements SingletonElectionPolicy {
-    private final Preference preference;
+    private final List<Preference> preferences;
     private final SingletonElectionPolicy policy;
 
+    @Deprecated
     public PreferredSingletonElectionPolicy(Preference preference, SingletonElectionPolicy policy) {
-        this.preference = preference;
+        this(policy, preference);
+    }
+
+    public PreferredSingletonElectionPolicy(SingletonElectionPolicy policy, Preference... preferences) {
         this.policy = policy;
+        this.preferences = (preferences != null) ? Arrays.asList(preferences) : Collections.<Preference>emptyList();
     }
 
     @Override
     public ClusterNode elect(List<ClusterNode> candidates) {
-        for (ClusterNode candidate: candidates) {
-            if (this.preference.preferred(candidate)) {
-                return candidate;
+        for (Preference preference: this.preferences) {
+            for (ClusterNode candidate: candidates) {
+                if (preference.preferred(candidate)) {
+                    return candidate;
+                }
             }
         }
         return this.policy.elect(candidates);
