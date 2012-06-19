@@ -48,7 +48,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.BINDING_NAMES;
-import static org.jboss.as.messaging.CommonAttributes.BRIDGE;
 import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_CONNECTION;
@@ -693,7 +692,7 @@ public class MessagingDescriptions {
         result.get(OPERATION_NAME).set(operationName);
         result.get(DESCRIPTION).set(bundle.getString("jms-topic." + operationName));
 
-        final ModelNode nameProp = result.get(REQUEST_PROPERTIES, QUEUE_NAME.getName());
+        final ModelNode nameProp = result.get(REQUEST_PROPERTIES, QUEUE_NAME);
         nameProp.get(DESCRIPTION).set(bundle.getString("jms-topic.list-messages-for-subscription.queue-name"));
         nameProp.get(TYPE).set(ModelType.STRING);
         nameProp.get(REQUIRED).set(true);
@@ -893,40 +892,6 @@ public class MessagingDescriptions {
 
     static ModelNode getGroupingHandlerRemove(final Locale locale) {
         return getDescriptionOnlyOperation(locale, REMOVE, GROUPING_HANDLER);
-    }
-
-    static ModelNode getBridgeResource(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("bridge"));
-        for (AttributeDefinition attr : CommonAttributes.BRIDGE_ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle, "bridge", root);
-        }
-
-        addResourceAttributeDescription(bundle, BRIDGE, root.get(ATTRIBUTES), STARTED, ModelType.BOOLEAN, false, null);
-
-        root.get(OPERATIONS); // placeholder
-
-        root.get(CHILDREN).setEmptyObject();
-        return root;
-    }
-
-    public static ModelNode getBridgeAdd(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("bridge.add"));
-        for (AttributeDefinition attr : CommonAttributes.BRIDGE_ATTRIBUTES) {
-            attr.addOperationParameterDescription(bundle, "bridge", op);
-        }
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
-    static ModelNode getBridgeRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, BRIDGE);
     }
 
     static ModelNode getClusterConnectionResource(Locale locale) {

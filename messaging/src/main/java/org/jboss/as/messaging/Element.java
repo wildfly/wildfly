@@ -202,7 +202,7 @@ public enum Element {
    PRE_ACK(CommonAttributes.PRE_ACK),
    PRODUCER_WINDOW_SIZE(CommonAttributes.PRODUCER_WINDOW_SIZE),
    PRODUCER_MAX_RATE(CommonAttributes.PRODUCER_MAX_RATE),
-   QUEUE_NAME(CommonAttributes.QUEUE_NAME),
+   QUEUE_NAME(BridgeDefinition.QUEUE_NAME),
    RECONNECT_ATTEMPTS(getReconnectAttemptsDefinitions()),
    RETRY_INTERVAL(getRetryIntervalDefinitions()),
    RETRY_INTERVAL_MULTIPLIER(getRetryIntervalMultiplierDefinitions()),
@@ -356,7 +356,7 @@ public enum Element {
     private static Map<String, AttributeDefinition> getReconnectAttemptsDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("connection", CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS);
-        result.put("bridge", CommonAttributes.BRIDGE_RECONNECT_ATTEMPTS);
+        result.put("bridge", BridgeDefinition.RECONNECT_ATTEMPTS);
         result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_RECONNECT_ATTEMPTS);
         return result;
 
@@ -365,7 +365,7 @@ public enum Element {
     private static Map<String, AttributeDefinition> getForwardingAddressDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("divert", DivertDefinition.FORWARDING_ADDRESS);
-        result.put("bridge", CommonAttributes.BRIDGE_FORWARDING_ADDRESS);
+        result.put("bridge", BridgeDefinition.FORWARDING_ADDRESS);
         return result;
 
     }
@@ -373,7 +373,7 @@ public enum Element {
     private static Map<String, AttributeDefinition> getDuplicateDetectionDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_USE_DUPLICATE_DETECTION);
-        result.put("bridge", CommonAttributes.BRIDGE_USE_DUPLICATE_DETECTION);
+        result.put("bridge", BridgeDefinition.USE_DUPLICATE_DETECTION);
         return result;
 
     }
@@ -417,7 +417,7 @@ public enum Element {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("source", JMSBridgeDefinition.SOURCE_USER);
         result.put("target", JMSBridgeDefinition.TARGET_USER);
-        result.put("default", CommonAttributes.USER);
+        result.put("default", BridgeDefinition.USER);
         return result;
     }
 
@@ -425,7 +425,7 @@ public enum Element {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("source", JMSBridgeDefinition.SOURCE_PASSWORD);
         result.put("target", JMSBridgeDefinition.TARGET_PASSWORD);
-        result.put("default", CommonAttributes.PASSWORD);
+        result.put("default", BridgeDefinition.PASSWORD);
         return result;
     }
 

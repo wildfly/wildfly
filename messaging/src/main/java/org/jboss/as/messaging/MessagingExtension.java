@@ -218,13 +218,7 @@ public class MessagingExtension implements Extension {
         createParamRegistration(inVMConnector);
 
         // Bridges
-        final ManagementResourceRegistration bridge = serverRegistration.registerSubModel(PathElement.pathElement(CommonAttributes.BRIDGE), MessagingSubsystemProviders.BRIDGE_RESOURCE);
-        bridge.registerOperationHandler(ADD, BridgeAdd.INSTANCE, BridgeAdd.INSTANCE, false);
-        bridge.registerOperationHandler(REMOVE, BridgeRemove.INSTANCE, BridgeRemove.INSTANCE, false);
-        BridgeWriteAttributeHandler.INSTANCE.registerAttributes(bridge, registerRuntimeOnly);
-        if (registerRuntimeOnly) {
-            BridgeControlHandler.INSTANCE.register(bridge);
-        }
+        serverRegistration.registerSubModel(new BridgeDefinition(registerRuntimeOnly));
 
         // Cluster connections
         final ManagementResourceRegistration cluster = serverRegistration.registerSubModel(PathElement.pathElement(CommonAttributes.CLUSTER_CONNECTION),
