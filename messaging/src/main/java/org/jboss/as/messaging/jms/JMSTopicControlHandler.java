@@ -83,7 +83,7 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
     private final ParametersValidator removeMessagesValidator = new ParametersValidator();
 
     private JMSTopicControlHandler() {
-        listMessagesForSubscriptionValidator.registerValidator(QUEUE_NAME.getName(), new StringLengthValidator(1));
+        listMessagesForSubscriptionValidator.registerValidator(QUEUE_NAME, new StringLengthValidator(1));
 
         countMessagesForSubscriptionValidator.registerValidator(CLIENT_ID.getName(), new StringLengthValidator(1));
         countMessagesForSubscriptionValidator.registerValidator(SUBSCRIPTION_NAME, new StringLengthValidator(1));
@@ -225,11 +225,11 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
                 context.getResult().set(control.listNonDurableSubscriptionsAsJSON());
             } else if (LIST_MESSAGES_FOR_SUBSCRIPTION.equals(operationName)) {
                 listMessagesForSubscriptionValidator.validate(operation);
-                final String queueName = operation.require(QUEUE_NAME.getName()).asString();
+                final String queueName = operation.require(QUEUE_NAME).asString();
                 String json = control.listMessagesForSubscriptionAsJSON(queueName);
                 context.getResult().set(ModelNode.fromJSONString(json));
             } else if (LIST_MESSAGES_FOR_SUBSCRIPTION_AS_JSON.equals(operationName)) {
-                final String queueName = operation.require(QUEUE_NAME.getName()).asString();
+                final String queueName = operation.require(QUEUE_NAME).asString();
                 context.getResult().set(control.listMessagesForSubscriptionAsJSON(queueName));
             } else if (COUNT_MESSAGES_FOR_SUBSCRIPTION.equals(operationName)) {
                 countMessagesForSubscriptionValidator.validate(operation);

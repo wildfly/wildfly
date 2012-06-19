@@ -39,12 +39,12 @@ public class BridgeWriteAttributeHandler extends ReloadRequiredWriteAttributeHan
     public static final BridgeWriteAttributeHandler INSTANCE = new BridgeWriteAttributeHandler();
 
     private BridgeWriteAttributeHandler() {
-        super(CommonAttributes.BRIDGE_ATTRIBUTES);
+        super(BridgeDefinition.ATTRIBUTES);
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
         final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-        for (AttributeDefinition attr : CommonAttributes.BRIDGE_ATTRIBUTES) {
+        for (AttributeDefinition attr : BridgeDefinition.ATTRIBUTES) {
             if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
                 registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
             }

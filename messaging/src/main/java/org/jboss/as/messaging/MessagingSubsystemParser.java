@@ -1542,7 +1542,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 writer.writeStartElement(Element.BRIDGE.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                 final ModelNode bridge = property.getValue();
-                for (AttributeDefinition attribute : CommonAttributes.BRIDGE_ATTRIBUTES) {
+                for (AttributeDefinition attribute : BridgeDefinition.ATTRIBUTES) {
                     if (CommonAttributes.FILTER == attribute) {
                         writeFilter(writer, property.getValue());
                     } else if (attribute == CommonAttributes.DISCOVERY_GROUP_NAME) {
