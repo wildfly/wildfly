@@ -80,6 +80,12 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
             lock.lock();
             boolean syncRegistered = false;
             synchronized (lock) {
+
+                //if the previous transaction was rolled back we re-load the entity bean state in the current TX
+                if(instance.isReloadRequired()) {
+                    instance.reload();
+                }
+
                 if (ROOT_LOGGER.isTraceEnabled()) {
                     ROOT_LOGGER.trace("Acquired lock: " + lock + " for entity bean instance: " + instance + " during invocation: " + context);
                 }
@@ -206,6 +212,10 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                 final boolean success = status != Status.STATUS_MARKED_ROLLBACK
                         && status != Status.STATUS_ROLLEDBACK &&
                         status != Status.STATUS_ROLLING_BACK;
+                if(!success) {
+                    //the transaction did not succeed, we need to reload the entity bean state
+                    componentInstance.setReloadRequired(true);
+                }
                 releaseInstance(componentInstance, success);
             } catch (Exception e) {
                 EJB3_LOGGER.exceptionReleasingEntity(e);

@@ -23,6 +23,7 @@
 package org.jboss.as.cmp.component.interceptors;
 
 import javax.transaction.Transaction;
+
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
@@ -49,9 +50,12 @@ public class CmpEntityBeanSynchronizationInterceptor extends EntityBeanSynchroni
         }
         final CmpEntityBeanContext entityContext = instance.getEjbContext();
 
-        if (!entityContext.isValid()) {
-            component.getStoreManager().loadEntity(entityContext);
-            entityContext.setValid(true);
+        if (instance.isReloadRequired()) {
+            synchronized (instance) {
+                if (instance.isReloadRequired()) {
+                    instance.reload();
+                }
+            }
         }
 
         // now it's ready and can be scheduled for the synchronization
