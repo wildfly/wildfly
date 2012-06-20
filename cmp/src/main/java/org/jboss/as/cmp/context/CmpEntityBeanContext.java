@@ -37,7 +37,7 @@ import org.jboss.as.ejb3.context.EntityContextImpl;
 public class CmpEntityBeanContext extends EntityContextImpl {
 
     private Object persistenceContext;
-    private boolean valid;
+    private volatile boolean valid;
     private boolean readOnly;
 
     /**
