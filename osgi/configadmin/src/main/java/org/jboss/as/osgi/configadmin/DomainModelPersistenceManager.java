@@ -59,9 +59,6 @@ public class DomainModelPersistenceManager implements PersistenceManager, Bundle
     @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void start(BundleContext context) throws Exception {
-        osgiConfigAdminServiceTracker = new ServiceTracker(context, ConfigurationAdmin.class.getName(), null);
-        osgiConfigAdminServiceTracker.open();
-
         // Get the ConfigAdminService
         ServiceReference sref = context.getServiceReference(ServiceContainer.class.getName());
         ServiceContainer serviceContainer = (ServiceContainer) context.getService(sref);
@@ -74,12 +71,26 @@ public class DomainModelPersistenceManager implements PersistenceManager, Bundle
         props.put(Constants.SERVICE_RANKING, Integer.MAX_VALUE);
         serviceRegistration = context.registerService(PersistenceManager.class.getName(), this, props);
 
-        // Provide config admin with the configuration from this persistence manager.
-        ConfigurationAdmin osgiConfigAdminService = (ConfigurationAdmin) osgiConfigAdminServiceTracker.waitForService(10000);
-        for(String pid : jbossConfigAdminService.getConfigurations()) {
-            // Looking up the configuration object is enough to trigger the lookup from this PersistenceManager
-            osgiConfigAdminService.getConfiguration(pid, null);
-        }
+        osgiConfigAdminServiceTracker = new ServiceTracker(context, ConfigurationAdmin.class.getName(), null) {
+            @Override
+            public Object addingService(ServiceReference reference) {
+                // When the OSGi Configuration Admin Service comes up it is primed with configuration from JBoss ConfigAdmin
+                Object svc = super.addingService(reference);
+                if (svc instanceof ConfigurationAdmin) {
+                    ConfigurationAdmin osgiConfigAdminService = (ConfigurationAdmin) svc;
+                    for(String pid : jbossConfigAdminService.getConfigurations()) {
+                        try {
+                            // Looking up the configuration object is enough to trigger the lookup from this PersistenceManager
+                            osgiConfigAdminService.getConfiguration(pid, null);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+                return svc;
+            }
+        };
+        osgiConfigAdminServiceTracker.open();
     }
 
     @Override
