@@ -46,6 +46,7 @@ import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.util.StrictSizeTable;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
@@ -672,7 +673,9 @@ public class DeployHandler extends BatchModeCommandHandler {
                 OperationBuilder op = new OperationBuilder(request);
                 op.addFileAsAttachment(f);
                 request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
-                result = ctx.getModelControllerClient().execute(op.build());
+                Operation operation = op.build();
+                result = ctx.getModelControllerClient().execute(operation);
+                operation.close();
             } else {
                 result = ctx.getModelControllerClient().execute(request);
             }
