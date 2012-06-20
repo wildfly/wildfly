@@ -188,9 +188,7 @@ public class ParseAndMarshalModelsTestCase {
 
     @Before
     public void setupServiceContainer() {
-        System.out.println("------ before " + isInContainer());
         if (isInContainer()){
-            System.out.println("---- Starting MSC container");
             serviceContainer = ServiceContainer.Factory.create("test");
         }
     }
@@ -217,7 +215,6 @@ public class ParseAndMarshalModelsTestCase {
     @InSequence(-1)
     @RunAsClient
     public void start(@ArquillianResource ContainerController cc, @ArquillianResource Deployer deployer) {
-        System.out.println("------ start " + isInContainer());
         cc.start("default-jbossas");
         deployer.deploy("test");
     }
@@ -226,14 +223,12 @@ public class ParseAndMarshalModelsTestCase {
     @InSequence(1)
     @RunAsClient
     public void stop(@ArquillianResource ContainerController cc, @ArquillianResource Deployer deployer) {
-        System.out.println("------ stop " + isInContainer());
         deployer.undeploy("test");
         cc.stop("default-jbossas");
     }
 
     @Test
     public void testStandaloneXml() throws Exception {
-        System.out.println("------ testStandaloneXml " + isInContainer());
         standaloneXmlTest(getOriginalStandaloneXml("standalone.xml"));
     }
 
@@ -347,6 +342,126 @@ public class ParseAndMarshalModelsTestCase {
         standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-2-xts.xml"));
     }
 
+    @Test
+    public void test710StandaloneXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-0.xml"));
+    }
+
+    @Test
+    public void test710StandaloneFullHaXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-0-full-ha.xml"));
+    }
+
+    @Test
+    public void test710StandaloneFullXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-0-full.xml"));
+    }
+
+    @Test
+    public void test710StandaloneHornetQCollocatedXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-0-hornetq-colocated.xml"));
+    }
+
+    @Test
+    public void test710StandaloneJtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-0-jts.xml"));
+    }
+
+    @Test
+    public void test710StandaloneMinimalisticXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-0-minimalistic.xml"));
+    }
+
+    @Test
+    public void test710StandaloneOsgiOnlyXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-0-osgi-only.xml"));
+    }
+
+    @Test
+    public void test710StandaloneXtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-0-xts.xml"));
+    }
+
+    @Test
+    public void test711StandaloneXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-1.xml"));
+    }
+
+    @Test
+    public void test711StandaloneFullHaXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-1-full-ha.xml"));
+    }
+
+    @Test
+    public void test711StandaloneFullXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-1-full.xml"));
+    }
+
+    @Test
+    public void test711StandaloneHornetQCollocatedXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-1-hornetq-colocated.xml"));
+    }
+
+    @Test
+    public void test711StandaloneJtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-1-jts.xml"));
+    }
+
+    @Test
+    public void test711StandaloneMinimalisticXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-1-minimalistic.xml"));
+    }
+
+    @Test
+    public void test711StandaloneOsgiOnlyXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-1-osgi-only.xml"));
+    }
+
+    @Test
+    public void test711StandaloneXtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-1-xts.xml"));
+    }
+
+    @Test
+    public void test712StandaloneXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2.xml"));
+    }
+
+    @Test
+    public void test712StandaloneFullHaXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-full-ha.xml"));
+    }
+
+    @Test
+    public void test712StandaloneFullXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-full.xml"));
+    }
+
+    @Test
+    public void test712StandaloneHornetQCollocatedXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-hornetq-colocated.xml"));
+    }
+
+    @Test
+    public void test712StandaloneJtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-jts.xml"));
+    }
+
+    @Test
+    public void test712StandaloneMinimalisticXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-minimalistic.xml"));
+    }
+
+    @Test
+    public void test712StandaloneOsgiOnlyXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-osgi-only.xml"));
+    }
+
+    @Test
+    public void test712StandaloneXtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-xts.xml"));
+    }
+
     private void standaloneXmlTest(File original) throws Exception {
 
         File file = new File("target/standalone-copy.xml");
@@ -381,6 +496,21 @@ public class ParseAndMarshalModelsTestCase {
     @Test
     public void test702HostXml() throws Exception {
         hostXmlTest(getLegacyConfigFile("host", "7-0-2.xml"));
+    }
+
+    @Test
+    public void test710HostXml() throws Exception {
+        hostXmlTest(getLegacyConfigFile("host", "7-1-0.xml"));
+    }
+
+    @Test
+    public void test711HostXml() throws Exception {
+        hostXmlTest(getLegacyConfigFile("host", "7-1-1.xml"));
+    }
+
+    @Test
+    public void test712HostXml() throws Exception {
+        hostXmlTest(getLegacyConfigFile("host", "7-1-2.xml"));
     }
 
     private void hostXmlTest(final File original) throws Exception {
@@ -440,6 +570,22 @@ public class ParseAndMarshalModelsTestCase {
     public void test702DomainPreviewXml() throws Exception {
         domainXmlTest(getLegacyConfigFile("domain", "7-0-2-preview.xml"));
     }
+
+    @Test @TargetsContainer("class-jbossas")
+    public void test710DomainXml() throws Exception {
+        domainXmlTest(getLegacyConfigFile("domain", "7-1-0.xml"));
+    }
+
+    @Test @TargetsContainer("class-jbossas")
+    public void test711DomainXml() throws Exception {
+        domainXmlTest(getLegacyConfigFile("domain", "7-1-1.xml"));
+    }
+
+    @Test @TargetsContainer("class-jbossas")
+    public void test712DomainXml() throws Exception {
+        domainXmlTest(getLegacyConfigFile("domain", "7-1-2.xml"));
+    }
+
 
 
     private void domainXmlTest(File original) throws Exception {
