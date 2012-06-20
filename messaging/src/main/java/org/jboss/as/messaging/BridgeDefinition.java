@@ -98,7 +98,6 @@ public class BridgeDefinition extends SimpleResourceDefinition {
         CommonAttributes.RETRY_INTERVAL, CommonAttributes.RETRY_INTERVAL_MULTIPLIER, CommonAttributes.MAX_RETRY_INTERVAL,
         CommonAttributes.CHECK_PERIOD,
         RECONNECT_ATTEMPTS,
-        CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN, // FIXME this attribute is not handled by BridgeConfiguration
         USE_DUPLICATE_DETECTION, CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
         USER, PASSWORD,
         ConnectorRefsAttribute.BRIDGE_CONNECTORS, CommonAttributes.DISCOVERY_GROUP_NAME
