@@ -83,7 +83,7 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
         if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
             readAttributeValidator.validate(operation);
             final String name = operation.require(NAME).asString();
-            if (STARTED.equals(name)) {
+            if (STARTED.getName().equals(name)) {
                 control = getHornetQComponentControl(context, operation, false);
                 context.getResult().set(control.isStarted());
             } else {
