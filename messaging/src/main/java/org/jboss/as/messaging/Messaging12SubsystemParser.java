@@ -228,7 +228,6 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 case MIN_LARGE_MESSAGE_SIZE:
                 case RETRY_INTERVAL_MULTIPLIER:
                 case MAX_RETRY_INTERVAL:
-                case FAILOVER_ON_SERVER_SHUTDOWN:
                 case CONFIRMATION_WINDOW_SIZE:
                 case USER:
                 case PASSWORD:
@@ -256,6 +255,11 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                     checkOtherElementIsNotAlreadyDefined(reader, seen, Element.DISCOVERY_GROUP_REF, Element.STATIC_CONNECTORS);
                     final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
                     DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, bridgeAdd, reader);
+                    break;
+                }
+                case FAILOVER_ON_SERVER_SHUTDOWN: {
+                    MessagingLogger.ROOT_LOGGER.deprecatedXMLElement(element.toString());
+                    skipElementText(reader);
                     break;
                 }
                 default: {
