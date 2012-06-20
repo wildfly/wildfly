@@ -53,6 +53,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     private volatile EntityContextImpl entityContext;
     private volatile boolean removed = false;
     private volatile boolean synchronizeRegistered;
+    private volatile boolean reloadRequired = false;
 
     private final Interceptor ejbStore;
     private final Interceptor ejbActivate;
@@ -84,6 +85,26 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
         return primaryKey;
     }
 
+    public void reload() {
+        try {
+            final EntityBeanComponent component = getComponent();
+            final InterceptorContext loadContext = prepareInterceptorContext();
+            loadContext.putPrivateData(InvocationType.class, InvocationType.ENTITY_EJB_EJB_LOAD);
+            loadContext.setMethod(component.getEjbLoadMethod());
+            ejbLoad.processInvocation(loadContext);
+            reloadRequired = false;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean isReloadRequired() {
+        return reloadRequired;
+    }
+
+    public void setReloadRequired(final boolean reloadRequired) {
+        this.reloadRequired = reloadRequired;
+    }
 
     public void discard() {
         if (!isDiscarded()) {
@@ -128,7 +149,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
             context.putPrivateData(InvocationType.class, InvocationType.ENTITY_EJB_ACTIVATE);
             ejbActivate.processInvocation(context);
             final InterceptorContext loadContext = prepareInterceptorContext();
-            context.putPrivateData(InvocationType.class, InvocationType.ENTITY_EJB_EJB_LOAD);
+            loadContext.putPrivateData(InvocationType.class, InvocationType.ENTITY_EJB_EJB_LOAD);
             loadContext.setMethod(component.getEjbLoadMethod());
             ejbLoad.processInvocation(loadContext);
         } catch (RemoteException e) {
