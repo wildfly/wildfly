@@ -75,7 +75,7 @@ public class DomainSlaveHandler implements OperationStepHandler {
 
         final Set<String> outstanding = new HashSet<String>(hostProxies.keySet());
         final List<TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation>> results = new ArrayList<TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation>>();
-        final Map<String, AsyncFuture<ModelNode>> finalResults = new HashMap<String, AsyncFuture<ModelNode>>();
+        final Map<String, HostControllerUpdateTask.ExecutedHostRequest> finalResults = new HashMap<String, HostControllerUpdateTask.ExecutedHostRequest>();
         final HostControllerUpdateTask.ProxyOperationListener listener = new HostControllerUpdateTask.ProxyOperationListener();
         for (Map.Entry<String, ProxyController> entry : hostProxies.entrySet()) {
             // Create the proxy task
@@ -83,7 +83,7 @@ public class DomainSlaveHandler implements OperationStepHandler {
             final TransformingProxyController proxyController = (TransformingProxyController) entry.getValue();
             final HostControllerUpdateTask task = new HostControllerUpdateTask(host, operation.clone(), context, proxyController);
             // Execute the operation on the remote host
-            final AsyncFuture<ModelNode> finalResult = task.execute(listener);
+            final HostControllerUpdateTask.ExecutedHostRequest finalResult = task.execute(listener);
             finalResults.put(host, finalResult);
         }
 
@@ -109,15 +109,17 @@ public class DomainSlaveHandler implements OperationStepHandler {
                 // Set rollback only
                 domainOperationContext.setFailureReported(true);
                 // Rollback all HCs
-                for(final AsyncFuture<ModelNode> finalResult : finalResults.values()) {
-                    finalResult.asyncCancel(false);
+                for(final HostControllerUpdateTask.ExecutedHostRequest finalResult : finalResults.values()) {
+                    finalResult.asyncCancel();
                 }
                 // Wait that all hosts are rolled back!?
-                for(final Map.Entry<String, AsyncFuture<ModelNode>> entry : finalResults.entrySet()) {
+                for(final Map.Entry<String, HostControllerUpdateTask.ExecutedHostRequest> entry : finalResults.entrySet()) {
                     final String hostName = entry.getKey();
                     try {
-                        final ModelNode result = entry.getValue().get();
-                        domainOperationContext.addHostControllerResult(hostName, result);
+                        final HostControllerUpdateTask.ExecutedHostRequest request = entry.getValue();
+                        final ModelNode result = request.getFinalResult().get();
+                        final ModelNode transformedResult = request.transformResult(result);
+                        domainOperationContext.addHostControllerResult(hostName, transformedResult);
                     } catch (Exception e) {
                         final ModelNode result = new ModelNode();
                         result.get(OUTCOME).set(FAILED);

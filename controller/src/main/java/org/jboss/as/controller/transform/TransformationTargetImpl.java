@@ -1,7 +1,9 @@
 package org.jboss.as.controller.transform;
 
 import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.SubsystemInformation;
 import org.jboss.as.controller.registry.OperationTransformerRegistry;
@@ -73,11 +75,18 @@ public class TransformationTargetImpl implements TransformationTarget {
     }
 
     @Override
-    public OperationTransformer resolveTransformer(PathAddress address, String operationName) {
-        OperationTransformerRegistry.TransformerEntry entry = operationTransformers.resolveTransformer(address, operationName);
-        if(entry.getPolicy() == OperationTransformerRegistry.TransformationPolicy.DISCARD) {
-            return null;
+    public OperationTransformer resolveTransformer(final PathAddress address, final String operationName) {
+        if(address.size() == 0) {
+            if(ModelDescriptionConstants.COMPOSITE.equals(operationName)) {
+                return new CompositeOperationTransformer();
+            }
+        } else if (address.size() > 1) {
+            if(ModelDescriptionConstants.PROFILE.equals(address.getElement(0).getKey())) {
+                final OperationTransformerRegistry.TransformerEntry entry = operationTransformers.resolveTransformer(address.subAddress(1), operationName);
+                return entry.getTransformer();
+            }
         }
+        final OperationTransformerRegistry.TransformerEntry entry = operationTransformers.resolveTransformer(address, operationName);
         return entry.getTransformer();
     }
 
@@ -113,5 +122,7 @@ public class TransformationTargetImpl implements TransformationTarget {
     public void addSubsystemVersion(String subsystemName, int majorVersion, int minorVersion) {
         StringBuilder sb = new StringBuilder(String.valueOf(majorVersion)).append('.').append(minorVersion);
         this.subsystemVersions.put(subsystemName, sb.toString());
+        // Merge a new subsystem
+        operationTransformers.mergeSubsystem(transformerRegistry.getSubsystemOperationTransformers(), subsystemName, ModelVersion.create(majorVersion, minorVersion));
     }
 }

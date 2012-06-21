@@ -23,15 +23,12 @@
 package org.jboss.as.test.integration.domain.suites;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.extension.ExtensionSetup;
 import org.jboss.as.test.integration.domain.extension.TestExtension;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
@@ -39,10 +36,6 @@ import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.StreamExporter;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -66,18 +59,8 @@ public class ExtensionManagementTestCase {
         testSupport = DomainTestSuite.createSupport(ExtensionManagementTestCase.class.getSimpleName());
         domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
         domainSlaveLifecycleUtil = testSupport.getDomainSlaveLifecycleUtil();
-
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        InputStream moduleXml = tccl.getResourceAsStream("extension/module.xml");
-
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
-        URL url = tccl.getResource("extension/META-INF/services/org.jboss.as.controller.Extension");
-        jar.addAsManifestResource(url, "services/org.jboss.as.controller.Extension");
-        jar.addPackage(TestExtension.class.getPackage());
-        StreamExporter exporter = jar.as(ZipExporter.class);
-        Map<String, StreamExporter> content = Collections.singletonMap("test-extension.jar", exporter);
-
-        testSupport.addTestModule(TestExtension.MODULE_NAME, moduleXml, content);
+        // Initialize the test extension
+        ExtensionSetup.initializeTestExtension(testSupport);
     }
 
     @AfterClass

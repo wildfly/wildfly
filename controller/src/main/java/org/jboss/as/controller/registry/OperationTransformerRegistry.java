@@ -22,8 +22,14 @@
 
 package org.jboss.as.controller.registry;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
@@ -65,6 +71,20 @@ public class OperationTransformerRegistry {
         }
         // Default is forward unchanged
         return FORWARD;
+    }
+
+    /**
+     * Merge a new subsystem from the global registration.
+     *
+     * @param registry the global registry
+     * @param subsystemName the subsystem name
+     * @param version the subsystem version
+     */
+    public void mergeSubsystem(final GlobalOperationTransformerRegistry registry, String subsystemName, ModelVersion version) {
+        final SubRegistry subRegistry = getOrCreate(SUBSYSTEM);
+        final OperationTransformerRegistry subsystemReg = subRegistry.getOrCreate(subsystemName);
+        final PathElement element = PathElement.pathElement(SUBSYSTEM, subsystemName);
+        registry.mergeSubtree(this, PathAddress.EMPTY_ADDRESS.append(element), version);
     }
 
     protected void registerTransformer(final PathAddress address, final String operationName, final OperationTransformer transformer) {
@@ -166,8 +186,6 @@ public class OperationTransformerRegistry {
 
         // Transform the operation
         TRANSFORM,
-//        // Transform the operation and result
-//        PROXY,
         // Forward unmodified
         FORWARD,
         // Discard, don't forward
@@ -197,17 +215,28 @@ public class OperationTransformerRegistry {
     }
 
     static OperationTransformer FORWARD_TRANSFORMER = new OperationTransformer() {
+
         @Override
-        public ModelNode transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
-            return operation;
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
+            return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
         }
     };
 
     static OperationTransformer DISCARD_TRANSFORMER = new OperationTransformer() {
+
         @Override
-        public ModelNode transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
             // hmm...
-            return null;
+            return new TransformedOperation(null, new OperationResultTransformer() {
+                            @Override
+                            public ModelNode transformResult(ModelNode ignore) {
+                                final ModelNode result = new ModelNode();
+                                result.get(OUTCOME).set(SUCCESS);
+                                result.get(RESULT);
+                                // perhaps some other param indicating that the operation was ignored
+                                return result;
+                            }
+            });
         }
     };
 

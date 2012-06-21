@@ -58,4 +58,11 @@ public class MgmtOperationException extends Exception {
         return result;
     }
 
+    @Override
+    public String toString() {
+        return "MgmtOperationException{" +
+                "operation=" + operation +
+                ", result=" + result +
+                '}';
+    }
 }

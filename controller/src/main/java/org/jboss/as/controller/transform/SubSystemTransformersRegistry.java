@@ -25,9 +25,11 @@ package org.jboss.as.controller.transform;
 import org.jboss.as.controller.PathAddress;
 
 /**
+ * Registration for subsystem specific operation transformers.
+ *
  * @author Emanuel Muckenhuber
  */
-public interface TransformersRegistry {
+public interface SubSystemTransformersRegistry {
 
     /**
      * Discard an operation.

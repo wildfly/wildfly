@@ -28,6 +28,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.Transformers;
@@ -53,11 +54,16 @@ public interface TransformingProxyController extends ProxyController {
      */
     Transformers getTransformers();
 
+    /**
+     * Transform the operation.
+     *
+     * @param operation the operation to transform.
+     * @param context the operation context
+     * @return the transformed operation
+     */
+    OperationTransformer.TransformedOperation transformOperation(OperationContext context, ModelNode operation);
+
     public static class Factory {
-//
-//        public static TransformingProxyController create(final ManagementChannelHandler channelAssociation, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator) {
-//            return create(channelAssociation, NOOP, pathAddress, addressTranslator);
-//        }
 
         public static TransformingProxyController create(final ManagementChannelHandler channelAssociation, final Transformers transformers, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator) {
             final TransactionalProtocolClient client = TransactionalProtocolHandlers.createClient(channelAssociation);
@@ -69,8 +75,7 @@ public interface TransformingProxyController extends ProxyController {
                 }
 
                 @Override
-                public ModelNode transformOperation(final TransformationContext context, final ModelNode original) {
-                    // Translate the proxy operation
+                public OperationTransformer.TransformedOperation transformOperation(final TransformationContext context, final ModelNode original) {
                     final ModelNode operation = proxy.translateOperationForProxy(original);
                     return transformers.transformOperation(context, operation);
                 }
@@ -116,27 +121,18 @@ public interface TransformingProxyController extends ProxyController {
         }
 
         @Override
+        public OperationTransformer.TransformedOperation transformOperation(final OperationContext context, final ModelNode operation) {
+            final TransformationContext transformationContext = Transformers.Factory.getTransformationContext(transformers, context);
+            return transformers.transformOperation(transformationContext, operation);
+        }
+
+        @Override
         public void execute(final ModelNode operation, final OperationMessageHandler handler, final ProxyOperationControl control, final OperationAttachments attachments) {
             // Execute untransformed
             proxy.execute(operation, handler, control, attachments);
         }
+
+
     }
-//
-//    Transformers NOOP = new Transformers() {
-//        @Override
-//        public TransformationTarget getTarget() {
-//            return null;
-//        }
-//
-//        @Override
-//        public ModelNode transformOperation(TransformationContext context, ModelNode operation) {
-//            return operation;
-//        }
-//
-//        @Override
-//        public Resource transformResource(TransformationContext context, Resource resource) {
-//            return resource;
-//        }
-//    };
 
 }
