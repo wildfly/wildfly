@@ -87,8 +87,9 @@ public class BroadcastGroupDefinition extends SimpleResourceDefinition {
             }
         }
 
-        registry.registerReadOnlyAttribute(BroadcastGroupControlHandler.STARTED, BroadcastGroupControlHandler.INSTANCE);
-
+        if (registerRuntimeOnly) {
+            registry.registerReadOnlyAttribute(BroadcastGroupControlHandler.STARTED, BroadcastGroupControlHandler.INSTANCE);
+        }
     }
 
     @Override
