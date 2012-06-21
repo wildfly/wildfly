@@ -120,7 +120,9 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             }
         }
 
-        registry.registerReadOnlyAttribute(BridgeControlHandler.STARTED, BridgeControlHandler.INSTANCE);
+        if (registerRuntimeOnly) {
+            registry.registerReadOnlyAttribute(BridgeControlHandler.STARTED, BridgeControlHandler.INSTANCE);
+        }
     }
 
     @Override
