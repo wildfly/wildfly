@@ -44,7 +44,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
-import org.jboss.as.controller.transform.Transformers;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
@@ -181,10 +182,12 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                 boolean interrupted = false;
                 try {
                     for (Map.Entry<ServerIdentity, ServerTaskExecutor.ExecutedServerRequest> entry : submittedTasks.entrySet()) {
-                        Future<ModelNode> future = entry.getValue().getFinalResult();
+                        final ServerTaskExecutor.ExecutedServerRequest request = entry.getValue();
+                        final Future<ModelNode> future = request.getFinalResult();
                         try {
-                            ModelNode finalResult = future.isCancelled() ? getCancelledResult() : future.get();
-                            domainOperationContext.addServerResult(entry.getKey(), finalResult);
+                            final ModelNode finalResult = future.isCancelled() ? getCancelledResult() : future.get();
+                            final ModelNode transformedResult = request.transformResult(finalResult);
+                            domainOperationContext.addServerResult(entry.getKey(), transformedResult);
                         } catch (InterruptedException e) {
                             interrupted = true;
                             HOST_CONTROLLER_LOGGER.interruptedAwaitingFinalResponse(entry.getKey().getServerName(), entry.getKey().getHostName());
@@ -246,9 +249,11 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                         }
                     }
                     final TransformingProxyController remoteProxyController = (TransformingProxyController) proxy;
-                    final ModelNode transformedOperation = remoteProxyController.getTransformers().transformOperation(Transformers.Factory.getTransformationContext(context), original);
+                    final OperationTransformer.TransformedOperation result = remoteProxyController.transformOperation(context, original);
+                    final ModelNode transformedOperation = result.getTransformedOperation();
+                    final OperationResultTransformer resultTransformer = result.getResultTransformer();
                     final TransactionalProtocolClient client = remoteProxyController.getProtocolClient();
-                    return executeOperation(listener, client, server, transformedOperation);
+                    return executeOperation(listener, client, server, transformedOperation, resultTransformer);
                 }
             };
             RolloutPlanController rolloutPlanController = new RolloutPlanController(opsByGroup, rolloutPlan, domainOperationContext, taskExecutor, executorService);

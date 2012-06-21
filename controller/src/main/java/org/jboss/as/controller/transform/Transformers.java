@@ -48,7 +48,7 @@ public interface Transformers {
      * @param operation the operation to transform
      * @return the transformed operation
      */
-    ModelNode transformOperation(TransformationContext context, ModelNode operation);
+    OperationTransformer.TransformedOperation transformOperation(TransformationContext context, ModelNode operation);
 
     /**
      * Transform given resource at given context
@@ -67,8 +67,12 @@ public interface Transformers {
             return new TransformersImpl(target);
         }
 
-        public static TransformationContext getTransformationContext(OperationContext context) {
-            return new TransformersImpl.DelegateTransformContext(context);
+        public static TransformationContext getTransformationContext(final Transformers transformers, final OperationContext context) {
+            return getTransformationContext(transformers.getTarget(), context);
+        }
+
+        public static TransformationContext getTransformationContext(final TransformationTarget target, final OperationContext context) {
+            return new TransformersImpl.DelegateTransformContext(context, target);
         }
     }
 

@@ -25,8 +25,8 @@ package org.jboss.as.controller;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.SubSystemTransformersRegistry;
 import org.jboss.as.controller.transform.SubsystemTransformer;
-import org.jboss.as.controller.transform.TransformersRegistry;
 import org.jboss.staxmapper.XMLElementWriter;
 
 /**
@@ -99,6 +99,6 @@ public interface SubsystemRegistration {
      * @param version the model version range
      * @return the transformers registry
      */
-    TransformersRegistry registerModelTransformers(ModelVersionRange version);
+    SubSystemTransformersRegistry registerModelTransformers(ModelVersionRange version);
 
 }

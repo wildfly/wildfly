@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.domain.management.util;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -31,12 +32,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -87,6 +93,45 @@ public class DomainTestUtils {
     }
 
     /**
+     * Create a composite operation.
+     *
+     * @param steps the individual steps
+     * @return the composite operation
+     */
+    public static ModelNode createCompositeOperation(ModelNode... steps) {
+        final ModelNode composite = new ModelNode();
+        composite.get(OP).set(COMPOSITE);
+        composite.get(OP_ADDR).setEmptyList();
+        composite.get(STEPS).setEmptyList();
+        for(final ModelNode step : steps) {
+            composite.get(STEPS).add(step);
+        }
+        return composite;
+    }
+
+    /**
+     * Execute multiple steps and check the result.
+     *
+     * @param client the controller client
+     * @param steps the individual steps
+     * @return the operation result
+     * @throws IOException
+     * @throws MgmtOperationException
+     */
+    public static List<ModelNode> executeStepsForResult(final ModelControllerClient client, final ModelNode... steps) throws IOException, MgmtOperationException {
+        final ModelNode operationResult = executeForResult(createCompositeOperation(steps), client);
+        if(! operationResult.hasDefined(RESULT)) {
+            return Collections.singletonList(operationResult);
+        }
+        final List<ModelNode> result = new ArrayList<ModelNode>();
+        final int size = operationResult.get(RESULT).asPropertyList().size();
+        for(int i = 0; i < size; i++) {
+            result.add(operationResult.get(RESULT).require("steps-" + (i+1)));
+        }
+        return result;
+    }
+
+    /**
      * Execute for result.
      *
      * @param op the operation to execute
@@ -99,6 +144,7 @@ public class DomainTestUtils {
        final ModelNode ret = modelControllerClient.execute(op);
 
        if (! SUCCESS.equals(ret.get(OUTCOME).asString())) {
+           System.out.println(ret);
            throw new MgmtOperationException("Management operation failed.", op, ret);
        }
        return ret.get(RESULT);

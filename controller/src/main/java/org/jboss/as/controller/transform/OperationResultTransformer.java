@@ -20,35 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller;
+package org.jboss.as.controller.transform;
+
+import org.jboss.dmr.ModelNode;
 
 /**
- * @author Emanuel Muckenhuber
- */
-public interface ModelVersionRange {
+ * Transformer for the operation result.
+ *
+* @author Emanuel Muckenhuber
+*/
+public interface OperationResultTransformer {
 
     /**
-     * Get all version in the range.
+     * Transform the operation result.
      *
-     * @return the versions
+     * @param result the operation result
+     * @return the transformed result
      */
-    ModelVersion[] getVersions();
+    ModelNode transformResult(ModelNode result);
 
-    public static class Versions {
+    OperationResultTransformer ORIGINAL_RESULT = new OperationResultTransformer() {
 
-        private Versions() {
-            //
+        @Override
+        public ModelNode transformResult(ModelNode result) {
+            return result;
         }
 
-        public static ModelVersionRange range(final ModelVersion... versions) {
-            return new ModelVersionRange() {
-                @Override
-                public ModelVersion[] getVersions() {
-                    return versions;
-                }
-            };
-        }
-
-    }
+    };
 
 }

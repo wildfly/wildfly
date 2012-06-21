@@ -30,6 +30,7 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.BlockingQueueOperationListener;
 import org.jboss.as.controller.remote.TransactionalOperationImpl;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
+import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
@@ -84,22 +85,23 @@ public abstract class ServerTaskExecutor {
      * @param client the transactional protocol client
      * @param identity the server identity
      * @param operation the operation
+     * @param transformer the operation result transformer
      * @return whether the operation was executed
      */
-    protected boolean executeOperation(final TransactionalProtocolClient.TransactionalOperationListener<ServerOperation> listener, TransactionalProtocolClient client, final ServerIdentity identity, final ModelNode operation) {
+    protected boolean executeOperation(final TransactionalProtocolClient.TransactionalOperationListener<ServerOperation> listener, TransactionalProtocolClient client, final ServerIdentity identity, final ModelNode operation, final OperationResultTransformer transformer) {
         if(client == null) {
             return false;
         }
         final OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
         final OperationAttachments operationAttachments = new DelegatingOperationAttachments(context);
-        final ServerOperation serverOperation = new ServerOperation(identity, operation, messageHandler, operationAttachments);
+        final ServerOperation serverOperation = new ServerOperation(identity, operation, messageHandler, operationAttachments, transformer);
         try {
             final Future<ModelNode> result = client.execute(listener, serverOperation);
-            recordExecutedRequest(new ExecutedServerRequest(identity, result));
+            recordExecutedRequest(new ExecutedServerRequest(identity, result, transformer));
         } catch (IOException e) {
             final TransactionalProtocolClient.PreparedOperation<ServerOperation> result = BlockingQueueOperationListener.FailedOperation.create(serverOperation, e);
             listener.operationPrepared(result);
-            recordExecutedRequest(new ExecutedServerRequest(identity, result.getFinalResult()));
+            recordExecutedRequest(new ExecutedServerRequest(identity, result.getFinalResult(), transformer));
         }
         return true;
     }
@@ -147,14 +149,21 @@ public abstract class ServerTaskExecutor {
     public static class ServerOperation extends TransactionalOperationImpl {
 
         private final ServerIdentity identity;
-        ServerOperation(ServerIdentity identity, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) {
+        private final OperationResultTransformer transformer;
+        ServerOperation(ServerIdentity identity, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments, OperationResultTransformer transformer) {
             super(operation, messageHandler, attachments);
             this.identity = identity;
+            this.transformer = transformer;
         }
 
         public ServerIdentity getIdentity() {
             return identity;
         }
+
+        ModelNode transformResult(ModelNode result) {
+            return transformer.transformResult(result);
+        }
+
     }
 
     /**
@@ -206,14 +215,20 @@ public abstract class ServerTaskExecutor {
     /**
      * The executed request.
      */
-    public static class ExecutedServerRequest implements Cancellable {
+    public static class ExecutedServerRequest implements OperationResultTransformer, Cancellable {
 
         private final ServerIdentity identity;
         private final Future<ModelNode> finalResult;
+        private final OperationResultTransformer transformer;
 
         public ExecutedServerRequest(ServerIdentity identity, Future<ModelNode> finalResult) {
+            this(identity, finalResult, OperationResultTransformer.ORIGINAL_RESULT);
+        }
+
+        public ExecutedServerRequest(ServerIdentity identity, Future<ModelNode> finalResult, OperationResultTransformer transformer) {
             this.identity = identity;
             this.finalResult = finalResult;
+            this.transformer = transformer;
         }
 
         public ServerIdentity getIdentity() {
@@ -225,9 +240,15 @@ public abstract class ServerTaskExecutor {
         }
 
         @Override
+        public ModelNode transformResult(final ModelNode result) {
+            return transformer.transformResult(result);
+        }
+
+        @Override
         public boolean cancel() {
             return finalResult.cancel(false);
         }
+
     }
 
     private static class DelegatingMessageHandler implements OperationMessageHandler {

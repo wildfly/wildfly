@@ -23,6 +23,7 @@
 package org.jboss.as.controller.test;
 
 import junit.framework.Assert;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
@@ -36,8 +37,11 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationTransformerRegistry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.AbstractOperationTransformer;
+import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
@@ -56,19 +60,27 @@ public class OperationTransformationTestCase {
 
     private final GlobalOperationTransformerRegistry registry = new GlobalOperationTransformerRegistry();
     private final ManagementResourceRegistration resourceRegistration = ManagementResourceRegistration.Factory.create(ROOT);
+    private final OperationTransformer NOOP_TRANSFORMER = new OperationTransformer() {
+        @Override
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
+            return new TransformedOperation(new ModelNode(), OperationResultTransformer.ORIGINAL_RESULT);
+        }
+    };
     private final Resource resourceRoot = Resource.Factory.create();
 
     @Before
     public void setUp() {
         registry.discardOperation(TEST_DISCARD, 1, 1, "discard");
-        final OperationTransformer transformer = new OperationTransformer() {
-                    @Override
-                    public ModelNode transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) {
-                        final ModelNode transformed = operation.clone();
-                        transformed.get("param1").set("value1");
-                        return transformed;
-                    }
-                };
+        final OperationTransformer transformer = new AbstractOperationTransformer() {
+
+            @Override
+            protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
+                final ModelNode transformed = operation.clone();
+                transformed.get("param1").set("value1");
+                return transformed;
+            }
+
+        };
         registry.registerTransformer(TEST_NORMAL, 1, 2, "normal", transformer);
     }
 
@@ -101,6 +113,23 @@ public class OperationTransformationTestCase {
         Assert.assertFalse(transformed.has("param1"));
     }
 
+    @Test
+    public void testMergeSubTree() {
+        final ModelNode subsystems = new ModelNode();
+        final PathAddress address = PathAddress.pathAddress(PathElement.pathElement("subsystem", "test"));
+        final OperationTransformerRegistry localRegistry = registry.resolve(ModelVersion.create(1, 0, 0), subsystems.setEmptyList());
+
+        OperationTransformerRegistry.TransformerEntry entry = localRegistry.resolveTransformer(address, "testing");
+        Assert.assertEquals(OperationTransformerRegistry.TransformationPolicy.FORWARD, entry.getPolicy());
+
+        registry.registerTransformer(address, 1, 0, "testing", NOOP_TRANSFORMER);
+        localRegistry.mergeSubsystem(registry, "test", ModelVersion.create(1, 0));
+
+        entry = localRegistry.resolveTransformer(address, "testing");
+        Assert.assertEquals(OperationTransformerRegistry.TransformationPolicy.TRANSFORM, entry.getPolicy());
+
+    }
+
     protected ModelNode transform(final ModelNode operation, int major, int minor) {
         return transform(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)), operation, major, minor);
     }
@@ -113,11 +142,16 @@ public class OperationTransformationTestCase {
             return null;
         } else {
             final OperationTransformer transformer = entry.getTransformer();
-            return transformer.transformOperation(TRANSFORMATION_CONTEXT, address, operation);
+            return transformer.transformOperation(TRANSFORMATION_CONTEXT, address, operation).getTransformedOperation();
         }
     }
 
     TransformationContext TRANSFORMATION_CONTEXT = new TransformationContext() {
+
+        @Override
+        public TransformationTarget getTarget() {
+            return null;
+        }
 
         @Override
         public ProcessType getProcessType() {
