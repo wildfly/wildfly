@@ -286,13 +286,6 @@ class MessagingSubsystemProviders {
         }
     };
 
-    public static final DescriptionProvider CLUSTER_CONNECTION_RESOURCE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getClusterConnectionResource(locale);
-        }
-    };
-
     public static final DescriptionProvider CONNECTOR_SERVICE_RESOURCE = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {

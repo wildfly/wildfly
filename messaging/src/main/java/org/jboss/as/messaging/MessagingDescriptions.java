@@ -48,7 +48,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.BINDING_NAMES;
-import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_CONNECTION;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
@@ -59,7 +58,6 @@ import static org.jboss.as.messaging.CommonAttributes.CONSUMER_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.CORE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DELIVERING_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE_MESSAGE_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE_SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
@@ -71,7 +69,6 @@ import static org.jboss.as.messaging.CommonAttributes.INITIAL_MESSAGE_PACKET_SIZ
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGES_ADDED;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.NODE_ID;
 import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_MESSAGE_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.NUMBER_OF_BYTES_PER_PAGE;
@@ -90,7 +87,6 @@ import static org.jboss.as.messaging.CommonAttributes.STARTED;
 import static org.jboss.as.messaging.CommonAttributes.SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
 import static org.jboss.as.messaging.CommonAttributes.TOPIC_ADDRESS;
-import static org.jboss.as.messaging.CommonAttributes.TOPOLOGY;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -894,45 +890,8 @@ public class MessagingDescriptions {
         return getDescriptionOnlyOperation(locale, REMOVE, GROUPING_HANDLER);
     }
 
-    static ModelNode getClusterConnectionResource(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("cluster-connection"));
-        for (AttributeDefinition attr : CommonAttributes.CLUSTER_CONNECTION_ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle, "cluster-connection", root);
-        }
-
-        final ModelNode attrs = root.get(ATTRIBUTES);
-        addResourceAttributeDescription(bundle, CLUSTER_CONNECTION, attrs, NODE_ID, ModelType.STRING, false, null);
-        addResourceAttributeDescription(bundle, CLUSTER_CONNECTION, attrs, TOPOLOGY, ModelType.STRING, false, null);
-        addResourceAttributeDescription(bundle, CLUSTER_CONNECTION, attrs, STARTED, ModelType.BOOLEAN, false, null);
-
-        root.get(OPERATIONS); // placeholder
-
-        root.get(CHILDREN).setEmptyObject();
-        return root;
-    }
-
-    public static ModelNode getClusterConnectionAdd(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("cluster-connection.add"));
-        for (AttributeDefinition attr : CommonAttributes.CLUSTER_CONNECTION_ATTRIBUTES) {
-            attr.addOperationParameterDescription(bundle, "cluster-connection", op);
-        }
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
-    static ModelNode getClusterConnectionRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, CLUSTER_CONNECTION);
-    }
-
     public static ModelNode getGetNodes(Locale locale) {
-        final ModelNode result = getDescriptionOnlyOperation(locale,  ClusterConnectionControlHandler.GET_NODES, CLUSTER_CONNECTION);
+        final ModelNode result = getDescriptionOnlyOperation(locale,  ClusterConnectionDefinition.GET_NODES, CLUSTER_CONNECTION);
         result.get(REPLY_PROPERTIES, DESCRIPTION).set(getResourceBundle(locale).getString("cluster-connection.get-nodes.reply"));
         result.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
         result.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.STRING);

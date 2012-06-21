@@ -25,11 +25,6 @@ package org.jboss.as.messaging;
 import static org.hornetq.api.core.client.HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
 import static org.hornetq.api.core.client.HornetQClient.DEFAULT_CONNECTION_TTL;
 import static org.hornetq.api.core.client.HornetQClient.DEFAULT_MAX_RETRY_INTERVAL;
-import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL;
-import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD;
-import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL;
-import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS;
-import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER;
 import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL;
 import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_MEMORY_WARNING_THRESHOLD;
 import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
@@ -67,9 +62,6 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public interface CommonAttributes {
-
-    SimpleAttributeDefinition ALLOW_DIRECT_CONNECTIONS_ONLY = new SimpleAttributeDefinition("allow-direct-connections-only",
-            new ModelNode().set(false), ModelType.BOOLEAN,  true);
 
     SimpleAttributeDefinition ADDRESS_FULL_MESSAGE_POLICY = new SimpleAttributeDefinition("address-full-policy",
             new ModelNode().set(AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY.toString()), ModelType.STRING, true);
@@ -127,46 +119,9 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CLUSTERED = new SimpleAttributeDefinition("clustered",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTERED), ModelType.BOOLEAN,  true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    SimpleAttributeDefinition CLUSTER_CONNECTION_CHECK_PERIOD = new SimpleAttributeDefinitionBuilder("check-period", LONG)
-            .setDefaultValue(new ModelNode().set(DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD))
-            .setAllowNull(true)
-            .setMeasurementUnit(MILLISECONDS)
-            .build();
-
-    SimpleAttributeDefinition CLUSTER_CONNECTION_ADDRESS = new SimpleAttributeDefinition("cluster-connection-address", "address",
-            null, ModelType.STRING, false, false, MeasurementUnit.NONE);
-
-    SimpleAttributeDefinition CLUSTER_CONNECTION_RECONNECT_ATTEMPTS = new SimpleAttributeDefinitionBuilder("reconnect-attempts", INT)
-            .setDefaultValue(new ModelNode().set(DEFAULT_CLUSTER_RECONNECT_ATTEMPTS))
-            .setAllowNull(true)
-            .build();
-
-    SimpleAttributeDefinition CLUSTER_CONNECTION_RETRY_INTERVAL = new SimpleAttributeDefinition("retry-interval",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL), ModelType.LONG, true, MeasurementUnit.MILLISECONDS);
-
-    SimpleAttributeDefinition CLUSTER_CONNECTION_RETRY_INTERVAL_MULTIPLIER = new SimpleAttributeDefinitionBuilder("retry-interval-multiplier", BIG_DECIMAL)
-            .setDefaultValue(new ModelNode().set(DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER))
-            .setAllowNull(true)
-            .build();
-
-    SimpleAttributeDefinition CLUSTER_CONNECTION_MAX_RETRY_INTERVAL = new SimpleAttributeDefinitionBuilder("max-retry-interval", LONG)
-            .setDefaultValue(new ModelNode().set(DEFAULT_CLUSTER_MAX_RETRY_INTERVAL))
-            .setAllowNull(true)
-            .setMeasurementUnit(MILLISECONDS)
-            .build();
-
-    SimpleAttributeDefinition CLUSTER_CONNECTION_CONNECTION_TTL = new SimpleAttributeDefinitionBuilder("connection-ttl", LONG)
-            .setDefaultValue(new ModelNode().set(DEFAULT_CLUSTER_CONNECTION_TTL))
-            .setAllowNull(true)
-            .setMeasurementUnit(MILLISECONDS)
-            .build();
-
-    SimpleAttributeDefinition CLUSTER_CONNECTION_USE_DUPLICATE_DETECTION = new SimpleAttributeDefinition("use-duplicate-detection",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_DUPLICATE_DETECTION), ModelType.BOOLEAN,  true);
-
     SimpleAttributeDefinition CLUSTER_PASSWORD = new SimpleAttributeDefinition("cluster-password", "cluster-password",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD), ModelType.STRING, true, true, null,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+            RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition CLUSTER_USER = new SimpleAttributeDefinition("cluster-user", "cluster-user",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER), ModelType.STRING, true, true, null,
@@ -212,8 +167,6 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CONNECTION_TTL_OVERRIDE = new SimpleAttributeDefinition("connection-ttl-override",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CONNECTION_TTL_OVERRIDE), ModelType.LONG,  true,
             MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
-
-    SimpleAttributeDefinition CONNECTOR_REF = new SimpleAttributeDefinition("connector-ref", ModelType.STRING, false);
 
     SimpleAttributeDefinition CONSUMER_MAX_RATE = new SimpleAttributeDefinition("consumer-max-rate",
             new ModelNode().set(HornetQClient.DEFAULT_CONSUMER_MAX_RATE), ModelType.INT,  true, MeasurementUnit.PER_SECOND);
@@ -265,9 +218,6 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .setFlags(RESTART_ALL_SERVICES)
             .build();
-
-    SimpleAttributeDefinition FORWARD_WHEN_NO_CONSUMERS = new SimpleAttributeDefinition("forward-when-no-consumers",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS), ModelType.BOOLEAN, true);
 
     SimpleAttributeDefinition GROUPING_HANDLER_ADDRESS = new SimpleAttributeDefinition("grouping-handler-address", "address",
             null, ModelType.STRING, false, false, MeasurementUnit.NONE);
@@ -376,9 +326,6 @@ public interface CommonAttributes {
     SimpleAttributeDefinition MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleAttributeDefinition("management-notification-address",
             new ModelNode().set(ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS.toString()), ModelType.STRING, true,
             AttributeAccess.Flag.RESTART_ALL_SERVICES);
-
-    SimpleAttributeDefinition MAX_HOPS = new SimpleAttributeDefinition("max-hops",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_MAX_HOPS), ModelType.INT,  true);
 
     SimpleAttributeDefinition MAX_DELIVERY_ATTEMPTS = new SimpleAttributeDefinition("max-delivery-attempts",
             new ModelNode().set(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS), ModelType.INT, true);
@@ -641,6 +588,7 @@ public interface CommonAttributes {
 
     String ACCEPTOR ="acceptor";
     String ACCEPTORS ="acceptors";
+    String ADDRESS ="address";
     String ADDRESS_SETTING ="address-setting";
     String ADDRESS_SETTINGS ="address-settings";
     String BINDING_NAMES ="binding-names";
@@ -702,7 +650,6 @@ public interface CommonAttributes {
     String MESSAGE_COUNT = "message-count";
     String MODE = "mode";
     String NAME ="name";
-    String NODE_ID = "node-id";
     String NETTY_ACCEPTOR ="netty-acceptor";
     String NETTY_CONNECTOR ="netty-connector";
     String NONE = "none";
@@ -742,7 +689,6 @@ public interface CommonAttributes {
     String SUBSYSTEM ="subsystem";
     String TEMPORARY ="temporary";
     String TOPIC_ADDRESS ="topic-address";
-    String TOPOLOGY = "topology";
     String TRANSACTION = "transaction";
     String TYPE_ATTR_NAME ="type";
     String VERSION = "version";
@@ -772,13 +718,6 @@ public interface CommonAttributes {
     AttributeDefinition[] GROUPING_HANDLER_ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT};
 
     AttributeDefinition[] CORE_QUEUE_ATTRIBUTES = { QUEUE_ADDRESS, FILTER, DURABLE };
-
-    AttributeDefinition[] CLUSTER_CONNECTION_ATTRIBUTES = {
-        CLUSTER_CONNECTION_ADDRESS, CONNECTOR_REF, MIN_LARGE_MESSAGE_SIZE, CLUSTER_CONNECTION_CONNECTION_TTL,
-        CLUSTER_CONNECTION_RETRY_INTERVAL, CLUSTER_CONNECTION_RETRY_INTERVAL_MULTIPLIER, CLUSTER_CONNECTION_MAX_RETRY_INTERVAL, CLUSTER_CONNECTION_RECONNECT_ATTEMPTS, CLUSTER_CONNECTION_USE_DUPLICATE_DETECTION,
-        CLUSTER_CONNECTION_CHECK_PERIOD, CALL_TIMEOUT, FORWARD_WHEN_NO_CONSUMERS, MAX_HOPS, BRIDGE_CONFIRMATION_WINDOW_SIZE, ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS,
-        DISCOVERY_GROUP_NAME, ALLOW_DIRECT_CONNECTIONS_ONLY
-    };
 
     AttributeDefinition[] JMS_QUEUE_ATTRIBUTES = { ENTRIES, SELECTOR, DURABLE };
 

@@ -223,14 +223,7 @@ public class MessagingExtension implements Extension {
         serverRegistration.registerSubModel(new BridgeDefinition(registerRuntimeOnly));
 
         // Cluster connections
-        final ManagementResourceRegistration cluster = serverRegistration.registerSubModel(PathElement.pathElement(CommonAttributes.CLUSTER_CONNECTION),
-                MessagingSubsystemProviders.CLUSTER_CONNECTION_RESOURCE);
-        cluster.registerOperationHandler(ADD, ClusterConnectionAdd.INSTANCE, ClusterConnectionAdd.INSTANCE, false);
-        cluster.registerOperationHandler(REMOVE, ClusterConnectionRemove.INSTANCE, ClusterConnectionRemove.INSTANCE, false);
-        ClusterConnectionWriteAttributeHandler.INSTANCE.registerAttributes(cluster, registerRuntimeOnly);
-        if (registerRuntimeOnly) {
-            ClusterConnectionControlHandler.INSTANCE.register(cluster);
-        }
+        serverRegistration.registerSubModel(new ClusterConnectionDefinition(registerRuntimeOnly));
 
         // Grouping Handler
         final ManagementResourceRegistration groupingHandler = serverRegistration.registerSubModel(GROUPING_HANDLER_PATH, MessagingSubsystemProviders.GROUPING_HANDLER_RESOURCE);

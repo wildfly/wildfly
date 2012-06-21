@@ -39,12 +39,12 @@ public class ClusterConnectionWriteAttributeHandler extends ReloadRequiredWriteA
     public static final ClusterConnectionWriteAttributeHandler INSTANCE = new ClusterConnectionWriteAttributeHandler();
 
     private ClusterConnectionWriteAttributeHandler() {
-        super(CommonAttributes.CLUSTER_CONNECTION_ATTRIBUTES);
+        super(ClusterConnectionDefinition.ATTRIBUTES);
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
         final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-        for (AttributeDefinition attr : CommonAttributes.CLUSTER_CONNECTION_ATTRIBUTES) {
+        for (AttributeDefinition attr : ClusterConnectionDefinition.ATTRIBUTES) {
             if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
                 registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
             }
