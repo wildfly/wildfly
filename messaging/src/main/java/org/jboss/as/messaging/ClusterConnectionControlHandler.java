@@ -22,11 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.messaging.CommonAttributes.NODE_ID;
-import static org.jboss.as.messaging.CommonAttributes.TOPOLOGY;
-
-import java.util.EnumSet;
-import java.util.Locale;
 import java.util.Map;
 
 import org.hornetq.api.core.management.ClusterConnectionControl;
@@ -35,12 +30,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Handler for runtime operations that interact with a HornetQ {@link org.hornetq.api.core.management.ClusterConnectionControl}.
@@ -51,37 +41,7 @@ public class ClusterConnectionControlHandler extends AbstractHornetQComponentCon
 
     public static final ClusterConnectionControlHandler INSTANCE = new ClusterConnectionControlHandler();
 
-    // we keep the operation for backwards compatibility but it duplicates the "static-connectors" writable attribute
-    @Deprecated
-    public static final String GET_STATIC_CONNECTORS_AS_JSON = "get-static-connectors-as-json";
-    public static final String GET_NODES = "get-nodes";
-
     private ClusterConnectionControlHandler() {
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registry) {
-        super.register(registry);
-
-        registry.registerReadOnlyAttribute(NODE_ID, this, AttributeAccess.Storage.RUNTIME);
-        registry.registerReadOnlyAttribute(TOPOLOGY, this, AttributeAccess.Storage.RUNTIME);
-
-        final EnumSet<OperationEntry.Flag> flags = EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY);
-
-        registry.registerOperationHandler(GET_STATIC_CONNECTORS_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, GET_STATIC_CONNECTORS_AS_JSON,
-                        CommonAttributes.CLUSTER_CONNECTION, ModelType.STRING, false);
-            }
-        }, flags);
-
-        registry.registerOperationHandler(GET_NODES, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getGetNodes(locale);
-            }
-        }, flags);
     }
 
     @Override
@@ -97,10 +57,10 @@ public class ClusterConnectionControlHandler extends AbstractHornetQComponentCon
 
     @Override
     protected void handleReadAttribute(String attributeName, OperationContext context, ModelNode operation) throws OperationFailedException {
-        if (NODE_ID.equals(attributeName)) {
+        if (ClusterConnectionDefinition.NODE_ID.getName().equals(attributeName)) {
             ClusterConnectionControl control = getHornetQComponentControl(context, operation, false);
             context.getResult().set(control.getNodeID());
-        } else if (TOPOLOGY.equals(attributeName)) {
+        } else if (ClusterConnectionDefinition.TOPOLOGY.getName().equals(attributeName)) {
             ClusterConnectionControl control = getHornetQComponentControl(context, operation, false);
             context.getResult().set(control.getTopology());
         } else {
@@ -110,14 +70,14 @@ public class ClusterConnectionControlHandler extends AbstractHornetQComponentCon
 
     @Override
     protected Object handleOperation(String operationName, OperationContext context, ModelNode operation) throws OperationFailedException {
-        if (GET_STATIC_CONNECTORS_AS_JSON.equals(operationName)) {
+        if (ClusterConnectionDefinition.GET_STATIC_CONNECTORS_AS_JSON.equals(operationName)) {
             ClusterConnectionControl control = getHornetQComponentControl(context, operation, false);
             try {
                 context.getResult().set(control.getStaticConnectorsAsJSON());
             } catch (Exception e) {
                 context.getFailureDescription().set(e.getLocalizedMessage());
             }
-        } else if (GET_NODES.equals(operationName)) {
+        } else if (ClusterConnectionDefinition.GET_NODES.equals(operationName)) {
             ClusterConnectionControl control = getHornetQComponentControl(context, operation, false);
             try {
                 Map<String, String> nodes = control.getNodes();

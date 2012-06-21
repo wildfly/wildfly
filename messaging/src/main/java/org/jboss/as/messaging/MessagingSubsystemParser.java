@@ -442,7 +442,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     handleElementText(reader, element, clusterConnectionAdd);
                     break;
                 case ADDRESS:  {
-                    handleElementText(reader, element, CommonAttributes.CLUSTER_CONNECTION_ADDRESS.getName(), clusterConnectionAdd);
+                    handleElementText(reader, element, ClusterConnectionDefinition.ADDRESS.getName(), clusterConnectionAdd);
                     break;
                 }
                 case CONNECTOR_REF:  {
@@ -572,7 +572,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 switch (attribute) {
                     case ALLOW_DIRECT_CONNECTIONS_ONLY: {
                         final String attrValue = reader.getAttributeValue(i);
-                        CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.parseAndSetParameter(attrValue, addOperation, reader);
+                        ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY.parseAndSetParameter(attrValue, addOperation, reader);
                         break;
                     }
                     default: {
@@ -1574,20 +1574,20 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 writer.writeStartElement(Element.CLUSTER_CONNECTION.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                 final ModelNode cluster = property.getValue();
-                for (AttributeDefinition attribute : CommonAttributes.CLUSTER_CONNECTION_ATTRIBUTES) {
-                    if (attribute == CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY) {
+                for (AttributeDefinition attribute : ClusterConnectionDefinition.ATTRIBUTES) {
+                    if (attribute == ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY) {
                         // we nest it in static-connectors
                         continue;
                     }
                     if (attribute == ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS) {
                         if (ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS.isMarshallable(cluster)) {
                             writer.writeStartElement(Element.STATIC_CONNECTORS.getLocalName());
-                            CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.marshallAsAttribute(cluster, writer);
+                            ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY.marshallAsAttribute(cluster, writer);
                             ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS.marshallAsElement(cluster, writer);
                             writer.writeEndElement();
-                        } else if (CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.isMarshallable(cluster)) {
+                        } else if (ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY.isMarshallable(cluster)) {
                             writer.writeEmptyElement(Element.STATIC_CONNECTORS.getLocalName());
-                            CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.marshallAsAttribute(cluster, writer);
+                            ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY.marshallAsAttribute(cluster, writer);
                         }
                     }
                     else if (attribute == CommonAttributes.DISCOVERY_GROUP_NAME) {

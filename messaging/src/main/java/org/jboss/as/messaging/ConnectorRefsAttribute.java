@@ -46,7 +46,7 @@ import org.jboss.dmr.ModelType;
  */
 public class ConnectorRefsAttribute extends PrimitiveListAttributeDefinition {
 
-    public static final ConnectorRefsAttribute CLUSTER_CONNECTION_CONNECTORS = new ConnectorRefsAttribute(CommonAttributes.STATIC_CONNECTORS, false, true);
+    public static final ConnectorRefsAttribute CLUSTER_CONNECTION_CONNECTORS = new ConnectorRefsAttribute(CommonAttributes.STATIC_CONNECTORS, false, true, RESTART_ALL_SERVICES);
 
     public static final ConnectorRefsAttribute BRIDGE_CONNECTORS = new ConnectorRefsAttribute(CommonAttributes.STATIC_CONNECTORS, true, true, RESTART_ALL_SERVICES);
 

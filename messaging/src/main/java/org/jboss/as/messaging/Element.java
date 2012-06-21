@@ -44,7 +44,7 @@ public enum Element {
    // Messaging 1.0 elements in alpha order
    ACCEPTORS(CommonAttributes.ACCEPTORS),
    ADDRESS(getAttributeDefinitions(CommonAttributes.QUEUE_ADDRESS, DivertDefinition.ADDRESS,
-           CommonAttributes.GROUPING_HANDLER_ADDRESS, CommonAttributes.CLUSTER_CONNECTION_ADDRESS)),
+           CommonAttributes.GROUPING_HANDLER_ADDRESS, ClusterConnectionDefinition.ADDRESS)),
    ADDRESS_SETTINGS(CommonAttributes.ADDRESS_SETTINGS),
    ALLOW_FAILBACK(CommonAttributes.ALLOW_FAILBACK),
    ASYNC_CONNECTION_EXECUTION_ENABLED(CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED),
@@ -78,7 +78,7 @@ public enum Element {
    FAILOVER_ON_SHUTDOWN(CommonAttributes.FAILOVER_ON_SHUTDOWN),
    FILE_DEPLOYMENT_ENABLED(CommonAttributes.FILE_DEPLOYMENT_ENABLED),
    FORWARDING_ADDRESS(getForwardingAddressDefinitions()),
-   FORWARD_WHEN_NO_CONSUMERS(CommonAttributes.FORWARD_WHEN_NO_CONSUMERS),
+   FORWARD_WHEN_NO_CONSUMERS(ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS),
    GROUP_ADDRESS(CommonAttributes.GROUP_ADDRESS),
    GROUP_PORT(CommonAttributes.GROUP_PORT),
    GROUPING_HANDLER(CommonAttributes.GROUPING_HANDLER),
@@ -107,7 +107,7 @@ public enum Element {
    LOG_JOURNAL_WRITE_RATE(CommonAttributes.LOG_JOURNAL_WRITE_RATE),
    MANAGEMENT_ADDRESS(CommonAttributes.MANAGEMENT_ADDRESS),
    MANAGEMENT_NOTIFICATION_ADDRESS(CommonAttributes.MANAGEMENT_NOTIFICATION_ADDRESS),
-   MAX_HOPS(CommonAttributes.MAX_HOPS),
+   MAX_HOPS(ClusterConnectionDefinition.MAX_HOPS),
    MEMORY_MEASURE_INTERVAL(CommonAttributes.MEMORY_MEASURE_INTERVAL),
    MEMORY_WARNING_THRESHOLD(CommonAttributes.MEMORY_WARNING_THRESHOLD),
    MESSAGE_COUNTER_ENABLED(CommonAttributes.MESSAGE_COUNTER_ENABLED),
@@ -345,7 +345,7 @@ public enum Element {
 
     private static Map<String, AttributeDefinition> getConnectorRefDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("simple", CommonAttributes.CONNECTOR_REF);
+        result.put("simple", ClusterConnectionDefinition.CONNECTOR_REF);
         result.put("broadcast-group", ConnectorRefsAttribute.BROADCAST_GROUP);
         result.put("bridge", ConnectorRefsAttribute.BRIDGE_CONNECTORS);
         result.put("cluster-connection", ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS);
@@ -357,7 +357,7 @@ public enum Element {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("connection", CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS);
         result.put("bridge", BridgeDefinition.RECONNECT_ATTEMPTS);
-        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_RECONNECT_ATTEMPTS);
+        result.put("cluster", ClusterConnectionDefinition.RECONNECT_ATTEMPTS);
         return result;
 
     }
@@ -372,7 +372,7 @@ public enum Element {
 
     private static Map<String, AttributeDefinition> getDuplicateDetectionDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_USE_DUPLICATE_DETECTION);
+        result.put("cluster", ClusterConnectionDefinition.USE_DUPLICATE_DETECTION);
         result.put("bridge", BridgeDefinition.USE_DUPLICATE_DETECTION);
         return result;
 
@@ -380,35 +380,35 @@ public enum Element {
 
     private static Map<String, AttributeDefinition> getRetryIntervalDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_RETRY_INTERVAL);
+        result.put("cluster", ClusterConnectionDefinition.RETRY_INTERVAL);
         result.put("default", CommonAttributes.RETRY_INTERVAL);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getRetryIntervalMultiplierDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_RETRY_INTERVAL_MULTIPLIER);
+        result.put("cluster", ClusterConnectionDefinition.RETRY_INTERVAL_MULTIPLIER);
         result.put("default", CommonAttributes.RETRY_INTERVAL_MULTIPLIER);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getMaxRetryIntervalDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_MAX_RETRY_INTERVAL);
+        result.put("cluster", ClusterConnectionDefinition.MAX_RETRY_INTERVAL);
         result.put("default", CommonAttributes.MAX_RETRY_INTERVAL);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getConnectionTTLDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_CONNECTION_TTL);
+        result.put("cluster", ClusterConnectionDefinition.CONNECTION_TTL);
         result.put("default", CommonAttributes.CONNECTION_TTL);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getCheckPeriodDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_CHECK_PERIOD);
+        result.put("cluster", ClusterConnectionDefinition.CHECK_PERIOD);
         result.put("default", CommonAttributes.CHECK_PERIOD);
         return result;
     }

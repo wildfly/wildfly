@@ -131,8 +131,9 @@
                 <cluster-connection name="cc1">
                     <address>cc1-address</address>
                     <connector-ref>netty</connector-ref>
-                    <min-large-message-size>10245</min-large-message-size>
                     <connection-ttl>1234</connection-ttl>
+                    <forward-when-no-consumers>true</forward-when-no-consumers>
+                    <max-hops>7</max-hops>
                     <retry-interval>987</retry-interval>
                     <retry-interval-multiplier>3.0</retry-interval-multiplier>
                     <max-retry-interval>3600</max-retry-interval>
@@ -140,8 +141,7 @@
                     <use-duplicate-detection>true</use-duplicate-detection>
                     <check-period>2345</check-period>
                     <call-timeout>3456</call-timeout>
-                    <forward-when-no-consumers>true</forward-when-no-consumers>
-                    <max-hops>7</max-hops>
+                    <min-large-message-size>10245</min-large-message-size>
                     <confirmation-window-size>459</confirmation-window-size>
                     <static-connectors>
                         <connector-ref>in-vm</connector-ref>

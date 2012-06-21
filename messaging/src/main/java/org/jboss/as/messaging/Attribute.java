@@ -12,7 +12,7 @@ import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 public enum Attribute {
    UNKNOWN((String) null),
    /* Messaging 1.0 attributes, in alpha order */
-   ALLOW_DIRECT_CONNECTIONS_ONLY(CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY),
+   ALLOW_DIRECT_CONNECTIONS_ONLY(ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY),
    // backup-connector-name is no longer used by HornetQ configuration
    @Deprecated
    BACKUP_CONNECTOR_NAME("backup-connector-name"),

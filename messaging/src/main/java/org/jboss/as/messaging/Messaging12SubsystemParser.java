@@ -301,7 +301,7 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                     handleElementText(reader, element, clusterConnectionAdd);
                     break;
                 case ADDRESS:  {
-                    handleElementText(reader, element, CommonAttributes.CLUSTER_CONNECTION_ADDRESS.getName(), clusterConnectionAdd);
+                    handleElementText(reader, element, ClusterConnectionDefinition.ADDRESS.getName(), clusterConnectionAdd);
                     break;
                 }
                 case CONNECTOR_REF:  {
