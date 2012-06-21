@@ -41,7 +41,6 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -52,9 +51,9 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.SubSystemTransformersRegistry;
 import org.jboss.as.controller.transform.SubsystemTransformer;
 import org.jboss.as.controller.transform.TransformerRegistry;
-import org.jboss.as.controller.transform.TransformersRegistry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
@@ -581,9 +580,9 @@ public class ExtensionRegistry {
         }
 
         @Override
-        public TransformersRegistry registerModelTransformers(final ModelVersionRange range) {
+        public SubSystemTransformersRegistry registerModelTransformers(final ModelVersionRange range) {
             final PathAddress subsystemAddress = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(SUBSYSTEM, name));
-            return new TransformersRegistry() {
+            return new SubSystemTransformersRegistry() {
 
                 @Override
                 public void discardOperation(PathAddress address, String operationName) {

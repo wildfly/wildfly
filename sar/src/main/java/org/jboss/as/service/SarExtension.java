@@ -50,9 +50,9 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.AbstractOperationTransformer;
+import org.jboss.as.controller.transform.SubSystemTransformersRegistry;
 import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.TransformersRegistry;
 import org.jboss.common.beans.property.PropertyEditors;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -94,20 +94,24 @@ public class SarExtension implements Extension {
                 context.completeStep();
             }
         }, AttributeAccess.Storage.CONFIGURATION);
-        final TransformersRegistry registry = subsystem.registerModelTransformers(ModelVersion.create(1, 0, 0));
-        registry.registerOperationTransformer(PathAddress.EMPTY_ADDRESS, "read-resource", new OperationTransformer() {
+        final SubSystemTransformersRegistry registry = subsystem.registerModelTransformers(ModelVersion.create(1, 0, 0));
+        registry.registerOperationTransformer(PathAddress.EMPTY_ADDRESS, "read-resource", new AbstractOperationTransformer() {
+
             @Override
-            public ModelNode transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) {
+            protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
                 System.out.print("transforming " + operation);
                 return operation;
             }
+
         });
-        registry.registerOperationTransformer(PathAddress.EMPTY_ADDRESS, "write-attribute", new OperationTransformer() {
+        registry.registerOperationTransformer(PathAddress.EMPTY_ADDRESS, "write-attribute", new AbstractOperationTransformer() {
+
             @Override
-            public ModelNode transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
+            protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
                 System.out.print("transforming write-attribute" + operation);
                 return operation;
             }
+
         });
 
     }

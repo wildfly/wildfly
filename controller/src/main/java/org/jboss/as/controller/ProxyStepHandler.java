@@ -38,8 +38,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.Transformers;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -80,16 +80,40 @@ public class ProxyStepHandler implements OperationStepHandler {
                 finalResultRef.set(response);
             }
         };
-        // Hmm...
+        // Transform the operation if needed
         if(proxyController instanceof TransformingProxyController) {
             final TransformingProxyController transformingProxyController = (TransformingProxyController) proxyController;
-            final TransformationContext transformationContext = Transformers.Factory.getTransformationContext(context);
-            final ModelNode transformedOperation = transformingProxyController.getTransformers().transformOperation(transformationContext, operation);
-            if(transformedOperation != null) { // discard the operation
-                proxyController.execute(transformedOperation, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
+            final OperationTransformer.TransformedOperation result = transformingProxyController.transformOperation(context, operation);
+            final ModelNode transformedOperation = result.getTransformedOperation();
+            final OperationResultTransformer resultTransformer = result.getResultTransformer();
+            if(transformedOperation != null) {
+                final ProxyController.ProxyOperationControl transformingProxyControl = new ProxyController.ProxyOperationControl() {
+                    @Override
+                    public void operationFailed(ModelNode response) {
+                        final ModelNode result = resultTransformer.transformResult(response);
+                        proxyControl.operationFailed(result);
+                    }
+
+                    @Override
+                    public void operationCompleted(ModelNode response) {
+                        final ModelNode result = resultTransformer.transformResult(response);
+                        proxyControl.operationCompleted(result);
+                    }
+
+                    @Override
+                    public void operationPrepared(ModelController.OperationTransaction transaction, ModelNode response) {
+                        // final ModelNode result = resultTransformer.transformResult(response);
+                        proxyControl.operationPrepared(transaction, response);
+                    }
+                };
+                proxyController.execute(transformedOperation, messageHandler, transformingProxyControl, new DelegatingOperationAttachments(context));
             } else {
-                //
-                context.completeStep();
+                // discard the operation
+                final ModelNode transformedResult = resultTransformer.transformResult(new ModelNode());
+                if(transformedResult != null) {
+                    context.getResult().set(transformedResult);
+                }
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 return;
             }
         } else {

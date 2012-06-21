@@ -32,7 +32,6 @@ import org.jboss.as.controller.remote.BlockingQueueOperationListener;
 import org.jboss.as.controller.remote.TransactionalOperationImpl;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
-import org.jboss.as.controller.remote.TransactionalProtocolClientImpl;
 import org.jboss.as.controller.support.ChannelServer;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;

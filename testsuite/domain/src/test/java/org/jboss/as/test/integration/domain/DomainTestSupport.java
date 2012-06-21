@@ -64,12 +64,13 @@ public class DomainTestSupport {
     public static final long domainShutdownTimeout = Long.valueOf(System.getProperty("jboss.test.domain.shutdown.timeout", "20000"));
 
     public static JBossAsManagedConfiguration getMasterConfiguration(String domainConfigPath, String hostConfigPath, String testName) throws URISyntaxException {
-
+        final String hostName = "master";
         File domains = getBaseDir(testName);
         File extraModules = getAddedModulesDir(testName);
+        File overrideModules = getHostOverrideModulesDir(testName, hostName);
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         final JBossAsManagedConfiguration masterConfig = new JBossAsManagedConfiguration();
-        configureModulePath(masterConfig, extraModules);
+        configureModulePath(masterConfig, overrideModules, extraModules);
         masterConfig.setHostControllerManagementAddress(masterAddress);
         masterConfig.setHostCommandLineProperties("-Djboss.test.host.master.address=" + masterAddress);
         URL url = tccl.getResource(domainConfigPath);
@@ -80,7 +81,7 @@ public class DomainTestSupport {
         assert url != null : "cannot find hostConfigPath";
         System.out.println(masterConfig.getHostConfigFile());
         masterConfig.setHostConfigFile(new File(url.toURI()).getAbsolutePath());
-        File masterDir = new File(domains, "master");
+        File masterDir = new File(domains, hostName);
         // TODO this should not be necessary
         new File(masterDir, "configuration").mkdirs();
         masterConfig.setDomainDirectory(masterDir.getAbsolutePath());
@@ -89,13 +90,14 @@ public class DomainTestSupport {
     }
 
     public static JBossAsManagedConfiguration getSlaveConfiguration(String hostConfigPath, String testName) throws URISyntaxException {
-
+        final String hostName = "slave";
         File domains = getBaseDir(testName);
         File extraModules = getAddedModulesDir(testName);
+        File overrideModules = getHostOverrideModulesDir(testName, hostName);
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         final JBossAsManagedConfiguration slaveConfig = new JBossAsManagedConfiguration();
-        configureModulePath(slaveConfig, extraModules);
-        slaveConfig.setHostName("slave");
+        configureModulePath(slaveConfig, overrideModules, extraModules);
+        slaveConfig.setHostName(hostName);
         slaveConfig.setHostControllerManagementAddress(slaveAddress);
         slaveConfig.setHostControllerManagementPort(19999);
         slaveConfig.setHostCommandLineProperties("-Djboss.test.host.master.address=" + masterAddress +
@@ -103,7 +105,7 @@ public class DomainTestSupport {
         URL url = tccl.getResource(hostConfigPath);
         slaveConfig.setHostConfigFile(new File(url.toURI()).getAbsolutePath());
         System.out.println(slaveConfig.getHostConfigFile());
-        File slaveDir = new File(domains, "slave");
+        File slaveDir = new File(domains, hostName);
         // TODO this should not be necessary
         new File(slaveDir, "configuration").mkdirs();
         slaveConfig.setDomainDirectory(slaveDir.getAbsolutePath());
@@ -134,8 +136,18 @@ public class DomainTestSupport {
         return new File("target" + File.separator + "domains" + File.separator + testName);
     }
 
+    public static File getHostDir(String testName, String hostName) {
+        return new File(getBaseDir(testName), hostName);
+    }
+
     public static File getAddedModulesDir(String testName) {
         File f = new File(getBaseDir(testName), "added-modules");
+        f.mkdirs();
+        return f;
+    }
+
+    public static File getHostOverrideModulesDir(String testName, String hostName) {
+        final File f = new File(getHostDir(testName, hostName), "added-modules");
         f.mkdirs();
         return f;
     }
@@ -227,13 +239,17 @@ public class DomainTestSupport {
         }
     }
 
-    private static void configureModulePath(JBossAsManagedConfiguration config, File extraModules) {
+    private static void configureModulePath(JBossAsManagedConfiguration config, File... extraModules) {
         String basePath = config.getModulePath();
         if (basePath == null || basePath.isEmpty()) {
             basePath = config.getJbossHome() + File.separatorChar + "modules";
         }
-        String fullPath = extraModules.getAbsolutePath() + File.pathSeparatorChar + basePath;
-        config.setModulePath(fullPath);
+        final StringBuilder path = new StringBuilder();
+        for(final File extraModule : extraModules) {
+            path.append(extraModule.getAbsolutePath()).append(File.pathSeparatorChar);
+        }
+        path.append(basePath);
+        config.setModulePath(path.toString());
     }
 
     private final JBossAsManagedConfiguration masterConfiguration;
@@ -289,11 +305,20 @@ public class DomainTestSupport {
 
     public void addTestModule(String moduleName, InputStream moduleXml, Map<String, StreamExporter> contents) throws IOException {
         File modulesDir = getAddedModulesDir(testClass);
+        addModule(modulesDir, moduleName, moduleXml, contents);
+    }
+
+    public void addOverrideModule(String hostName, String moduleName, InputStream moduleXml, Map<String, StreamExporter> contents) throws IOException {
+        File modulesDir = getHostOverrideModulesDir(testClass, hostName);
+        addModule(modulesDir, moduleName, moduleXml, contents);
+    }
+
+    static void addModule(final File modulesDir, String moduleName, InputStream moduleXml, Map<String, StreamExporter> resources) throws IOException {
         String modulePath = moduleName.replace('.', File.separatorChar) + File.separatorChar + "main";
         File moduleDir = new File(modulesDir, modulePath);
         moduleDir.mkdirs();
         FileUtils.copyFile(moduleXml, new File(moduleDir, "module.xml"));
-        for (Map.Entry<String, StreamExporter> entry : contents.entrySet()) {
+        for (Map.Entry<String, StreamExporter> entry : resources.entrySet()) {
             entry.getValue().exportTo(new File(moduleDir, entry.getKey()), true);
         }
     }

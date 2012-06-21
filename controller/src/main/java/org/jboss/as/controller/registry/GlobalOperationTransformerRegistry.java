@@ -30,6 +30,7 @@ import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -131,6 +132,11 @@ public class GlobalOperationTransformerRegistry {
         return create(version, versions);
     }
 
+    protected void mergeSubtree(final OperationTransformerRegistry targetRegistry, final PathAddress address, final ModelVersion version) {
+        final GlobalOperationTransformerRegistry child = navigate(address.iterator());
+        child.process(targetRegistry, address, version, Collections.<PathAddress, ModelVersion>emptyMap());
+    }
+
     protected OperationTransformerRegistry create(final ModelVersion version, final Map<PathAddress, ModelVersion> versions) {
         final OperationTransformerRegistry registry = new OperationTransformerRegistry();
         process(registry, PathAddress.EMPTY_ADDRESS, version, versions);
@@ -190,6 +196,23 @@ public class GlobalOperationTransformerRegistry {
             return registry.resolveTransformer(iterator, element.getValue(), version, operationName);
         }
     }
+
+    GlobalOperationTransformerRegistry navigate(final Iterator<PathElement> iterator) {
+        if(! iterator.hasNext()) {
+            return this;
+        } else {
+            final PathElement element = iterator.next();
+            final SubRegistry registry = subRegistriesUpdater.get(this, element.getKey());
+            if(registry == null) {
+                return null;
+            }
+            GlobalOperationTransformerRegistry other = SubRegistry.childrenUpdater.get(registry, element.getValue());
+            if(other != null) {
+                return other.navigate(iterator);
+            }
+            return null;
+        }
+    };
 
     SubRegistry getOrCreate(final String key) {
         for (;;) {

@@ -12,6 +12,13 @@ import org.jboss.as.controller.registry.Resource;
 public interface TransformationContext {
 
     /**
+     * Get the transformation target.
+     *
+     * @return the transformation target
+     */
+    TransformationTarget getTarget();
+
+    /**
      * Get the type of process in which this operation is executing.
      *
      * @return the process type. Will not be {@code null}

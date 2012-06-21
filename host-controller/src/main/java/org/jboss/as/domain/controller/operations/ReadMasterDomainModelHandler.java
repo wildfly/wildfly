@@ -52,7 +52,7 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler, Descr
     }
 
     private Resource transformResource(final OperationContext context, Resource root) {
-        return transformers.transformResource(Transformers.Factory.getTransformationContext(context), root);
+        return transformers.transformResource(Transformers.Factory.getTransformationContext(transformers, context), root);
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

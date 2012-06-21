@@ -20,35 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller;
+package org.jboss.as.test.integration.domain.extension;
+
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface ModelVersionRange {
+public class VersionedExtension1 extends VersionedExtensionCommon {
 
-    /**
-     * Get all version in the range.
-     *
-     * @return the versions
-     */
-    ModelVersion[] getVersions();
+    @Override
+    public void initialize(final ExtensionContext context) {
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0, 0);
 
-    public static class Versions {
-
-        private Versions() {
-            //
-        }
-
-        public static ModelVersionRange range(final ModelVersion... versions) {
-            return new ModelVersionRange() {
-                @Override
-                public ModelVersion[] getVersions() {
-                    return versions;
-                }
-            };
-        }
-
+        final ManagementResourceRegistration registration = initializeSubsystem(subsystem);
+        // Register the transformers
     }
+
+
 
 }
