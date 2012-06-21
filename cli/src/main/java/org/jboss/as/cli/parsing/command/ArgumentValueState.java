@@ -54,10 +54,10 @@ public class ArgumentValueState extends DefaultParsingState {
         setLeaveOnWhitespace(true);
         if(!Util.isWindows()) {
             // on windows we don't escape, this would mess up file system paths for example.
-            setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
+            setDefaultHandler(WordCharacterHandler.LB_LEAVE_ESCAPE_ON);
             enterState('"', QuotesState.QUOTES_INCLUDED);
         } else {
-            setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_OFF);
+            setDefaultHandler(new WordCharacterHandler(true, false));
             enterState('"', new QuotesState(true, false));
         }
         setReturnHandler(new CharacterHandler() {

@@ -328,4 +328,10 @@ public class MockCommandContext implements CommandContext {
     public void connectController() {
         connectController(null, -1);
     }
+
+    @Override
+    public Object remove(String key) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

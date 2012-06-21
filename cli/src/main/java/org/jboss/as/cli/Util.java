@@ -148,18 +148,18 @@ public class Util {
         return SecurityActions.getSystemProperty("os.name").toLowerCase(Locale.ENGLISH).indexOf("windows") >= 0;
     }
 
-    public static boolean isSuccess(ModelNode operationResult) {
-        if(operationResult != null) {
-            return operationResult.hasDefined(Util.OUTCOME) && operationResult.get(Util.OUTCOME).asString().equals(Util.SUCCESS);
+    public static boolean isSuccess(ModelNode operationResponse) {
+        if(operationResponse != null) {
+            return operationResponse.hasDefined(Util.OUTCOME) && operationResponse.get(Util.OUTCOME).asString().equals(Util.SUCCESS);
         }
         return false;
     }
 
-    public static String getFailureDescription(ModelNode operationResult) {
-        if(operationResult == null) {
+    public static String getFailureDescription(ModelNode operationResponse) {
+        if(operationResponse == null) {
             return null;
         }
-        ModelNode descr = operationResult.get(Util.FAILURE_DESCRIPTION);
+        ModelNode descr = operationResponse.get(Util.FAILURE_DESCRIPTION);
         if(descr == null) {
             return null;
         }

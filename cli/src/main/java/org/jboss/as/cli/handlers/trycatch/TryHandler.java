@@ -19,43 +19,47 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.parsing;
+package org.jboss.as.cli.handlers.trycatch;
 
+import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.Util;
+import org.jboss.as.cli.CommandLineException;
+import org.jboss.as.cli.batch.BatchManager;
+import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class LineBreakHandler implements CharacterHandler {
+public class TryHandler extends CommandHandlerWithHelp {
 
-    private final boolean fallbackToEscape;
-    private final boolean leaveOnLnBreak;
-
-    public LineBreakHandler(boolean leaveOnLnBreak, boolean fallbackToEscape) {
-        this.leaveOnLnBreak = leaveOnLnBreak;
-        this.fallbackToEscape = fallbackToEscape;
+    public TryHandler() {
+        super("try", true);
     }
 
     @Override
-    public void handle(ParsingContext ctx) throws CommandFormatException {
-        if(ctx.getCharacter() == '\\') {
-            if(ctx.getInput().length() > ctx.getLocation() + Util.LINE_SEPARATOR.length() &&
-                    ctx.getInput().startsWith(Util.LINE_SEPARATOR, ctx.getLocation() + 1)) {
-                if(leaveOnLnBreak) {
-                    ctx.leaveState();
-                    ctx.advanceLocation(Util.LINE_SEPARATOR.length());
-                }
-            } else if(fallbackToEscape){
-                ctx.enterState(EscapeCharacterState.INSTANCE);
-            } else {
-                doHandle(ctx);
-            }
-        } else {
-            doHandle(ctx);
+    public boolean isAvailable(CommandContext ctx) {
+        if(ctx.isBatchMode()) {
+            return false;
         }
+        return super.isAvailable(ctx);
     }
 
-    protected void doHandle(ParsingContext ctx) throws CommandFormatException {}
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
+     */
+    @Override
+    protected void doHandle(CommandContext ctx) throws CommandLineException {
+
+        final BatchManager batchManager = ctx.getBatchManager();
+        if(batchManager.isBatchActive()) {
+            throw new CommandFormatException("try is not allowed while in batch mode.");
+        }
+
+        if(!batchManager.activateNewBatch()) {
+            // that's more like illegal state
+            throw new CommandFormatException("Failed to activate batch mode for try.");
+        }
+        TryBlock.create(ctx);
+    }
 }

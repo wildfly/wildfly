@@ -57,6 +57,7 @@ public class CommandState extends DefaultParsingState {
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
                 if(ctx.isEndOfContent()) {
+                    ctx.leaveState();
                     return;
                 }
                 final CharacterHandler handler = getHandler(ctx.getCharacter());

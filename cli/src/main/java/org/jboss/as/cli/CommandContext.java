@@ -104,6 +104,14 @@ public interface CommandContext {
     Object get(String key);
 
     /**
+     * Removes the value the key was associated with using the set(key, value) method above.
+     * If the key isn't associated with any value, the method will return null.
+     * @param key the key to be removed
+     * @return the value associated with the key or null, if the key wasn't associated with any non-null value.
+     */
+    Object remove(String key);
+
+    /**
      * Returns the model controller client or null if it hasn't been initialized.
      * @return the model controller client or null if it hasn't been initialized.
      */
