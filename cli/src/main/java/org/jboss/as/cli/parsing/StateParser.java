@@ -48,28 +48,22 @@ public class StateParser {
             return;
         }
 
-        int i = 0;
         ParsingContextImpl ctx = new ParsingContextImpl();
         ctx.initialState = initialState;
         ctx.callbackHandler = callbackHandler;
         ctx.input = str;
 
-        ctx.ch = str.charAt(i);
-        ctx.location = i;
+        ctx.ch = str.charAt(0);
+        ctx.location = 0;
         initialState.getEnterHandler().handle(ctx);
 
-        while (i < str.length()) {
-            char ch = str.charAt(i);
-
-            ctx.ch = ch;
-            ctx.location = i;
-
-            CharacterHandler handler = ctx.getState().getHandler(ch);
+        while (ctx.location < str.length()) {
+            ctx.ch = str.charAt(ctx.location);
+            final CharacterHandler handler = ctx.getState().getHandler(ctx.ch);
             handler.handle(ctx);
-            ++i;
+            ++ctx.location;
         }
 
-        ctx.location = i;
         ctx.endOfContent = true;
         ParsingState state = ctx.getState();
         while(state != ctx.initialState) {
@@ -149,6 +143,15 @@ public class StateParser {
         @Override
         public String getInput() {
             return input;
+        }
+
+        @Override
+        public void advanceLocation(int offset) throws IndexOutOfBoundsException {
+            if(location + offset >= input.length()) {
+                throw new IndexOutOfBoundsException("Location=" + location + ", offset=" + offset + ", length=" + input.length());
+            }
+            location += offset;
+            ch = input.charAt(location);
         }
     }
 }

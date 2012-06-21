@@ -62,8 +62,7 @@ public class OperationRequestState extends DefaultParsingState {
         enterState(OutputTargetState.OUTPUT_REDIRECT_CHAR, outRedirect);
         setReturnHandler(new CharacterHandler(){
             @Override
-            public void handle(ParsingContext ctx)
-                    throws CommandFormatException {
+            public void handle(ParsingContext ctx) throws CommandFormatException {
                 if(ctx.isEndOfContent()) {
                     return;
                 }

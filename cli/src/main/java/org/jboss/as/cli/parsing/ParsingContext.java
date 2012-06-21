@@ -29,21 +29,76 @@ import org.jboss.as.cli.CommandFormatException;
  */
 public interface ParsingContext {
 
+    /**
+     * The complete string being parsed.
+     *
+     * @return  the complete string being parsed
+     */
     String getInput();
 
+    /**
+     * The current state.
+     *
+     * @return current state
+     */
     ParsingState getState();
 
+    /**
+     * Enters the state passed in as the argument which then becomes the current state.
+     *
+     * @param state  the state to enter
+     * @throws CommandFormatException  in case something went wrong
+     */
     void enterState(ParsingState state) throws CommandFormatException;
 
+    /**
+     * Leaves the current state and and returns it.
+     *
+     * @return  the state that's been left
+     * @throws CommandFormatException  in case something went wrong
+     */
     ParsingState leaveState() throws CommandFormatException;
 
+    /**
+     * Leaves the current state and then enters it again.
+     *
+     * @throws CommandFormatException  in case something went wrong
+     */
     void reenterState() throws CommandFormatException;
 
+    /**
+     * The callback handler used for current parsing.
+     *
+     * @return  the callback handler used for the current parsing
+     */
     ParsingStateCallbackHandler getCallbackHandler();
 
+    /**
+     * The character at the current location in the input string.
+     *
+     * @return  the character at the current location in the input string
+     */
     char getCharacter();
 
+    /**
+     * The current location in the input string.
+     *
+     * @return  the current location in the input string
+     */
     int getLocation();
 
+    /**
+     * Checks whether the end of the input string has been reached.
+     *
+     * @return  true if the end of the input stream has been reached
+     */
     boolean isEndOfContent();
+
+    /**
+     * Advances the current location by skipping the specified number of characters.
+     *
+     * @param offset  the number of characters to skip
+     * @throws IndexOutOfBoundsException  if the new location exceeds the input string length
+     */
+    void advanceLocation(int offset) throws IndexOutOfBoundsException;
 }

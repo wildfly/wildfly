@@ -115,6 +115,10 @@ import org.jboss.as.cli.handlers.jca.XADataSourceAddCompositeHandler;
 import org.jboss.as.cli.handlers.jms.CreateJmsResourceHandler;
 import org.jboss.as.cli.handlers.jms.DeleteJmsResourceHandler;
 import org.jboss.as.cli.handlers.module.ASModuleHandler;
+import org.jboss.as.cli.handlers.trycatch.CatchHandler;
+import org.jboss.as.cli.handlers.trycatch.EndTryHandler;
+import org.jboss.as.cli.handlers.trycatch.FinallyHandler;
+import org.jboss.as.cli.handlers.trycatch.TryHandler;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.NodePathFormatter;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
@@ -340,6 +344,12 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new BatchMoveLineHandler(), "move-batch-line");
         cmdRegistry.registerHandler(new BatchEditLineHandler(), "edit-batch-line");
 
+        // try-catch
+        cmdRegistry.registerHandler(new TryHandler(), "try");
+        cmdRegistry.registerHandler(new CatchHandler(), "catch");
+        cmdRegistry.registerHandler(new FinallyHandler(), "finally");
+        cmdRegistry.registerHandler(new EndTryHandler(), "end-try");
+
         // data-source
         GenericTypeOperationHandler dsHandler = new GenericTypeOperationHandler(this, "/subsystem=datasources/data-source", null);
         final DefaultCompleter driverNameCompleter = new DefaultCompleter(JDBCDriverNameProvider.INSTANCE);
@@ -555,6 +565,7 @@ class CommandContextImpl implements CommandContext {
             Throwable t = e.getCause();
             while(t != null) {
                 buf.append(": ").append(t.getLocalizedMessage());
+                t = t.getCause();
             }
             error(buf.toString());
         }
@@ -663,6 +674,11 @@ class CommandContextImpl implements CommandContext {
     @Override
     public Object get(String key) {
         return map.get(key);
+    }
+
+    @Override
+    public Object remove(String key) {
+        return map.remove(key);
     }
 
     @Override
