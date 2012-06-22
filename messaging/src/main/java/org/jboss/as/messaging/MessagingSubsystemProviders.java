@@ -33,27 +33,6 @@ import org.jboss.dmr.ModelNode;
  */
 class MessagingSubsystemProviders {
 
-    static final DescriptionProvider ADDRESS_SETTING = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getAddressSetting(locale);
-        }
-    };
-
-    static final DescriptionProvider ADDRESS_SETTING_ADD = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getAddressSettingAdd(locale);
-        }
-    };
-
-    static final DescriptionProvider ADDRESS_SETTING_REMOVE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getAddressSettingRemove(locale);
-        }
-    };
-
     static final DescriptionProvider QUEUE_RESOURCE = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {

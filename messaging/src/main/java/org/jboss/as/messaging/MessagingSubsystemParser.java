@@ -1797,16 +1797,16 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 final ModelNode setting = matchSetting.getValue();
                 CommonAttributes.DEAD_LETTER_ADDRESS.marshallAsElement(setting, writer);
                 CommonAttributes.EXPIRY_ADDRESS.marshallAsElement(setting, writer);
-                CommonAttributes.REDELIVERY_DELAY.marshallAsElement(setting, writer);
-                CommonAttributes.MAX_DELIVERY_ATTEMPTS.marshallAsElement(setting, writer);
-                CommonAttributes.MAX_SIZE_BYTES.marshallAsElement(setting, writer);
-                CommonAttributes.PAGE_SIZE_BYTES.marshallAsElement(setting, writer);
-                CommonAttributes.PAGE_MAX_CACHE_SIZE.marshallAsElement(setting, writer);
-                CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY.marshallAsElement(setting, writer);
-                CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT.marshallAsElement(setting, writer);
-                CommonAttributes.LVQ.marshallAsElement(setting, writer);
-                CommonAttributes.REDISTRIBUTION_DELAY.marshallAsElement(setting, writer);
-                CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE.marshallAsElement(setting, writer);
+                AddressSettingDefinition.REDELIVERY_DELAY.marshallAsElement(setting, writer);
+                AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS.marshallAsElement(setting, writer);
+                AddressSettingDefinition.MAX_SIZE_BYTES.marshallAsElement(setting, writer);
+                AddressSettingDefinition.PAGE_SIZE_BYTES.marshallAsElement(setting, writer);
+                AddressSettingDefinition.PAGE_MAX_CACHE_SIZE.marshallAsElement(setting, writer);
+                AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY.marshallAsElement(setting, writer);
+                AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT.marshallAsElement(setting, writer);
+                AddressSettingDefinition.LAST_VALUE_QUEUE.marshallAsElement(setting, writer);
+                AddressSettingDefinition.REDISTRIBUTION_DELAY.marshallAsElement(setting, writer);
+                AddressSettingDefinition.SEND_TO_DLA_ON_NO_ROUTE.marshallAsElement(setting, writer);
                 writer.writeEndElement();
             }
             writer.writeEndElement();
