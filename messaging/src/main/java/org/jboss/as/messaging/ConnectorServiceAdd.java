@@ -48,6 +48,7 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class ConnectorServiceAdd extends AbstractAddStepHandler {
 
+
     public static final ConnectorServiceAdd INSTANCE = new ConnectorServiceAdd();
 
     private ConnectorServiceAdd() {
@@ -55,9 +56,6 @@ public class ConnectorServiceAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        model.setEmptyObject();
-
         for (final AttributeDefinition attributeDefinition : ConnectorServiceDefinition.ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);
         }

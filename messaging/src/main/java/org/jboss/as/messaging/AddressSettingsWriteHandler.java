@@ -22,20 +22,14 @@
 
 package org.jboss.as.messaging;
 
-import org.jboss.as.controller.AbstractWriteAttributeHandler;
-
-import java.util.EnumSet;
-
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -45,15 +39,6 @@ import org.jboss.dmr.ModelNode;
 class AddressSettingsWriteHandler extends AbstractWriteAttributeHandler<AddressSettingsWriteHandler.RevertHandback> {
 
     static final AddressSettingsWriteHandler INSTANCE = new AddressSettingsWriteHandler();
-
-    public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
-        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
-        for (AttributeDefinition attr : AddressSettingDefinition.ATTRIBUTES) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
-            }
-        }
-    }
 
     protected AddressSettingsWriteHandler() {
         super(AddressSettingDefinition.ATTRIBUTES);

@@ -7,12 +7,9 @@ import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElem
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTORS;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_REF;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
-import static org.jboss.as.messaging.CommonAttributes.MAX_POOL_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.MIN_POOL_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
@@ -24,6 +21,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -51,8 +49,8 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
             throws XMLStreamException {
         super.writePooledConnectionFactoryAttributes(writer, name, factory);
 
-        MIN_POOL_SIZE.marshallAsElement(factory, writer);
-        MAX_POOL_SIZE.marshallAsElement(factory, writer);
+        Pooled.MIN_POOL_SIZE.marshallAsElement(factory, writer);
+        Pooled.MAX_POOL_SIZE.marshallAsElement(factory, writer);
     }
 
     protected ModelNode createConnectionFactory(XMLExtendedStreamReader reader, ModelNode connectionFactory, boolean pooled) throws XMLStreamException
@@ -88,7 +86,6 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 }
                 case HA:
                 case CLIENT_FAILURE_CHECK_PERIOD:
-                case CONNECTION_TTL:
                 case CALL_TIMEOUT:
                 case CONSUMER_WINDOW_SIZE:
                 case CONSUMER_MAX_RATE:
@@ -96,7 +93,6 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 case PRODUCER_WINDOW_SIZE:
                 case PRODUCER_MAX_RATE:
                 case CACHE_LARGE_MESSAGE_CLIENT:
-                case MIN_LARGE_MESSAGE_SIZE:
                 case CLIENT_ID:
                 case DUPS_OK_BATCH_SIZE:
                 case TRANSACTION_BATH_SIZE:
@@ -105,8 +101,6 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 case BLOCK_ON_DURABLE_SEND:
                 case AUTO_GROUP:
                 case PRE_ACK:
-                case RETRY_INTERVAL_MULTIPLIER:
-                case MAX_RETRY_INTERVAL:
                 case FAILOVER_ON_INITIAL_CONNECTION:
                 case FAILOVER_ON_SERVER_SHUTDOWN:
                 case LOAD_BALANCING_CLASS_NAME:
@@ -114,11 +108,12 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 case GROUP_ID:
                     handleElementText(reader, element, connectionFactory);
                     break;
-                case RETRY_INTERVAL:
-                    // Use the "default" variant
-                    handleElementText(reader, element, "default", connectionFactory);
-                    break;
+                case CONNECTION_TTL:
+                case MAX_RETRY_INTERVAL:
+                case MIN_LARGE_MESSAGE_SIZE:
                 case RECONNECT_ATTEMPTS:
+                case RETRY_INTERVAL:
+                case RETRY_INTERVAL_MULTIPLIER:
                 case SCHEDULED_THREAD_POOL_MAX_SIZE:
                 case THREAD_POOL_MAX_SIZE:
                     // Use the "connection" variant
@@ -175,14 +170,14 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                         throw unexpectedElement(reader);
                     }
                     // Element name is overloaded, handleElementText can not be used, we must use the correct attribute
-                    CommonAttributes.PCF_USER.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
+                    Pooled.USER.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
                     break;
                 case PASSWORD:
                     if(!pooled) {
                         throw unexpectedElement(reader);
                     }
                     // Element name is overloaded, handleElementText can not be used, we must use the correct attribute
-                    CommonAttributes.PCF_PASSWORD.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
+                    Pooled.PASSWORD.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
                     break;
                 case MAX_POOL_SIZE:
                 case MIN_POOL_SIZE:
@@ -225,7 +220,6 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 case QUEUE_NAME:
                 case HA:
                 case TRANSFORMER_CLASS_NAME:
-                case MIN_LARGE_MESSAGE_SIZE:
                 case RETRY_INTERVAL_MULTIPLIER:
                 case MAX_RETRY_INTERVAL:
                 case CONFIRMATION_WINDOW_SIZE:
@@ -238,6 +232,7 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                     FILTER.parseAndSetParameter(string, bridgeAdd, reader);
                     break;
                 }
+                case MIN_LARGE_MESSAGE_SIZE:
                 case RETRY_INTERVAL:
                     // Use the "default" variant
                     handleElementText(reader, element, "default", bridgeAdd);
@@ -297,7 +292,6 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 case CONFIRMATION_WINDOW_SIZE:
                 case FORWARD_WHEN_NO_CONSUMERS:
                 case MAX_HOPS:
-                case MIN_LARGE_MESSAGE_SIZE:
                     handleElementText(reader, element, clusterConnectionAdd);
                     break;
                 case ADDRESS:  {
@@ -312,6 +306,7 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 case CHECK_PERIOD:
                 case CONNECTION_TTL:
                 case MAX_RETRY_INTERVAL:
+                case MIN_LARGE_MESSAGE_SIZE:
                 case RECONNECT_ATTEMPTS:
                 case RETRY_INTERVAL:
                 case RETRY_INTERVAL_MULTIPLIER:

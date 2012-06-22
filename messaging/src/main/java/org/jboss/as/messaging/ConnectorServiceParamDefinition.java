@@ -38,7 +38,7 @@ public class ConnectorServiceParamDefinition extends SimpleResourceDefinition {
 
     public ConnectorServiceParamDefinition() {
         super(PathElement.pathElement(CommonAttributes.PARAM),
-                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTOR_SERVICE + "." + CommonAttributes.PARAM),
+                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTOR_SERVICE, CommonAttributes.PARAM),
                 ConnectorServiceParamAdd.INSTANCE,
                 ConnectorServiceParamRemove.INSTANCE);
     }

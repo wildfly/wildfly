@@ -24,11 +24,9 @@ package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
-import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.hornetq.jms.server.JMSServerManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -37,10 +35,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -56,12 +51,12 @@ import org.jboss.msc.service.ServiceTarget;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-public class JMSQueueAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class JMSQueueAdd extends AbstractAddStepHandler {
 
     public static final JMSQueueAdd INSTANCE = new JMSQueueAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition attributeDefinition : CommonAttributes.JMS_QUEUE_ATTRIBUTES) {
+        for (AttributeDefinition attributeDefinition : JMSQueueDefinition.ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);
         }
     }
@@ -76,7 +71,7 @@ public class JMSQueueAdd extends AbstractAddStepHandler implements DescriptionPr
         final boolean durable = DURABLE.resolveModelAttribute(context, model).asBoolean();
 
         final String selector = selectorNode.isDefined() ? selectorNode.asString() : null;
-        final ModelNode entries = ENTRIES.resolveModelAttribute(context, model);
+        final ModelNode entries = JndiEntriesAttribute.DESTINATION.resolveModelAttribute(context, model);
         final String[] jndiBindings = JndiEntriesAttribute.getJndiBindings(entries);
         installServices(verificationHandler, newControllers, name, serviceTarget, hqServiceName, selector, durable, jndiBindings);
 
@@ -98,10 +93,5 @@ public class JMSQueueAdd extends AbstractAddStepHandler implements DescriptionPr
         if (newControllers != null) {
             newControllers.add(controller);
         }
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getJmsQueueAdd(locale);
     }
 }

@@ -42,7 +42,7 @@ public class ConnectorServiceDefinition extends SimpleResourceDefinition {
 
     public ConnectorServiceDefinition(final boolean registerRuntimeOnly) {
         super(PathElement.pathElement(CommonAttributes.CONNECTOR_SERVICE),
-                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTOR_SERVICE, false),
+                MessagingExtension.getResourceDescriptionResolver(false, CommonAttributes.CONNECTOR_SERVICE),
                 ConnectorServiceAdd.INSTANCE,
                 ConnectorServiceRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;

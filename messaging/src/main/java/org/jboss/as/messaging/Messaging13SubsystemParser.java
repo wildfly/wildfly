@@ -36,7 +36,6 @@ import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.JMS_BRIDGE;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
-import static org.jboss.as.messaging.CommonAttributes.USE_AUTO_RECOVERY;
 import static org.jboss.as.messaging.Element.SOURCE;
 import static org.jboss.as.messaging.Element.TARGET;
 
@@ -51,6 +50,7 @@ import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 import org.jboss.dmr.ModelNode;
@@ -86,7 +86,7 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
             throws XMLStreamException {
         super.writePooledConnectionFactoryAttributes(writer, name, factory);
 
-        USE_AUTO_RECOVERY.marshallAsElement(factory, writer);
+        Pooled.USE_AUTO_RECOVERY.marshallAsElement(factory, writer);
     }
 
     protected ModelNode createConnectionFactory(XMLExtendedStreamReader reader, ModelNode connectionFactory, boolean pooled) throws XMLStreamException
@@ -122,15 +122,14 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
                 }
                 case HA:
                 case CLIENT_FAILURE_CHECK_PERIOD:
-                case CONNECTION_TTL:
                 case CALL_TIMEOUT:
+                case COMPRESS_LARGE_MESSAGES:
                 case CONSUMER_WINDOW_SIZE:
                 case CONSUMER_MAX_RATE:
                 case CONFIRMATION_WINDOW_SIZE:
                 case PRODUCER_WINDOW_SIZE:
                 case PRODUCER_MAX_RATE:
                 case CACHE_LARGE_MESSAGE_CLIENT:
-                case MIN_LARGE_MESSAGE_SIZE:
                 case CLIENT_ID:
                 case DUPS_OK_BATCH_SIZE:
                 case TRANSACTION_BATH_SIZE:
@@ -139,8 +138,6 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
                 case BLOCK_ON_DURABLE_SEND:
                 case AUTO_GROUP:
                 case PRE_ACK:
-                case RETRY_INTERVAL_MULTIPLIER:
-                case MAX_RETRY_INTERVAL:
                 case FAILOVER_ON_INITIAL_CONNECTION:
                 case FAILOVER_ON_SERVER_SHUTDOWN:
                 case LOAD_BALANCING_CLASS_NAME:
@@ -148,11 +145,12 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
                 case GROUP_ID:
                     handleElementText(reader, element, connectionFactory);
                     break;
-                case RETRY_INTERVAL:
-                    // Use the "default" variant
-                    handleElementText(reader, element, "default", connectionFactory);
-                    break;
+                case CONNECTION_TTL:
+                case MAX_RETRY_INTERVAL:
+                case MIN_LARGE_MESSAGE_SIZE:
                 case RECONNECT_ATTEMPTS:
+                case RETRY_INTERVAL:
+                case RETRY_INTERVAL_MULTIPLIER:
                 case SCHEDULED_THREAD_POOL_MAX_SIZE:
                 case THREAD_POOL_MAX_SIZE:
                     // Use the "connection" variant
@@ -209,14 +207,14 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
                         throw unexpectedElement(reader);
                     }
                     // Element name is overloaded, handleElementText can not be used, we must use the correct attribute
-                    CommonAttributes.PCF_USER.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
+                    Pooled.USER.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
                     break;
                 case PASSWORD:
                     if(!pooled) {
                         throw unexpectedElement(reader);
                     }
                     // Element name is overloaded, handleElementText can not be used, we must use the correct attribute
-                    CommonAttributes.PCF_PASSWORD.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
+                    Pooled.PASSWORD.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
                     break;
                 case MAX_POOL_SIZE:
                 case MIN_POOL_SIZE:
@@ -422,18 +420,18 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
         JMSBridgeDefinition.MODULE.marshallAsAttribute(value, writer);
 
         writer.writeStartElement(SOURCE.getLocalName());
-        for (SimpleAttributeDefinition attr : JMSBridgeDefinition.JMS_SOURCE_ATTRIBUTES) {
+        for (AttributeDefinition attr : JMSBridgeDefinition.JMS_SOURCE_ATTRIBUTES) {
             attr.marshallAsElement(value, writer);
         }
         writer.writeEndElement();
 
         writer.writeStartElement(TARGET.getLocalName());
-        for (SimpleAttributeDefinition attr : JMSBridgeDefinition.JMS_TARGET_ATTRIBUTES) {
+        for (AttributeDefinition attr : JMSBridgeDefinition.JMS_TARGET_ATTRIBUTES) {
             attr.marshallAsElement(value, writer);
         }
         writer.writeEndElement();
 
-        for (SimpleAttributeDefinition attr : JMSBridgeDefinition.JMS_BRIDGE_ATTRIBUTES) {
+        for (AttributeDefinition attr : JMSBridgeDefinition.JMS_BRIDGE_ATTRIBUTES) {
             if (attr == JMSBridgeDefinition.MODULE) {
                 // handled as a XML attribute
                 continue;

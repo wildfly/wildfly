@@ -25,14 +25,12 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -44,7 +42,7 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ConnectorServiceParamAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class ConnectorServiceParamAdd extends AbstractAddStepHandler {
 
     /**
      * Create an "add" operation using the existing model
@@ -79,10 +77,5 @@ public class ConnectorServiceParamAdd extends AbstractAddStepHandler implements 
             context.reloadRequired();
         }
         // else MessagingSubsystemAdd will add a handler that calls ConnectorServiceAdd.addConnectorServiceConfigs
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getConnectorServiceParamAdd(locale);
     }
 }

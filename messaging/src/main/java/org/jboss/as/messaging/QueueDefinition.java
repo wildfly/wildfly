@@ -23,69 +23,77 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
-import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
-import static org.jboss.dmr.ModelType.BOOLEAN;
-import static org.jboss.dmr.ModelType.STRING;
+import static org.jboss.dmr.ModelType.LONG;
 
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
 
 /**
- * Divert resource definition
+ * Queue resource definition
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class DivertDefinition extends SimpleResourceDefinition {
+public class QueueDefinition extends SimpleResourceDefinition {
 
-    private static final PathElement DIVERT_PATH = PathElement.pathElement(CommonAttributes.DIVERT);
-
-    public static final SimpleAttributeDefinition ROUTING_NAME = create("routing-name", STRING)
-            .setAllowNull(true)
-            .setFlags(RESTART_ALL_SERVICES)
+    public static final AttributeDefinition ADDRESS = create("queue-address", ModelType.STRING)
+            .setXmlName(CommonAttributes.ADDRESS)
+            .setRestartAllServices()
             .build();
 
-    public static final SimpleAttributeDefinition ADDRESS = create("divert-address", STRING)
-            .setXmlName("address")
-            .setDefaultValue(null)
-            .setFlags(RESTART_ALL_SERVICES)
+    static final AttributeDefinition[] ATTRIBUTES = { ADDRESS, CommonAttributes.FILTER, CommonAttributes.DURABLE };
+
+    static final AttributeDefinition ID= create("id", LONG)
+            .setStorageRuntime()
             .build();
 
-    public static final SimpleAttributeDefinition FORWARDING_ADDRESS = create("forwarding-address", STRING)
-            .setFlags(RESTART_ALL_SERVICES)
-            .build();
+    static final AttributeDefinition[] READONLY_ATTRIBUTES = { CommonAttributes.PAUSED, CommonAttributes.TEMPORARY, ID };
 
-    public static final SimpleAttributeDefinition EXCLUSIVE = create("exclusive", BOOLEAN)
-            .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_DIVERT_EXCLUSIVE))
-            .setAllowNull(true)
-            .setFlags(RESTART_ALL_SERVICES)
-            .build();
-
-    public static final AttributeDefinition[] ATTRIBUTES = { ROUTING_NAME, ADDRESS, FORWARDING_ADDRESS, CommonAttributes.FILTER,
-        CommonAttributes.TRANSFORMER_CLASS_NAME, EXCLUSIVE };
+    static final AttributeDefinition[] METRICS = { CommonAttributes.MESSAGE_COUNT, CommonAttributes.DELIVERING_COUNT, CommonAttributes.MESSAGES_ADDED,
+            CommonAttributes.SCHEDULED_COUNT, CommonAttributes.CONSUMER_COUNT
+            };
 
     private final boolean registerRuntimeOnly;
 
-    public DivertDefinition(boolean registerRuntimeOnly) {
-        super(DivertDefinition.DIVERT_PATH,
-                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DIVERT),
-                DivertAdd.INSTANCE,
-                DivertRemove.INSTANCE);
+    public QueueDefinition(final boolean registerRuntimeOnly) {
+        super(PathElement.pathElement(CommonAttributes.QUEUE),
+                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.QUEUE),
+                QueueAdd.INSTANCE,
+                QueueRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
         super.registerAttributes(registry);
+
         for (AttributeDefinition attr : ATTRIBUTES) {
             if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, DivertConfigurationWriteHandler.INSTANCE);
+                registry.registerReadWriteAttribute(attr, null, QueueConfigurationWriteHandler.INSTANCE);
             }
+        }
+
+        if (registerRuntimeOnly) {
+            for (AttributeDefinition attr : READONLY_ATTRIBUTES) {
+                registry.registerReadOnlyAttribute(attr, QueueReadAttributeHandler.INSTANCE);
+            }
+
+            for (AttributeDefinition metric : METRICS) {
+                registry.registerMetric(metric, QueueReadAttributeHandler.INSTANCE);
+            }
+        }
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration registry) {
+        super.registerOperations(registry);
+
+        if (registerRuntimeOnly) {
+            QueueControlHandler.INSTANCE.registerOperations(registry);
         }
     }
 }

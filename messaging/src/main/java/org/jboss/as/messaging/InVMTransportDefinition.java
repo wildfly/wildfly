@@ -25,6 +25,7 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.dmr.ModelType.INT;
 
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 
@@ -39,7 +40,7 @@ public class InVMTransportDefinition extends AbstractTransportDefinition {
             .setRestartAllServices()
             .build();
 
-    static AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SERVER_ID };
+    static AttributeDefinition[] ATTRIBUTES = { SERVER_ID };
 
     public static SimpleResourceDefinition createAcceptorDefinition(final boolean registerRuntimeOnly) {
         return new InVMTransportDefinition(registerRuntimeOnly, true, CommonAttributes.IN_VM_ACCEPTOR);

@@ -57,6 +57,7 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler {
 
         model.setEmptyObject();
 
+        // TODO the alternative between connectors and discovery group should be expressed by the attributes, not here
         boolean hasStatic = operation.hasDefined(ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS.getName());
         boolean hasDiscGroup = operation.hasDefined(CommonAttributes.DISCOVERY_GROUP_NAME.getName());
         if (hasStatic && hasDiscGroup) {

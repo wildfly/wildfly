@@ -22,6 +22,10 @@
 
 package org.jboss.as.messaging.jms;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
@@ -35,12 +39,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Transition;
 import org.jboss.msc.service.ServiceListener;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Values;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 /**
  * A {@link BindingRegistry} implementation for JBoss AS7.
@@ -134,107 +133,5 @@ public class AS7BindingRegistry implements BindingRegistry {
     @Override
     public void close() {
         // NOOP
-    }
-
-    /**
-     * Utility class holding a jndi context {@link ServiceName} and a jndi name relative to that jndi context
-     */
-    private static class JndiBinding {
-
-        /**
-         * Jndi name relative to the jndi context {@link #jndiContextServiceName}
-         */
-        private final String relativeJndiName;
-
-        /**
-         * The ServiceName of the jndi context
-         */
-        private final ServiceName jndiContextServiceName;
-
-        private final String cachedToString;
-
-        JndiBinding(final ServiceName contextServiceName, final String relativeJndiName) {
-            if (contextServiceName == null) {
-                throw MESSAGES.nullVar("contextServiceName");
-            }
-            if (relativeJndiName == null) {
-                throw MESSAGES.nullVar("relativeJndiName");
-            }
-            this.jndiContextServiceName = contextServiceName;
-            this.relativeJndiName = relativeJndiName;
-
-            this.cachedToString = this.generateToString();
-        }
-
-        /**
-         * Creates a {@link JndiBinding} out of the passed <code>name</code>.
-         * <p/>
-         * If the passed jndi name doesn't start with java: namespace, then it is considered relative to java:jboss/jms
-         * namespace and a {@link JndiBinding} corresponding to that namespace is returned.
-         * <p/>
-         * If the passed jndi name starts with java: namespace, but doesn't belong to known/supported jndi context, then
-         * this method returns null. Known/Supported jndi context include java:jboss/, java:global/, java:app/, java:module/,
-         * java:comp/, java:/
-         *
-         * @param name The jndi name to parse
-         * @return
-         */
-        static JndiBinding parse(final String name) {
-            String relativeJndiName = null;
-            if (name.startsWith("java:jboss/")) { // java:jboss/<something>
-                relativeJndiName = name.substring(11);
-                return new JndiBinding(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, relativeJndiName);
-            }
-            if (name.startsWith("java:comp/")) { // java:comp/<something>
-                relativeJndiName = name.substring(10);
-                return new JndiBinding(ContextNames.COMPONENT_CONTEXT_SERVICE_NAME, relativeJndiName);
-            }
-            if (name.startsWith("java:module/")) { // java:module/<something>
-                relativeJndiName = name.substring(12);
-                return new JndiBinding(ContextNames.MODULE_CONTEXT_SERVICE_NAME, relativeJndiName);
-            }
-            if (name.startsWith("java:app/")) { // java:app/<something>
-                relativeJndiName = name.substring(9);
-                return new JndiBinding(ContextNames.APPLICATION_CONTEXT_SERVICE_NAME, relativeJndiName);
-            }
-            if (name.startsWith("java:global/")) { // java:global/<something>
-                relativeJndiName = name.substring(12);
-                return new JndiBinding(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, relativeJndiName);
-            }
-            if (name.startsWith("java:/")) { // java:/<something>
-                relativeJndiName = name.substring(6);
-                return new JndiBinding(ContextNames.JAVA_CONTEXT_SERVICE_NAME, relativeJndiName);
-            }
-            if (name.startsWith("java:")) { // java:<something> (Note that this is *not* the same as java:/<something>.
-                // we don't allow java:<something>
-                return null;
-            }
-            // no java: namespace, so consider this relative to java:jboss/jms/ (by default)
-            relativeJndiName = name;
-            return new JndiBinding(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, "jms/" + relativeJndiName);
-
-        }
-
-        @Override
-        public String toString() {
-            return this.cachedToString;
-        }
-
-        private String generateToString() {
-            final StringBuffer sb = new StringBuffer();
-            if (this.jndiContextServiceName.equals(ContextNames.JBOSS_CONTEXT_SERVICE_NAME)) {
-                sb.append("java:jboss/");
-            } else if (this.jndiContextServiceName.equals(ContextNames.APPLICATION_CONTEXT_SERVICE_NAME)) {
-                sb.append("java:app/");
-            } else if (this.jndiContextServiceName.equals(ContextNames.MODULE_CONTEXT_SERVICE_NAME)) {
-                sb.append("java:module/");
-            } else if (this.jndiContextServiceName.equals(ContextNames.COMPONENT_CONTEXT_SERVICE_NAME)) {
-                sb.append("java:comp/");
-            } else if (this.jndiContextServiceName.equals(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME)) {
-                sb.append("java:global/");
-            }
-            sb.append(this.relativeJndiName);
-            return sb.toString();
-        }
     }
 }

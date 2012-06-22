@@ -24,26 +24,23 @@ package org.jboss.as.messaging.jms.bridge;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
-import static org.jboss.as.messaging.CommonAttributes.JMS_BRIDGE;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 
-import java.util.Locale;
-
 import org.hornetq.jms.bridge.QualityOfServiceMode;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.jms.SelectorAttribute;
 import org.jboss.dmr.ModelNode;
@@ -63,8 +60,8 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
     public static final String RESUME = "resume";
 
     public static final SimpleAttributeDefinition MODULE = create("module", STRING)
-            .setAllowNull(true).
-            build();
+            .setAllowNull(true)
+            .build();
     public static final SimpleAttributeDefinition SOURCE_CONNECTION_FACTORY = new JNDIResourceAttributeDefinition("source-connection-factory", CommonAttributes.CONNECTION_FACTORY);
     public static final SimpleAttributeDefinition SOURCE_DESTINATION = new JNDIResourceAttributeDefinition("source-destination", CommonAttributes.DESTINATION);
     public static final SimpleAttributeDefinition SOURCE_USER = create("source-user", STRING)
@@ -123,39 +120,36 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition STARTED = create(CommonAttributes.STARTED, BOOLEAN)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
-    public static final SimpleAttributeDefinition PAUSED = create(CommonAttributes.PAUSED, BOOLEAN)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
 
-    public static final SimpleAttributeDefinition[] JMS_BRIDGE_ATTRIBUTES = {
-        MODULE,
-        SelectorAttribute.SELECTOR,
-        QUALITY_OF_SERVICE,
-        FAILURE_RETRY_INTERVAL, MAX_RETRIES,
-        MAX_BATCH_SIZE, MAX_BATCH_TIME,
-        SUBSCRIPTION_NAME, CommonAttributes.CLIENT_ID,
-        ADD_MESSAGE_ID_IN_HEADER
+    public static final AttributeDefinition[] JMS_BRIDGE_ATTRIBUTES = {
+            MODULE,
+            SelectorAttribute.SELECTOR,
+            QUALITY_OF_SERVICE,
+            FAILURE_RETRY_INTERVAL, MAX_RETRIES,
+            MAX_BATCH_SIZE, MAX_BATCH_TIME,
+            SUBSCRIPTION_NAME, CommonAttributes.CLIENT_ID,
+            ADD_MESSAGE_ID_IN_HEADER
     };
 
-    public static final SimpleAttributeDefinition[] JMS_SOURCE_ATTRIBUTES = {
-        SOURCE_CONNECTION_FACTORY, SOURCE_DESTINATION,
-        SOURCE_USER, SOURCE_PASSWORD,
-        SOURCE_CONTEXT
+    public static final AttributeDefinition[] JMS_SOURCE_ATTRIBUTES = {
+            SOURCE_CONNECTION_FACTORY, SOURCE_DESTINATION,
+            SOURCE_USER, SOURCE_PASSWORD,
+            SOURCE_CONTEXT
     };
 
-    public static final SimpleAttributeDefinition[] JMS_TARGET_ATTRIBUTES = {
-        TARGET_CONNECTION_FACTORY, TARGET_DESTINATION,
-        TARGET_USER, TARGET_PASSWORD,
-        TARGET_CONTEXT
+    public static final AttributeDefinition[] JMS_TARGET_ATTRIBUTES = {
+            TARGET_CONNECTION_FACTORY, TARGET_DESTINATION,
+            TARGET_USER, TARGET_PASSWORD,
+            TARGET_CONTEXT
     };
 
-    public static final SimpleAttributeDefinition[] READONLY_ATTRIBUTES = {
-        STARTED, PAUSED
+    public static final AttributeDefinition[] READONLY_ATTRIBUTES = {
+            STARTED, CommonAttributes.PAUSED
     };
 
     public static final String[] OPERATIONS = {
-        ModelDescriptionConstants.START, ModelDescriptionConstants.STOP,
-        PAUSE, RESUME
+            ModelDescriptionConstants.START, ModelDescriptionConstants.STOP,
+            PAUSE, RESUME
     };
 
     public JMSBridgeDefinition() {
@@ -168,16 +162,16 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
         super.registerAttributes(registry);
-        for (SimpleAttributeDefinition attr : JMS_BRIDGE_ATTRIBUTES) {
+        for (AttributeDefinition attr : JMS_BRIDGE_ATTRIBUTES) {
             registry.registerReadWriteAttribute(attr, null, JMSBridgeWriteAttributeHandler.INSTANCE);
         }
-        for (SimpleAttributeDefinition attr : JMS_SOURCE_ATTRIBUTES) {
+        for (AttributeDefinition attr : JMS_SOURCE_ATTRIBUTES) {
             registry.registerReadWriteAttribute(attr, null, JMSBridgeWriteAttributeHandler.INSTANCE);
         }
-        for (SimpleAttributeDefinition attr : JMS_TARGET_ATTRIBUTES) {
+        for (AttributeDefinition attr : JMS_TARGET_ATTRIBUTES) {
             registry.registerReadWriteAttribute(attr, null, JMSBridgeWriteAttributeHandler.INSTANCE);
         }
-        for (SimpleAttributeDefinition attr : READONLY_ATTRIBUTES) {
+        for (AttributeDefinition attr : READONLY_ATTRIBUTES) {
             registry.registerReadOnlyAttribute(attr, JMSBridgeHandler.INSTANCE);
         }
     }
@@ -185,13 +179,8 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
         super.registerOperations(registry);
-        for (final String operationName: OPERATIONS) {
-            registry.registerOperationHandler(operationName, JMSBridgeHandler.INSTANCE, new DescriptionProvider() {
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    return MessagingDescriptions.getDescriptionOnlyOperation(locale, operationName, JMS_BRIDGE);
-                }
-            });
+        for (final String operationName : OPERATIONS) {
+            registry.registerOperationHandler(new SimpleOperationDefinition(operationName, getResourceDescriptionResolver()), JMSBridgeHandler.INSTANCE);
         }
     }
 

@@ -71,8 +71,9 @@ public class GroupingHandlerDefinition extends SimpleResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     public GroupingHandlerDefinition(final boolean registerRuntimeOnly) {
-        super(PathElement.pathElement(CommonAttributes.GROUPING_HANDLER), MessagingExtension
-                .getResourceDescriptionResolver(CommonAttributes.GROUPING_HANDLER), GroupingHandlerAdd.INSTANCE,
+        super(PathElement.pathElement(CommonAttributes.GROUPING_HANDLER),
+                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.GROUPING_HANDLER),
+                GroupingHandlerAdd.INSTANCE,
                 GroupingHandlerRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
     }

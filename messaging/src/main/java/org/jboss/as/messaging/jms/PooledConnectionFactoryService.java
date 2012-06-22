@@ -22,15 +22,25 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.server.HornetQServer;
-import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
-import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.services.resourceadapters.ResourceAdapterActivatorService;
+import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
-import org.jboss.as.messaging.CommonAttributes;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.service.SubjectFactoryService;
@@ -90,17 +100,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
-
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 /**
  * A service which translates a pooled connection factory into a resource adapter driven connection pool
@@ -238,7 +237,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             }
 
             boolean hasReconnect = false;
-            final String reconnectName = JMSServices.RECONNECT_ATTEMPTS_PROP_NAME;
+            final String reconnectName = ConnectionFactoryAttributes.Common.RECONNECT_ATTEMPTS_PROP_NAME;
             for (PooledConnectionFactoryConfigProperties adapterParam : adapterParams) {
                 hasReconnect |= reconnectName.equals(adapterParam.getName());
 
@@ -330,7 +329,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
     }
 
     private InboundResourceAdapter createInbound() {
-        InboundResourceAdapter inbound;
         List<RequiredConfigProperty> destination = Collections.singletonList(new RequiredConfigProperty(EMPTY_LOCL, str("destination"), null));
         // setup the JMS activation config properties
         final List<ConfigProperty> jmsActivationConfigProps = new ArrayList<ConfigProperty>(JMS_ACTIVATION_CONFIG_PROPERTIES.size());

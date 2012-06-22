@@ -22,13 +22,7 @@
 
 package org.jboss.as.messaging.jms;
 
-import java.util.EnumSet;
-
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.messaging.CommonAttributes;
 
 /**
  * Write attribute handler for attributes that update the persistent configuration of a JMS queue resource.
@@ -40,16 +34,6 @@ public class JMSQueueConfigurationWriteHandler extends ReloadRequiredWriteAttrib
     public static final JMSQueueConfigurationWriteHandler INSTANCE = new JMSQueueConfigurationWriteHandler();
 
     private JMSQueueConfigurationWriteHandler() {
-        super(CommonAttributes.JMS_QUEUE_ATTRIBUTES);
+        super(JMSQueueDefinition.ATTRIBUTES);
     }
-
-    public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
-        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-        for (AttributeDefinition attr : CommonAttributes.JMS_QUEUE_ATTRIBUTES) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
-            }
-        }
-    }
-
 }

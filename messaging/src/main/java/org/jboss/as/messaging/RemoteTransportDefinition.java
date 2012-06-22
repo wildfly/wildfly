@@ -39,7 +39,7 @@ public class RemoteTransportDefinition extends AbstractTransportDefinition {
             .setAllowNull(false)
             .build();
 
-    static AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SOCKET_BINDING };
+    static AttributeDefinition[] ATTRIBUTES = { SOCKET_BINDING };
 
 
     public static SimpleResourceDefinition createAcceptorDefinition(final boolean registerRuntimeOnly) {
