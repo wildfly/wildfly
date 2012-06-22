@@ -48,7 +48,7 @@ class AddressSettingsWriteHandler extends AbstractWriteAttributeHandler<AddressS
 
     public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
         final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
-        for (AttributeDefinition attr : AddressSettingAdd.ATTRIBUTES) {
+        for (AttributeDefinition attr : AddressSettingDefinition.ATTRIBUTES) {
             if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
                 registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
             }
@@ -56,7 +56,7 @@ class AddressSettingsWriteHandler extends AbstractWriteAttributeHandler<AddressS
     }
 
     protected AddressSettingsWriteHandler() {
-        super(AddressSettingAdd.ATTRIBUTES);
+        super(AddressSettingDefinition.ATTRIBUTES);
     }
 
     @Override

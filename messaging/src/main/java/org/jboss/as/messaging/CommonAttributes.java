@@ -43,7 +43,6 @@ import static org.jboss.dmr.ModelType.OBJECT;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
-import org.hornetq.core.settings.impl.AddressSettings;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -61,9 +60,6 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public interface CommonAttributes {
-
-    SimpleAttributeDefinition ADDRESS_FULL_MESSAGE_POLICY = new SimpleAttributeDefinition("address-full-policy",
-            new ModelNode().set(AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY.toString()), ModelType.STRING, true);
 
     SimpleAttributeDefinition ALLOW_FAILBACK = new SimpleAttributeDefinition("allow-failback",
             new ModelNode().set(ConfigurationImpl.DEFAULT_ALLOW_AUTO_FAILBACK), ModelType.BOOLEAN,  true,
@@ -314,9 +310,6 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE), ModelType.BOOLEAN,  true,
             AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    SimpleAttributeDefinition LVQ = new SimpleAttributeDefinition("last-value-queue",
-            new ModelNode().set(AddressSettings.DEFAULT_LAST_VALUE_QUEUE), ModelType.BOOLEAN, true);
-
     SimpleAttributeDefinition MANAGEMENT_ADDRESS = new SimpleAttributeDefinition("management-address",
             new ModelNode().set(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString()), ModelType.STRING, true,
             AttributeAccess.Flag.RESTART_ALL_SERVICES);
@@ -324,9 +317,6 @@ public interface CommonAttributes {
     SimpleAttributeDefinition MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleAttributeDefinition("management-notification-address",
             new ModelNode().set(ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS.toString()), ModelType.STRING, true,
             AttributeAccess.Flag.RESTART_ALL_SERVICES);
-
-    SimpleAttributeDefinition MAX_DELIVERY_ATTEMPTS = new SimpleAttributeDefinition("max-delivery-attempts",
-            new ModelNode().set(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS), ModelType.INT, true);
 
     SimpleAttributeDefinition MAX_POOL_SIZE = new SimpleAttributeDefinitionBuilder("max-pool-size", INT)
             .setDefaultValue(new ModelNode().set(-1))
@@ -339,11 +329,6 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .setMeasurementUnit(MILLISECONDS)
             .setFlags(RESTART_ALL_SERVICES)
-            .build();
-
-    SimpleAttributeDefinition MAX_SIZE_BYTES = new SimpleAttributeDefinitionBuilder("max-size-bytes", LONG)
-            .setDefaultValue(new ModelNode().set(AddressSettings.DEFAULT_MAX_SIZE_BYTES))
-            .setAllowNull(true)
             .build();
 
     SimpleAttributeDefinition MEMORY_MEASURE_INTERVAL = new SimpleAttributeDefinitionBuilder("memory-measure-interval", LONG)
@@ -364,9 +349,6 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition MESSAGE_COUNTER_ENABLED = new SimpleAttributeDefinition("message-counter-enabled",
             new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_ENABLED), ModelType.BOOLEAN,  true);
-
-    SimpleAttributeDefinition MESSAGE_COUNTER_HISTORY_DAY_LIMIT = new SimpleAttributeDefinition("message-counter-history-day-limit",
-            new ModelNode().set(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT), ModelType.INT, true);
 
     SimpleAttributeDefinition MESSAGE_COUNTER_MAX_DAY_HISTORY = new SimpleAttributeDefinition("message-counter-max-day-history",
             new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY), ModelType.INT,  true, MeasurementUnit.DAYS);
@@ -395,18 +377,10 @@ public interface CommonAttributes {
             .setAllowExpression(true)
             .build();
 
-    SimpleAttributeDefinition PAGE_MAX_CACHE_SIZE = new SimpleAttributeDefinition("page-max-cache-size",
-            new ModelNode(AddressSettings.DEFAULT_PAGE_MAX_CACHE), ModelType.INT, true);
-
     SimpleAttributeDefinition PAGE_MAX_CONCURRENT_IO = new SimpleAttributeDefinitionBuilder("page-max-concurrent-io", ModelType.INT)
             .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_MAX_CONCURRENT_PAGE_IO))
             .setAllowNull(true)
             .setFlags(RESTART_ALL_SERVICES)
-            .build();
-
-    SimpleAttributeDefinition PAGE_SIZE_BYTES = new SimpleAttributeDefinitionBuilder("page-size-bytes", LONG)
-            .setDefaultValue(new ModelNode().set(AddressSettings.DEFAULT_PAGE_SIZE))
-            .setAllowNull(true)
             .build();
 
     SimpleAttributeDefinition PATH = create("path", ModelType.STRING)
@@ -454,12 +428,6 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .build();
 
-    SimpleAttributeDefinition REDELIVERY_DELAY = new SimpleAttributeDefinition("redelivery-delay",
-            new ModelNode().set(AddressSettings.DEFAULT_REDELIVER_DELAY), ModelType.LONG, true);
-
-    SimpleAttributeDefinition REDISTRIBUTION_DELAY = new SimpleAttributeDefinition("redistribution-delay",
-            new ModelNode().set(AddressSettings.DEFAULT_REDISTRIBUTION_DELAY), ModelType.LONG, true);
-
     SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinition("relative-to", ModelType.STRING, true);
 
     RemotingInterceptorsAttribute REMOTING_INTERCEPTORS = RemotingInterceptorsAttribute.INSTANCE;
@@ -499,9 +467,6 @@ public interface CommonAttributes {
             AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SelectorAttribute SELECTOR = SelectorAttribute.SELECTOR;
-
-    SimpleAttributeDefinition SEND_TO_DLA_ON_NO_ROUTE = new SimpleAttributeDefinition("send-to-dla-on-no-route",
-            new ModelNode().set(AddressSettings.DEFAULT_SEND_TO_DLA_ON_NO_ROUTE), ModelType.BOOLEAN, true);
 
     SimpleAttributeDefinition SERVER_ID = new SimpleAttributeDefinition("server-id", ModelType.INT, false);
 

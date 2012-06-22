@@ -942,34 +942,6 @@ public class MessagingDescriptions {
         return getDescriptionOnlyOperation(locale, REMOVE, ACCEPTOR);
     }
 
-    static ModelNode getAddressSetting(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("address-setting"));
-        for(SimpleAttributeDefinition def : AddressSettingAdd.ATTRIBUTES) {
-            def.addResourceAttributeDescription(bundle, "address-setting", root);
-        }
-        return root;
-    }
-
-    static ModelNode getAddressSettingAdd(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("address-setting.add"));
-        for(SimpleAttributeDefinition def : AddressSettingAdd.ATTRIBUTES) {
-            def.addOperationParameterDescription(bundle, "address-setting", op);
-        }
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
-    static ModelNode getAddressSettingRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, ADDRESS_SETTING);
-    }
-
     static ModelNode getRemoteAcceptor(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 

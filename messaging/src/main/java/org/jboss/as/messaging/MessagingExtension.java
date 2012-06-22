@@ -147,10 +147,7 @@ public class MessagingExtension implements Extension {
         }
 
         // Address settings
-        final ManagementResourceRegistration addressSetting = serverRegistration.registerSubModel(ADDRESS_SETTING, MessagingSubsystemProviders.ADDRESS_SETTING);
-        addressSetting.registerOperationHandler(ADD, AddressSettingAdd.INSTANCE, MessagingSubsystemProviders.ADDRESS_SETTING_ADD);
-        addressSetting.registerOperationHandler(REMOVE, AddressSettingRemove.INSTANCE, MessagingSubsystemProviders.ADDRESS_SETTING_REMOVE);
-        AddressSettingsWriteHandler.INSTANCE.registerAttributes(addressSetting, registerRuntimeOnly);
+        serverRegistration.registerSubModel(new AddressSettingDefinition(registerRuntimeOnly));
 
         // Broadcast groups
         serverRegistration.registerSubModel(new BroadcastGroupDefinition(registerRuntimeOnly));
