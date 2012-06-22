@@ -1,0 +1,11 @@
+SYNOPSIS
+
+    end-try [--help]
+
+DESCRIPTION
+
+    Ends and executes a try-catch-finally control flow.
+
+ARGUMENTS
+
+    --help    - prints this description.
