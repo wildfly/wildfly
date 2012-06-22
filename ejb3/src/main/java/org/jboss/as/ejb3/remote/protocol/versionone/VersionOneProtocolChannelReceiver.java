@@ -31,6 +31,7 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
+import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.MarshallerFactory;
@@ -63,6 +64,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
 
     private static final byte HEADER_SESSION_OPEN_REQUEST = 0x01;
     private static final byte HEADER_INVOCATION_REQUEST = 0x03;
+    private static final byte HEADER_INVOCATION_CANCELLATION_REQUEST = 0x04;
     private static final byte HEADER_TX_COMMIT_REQUEST = 0x0F;
     private static final byte HEADER_TX_ROLLBACK_REQUEST = 0x10;
     private static final byte HEADER_TX_PREPARE_REQUEST = 0x11;
@@ -76,16 +78,18 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     private final ExecutorService executorService;
     private final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector;
     private final Set<ClusterTopologyUpdateListener> clusterTopologyUpdateListeners = Collections.synchronizedSet(new HashSet<ClusterTopologyUpdateListener>());
+    private final RemoteAsyncInvocationCancelStatusService remoteAsyncInvocationCancelStatus;
 
     public VersionOneProtocolChannelReceiver(final ChannelAssociation channelAssociation, final DeploymentRepository deploymentRepository,
                                              final EJBRemoteTransactionsRepository transactionsRepository, final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector,
-                                             final MarshallerFactory marshallerFactory, final ExecutorService executorService) {
+                                             final MarshallerFactory marshallerFactory, final ExecutorService executorService, final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatusService) {
         this.marshallerFactory = marshallerFactory;
         this.channelAssociation = channelAssociation;
         this.executorService = executorService;
         this.deploymentRepository = deploymentRepository;
         this.transactionsRepository = transactionsRepository;
         this.clientMappingRegistryCollector = clientMappingRegistryCollector;
+        this.remoteAsyncInvocationCancelStatus = asyncInvocationCancelStatusService;
     }
 
     public void startReceiving() {
@@ -151,7 +155,10 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             MessageHandler messageHandler = null;
             switch (header) {
                 case HEADER_INVOCATION_REQUEST:
-                    messageHandler = new MethodInvocationMessageHandler(this.deploymentRepository, this.marshallerFactory, this.executorService);
+                    messageHandler = new MethodInvocationMessageHandler(this.deploymentRepository, this.marshallerFactory, this.executorService, this.remoteAsyncInvocationCancelStatus);
+                    break;
+                case HEADER_INVOCATION_CANCELLATION_REQUEST:
+                    messageHandler = new InvocationCancellationMessageHandler(this.remoteAsyncInvocationCancelStatus);
                     break;
                 case HEADER_SESSION_OPEN_REQUEST:
                     messageHandler = new SessionOpenRequestHandler(this.deploymentRepository, this.marshallerFactory, this.executorService);

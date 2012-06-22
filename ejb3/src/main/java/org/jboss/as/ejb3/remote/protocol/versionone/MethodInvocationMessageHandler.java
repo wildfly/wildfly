@@ -28,11 +28,13 @@ import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
+import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
+import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBLocator;
@@ -76,11 +78,14 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
 
     private final ExecutorService executorService;
     private final MarshallerFactory marshallerFactory;
+    private final RemoteAsyncInvocationCancelStatusService remoteAsyncInvocationCancelStatus;
 
-    MethodInvocationMessageHandler(final DeploymentRepository deploymentRepository, final org.jboss.marshalling.MarshallerFactory marshallerFactory, final ExecutorService executorService) {
+    MethodInvocationMessageHandler(final DeploymentRepository deploymentRepository, final org.jboss.marshalling.MarshallerFactory marshallerFactory, final ExecutorService executorService,
+                                   final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatus) {
         super(deploymentRepository);
         this.marshallerFactory = marshallerFactory;
         this.executorService = executorService;
+        this.remoteAsyncInvocationCancelStatus = asyncInvocationCancelStatus;
     }
 
     @Override
@@ -197,7 +202,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                     Object result = null;
                     RemotingContext.setConnection(channelAssociation.getChannel().getConnection());
                     try {
-                        result = invokeMethod(componentView, invokedMethod, methodParams, locator, attachments);
+                        result = invokeMethod(invocationId, componentView, invokedMethod, methodParams, locator, attachments);
                     } catch (Throwable throwable) {
                         try {
                             // write out the failure
@@ -261,7 +266,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         return statefulSessionComponent.getCache().getWeakAffinity(sessionID);
     }
 
-    private Object invokeMethod(final ComponentView componentView, final Method method, final Object[] args, final EJBLocator<?> ejbLocator, final Map<String, Object> attachments) throws Throwable {
+    private Object invokeMethod(final short invocationId, final ComponentView componentView, final Method method, final Object[] args, final EJBLocator<?> ejbLocator, final Map<String, Object> attachments) throws Throwable {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(args);
         interceptorContext.setMethod(method);
@@ -304,7 +309,17 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                 // just invoke normally
                 return componentView.invoke(interceptorContext);
             }
-            return ((Future) componentView.invoke(interceptorContext)).get();
+            final CancellationFlag asyncInvocationCancellationFlag = new CancellationFlag();
+            interceptorContext.putPrivateData(CancellationFlag.class, asyncInvocationCancellationFlag);
+            // keep track of the cancellation flag for this invocation
+            this.remoteAsyncInvocationCancelStatus.registerAsyncInvocation(invocationId, asyncInvocationCancellationFlag);
+            try {
+                return ((Future)componentView.invoke(interceptorContext)).get();
+            } finally {
+                // now that the async invocation is done, we no longer need to keep track of the
+                // cancellation flag for this invocation
+                this.remoteAsyncInvocationCancelStatus.asyncInvocationDone(invocationId);
+            }
         } else {
             return componentView.invoke(interceptorContext);
         }
