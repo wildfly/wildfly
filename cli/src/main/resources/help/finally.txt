@@ -1,0 +1,11 @@
+SYNOPSIS
+
+    finally [--help]
+
+DESCRIPTION
+
+    Starts the finally block in the try-catch-finally control flow.
+
+ARGUMENTS
+
+    --help    - prints this description.
