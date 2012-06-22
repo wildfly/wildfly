@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -336,7 +337,9 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
         if (entryFile.exists()) {
             FileInputStream input = new FileInputStream(entryFile);
             try {
-                return OSGiMetaDataBuilder.load(input);
+                Properties props = new Properties();
+                props.load(input);
+                return OSGiMetaDataBuilder.load(props);
             } finally {
                 input.close();
             }
