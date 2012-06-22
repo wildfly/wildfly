@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.management.util;
 
+import java.io.OutputStream;
+
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
@@ -31,12 +33,15 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 public class CLITestUtil {
-    
+
     private static final String serverAddr = TestSuiteEnvironment.getServerAddress();
     private static final int serverPort = TestSuiteEnvironment.getServerPort();
-    
+
     public static CommandContext getCommandContext() throws CliInitializationException {
         return CommandContextFactory.getInstance().newCommandContext(serverAddr, serverPort, null, null);
     }
-    
+
+    public static CommandContext getCommandContext(OutputStream out) throws CliInitializationException {
+        return CommandContextFactory.getInstance().newCommandContext(serverAddr, serverPort, null, null, null, out);
+    }
 }

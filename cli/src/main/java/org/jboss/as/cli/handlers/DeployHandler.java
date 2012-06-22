@@ -474,6 +474,8 @@ public class DeployHandler extends BatchModeCommandHandler {
             }
 
             if(Util.isDeploymentInRepository(name, client)) {
+                // in batch mode these kind of checks might be inaccurate
+                // because the previous commands and operations are not taken into account
                 return buildDeploymentReplace(f, name, runtimeName);
             } else {
                 // add deployment to the repository (enabled in standalone, disabled in domain (i.e. not associated with any sg))
@@ -496,7 +498,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                 throw new OperationFormatException(this.disabled.getFullName() + " can't be used in combination with a CLI archive.");
             }
 
-            if(Util.isDeploymentInRepository(name, client)) {
+            if(!ctx.isBatchMode() && Util.isDeploymentInRepository(name, client)) {
                 throw new OperationFormatException("'" + name + "' already exists in the deployment repository (use " +
                     this.force.getFullName() + " to replace the existing content in the repository).");
             }
@@ -609,12 +611,12 @@ public class DeployHandler extends BatchModeCommandHandler {
 
         final ModelNode addRequest;
         if(f != null) {
-            if(Util.isDeploymentInRepository(name, client)) {
+            if(!ctx.isBatchMode() && Util.isDeploymentInRepository(name, client)) {
                 throw new OperationFormatException("'" + name + "' already exists in the deployment repository (use " +
                     this.force.getFullName() + " to replace the existing content in the repository).");
             }
             addRequest = this.buildDeploymentAdd(f, name, runtimeName, unmanaged);
-        } else if(!Util.isDeploymentInRepository(name, client)) {
+        } else if(!ctx.isBatchMode() && !Util.isDeploymentInRepository(name, client)) {
             throw new OperationFormatException("'" + name + "' is not found among the registered deployments.");
         } else {
             addRequest = null;
