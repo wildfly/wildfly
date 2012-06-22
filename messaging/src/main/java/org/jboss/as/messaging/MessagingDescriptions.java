@@ -858,43 +858,10 @@ public class MessagingDescriptions {
         return result;
     }
 
-    static ModelNode getConnectorServiceResource(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("connector-service"));
-        for (AttributeDefinition attr : CommonAttributes.CONNECTOR_SERVICE_ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle, "connector-service", root);
-        }
-
-        root.get(OPERATIONS); // placeholder
-
-        getParamChildrenDescription(bundle, root, "connector-service");
-
-        return root;
-    }
-
     private static void getParamChildrenDescription(final ResourceBundle bundle, final ModelNode parent, final String prefix) {
         parent.get(CHILDREN, CommonAttributes.PARAM, DESCRIPTION).set(bundle.getString(prefix + ".param"));
         parent.get(CHILDREN, CommonAttributes.PARAM, MIN_OCCURS).set(0);
         parent.get(CHILDREN, CommonAttributes.PARAM, MODEL_DESCRIPTION);
-    }
-
-    public static ModelNode getConnectorServiceAdd(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("connector-service.add"));
-        for (AttributeDefinition attr : CommonAttributes.CONNECTOR_SERVICE_ATTRIBUTES) {
-            attr.addOperationParameterDescription(bundle, "connector-service", op);
-        }
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
-    static ModelNode getConnectorServiceRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, CONNECTOR_SERVICE);
     }
 
     static ModelNode getConnectorServiceParamResource(Locale locale) {

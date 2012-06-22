@@ -1521,7 +1521,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 writer.writeStartElement(Element.CONNECTOR_SERVICE.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                 final ModelNode service = property.getValue();
-                for (AttributeDefinition attribute : CommonAttributes.CONNECTOR_SERVICE_ATTRIBUTES) {
+                for (AttributeDefinition attribute : ConnectorServiceDefinition.ATTRIBUTES) {
                     attribute.marshallAsElement(property.getValue(), writer);
                 }
                 if (service.hasDefined(CommonAttributes.PARAM)) {
