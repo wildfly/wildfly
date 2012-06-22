@@ -850,46 +850,6 @@ public class MessagingDescriptions {
         }
     }
 
-    static ModelNode getBroadcastGroupRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, BROADCAST_GROUP);
-    }
-
-    static ModelNode getDiscoveryGroupRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, DISCOVERY_GROUP);
-    }
-
-    static ModelNode getGroupingHandlerResource(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("grouping-handler"));
-        for (AttributeDefinition attr : CommonAttributes.GROUPING_HANDLER_ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle, "grouping-handler", root);
-        }
-
-        root.get(OPERATIONS); // placeholder
-
-        root.get(CHILDREN).setEmptyObject();
-        return root;
-    }
-
-    public static ModelNode getGroupingHandlerAdd(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("grouping-handler.add"));
-        for (AttributeDefinition attr : CommonAttributes.GROUPING_HANDLER_ATTRIBUTES) {
-            attr.addOperationParameterDescription(bundle, "grouping-handler", op);
-        }
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
-    static ModelNode getGroupingHandlerRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, GROUPING_HANDLER);
-    }
-
     public static ModelNode getGetNodes(Locale locale) {
         final ModelNode result = getDescriptionOnlyOperation(locale,  ClusterConnectionDefinition.GET_NODES, CLUSTER_CONNECTION);
         result.get(REPLY_PROPERTIES, DESCRIPTION).set(getResourceBundle(locale).getString("cluster-connection.get-nodes.reply"));

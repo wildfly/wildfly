@@ -23,9 +23,8 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.operations.common.Util.getOperation;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
-
-import java.util.Locale;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
@@ -35,7 +34,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -49,7 +47,7 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class GroupingHandlerAdd implements OperationStepHandler, DescriptionProvider {
+public class GroupingHandlerAdd implements OperationStepHandler {
 
     public static final GroupingHandlerAdd INSTANCE = new GroupingHandlerAdd();
 
@@ -66,7 +64,7 @@ public class GroupingHandlerAdd implements OperationStepHandler, DescriptionProv
         }
         final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
         final ModelNode model = resource.getModel();
-        for (final AttributeDefinition attributeDefinition : CommonAttributes.GROUPING_HANDLER_ATTRIBUTES) {
+        for (final AttributeDefinition attributeDefinition : GroupingHandlerDefinition.ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);
         }
 
@@ -91,11 +89,6 @@ public class GroupingHandlerAdd implements OperationStepHandler, DescriptionProv
         context.completeStep();
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getGroupingHandlerAdd(locale);
-    }
-
     static void addGroupingHandlerConfig(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
         if (model.hasDefined(CommonAttributes.GROUPING_HANDLER)) {
             Property prop = model.get(CommonAttributes.GROUPING_HANDLER).asProperty();
@@ -105,9 +98,9 @@ public class GroupingHandlerAdd implements OperationStepHandler, DescriptionProv
 
     static GroupingHandlerConfiguration createGroupingHandlerConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
-        final GroupingHandlerConfiguration.TYPE type = GroupingHandlerConfiguration.TYPE.valueOf(CommonAttributes.TYPE.resolveModelAttribute(context, model).asString());
-        final String address = CommonAttributes.GROUPING_HANDLER_ADDRESS.resolveModelAttribute(context, model).asString();
-        final int timeout = CommonAttributes.TIMEOUT.resolveModelAttribute(context, model).asInt();
+        final GroupingHandlerConfiguration.TYPE type = GroupingHandlerConfiguration.TYPE.valueOf(GroupingHandlerDefinition.TYPE.resolveModelAttribute(context, model).asString());
+        final String address = GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS.resolveModelAttribute(context, model).asString();
+        final int timeout = GroupingHandlerDefinition.TIMEOUT.resolveModelAttribute(context, model).asInt();
         return new GroupingHandlerConfiguration(SimpleString.toSimpleString(name), type, SimpleString.toSimpleString(address), timeout);
     }
 }

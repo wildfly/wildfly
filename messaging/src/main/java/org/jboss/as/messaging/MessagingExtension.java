@@ -226,10 +226,7 @@ public class MessagingExtension implements Extension {
         serverRegistration.registerSubModel(new ClusterConnectionDefinition(registerRuntimeOnly));
 
         // Grouping Handler
-        final ManagementResourceRegistration groupingHandler = serverRegistration.registerSubModel(GROUPING_HANDLER_PATH, MessagingSubsystemProviders.GROUPING_HANDLER_RESOURCE);
-        groupingHandler.registerOperationHandler(ADD, GroupingHandlerAdd.INSTANCE, GroupingHandlerAdd.INSTANCE);
-        groupingHandler.registerOperationHandler(REMOVE, GroupingHandlerRemove.INSTANCE, GroupingHandlerRemove.INSTANCE);
-        GroupingHandlerWriteAttributeHandler.INSTANCE.registerAttributes(groupingHandler, registerRuntimeOnly);
+        serverRegistration.registerSubModel(new GroupingHandlerDefinition(registerRuntimeOnly));
 
         // Connector services
         final ManagementResourceRegistration connectorService = serverRegistration.registerSubModel(PathElement.pathElement(CommonAttributes.CONNECTOR_SERVICE),

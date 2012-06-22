@@ -44,7 +44,7 @@ public enum Element {
    // Messaging 1.0 elements in alpha order
    ACCEPTORS(CommonAttributes.ACCEPTORS),
    ADDRESS(getAttributeDefinitions(CommonAttributes.QUEUE_ADDRESS, DivertDefinition.ADDRESS,
-           CommonAttributes.GROUPING_HANDLER_ADDRESS, ClusterConnectionDefinition.ADDRESS)),
+           GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS, ClusterConnectionDefinition.ADDRESS)),
    ADDRESS_SETTINGS(CommonAttributes.ADDRESS_SETTINGS),
    ALLOW_FAILBACK(CommonAttributes.ALLOW_FAILBACK),
    ASYNC_CONNECTION_EXECUTION_ENABLED(CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED),
@@ -162,8 +162,8 @@ public enum Element {
    REDISTRIBUTION_DELAY(CommonAttributes.REDISTRIBUTION_DELAY),
    SEND_TO_DLA_ON_NO_ROUTE(CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE),
    STATIC_CONNECTORS(CommonAttributes.STATIC_CONNECTORS),
-   TIMEOUT(CommonAttributes.TIMEOUT),
-   TYPE(CommonAttributes.TYPE),
+   TIMEOUT(GroupingHandlerDefinition.TIMEOUT),
+   TYPE(GroupingHandlerDefinition.TYPE),
 
    //JMS Stuff
    AUTO_GROUP(CommonAttributes.AUTO_GROUP),

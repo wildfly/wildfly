@@ -623,7 +623,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 }
                 case ADDRESS: {
-                    handleElementText(reader, element, CommonAttributes.GROUPING_HANDLER_ADDRESS.getName(), groupingHandlerAdd);
+                    handleElementText(reader, element, GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS.getName(), groupingHandlerAdd);
                     break;
                 }
                 default: {
@@ -1619,7 +1619,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             writer.writeStartElement(Element.GROUPING_HANDLER.getLocalName());
             writer.writeAttribute(Attribute.NAME.getLocalName(), handler.getName());
             final ModelNode resourceModel = handler.getValue();
-            for (AttributeDefinition attr : CommonAttributes.GROUPING_HANDLER_ATTRIBUTES) {
+            for (AttributeDefinition attr : GroupingHandlerDefinition.ATTRIBUTES) {
                 attr.marshallAsElement(resourceModel, writer);
             }
             writer.writeEndElement();
