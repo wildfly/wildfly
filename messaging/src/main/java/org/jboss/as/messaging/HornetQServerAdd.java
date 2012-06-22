@@ -455,7 +455,7 @@ class HornetQServerAdd implements OperationStepHandler {
                 if(config.hasDefined(CommonAttributes.ROLE)) {
                     final Set<Role> roles = new HashSet<Role>();
                     for (final Property role : config.get(CommonAttributes.ROLE).asPropertyList()) {
-                        roles.add(SecurityRoleAdd.transform(context, role.getName(), role.getValue()));
+                        roles.add(SecurityRoleDefinition.transform(context, role.getName(), role.getValue()));
                     }
                     configuration.getSecurityRoles().put(match, roles);
                 }

@@ -24,7 +24,6 @@ package org.jboss.as.messaging;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
@@ -33,7 +32,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -44,7 +42,7 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Emanuel Muckenhuber
  */
-class SecuritySettingAdd extends AbstractAddStepHandler implements DescriptionProvider {
+class SecuritySettingAdd extends AbstractAddStepHandler {
 
     static final SecuritySettingAdd INSTANCE = new SecuritySettingAdd();
 
@@ -62,11 +60,6 @@ class SecuritySettingAdd extends AbstractAddStepHandler implements DescriptionPr
             final String match = address.getLastElement().getValue();
             server.getSecurityRepository().addMatch(match, new HashSet<Role>());
         }
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getSecuritySettingAdd(locale);
     }
 
     static HornetQServer getServer(final OperationContext context, ModelNode operation) {

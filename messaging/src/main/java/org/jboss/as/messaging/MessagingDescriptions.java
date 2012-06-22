@@ -46,14 +46,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
-import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.BINDING_NAMES;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_CONNECTION;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_SERVICE;
 import static org.jboss.as.messaging.CommonAttributes.CONSUMER_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.CORE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
@@ -63,7 +61,6 @@ import static org.jboss.as.messaging.CommonAttributes.DURABLE_SUBSCRIPTION_COUNT
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
-import static org.jboss.as.messaging.CommonAttributes.GROUPING_HANDLER;
 import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.INITIAL_MESSAGE_PACKET_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
@@ -82,7 +79,6 @@ import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAMES;
 import static org.jboss.as.messaging.CommonAttributes.ROLES_ATTR_NAME;
 import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.STARTED;
 import static org.jboss.as.messaging.CommonAttributes.SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
@@ -92,7 +88,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.messaging.jms.AbstractAddJndiHandler;
@@ -143,7 +138,7 @@ public class MessagingDescriptions {
         roleName.get(NILLABLE).set(false);
         roleName.get(MIN_LENGTH).set(1);
 
-        for (AttributeDefinition attr : SecurityRoleAdd.ROLE_ATTRIBUTES) {
+        for (AttributeDefinition attr : SecurityRoleDefinition.ATTRIBUTES) {
             final String attrName = attr.getName();
             final ModelNode attrNode = valueType.get(attrName);
             attrNode.get(DESCRIPTION).set(bundle.getString("security-role." + attrName));
@@ -1163,57 +1158,6 @@ public class MessagingDescriptions {
         return getDescriptionOnlyOperation(locale, REMOVE, PATH);
     }
 
-    public static ModelNode getSecuritySettingResource(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("security-setting"));
-        root.get(CHILDREN, CommonAttributes.ROLE, DESCRIPTION).set(bundle.getString("security-role"));
-        root.get(CHILDREN, CommonAttributes.ROLE, MIN_OCCURS).set(0);
-        root.get(CHILDREN, CommonAttributes.ROLE, MODEL_DESCRIPTION);
-        return root;
-    }
-
-    public static ModelNode getSecuritySettingAdd(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(ADD);
-        node.get(DESCRIPTION).set(bundle.getString("security-setting.add"));
-        return node;
-    }
-
-    public static ModelNode getSecuritySettingRemove(Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, SECURITY_SETTING);
-    }
-
-    public static ModelNode getSecurityRoleResource(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("security-role"));
-        for(final AttributeDefinition def : SecurityRoleAdd.ROLE_ATTRIBUTES) {
-            def.addResourceAttributeDescription(bundle, "security-role", root);
-        }
-        return root;
-    }
-
-    public static ModelNode getSecurityRoleAdd(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(ADD);
-        node.get(DESCRIPTION).set(bundle.getString("security-role.add"));
-        for(final AttributeDefinition def : SecurityRoleAdd.ROLE_ATTRIBUTES) {
-            def.addOperationParameterDescription(bundle, "security-role", node);
-        }
-        return node;
-    }
-
-    public static ModelNode getSecurityRoleRemove(Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, "security-role");
-    }
-
     public static ModelNode getDescriptionOnlyOperation(final Locale locale, final String operationName, final String descriptionPrefix) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
@@ -1279,13 +1223,13 @@ public class MessagingDescriptions {
         final ModelNode roles = addResourceAttributeDescription(bundle, CORE_ADDRESS, attrs, ROLES_ATTR_NAME, ModelType.LIST, false, null);
         final ModelNode rolesValue = roles.get(VALUE_TYPE);
         addResourceAttributeDescription(bundle, "security-role", rolesValue, NAME, ModelType.STRING, false, null);
-        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleAdd.SEND.getName(), ModelType.BOOLEAN, false, null);
-        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleAdd.CONSUME.getName(), ModelType.BOOLEAN, false, null);
-        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleAdd.CREATE_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
-        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleAdd.DELETE_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
-        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleAdd.CREATE_NON_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
-        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleAdd.DELETE_NON_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
-        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleAdd.MANAGE.getName(), ModelType.BOOLEAN, false, null);
+        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleDefinition.SEND.getName(), ModelType.BOOLEAN, false, null);
+        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleDefinition.CONSUME.getName(), ModelType.BOOLEAN, false, null);
+        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleDefinition.CREATE_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
+        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleDefinition.DELETE_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
+        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
+        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
+        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleDefinition.MANAGE.getName(), ModelType.BOOLEAN, false, null);
         final ModelNode queues = addResourceAttributeDescription(bundle, CORE_ADDRESS, attrs, QUEUE_NAMES, ModelType.LIST, false, null);
         queues.get(VALUE_TYPE).set(ModelType.STRING);
         addResourceAttributeDescription(bundle, CORE_ADDRESS, attrs, NUMBER_OF_BYTES_PER_PAGE, ModelType.LONG, false, MeasurementUnit.BYTES);

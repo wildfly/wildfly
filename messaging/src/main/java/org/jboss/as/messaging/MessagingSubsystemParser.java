@@ -998,10 +998,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         roles = reader.getListAttributeValue(i);
                         break;
                     case TYPE_ATTR_NAME:
-                        perm = SecurityRoleAdd.ROLE_ATTRIBUTES_BY_XML_NAME.get(reader.getAttributeValue(i));
+                        perm = SecurityRoleDefinition.ROLE_ATTRIBUTES_BY_XML_NAME.get(reader.getAttributeValue(i));
                         if (perm == null) {
                             throw ControllerMessages.MESSAGES.invalidAttributeValue(reader.getAttributeValue(i),
-                                    reader.getAttributeName(i), SecurityRoleAdd.ROLE_ATTRIBUTES_BY_XML_NAME.keySet(),
+                                    reader.getAttributeName(i), SecurityRoleDefinition.ROLE_ATTRIBUTES_BY_XML_NAME.keySet(),
                                     reader.getLocation());
                         }
                         break;
@@ -1038,7 +1038,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             operation.get(OP).set(ADD);
             operation.get(OP_ADDR).set(addr);
 
-            for (AttributeDefinition perm : SecurityRoleAdd.ROLE_ATTRIBUTES) {
+            for (AttributeDefinition perm : SecurityRoleDefinition.ATTRIBUTES) {
                 operation.get(perm.getName()).set(perms.contains(perm));
             }
 
@@ -1730,36 +1730,36 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     for (Property rolePerms : matchRoles.getValue().get(ROLE).asPropertyList()) {
                         final String role = rolePerms.getName();
                         final ModelNode perms = rolePerms.getValue();
-                        if (perms.get(SecurityRoleAdd.SEND.getName()).asBoolean(false)) {
+                        if (perms.get(SecurityRoleDefinition.SEND.getName()).asBoolean(false)) {
                             send.add(role);
                         }
-                        if (perms.get(SecurityRoleAdd.CONSUME.getName()).asBoolean(false)) {
+                        if (perms.get(SecurityRoleDefinition.CONSUME.getName()).asBoolean(false)) {
                             consume.add(role);
                         }
-                        if (perms.get(SecurityRoleAdd.CREATE_DURABLE_QUEUE.getName()).asBoolean(false)) {
+                        if (perms.get(SecurityRoleDefinition.CREATE_DURABLE_QUEUE.getName()).asBoolean(false)) {
                             createDurableQueue.add(role);
                         }
-                        if (perms.get(SecurityRoleAdd.DELETE_DURABLE_QUEUE.getName()).asBoolean(false)) {
+                        if (perms.get(SecurityRoleDefinition.DELETE_DURABLE_QUEUE.getName()).asBoolean(false)) {
                             deleteDurableQueue.add(role);
                         }
-                        if (perms.get(SecurityRoleAdd.CREATE_NON_DURABLE_QUEUE.getName()).asBoolean(false)) {
+                        if (perms.get(SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE.getName()).asBoolean(false)) {
                             createNonDurableQueue.add(role);
                         }
-                        if (perms.get(SecurityRoleAdd.DELETE_NON_DURABLE_QUEUE.getName()).asBoolean(false)) {
+                        if (perms.get(SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE.getName()).asBoolean(false)) {
                             deleteNonDurableQueue.add(role);
                         }
-                        if (perms.get(SecurityRoleAdd.MANAGE.getName()).asBoolean(false)) {
+                        if (perms.get(SecurityRoleDefinition.MANAGE.getName()).asBoolean(false)) {
                             manageRoles.add(role);
                         }
                     }
 
-                    writePermission(writer, SecurityRoleAdd.SEND.getXmlName(), send);
-                    writePermission(writer, SecurityRoleAdd.CONSUME.getXmlName(), consume);
-                    writePermission(writer, SecurityRoleAdd.CREATE_DURABLE_QUEUE.getXmlName(), createDurableQueue);
-                    writePermission(writer, SecurityRoleAdd.DELETE_DURABLE_QUEUE.getXmlName(), deleteDurableQueue);
-                    writePermission(writer, SecurityRoleAdd.CREATE_NON_DURABLE_QUEUE.getXmlName(), createNonDurableQueue);
-                    writePermission(writer, SecurityRoleAdd.DELETE_NON_DURABLE_QUEUE.getXmlName(), deleteNonDurableQueue);
-                    writePermission(writer, SecurityRoleAdd.MANAGE.getXmlName(), manageRoles);
+                    writePermission(writer, SecurityRoleDefinition.SEND.getXmlName(), send);
+                    writePermission(writer, SecurityRoleDefinition.CONSUME.getXmlName(), consume);
+                    writePermission(writer, SecurityRoleDefinition.CREATE_DURABLE_QUEUE.getXmlName(), createDurableQueue);
+                    writePermission(writer, SecurityRoleDefinition.DELETE_DURABLE_QUEUE.getXmlName(), deleteDurableQueue);
+                    writePermission(writer, SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE.getXmlName(), createNonDurableQueue);
+                    writePermission(writer, SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE.getXmlName(), deleteNonDurableQueue);
+                    writePermission(writer, SecurityRoleDefinition.MANAGE.getXmlName(), manageRoles);
                 }
 
                 writer.writeEndElement();

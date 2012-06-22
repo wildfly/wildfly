@@ -22,28 +22,26 @@
 
 package org.jboss.as.messaging;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
 
 /**
  * {@code OperationStepHandler} for removing a security role.
  *
  * @author Emanuel Muckenhuber
  */
-class SecurityRoleRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+class SecurityRoleRemove extends AbstractRemoveStepHandler {
 
     static final SecurityRoleRemove INSTANCE = new SecurityRoleRemove();
 
@@ -72,10 +70,5 @@ class SecurityRoleRemove extends AbstractRemoveStepHandler implements Descriptio
             return HornetQServer.class.cast(controller.getValue());
         }
         return null;
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getSecurityRoleRemove(locale);
     }
 }

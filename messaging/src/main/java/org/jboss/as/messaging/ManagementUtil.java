@@ -74,13 +74,13 @@ public class ManagementUtil {
                 for (Property prop : role.asPropertyList()) {
                     String key = prop.getName();
                     if ("createDurableQueue".equals(key)) {
-                        key = SecurityRoleAdd.CREATE_DURABLE_QUEUE.getName();
+                        key = SecurityRoleDefinition.CREATE_DURABLE_QUEUE.getName();
                     } else if ("deleteDurableQueue".equals(key)) {
-                        key = SecurityRoleAdd.DELETE_DURABLE_QUEUE.getName();
+                        key = SecurityRoleDefinition.DELETE_DURABLE_QUEUE.getName();
                     } else if ("createNonDurableQueue".equals(key)) {
-                        key = SecurityRoleAdd.CREATE_NON_DURABLE_QUEUE.getName();
+                        key = SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE.getName();
                     } else if ("deleteNonDurableQueue".equals(key)) {
-                        key = SecurityRoleAdd.DELETE_NON_DURABLE_QUEUE.getName();
+                        key = SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE.getName();
                     }
 
                     roleNode.get(key).set(prop.getValue());

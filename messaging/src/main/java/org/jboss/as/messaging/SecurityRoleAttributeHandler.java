@@ -22,20 +22,16 @@
 
 package org.jboss.as.messaging;
 
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -49,16 +45,7 @@ class SecurityRoleAttributeHandler extends AbstractWriteAttributeHandler<Set<Rol
     static final SecurityRoleAttributeHandler INSTANCE = new SecurityRoleAttributeHandler();
 
     private SecurityRoleAttributeHandler() {
-        super(SecurityRoleAdd.ROLE_ATTRIBUTES);
-    }
-
-    public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
-        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
-        for (AttributeDefinition attr : SecurityRoleAdd.ROLE_ATTRIBUTES) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
-            }
-        }
+        super(SecurityRoleDefinition.ATTRIBUTES);
     }
 
     @Override
@@ -81,7 +68,7 @@ class SecurityRoleAttributeHandler extends AbstractWriteAttributeHandler<Set<Rol
             }
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
             final ModelNode subModel = resource.getModel();
-            final Role updatedRole = SecurityRoleAdd.transform(context, roleName, subModel);
+            final Role updatedRole = SecurityRoleDefinition.transform(context, roleName, subModel);
             newRoles.add(updatedRole);
             server.getSecurityRepository().addMatch(match, newRoles);
         }
