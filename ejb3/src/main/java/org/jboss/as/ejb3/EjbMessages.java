@@ -2086,4 +2086,16 @@ public interface EjbMessages {
 
     @Message(id = 14226, value = "Could not lookup service %s")
     IllegalStateException serviceNotFound(ServiceName serviceName);
+
+    @Message(id = 14227, value = "EJB %s of type %s must have public default constructor")
+    DeploymentUnitProcessingException ejbMustHavePublicDefaultConstructor(String componentName, String componentClassName);
+
+    @Message(id = 14228, value = "EJB %s of type %s must not be inner class")
+    DeploymentUnitProcessingException ejbMustNotBeInnerClass(String componentName, String componentClassName);
+
+    @Message(id = 14229, value = "EJB %s of type %s must be declared public")
+    DeploymentUnitProcessingException ejbMustBePublicClass(String componentName, String componentClassName);
+
+    @Message(id = 14230, value = "EJB %s of type %s must not be declared final")
+    DeploymentUnitProcessingException ejbMustNotBeFinalClass(String componentName, String componentClassName);
 }
