@@ -43,7 +43,6 @@ import static org.jboss.dmr.ModelType.OBJECT;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
-import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -218,9 +217,6 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .setFlags(RESTART_ALL_SERVICES)
             .build();
-
-    SimpleAttributeDefinition GROUPING_HANDLER_ADDRESS = new SimpleAttributeDefinition("grouping-handler-address", "address",
-            null, ModelType.STRING, false, false, MeasurementUnit.NONE);
 
     SimpleAttributeDefinition GROUP_ADDRESS = create("group-address", ModelType.STRING)
             .setDefaultValue(null)
@@ -536,10 +532,6 @@ public interface CommonAttributes {
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
-    // FIXME GroupiongHanderConfiguration timeout is a int (instead of a long). Use a INT until HornetQ conf is fixed [HORNETQ-885]
-    SimpleAttributeDefinition TIMEOUT =  new SimpleAttributeDefinition("timeout",
-            new ModelNode().set(GroupingHandlerConfiguration.DEFAULT_TIMEOUT), ModelType.INT,  true, MeasurementUnit.MILLISECONDS);
-
     SimpleAttributeDefinition TRANSACTION_ATTRIBUTE = new SimpleAttributeDefinition("transaction",
             new ModelNode().set("transaction"), ModelType.STRING,  true);
 
@@ -558,9 +550,6 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .setFlags(RESTART_ALL_SERVICES)
             .build();
-
-    SimpleAttributeDefinition TYPE = new SimpleAttributeDefinition("type", "type",
-            null, ModelType.STRING,  true, false, MeasurementUnit.NONE, GroupingHandlerTypeValidator.INSTANCE);
 
     SimpleAttributeDefinition CONNECTION_FACTORY_TYPE = new SimpleAttributeDefinition("factory-type", "factory-type",
             null, ModelType.STRING,  true, false, MeasurementUnit.NONE, ConnectionFactoryTypeValidator.INSTANCE);
@@ -714,8 +703,6 @@ public interface CommonAttributes {
     AttributeDefinition[]  SIMPLE_ROOT_RESOURCE_WRITE_ATTRIBUTES = {
         FAILOVER_ON_SHUTDOWN, MESSAGE_COUNTER_ENABLED, MESSAGE_COUNTER_MAX_DAY_HISTORY, MESSAGE_COUNTER_SAMPLE_PERIOD
     };
-
-    AttributeDefinition[] GROUPING_HANDLER_ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT};
 
     AttributeDefinition[] CORE_QUEUE_ATTRIBUTES = { QUEUE_ADDRESS, FILTER, DURABLE };
 
