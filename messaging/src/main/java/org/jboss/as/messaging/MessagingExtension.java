@@ -283,14 +283,7 @@ public class MessagingExtension implements Extension {
         }
         // getJNDIBindings (no -- same as "entries")
 
-        final ManagementResourceRegistration securitySettings = serverRegistration.registerSubModel(SECURITY_SETTING, MessagingSubsystemProviders.SECURITY_SETTING);
-        securitySettings.registerOperationHandler(ADD, SecuritySettingAdd.INSTANCE, SecuritySettingAdd.INSTANCE);
-        securitySettings.registerOperationHandler(REMOVE, SecuritySettingRemove.INSTANCE, SecuritySettingRemove.INSTANCE);
-
-        final ManagementResourceRegistration securityRole = securitySettings.registerSubModel(SECURITY_ROLE, MessagingSubsystemProviders.SECURITY_ROLE);
-        securityRole.registerOperationHandler(ADD, SecurityRoleAdd.INSTANCE, SecurityRoleAdd.INSTANCE);
-        securityRole.registerOperationHandler(REMOVE, SecurityRoleRemove.INSTANCE, SecurityRoleRemove.INSTANCE);
-        SecurityRoleAttributeHandler.INSTANCE.registerAttributes(securityRole, registerRuntimeOnly);
+        serverRegistration.registerSubModel(new SecuritySettingDefinition());
 
         if (context.isRuntimeOnlyRegistrationValid()) {
 

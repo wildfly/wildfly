@@ -632,6 +632,7 @@ public interface CommonAttributes {
     String ROLE = "role";
     String ROLES_ATTR_NAME ="roles";
     String SCHEDULED_COUNT = "scheduled-count";
+    String SECURITY_ROLE ="security-role";
     String SECURITY_SETTING ="security-setting";
     String SECURITY_SETTINGS ="security-settings";
     String SELECTOR_STRING = "selector";

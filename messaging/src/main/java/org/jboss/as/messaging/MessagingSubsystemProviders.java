@@ -265,20 +265,6 @@ class MessagingSubsystemProviders {
         }
     };
 
-    public static final DescriptionProvider SECURITY_ROLE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getSecurityRoleResource(locale);
-        }
-    };
-
-    public static final DescriptionProvider SECURITY_SETTING = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getSecuritySettingResource(locale);
-        }
-    };
-
     public static final DescriptionProvider CORE_ADDRESS = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
