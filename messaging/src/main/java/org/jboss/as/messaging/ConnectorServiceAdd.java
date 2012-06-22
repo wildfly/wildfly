@@ -24,7 +24,6 @@ package org.jboss.as.messaging;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.hornetq.core.config.Configuration;
@@ -35,7 +34,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -48,7 +46,7 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ConnectorServiceAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class ConnectorServiceAdd extends AbstractAddStepHandler {
 
     public static final ConnectorServiceAdd INSTANCE = new ConnectorServiceAdd();
 
@@ -60,7 +58,7 @@ public class ConnectorServiceAdd extends AbstractAddStepHandler implements Descr
 
         model.setEmptyObject();
 
-        for (final AttributeDefinition attributeDefinition : CommonAttributes.CONNECTOR_SERVICE_ATTRIBUTES) {
+        for (final AttributeDefinition attributeDefinition : ConnectorServiceDefinition.ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);
         }
     }
@@ -75,11 +73,6 @@ public class ConnectorServiceAdd extends AbstractAddStepHandler implements Descr
             context.reloadRequired();
         }
         // else MessagingSubsystemAdd will add a handler that calls addConnectorServiceConfigs
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getConnectorServiceAdd(locale);
     }
 
     static void addConnectorServiceConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {

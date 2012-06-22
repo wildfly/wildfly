@@ -116,8 +116,13 @@ public class MessagingExtension implements Extension {
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, true);
+        return getResourceDescriptionResolver(keyPrefix, true);
     }
+
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, final boolean useUnprefixedChildTypes) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, useUnprefixedChildTypes);
+    }
+
 
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
@@ -229,17 +234,7 @@ public class MessagingExtension implements Extension {
         serverRegistration.registerSubModel(new GroupingHandlerDefinition(registerRuntimeOnly));
 
         // Connector services
-        final ManagementResourceRegistration connectorService = serverRegistration.registerSubModel(PathElement.pathElement(CommonAttributes.CONNECTOR_SERVICE),
-                MessagingSubsystemProviders.CONNECTOR_SERVICE_RESOURCE);
-        connectorService.registerOperationHandler(ADD, ConnectorServiceAdd.INSTANCE, ConnectorServiceAdd.INSTANCE, false);
-        connectorService.registerOperationHandler(REMOVE, ConnectorServiceRemove.INSTANCE, ConnectorServiceRemove.INSTANCE, false);
-        ConnectorServiceWriteAttributeHandler.INSTANCE.registerAttributes(connectorService, registerRuntimeOnly);
-
-        final ManagementResourceRegistration connectorServiceParam = connectorService.registerSubModel(PathElement.pathElement(CommonAttributes.PARAM),
-                MessagingSubsystemProviders.CONNECTOR_SERVICE_PARAM_RESOURCE);
-        connectorServiceParam.registerOperationHandler(ADD, ConnectorServiceParamAdd.INSTANCE, ConnectorServiceParamAdd.INSTANCE, false);
-        connectorServiceParam.registerOperationHandler(REMOVE, ConnectorServiceParamRemove.INSTANCE, ConnectorServiceParamRemove.INSTANCE, false);
-        connectorServiceParam.registerReadWriteAttribute(CommonAttributes.VALUE.getName(), null, ConnectorServiceParamWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        serverRegistration.registerSubModel(new ConnectorServiceDefinition(registerRuntimeOnly));
 
         // Messaging paths
         for (final String path : CommonAttributes.PATHS) {

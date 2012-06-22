@@ -279,13 +279,6 @@ class MessagingSubsystemProviders {
         }
     };
 
-    public static final DescriptionProvider CONNECTOR_SERVICE_RESOURCE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getConnectorServiceResource(locale);
-        }
-    };
-
     public static final DescriptionProvider CONNECTOR_SERVICE_PARAM_RESOURCE = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {

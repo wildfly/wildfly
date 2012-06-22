@@ -195,7 +195,9 @@ public interface CommonAttributes {
 
     JndiEntriesAttribute ENTRIES = JndiEntriesAttribute.DESTINATION;
 
-    SimpleAttributeDefinition FACTORY_CLASS = new SimpleAttributeDefinition("factory-class", ModelType.STRING, false);
+    SimpleAttributeDefinition FACTORY_CLASS = create("factory-class", ModelType.STRING)
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition EXPIRY_ADDRESS = new SimpleAttributeDefinition("expiry-address", ModelType.STRING, true);
 
@@ -707,8 +709,6 @@ public interface CommonAttributes {
     AttributeDefinition[] CORE_QUEUE_ATTRIBUTES = { QUEUE_ADDRESS, FILTER, DURABLE };
 
     AttributeDefinition[] JMS_QUEUE_ATTRIBUTES = { ENTRIES, SELECTOR, DURABLE };
-
-    AttributeDefinition[] CONNECTOR_SERVICE_ATTRIBUTES = { FACTORY_CLASS };
 
     String[] PATHS = new String[] {CommonAttributes.BINDINGS_DIRECTORY, CommonAttributes.JOURNAL_DIRECTORY, CommonAttributes.LARGE_MESSAGES_DIRECTORY, CommonAttributes.PAGING_DIRECTORY};
 }

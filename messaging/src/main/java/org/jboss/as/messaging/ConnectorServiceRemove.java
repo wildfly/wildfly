@@ -22,12 +22,9 @@
 
 package org.jboss.as.messaging;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -35,7 +32,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ConnectorServiceRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class ConnectorServiceRemove extends AbstractRemoveStepHandler {
 
     public static final ConnectorServiceRemove INSTANCE = new ConnectorServiceRemove();
 
@@ -51,10 +48,5 @@ public class ConnectorServiceRemove extends AbstractRemoveStepHandler implements
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         context.revertReloadRequired();
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getConnectorServiceRemove(locale);
     }
 }
