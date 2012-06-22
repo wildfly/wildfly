@@ -32,6 +32,10 @@ public class WarLibEjb implements WarLibInterface {
 
     private final OtherEjb ejb;
 
+    public WarLibEjb() {
+        ejb = null;
+    }
+
     @Inject
     public WarLibEjb(final OtherEjb ejb) {
         this.ejb = ejb;
