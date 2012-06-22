@@ -35,8 +35,6 @@ import static org.jboss.as.messaging.ManagementUtil.reportRoles;
 import static org.jboss.as.messaging.ManagementUtil.reportRolesAsJSON;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
-import java.util.Locale;
-
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.server.HornetQServer;
@@ -44,10 +42,8 @@ import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -56,7 +52,7 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class AddressControlHandler extends AbstractRuntimeOnlyHandler implements DescriptionProvider {
+public class AddressControlHandler extends AbstractRuntimeOnlyHandler {
 
     public static AddressControlHandler INSTANCE = new AddressControlHandler();
 
@@ -72,12 +68,6 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler implements
         } else if (CoreAddressDefinition.GET_ROLES_AS_JSON.equals(operationName)) {
             handleGetRolesAsJson(context, operation);
         }
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, CoreAddressDefinition.GET_ROLES_AS_JSON,
-                CommonAttributes.CORE_ADDRESS, ModelType.STRING, true);
     }
 
     private void handleReadAttribute(OperationContext context, ModelNode operation) {

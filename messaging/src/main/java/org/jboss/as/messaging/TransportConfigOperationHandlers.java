@@ -65,7 +65,9 @@ import org.jboss.msc.service.ServiceName;
  */
 class TransportConfigOperationHandlers {
 
-    /** The transport-config remove operation handler. */
+    /**
+     * The transport-config remove operation handler.
+     */
     static final OperationStepHandler REMOVE = new OperationStepHandler() {
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -83,13 +85,13 @@ class TransportConfigOperationHandlers {
      * @param context the operation context
      */
     static void reloadRequiredStep(final OperationContext context) {
-        if(context.isNormalServer()) {
+        if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                     final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
                     final ServiceController<?> controller = context.getServiceRegistry(false).getService(hqServiceName);
-                    if(controller != null) {
+                    if (controller != null) {
                         context.reloadRequired();
                     }
                     context.completeStep();
@@ -107,7 +109,7 @@ class TransportConfigOperationHandlers {
      */
     static void processAcceptors(final Configuration configuration, final ModelNode params, final Set<String> bindings) {
         final Map<String, TransportConfiguration> acceptors = new HashMap<String, TransportConfiguration>();
-        if(params.hasDefined(ACCEPTOR)) {
+        if (params.hasDefined(ACCEPTOR)) {
             for (final Property property : params.get(ACCEPTOR).asPropertyList()) {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
@@ -116,7 +118,7 @@ class TransportConfigOperationHandlers {
                 acceptors.put(acceptorName, new TransportConfiguration(clazz, parameters, acceptorName));
             }
         }
-        if(params.hasDefined(REMOTE_ACCEPTOR)) {
+        if (params.hasDefined(REMOTE_ACCEPTOR)) {
             for (final Property property : params.get(REMOTE_ACCEPTOR).asPropertyList()) {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
@@ -127,7 +129,7 @@ class TransportConfigOperationHandlers {
                 acceptors.put(acceptorName, new TransportConfiguration(NettyAcceptorFactory.class.getName(), parameters, acceptorName));
             }
         }
-        if(params.hasDefined(IN_VM_ACCEPTOR)) {
+        if (params.hasDefined(IN_VM_ACCEPTOR)) {
             for (final Property property : params.get(IN_VM_ACCEPTOR).asPropertyList()) {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
@@ -147,7 +149,7 @@ class TransportConfigOperationHandlers {
      */
     static Map<String, Object> getParameters(final ModelNode config) {
         final Map<String, Object> parameters = new HashMap<String, Object>();
-        if (config.get(PARAM).isDefined()) {
+        if (config.hasDefined(PARAM)) {
             for (final Property parameter : config.get(PARAM).asPropertyList()) {
                 parameters.put(parameter.getName(), parameter.getValue().get(ModelDescriptionConstants.VALUE).asString());
             }
@@ -184,7 +186,7 @@ class TransportConfigOperationHandlers {
                 connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName));
             }
         }
-        if(params.hasDefined(IN_VM_CONNECTOR)) {
+        if (params.hasDefined(IN_VM_CONNECTOR)) {
             for (final Property property : params.get(IN_VM_CONNECTOR).asPropertyList()) {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
@@ -207,18 +209,15 @@ class TransportConfigOperationHandlers {
         }
 
         @Override
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
             final ModelNode subModel = resource.getModel();
-            // Process attributes
-            for(final AttributeDefinition attribute : attributes) {
+            for (final AttributeDefinition attribute : attributes) {
                 attribute.validateAndSet(operation, subModel);
             }
-            // Process acceptor/connector type specific properties
-            process(subModel, operation);
-            // The transport-config parameters
-            if(operation.hasDefined(CommonAttributes.PARAMS)) {
-                for(Property property : operation.get(CommonAttributes.PARAMS).asPropertyList()) {
+
+            if(operation.hasDefined(CommonAttributes.PARAM)) {
+                for(Property property : operation.get(CommonAttributes.PARAM).asPropertyList()) {
                     final Resource param = context.createResource(PathAddress.pathAddress(PathElement.pathElement(CommonAttributes.PARAM, property.getName())));
                     final ModelNode value = property.getValue();
                     if(! value.isDefined()) {
@@ -231,10 +230,6 @@ class TransportConfigOperationHandlers {
             reloadRequiredStep(context);
             context.completeStep();
         }
-
-        void process(ModelNode subModel, ModelNode operation) {
-            //
-        };
 
         @Override
         public ModelNode getModelDescription(Locale locale) {

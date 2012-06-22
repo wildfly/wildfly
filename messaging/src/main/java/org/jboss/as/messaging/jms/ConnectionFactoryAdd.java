@@ -23,6 +23,14 @@
 package org.jboss.as.messaging.jms;
 
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
+import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.CONSUMER_MAX_RATE;
+import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
+import static org.jboss.as.messaging.CommonAttributes.HA;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,54 +46,14 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingMessages;
 import org.jboss.as.messaging.MessagingServices;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.messaging.CommonAttributes.AUTO_GROUP;
-import static org.jboss.as.messaging.CommonAttributes.BLOCK_ON_ACK;
-import static org.jboss.as.messaging.CommonAttributes.BLOCK_ON_DURABLE_SEND;
-import static org.jboss.as.messaging.CommonAttributes.BLOCK_ON_NON_DURABLE_SEND;
-import static org.jboss.as.messaging.CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT;
-import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
-import static org.jboss.as.messaging.CommonAttributes.CF_CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD;
-import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
-import static org.jboss.as.messaging.CommonAttributes.COMPRESS_LARGE_MESSAGES;
-import static org.jboss.as.messaging.CommonAttributes.CONFIRMATION_WINDOW_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_TYPE;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.CONSUMER_MAX_RATE;
-import static org.jboss.as.messaging.CommonAttributes.CONSUMER_WINDOW_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
-import static org.jboss.as.messaging.CommonAttributes.DUPS_OK_BATCH_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
-import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION;
-import static org.jboss.as.messaging.CommonAttributes.GROUP_ID;
-import static org.jboss.as.messaging.CommonAttributes.HA;
-import static org.jboss.as.messaging.CommonAttributes.LOAD_BALANCING_CLASS_NAME;
-import static org.jboss.as.messaging.CommonAttributes.MAX_RETRY_INTERVAL;
-import static org.jboss.as.messaging.CommonAttributes.MIN_LARGE_MESSAGE_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.PRE_ACK;
-import static org.jboss.as.messaging.CommonAttributes.PRODUCER_MAX_RATE;
-import static org.jboss.as.messaging.CommonAttributes.PRODUCER_WINDOW_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL;
-import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_BATCH_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.USE_GLOBAL_POOLS;
-import static org.jboss.as.messaging.jms.JMSServices.CONNECTION_FACTORY_ATTRS;
 
 /**
  * Update adding a connection factory to the subsystem. The
@@ -100,18 +68,18 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        boolean hasConnector = operation.hasDefined(CF_CONNECTOR.getName());
+        // TODO the alternative between connectors and discovery group should be expressed by the attributes, not here
+        boolean hasConnector = operation.hasDefined(ConnectorAttribute.CONNECTOR.getName());
         boolean hasDiscoveryGroup = operation.hasDefined(DISCOVERY_GROUP_NAME.getName());
         if (!hasConnector && !hasDiscoveryGroup) {
-            throw new OperationFailedException(MessagingMessages.MESSAGES.invalidOperationParameters(CF_CONNECTOR.getName(), DISCOVERY_GROUP_NAME.getName()));
+            throw new OperationFailedException(MessagingMessages.MESSAGES.invalidOperationParameters(ConnectorAttribute.CONNECTOR.getName(), DISCOVERY_GROUP_NAME.getName()));
         } else if (hasConnector && hasDiscoveryGroup) {
-            throw new OperationFailedException(MessagingMessages.MESSAGES.cannotIncludeOperationParameters(CF_CONNECTOR.getName(), DISCOVERY_GROUP_NAME.getName()));
+            throw new OperationFailedException(MessagingMessages.MESSAGES.cannotIncludeOperationParameters(ConnectorAttribute.CONNECTOR.getName(), DISCOVERY_GROUP_NAME.getName()));
         }
 
-        for (final AttributeDefinition attribute : JMSServices.CONNECTION_FACTORY_ATTRS) {
+        for (final AttributeDefinition attribute : ConnectionFactoryDefinition.ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
         }
-        CommonAttributes.CONNECTION_FACTORY_TYPE.validateAndSet(operation, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
@@ -132,84 +100,65 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
 
     static ConnectionFactoryConfiguration createConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
-        final ModelNode entries = ENTRIES.resolveModelAttribute(context, model);
+        final ModelNode entries = JndiEntriesAttribute.CONNECTION_FACTORY.resolveModelAttribute(context, model);
         final String[] jndiBindings = JndiEntriesAttribute.getJndiBindings(entries);
 
         final ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl(name, HornetQClient.DEFAULT_HA, jndiBindings);
 
         config.setHA(HA.resolveModelAttribute(context, model).asBoolean());
-        config.setAutoGroup(AUTO_GROUP.resolveModelAttribute(context, model).asBoolean());
-        config.setBlockOnAcknowledge(BLOCK_ON_ACK.resolveModelAttribute(context, model).asBoolean());
-        config.setBlockOnDurableSend(BLOCK_ON_DURABLE_SEND.resolveModelAttribute(context, model).asBoolean());
-        config.setBlockOnNonDurableSend(BLOCK_ON_NON_DURABLE_SEND.resolveModelAttribute(context, model).asBoolean());
-        config.setCacheLargeMessagesClient(CACHE_LARGE_MESSAGE_CLIENT.resolveModelAttribute(context, model).asBoolean());
+        config.setAutoGroup(Common.AUTO_GROUP.resolveModelAttribute(context, model).asBoolean());
+        config.setBlockOnAcknowledge(Common.BLOCK_ON_ACKNOWLEDGE.resolveModelAttribute(context, model).asBoolean());
+        config.setBlockOnDurableSend(Common.BLOCK_ON_DURABLE_SEND.resolveModelAttribute(context, model).asBoolean());
+        config.setBlockOnNonDurableSend(Common.BLOCK_ON_NON_DURABLE_SEND.resolveModelAttribute(context, model).asBoolean());
+        config.setCacheLargeMessagesClient(Common.CACHE_LARGE_MESSAGE_CLIENT.resolveModelAttribute(context, model).asBoolean());
         config.setCallTimeout(CALL_TIMEOUT.resolveModelAttribute(context, model).asLong());
-        config.setClientFailureCheckPeriod(CLIENT_FAILURE_CHECK_PERIOD.resolveModelAttribute(context, model).asInt());
+        config.setClientFailureCheckPeriod(Common.CLIENT_FAILURE_CHECK_PERIOD.resolveModelAttribute(context, model).asInt());
         final ModelNode clientId = CLIENT_ID.resolveModelAttribute(context, model);
         if (clientId.isDefined()) {
             config.setClientID(clientId.asString());
         }
-        config.setCompressLargeMessages(COMPRESS_LARGE_MESSAGES.resolveModelAttribute(context, model).asBoolean());
-        config.setConfirmationWindowSize(CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt());
-        config.setConnectionTTL(CONNECTION_TTL.resolveModelAttribute(context, model).asLong());
+        config.setCompressLargeMessages(Common.COMPRESS_LARGE_MESSAGES.resolveModelAttribute(context, model).asBoolean());
+        config.setConfirmationWindowSize(Common.CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setConnectionTTL(Common.CONNECTION_TTL.resolveModelAttribute(context, model).asLong());
         if (model.hasDefined(CONNECTOR)) {
             ModelNode connectorRefs = model.get(CONNECTOR);
             List<String> connectorNames = new ArrayList<String>(connectorRefs.keys());
             config.setConnectorNames(connectorNames);
         }
         config.setConsumerMaxRate(CONSUMER_MAX_RATE.resolveModelAttribute(context, model).asInt());
-        config.setConsumerWindowSize(CONSUMER_WINDOW_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setConsumerWindowSize(Common.CONSUMER_WINDOW_SIZE.resolveModelAttribute(context, model).asInt());
         final ModelNode discoveryGroupName = DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
         if (discoveryGroupName.isDefined()) {
             config.setDiscoveryGroupName(discoveryGroupName.asString());
         }
 
-        config.setDupsOKBatchSize(DUPS_OK_BATCH_SIZE.resolveModelAttribute(context, model).asInt());
-        config.setFailoverOnInitialConnection(FAILOVER_ON_INITIAL_CONNECTION.resolveModelAttribute(context, model).asBoolean());
+        config.setDupsOKBatchSize(Common.DUPS_OK_BATCH_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setFailoverOnInitialConnection(Common.FAILOVER_ON_INITIAL_CONNECTION.resolveModelAttribute(context, model).asBoolean());
 
-        final ModelNode groupId = GROUP_ID.resolveModelAttribute(context, model);
-        if(groupId.isDefined()) {
+        final ModelNode groupId = Common.GROUP_ID.resolveModelAttribute(context, model);
+        if (groupId.isDefined()) {
             config.setGroupID(groupId.asString());
         }
 
-        final ModelNode lbcn = LOAD_BALANCING_CLASS_NAME.resolveModelAttribute(context, model);
-        if(lbcn.isDefined()) {
+        final ModelNode lbcn = Common.CONNECTION_LOAD_BALANCING_CLASS_NAME.resolveModelAttribute(context, model);
+        if (lbcn.isDefined()) {
             config.setLoadBalancingPolicyClassName(lbcn.asString());
         }
-
-        config.setMaxRetryInterval(MAX_RETRY_INTERVAL.resolveModelAttribute(context, model).asLong());
-        config.setMinLargeMessageSize(MIN_LARGE_MESSAGE_SIZE.resolveModelAttribute(context, model).asInt());
-        config.setPreAcknowledge(PRE_ACK.resolveModelAttribute(context, model).asBoolean());
-        config.setProducerMaxRate(PRODUCER_MAX_RATE.resolveModelAttribute(context, model).asInt());
-        config.setProducerWindowSize(PRODUCER_WINDOW_SIZE.resolveModelAttribute(context, model).asInt());
-        config.setReconnectAttempts(CONNECTION_FACTORY_RECONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt());
-        config.setRetryInterval(RETRY_INTERVAL.resolveModelAttribute(context, model).asLong());
-        config.setRetryIntervalMultiplier(RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, model).asDouble());
-        config.setScheduledThreadPoolMaxSize(CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, model).asInt());
-        config.setThreadPoolMaxSize(CONNECTION_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, model).asInt());
-        config.setTransactionBatchSize(TRANSACTION_BATCH_SIZE.resolveModelAttribute(context, model).asInt());
-        config.setUseGlobalPools(USE_GLOBAL_POOLS.resolveModelAttribute(context, model).asBoolean());
-        config.setLoadBalancingPolicyClassName(LOAD_BALANCING_CLASS_NAME.resolveModelAttribute(context, model).asString());
-        JMSFactoryType jmsFactoryType = getFactoryType(CONNECTION_FACTORY_TYPE.resolveModelAttribute(context, model).asString());
+        config.setMaxRetryInterval(Common.MAX_RETRY_INTERVAL.resolveModelAttribute(context, model).asLong());
+        config.setMinLargeMessageSize(Common.MIN_LARGE_MESSAGE_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setPreAcknowledge(Common.PRE_ACKNOWLEDGE.resolveModelAttribute(context, model).asBoolean());
+        config.setProducerMaxRate(Common.PRODUCER_MAX_RATE.resolveModelAttribute(context, model).asInt());
+        config.setProducerWindowSize(Common.PRODUCER_WINDOW_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setReconnectAttempts(Common.RECONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt());
+        config.setRetryInterval(Common.RETRY_INTERVAL.resolveModelAttribute(context, model).asLong());
+        config.setRetryIntervalMultiplier(Common.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, model).asDouble());
+        config.setScheduledThreadPoolMaxSize(Common.SCHEDULED_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setThreadPoolMaxSize(Common.THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setTransactionBatchSize(Common.TRANSACTION_BATCH_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setUseGlobalPools(Common.USE_GLOBAL_POOLS.resolveModelAttribute(context, model).asBoolean());
+        config.setLoadBalancingPolicyClassName(Common.CONNECTION_LOAD_BALANCING_CLASS_NAME.resolveModelAttribute(context, model).asString());
+        JMSFactoryType jmsFactoryType = ConnectionFactoryType.valueOf(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.resolveModelAttribute(context, model).asString()).getType();
         config.setFactoryType(jmsFactoryType);
         return config;
     }
-
-    private static JMSFactoryType getFactoryType(String factoryType) {
-        if(factoryType == null || factoryType.equals(CommonAttributes.GENERIC_FACTORY)) {
-            return JMSFactoryType.CF;
-        } else if (factoryType.equals(CommonAttributes.QUEUE_FACTORY)) {
-            return JMSFactoryType.QUEUE_CF;
-        } else if (factoryType.equals(CommonAttributes.TOPIC_FACTORY)) {
-            return JMSFactoryType.TOPIC_CF;
-        } else if (factoryType.equals(CommonAttributes.XA_GENERIC_FACTORY)) {
-            return JMSFactoryType.XA_CF;
-        } else if (factoryType.equals(CommonAttributes.XA_QUEUE_FACTORY)) {
-            return JMSFactoryType.QUEUE_XA_CF;
-        } else if (factoryType.equals(CommonAttributes.XA_TOPIC_FACTORY)) {
-            return JMSFactoryType.TOPIC_XA_CF;
-        }
-        return JMSFactoryType.CF;
-    }
-
 }

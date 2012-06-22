@@ -22,12 +22,13 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.messaging.Attribute;
-import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.Element;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -41,7 +42,7 @@ public class SelectorAttribute extends SimpleAttributeDefinition {
     public static final SelectorAttribute SELECTOR = new SelectorAttribute();
 
     private SelectorAttribute() {
-        super(CommonAttributes.SELECTOR_STRING, ModelType.STRING, true);
+        super("selector", ModelType.STRING, true, RESTART_ALL_SERVICES);
     }
 
     @Override

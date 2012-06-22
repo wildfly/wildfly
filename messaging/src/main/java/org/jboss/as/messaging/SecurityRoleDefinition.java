@@ -24,6 +24,7 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_NONE;
 import static org.jboss.dmr.ModelType.BOOLEAN;
+import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,7 +43,6 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Security role resource definition
@@ -84,7 +84,7 @@ public class SecurityRoleDefinition extends SimpleResourceDefinition {
         MANAGE
     };
 
-    static final SimpleAttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)
+    static final SimpleAttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create("name", STRING)
             .build();
 
     static final Map<String, AttributeDefinition> ROLE_ATTRIBUTES_BY_XML_NAME;

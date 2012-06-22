@@ -22,45 +22,45 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 /**
  * Base class for handlers that handle an "add-jndi" operation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public abstract class AbstractAddJndiHandler implements OperationStepHandler, DescriptionProvider {
+public abstract class AbstractAddJndiHandler implements OperationStepHandler {
 
     public static final String ADD_JNDI = "add-jndi";
 
-    private final ParametersValidator validator = new ParametersValidator();
+    protected static final SimpleAttributeDefinition JNDI_BINDING = new SimpleAttributeDefinitionBuilder(CommonAttributes.JNDI_BINDING, ModelType.STRING)
+            .setAllowNull(false)
+            .setValidator(new StringLengthValidator(1))
+            .build();
 
-    protected AbstractAddJndiHandler() {
-        validator.registerValidator(CommonAttributes.JNDI_BINDING, new StringLengthValidator(1));
-    }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        validator.validate(operation);
-        String jndiName = operation.require(CommonAttributes.JNDI_BINDING).asString();
-        final ModelNode entries = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(CommonAttributes.ENTRIES.getName());
+        JNDI_BINDING.validateOperation(operation);
+        String jndiName = JNDI_BINDING.resolveModelAttribute(context, operation).asString();
+        final ModelNode entries = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(JndiEntriesAttribute.DESTINATION.getName());
         for (ModelNode entry : entries.asList()) {
             if (jndiName.equals(entry.asString())) {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.jndiNameAlreadyRegistered(jndiName)));
@@ -80,7 +80,7 @@ public abstract class AbstractAddJndiHandler implements OperationStepHandler, De
                     if (hqService != null) {
                         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
                         String resourceName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-                        String jndiName = operation.require(CommonAttributes.JNDI_BINDING).asString();
+                        String jndiName = JNDI_BINDING.resolveModelAttribute(context, operation).asString();
                         addJndiNameToControl(jndiName, resourceName, hqServer, context);
                     } // else the subsystem isn't started yet
 
@@ -95,10 +95,6 @@ public abstract class AbstractAddJndiHandler implements OperationStepHandler, De
             }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep();
-    }
-
-    public void registerOperation(final ManagementResourceRegistration registration) {
-        registration.registerOperationHandler(ADD_JNDI, this, this);
     }
 
     protected abstract void addJndiNameToControl(String toAdd, String resourceName, HornetQServer server, OperationContext context);

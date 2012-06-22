@@ -22,14 +22,9 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.messaging.jms.PooledConnectionFactoryAttribute.getDefinitions;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.getDefinitions;
 
-import java.util.EnumSet;
-
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * Write attribute handler for attributes that update the persistent configuration of a JMS pooled connection factory resource.
@@ -41,17 +36,6 @@ public class PooledConnectionFactoryWriteAttributeHandler extends ReloadRequired
     public static final PooledConnectionFactoryWriteAttributeHandler INSTANCE = new PooledConnectionFactoryWriteAttributeHandler();
 
     private PooledConnectionFactoryWriteAttributeHandler() {
-        super(getDefinitions(JMSServices.POOLED_CONNECTION_FACTORY_ATTRS));
+        super(getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES));
     }
-
-    public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
-        // TODO can any of these be applied to the runtime?
-        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-        for (AttributeDefinition attr : getDefinitions(JMSServices.POOLED_CONNECTION_FACTORY_ATTRS)) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
-            }
-        }
-    }
-
 }

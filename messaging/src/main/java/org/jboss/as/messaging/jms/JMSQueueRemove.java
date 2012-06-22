@@ -22,16 +22,12 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
@@ -43,7 +39,7 @@ import org.jboss.msc.service.ServiceName;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-public class JMSQueueRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class JMSQueueRemove extends AbstractRemoveStepHandler {
 
     public static final JMSQueueRemove INSTANCE = new JMSQueueRemove();
 
@@ -56,10 +52,5 @@ public class JMSQueueRemove extends AbstractRemoveStepHandler implements Descrip
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getJmsQueueRemove(locale);
     }
 }

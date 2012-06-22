@@ -27,16 +27,15 @@ import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
-import static org.jboss.as.messaging.CommonAttributes.MAX_POOL_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.MIN_POOL_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.NONE;
 import static org.jboss.as.messaging.CommonAttributes.NO_TX;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
 import static org.jboss.as.messaging.CommonAttributes.XA_TX;
-import static org.jboss.as.messaging.jms.PooledConnectionFactoryAttribute.getDefinitions;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.getDefinitions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -45,7 +44,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.messaging.CommonAttributes;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
@@ -60,16 +60,14 @@ import org.jboss.msc.service.ServiceTarget;
  *         Date: 5/13/11
  *         Time: 1:42 PM
  */
-public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
+public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final PooledConnectionFactoryAdd INSTANCE = new PooledConnectionFactoryAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        for(final AttributeDefinition attribute : getDefinitions(JMSServices.POOLED_CONNECTION_FACTORY_ATTRS)) {
+        for(final AttributeDefinition attribute : getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES)) {
             attribute.validateAndSet(operation, model);
         }
-
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,
@@ -80,16 +78,16 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         final String name = address.getLastElement().getValue();
 
         final ModelNode resolvedModel = model.clone();
-        for(final AttributeDefinition attribute : getDefinitions(JMSServices.POOLED_CONNECTION_FACTORY_ATTRS)) {
+        for(final AttributeDefinition attribute : getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES)) {
             resolvedModel.get(attribute.getName()).set(attribute.resolveModelAttribute(context, resolvedModel ));
         }
 
         // We validated that jndiName part of the model in populateModel
         // TODO we only use a single jndi name here but the xsd indicates support for many
-        final String jndiName = resolvedModel.get(CommonAttributes.ENTRIES.getName()).asList().get(0).asString();
+        final String jndiName = resolvedModel.get(JndiEntriesAttribute.CONNECTION_FACTORY.getName()).asList().get(0).asString();
 
-        final int minPoolSize = resolvedModel.get(MIN_POOL_SIZE.getName()).asInt();
-        final int maxPoolSize = resolvedModel.get(MAX_POOL_SIZE.getName()).asInt();
+        final int minPoolSize = resolvedModel.get(ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE.getName()).asInt();
+        final int maxPoolSize = resolvedModel.get(ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE.getName()).asInt();
 
         final String txSupport;
         if(resolvedModel.hasDefined(TRANSACTION)) {
@@ -144,7 +142,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
     }
     static List<PooledConnectionFactoryConfigProperties> getAdapterParams(ModelNode model, OperationContext context) throws OperationFailedException {
         List<PooledConnectionFactoryConfigProperties> configs = new ArrayList<PooledConnectionFactoryConfigProperties>();
-        for (PooledConnectionFactoryAttribute nodeAttribute : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS)
+        for (ConnectionFactoryAttribute nodeAttribute : PooledConnectionFactoryDefinition.ATTRIBUTES)
         {
             if (!nodeAttribute.isResourceAdapterProperty())
                 continue;
@@ -157,5 +155,10 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
             }
         }
         return configs;
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return MessagingDescriptions.getPooledConnectionFactoryAdd(locale);
     }
 }

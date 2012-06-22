@@ -25,6 +25,7 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
 
 import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 

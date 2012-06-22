@@ -41,7 +41,7 @@ public class GenericTransportDefinition extends AbstractTransportDefinition {
             .setRestartAllServices()
             .build();
 
-    static AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CommonAttributes.FACTORY_CLASS, SOCKET_BINDING };
+    static AttributeDefinition[] ATTRIBUTES = { CommonAttributes.FACTORY_CLASS, SOCKET_BINDING };
 
     public static SimpleResourceDefinition createAcceptorDefinition(final boolean registerRuntimeOnly) {
         return new GenericTransportDefinition(registerRuntimeOnly, true, CommonAttributes.ACCEPTOR);

@@ -30,6 +30,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.messaging.Attribute;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.Element;
@@ -52,7 +53,7 @@ public class JndiEntriesAttribute extends PrimitiveListAttributeDefinition {
     private final boolean forDestination;
 
     private JndiEntriesAttribute(final boolean forDestination) {
-        super(CommonAttributes.ENTRIES_STRING, CommonAttributes.ENTRIES_STRING, false, ModelType.STRING, 1, Integer.MAX_VALUE, new StringLengthValidator(1));
+        super(CommonAttributes.ENTRIES_STRING, CommonAttributes.ENTRIES_STRING, false, ModelType.STRING, 1, Integer.MAX_VALUE, new String[0], new String[0], new StringLengthValidator(1), null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
         this.forDestination = forDestination;
     }
 

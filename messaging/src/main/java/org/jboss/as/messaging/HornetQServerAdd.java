@@ -23,7 +23,6 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
@@ -33,15 +32,12 @@ import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_PASSWORD;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_USER;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL_OVERRIDE;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_BINDINGS_DIR;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_JOURNAL_DIR;
 import static org.jboss.as.messaging.CommonAttributes.FAILBACK_DELAY;
 import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SHUTDOWN;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
-import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
 import static org.jboss.as.messaging.CommonAttributes.JMX_DOMAIN;
 import static org.jboss.as.messaging.CommonAttributes.JMX_MANAGEMENT_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_BUFFER_SIZE;
@@ -69,12 +65,11 @@ import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_SCAN_PERIOD
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_THREAD_PRIORITY;
 import static org.jboss.as.messaging.CommonAttributes.PAGE_MAX_CONCURRENT_IO;
 import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.PATH;
 import static org.jboss.as.messaging.CommonAttributes.PERF_BLAST_PAGES;
 import static org.jboss.as.messaging.CommonAttributes.PERSISTENCE_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
 import static org.jboss.as.messaging.CommonAttributes.PERSIST_ID_CACHE;
-import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
-import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.RUN_SYNC_SPEED_TEST;
 import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_DOMAIN;
@@ -111,6 +106,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -164,12 +160,6 @@ class HornetQServerAdd implements OperationStepHandler {
             attributeDefinition.validateAndSet(operation, model);
         }
 
-        model.get(QUEUE).setEmptyObject();
-        model.get(CONNECTION_FACTORY).setEmptyObject();
-        model.get(JMS_QUEUE).setEmptyObject();
-        model.get(JMS_TOPIC).setEmptyObject();
-        model.get(POOLED_CONNECTION_FACTORY).setEmptyObject();
-
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -208,14 +198,14 @@ class HornetQServerAdd implements OperationStepHandler {
 
                 // Create path services
 
-                String bindingsPath = getPath(DEFAULT_BINDINGS_DIR, CommonAttributes.PATH.resolveModelAttribute(context, model.get(PATH, BINDINGS_DIRECTORY)));
-                String bindingsRelativeToPath = getRelativeToPath(model.get(PATH, BINDINGS_DIRECTORY));
-                String journalPath = getPath(DEFAULT_JOURNAL_DIR, CommonAttributes.PATH.resolveModelAttribute(context, model.get(PATH, JOURNAL_DIRECTORY)));
-                String journalRelativeToPath = getRelativeToPath(model.get(PATH, JOURNAL_DIRECTORY));
-                String largeMessagePath = getPath(DEFAULT_LARGE_MESSAGE_DIR, CommonAttributes.PATH.resolveModelAttribute(context, model.get(PATH, LARGE_MESSAGES_DIRECTORY)));
-                String largeMessageRelativeToPath = getRelativeToPath(model.get(PATH, LARGE_MESSAGES_DIRECTORY));
-                String pagingPath = getPath(DEFAULT_PAGING_DIR, CommonAttributes.PATH.resolveModelAttribute(context, model.get(PATH, PAGING_DIRECTORY)));
-                String pagingRelativeToPath = getRelativeToPath(model.get(PATH, PAGING_DIRECTORY));
+                String bindingsPath = getPath(DEFAULT_BINDINGS_DIR, PATH.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, BINDINGS_DIRECTORY)));
+                String bindingsRelativeToPath = getRelativeToPath(model.get(ModelDescriptionConstants.PATH, BINDINGS_DIRECTORY));
+                String journalPath = getPath(DEFAULT_JOURNAL_DIR, PATH.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, JOURNAL_DIRECTORY)));
+                String journalRelativeToPath = getRelativeToPath(model.get(ModelDescriptionConstants.PATH, JOURNAL_DIRECTORY));
+                String largeMessagePath = getPath(DEFAULT_LARGE_MESSAGE_DIR, PATH.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, LARGE_MESSAGES_DIRECTORY)));
+                String largeMessageRelativeToPath = getRelativeToPath(model.get(ModelDescriptionConstants.PATH, LARGE_MESSAGES_DIRECTORY));
+                String pagingPath = getPath(DEFAULT_PAGING_DIR, PATH.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, PAGING_DIRECTORY)));
+                String pagingRelativeToPath = getRelativeToPath(model.get(ModelDescriptionConstants.PATH, PAGING_DIRECTORY));
 
                 // Create the HornetQ Service
                 final HornetQService hqService = new HornetQService(

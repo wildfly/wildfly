@@ -29,26 +29,24 @@ import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_CLUSTER_REC
 import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNTIME;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
+import static org.jboss.dmr.ModelType.OBJECT;
 import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.EnumSet;
-import java.util.Locale;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -68,7 +66,7 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
     @Deprecated
     public static final String GET_STATIC_CONNECTORS_AS_JSON = "get-static-connectors-as-json";
 
-    public static final String[] OPERATIONS = { START, STOP, GET_NODES, GET_STATIC_CONNECTORS_AS_JSON };
+    public static final String[] OPERATIONS = {GET_NODES, GET_STATIC_CONNECTORS_AS_JSON};
 
     private final boolean registerRuntimeOnly;
 
@@ -147,18 +145,18 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = {
-        ADDRESS, CONNECTOR_REF,
-        CONNECTION_TTL,
-        FORWARD_WHEN_NO_CONSUMERS, MAX_HOPS,
-        RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER, MAX_RETRY_INTERVAL,
-        RECONNECT_ATTEMPTS, USE_DUPLICATE_DETECTION,
-        CHECK_PERIOD,
-        ALLOW_DIRECT_CONNECTIONS_ONLY,
-        CommonAttributes.CALL_TIMEOUT,
-        CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
-        CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
-        CommonAttributes.DISCOVERY_GROUP_NAME,
-        ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS,
+            ADDRESS, CONNECTOR_REF,
+            CONNECTION_TTL,
+            FORWARD_WHEN_NO_CONSUMERS, MAX_HOPS,
+            RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER, MAX_RETRY_INTERVAL,
+            RECONNECT_ATTEMPTS, USE_DUPLICATE_DETECTION,
+            CHECK_PERIOD,
+            ALLOW_DIRECT_CONNECTIONS_ONLY,
+            CommonAttributes.CALL_TIMEOUT,
+            CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
+            CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
+            CommonAttributes.DISCOVERY_GROUP_NAME,
+            ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS,
     };
 
     public static final SimpleAttributeDefinition NODE_ID = create("node-id", STRING)
@@ -170,9 +168,8 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final AttributeDefinition[] READONLY_ATTRIBUTES = {
-        TOPOLOGY,
-        NODE_ID,
-        ClusterConnectionControlHandler.STARTED
+            TOPOLOGY,
+            NODE_ID
     };
 
     public ClusterConnectionDefinition(final boolean registerRuntimeOnly) {
@@ -193,6 +190,8 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
         }
 
         if (registerRuntimeOnly) {
+            ClusterConnectionControlHandler.INSTANCE.registerAttributes(registry);
+
             for (AttributeDefinition attr : READONLY_ATTRIBUTES) {
                 registry.registerReadOnlyAttribute(attr, ClusterConnectionControlHandler.INSTANCE);
             }
@@ -202,24 +201,20 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
         if (registerRuntimeOnly) {
-            registry.registerOperationHandler(START, ClusterConnectionControlHandler.INSTANCE, new DefaultOperationDescriptionProvider(START, getResourceDescriptionResolver()));
-            registry.registerOperationHandler(STOP, ClusterConnectionControlHandler.INSTANCE, new DefaultOperationDescriptionProvider(STOP, getResourceDescriptionResolver()));
+            ClusterConnectionControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
 
             final EnumSet<OperationEntry.Flag> flags = EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY);
-
-            registry.registerOperationHandler(ClusterConnectionDefinition.GET_NODES, ClusterConnectionControlHandler.INSTANCE, new DescriptionProvider() {
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    return MessagingDescriptions.getGetNodes(locale);
-                }
-            }, flags);
-            registry.registerOperationHandler(ClusterConnectionDefinition.GET_STATIC_CONNECTORS_AS_JSON, ClusterConnectionControlHandler.INSTANCE, new DescriptionProvider() {
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, ClusterConnectionDefinition.GET_STATIC_CONNECTORS_AS_JSON,
-                            CommonAttributes.CLUSTER_CONNECTION, STRING, false);
-                }
-            }, flags);
+            SimpleOperationDefinition getNodesDef = new SimpleOperationDefinitionBuilder(ClusterConnectionDefinition.GET_NODES, getResourceDescriptionResolver())
+                    .withFlags(flags)
+                    .setReplyType(OBJECT)
+                    .setReplyValueType(STRING)
+                    .build();
+            registry.registerOperationHandler(getNodesDef, ClusterConnectionControlHandler.INSTANCE);
+            SimpleOperationDefinition getStaticConnectorsAsJson = new SimpleOperationDefinitionBuilder(ClusterConnectionDefinition.GET_STATIC_CONNECTORS_AS_JSON, getResourceDescriptionResolver())
+                    .withFlags(flags)
+                    .setReplyType(STRING)
+                    .build();
+            registry.registerOperationHandler(getStaticConnectorsAsJson, ClusterConnectionControlHandler.INSTANCE);
 
         }
 

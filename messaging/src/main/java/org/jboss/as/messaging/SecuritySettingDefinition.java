@@ -37,7 +37,7 @@ public class SecuritySettingDefinition extends SimpleResourceDefinition {
 
     public SecuritySettingDefinition(final boolean registerRuntimeOnly) {
         super(PathElement.pathElement(CommonAttributes.SECURITY_SETTING),
-                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.SECURITY_SETTING, false),
+                MessagingExtension.getResourceDescriptionResolver(false, CommonAttributes.SECURITY_SETTING),
                 SecuritySettingAdd.INSTANCE,
                 SecuritySettingRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;

@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import java.util.EnumSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -31,12 +30,9 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 
 /**
  * Abstract acceptor resource definition
@@ -51,7 +47,7 @@ public abstract class AbstractTransportDefinition extends SimpleResourceDefiniti
 
     protected AbstractTransportDefinition(final boolean registerRuntimeOnly, final boolean isAcceptor, final String specificType, AttributeDefinition... attrs) {
         super(PathElement.pathElement(specificType),
-                new StandardResourceDescriptionResolver((isAcceptor? CommonAttributes.ACCEPTOR : CommonAttributes.CONNECTOR),
+                new StandardResourceDescriptionResolver((isAcceptor ? CommonAttributes.ACCEPTOR : CommonAttributes.CONNECTOR),
                         MessagingExtension.RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, false) {
                     @Override
                     public String getResourceDescription(Locale locale, ResourceBundle bundle) {
@@ -77,20 +73,14 @@ public abstract class AbstractTransportDefinition extends SimpleResourceDefiniti
         }
 
         if (isAcceptor && registerRuntimeOnly) {
-            registry.registerReadOnlyAttribute(AcceptorControlHandler.STARTED, AcceptorControlHandler.INSTANCE);
+            AcceptorControlHandler.INSTANCE.registerAttributes(registry);
         }
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
         if (isAcceptor && registerRuntimeOnly) {
-            for (String operation : AcceptorControlHandler.OPERATIONS) {
-                final DescriptionProvider desc = new DefaultOperationDescriptionProvider(operation, getResourceDescriptionResolver());
-                registry.registerOperationHandler(operation,
-                        AcceptorControlHandler.INSTANCE,
-                        desc,
-                        EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY));
-            }
+            AcceptorControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
         }
 
         super.registerOperations(registry);

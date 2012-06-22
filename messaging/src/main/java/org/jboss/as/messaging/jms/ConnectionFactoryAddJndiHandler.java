@@ -22,16 +22,11 @@
 
 package org.jboss.as.messaging.jms;
 
-import java.util.Locale;
-
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.management.ManagementService;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.as.messaging.MessagingDescriptions;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Handler for "add-jndi" operation on a connection factory resource.
@@ -58,8 +53,5 @@ public class ConnectionFactoryAddJndiHandler extends AbstractAddJndiHandler {
         }
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getAddJndiOperation(locale, CommonAttributes.CONNECTION_FACTORY);
-    }
+
 }

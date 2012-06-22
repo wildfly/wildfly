@@ -24,8 +24,6 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNTIME;
 import static org.jboss.as.messaging.CommonAttributes.GROUP_ADDRESS;
@@ -34,6 +32,7 @@ import static org.jboss.as.messaging.CommonAttributes.LOCAL_BIND_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_BIND_PORT;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING_ALTERNATIVE;
 import static org.jboss.dmr.ModelType.LONG;
+import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.EnumSet;
 
@@ -41,9 +40,9 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
@@ -62,14 +61,12 @@ public class BroadcastGroupDefinition extends SimpleResourceDefinition {
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
-    public static final AttributeDefinition[] ATTRIBUTES = { SOCKET_BINDING_ALTERNATIVE, LOCAL_BIND_ADDRESS, LOCAL_BIND_PORT,
-        GROUP_ADDRESS, GROUP_PORT, BROADCAST_PERIOD, ConnectorRefsAttribute.BROADCAST_GROUP };
+    public static final AttributeDefinition[] ATTRIBUTES = {SOCKET_BINDING_ALTERNATIVE, LOCAL_BIND_ADDRESS, LOCAL_BIND_PORT,
+            GROUP_ADDRESS, GROUP_PORT, BROADCAST_PERIOD, ConnectorRefsAttribute.BROADCAST_GROUP};
 
     public static final String GET_CONNECTOR_PAIRS_AS_JSON = "get-connector-pairs-as-json";
 
-    public static final String[] OPERATIONS = { START, STOP, GET_CONNECTOR_PAIRS_AS_JSON };
     private final boolean registerRuntimeOnly;
-
 
     public BroadcastGroupDefinition(boolean registerRuntimeOnly) {
         super(PathElement.pathElement(CommonAttributes.BROADCAST_GROUP),
@@ -89,22 +86,21 @@ public class BroadcastGroupDefinition extends SimpleResourceDefinition {
         }
 
         if (registerRuntimeOnly) {
-            registry.registerReadOnlyAttribute(BroadcastGroupControlHandler.STARTED, BroadcastGroupControlHandler.INSTANCE);
+            BroadcastGroupControlHandler.INSTANCE.registerAttributes(registry);
         }
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
         if (registerRuntimeOnly) {
-            for (String operation : OPERATIONS) {
-                final DescriptionProvider desc = new DefaultOperationDescriptionProvider(operation, getResourceDescriptionResolver());
-                registry.registerOperationHandler(operation,
-                        BroadcastGroupControlHandler.INSTANCE,
-                        desc,
-                        EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY));
-            }
-        }
+            BroadcastGroupControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
 
+            SimpleOperationDefinition op = new SimpleOperationDefinitionBuilder(GET_CONNECTOR_PAIRS_AS_JSON, getResourceDescriptionResolver())
+                .withFlags(EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY))
+                .setReplyType(STRING)
+                .build();
+            registry.registerOperationHandler(op, BroadcastGroupControlHandler.INSTANCE);
+        }
         super.registerOperations(registry);
     }
 }
