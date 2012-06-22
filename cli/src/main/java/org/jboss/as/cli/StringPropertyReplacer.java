@@ -36,7 +36,7 @@ import java.io.File;
  */
 final class StringPropertyReplacer {
     /** New line string constant */
-    public static final String NEWLINE = Util.getLineSeparator();
+    public static final String NEWLINE = Util.LINE_SEPARATOR;
 
     /** File separator value */
     private static final String FILE_SEPARATOR = File.separator;
