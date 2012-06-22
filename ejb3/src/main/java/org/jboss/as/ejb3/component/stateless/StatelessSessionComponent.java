@@ -22,6 +22,10 @@
 
 package org.jboss.as.ejb3.component.stateless;
 
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
@@ -33,11 +37,6 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.msc.service.StopContext;
-
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
@@ -132,12 +131,12 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
 
 
     @Override
-    public void stop(StopContext stopContext) {
+    public void stop() {
         getShutDownInterceptorFactory().shutdown();
         if(this.pool!=null){
             this.pool.stop();
         }
-        super.stop(stopContext);
+        super.stop();
     }
 
     @Override

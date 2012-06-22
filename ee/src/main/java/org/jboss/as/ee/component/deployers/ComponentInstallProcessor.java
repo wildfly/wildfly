@@ -52,6 +52,7 @@ import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.NamingStoreService;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -140,6 +141,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
         // START depends on CREATE
         startBuilder.addDependency(createServiceName, BasicComponent.class, startService.getComponentInjector());
+        Services.addServerExecutorDependency(startBuilder, startService.getExecutorInjector(), false);
 
         //don't start components until all bindings are up
         startBuilder.addDependency(bindingDependencyService);

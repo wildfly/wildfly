@@ -189,9 +189,9 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     @Override
-    public void stop(StopContext stopContext) {
+    public void stop() {
         getShutDownInterceptorFactory().shutdown();
-        super.stop(stopContext);
+        super.stop();
     }
 
     public ApplicationExceptionDetails getApplicationException(Class<?> exceptionClass, Method invokedMethod) {

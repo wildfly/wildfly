@@ -226,11 +226,9 @@ public class BasicComponent implements Component {
     /**
      * {@inheritDoc}
      *
-     * @param stopContext
      */
-    public void stop(final StopContext stopContext) {
+    public void stop() {
         if (stopping.compareAndSet(false, true)) {
-            stopContext.asynchronous();
             synchronized (this) {
                 gate = false;
                 //this.stopContext = stopContext;
@@ -240,7 +238,6 @@ public class BasicComponent implements Component {
             //TODO: this has lots of potential for race conditions unless we are careful
             //TODO: using stopContext.asynchronous() and then executing synchronously is pointless.
             // Use org.jboss.as.server.Services#addServerExecutorDependency to inject an executor to do this async
-            stopContext.complete();
         }
     }
 
