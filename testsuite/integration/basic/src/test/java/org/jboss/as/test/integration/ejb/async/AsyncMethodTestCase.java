@@ -203,7 +203,6 @@ public class AsyncMethodTestCase {
         Assert.assertEquals("false;true", result); // the bean knows that it was cancelled
     }
    
-    @Ignore("JBPAPP-8972")
     @Test
     @RunAsClient
     public void testCancelRemoteAsyncMethod() throws Exception {
