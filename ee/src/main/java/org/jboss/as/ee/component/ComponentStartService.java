@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -38,18 +40,46 @@ import org.jboss.msc.value.InjectedValue;
 public final class ComponentStartService implements Service<Component> {
 
     private final InjectedValue<BasicComponent> component = new InjectedValue<BasicComponent>();
+    private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
 
-    /** {@inheritDoc} */
-    public void start(StartContext context) throws StartException {
-        getValue().start();
+    /**
+     * {@inheritDoc}
+     */
+    public void start(final StartContext context) throws StartException {
+        context.asynchronous();
+        executor.getValue().submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    getValue().start();
+                    context.complete();
+                } catch (Throwable e) {
+                    context.failed(new StartException(e));
+                }
+            }
+        });
     }
 
-    /** {@inheritDoc} */
-    public void stop(StopContext context) {
-        getValue().stop(context);
+    /**
+     * {@inheritDoc}
+     */
+    public void stop(final StopContext context) {
+        context.asynchronous();
+        executor.getValue().submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    getValue().stop();
+                } finally {
+                    context.complete();
+                }
+            }
+        });
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public BasicComponent getValue() throws IllegalStateException, IllegalArgumentException {
         return component.getValue();
     }
@@ -61,5 +91,9 @@ public final class ComponentStartService implements Service<Component> {
      */
     public Injector<BasicComponent> getComponentInjector() {
         return component;
+    }
+
+    public InjectedValue<ExecutorService> getExecutorInjector() {
+        return executor;
     }
 }

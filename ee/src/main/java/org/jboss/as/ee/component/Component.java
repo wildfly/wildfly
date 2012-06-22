@@ -23,7 +23,6 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.naming.context.NamespaceContextSelector;
-import org.jboss.msc.service.StopContext;
 
 /**
  * Common contract for an EE component.  Implementations of this will be available as a service and can be used as the
@@ -43,9 +42,8 @@ public interface Component {
     /**
      * Stop operation called when the Component is no longer available.
      *
-     * @param stopContext the stop context for the component service
      */
-    void stop(final StopContext stopContext);
+    void stop();
 
     /**
      * Get the component's actual implementation class.
