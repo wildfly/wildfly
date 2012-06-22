@@ -37,11 +37,11 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.ejb.client.Affinity;
+import org.jboss.ejb.client.EJBClientInvocationContext;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
-import org.jboss.ejb.client.TransactionID;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.AbstractClassResolver;
@@ -284,10 +284,13 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                 }
                 final String key = attachment.getKey();
                 final Object value = attachment.getValue();
-                // this is private to JBoss EJB implementation and not meant to be visible to the
-                // application, so add this attachment to the privateData of the InterceptorContext
-                if (TransactionID.PRIVATE_DATA_KEY.equals(key)) {
-                    interceptorContext.putPrivateData(key, value);
+                // these are private to JBoss EJB implementation and not meant to be visible to the
+                // application, so add these attachments to the privateData of the InterceptorContext
+                if (EJBClientInvocationContext.PRIVATE_ATTACHMENTS_KEY.equals(key)) {
+                    final Map<Object, Object> privateAttachments = (Map<Object, Object>) value;
+                    for (final Map.Entry<Object, Object> privateAttachment : privateAttachments.entrySet()) {
+                        interceptorContext.putPrivateData(privateAttachment.getKey(), privateAttachment.getValue());
+                    }
                 } else {
                     // add it to the InvocationContext which will be visible to the target bean and the
                     // application specific interceptors
