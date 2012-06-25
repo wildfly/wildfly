@@ -109,6 +109,14 @@ public class ModuleSpecification extends SimpleAttachable {
      */
     private final List<DependencySpec> moduleSystemDependencies = new ArrayList<DependencySpec>();
 
+    /**
+     * Deployments may delegate their content to an OSGi Bundle. It is for example possible
+     * to deploy an OSGi Bundle as JBossWeb Application (WAR) in which case two modules are created.
+     * The ordinary WAR module and the module that results from resovling the OSGi Bundle. The WAR
+     * module no resource loaders. Instead it has an additionl dependency on the OSGi Bundle.
+     */
+    private ModuleDependency bundleContentDependency;
+
     public void addSystemDependency(final ModuleDependency dependency) {
         if (!exclusions.contains(dependency.getIdentifier()) && !systemDependenciesSet.contains(dependency.getIdentifier())) {
             this.systemDependencies.add(dependency);
@@ -271,5 +279,13 @@ public class ModuleSpecification extends SimpleAttachable {
 
     public List<DependencySpec> getModuleSystemDependencies() {
         return Collections.unmodifiableList(moduleSystemDependencies);
+    }
+
+    public ModuleDependency getOSGiContentDependency() {
+        return bundleContentDependency;
+    }
+
+    public void addOSGiContentDependency(ModuleDependency bundleDependency) {
+        this.bundleContentDependency = bundleDependency;
     }
 }

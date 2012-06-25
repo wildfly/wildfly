@@ -21,24 +21,35 @@
  */
 package org.jboss.as.test.smoke.osgi;
 
+import java.io.InputStream;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.Servlet;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
 
 import junit.framework.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleServlet;
+import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * Test webapp deployemnts as OSGi bundles
  *
  * @author thomas.diesler@jboss.com
  * @since 07-Jun-2011
@@ -47,14 +58,24 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class SimpleWebAppTestCase {
 
+    private static final String SIMPLE_WAR = "war-example.war";
+    private static final String WAR_STRUCTURE_BUNDLE = "war-structure-bundle.war";
+    private static final String OSGI_STRUCTURE_BUNDLE = "osgi-structure-bundle.war";
+
     @ArquillianResource
     private URL url;
 
-    @Deployment(testable = false)
-    public static Archive<?> getDeployment() {
-        final WebArchive archive = ShrinkWrap.create(WebArchive.class, "war-osgi-example.war");
+    @Deployment(name = SIMPLE_WAR, testable = false)
+    public static Archive<?> getWarDeployment() {
+        final WebArchive archive = ShrinkWrap.create(WebArchive.class, SIMPLE_WAR);
         archive.addClasses(SimpleServlet.class);
-        /*
+        return archive;
+    }
+
+    @Deployment(name = WAR_STRUCTURE_BUNDLE, testable = false)
+    public static Archive<?> getWarStructureDeployment() {
+        final WebArchive archive = ShrinkWrap.create(WebArchive.class, WAR_STRUCTURE_BUNDLE);
+        archive.addClasses(SimpleServlet.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -67,14 +88,46 @@ public class SimpleWebAppTestCase {
                 return builder.openStream();
             }
         });
-        */
+        return archive;
+    }
+
+    @Deployment(name = OSGI_STRUCTURE_BUNDLE, testable = false)
+    public static Archive<?> getOSGiStructureDeployment() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, OSGI_STRUCTURE_BUNDLE);
+        archive.addClasses(SimpleServlet.class);
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(PostConstruct.class, WebServlet.class);
+                builder.addImportPackages(Servlet.class, HttpServlet.class);
+                return builder.openStream();
+            }
+        });
         return archive;
     }
 
     @Test
-    public void testServlet() throws Exception {
-        String s = performCall("simple", "Hello");
-        Assert.assertEquals("Simple Servlet called with input=Hello", s);
+    @OperateOnDeployment(SIMPLE_WAR)
+    public void testSimpleWar() throws Exception {
+        String result = performCall("simple", "Hello");
+        Assert.assertEquals("Simple Servlet called with input=Hello", result);
+    }
+
+    @Test
+    @OperateOnDeployment(WAR_STRUCTURE_BUNDLE)
+    public void testWarStructureBundle() throws Exception {
+        String result = performCall("simple", "Hello");
+        Assert.assertEquals("Simple Servlet called with input=Hello", result);
+    }
+
+    @Test
+    @OperateOnDeployment(OSGI_STRUCTURE_BUNDLE)
+    public void testOSGiStructureBundle() throws Exception {
+        String result = performCall("simple", "Hello");
+        Assert.assertEquals("Simple Servlet called with input=Hello", result);
     }
 
     private String performCall(String urlPattern, String param) throws Exception {
