@@ -26,7 +26,6 @@ import java.util.Locale;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -41,16 +40,15 @@ public class WarDeploymentInitializingProcessor implements DeploymentUnitProcess
 
     static final String WAR_EXTENSION = ".war";
 
+    @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if(deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
-            return;
-        }
         if(deploymentUnit.getName().toLowerCase(Locale.ENGLISH).endsWith(WAR_EXTENSION)) {
             DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
         }
     }
 
+    @Override
     public void undeploy(final DeploymentUnit context) {
     }
 }

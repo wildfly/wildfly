@@ -31,6 +31,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.osgi.framework.AbstractBundleRevisionAdaptor;
 import org.jboss.osgi.metadata.OSGiMetaData;
@@ -56,9 +57,10 @@ public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
 
         // Create the {@link ModuleRegisterService}
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        final XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
+        final XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
         final Module module = depUnit.getAttachment(Attachments.MODULE);
-        if (bundle == null && module != null) {
+        final ModuleSpecification moduleSpecification = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        if (bundle == null && module != null && moduleSpecification.isPrivateModule() == false) {
             LOGGER.infoRegisterModule(module.getIdentifier());
             try {
                 final BundleContext context = depUnit.getAttachment(OSGiConstants.SYSTEM_CONTEXT_KEY);
