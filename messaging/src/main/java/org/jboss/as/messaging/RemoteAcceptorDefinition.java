@@ -22,46 +22,54 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
+import static org.jboss.dmr.ModelType.STRING;
+
 import java.util.EnumSet;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.dmr.ModelType;
 
 /**
- * Generic acceptor resource definition
+ * in-vm acceptor resource definition
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class AcceptorDefinition extends SimpleResourceDefinition {
+public class RemoteAcceptorDefinition extends SimpleResourceDefinition {
 
-    public static final SimpleAttributeDefinition SOCKET_BINDING = SimpleAttributeDefinitionBuilder.create("socket-binding", ModelType.STRING)
-            .setAllowNull(true)
+    public static final AttributeDefinition SOCKET_BINDING = create("socket-binding", STRING)
             .setRestartAllServices()
             .build();
 
-    static AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CommonAttributes.FACTORY_CLASS, SOCKET_BINDING };
+    static AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SOCKET_BINDING };
 
-    /** The generic transport-config add operation handler. */
-    static final OperationStepHandler GENERIC_ADD = new TransportConfigOperationHandlers.BasicTransportConfigAdd(ATTRIBUTES);
+    static final OperationStepHandler REMOTE_ADD = new TransportConfigOperationHandlers.BasicTransportConfigAdd(ATTRIBUTES);
+
+    static final OperationStepHandler REMOTE_ATTRIBUTE_HANDLER = new TransportConfigOperationHandlers.AttributeWriteHandler(ATTRIBUTES);
 
     private final boolean registerRuntimeOnly;
 
 
-    public AcceptorDefinition(final boolean registerRuntimeOnly) {
-        super(PathElement.pathElement(CommonAttributes.ACCEPTOR),
-                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.ACCEPTOR, false),
-                GENERIC_ADD,
-                TransportConfigOperationHandlers.REMOVE);
+    public RemoteAcceptorDefinition(final boolean registerRuntimeOnly) {
+        super(PathElement.pathElement(CommonAttributes.REMOTE_ACCEPTOR),
+            new StandardResourceDescriptionResolver(CommonAttributes.ACCEPTOR, MessagingExtension.RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, false) {
+                @Override
+                public String getResourceDescription(Locale locale, ResourceBundle bundle) {
+                    return bundle.getString(CommonAttributes.REMOTE_ACCEPTOR);
+                }
+            },
+            REMOTE_ADD,
+            TransportConfigOperationHandlers.REMOVE);
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
@@ -71,7 +79,7 @@ public class AcceptorDefinition extends SimpleResourceDefinition {
 
         for (AttributeDefinition attr : ATTRIBUTES) {
             if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, TransportConfigOperationHandlers.GENERIC_ATTR);
+                registry.registerReadWriteAttribute(attr, null, REMOTE_ATTRIBUTE_HANDLER);
             }
         }
 

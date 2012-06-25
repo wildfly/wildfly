@@ -83,7 +83,7 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
             final String name = address.getLastElement().getValue();
 
             final ServiceTarget target = context.getServiceTarget();
-            if(model.hasDefined(CommonAttributes.SOCKET_BINDING.getName())) {
+            if(model.hasDefined(RemoteAcceptorDefinition.SOCKET_BINDING.getName())) {
                 final GroupBindingService bindingService = new GroupBindingService();
                 target.addService(GroupBindingService.getBroadcastBaseServiceName(hqServiceName).append(name), bindingService)
                         .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(model.get(SOCKET_BINDING).asString()), SocketBinding.class, bindingService.getBindingRef())

@@ -45,7 +45,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.BINDING_NAMES;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_CONNECTION;
@@ -79,7 +78,6 @@ import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAMES;
 import static org.jboss.as.messaging.CommonAttributes.ROLES_ATTR_NAME;
 import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.STARTED;
 import static org.jboss.as.messaging.CommonAttributes.SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
 import static org.jboss.as.messaging.CommonAttributes.TOPIC_ADDRESS;
@@ -900,98 +898,14 @@ public class MessagingDescriptions {
         return node;
     }
 
-    static ModelNode getAcceptor(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("acceptor"));
-        for (AttributeDefinition attr : TransportConfigOperationHandlers.GENERIC) {
-            attr.addResourceAttributeDescription(bundle, null, root);
-        }
-
-        addResourceAttributeDescription(bundle, "acceptor", root.get(ATTRIBUTES), STARTED, ModelType.BOOLEAN, false, null);
-
-        getParamChildrenDescription(bundle, root, "acceptor");
-
-        return root;
-    }
-
-    static ModelNode getAcceptorAdd(final Locale locale) {
+    static ModelNode getAcceptorAdd(final Locale locale, AttributeDefinition... attrs) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode op = new ModelNode();
         op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("acceptor.add"));
 
-        for (AttributeDefinition attr : TransportConfigOperationHandlers.GENERIC) {
-            attr.addOperationParameterDescription(bundle, null, op);
-        }
-
-        addParamsParameterDescription(op, "acceptor.add.params", bundle);
-
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
-    static ModelNode getAcceptorRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, ACCEPTOR);
-    }
-
-    static ModelNode getRemoteAcceptor(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("remote-acceptor"));
-        for (AttributeDefinition attr : TransportConfigOperationHandlers.REMOTE) {
-            attr.addResourceAttributeDescription(bundle, null, root);
-        }
-
-        addResourceAttributeDescription(bundle, "acceptor", root.get(ATTRIBUTES), STARTED, ModelType.BOOLEAN, false, null);
-
-        getParamChildrenDescription(bundle, root, "acceptor");
-
-        return root;
-    }
-
-    static ModelNode getRemoteAcceptorAdd(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("acceptor.add"));
-        for (AttributeDefinition attr : TransportConfigOperationHandlers.REMOTE) {
-            attr.addOperationParameterDescription(bundle, null, op);
-        }
-
-        addParamsParameterDescription(op, "acceptor.add.params", bundle);
-
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
-    static ModelNode getInVMAcceptor(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("in-vm-acceptor"));
-        for (AttributeDefinition attr : TransportConfigOperationHandlers.IN_VM) {
-            attr.addResourceAttributeDescription(bundle, null, root);
-        }
-
-        addResourceAttributeDescription(bundle, "acceptor", root.get(ATTRIBUTES), STARTED, ModelType.BOOLEAN, false, null);
-
-        getParamChildrenDescription(bundle, root, "acceptor");
-
-        return root;
-    }
-
-    static ModelNode getInVMAcceptorAdd(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("acceptor.add"));
-        for (AttributeDefinition attr : TransportConfigOperationHandlers.IN_VM) {
+        for (AttributeDefinition attr : attrs) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
 
@@ -1006,7 +920,7 @@ public class MessagingDescriptions {
 
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("connector"));
-        for (AttributeDefinition attr : TransportConfigOperationHandlers.GENERIC) {
+        for (AttributeDefinition attr : AcceptorDefinition.ATTRIBUTES) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
 
@@ -1021,7 +935,7 @@ public class MessagingDescriptions {
         final ModelNode op = new ModelNode();
         op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("connector.add"));
-        for (AttributeDefinition attr : TransportConfigOperationHandlers.GENERIC) {
+        for (AttributeDefinition attr : AcceptorDefinition.ATTRIBUTES) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
 
@@ -1040,7 +954,7 @@ public class MessagingDescriptions {
 
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("remote-connector"));
-        for (AttributeDefinition attr : TransportConfigOperationHandlers.REMOTE) {
+        for (AttributeDefinition attr : RemoteAcceptorDefinition.ATTRIBUTES) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
 
@@ -1055,7 +969,7 @@ public class MessagingDescriptions {
         final ModelNode op = new ModelNode();
         op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("connector.add"));
-        for (AttributeDefinition attr : TransportConfigOperationHandlers.REMOTE) {
+        for (AttributeDefinition attr : RemoteAcceptorDefinition.ATTRIBUTES) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
 
@@ -1070,7 +984,7 @@ public class MessagingDescriptions {
 
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("in-vm-connector"));
-        for (AttributeDefinition attr : TransportConfigOperationHandlers.IN_VM) {
+        for (AttributeDefinition attr : InVMAcceptorDefinition.ATTRIBUTES) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
 
@@ -1085,7 +999,7 @@ public class MessagingDescriptions {
         final ModelNode op = new ModelNode();
         op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("connector.add"));
-        for (AttributeDefinition attr : TransportConfigOperationHandlers.IN_VM) {
+        for (AttributeDefinition attr : InVMAcceptorDefinition.ATTRIBUTES) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
 
