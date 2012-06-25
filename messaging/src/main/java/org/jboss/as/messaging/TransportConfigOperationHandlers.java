@@ -32,7 +32,6 @@ import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
-import static org.jboss.as.messaging.CommonAttributes.VALUE;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.EnumSet;
@@ -92,29 +91,6 @@ class TransportConfigOperationHandlers {
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final Resource resource = context.removeResource(PathAddress.EMPTY_ADDRESS);
-            reloadRequiredStep(context);
-            context.completeStep();
-        }
-    };
-
-    /** The transport-config param add operation handler. */
-    static final OperationStepHandler PARAM_ADD = new OperationStepHandler() {
-
-        @Override
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-            VALUE.validateAndSet(operation, resource.getModel());
-            reloadRequiredStep(context);
-            context.completeStep();
-        }
-    };
-
-    static final OperationStepHandler PARAM_ATTR = new OperationStepHandler() {
-
-        @Override
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
-            VALUE.validateAndSet(operation, resource.getModel());
             reloadRequiredStep(context);
             context.completeStep();
         }

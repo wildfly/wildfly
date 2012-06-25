@@ -53,6 +53,7 @@ import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.as.messaging.jms.SelectorAttribute;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.metadata.ejb.jboss.LocalBindingMetaData;
 
 /**
  * @author Emanuel Muckenhuber
@@ -192,7 +193,7 @@ public interface CommonAttributes {
     JndiEntriesAttribute ENTRIES = JndiEntriesAttribute.DESTINATION;
 
     SimpleAttributeDefinition FACTORY_CLASS = create("factory-class", ModelType.STRING)
-            .setFlags(RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition EXPIRY_ADDRESS = new SimpleAttributeDefinition("expiry-address", ModelType.STRING, true);
@@ -488,8 +489,11 @@ public interface CommonAttributes {
     SimpleAttributeDefinition SOCKET_BINDING_ALTERNATIVE = create("socket-binding", ModelType.STRING)
             .setDefaultValue(null)
             .setAllowNull(false)
-            .setAlternatives("group-address", "group-port", "local-bind-address", "local-bind-port")
-            .setFlags(RESTART_ALL_SERVICES)
+            .setAlternatives(GROUP_ADDRESS.getName(),
+                             GROUP_PORT.getName(),
+                             LOCAL_BIND_ADDRESS.getName(),
+                             LOCAL_BIND_PORT.getName())
+            .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinitionBuilder("thread-pool-max-size", INT)

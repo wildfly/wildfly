@@ -66,6 +66,8 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
+    public static final String[] OPERATIONS = { START, STOP };
+
     private ParametersValidator readAttributeValidator = new ParametersValidator();
 
     protected AbstractHornetQComponentControlHandler() {

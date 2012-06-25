@@ -170,15 +170,7 @@ public class MessagingExtension implements Extension {
         }
         // getExpiryAddress, setExpiryAddress, getDeadLetterAddress, setDeadLetterAddress  -- no -- just toggle the 'queue-address', make this a mutable attr of address-setting
 
-        final ManagementResourceRegistration acceptor = serverRegistration.registerSubModel(GENERIC_ACCEPTOR, MessagingSubsystemProviders.ACCEPTOR);
-        acceptor.registerOperationHandler(ADD, TransportConfigOperationHandlers.GENERIC_ADD, MessagingSubsystemProviders.ACCEPTOR_ADD);
-        acceptor.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.ACCEPTOR_REMOVE);
-        TransportConfigOperationHandlers.GENERIC_ATTR.registerAttributes(acceptor, registerRuntimeOnly);
-        createParamRegistration(acceptor);
-        if (registerRuntimeOnly) {
-            AcceptorControlHandler.INSTANCE.register(acceptor);
-        }
-
+        serverRegistration.registerSubModel(new AcceptorDefinition(registerRuntimeOnly));
 
         // remote acceptor
         final ManagementResourceRegistration remoteAcceptor = serverRegistration.registerSubModel(REMOTE_ACCEPTOR, MessagingSubsystemProviders.REMOTE_ACCEPTOR);
@@ -318,9 +310,9 @@ public class MessagingExtension implements Extension {
 
     static void createParamRegistration(final ManagementResourceRegistration parent) {
         final ManagementResourceRegistration registration = parent.registerSubModel(PARAM, MessagingSubsystemProviders.PARAM);
-        registration.registerOperationHandler(ADD, TransportConfigOperationHandlers.PARAM_ADD, MessagingSubsystemProviders.PARAM_ADD);
+        registration.registerOperationHandler(ADD, TransportParamDefinition.PARAM_ADD, MessagingSubsystemProviders.PARAM_ADD);
         registration.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.PARAM_REMOVE);
-        registration.registerReadWriteAttribute("value", null, TransportConfigOperationHandlers.PARAM_ATTR, EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES));
+        registration.registerReadWriteAttribute("value", null, TransportParamDefinition.PARAM_ATTR, EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES));
     }
 
 }
