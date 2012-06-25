@@ -78,8 +78,6 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         }
         WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;
-        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-        assert resourceRoots != null;
 
         boolean isComplete = false;
         WebMetaData specMetaData = warMetaData.getWebMetaData();
@@ -103,6 +101,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         Map<String, VirtualFile> scis = new HashMap<String, VirtualFile>();
         boolean fragmentFound = false;
         Map<String, WebFragmentMetaData> webFragments = warMetaData.getWebFragmentsMetaData();
+        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
         for (ResourceRoot resourceRoot : resourceRoots) {
             if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
                 jarsSet.add(resourceRoot.getRootName());

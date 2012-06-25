@@ -55,10 +55,7 @@ public class ManagedBeanSubDeploymentMarkingProcessor implements DeploymentUnitP
         if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-        List<ResourceRoot> potentialSubDeployments = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-        if(potentialSubDeployments == null) {
-            return;
-        }
+        List<ResourceRoot> potentialSubDeployments = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
         for (ResourceRoot resourceRoot : potentialSubDeployments) {
             if (ModuleRootMarker.isModuleRoot(resourceRoot)) {
                 // module roots cannot be managed bean jars
