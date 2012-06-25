@@ -148,8 +148,8 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 handleDeployment(deploymentUnit, moduleSpec, rootDeploymentSpecification);
             }
             // handle sub deployments
-            final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
             final Map<String, ResourceRoot> subDeploymentMap = new HashMap<String, ResourceRoot>();
+            final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
             for (final ResourceRoot root : resourceRoots) {
                 if (SubDeploymentMarker.isSubDeployment(root)) {
                     subDeploymentMap.put(root.getRoot().getPathNameRelativeTo(deploymentRoot.getRoot()), root);

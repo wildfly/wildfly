@@ -75,8 +75,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         tldsMetaData.setTlds(tlds);
         // TLDs are located in WEB-INF or any subdir (except the top level "classes" and "lib")
         // and in JARs from WEB-INF/lib, in META-INF or any subdir
-        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-        assert resourceRoots != null;
+        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
         for (ResourceRoot resourceRoot : resourceRoots) {
             if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
                 VirtualFile webFragment = resourceRoot.getRoot().getChild(META_INF);
