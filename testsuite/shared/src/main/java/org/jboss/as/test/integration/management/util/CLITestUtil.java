@@ -42,6 +42,7 @@ public class CLITestUtil {
     }
 
     public static CommandContext getCommandContext(OutputStream out) throws CliInitializationException {
+        System.setProperty("jreadline.terminal","org.jboss.jreadline.terminal.TestTerminal");
         return CommandContextFactory.getInstance().newCommandContext(serverAddr, serverPort, null, null, null, out);
     }
 }
