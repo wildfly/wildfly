@@ -32,7 +32,6 @@ import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -51,11 +50,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -69,19 +65,11 @@ import org.jboss.msc.service.ServiceName;
  */
 class TransportConfigOperationHandlers {
 
-    static final SelfRegisteringAttributeHandler GENERIC_ATTR = new AttributeWriteHandler(AcceptorDefinition.ATTRIBUTES);
-
-    static final OperationStepHandler IN_VM_ADD = new BasicTransportConfigAdd(InVMAcceptorDefinition.ATTRIBUTES);
-    static final SelfRegisteringAttributeHandler IN_VM_ATTR = new AttributeWriteHandler(InVMAcceptorDefinition.ATTRIBUTES);
-
-    static final SelfRegisteringAttributeHandler REMOTE_ATTR = new AttributeWriteHandler(RemoteAcceptorDefinition.ATTRIBUTES);
-
     /** The transport-config remove operation handler. */
     static final OperationStepHandler REMOVE = new OperationStepHandler() {
-
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final Resource resource = context.removeResource(PathAddress.EMPTY_ADDRESS);
+            context.removeResource(PathAddress.EMPTY_ADDRESS);
             reloadRequiredStep(context);
             context.completeStep();
         }
@@ -133,8 +121,8 @@ class TransportConfigOperationHandlers {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(config);
-                final String binding = config.get(RemoteAcceptorDefinition.SOCKET_BINDING.getName()).asString();
-                parameters.put(RemoteAcceptorDefinition.SOCKET_BINDING.getName(), binding);
+                final String binding = config.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).asString();
+                parameters.put(RemoteTransportDefinition.SOCKET_BINDING.getName(), binding);
                 bindings.add(binding);
                 acceptors.put(acceptorName, new TransportConfiguration(NettyAcceptorFactory.class.getName(), parameters, acceptorName));
             }
@@ -144,7 +132,7 @@ class TransportConfigOperationHandlers {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(config);
-                parameters.put(InVMAcceptorDefinition.SERVER_ID.getName(), config.get(InVMAcceptorDefinition.SERVER_ID.getName()).asInt());
+                parameters.put(InVMTransportDefinition.SERVER_ID.getName(), config.get(InVMTransportDefinition.SERVER_ID.getName()).asInt());
                 acceptors.put(acceptorName, new TransportConfiguration(InVMAcceptorFactory.class.getName(), parameters, acceptorName));
             }
         }
@@ -190,8 +178,8 @@ class TransportConfigOperationHandlers {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(config);
-                final String binding = config.get(RemoteAcceptorDefinition.SOCKET_BINDING.getName()).asString();
-                parameters.put(RemoteAcceptorDefinition.SOCKET_BINDING.getName(), binding);
+                final String binding = config.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).asString();
+                parameters.put(RemoteTransportDefinition.SOCKET_BINDING.getName(), binding);
                 bindings.add(binding);
                 connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName));
             }
@@ -201,7 +189,7 @@ class TransportConfigOperationHandlers {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(config);
-                parameters.put(InVMAcceptorDefinition.SERVER_ID.getName(), config.get(InVMAcceptorDefinition.SERVER_ID.getName()).asInt());
+                parameters.put(InVMTransportDefinition.SERVER_ID.getName(), config.get(InVMTransportDefinition.SERVER_ID.getName()).asInt());
                 connectors.put(connectorName, new TransportConfiguration(InVMConnectorFactory.class.getName(), parameters, connectorName));
             }
         }
@@ -211,8 +199,10 @@ class TransportConfigOperationHandlers {
     static class BasicTransportConfigAdd implements OperationStepHandler, DescriptionProvider {
 
         private final AttributeDefinition[] attributes;
+        private final boolean isAcceptor;
 
-        BasicTransportConfigAdd(final AttributeDefinition[] attributes) {
+        BasicTransportConfigAdd(final boolean isAcceptor, final AttributeDefinition[] attributes) {
+            this.isAcceptor = isAcceptor;
             this.attributes = attributes;
         }
 
@@ -248,30 +238,11 @@ class TransportConfigOperationHandlers {
 
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getAcceptorAdd(locale, attributes);
-        }
-    }
-
-    interface SelfRegisteringAttributeHandler extends OperationStepHandler {
-        void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly);
-    }
-
-    static class AttributeWriteHandler extends ReloadRequiredWriteAttributeHandler implements SelfRegisteringAttributeHandler {
-        final AttributeDefinition[] attributes;
-
-        public AttributeWriteHandler(AttributeDefinition[] attributes) {
-            super(attributes);
-            this.attributes = attributes;
-        }
-
-        public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
-            final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-            for (AttributeDefinition attr : attributes) {
-                if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                    registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
-                }
+            if (isAcceptor) {
+                return MessagingDescriptions.getAcceptorAdd(locale, attributes);
+            } else {
+                return MessagingDescriptions.getConnectorAdd(locale, attributes);
             }
         }
     }
-
 }

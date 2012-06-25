@@ -170,33 +170,15 @@ public class MessagingExtension implements Extension {
         }
         // getExpiryAddress, setExpiryAddress, getDeadLetterAddress, setDeadLetterAddress  -- no -- just toggle the 'queue-address', make this a mutable attr of address-setting
 
-        serverRegistration.registerSubModel(new AcceptorDefinition(registerRuntimeOnly));
+        // Acceptors
+        serverRegistration.registerSubModel(GenericTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
+        serverRegistration.registerSubModel(RemoteTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
+        serverRegistration.registerSubModel(InVMTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
 
-        serverRegistration.registerSubModel(new RemoteAcceptorDefinition(registerRuntimeOnly));
-
-        // in-vm acceptor
-        serverRegistration.registerSubModel(new InVMAcceptorDefinition(registerRuntimeOnly));
-
-        // connector
-        final ManagementResourceRegistration connector = serverRegistration.registerSubModel(GENERIC_CONNECTOR, MessagingSubsystemProviders.CONNECTOR);
-        connector.registerOperationHandler(ADD, AcceptorDefinition.GENERIC_ADD, MessagingSubsystemProviders.CONNECTOR_ADD);
-        connector.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.CONNECTOR_REMOVE);
-        TransportConfigOperationHandlers.GENERIC_ATTR.registerAttributes(connector, registerRuntimeOnly);
-        createParamRegistration(connector);
-
-        // remote connector
-        final ManagementResourceRegistration remoteConnector = serverRegistration.registerSubModel(REMOTE_CONNECTOR, MessagingSubsystemProviders.REMOTE_CONNECTOR);
-        remoteConnector.registerOperationHandler(ADD, RemoteAcceptorDefinition.REMOTE_ADD, MessagingSubsystemProviders.REMOTE_CONNECTOR_ADD);
-        remoteConnector.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.CONNECTOR_REMOVE);
-        TransportConfigOperationHandlers.REMOTE_ATTR.registerAttributes(remoteConnector, registerRuntimeOnly);
-        createParamRegistration(remoteConnector);
-
-        // in-vm connector
-        final ManagementResourceRegistration inVMConnector = serverRegistration.registerSubModel(IN_VM_CONNECTOR, MessagingSubsystemProviders.IN_VM_CONNECTOR);
-        inVMConnector.registerOperationHandler(ADD, TransportConfigOperationHandlers.IN_VM_ADD, MessagingSubsystemProviders.IN_VM_CONNECTOR_ADD);
-        inVMConnector.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.CONNECTOR_REMOVE);
-        TransportConfigOperationHandlers.IN_VM_ATTR.registerAttributes(inVMConnector, registerRuntimeOnly);
-        createParamRegistration(inVMConnector);
+        // Connectors
+        serverRegistration.registerSubModel(GenericTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        serverRegistration.registerSubModel(RemoteTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        serverRegistration.registerSubModel(InVMTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
 
         // Bridges
         serverRegistration.registerSubModel(new BridgeDefinition(registerRuntimeOnly));
@@ -292,12 +274,4 @@ public class MessagingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_2.getUriString(), Messaging12SubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_3.getUriString(), Messaging13SubsystemParser.getInstance());
     }
-
-    static void createParamRegistration(final ManagementResourceRegistration parent) {
-        final ManagementResourceRegistration registration = parent.registerSubModel(PARAM, MessagingSubsystemProviders.PARAM);
-        registration.registerOperationHandler(ADD, TransportParamDefinition.PARAM_ADD, MessagingSubsystemProviders.PARAM_ADD);
-        registration.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.PARAM_REMOVE);
-        registration.registerReadWriteAttribute("value", null, TransportParamDefinition.PARAM_ATTR, EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES));
-    }
-
 }

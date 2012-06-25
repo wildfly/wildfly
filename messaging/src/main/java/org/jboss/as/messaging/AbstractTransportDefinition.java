@@ -22,9 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
-import static org.jboss.dmr.ModelType.INT;
-
 import java.util.EnumSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -42,56 +39,51 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 
 /**
- * remote acceptor resource definition
+ * Abstract acceptor resource definition
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class InVMAcceptorDefinition extends SimpleResourceDefinition {
-
-    public static final AttributeDefinition SERVER_ID = create("server-id", INT)
-            .setRestartAllServices()
-            .build();
-
-    static AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SERVER_ID };
-
-    static final OperationStepHandler INVM_ADD = new TransportConfigOperationHandlers.BasicTransportConfigAdd(ATTRIBUTES);
-
-    static final OperationStepHandler INVM_ATTRIBUTE_HANDLER = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+public abstract class AbstractTransportDefinition extends SimpleResourceDefinition {
 
     private final boolean registerRuntimeOnly;
+    private final AttributeDefinition[] attrs;
+    private final boolean isAcceptor;
 
-
-    public InVMAcceptorDefinition(final boolean registerRuntimeOnly) {
-        super(PathElement.pathElement(CommonAttributes.IN_VM_ACCEPTOR),
-            new StandardResourceDescriptionResolver(CommonAttributes.ACCEPTOR, MessagingExtension.RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, false) {
-                @Override
-                public String getResourceDescription(Locale locale, ResourceBundle bundle) {
-                    return bundle.getString(CommonAttributes.IN_VM_ACCEPTOR);
-                }
-            },
-            INVM_ADD,
-            TransportConfigOperationHandlers.REMOVE);
+    protected AbstractTransportDefinition(final boolean registerRuntimeOnly, final boolean isAcceptor, final String specificType, AttributeDefinition... attrs) {
+        super(PathElement.pathElement(specificType),
+                new StandardResourceDescriptionResolver((isAcceptor? CommonAttributes.ACCEPTOR : CommonAttributes.CONNECTOR),
+                        MessagingExtension.RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, false) {
+                    @Override
+                    public String getResourceDescription(Locale locale, ResourceBundle bundle) {
+                        return bundle.getString(specificType);
+                    }
+                },
+                new TransportConfigOperationHandlers.BasicTransportConfigAdd(isAcceptor, attrs),
+                TransportConfigOperationHandlers.REMOVE);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        this.isAcceptor = isAcceptor;
+        this.attrs = attrs;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
         super.registerAttributes(registry);
 
-        for (AttributeDefinition attr : ATTRIBUTES) {
+        OperationStepHandler attributeHandler = new ReloadRequiredWriteAttributeHandler(attrs);
+        for (AttributeDefinition attr : attrs) {
             if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, INVM_ATTRIBUTE_HANDLER);
+                registry.registerReadWriteAttribute(attr, null, attributeHandler);
             }
         }
 
-        if (registerRuntimeOnly) {
+        if (isAcceptor && registerRuntimeOnly) {
             registry.registerReadOnlyAttribute(AcceptorControlHandler.STARTED, AcceptorControlHandler.INSTANCE);
         }
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
-        if (registerRuntimeOnly) {
+        if (isAcceptor && registerRuntimeOnly) {
             for (String operation : AcceptorControlHandler.OPERATIONS) {
                 final DescriptionProvider desc = new DefaultOperationDescriptionProvider(operation, getResourceDescriptionResolver());
                 registry.registerOperationHandler(operation,

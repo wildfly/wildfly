@@ -43,7 +43,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNIT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.BINDING_NAMES;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
@@ -915,27 +914,13 @@ public class MessagingDescriptions {
         return op;
     }
 
-    static ModelNode getConnector(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("connector"));
-        for (AttributeDefinition attr : AcceptorDefinition.ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle, null, root);
-        }
-
-        getParamChildrenDescription(bundle, root, "connector");
-
-        return root;
-    }
-
-    static ModelNode getConnectorAdd(final Locale locale) {
+    static ModelNode getConnectorAdd(final Locale locale, AttributeDefinition... attrs) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode op = new ModelNode();
         op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("connector.add"));
-        for (AttributeDefinition attr : AcceptorDefinition.ATTRIBUTES) {
+        for (AttributeDefinition attr : attrs) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
 
@@ -943,99 +928,6 @@ public class MessagingDescriptions {
 
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
-    }
-
-    static ModelNode getConnectorRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, CONNECTOR);
-    }
-
-    static ModelNode getRemoteConnector(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("remote-connector"));
-        for (AttributeDefinition attr : RemoteAcceptorDefinition.ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle, null, root);
-        }
-
-        getParamChildrenDescription(bundle, root, "connector");
-
-        return root;
-    }
-
-    static ModelNode getRemoteConnectorAdd(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("connector.add"));
-        for (AttributeDefinition attr : RemoteAcceptorDefinition.ATTRIBUTES) {
-            attr.addOperationParameterDescription(bundle, null, op);
-        }
-
-        addParamsParameterDescription(op, "connector.add.params", bundle);
-
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
-    static ModelNode getInVMConnector(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("in-vm-connector"));
-        for (AttributeDefinition attr : InVMAcceptorDefinition.ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle, null, root);
-        }
-
-        getParamChildrenDescription(bundle, root, "connector");
-
-        return root;
-    }
-
-    static ModelNode getInVMConnectorAdd(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("connector.add"));
-        for (AttributeDefinition attr : InVMAcceptorDefinition.ATTRIBUTES) {
-            attr.addOperationParameterDescription(bundle, null, op);
-        }
-
-        addParamsParameterDescription(op, "connector.add.params", bundle);
-
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
-
-    static ModelNode getParam(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("transport-config.param"));
-
-        root.get(ATTRIBUTES, VALUE, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, VALUE, DESCRIPTION).set(bundle.getString("transport-config.param.value"));
-
-        return root;
-    }
-
-    static ModelNode getParamAdd(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("transport-config.param.add"));
-        op.get(REQUEST_PROPERTIES, VALUE, TYPE).set(ModelType.STRING);
-        op.get(REQUEST_PROPERTIES, VALUE, DESCRIPTION).set(bundle.getString("transport-config.param.value"));
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
-    static ModelNode getParamRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, "transport-config.param");
     }
 
     public static ModelNode getPathResource(Locale locale, String pathType) {

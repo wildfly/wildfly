@@ -50,7 +50,7 @@ class HornetQService implements Service<HornetQServer> {
      * The name of the SocketBinding reference to use for HOST/PORT
      * configuration
      */
-    private static final String SOCKET_REF = RemoteAcceptorDefinition.SOCKET_BINDING.getName();
+    private static final String SOCKET_REF = RemoteTransportDefinition.SOCKET_BINDING.getName();
 
     private Configuration configuration;
 
