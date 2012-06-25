@@ -111,7 +111,7 @@ public class SimpleModuleRegistrationTestCase {
         // Setup the resolve context
         XResolver resolver = getResolver();
         XEnvironment env = getEnvironment();
-        ResolveContext context = resolver.createResolverContext(env, Collections.singleton(resource), null);
+        ResolveContext context = resolver.createResolveContext(env, Collections.singleton(resource), null);
 
         // Find the providers
         Map<Resource, List<Wire>> wiremap = resolver.resolve(context);

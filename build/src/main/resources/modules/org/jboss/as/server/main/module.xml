@@ -47,6 +47,7 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.logmanager" services="import"/>
         <module name="org.jboss.log4j.logmanager"/>
+        <module name="org.jboss.osgi.resolver"/>
         <module name="org.jboss.remoting3"/>
         <module name="org.jboss.sasl"/>
         <module name="org.jboss.stdio"/>
@@ -64,6 +65,7 @@
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.as.remoting"/>
         <module name="org.jboss.as.security" optional="true" services="import"/>
+        <module name="org.osgi.core"/>
         <module name="org.picketbox" optional="true"/>
     </dependencies>
 </module>

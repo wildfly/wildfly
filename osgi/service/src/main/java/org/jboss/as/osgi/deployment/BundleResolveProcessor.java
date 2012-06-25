@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -57,7 +58,7 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
-        XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
+        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
         if (bundle != null && deployment.isAutoStart()) {
             XBundleRevision brev = bundle.getBundleRevision();
             XEnvironment env = depUnit.getAttachment(OSGiConstants.ENVIRONMENT_KEY);

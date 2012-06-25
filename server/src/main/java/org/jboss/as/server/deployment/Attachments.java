@@ -44,6 +44,7 @@ import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.osgi.resolver.XBundle;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -207,6 +208,15 @@ public final class Attachments {
     //
 
     public static final AttachmentKey<AbstractVaultReader> VAULT_READER_ATTACHMENT_KEY = AttachmentKey.create(AbstractVaultReader.class);
+
+    //
+    // REGISTER
+    //
+
+    /**
+     * Attachment key for the installed {@link XBundle}.
+     */
+    public static final AttachmentKey<XBundle> INSTALLED_BUNDLE_KEY = AttachmentKey.create(XBundle.class);
 
     //
     // DEPENDENCIES
