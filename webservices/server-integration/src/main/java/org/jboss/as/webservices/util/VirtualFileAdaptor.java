@@ -26,25 +26,12 @@ import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamField;
-import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
-import java.util.jar.JarOutputStream;
 
-import org.jboss.vfs.VFS;
-import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
-import org.jboss.wsf.spi.deployment.WritableUnifiedVirtualFile;
 import org.jboss.wsf.spi.util.URLLoaderAdapter;
 
 /**
@@ -54,66 +41,18 @@ import org.jboss.wsf.spi.util.URLLoaderAdapter;
  * @author Ales.Justin@jboss.org
  * @author alessio.soldano@jboss.com
  */
-public final class VirtualFileAdaptor implements WritableUnifiedVirtualFile {
-    private static final long serialVersionUID = -4509594124653184348L;
+public final class VirtualFileAdaptor implements UnifiedVirtualFile {
 
-    private static final ObjectStreamField[] serialPersistentFields = { new ObjectStreamField("rootUrl", URL.class),
-            new ObjectStreamField("path", String.class), new ObjectStreamField("requiresMount", boolean.class) };
+    private static final long serialVersionUID = -4509594124653184349L;
 
-    /** Minimal info to get full vfs file structure */
-    private URL rootUrl;
-    private String path;
-    private boolean requiresMount;
-    /** The virtual file */
     private transient VirtualFile file;
 
     public VirtualFileAdaptor(VirtualFile file) {
         this.file = file;
     }
 
-    public VirtualFileAdaptor(URL rootUrl, String path) {
-        this(rootUrl, path, false);
-    }
-
-    protected VirtualFileAdaptor(URL rootUrl, String path, boolean requiresMount) {
-        if (rootUrl == null)
-            throw MESSAGES.nullRootUrl();
-        if (path == null)
-            throw MESSAGES.nullPath();
-
-        this.rootUrl = rootUrl;
-        this.path = path;
-        this.requiresMount = requiresMount;
-    }
-
-    /**
-     * Get the virtual file. Create file from root url and path if it doesn't exist yet.
-     *
-     * @return virtual file root
-     * @throws IOException for any error
-     */
     protected VirtualFile getFile() throws IOException {
-        if (file == null) {
-            VirtualFile root;
-            try {
-                root = VFS.getChild(rootUrl.toURI());
-            } catch (URISyntaxException e) {
-                throw MESSAGES.cannotGetVirtualFile(e, rootUrl);
-            }
-            file = root.getChild(path);
-
-            if (!file.exists()) {
-                throw MESSAGES.missingVirtualFile(file);
-            } else if (requiresMount && !isMounted(root, file)) {
-                throw MESSAGES.unmountedVirtualFile(file);
-            }
-        }
         return file;
-    }
-
-    private static boolean isMounted(VirtualFile root, VirtualFile child) throws IOException {
-        return !(root.getPathName().equals(root.getPhysicalFile().getAbsolutePath()) && child.getPathName().equals(
-                child.getPhysicalFile().getAbsolutePath()));
     }
 
     public UnifiedVirtualFile findChild(String child) throws IOException {
@@ -130,63 +69,6 @@ public final class VirtualFileAdaptor implements WritableUnifiedVirtualFile {
         } catch (Exception e) {
             return null;
         }
-    }
-
-    public void writeContent(OutputStream bos) throws IOException {
-        writeContent(bos, null);
-    }
-
-    public void writeContent(OutputStream bos, NameFilter filter) throws IOException {
-        InputStream is = null;
-        try {
-            is = getFile().openStream();
-            if (is instanceof JarInputStream) {
-                JarInputStream jis = (JarInputStream) is;
-                JarOutputStream os = new JarOutputStream(bos);
-                JarEntry je = null;
-                while ((je = jis.getNextJarEntry()) != null) {
-                    if (filter != null && filter.accept(je.getName())) {
-                        os.putNextEntry(je);
-                        VFSUtils.copyStream(jis, os);
-                    }
-                }
-                VFSUtils.safeClose(os);
-            } else {
-                VFSUtils.copyStream(is, bos);
-            }
-        } finally {
-            VFSUtils.safeClose(is);
-        }
-    }
-
-    private void writeObject(ObjectOutputStream out) throws IOException, URISyntaxException {
-        VirtualFile file = getFile();
-        URL url = rootUrl;
-        if (url == null) {
-            VirtualFile parentFile = file.getParent();
-            url = parentFile != null ? parentFile.toURL() : null;
-        }
-        String pathName = path;
-        if (pathName == null)
-            pathName = file.getName();
-
-        ObjectOutputStream.PutField fields = out.putFields();
-        fields.put("rootUrl", url);
-        fields.put("path", pathName);
-
-        URI uri = url != null ? url.toURI() : null;
-        VirtualFile newRoot = VFS.getChild(uri);
-        VirtualFile newChild = newRoot.getChild(pathName);
-        fields.put("requiresMount", isMounted(newRoot, newChild));
-
-        out.writeFields();
-    }
-
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        ObjectInputStream.GetField fields = in.readFields();
-        rootUrl = (URL) fields.get("rootUrl", null);
-        path = (String) fields.get("path", null);
-        requiresMount = fields.get("requiresMount", false);
     }
 
     private Object writeReplace() {

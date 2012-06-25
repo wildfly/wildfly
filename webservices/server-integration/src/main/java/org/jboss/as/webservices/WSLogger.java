@@ -51,10 +51,6 @@ public interface WSLogger extends BasicLogger {
     void creatingUnifiedWebservicesDeploymentModel(DeploymentUnit unit);
 
     @LogMessage(level = WARN)
-    @Message(id = 15504, value = "Cannot load metadata files for deployment root %s")
-    void cannotLoadMetaDataFiles(@Cause Throwable cause, VirtualFile root);
-
-    @LogMessage(level = WARN)
     @Message(id = 15506, value = "Cannot load WS deployment aspects from %s")
     void cannotLoadDeploymentAspectsDefinitionFile(String resourcePath);
 

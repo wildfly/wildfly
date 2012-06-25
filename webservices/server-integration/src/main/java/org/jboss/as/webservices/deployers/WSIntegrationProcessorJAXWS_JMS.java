@@ -45,13 +45,11 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.ws.common.deployment.SOAPAddressWSDLParser;
-import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointMetaData;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
 
@@ -102,8 +100,8 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
                 try {
                     final ResourceRoot resourceRoot = getWsdlResourceRoot(unit, wsdlLocation);
                     if (resourceRoot == null) continue;
-                    final UnifiedVirtualFile uvf = new VirtualFileAdaptor(resourceRoot.getRoot());
-                    URL url = uvf.findChild(wsdlLocation).toURL();
+                    final VirtualFile wsdlLocationFile = resourceRoot.getRoot().getChild(wsdlLocation);
+                    final URL url = wsdlLocationFile.toURL();
                     SOAPAddressWSDLParser parser = new SOAPAddressWSDLParser(url);
                     for (AnnotationInstance ai : map.get(wsdlLocation)) {
                         String port = ai.value(PORT_NAME).asString();

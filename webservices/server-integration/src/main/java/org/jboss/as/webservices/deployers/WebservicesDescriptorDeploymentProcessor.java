@@ -21,15 +21,19 @@
  */
 package org.jboss.as.webservices.deployers;
 
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
+
+import java.io.IOException;
+import java.net.URL;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
-import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
+import org.jboss.vfs.VirtualFile;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesFactory;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 
@@ -44,15 +48,30 @@ public final class WebservicesDescriptorDeploymentProcessor implements Deploymen
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         final ResourceRoot deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final UnifiedVirtualFile virtualFile = new VirtualFileAdaptor(deploymentRoot.getRoot());
-        final WebservicesMetaData webservicesMD = WebservicesFactory.loadFromVFSRoot(virtualFile);
-        if (webservicesMD != null) {
+        final URL webservicesDescriptorURL = getWebServicesDescriptorURL(deploymentRoot);
+
+        if (webservicesDescriptorURL != null) {
+            final WebservicesMetaData webservicesMD = WebservicesFactory.load(webservicesDescriptorURL);
             unit.putAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY, webservicesMD);
         }
     }
 
     public void undeploy(final DeploymentUnit unit) {
         // does nothing
+    }
+
+    private URL getWebServicesDescriptorURL(final ResourceRoot deploymentRoot) throws DeploymentUnitProcessingException {
+        VirtualFile wsdd = deploymentRoot.getRoot().getChild("WEB-INF/webservices.xml");
+
+        if (!wsdd.exists()) {
+            wsdd = deploymentRoot.getRoot().getChild("META-INF/webservices.xml");
+        }
+
+        try {
+            return wsdd.exists() ? wsdd.toURL() : null;
+        } catch (IOException e) {
+            throw MESSAGES.cannotGetURLForDescriptor(e, wsdd.getPathName());
+        }
     }
 
 }

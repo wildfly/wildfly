@@ -21,15 +21,19 @@
  */
 package org.jboss.as.webservices.deployers;
 
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
+
+import java.io.IOException;
+import java.net.URL;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
-import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
+import org.jboss.vfs.VirtualFile;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesFactory;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 
@@ -43,15 +47,30 @@ public final class JBossWebservicesDescriptorDeploymentProcessor implements Depl
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         final ResourceRoot deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final UnifiedVirtualFile virtualFile = new VirtualFileAdaptor(deploymentRoot.getRoot());
-        final JBossWebservicesMetaData jbossWebservicesMD = JBossWebservicesFactory.loadFromVFSRoot(virtualFile);
-        if (jbossWebservicesMD != null) {
+        final URL jbossWebservicesDescriptorURL = getJBossWebServicesDescriptorURL(deploymentRoot);
+
+        if (jbossWebservicesDescriptorURL != null) {
+            final JBossWebservicesMetaData jbossWebservicesMD = JBossWebservicesFactory.load(jbossWebservicesDescriptorURL);
             unit.putAttachment(WSAttachmentKeys.JBOSS_WEBSERVICES_METADATA_KEY, jbossWebservicesMD);
         }
     }
 
     public void undeploy(final DeploymentUnit unit) {
         // does nothing
+    }
+
+    private URL getJBossWebServicesDescriptorURL(final ResourceRoot deploymentRoot) throws DeploymentUnitProcessingException {
+        VirtualFile jwsdd = deploymentRoot.getRoot().getChild("WEB-INF/jboss-webservices.xml");
+
+        if (!jwsdd.exists()) {
+            jwsdd = deploymentRoot.getRoot().getChild("META-INF/jboss-webservices.xml");
+        }
+
+        try {
+            return jwsdd.exists() ? jwsdd.toURL() : null;
+        } catch (IOException e) {
+            throw MESSAGES.cannotGetURLForDescriptor(e, jwsdd.getPathName());
+        }
     }
 
 }
