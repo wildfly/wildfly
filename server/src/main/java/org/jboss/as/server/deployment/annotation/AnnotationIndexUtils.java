@@ -44,10 +44,7 @@ public class AnnotationIndexUtils {
 
     public static Map<ResourceRoot, Index> getAnnotationIndexes(final DeploymentUnit deploymentUnit) {
         final List<ResourceRoot> allResourceRoots = new ArrayList<ResourceRoot>();
-        final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-        if (resourceRoots != null) {
-            allResourceRoots.addAll(resourceRoots);
-        }
+        allResourceRoots.addAll(deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS));
         allResourceRoots.add(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT));
         Map<ResourceRoot, Index> indexes = new HashMap<ResourceRoot, Index>();
         for (ResourceRoot resourceRoot : allResourceRoots) {

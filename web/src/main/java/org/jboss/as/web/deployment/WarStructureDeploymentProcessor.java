@@ -115,7 +115,6 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
             for (ResourceRoot root : resourceRoots) {
                 deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, root);
             }
-
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException(e);
         }
