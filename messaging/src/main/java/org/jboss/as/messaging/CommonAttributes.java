@@ -634,6 +634,7 @@ public interface CommonAttributes {
     String SECURITY_SETTING ="security-setting";
     String SECURITY_SETTINGS ="security-settings";
     String SELECTOR_STRING = "selector";
+    String SOCKET_BINDING = "socket-binding";
     String TOPIC_FACTORY = "TOPIC";
     String HORNETQ_SERVER = "hornetq-server";
     String QUEUE_FACTORY = "QUEUE";
