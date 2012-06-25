@@ -78,9 +78,11 @@ import static org.jboss.as.messaging.CommonAttributes.REMOTING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.ROLE;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
-import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
+<<<<<<< HEAD
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
+=======
+>>>>>>> af90bfe... [AS7-4790] ResourceDefinition conversion
 import static org.jboss.as.messaging.CommonAttributes.SUBSYSTEM;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
@@ -860,7 +862,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             switch (element) {
                 case ACCEPTOR: {
                     acceptorAddress.add(ACCEPTOR, name);
-                    if(socketBinding != null) operation.get(SOCKET_BINDING.getName()).set(socketBinding);
+                    if(socketBinding != null) operation.get(RemoteAcceptorDefinition.SOCKET_BINDING.getName()).set(socketBinding);
                     parseTransportConfigurationParams(reader, operation, true);
                     break;
                 } case NETTY_ACCEPTOR: {
@@ -868,12 +870,12 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     if(socketBinding == null) {
                         throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
                     }
-                    operation.get(SOCKET_BINDING.getName()).set(socketBinding);
+                    operation.get(RemoteAcceptorDefinition.SOCKET_BINDING.getName()).set(socketBinding);
                     parseTransportConfigurationParams(reader, operation, false);
                     break;
                 } case IN_VM_ACCEPTOR: {
                     acceptorAddress.add(IN_VM_ACCEPTOR, name);
-                    operation.get(SERVER_ID.getName()).set(serverId);
+                    operation.get(InVMAcceptorDefinition.SERVER_ID.getName()).set(serverId);
                     parseTransportConfigurationParams(reader, operation, false);
                     break;
                 } default: {
@@ -1086,7 +1088,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             switch (element) {
                 case CONNECTOR: {
                     connectorAddress.add(CONNECTOR, name);
-                    if(socketBinding != null) operation.get(SOCKET_BINDING.getName()).set(socketBinding);
+                    if(socketBinding != null) operation.get(RemoteAcceptorDefinition.SOCKET_BINDING.getName()).set(socketBinding);
                     parseTransportConfigurationParams(reader, operation, true);
                     break;
                 } case NETTY_CONNECTOR: {
@@ -1094,12 +1096,12 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     if(socketBinding == null) {
                         ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
                     }
-                    operation.get(SOCKET_BINDING.getName()).set(socketBinding);
+                    operation.get(RemoteAcceptorDefinition.SOCKET_BINDING.getName()).set(socketBinding);
                     parseTransportConfigurationParams(reader, operation, false);
                     break;
                 } case IN_VM_CONNECTOR: {
                     connectorAddress.add(IN_VM_CONNECTOR, name);
-                    operation.get(SERVER_ID.getName()).set(serverId);
+                    operation.get(InVMAcceptorDefinition.SERVER_ID.getName()).set(serverId);
                     parseTransportConfigurationParams(reader, operation, false);
                     break;
                 } default: {
@@ -1689,11 +1691,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
         final ModelNode value = property.getValue();
 
-        if (value.hasDefined(SOCKET_BINDING.getName())) {
-            writeAttribute(writer, Attribute.SOCKET_BINDING, value.get(SOCKET_BINDING.getName()));
+        if (value.hasDefined(RemoteAcceptorDefinition.SOCKET_BINDING.getName())) {
+            writeAttribute(writer, Attribute.SOCKET_BINDING, value.get(RemoteAcceptorDefinition.SOCKET_BINDING.getName()));
         }
-        if (value.hasDefined(SERVER_ID.getName())) {
-            writeAttribute(writer, Attribute.SERVER_ID, value.get(SERVER_ID.getName()));
+        if (value.hasDefined(InVMAcceptorDefinition.SERVER_ID.getName())) {
+            writeAttribute(writer, Attribute.SERVER_ID, value.get(InVMAcceptorDefinition.SERVER_ID.getName()));
         }
 
         CommonAttributes.FACTORY_CLASS.marshallAsElement(value, writer);

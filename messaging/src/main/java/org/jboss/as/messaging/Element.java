@@ -224,7 +224,7 @@ public enum Element {
    CONNECTION_FACTORY_TYPE(CommonAttributes.CONNECTION_FACTORY_TYPE),
    SETUP_ATTEMPTS(CommonAttributes.SETUP_ATTEMPTS),
    SETUP_INTERVAL(CommonAttributes.SETUP_INTERVAL),
-   SOCKET_BINDING(CommonAttributes.SOCKET_BINDING.getName()),
+   SOCKET_BINDING(RemoteAcceptorDefinition.SOCKET_BINDING.getName()),
 
    // JMS Bridge
    JMS_BRIDGE(CommonAttributes.JMS_BRIDGE),

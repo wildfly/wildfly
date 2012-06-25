@@ -91,55 +91,6 @@ class MessagingSubsystemProviders {
         }
     };
 
-    public static final DescriptionProvider ACCEPTOR = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getAcceptor(locale);
-        }
-    };
-
-    public static final DescriptionProvider ACCEPTOR_ADD = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getAcceptorAdd(locale);
-        }
-    };
-
-    public static final DescriptionProvider ACCEPTOR_REMOVE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getAcceptorRemove(locale);
-        }
-    };
-
-    public static final DescriptionProvider REMOTE_ACCEPTOR = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getRemoteAcceptor(locale);
-        }
-    };
-
-    public static final DescriptionProvider REMOTE_ACCEPTOR_ADD = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getRemoteAcceptorAdd(locale);
-        }
-    };
-
-    public static final DescriptionProvider IN_VM_ACCEPTOR = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getInVMAcceptor(locale);
-        }
-    };
-
-    public static final DescriptionProvider IN_VM_ACCEPTOR_ADD = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getInVMAcceptorAdd(locale);
-        }
-    };
-
     public static final DescriptionProvider CONNECTOR = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {

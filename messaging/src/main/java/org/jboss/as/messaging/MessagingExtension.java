@@ -83,7 +83,7 @@ public class MessagingExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "messaging";
 
-    private static final String RESOURCE_NAME = MessagingDescriptions.class.getPackage().getName() + ".LocalDescriptions";
+    static final String RESOURCE_NAME = MessagingDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
     static final PathElement ADDRESS_SETTING = PathElement.pathElement(CommonAttributes.ADDRESS_SETTING);
 
@@ -172,36 +172,21 @@ public class MessagingExtension implements Extension {
 
         serverRegistration.registerSubModel(new AcceptorDefinition(registerRuntimeOnly));
 
-        // remote acceptor
-        final ManagementResourceRegistration remoteAcceptor = serverRegistration.registerSubModel(REMOTE_ACCEPTOR, MessagingSubsystemProviders.REMOTE_ACCEPTOR);
-        remoteAcceptor.registerOperationHandler(ADD, TransportConfigOperationHandlers.REMOTE_ADD, MessagingSubsystemProviders.REMOTE_ACCEPTOR_ADD);
-        remoteAcceptor.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.ACCEPTOR_REMOVE);
-        TransportConfigOperationHandlers.REMOTE_ATTR.registerAttributes(remoteAcceptor, registerRuntimeOnly);
-        createParamRegistration(remoteAcceptor);
-        if (registerRuntimeOnly) {
-            AcceptorControlHandler.INSTANCE.register(remoteAcceptor);
-        }
+        serverRegistration.registerSubModel(new RemoteAcceptorDefinition(registerRuntimeOnly));
 
         // in-vm acceptor
-        final ManagementResourceRegistration inVMAcceptor = serverRegistration.registerSubModel(IN_VM_ACCEPTOR, MessagingSubsystemProviders.IN_VM_ACCEPTOR);
-        inVMAcceptor.registerOperationHandler(ADD, TransportConfigOperationHandlers.IN_VM_ADD, MessagingSubsystemProviders.IN_VM_ACCEPTOR_ADD);
-        inVMAcceptor.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.ACCEPTOR_REMOVE);
-        TransportConfigOperationHandlers.IN_VM_ATTR.registerAttributes(inVMAcceptor, registerRuntimeOnly);
-        createParamRegistration(inVMAcceptor);
-        if (registerRuntimeOnly) {
-            AcceptorControlHandler.INSTANCE.register(inVMAcceptor);
-        }
+        serverRegistration.registerSubModel(new InVMAcceptorDefinition(registerRuntimeOnly));
 
         // connector
         final ManagementResourceRegistration connector = serverRegistration.registerSubModel(GENERIC_CONNECTOR, MessagingSubsystemProviders.CONNECTOR);
-        connector.registerOperationHandler(ADD, TransportConfigOperationHandlers.GENERIC_ADD, MessagingSubsystemProviders.CONNECTOR_ADD);
+        connector.registerOperationHandler(ADD, AcceptorDefinition.GENERIC_ADD, MessagingSubsystemProviders.CONNECTOR_ADD);
         connector.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.CONNECTOR_REMOVE);
         TransportConfigOperationHandlers.GENERIC_ATTR.registerAttributes(connector, registerRuntimeOnly);
         createParamRegistration(connector);
 
         // remote connector
         final ManagementResourceRegistration remoteConnector = serverRegistration.registerSubModel(REMOTE_CONNECTOR, MessagingSubsystemProviders.REMOTE_CONNECTOR);
-        remoteConnector.registerOperationHandler(ADD, TransportConfigOperationHandlers.REMOTE_ADD, MessagingSubsystemProviders.REMOTE_CONNECTOR_ADD);
+        remoteConnector.registerOperationHandler(ADD, RemoteAcceptorDefinition.REMOTE_ADD, MessagingSubsystemProviders.REMOTE_CONNECTOR_ADD);
         remoteConnector.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.CONNECTOR_REMOVE);
         TransportConfigOperationHandlers.REMOTE_ATTR.registerAttributes(remoteConnector, registerRuntimeOnly);
         createParamRegistration(remoteConnector);

@@ -469,8 +469,6 @@ public interface CommonAttributes {
 
     SelectorAttribute SELECTOR = SelectorAttribute.SELECTOR;
 
-    SimpleAttributeDefinition SERVER_ID = new SimpleAttributeDefinition("server-id", ModelType.INT, false);
-
     SimpleAttributeDefinition SERVER_DUMP_INTERVAL = new SimpleAttributeDefinition("server-dump-interval",
             new ModelNode().set(ConfigurationImpl.DEFAULT_SERVER_DUMP_INTERVAL), ModelType.LONG,  true,
             MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
@@ -481,10 +479,6 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition SHARED_STORE = new SimpleAttributeDefinition("shared-store",
             new ModelNode().set(ConfigurationImpl.DEFAULT_SHARED_STORE), ModelType.BOOLEAN,  true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
-
-    SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinition("socket-binding", ModelType.STRING, false);
-
-    SimpleAttributeDefinition SOCKET_BINDING_OPTIONAL = new SimpleAttributeDefinition("socket-binding", ModelType.STRING, true);
 
     SimpleAttributeDefinition SOCKET_BINDING_ALTERNATIVE = create("socket-binding", ModelType.STRING)
             .setDefaultValue(null)
