@@ -54,10 +54,7 @@ public final class DeploymentUtils {
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         if (deploymentRoot != null)
             roots.add(deploymentRoot);
-        AttachmentList<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-        if (resourceRoots != null) {
-            roots.addAll(resourceRoots);
-        }
+        roots.addAll(deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS));
         return roots;
     }
 
