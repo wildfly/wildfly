@@ -25,6 +25,7 @@ package org.jboss.as.osgi.deployment;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -74,7 +75,7 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
             } catch (BundleException ex) {
                 throw new DeploymentUnitProcessingException(ex);
             }
-            phaseContext.addDeploymentDependency(serviceName, OSGiConstants.INSTALLED_BUNDLE_KEY);
+            phaseContext.addDeploymentDependency(serviceName, Attachments.INSTALLED_BUNDLE_KEY);
             depUnit.putAttachment(BUNDLE_INSTALL_SERVICE, serviceName);
         }
     }

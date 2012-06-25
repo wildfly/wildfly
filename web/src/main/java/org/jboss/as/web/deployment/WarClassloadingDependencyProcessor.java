@@ -31,11 +31,12 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.web.WebLogger;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
+import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XBundleRevision;
 
 /**
  * Module dependencies processor.
@@ -60,8 +61,7 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         Module.registerURLStreamHandlerFactoryModule(Module.forClass(WarClassloadingDependencyProcessor.class));
     }
 
-    private static final Logger logger = Logger.getLogger(WarClassloadingDependencyProcessor.class);
-
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
@@ -89,6 +89,14 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         // don't export our internals
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, true, false));
 
+        // Setup the content delegation in case this webapp is deployed as OSGi Bundle.
+        XBundle bundle = deploymentUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
+        if (bundle != null && bundle.isResolved()) {
+            XBundleRevision brev = bundle.getBundleRevision();
+            Module module = brev.getModuleClassLoader().getModule();
+            ModuleDependency moddep = new ModuleDependency(module.getModuleLoader(), module.getIdentifier(), false, false, false, false);
+            moduleSpecification.addOSGiContentDependency(moddep);
+        }
     }
 
     private void addJSFAPI(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
@@ -115,6 +123,7 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         moduleSpecification.addSystemDependency(jsf);
     }
 
+    @Override
     public void undeploy(final DeploymentUnit context) {
     }
 }
