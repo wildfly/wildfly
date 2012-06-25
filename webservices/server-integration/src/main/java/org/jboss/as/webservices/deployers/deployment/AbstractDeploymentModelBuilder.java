@@ -32,12 +32,6 @@ import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JBOSS_WEBSERVICES_METADATA_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICES_METADATA_KEY;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -58,7 +52,6 @@ import org.jboss.wsf.spi.deployment.DeploymentModelFactory;
 import org.jboss.wsf.spi.deployment.DeploymentType;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.EndpointType;
-import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 
@@ -69,8 +62,6 @@ import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder {
-    /** WSDL, XSD and XML files filter. */
-    private static final WSVirtualFileFilter WS_FILE_FILTER = new WSVirtualFileFilter();
 
     /** Deployment model factory. */
     private final DeploymentModelFactory deploymentModelFactory;
@@ -202,20 +193,6 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
             classLoader = module.getClassLoader();
         }
         final ArchiveDeployment dep = this.newDeployment(unit.getName(), classLoader);
-
-        if (root != null) {
-            try {
-                List<VirtualFile> virtualFiles = root.getChildrenRecursively(WS_FILE_FILTER);
-                final Set<UnifiedVirtualFile> uVirtualFiles = new HashSet<UnifiedVirtualFile>();
-                for (VirtualFile vf : virtualFiles) {
-                    // Adding the roots of the virtual files.
-                    uVirtualFiles.add(new VirtualFileAdaptor(vf));
-                }
-                dep.setMetadataFiles(new LinkedList<UnifiedVirtualFile>(uVirtualFiles));
-            } catch (IOException e) {
-                ROOT_LOGGER.cannotLoadMetaDataFiles(e, root);
-            }
-        }
 
         if (unit.getParent() != null) {
             final String parentDeploymentName = unit.getParent().getName();
