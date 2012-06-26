@@ -213,7 +213,7 @@ public final class ASHelper {
         if (warMetaData != null) {
             result = warMetaData.getMergedJBossWebMetaData();
             if (result == null) {
-                result = warMetaData.getJbossWebMetaData();
+                result = warMetaData.getJBossWebMetaData();
             }
         } else {
             result = getOptionalAttachment(unit, WSAttachmentKeys.JBOSSWEB_METADATA_KEY);

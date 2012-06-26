@@ -21,6 +21,12 @@
  */
 package org.jboss.as.test.smoke.osgi;
 
+import static org.jboss.as.test.osgi.OSGiManagementOperations.bundleStart;
+import static org.jboss.as.test.osgi.OSGiManagementOperations.bundleStop;
+import static org.jboss.as.test.osgi.OSGiManagementOperations.getBundleInfo;
+import static org.jboss.as.test.osgi.OSGiManagementOperations.getBundleState;
+
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
@@ -37,8 +43,12 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleServlet;
+import org.jboss.dmr.ModelNode;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -65,7 +75,10 @@ public class SimpleWebAppTestCase {
     private static final String WEB_APPLICATION_BUNDLE_B = "osgi-webapp-b.wab";
 
     @ArquillianResource
-    private URL urlres;
+    URL targetURL;
+
+    @ArquillianResource
+    ManagementClient managementClient;
 
     @Deployment(name = SIMPLE_WAR, testable = false)
     public static Archive<?> getWarDeployment() {
@@ -179,7 +192,28 @@ public class SimpleWebAppTestCase {
     @Test
     @OperateOnDeployment(WEB_APPLICATION_BUNDLE_B)
     public void testWebApplicationBundleB() throws Exception {
+
+        ModelNode info = getBundleInfo(getControllerClient(), WEB_APPLICATION_BUNDLE_B);
+        Assert.assertEquals("ACTIVE", info.get(ModelConstants.STATE).asString());
+        Assert.assertEquals(WEB_APPLICATION_BUNDLE_B, info.get(ModelConstants.SYMBOLIC_NAME).asString());
+
         String result = performCall("osgi-webapp", "simple", "Hello");
+        Assert.assertEquals("Simple Servlet called with input=Hello", result);
+
+        Assert.assertTrue("Bundle stopped", bundleStop(getControllerClient(), WEB_APPLICATION_BUNDLE_B));
+        Assert.assertEquals("RESOLVED", getBundleState(getControllerClient(), WEB_APPLICATION_BUNDLE_B));
+
+        try {
+            performCall("osgi-webapp", "simple", "Hello");
+            Assert.fail("IOException expected");
+        } catch (IOException ex) {
+            // expected
+        }
+
+        Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), WEB_APPLICATION_BUNDLE_B));
+        Assert.assertEquals("ACTIVE", getBundleState(getControllerClient(), WEB_APPLICATION_BUNDLE_B));
+
+        result = performCall("osgi-webapp", "simple", "Hello");
         Assert.assertEquals("Simple Servlet called with input=Hello", result);
     }
 
@@ -188,11 +222,15 @@ public class SimpleWebAppTestCase {
     }
 
     private String performCall(String context, String pattern, String param) throws Exception {
-        String urlspec = urlres.toExternalForm();
-        if (urlres.getPath().isEmpty() && context != null) {
+        String urlspec = targetURL.toExternalForm();
+        if (targetURL.getPath().isEmpty() && context != null) {
             urlspec += "/" + context + "/";
         }
         URL url = new URL(urlspec + pattern + "?input=" + param);
         return HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS);
+    }
+
+    private ModelControllerClient getControllerClient() {
+        return managementClient.getControllerClient();
     }
 }

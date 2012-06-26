@@ -47,6 +47,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.spi.BundleInfo;
 import org.jboss.vfs.VirtualFile;
+import org.osgi.framework.BundleContext;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -209,11 +210,14 @@ public final class Attachments {
     //
 
     public static final AttachmentKey<AbstractVaultReader> VAULT_READER_ATTACHMENT_KEY = AttachmentKey.create(AbstractVaultReader.class);
-
     /**
      * Attachment key for the {@link BundleInfo} when an OSGi bundle deployment is detected.
      */
     public static final AttachmentKey<BundleInfo> BUNDLE_INFO_KEY = AttachmentKey.create(BundleInfo.class);
+    /**
+     * Attachment key for the OSGi system context.
+     */
+    public static final AttachmentKey<BundleContext> SYSTEM_CONTEXT_KEY = AttachmentKey.create(BundleContext.class);
 
     //
     // REGISTER
