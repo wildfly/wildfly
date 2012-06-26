@@ -43,6 +43,8 @@ import java.util.Set;
  */
 public class WebInjectionContainer implements InstanceManager {
 
+    private static final ThreadLocal<WebInjectionContainer> CURRENT_INJECTION_CONTAINER = new ThreadLocal<WebInjectionContainer>();
+
     private final ClassLoader classloader;
     private final Map<String, ComponentInstantiator> webComponentInstantiatorMap = new HashMap<String, ComponentInstantiator>();
     private final Set<ServiceName> serviceNames = new HashSet<ServiceName>();
@@ -103,5 +105,13 @@ public class WebInjectionContainer implements InstanceManager {
 
     public Set<ServiceName> getServiceNames() {
         return Collections.unmodifiableSet(serviceNames);
+    }
+
+    public static void setCurrentInjectionContainer(final WebInjectionContainer webInjectionContainer) {
+        CURRENT_INJECTION_CONTAINER.set(webInjectionContainer);
+    }
+
+    public static WebInjectionContainer getCurrentInjectionContainer() {
+        return CURRENT_INJECTION_CONTAINER.get();
     }
 }
