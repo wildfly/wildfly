@@ -1019,36 +1019,6 @@ public class MessagingDescriptions {
         return result;
     }
 
-    public static ModelNode getCoreAddressResource(Locale locale) {
-        final ResourceBundle bundle =  getResourceBundle(locale);
-
-        final ModelNode result = new ModelNode();
-        result.get(DESCRIPTION).set(bundle.getString("core-address"));
-
-        final ModelNode attrs = result.get(ATTRIBUTES);
-        final ModelNode roles = addResourceAttributeDescription(bundle, CORE_ADDRESS, attrs, ROLES_ATTR_NAME, ModelType.LIST, false, null);
-        final ModelNode rolesValue = roles.get(VALUE_TYPE);
-        addResourceAttributeDescription(bundle, "security-role", rolesValue, NAME, ModelType.STRING, false, null);
-        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleDefinition.SEND.getName(), ModelType.BOOLEAN, false, null);
-        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleDefinition.CONSUME.getName(), ModelType.BOOLEAN, false, null);
-        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleDefinition.CREATE_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
-        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleDefinition.DELETE_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
-        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
-        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
-        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleDefinition.MANAGE.getName(), ModelType.BOOLEAN, false, null);
-        final ModelNode queues = addResourceAttributeDescription(bundle, CORE_ADDRESS, attrs, QUEUE_NAMES, ModelType.LIST, false, null);
-        queues.get(VALUE_TYPE).set(ModelType.STRING);
-        addResourceAttributeDescription(bundle, CORE_ADDRESS, attrs, NUMBER_OF_BYTES_PER_PAGE, ModelType.LONG, false, MeasurementUnit.BYTES);
-        addResourceAttributeDescription(bundle, CORE_ADDRESS, attrs, NUMBER_OF_PAGES, ModelType.INT, false, MeasurementUnit.NONE);
-        final ModelNode bindings = addResourceAttributeDescription(bundle, CORE_ADDRESS, attrs, BINDING_NAMES, ModelType.LIST, false, null);
-        bindings.get(VALUE_TYPE).set(ModelType.STRING);
-
-        result.get(OPERATIONS); // placeholder
-        result.get(CHILDREN).setEmptyObject();
-
-        return result;
-    }
-
     private static ModelNode addResourceAttributeDescription(final ResourceBundle bundle, final String prefix,
                                                              final ModelNode attributes, final String attrName,
                                                              final ModelType type, final boolean nillable,

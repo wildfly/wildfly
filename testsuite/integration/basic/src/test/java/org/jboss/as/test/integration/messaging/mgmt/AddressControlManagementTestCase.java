@@ -158,15 +158,19 @@ public class AddressControlManagementTestCase {
         op.get("child-type").set("core-address");
         ModelNode result = execute(op, true);
         Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(0, result.asInt());
+        Assert.assertEquals(1, result.asInt());
 
         op = getAddressOperation("read-children-names");
-        op.get("child-type").set("core-address");
-        result = execute(op, false);
+        op.get("child-type").set("role");
+        result = execute(op, true);
+        Assert.assertTrue(result.isDefined());
+        Assert.assertEquals(1, result.asInt());
 
         op = getAddressOperation("read-children-resources");
-        op.get("child-type").set("core-address");
-        result = execute(op, false);
+        op.get("child-type").set("role");
+        result = execute(op, true);
+        Assert.assertTrue(result.isDefined());
+        Assert.assertEquals(1, result.asInt());
     }
 
     @Test
@@ -177,10 +181,7 @@ public class AddressControlManagementTestCase {
         ModelNode result = execute(op, true);
         Assert.assertEquals(ModelType.OBJECT, result.getType());
 
-        Assert.assertEquals(ModelType.LIST, result.get("roles").getType());
-        if (result.get("roles").asInt() > 0) {
-            Assert.assertEquals(ModelType.OBJECT, result.get("roles").get(0).getType());
-        }
+        Assert.assertEquals(ModelType.OBJECT, result.get("role").getType());
 
         Assert.assertEquals(ModelType.INT, result.get("number-of-pages").getType());
 

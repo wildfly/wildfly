@@ -23,6 +23,7 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_NONE;
+import static org.jboss.dmr.ModelType.BOOLEAN;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,9 +31,12 @@ import java.util.Map;
 
 import org.hornetq.core.security.Role;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -47,23 +51,31 @@ import org.jboss.dmr.ModelType;
  */
 public class SecurityRoleDefinition extends SimpleResourceDefinition {
 
-    private static AttributeDefinition create(final String name, final String xmlName) {
-        return SimpleAttributeDefinitionBuilder.create(name, ModelType.BOOLEAN)
+    public static ObjectTypeAttributeDefinition getObjectTypeAttributeDefinition() {
+        // add the role name as an attribute of the object type
+        SimpleAttributeDefinition[] attrs = new SimpleAttributeDefinition[ATTRIBUTES.length + 1];
+        attrs[0] = NAME;
+        System.arraycopy(ATTRIBUTES, 0, attrs, 1, ATTRIBUTES.length);
+        return ObjectTypeAttributeDefinition.Builder.of(CommonAttributes.ROLE, attrs).build();
+    }
+
+    private static SimpleAttributeDefinition create(final String name, final String xmlName) {
+        return SimpleAttributeDefinitionBuilder.create(name, BOOLEAN)
                 .setXmlName(xmlName)
                 .setDefaultValue(new ModelNode().set(false))
                 .setFlags(RESTART_NONE)
                 .build();
     }
 
-    static final AttributeDefinition SEND = create("send", "send");
-    static final AttributeDefinition CONSUME = create("consume", "consume");
-    static final AttributeDefinition CREATE_DURABLE_QUEUE = create("create-durable-queue", "createDurableQueue");
-    static final AttributeDefinition DELETE_DURABLE_QUEUE = create("delete-durable-queue", "deleteDurableQueue");
-    static final AttributeDefinition CREATE_NON_DURABLE_QUEUE = create("create-non-durable-queue", "createNonDurableQueue");
-    static final AttributeDefinition DELETE_NON_DURABLE_QUEUE = create("delete-non-durable-queue", "deleteNonDurableQueue");
-    static final AttributeDefinition MANAGE = create("manage", "manage");
+    static final SimpleAttributeDefinition SEND = create("send", "send");
+    static final SimpleAttributeDefinition CONSUME = create("consume", "consume");
+    static final SimpleAttributeDefinition CREATE_DURABLE_QUEUE = create("create-durable-queue", "createDurableQueue");
+    static final SimpleAttributeDefinition DELETE_DURABLE_QUEUE = create("delete-durable-queue", "deleteDurableQueue");
+    static final SimpleAttributeDefinition CREATE_NON_DURABLE_QUEUE = create("create-non-durable-queue", "createNonDurableQueue");
+    static final SimpleAttributeDefinition DELETE_NON_DURABLE_QUEUE = create("delete-non-durable-queue", "deleteNonDurableQueue");
+    static final SimpleAttributeDefinition MANAGE = create("manage", "manage");
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
+    static final SimpleAttributeDefinition[] ATTRIBUTES = {
         SEND,
         CONSUME,
         CREATE_DURABLE_QUEUE,
@@ -73,7 +85,12 @@ public class SecurityRoleDefinition extends SimpleResourceDefinition {
         MANAGE
     };
 
+    static final SimpleAttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)
+            .build();
+
     static final Map<String, AttributeDefinition> ROLE_ATTRIBUTES_BY_XML_NAME;
+    private final boolean registerRuntimeOnly;
+    private final boolean readOnly;
 
     static {
         Map<String, AttributeDefinition> robxn = new HashMap<String, AttributeDefinition>();
@@ -97,20 +114,39 @@ public class SecurityRoleDefinition extends SimpleResourceDefinition {
         return new Role(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage);
     }
 
-    public SecurityRoleDefinition() {
+    public static SecurityRoleDefinition newReadOnlySecurityRoleDefinition() {
+        return new SecurityRoleDefinition(true, true, null, null);
+    }
+
+    public static SecurityRoleDefinition newSecurityRoleDefinition(final boolean registerRuntimeOnly) {
+        return new SecurityRoleDefinition(registerRuntimeOnly, false, SecurityRoleAdd.INSTANCE, SecurityRoleRemove.INSTANCE);
+    }
+
+    private SecurityRoleDefinition(final boolean registerRuntimeOnly, final boolean readOnly, final OperationStepHandler addHandler, final OperationStepHandler removeHandler) {
         super(PathElement.pathElement(CommonAttributes.ROLE),
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.SECURITY_ROLE),
-                SecurityRoleAdd.INSTANCE,
-                SecurityRoleRemove.INSTANCE);
+                addHandler,
+                removeHandler);
+        this.registerRuntimeOnly = registerRuntimeOnly;
+        this.readOnly = readOnly;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
         super.registerAttributes(registry);
 
-        for (AttributeDefinition attr : SecurityRoleDefinition.ATTRIBUTES) {
-            if (!attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, SecurityRoleAttributeHandler.INSTANCE);
+        if (readOnly) {
+            for (SimpleAttributeDefinition attr : ATTRIBUTES) {
+                AttributeDefinition readOnlyAttr = SimpleAttributeDefinitionBuilder.create(attr)
+                        .setStorageRuntime()
+                        .build();
+                registry.registerReadOnlyAttribute(readOnlyAttr, SecurityRoleReadAttributeHandler.INSTANCE);
+            }
+        } else {
+            for (AttributeDefinition attr : ATTRIBUTES) {
+                if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
+                    registry.registerReadWriteAttribute(attr, null, SecurityRoleAttributeHandler.INSTANCE);
+                }
             }
         }
     }

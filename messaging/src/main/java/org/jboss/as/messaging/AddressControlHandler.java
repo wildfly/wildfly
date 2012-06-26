@@ -22,14 +22,19 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.messaging.CommonAttributes.BINDING_NAMES;
+import static org.jboss.as.messaging.CommonAttributes.NUMBER_OF_BYTES_PER_PAGE;
+import static org.jboss.as.messaging.CommonAttributes.NUMBER_OF_PAGES;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAMES;
+import static org.jboss.as.messaging.CommonAttributes.ROLES_ATTR_NAME;
 import static org.jboss.as.messaging.ManagementUtil.reportListOfString;
 import static org.jboss.as.messaging.ManagementUtil.reportRoles;
 import static org.jboss.as.messaging.ManagementUtil.reportRolesAsJSON;
-import static org.jboss.as.messaging.CommonAttributes.*;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
-import java.util.EnumSet;
 import java.util.Locale;
 
 import org.hornetq.api.core.management.AddressControl;
@@ -41,9 +46,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -58,11 +60,6 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler implements
 
     public static AddressControlHandler INSTANCE = new AddressControlHandler();
 
-    public static final String[] ATTRIBUTES = { ROLES_ATTR_NAME, QUEUE_NAMES, NUMBER_OF_BYTES_PER_PAGE, NUMBER_OF_PAGES, BINDING_NAMES };
-    // we keep the operation for backwards compatibility but it duplicates the "roles" attributes
-    @Deprecated
-    public static final String GET_ROLES_AS_JSON = "get-roles-as-json";
-
     private AddressControlHandler() {
     }
 
@@ -72,23 +69,14 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler implements
         final String operationName = operation.require(OP).asString();
         if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
             handleReadAttribute(context, operation);
-        } else if (GET_ROLES_AS_JSON.equals(operationName)) {
+        } else if (CoreAddressDefinition.GET_ROLES_AS_JSON.equals(operationName)) {
             handleGetRolesAsJson(context, operation);
         }
     }
 
-    public void register(final ManagementResourceRegistration registry) {
-
-        for (String attr : ATTRIBUTES) {
-            registry.registerReadOnlyAttribute(attr, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        registry.registerOperationHandler(GET_ROLES_AS_JSON, this, this, EnumSet.of(OperationEntry.Flag.READ_ONLY));
-    }
-
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, AddressControlHandler.GET_ROLES_AS_JSON,
+        return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, CoreAddressDefinition.GET_ROLES_AS_JSON,
                 CommonAttributes.CORE_ADDRESS, ModelType.STRING, true);
     }
 

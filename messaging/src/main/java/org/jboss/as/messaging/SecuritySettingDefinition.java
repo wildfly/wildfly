@@ -33,17 +33,20 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class SecuritySettingDefinition extends SimpleResourceDefinition {
 
-    public SecuritySettingDefinition() {
+    private final boolean registerRuntimeOnly;
+
+    public SecuritySettingDefinition(final boolean registerRuntimeOnly) {
         super(PathElement.pathElement(CommonAttributes.SECURITY_SETTING),
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.SECURITY_SETTING, false),
                 SecuritySettingAdd.INSTANCE,
                 SecuritySettingRemove.INSTANCE);
+        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration registry) {
         super.registerChildren(registry);
 
-        registry.registerSubModel(new SecurityRoleDefinition());
+        registry.registerSubModel(SecurityRoleDefinition.newSecurityRoleDefinition(registerRuntimeOnly));
     }
 }

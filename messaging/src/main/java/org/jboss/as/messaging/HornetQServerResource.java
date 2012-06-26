@@ -48,8 +48,6 @@ public class HornetQServerResource implements Resource {
     private final Resource delegate;
     private ServiceController<HornetQServer> hornetQServerServiceController;
 
-//    private ManagementService managementService;
-
     public HornetQServerResource() {
         this(Resource.Factory.create());
     }
@@ -93,7 +91,7 @@ public class HornetQServerResource implements Resource {
     @Override
     public Resource getChild(PathElement element) {
         if (CORE_ADDRESS.equals(element.getKey())) {
-            return hasAddressControl(element) ? CoreAddressResource.INSTANCE : null;
+            return hasAddressControl(element) ? new CoreAddressResource(element.getValue(), getManagementService()) : null;
         } else {
             return delegate.getChild(element);
         }
@@ -103,7 +101,7 @@ public class HornetQServerResource implements Resource {
     public Resource requireChild(PathElement element) {
         if (CORE_ADDRESS.equals(element.getKey())) {
             if (hasAddressControl(element)) {
-                return CoreAddressResource.INSTANCE;
+                return new CoreAddressResource(element.getValue(), getManagementService());
             }
             throw new NoSuchResourceException(element);
         } else {
@@ -126,7 +124,7 @@ public class HornetQServerResource implements Resource {
             if (address.size() > 1) {
                 throw new NoSuchResourceException(address.getElement(1));
             }
-            return CoreAddressResource.INSTANCE;
+            return new CoreAddressResource(address.getElement(0).getValue(), getManagementService());
         } else {
             return delegate.navigate(address);
         }
@@ -153,7 +151,7 @@ public class HornetQServerResource implements Resource {
         if (CORE_ADDRESS.equals(childType)) {
             Set<ResourceEntry> result = new HashSet<ResourceEntry>();
             for (String name : getCoreAddressNames()) {
-                result.add(new CoreAddressResource.CoreAddressResourceEntry(name));
+                result.add(new CoreAddressResource.CoreAddressResourceEntry(name, getManagementService()));
             }
             return result;
         } else {
