@@ -70,9 +70,7 @@ import org.jboss.vfs.VirtualFile;
  */
 public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
-    /**
-     * Merge everything into WarMetaData.
-     */
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
@@ -80,11 +78,9 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         }
         WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;
-        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-        assert resourceRoots != null;
 
-        WebMetaData specMetaData = warMetaData.getWebMetaData();
         boolean isComplete = false;
+        WebMetaData specMetaData = warMetaData.getWebMetaData();
         if (specMetaData != null) {
             if (specMetaData instanceof Web25MetaData) {
                 isComplete |= ((Web25MetaData) specMetaData).isMetadataComplete();
@@ -105,6 +101,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         Map<String, VirtualFile> scis = new HashMap<String, VirtualFile>();
         boolean fragmentFound = false;
         Map<String, WebFragmentMetaData> webFragments = warMetaData.getWebFragmentsMetaData();
+        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
         for (ResourceRoot resourceRoot : resourceRoots) {
             if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
                 jarsSet.add(resourceRoot.getRootName());
@@ -114,8 +111,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                     overlays.add(overlay);
                 }
                 // Find ServletContainerInitializer services
-                VirtualFile sci = resourceRoot.getRoot()
-                        .getChild("META-INF/services/javax.servlet.ServletContainerInitializer");
+                VirtualFile sci = resourceRoot.getRoot().getChild("META-INF/services/javax.servlet.ServletContainerInitializer");
                 if (sci.exists()) {
                     scis.put(resourceRoot.getRootName(), sci);
                 }
@@ -178,8 +174,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             absoluteOrderingMetaData = ((Web30MetaData) specMetaData).getAbsoluteOrdering();
         }
         if (absoluteOrderingMetaData != null) {
-            // Absolute ordering from web.xml, any relative fragment ordering is
-            // ignored
+            // Absolute ordering from web.xml, any relative fragment ordering is ignored
             int otherPos = -1;
             int i = 0;
             for (OrderingElementMetaData orderingElementMetaData : absoluteOrderingMetaData.getOrdering()) {
@@ -239,11 +234,9 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
         Map<String, WebMetaData> annotationsMetaData = warMetaData.getAnnotationsMetaData();
 
-        // The fragments and corresponding annotations will need to be merged in
-        // order
+        // The fragments and corresponding annotations will need to be merged in order
         // For each JAR in the order:
-        // - Merge the annotation metadata into the fragment meta data
-        // (unless the fragment exists and is meta data complete)
+        // - Merge the annotation metadata into the fragment meta data (unless the fragment exists and is meta data complete)
         // - Merge the fragment metadata into merged fragment meta data
         WebCommonMetaData mergedFragmentMetaData = new WebCommonMetaData();
         if (specMetaData == null) {
@@ -252,20 +245,22 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             specMetaData.setVersion("3.0");
         }
         // Augment with meta data from annotations in /WEB-INF/classes
-        WebMetaData classesAnnotatedMetaData = annotationsMetaData.get("classes");
-        if (classesAnnotatedMetaData != null) {
+        WebMetaData annotatedMetaData = annotationsMetaData.get("classes");
+        if (annotatedMetaData == null && deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
+            annotatedMetaData = annotationsMetaData.get(deploymentUnit.getName());
+        }
+        if (annotatedMetaData != null) {
             if (isComplete) {
                 // Discard @WebFilter, @WebListener and @WebServlet
-                classesAnnotatedMetaData.setFilters(null);
-                classesAnnotatedMetaData.setFilterMappings(null);
-                classesAnnotatedMetaData.setListeners(null);
-                classesAnnotatedMetaData.setServlets(null);
-                classesAnnotatedMetaData.setServletMappings(null);
+                annotatedMetaData.setFilters(null);
+                annotatedMetaData.setFilterMappings(null);
+                annotatedMetaData.setListeners(null);
+                annotatedMetaData.setServlets(null);
+                annotatedMetaData.setServletMappings(null);
             }
-            WebCommonMetaDataMerger.augment(specMetaData, classesAnnotatedMetaData, null, true);
+            WebCommonMetaDataMerger.augment(specMetaData, annotatedMetaData, null, true);
         }
-        // Augment with meta data from fragments and annotations from the
-        // corresponding JAR
+        // Augment with meta data from fragments and annotations from the corresponding JAR
         for (String jar : order) {
             WebFragmentMetaData webFragmentMetaData = webFragments.get(jar);
             if (webFragmentMetaData == null || isComplete) {
@@ -293,8 +288,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                 throw new DeploymentUnitProcessingException(MESSAGES.invalidWebFragment(jar), e);
             }
         }
-        // Augment with meta data from annotations from JARs excluded from the
-        // order
+        // Augment with meta data from annotations from JARs excluded from the order
         for (String jar : jarsSet) {
             WebFragmentMetaData webFragmentMetaData = new WebFragmentMetaData();
             // Add non overriding default distributable flag
@@ -321,8 +315,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         }
         WebCommonMetaDataMerger.augment(specMetaData, mergedFragmentMetaData, null, true);
 
-        // Override with meta data (JBossWebMetaData)
-        // Create a merged view
+        // Override with meta data (JBossWebMetaData) Create a merged view
         JBossWebMetaData mergedMetaData = new JBossWebMetaData();
         JBossWebMetaData metaData = warMetaData.getJbossWebMetaData();
         JBossWebMetaDataMerger.merge(mergedMetaData, metaData, specMetaData);
@@ -362,6 +355,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         }
     }
 
+    @Override
     public void undeploy(final DeploymentUnit context) {
     }
 

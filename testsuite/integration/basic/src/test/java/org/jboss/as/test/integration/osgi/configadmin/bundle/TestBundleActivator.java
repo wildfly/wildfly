@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
+import org.jboss.as.osgi.DeploymentMarker;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -41,6 +42,7 @@ import org.osgi.service.cm.ManagedService;
  *
  * @author David Bosschaert
  */
+@DeploymentMarker(autoStart = false)
 public class TestBundleActivator implements BundleActivator {
     private ServiceRegistration reg;
 

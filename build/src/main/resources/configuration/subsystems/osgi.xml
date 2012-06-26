@@ -17,6 +17,7 @@
       <replacement placeholder="CAPABILITIES">
 	       <capabilities>
 	           <!-- modules registered with the OSGi layer on startup -->
+	           <capability name="javax.servlet.api"/>
 	           <capability name="javax.servlet.api:v25"/>
 	           <capability name="javax.transaction.api"/>
 	           <!-- bundles started in startlevel 1 -->

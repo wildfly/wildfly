@@ -22,7 +22,6 @@
 
 package org.jboss.as.osgi.deployment;
 
-import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
@@ -32,25 +31,16 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.framework.AbstractBundleRevisionAdaptor;
 import org.jboss.osgi.metadata.OSGiMetaData;
+import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XBundleRevision;
+import org.jboss.osgi.resolver.XBundleRevisionBuilderFactory;
 import org.jboss.osgi.resolver.XEnvironment;
-import org.jboss.osgi.resolver.XResource;
 import org.jboss.osgi.resolver.XResourceBuilder;
-import org.jboss.osgi.resolver.XResourceBuilderFactory;
+import org.osgi.framework.BundleContext;
 
 /**
  * Processes deployments that have a Module attached.
@@ -67,90 +57,43 @@ public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
 
         // Create the {@link ModuleRegisterService}
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        final XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
         final Module module = depUnit.getAttachment(Attachments.MODULE);
-        if (module != null) {
-            OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
-            ModuleRegisterService.addService(phaseContext, module, metadata);
-        }
-    }
-
-    @Override
-    public void undeploy(final DeploymentUnit depUnit) {
-        final Module module = depUnit.getAttachment(Attachments.MODULE);
-        if (module != null) {
-            ModuleRegisterService.removeService(depUnit);
-        }
-    }
-
-    private static class ModuleRegisterService implements Service<ModuleRegisterService> {
-
-        public static final ServiceName SERVICE_NAME_BASE = SERVICE_BASE_NAME.append("module", "registration");
-
-        private final Module module;
-        private final OSGiMetaData metadata;
-        private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
-        private XResource resource;
-
-
-        private ModuleRegisterService(Module module, OSGiMetaData metadata) {
-            this.module = module;
-            this.metadata = metadata;
-        }
-
-        public static void addService(DeploymentPhaseContext phaseContext, Module module, OSGiMetaData metadata) {
-            final ModuleRegisterService service = new ModuleRegisterService(module, metadata);
-            final ServiceName serviceName = getServiceName(module.getIdentifier());
-            final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-            ServiceBuilder<ModuleRegisterService> builder = serviceTarget.addService(serviceName, service);
-            builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, service.injectedEnvironment);
-            builder.addDependency(ServiceModuleLoader.moduleServiceName(module.getIdentifier()));
-            builder.install();
-        }
-
-        public static void removeService(DeploymentUnit deploymentUnit) {
-            final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-            ServiceName serviceName = getServiceName(module.getIdentifier());
-            final ServiceController<?> serviceController = deploymentUnit.getServiceRegistry().getService(serviceName);
-            if (serviceController != null) {
-                serviceController.setMode(Mode.REMOVE);
-            }
-        }
-
-        public synchronized void start(StartContext context) throws StartException {
-            ServiceController<?> controller = context.getController();
-            LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
-            LOGGER.infoRegisterModule(module);
+        final ModuleSpecification moduleSpecification = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        if (bundle == null && module != null && moduleSpecification.isPrivateModule() == false) {
+            LOGGER.infoRegisterModule(module.getIdentifier());
             try {
-                XResourceBuilder builder = XResourceBuilderFactory.create();
+                final BundleContext context = depUnit.getAttachment(OSGiConstants.SYSTEM_CONTEXT_KEY);
+                XBundleRevisionBuilderFactory factory = new XBundleRevisionBuilderFactory() {
+                    @Override
+                    public XBundleRevision createResource() {
+                        return new AbstractBundleRevisionAdaptor(context, module);
+                    }
+                };
+                OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
+                XEnvironment env = depUnit.getAttachment(OSGiConstants.ENVIRONMENT_KEY);
+                XResourceBuilder builder = XBundleRevisionBuilderFactory.create(factory);
                 if (metadata != null) {
                     builder.loadFrom(metadata);
                 } else {
                     builder.loadFrom(module);
                 }
-                resource = builder.getResource();
-                resource.addAttachment(Module.class, module);
-                injectedEnvironment.getValue().installResources(resource);
+                XBundleRevision brev = (XBundleRevision) builder.getResource();
+                env.installResources(brev);
+                depUnit.putAttachment(OSGiConstants.REGISTERED_MODULE_KEY, brev);
             } catch (Throwable th) {
-                throw MESSAGES.startFailedToRegisterModule(th, module);
+                throw MESSAGES.deploymentFailedToRegisterModule(th, module);
             }
         }
+    }
 
-        public synchronized void stop(StopContext context) {
-            ServiceController<?> controller = context.getController();
-            LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
-            if (resource != null) {
-                LOGGER.infoUnregisterModule(module);
-                injectedEnvironment.getValue().uninstallResources(resource);
-            }
-        }
-
-        @Override
-        public ModuleRegisterService getValue() throws IllegalStateException {
-            return this;
-        }
-
-        private static ServiceName getServiceName(ModuleIdentifier moduleIdentifier) {
-            return SERVICE_NAME_BASE.append(moduleIdentifier.toString());
+    @Override
+    public void undeploy(final DeploymentUnit depUnit) {
+        final XBundleRevision brev = depUnit.removeAttachment(OSGiConstants.REGISTERED_MODULE_KEY);
+        if (brev != null) {
+            LOGGER.infoUnregisterModule(brev.getModuleIdentifier());
+            XEnvironment env = depUnit.getAttachment(OSGiConstants.ENVIRONMENT_KEY);
+            env.uninstallResources(brev);
         }
     }
 }
