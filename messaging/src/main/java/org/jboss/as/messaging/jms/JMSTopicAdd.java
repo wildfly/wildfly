@@ -22,6 +22,9 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
+
 import java.util.List;
 import java.util.Locale;
 
@@ -33,7 +36,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
@@ -43,10 +45,6 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
-
 /**
  * Update handler adding a topic to the JMS subsystem. The
  * runtime action, will create the {@link JMSTopicService}.
@@ -55,19 +53,6 @@ import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
 public class JMSTopicAdd extends AbstractAddStepHandler implements DescriptionProvider {
-
-    public static final String OPERATION_NAME = ADD;
-
-    /**
-     * Create an "add" operation using the existing model
-     */
-    public static ModelNode getOperation(ModelNode address, ModelNode existing) {
-        ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
-        if (existing.hasDefined(ENTRIES.getName())) {
-            op.get(ENTRIES.getName()).set(existing.get(ENTRIES.getName()));
-        }
-        return op;
-    }
 
     public static final JMSTopicAdd INSTANCE = new JMSTopicAdd();
 

@@ -3,7 +3,6 @@
  */
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
@@ -38,18 +37,7 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class QueueAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
-    public static final String OPERATION_NAME = ADD;
-
     public static final QueueAdd INSTANCE = new QueueAdd();
-
-    /**
-     * Create an "add" operation using the existing model
-     */
-    public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
-
-        final ModelNode operation = org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, subModel);
-        return operation;
-    }
 
     private QueueAdd() {}
 

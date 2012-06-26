@@ -22,9 +22,7 @@
 
 package org.jboss.as.messaging.jms.bridge;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.operations.common.Util.getOperation;
 import static org.jboss.as.server.Services.addServerExecutorDependency;
 
 import java.util.List;
@@ -63,13 +61,6 @@ import org.jboss.msc.service.ServiceName;
  */
 public class JMSBridgeAdd extends AbstractAddStepHandler {
     public static final JMSBridgeAdd INSTANCE = new JMSBridgeAdd();
-
-    /**
-     * Create an "add" operation using the existing model
-     */
-    public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
-        return getOperation(ADD, address, subModel);
-    }
 
     private JMSBridgeAdd() {
     }

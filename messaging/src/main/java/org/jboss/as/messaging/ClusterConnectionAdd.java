@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CHECK_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL;
@@ -57,16 +56,6 @@ import org.jboss.msc.service.ServiceRegistry;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ClusterConnectionAdd extends AbstractAddStepHandler implements DescriptionProvider {
-
-    /**
-     * Create an "add" operation using the existing model
-     */
-    public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
-
-        final ModelNode operation = org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, subModel);
-
-        return operation;
-    }
 
     public static final ClusterConnectionAdd INSTANCE = new ClusterConnectionAdd();
 

@@ -22,8 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.operations.common.Util.getOperation;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.List;
@@ -51,13 +49,6 @@ import org.jboss.msc.service.ServiceRegistry;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DivertAdd extends AbstractAddStepHandler {
-
-    /**
-     * Create an "add" operation using the existing model
-     */
-    public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
-        return getOperation(ADD, address, subModel);
-    }
 
     public static final DivertAdd INSTANCE = new DivertAdd();
 

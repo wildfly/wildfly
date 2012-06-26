@@ -90,26 +90,6 @@ class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionPro
     }
 
     /**
-     * Create the add operation based on an existing model.
-     *
-     * @param address the address
-     * @param subModel the sub model
-     * @return the add operation
-     */
-    static ModelNode createAddOperation(final ModelNode address, final ModelNode subModel) {
-        final ModelNode operation = new ModelNode();
-        operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
-        for(final SimpleAttributeDefinition definition : ATTRIBUTES) {
-            final String attribute = definition.getName();
-            if(subModel.hasDefined(attribute)) {
-                operation.get(attribute).set(subModel.get(attribute));
-            }
-        }
-        return operation;
-    }
-
-    /**
      * Create a setting.
      *
      * @param context the operation context
