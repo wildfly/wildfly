@@ -30,7 +30,6 @@ import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolver;
-import org.jboss.osgi.spi.BundleInfo;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.BundleWiring;
 
@@ -43,9 +42,6 @@ public interface OSGiConstants {
 
     /** Service base name for all OSGi subsystem services. */
     ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("osgi", "as");
-
-    /** Attachment key for the {@link BundleManager}. */
-    AttachmentKey<BundleInfo> BUNDLE_INFO_KEY = AttachmentKey.create(BundleInfo.class);
 
     /** Attachment key for the {@link BundleManager}. */
     AttachmentKey<BundleManager> BUNDLE_MANAGER_KEY = AttachmentKey.create(BundleManager.class);
