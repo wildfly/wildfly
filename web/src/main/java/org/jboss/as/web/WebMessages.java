@@ -197,9 +197,6 @@ public interface WebMessages {
     @Message(id = 18049, value = "Instance destruction failed")
     RuntimeException instanceDestructionFailed(@Cause Throwable t);
 
-    @Message(id = 18050, value = "@ManagedBean is only allowed at class level %s")
-    String invalidManagedBeanAnnotation(AnnotationTarget target);
-
     @Message(id = 18051, value = "Authentication Manager has not been set")
     IllegalStateException noAuthenticationManager();
 
