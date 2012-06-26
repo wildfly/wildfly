@@ -173,6 +173,7 @@
         <version.org.jboss.modules.jboss-modules>1.1.2.GA</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.0.2.GA</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.netty>3.2.6.Final</version.org.jboss.netty>
+        <version.org.jboss.osgi.deployment>1.1.1.Final</version.org.jboss.osgi.deployment>
         <version.org.jboss.osgi.framework>2.0.0.CR3</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.logging>1.0.0.Final</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.metadata>2.1.1.CR3</version.org.jboss.osgi.metadata>
@@ -4452,15 +4453,15 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.osgi.deployment</groupId>
+                <artifactId>jbosgi-deployment</artifactId>
+                <version>${version.org.jboss.osgi.deployment}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.osgi.framework</groupId>
                 <artifactId>jbosgi-framework-core</artifactId>
                 <version>${version.org.jboss.osgi.framework}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.osgi</groupId>
-                        <artifactId>org.osgi.compendium</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>

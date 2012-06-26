@@ -68,6 +68,7 @@ import org.jboss.vfs.VirtualFile;
  * Merge all metadata into a main JBossWebMetaData.
  *
  * @author Remy Maucherat
+ * @author Thomas.Diesler@jboss.com
  */
 public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
@@ -318,7 +319,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
         // Override with meta data (JBossWebMetaData) Create a merged view
         JBossWebMetaData mergedMetaData = new JBossWebMetaData();
-        JBossWebMetaData metaData = warMetaData.getJbossWebMetaData();
+        JBossWebMetaData metaData = warMetaData.getJBossWebMetaData();
         JBossWebMetaDataMerger.merge(mergedMetaData, metaData, specMetaData);
         // FIXME: Incorporate any ear level overrides
 
