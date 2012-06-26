@@ -82,11 +82,11 @@ public class TransformationTargetImpl implements TransformationTarget {
             }
         } else if (address.size() > 1) {
             if(ModelDescriptionConstants.PROFILE.equals(address.getElement(0).getKey())) {
-                final OperationTransformerRegistry.TransformerEntry entry = operationTransformers.resolveTransformer(address.subAddress(1), operationName);
+                final OperationTransformerRegistry.OperationTransformerEntry entry = operationTransformers.resolveTransformer(address.subAddress(1), operationName);
                 return entry.getTransformer();
             }
         }
-        final OperationTransformerRegistry.TransformerEntry entry = operationTransformers.resolveTransformer(address, operationName);
+        final OperationTransformerRegistry.OperationTransformerEntry entry = operationTransformers.resolveTransformer(address, operationName);
         return entry.getTransformer();
     }
 

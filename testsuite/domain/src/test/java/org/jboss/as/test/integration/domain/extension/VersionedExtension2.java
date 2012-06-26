@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -40,11 +41,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.AliasOperationTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.SubSystemTransformersRegistry;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -52,11 +54,18 @@ import org.jboss.dmr.ModelNode;
  */
 public class VersionedExtension2 extends VersionedExtensionCommon {
 
+    // New element which does not exist in v1
+    private static final PathElement NEW_ELEMENT = PathElement.pathElement("new-element");
+    // Element which is element>renamed in v2
+    private static final PathElement RENAMED = PathElement.pathElement("renamed", "element");
+
     @Override
     public void initialize(final ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 2, 0, 0);
-
+        // Initialize the subsystem
         final ManagementResourceRegistration registration = initializeSubsystem(subsystem);
+
+        // Register a update operation, which requires the transformer to create composite operation
         registration.registerOperationHandler("update", new OperationStepHandler() {
             @Override
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -68,10 +77,29 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
             }
         }, DESCRIPTION_PROVIDER);
 
+        // Add a new model, which does not exist in the old model
+        registration.registerSubModel(createResourceDefinition(NEW_ELEMENT));
+        // Add the renamed model
+        registration.registerSubModel(createResourceDefinition(RENAMED));
+
         // Register the transformers
-        final SubSystemTransformersRegistry transformers =  subsystem.registerModelTransformers(ModelVersion.create(1, 0, 0));
-        transformers.registerOperationTransformer(PathAddress.EMPTY_ADDRESS, "update", new UpdateTransformer());
+        final TransformersSubRegistration transformers =  subsystem.registerModelTransformers(ModelVersion.create(1, 0, 0), RESOURCE_TRANSFORMER);
+        transformers.registerOperationTransformer("update", new UpdateTransformer());
+
+        // Discard the add/remove operation to the new element
+        final TransformersSubRegistration newElement = transformers.registerSubResource(NEW_ELEMENT);
+        newElement.discardOperations(TransformersSubRegistration.COMMON_OPERATIONS);
+
+        // Register an alias operation transformer, transforming renamed>element to element>renamed
+        final TransformersSubRegistration renamed = transformers.registerSubResource(RENAMED, AliasOperationTransformer.replaceLastElement(PathElement.pathElement("element", "renamed")));
     }
+
+    static ResourceTransformer RESOURCE_TRANSFORMER = new ResourceTransformer() {
+        @Override
+        public ModelNode transformModel(TransformationContext context, ModelNode model) {
+            return model;
+        }
+    };
 
     static class UpdateTransformer implements OperationTransformer {
 
@@ -107,7 +135,5 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
         }
 
     };
-
-
 
 }

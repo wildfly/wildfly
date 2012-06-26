@@ -23,8 +23,8 @@
 package org.jboss.as.test.integration.domain.extension;
 
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
@@ -32,12 +32,17 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class VersionedExtension1 extends VersionedExtensionCommon {
 
+    private static final PathElement ORIGINAL = PathElement.pathElement("element", "renamed");
+
     @Override
     public void initialize(final ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0, 0);
 
         final ManagementResourceRegistration registration = initializeSubsystem(subsystem);
-        // Register the transformers
+        // Register an element which is going to get renamed
+        registration.registerSubModel(createResourceDefinition(ORIGINAL));
+
+        // No transformers for the first version of the model!
     }
 
 

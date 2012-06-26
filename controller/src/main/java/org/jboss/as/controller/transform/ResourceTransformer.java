@@ -16,4 +16,12 @@ public interface ResourceTransformer {
      * @return transformed model
      */
     ModelNode transformModel(TransformationContext context, ModelNode model);
+
+    ResourceTransformer ORIGINAL = new ResourceTransformer() {
+        @Override
+        public ModelNode transformModel(TransformationContext context, ModelNode model) {
+            return model;
+        }
+    };
+
 }
