@@ -54,6 +54,7 @@ import org.jboss.vfs.util.SuffixMatchFilter;
  * Create and mount classpath entries in the .war deployment.
  *
  * @author Emanuel Muckenhuber
+ * @author Thomas.Diesler@jboss.com
  */
 public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor {
 

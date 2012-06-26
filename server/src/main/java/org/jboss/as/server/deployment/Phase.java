@@ -431,12 +431,13 @@ public enum Phase {
     // IMPORTANT: WS integration installs deployment aspects dynamically
     // so consider INSTALL 0x1C10 - 0x1CFF reserved for WS subsystem!
     public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1D00;
-    public static final int INSTALL_DEPLOYMENT_REPOSITORY               = 0x1E00;
-    public static final int INSTALL_EJB_MANAGEMENT_RESOURCES            = 0x1F00;
-    public static final int INSTALL_APPLICATION_CLIENT                  = 0x2000;
-    public static final int INSTALL_DSXML_DEPLOYMENT                    = 0x2010;
-    public static final int INSTALL_MESSAGING_XML_RESOURCES             = 0x2011;
-    public static final int INSTALL_BUNDLE_ACTIVATE                     = 0x2100;
+    public static final int INSTALL_WAB_DEPLOYMENT                      = 0x1E00;
+    public static final int INSTALL_DEPLOYMENT_REPOSITORY               = 0x1F00;
+    public static final int INSTALL_EJB_MANAGEMENT_RESOURCES            = 0x2000;
+    public static final int INSTALL_APPLICATION_CLIENT                  = 0x2010;
+    public static final int INSTALL_DSXML_DEPLOYMENT                    = 0x2020;
+    public static final int INSTALL_MESSAGING_XML_RESOURCES             = 0x2030;
+    public static final int INSTALL_BUNDLE_ACTIVATE                     = 0x2040;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x0100;
