@@ -29,6 +29,7 @@ import static org.jboss.dmr.ModelType.STRING;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -69,8 +70,10 @@ public class DivertDefinition extends SimpleResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     public DivertDefinition(boolean registerRuntimeOnly) {
-        super(MessagingExtension.DIVERT_PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DIVERT),
-                DivertAdd.INSTANCE, DivertRemove.INSTANCE);
+        super(PathElement.pathElement(CommonAttributes.DIVERT),
+                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DIVERT),
+                DivertAdd.INSTANCE,
+                DivertRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 

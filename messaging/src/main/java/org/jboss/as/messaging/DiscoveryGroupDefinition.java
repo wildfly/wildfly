@@ -32,6 +32,7 @@ import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING_ALTERNATIVE
 
 import org.hornetq.api.core.client.HornetQClient;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -68,7 +69,7 @@ public class DiscoveryGroupDefinition extends SimpleResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     public DiscoveryGroupDefinition(final boolean registerRuntimeOnly) {
-        super(MessagingExtension.DISCOVERY_GROUP_PATH,
+        super(PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP),
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DISCOVERY_GROUP),
                 DiscoveryGroupAdd.INSTANCE,
                 DiscoveryGroupRemove.INSTANCE);

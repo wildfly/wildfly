@@ -39,6 +39,7 @@ import java.util.EnumSet;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
@@ -71,7 +72,7 @@ public class BroadcastGroupDefinition extends SimpleResourceDefinition {
 
 
     public BroadcastGroupDefinition(boolean registerRuntimeOnly) {
-        super(MessagingExtension.BROADCAST_GROUP_PATH,
+        super(PathElement.pathElement(CommonAttributes.BROADCAST_GROUP),
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.BROADCAST_GROUP),
                 BroadcastGroupAdd.INSTANCE,
                 BroadcastGroupRemove.INSTANCE);
