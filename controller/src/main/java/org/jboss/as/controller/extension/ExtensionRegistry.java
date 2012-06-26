@@ -52,7 +52,8 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.SubSystemTransformersRegistry;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformer;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.dmr.ModelNode;
@@ -598,26 +599,12 @@ public class ExtensionRegistry {
         }
 
         @Override
-        public SubSystemTransformersRegistry registerModelTransformers(final ModelVersionRange range) {
+        public TransformersSubRegistration registerModelTransformers(final ModelVersionRange range, final ResourceTransformer subsystemTransformer) {
             final PathAddress subsystemAddress = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(SUBSYSTEM, name));
-            return new SubSystemTransformersRegistry() {
-
-                @Override
-                public void discardOperation(PathAddress address, String operationName) {
-                    final PathAddress realAddress = subsystemAddress.append(address);
-                    for(final ModelVersion version : range.getVersions()) {
-                        transformerRegistry.getSubsystemOperationTransformers().discardOperation(realAddress, version, operationName);
-                    }
-                }
-
-                @Override
-                public void registerOperationTransformer(final PathAddress address, final String operationName, final OperationTransformer transformer) {
-                    final PathAddress realAddress = subsystemAddress.append(address);
-                    for(final ModelVersion version : range.getVersions()) {
-                        transformerRegistry.getSubsystemOperationTransformers().registerTransformer(realAddress, version, operationName, transformer);
-                    }
-                }
-            };
+            for(final ModelVersion version : range.getVersions()) {
+                transformerRegistry.getSubsystemOperationTransformers().createChildRegistry(subsystemAddress, version, subsystemTransformer, true);
+            }
+            return new TransformersSubRegistration.TransformersSubRegistrationImpl(range, transformerRegistry.getSubsystemOperationTransformers(), subsystemAddress);
         }
 
         private ManagementResourceRegistration getDummyRegistration() {

@@ -25,7 +25,8 @@ package org.jboss.as.controller;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.SubSystemTransformersRegistry;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformer;
 import org.jboss.staxmapper.XMLElementWriter;
 
@@ -97,8 +98,9 @@ public interface SubsystemRegistration {
      * Register transformers for a specific model versions.
      *
      * @param version the model version range
+     * @param resourceTransformer the subsystem resource transformer
      * @return the transformers registry
      */
-    SubSystemTransformersRegistry registerModelTransformers(ModelVersionRange version);
+    TransformersSubRegistration registerModelTransformers(ModelVersionRange version, ResourceTransformer resourceTransformer);
 
 }
