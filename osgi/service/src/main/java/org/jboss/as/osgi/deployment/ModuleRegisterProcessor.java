@@ -63,7 +63,7 @@ public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
         if (bundle == null && module != null && moduleSpecification.isPrivateModule() == false) {
             LOGGER.infoRegisterModule(module.getIdentifier());
             try {
-                final BundleContext context = depUnit.getAttachment(OSGiConstants.SYSTEM_CONTEXT_KEY);
+                final BundleContext context = depUnit.getAttachment(Attachments.SYSTEM_CONTEXT_KEY);
                 XBundleRevisionBuilderFactory factory = new XBundleRevisionBuilderFactory() {
                     @Override
                     public XBundleRevision createResource() {

@@ -28,18 +28,20 @@ import java.util.List;
 
 import javax.servlet.ServletContext;
 
-import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.ThreadSetupBindingListener;
 import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.deployment.jsf.JsfInjectionProvider;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -47,7 +49,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Emanuel Muckenhuber
  */
-class WebDeploymentService implements Service<Context> {
+class WebDeploymentService implements Service<StandardContext> {
 
     private final StandardContext context;
     private final InjectedValue<Realm> realm = new InjectedValue<Realm>();
@@ -62,9 +64,11 @@ class WebDeploymentService implements Service<Context> {
         this.attributes = attributes;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    InjectedValue<Realm> getRealm() {
+        return realm;
+    }
+
+    @Override
     public synchronized void start(StartContext startContext) throws StartException {
         if (attributes != null) {
             final ServletContext context = this.context.getServletContext();
@@ -100,9 +104,7 @@ class WebDeploymentService implements Service<Context> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public synchronized void stop(StopContext stopContext) {
         try {
             context.stop();
@@ -116,19 +118,31 @@ class WebDeploymentService implements Service<Context> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public synchronized Context getValue() throws IllegalStateException {
-        final Context context = this.context;
+    @Override
+    public synchronized StandardContext getValue() throws IllegalStateException {
         if (context == null) {
             throw new IllegalStateException();
         }
         return context;
     }
 
-    public InjectedValue<Realm> getRealm() {
-        return realm;
-    }
+    static class ContextActivator {
 
+        static final AttachmentKey<ContextActivator> ATTACHMENT_KEY = AttachmentKey.create(ContextActivator.class);
+
+        private final ServiceController<StandardContext> controller;
+
+        ContextActivator(ServiceController<StandardContext> controller) {
+            this.controller = controller;
+        }
+
+        void start() {
+            controller.setMode(Mode.ACTIVE);
+        }
+
+        void stop() {
+            if (controller.getMode() == Mode.ACTIVE)
+                controller.setMode(Mode.NEVER);
+        }
+    }
 }
