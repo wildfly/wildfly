@@ -61,9 +61,11 @@ public class SimpleWebAppTestCase {
     private static final String SIMPLE_WAR = "war-example.war";
     private static final String WAR_STRUCTURE_BUNDLE = "war-structure-bundle.war";
     private static final String OSGI_STRUCTURE_BUNDLE = "osgi-structure-bundle.war";
+    private static final String WEB_APPLICATION_BUNDLE_A = "osgi-webapp-a.wab";
+    private static final String WEB_APPLICATION_BUNDLE_B = "osgi-webapp-b.wab";
 
     @ArquillianResource
-    private URL url;
+    private URL urlres;
 
     @Deployment(name = SIMPLE_WAR, testable = false)
     public static Archive<?> getWarDeployment() {
@@ -109,6 +111,43 @@ public class SimpleWebAppTestCase {
         return archive;
     }
 
+    @Deployment(name = WEB_APPLICATION_BUNDLE_A, testable = false)
+    public static Archive<?> getWebAppBundleDeploymentA() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, WEB_APPLICATION_BUNDLE_A);
+        archive.addClasses(SimpleServlet.class);
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(PostConstruct.class, WebServlet.class);
+                builder.addImportPackages(Servlet.class, HttpServlet.class);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = WEB_APPLICATION_BUNDLE_B, testable = false)
+    public static Archive<?> getWebAppBundleDeploymentB() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, WEB_APPLICATION_BUNDLE_B);
+        archive.addClasses(SimpleServlet.class);
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(PostConstruct.class, WebServlet.class);
+                builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addManifestHeader("Web-ContextPath", "/osgi-webapp");
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
     @Test
     @OperateOnDeployment(SIMPLE_WAR)
     public void testSimpleWar() throws Exception {
@@ -130,8 +169,30 @@ public class SimpleWebAppTestCase {
         Assert.assertEquals("Simple Servlet called with input=Hello", result);
     }
 
-    private String performCall(String urlPattern, String param) throws Exception {
-        URL url = new URL(this.url.toExternalForm() + urlPattern + "?input=" + param);
+    @Test
+    @OperateOnDeployment(WEB_APPLICATION_BUNDLE_A)
+    public void testWebApplicationBundleA() throws Exception {
+        String result = performCall("osgi-webapp-a", "simple", "Hello");
+        Assert.assertEquals("Simple Servlet called with input=Hello", result);
+    }
+
+    @Test
+    @OperateOnDeployment(WEB_APPLICATION_BUNDLE_B)
+    public void testWebApplicationBundleB() throws Exception {
+        String result = performCall("osgi-webapp", "simple", "Hello");
+        Assert.assertEquals("Simple Servlet called with input=Hello", result);
+    }
+
+    private String performCall(String pattern, String param) throws Exception {
+        return performCall(null,  pattern, param);
+    }
+
+    private String performCall(String context, String pattern, String param) throws Exception {
+        String urlspec = urlres.toExternalForm();
+        if (urlres.getPath().isEmpty() && context != null) {
+            urlspec += "/" + context + "/";
+        }
+        URL url = new URL(urlspec + pattern + "?input=" + param);
         return HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS);
     }
 }
