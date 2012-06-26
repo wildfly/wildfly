@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.web">
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.jsf">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,34 +32,20 @@
     </resources>
 
     <dependencies>
-        <module name="sun.jdk"/>
+        <module name="com.sun.jsf-impl"/>
         <module name="javax.annotation.api"/>
         <module name="javax.api"/>
-        <module name="javax.security.auth.message.api"/>
-        <module name="javax.servlet.api"/>
-        <module name="javax.servlet.jsp.api"/>
-        <module name="org.jboss.jandex"/>
-        <module name="org.jboss.staxmapper"/>
-        <module name="org.jboss.as.clustering.api" optional="true"/>
-        <module name="org.jboss.as.clustering.registry" optional="true"/>
-        <module name="org.jboss.as.clustering.web.spi" optional="true"/>
+        <module name="javax.faces.api" />
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
-        <module name="org.jboss.as.naming"/>
-        <module name="org.jboss.as.network"/>
-        <module name="org.jboss.as.security"/>
         <module name="org.jboss.as.server"/>
-        <module name="org.jboss.as.threads"/>
-        <module name="org.jboss.invocation"/>
-        <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.metadata"/>
+        <module name="org.jboss.as.web"/>
+        <module name="org.jboss.jandex"/>
+        <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
-        <module name="org.jboss.threads"/>
+        <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.metadata"/>
         <module name="org.jboss.vfs"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.common-core"/>
-        <module name="org.picketbox"/>
-        <module name="javax.security.jacc.api"/>
     </dependencies>
 </module>
