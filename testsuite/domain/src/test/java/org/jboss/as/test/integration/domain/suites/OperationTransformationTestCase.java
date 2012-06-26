@@ -26,6 +26,7 @@ import junit.framework.Assert;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
@@ -33,10 +34,13 @@ import org.jboss.as.test.integration.domain.extension.ExtensionSetup;
 import org.jboss.as.test.integration.domain.extension.VersionedExtensionCommon;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.*;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.IOException;
 
 /**
  * @author Emanuel Muckenhuber
@@ -67,36 +71,66 @@ public class OperationTransformationTestCase {
 
     @Test
     public void test() throws Exception {
-        final ModelNode address = PathAddress.pathAddress(PathElement.pathElement(PROFILE, "default"),
-                PathElement.pathElement(SUBSYSTEM, VersionedExtensionCommon.SUBSYSTEM_NAME)).toModelNode();
+        final PathAddress extension = PathAddress.pathAddress(PathElement.pathElement(EXTENSION, VersionedExtensionCommon.EXTENSION_NAME));
+        final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(PROFILE, "default"),
+                PathElement.pathElement(SUBSYSTEM, VersionedExtensionCommon.SUBSYSTEM_NAME));
+
+        final ModelNode serverAddress = getRunningServerAddress("slave", "main-three");
+        serverAddress.add(SUBSYSTEM, VersionedExtensionCommon.SUBSYSTEM_NAME);
 
         final DomainClient client = master.getDomainClient();
         // Add extension
-        final ModelNode extensionAdd = new ModelNode();
-        extensionAdd.get(OP).set(ADD);
-        extensionAdd.get(OP_ADDR).add(EXTENSION, VersionedExtensionCommon.EXTENSION_NAME);
+        final ModelNode extensionAdd = createAdd(extension);
         executeForResult(extensionAdd, client);
         // Add subsystem
-        final ModelNode subsystemAdd = new ModelNode();
-        subsystemAdd.get(OP).set(ADD);
-        subsystemAdd.get(OP_ADDR).set(address);
+        final ModelNode subsystemAdd = createAdd(address);
         executeForResult(subsystemAdd, client);
         // Check master version
-        final ModelNode mExt = new ModelNode();
-        mExt.get(OP).set(READ_RESOURCE_OPERATION);
-        mExt.get(OP_ADDR).add(EXTENSION, VersionedExtensionCommon.EXTENSION_NAME).add(SUBSYSTEM, VersionedExtensionCommon.SUBSYSTEM_NAME);
-
+        final ModelNode mExt = create(READ_RESOURCE_OPERATION, extension.append(PathElement.pathElement(SUBSYSTEM, VersionedExtensionCommon.SUBSYSTEM_NAME)));
         assertVersion(executeForResult(mExt, client), ModelVersion.create(2));
 
-        //
+        // Check the new element
+        final PathAddress newElement = address.append(PathElement.pathElement("new-element", "new1"));
+        final ModelNode addNew = createAdd(newElement);
+        executeForResult(addNew, client);
+        Assert.assertTrue(exists(newElement, client));
 
+        // The add operation on the slave should have been discarded
+        final ModelNode newElementOnSlave = serverAddress.clone();
+        newElementOnSlave.add("new-element", "new1");
+        Assert.assertFalse(exists(newElementOnSlave, client));
 
-        final ModelNode update = new ModelNode();
-        update.get(OP).set("update");
-        update.get(OP_ADDR).set(address);
+        // Check the renamed element
+        final PathAddress renamedAddress = address.append(PathElement.pathElement("renamed", "element"));
+        final ModelNode renamedAdd = createAdd(renamedAddress);
+        executeForResult(renamedAdd, client);
+        Assert.assertTrue(exists(renamedAddress, client));
 
-        executeForResult(update, client);
+        // renamed > element
+        final ModelNode renamedElementOnSlave = serverAddress.clone();
+        renamedElementOnSlave.add("renamed", "element");
+        Assert.assertFalse(exists(renamedElementOnSlave, client));
 
+        // element > renamed
+        final ModelNode elementRenamedOnSlave = serverAddress.clone();
+        elementRenamedOnSlave.add("element", "renamed");
+        Assert.assertTrue(exists(elementRenamedOnSlave, client));
+
+        // Update
+        executeForResult(create("update", address), client);
+
+    }
+
+    static ModelNode createAdd(PathAddress address) {
+        return create(ADD, address);
+    }
+
+    static ModelNode create(String op, ModelNode address) {
+        return createOperation(op, address);
+    }
+
+    static ModelNode create(String op, PathAddress address) {
+        return createOperation(op, address);
     }
 
     static void assertVersion(final ModelNode v, ModelVersion version) {

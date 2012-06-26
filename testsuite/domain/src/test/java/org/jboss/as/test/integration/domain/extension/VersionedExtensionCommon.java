@@ -80,8 +80,7 @@ public abstract class VersionedExtensionCommon implements Extension {
 
     protected ManagementResourceRegistration initializeSubsystem(final SubsystemRegistration registration) {
         // Common subsystem tasks
-        final ResourceDefinition def = new SimpleResourceDefinition(SUBSYSTEM_PATH, new TestResourceDescriptionResolver(),
-                SUBSYSTEM_ADD, SUBSYSTEM_REMOVE, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
+        final ResourceDefinition def = createResourceDefinition(SUBSYSTEM_PATH);
         registration.registerXMLElementWriter(getParser());
 
         final ManagementResourceRegistration reg = registration.registerSubsystemModel(def);
@@ -94,14 +93,19 @@ public abstract class VersionedExtensionCommon implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, EXTENSION_NAME, PARSER);
     }
 
-    private static OperationStepHandler SUBSYSTEM_ADD = new AbstractAddStepHandler() {
+    protected ResourceDefinition createResourceDefinition(final PathElement element) {
+        return new SimpleResourceDefinition(element, new TestResourceDescriptionResolver(),
+                NOOP_ADD_HANDLER, NOOP_REMOVE_HANDLER, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
+    }
+
+    private static OperationStepHandler NOOP_ADD_HANDLER = new AbstractAddStepHandler() {
         @Override
         protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             //
         }
     };
 
-    private static OperationStepHandler SUBSYSTEM_REMOVE = new AbstractRemoveStepHandler() {
+    private static OperationStepHandler NOOP_REMOVE_HANDLER = new AbstractRemoveStepHandler() {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRuntime(context, operation, model);

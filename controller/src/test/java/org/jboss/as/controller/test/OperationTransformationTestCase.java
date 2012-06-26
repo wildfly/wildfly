@@ -119,7 +119,7 @@ public class OperationTransformationTestCase {
         final PathAddress address = PathAddress.pathAddress(PathElement.pathElement("subsystem", "test"));
         final OperationTransformerRegistry localRegistry = registry.resolve(ModelVersion.create(1, 0, 0), subsystems.setEmptyList());
 
-        OperationTransformerRegistry.TransformerEntry entry = localRegistry.resolveTransformer(address, "testing");
+        OperationTransformerRegistry.OperationTransformerEntry entry = localRegistry.resolveTransformer(address, "testing");
         Assert.assertEquals(OperationTransformerRegistry.TransformationPolicy.FORWARD, entry.getPolicy());
 
         registry.registerTransformer(address, 1, 0, "testing", NOOP_TRANSFORMER);
@@ -137,7 +137,7 @@ public class OperationTransformationTestCase {
     protected ModelNode transform(final PathAddress address, final ModelNode operation, int major, int minor) {
         final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
         final OperationTransformerRegistry transformerRegistry = registry.resolve(major, minor, AS_7_1_1_SUBSYSTEM_VERSIONS);
-        final OperationTransformerRegistry.TransformerEntry entry = transformerRegistry.resolveTransformer(address, operationName);
+        final OperationTransformerRegistry.OperationTransformerEntry entry = transformerRegistry.resolveTransformer(address, operationName);
         if(entry.getPolicy() == OperationTransformerRegistry.TransformationPolicy.DISCARD) {
             return null;
         } else {

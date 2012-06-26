@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
 
@@ -45,15 +46,19 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  */
 public class OperationTransformerRegistry {
 
+    private final ResourceTransformerEntry resourceTransformer;
+    private final OperationTransformerEntry defaultTransformer;
     private volatile Map<String, SubRegistry> subRegistries;
-    private volatile Map<String, TransformerEntry> transformerEntries;
+    private volatile Map<String, OperationTransformerEntry> transformerEntries;
 
     private static final AtomicMapFieldUpdater<OperationTransformerRegistry, String, SubRegistry> subRegistriesUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(OperationTransformerRegistry.class, Map.class, "subRegistries"));
-    private static final AtomicMapFieldUpdater<OperationTransformerRegistry, String, TransformerEntry> entriesUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(OperationTransformerRegistry.class, Map.class, "transformerEntries"));
+    private static final AtomicMapFieldUpdater<OperationTransformerRegistry, String, OperationTransformerEntry> entriesUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(OperationTransformerRegistry.class, Map.class, "transformerEntries"));
 
-    public OperationTransformerRegistry() {
+    protected OperationTransformerRegistry(final ResourceTransformerEntry resourceTransformer, final OperationTransformerEntry defaultTransformer) {
         entriesUpdater.clear(this);
         subRegistriesUpdater.clear(this);
+        this.defaultTransformer = defaultTransformer;
+        this.resourceTransformer = resourceTransformer;
     }
 
     /**
@@ -63,9 +68,9 @@ public class OperationTransformerRegistry {
      * @param operationName the operation name
      * @return the transformer entry
      */
-    public TransformerEntry resolveTransformer(final PathAddress address, final String operationName) {
+    public OperationTransformerEntry resolveTransformer(final PathAddress address, final String operationName) {
         final Iterator<PathElement> iterator = address.iterator();
-        final TransformerEntry entry = resolveTransformer(iterator, operationName);
+        final OperationTransformerEntry entry = resolveTransformer(iterator, operationName);
         if(entry != null) {
             return entry;
         }
@@ -81,23 +86,38 @@ public class OperationTransformerRegistry {
      * @param version the subsystem version
      */
     public void mergeSubsystem(final GlobalOperationTransformerRegistry registry, String subsystemName, ModelVersion version) {
-        final SubRegistry subRegistry = getOrCreate(SUBSYSTEM);
-        final OperationTransformerRegistry subsystemReg = subRegistry.getOrCreate(subsystemName);
         final PathElement element = PathElement.pathElement(SUBSYSTEM, subsystemName);
         registry.mergeSubtree(this, PathAddress.EMPTY_ADDRESS.append(element), version);
     }
 
     protected void registerTransformer(final PathAddress address, final String operationName, final OperationTransformer transformer) {
-        registerTransformer(address.iterator(), operationName, new TransformerEntry(transformer, TransformationPolicy.TRANSFORM));
+        registerTransformer(address.iterator(), operationName, new OperationTransformerEntry(transformer, TransformationPolicy.TRANSFORM));
     }
 
-    protected Map<String, TransformerEntry> getTransformers() {
+    public ResourceTransformerEntry getResourceTransformer() {
+        return resourceTransformer;
+    }
+
+    public OperationTransformerEntry getDefaultTransformer() {
+        return defaultTransformer;
+    }
+
+    protected Map<String, OperationTransformerEntry> getTransformers() {
         return entriesUpdater.get(this);
     }
 
-    protected void registerTransformer(final Iterator<PathElement> iterator, String operationName, TransformerEntry entry) {
+    protected void createChildRegistry(final Iterator<PathElement> iterator,  ResourceTransformerEntry resourceTransformer, OperationTransformerEntry defaultTransformer) {
+        if(!iterator.hasNext()) {
+            throw new IllegalStateException();
+        } else {
+            final PathElement element = iterator.next();
+            getOrCreate(element.getKey()).createChild(iterator, element.getValue(), resourceTransformer, defaultTransformer);
+        }
+    }
+
+    protected void registerTransformer(final Iterator<PathElement> iterator, String operationName, OperationTransformerEntry entry) {
         if(! iterator.hasNext()) {
-            final TransformerEntry existing = entriesUpdater.putIfAbsent(this, operationName, entry);
+            final OperationTransformerEntry existing = entriesUpdater.putIfAbsent(this, operationName, entry);
             if(existing != null) {
                 throw new IllegalStateException("duplicate transformer " + operationName);
             }
@@ -107,9 +127,13 @@ public class OperationTransformerRegistry {
         }
     }
 
-    protected TransformerEntry resolveTransformer(final Iterator<PathElement> iterator, final String operationName) {
+    protected OperationTransformerEntry resolveTransformer(final Iterator<PathElement> iterator, final String operationName) {
         if(! iterator.hasNext()) {
-            return entriesUpdater.get(this, operationName);
+            final OperationTransformerEntry entry = entriesUpdater.get(this, operationName);
+            if(entry == null) {
+                return defaultTransformer;
+            }
+            return entry;
         } else {
             final PathElement element = iterator.next();
             final String key = element.getKey();
@@ -147,7 +171,7 @@ public class OperationTransformerRegistry {
             childrenUpdater.clear(this);
         }
 
-        public TransformerEntry resolveTransformer(Iterator<PathElement> iterator, String value, String operationName) {
+        public OperationTransformerEntry resolveTransformer(Iterator<PathElement> iterator, String value, String operationName) {
             OperationTransformerRegistry entry = childrenUpdater.get(this, value);
             if(entry == null) {
                 entry = childrenUpdater.get(this, "*");
@@ -158,18 +182,26 @@ public class OperationTransformerRegistry {
             return entry.resolveTransformer(iterator, operationName);
         }
 
-        public void registerTransformer(Iterator<PathElement> iterator, String value, String operationName, TransformerEntry entry) {
-            getOrCreate(value).registerTransformer(iterator, operationName, entry);
+        public void createChild(Iterator<PathElement> iterator, String value, ResourceTransformerEntry resourceTransformer, OperationTransformerEntry defaultTransformer) {
+            if(! iterator.hasNext()) {
+                getOrCreate(value, resourceTransformer, defaultTransformer);
+            } else {
+                getOrCreate(value, null, null).createChildRegistry(iterator, resourceTransformer, defaultTransformer);
+            }
         }
 
-        OperationTransformerRegistry getOrCreate(final String value) {
+        public void registerTransformer(Iterator<PathElement> iterator, String value, String operationName,  OperationTransformerEntry entry) {
+            getOrCreate(value, null, null).registerTransformer(iterator, operationName, entry);
+        }
+
+        OperationTransformerRegistry getOrCreate(final String value, final ResourceTransformerEntry resourceTransformer,final OperationTransformerEntry defaultTransformer) {
             for(;;) {
                 final Map<String, OperationTransformerRegistry> entries = childrenUpdater.get(this);
                 OperationTransformerRegistry entry = entries.get(value);
                 if(entry != null) {
                     return entry;
                 } else {
-                    entry = new OperationTransformerRegistry();
+                    entry = new OperationTransformerRegistry(resourceTransformer, defaultTransformer);
                     final OperationTransformerRegistry existing = childrenUpdater.putAtomic(this, value, entry, entries);
                     if(existing == null) {
                         return entry;
@@ -194,12 +226,31 @@ public class OperationTransformerRegistry {
 
     }
 
-    public static class TransformerEntry {
+    public static class ResourceTransformerEntry {
+
+        private final ResourceTransformer transformer;
+        private final boolean inherited;
+
+        public ResourceTransformerEntry(ResourceTransformer transformer, boolean inherited) {
+            this.transformer = transformer;
+            this.inherited = inherited;
+        }
+
+        public ResourceTransformer getTransformer() {
+            return transformer;
+        }
+
+        public boolean isInherited() {
+            return inherited;
+        }
+    }
+
+    public static class OperationTransformerEntry {
 
         final OperationTransformer transformer;
         final TransformationPolicy policy;
 
-        public TransformerEntry(OperationTransformer transformer, TransformationPolicy policy) {
+        public OperationTransformerEntry(OperationTransformer transformer, TransformationPolicy policy) {
             this.transformer = transformer;
             this.policy = policy;
         }
@@ -240,7 +291,7 @@ public class OperationTransformerRegistry {
         }
     };
 
-    static TransformerEntry DISCARD = new TransformerEntry(DISCARD_TRANSFORMER, TransformationPolicy.DISCARD);
-    static TransformerEntry FORWARD = new TransformerEntry(FORWARD_TRANSFORMER, TransformationPolicy.FORWARD);
+    public static OperationTransformerEntry DISCARD = new OperationTransformerEntry(DISCARD_TRANSFORMER, TransformationPolicy.DISCARD);
+    public static OperationTransformerEntry FORWARD = new OperationTransformerEntry(FORWARD_TRANSFORMER, TransformationPolicy.FORWARD);
 
 }
