@@ -48,6 +48,7 @@
         <module name="org.jboss.logmanager" services="import"/>
         <module name="org.jboss.log4j.logmanager"/>
         <module name="org.jboss.osgi.resolver"/>
+        <module name="org.jboss.osgi.spi"/>
         <module name="org.jboss.remoting3"/>
         <module name="org.jboss.sasl"/>
         <module name="org.jboss.stdio"/>

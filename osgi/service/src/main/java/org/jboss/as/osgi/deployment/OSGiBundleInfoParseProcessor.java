@@ -26,7 +26,6 @@ import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
 import java.util.jar.Manifest;
 
-import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.BundleInstallIntegration;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -54,7 +53,7 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
         final String contextName = depUnit.getName();
 
         // Check if we already have a BundleInfo
-        BundleInfo info = depUnit.getAttachment(OSGiConstants.BUNDLE_INFO_KEY);
+        BundleInfo info = depUnit.getAttachment(Attachments.BUNDLE_INFO_KEY);
         Deployment deployment = BundleInstallIntegration.getDeployment(contextName);
         if (info != null || deployment != null)
             return;
@@ -66,7 +65,7 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
                 // Construct and attach the {@link BundleInfo} from {@link OSGiMetaData}
                 VirtualFile virtualFile = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
                 info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), contextName);
-                depUnit.putAttachment(OSGiConstants.BUNDLE_INFO_KEY, info);
+                depUnit.putAttachment(Attachments.BUNDLE_INFO_KEY, info);
             } catch (BundleException ex) {
                 throw MESSAGES.cannotCreateBundleDeployment(ex, depUnit);
             }
@@ -75,6 +74,6 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        depUnit.removeAttachment(OSGiConstants.BUNDLE_INFO_KEY);
+        depUnit.removeAttachment(Attachments.BUNDLE_INFO_KEY);
     }
 }

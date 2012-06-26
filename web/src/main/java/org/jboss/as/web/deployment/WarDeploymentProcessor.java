@@ -147,8 +147,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
         final ClassLoader classLoader = module.getClassLoader();
         final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
-        final List<SetupAction> setupActions = deploymentUnit
-                .getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS);
+        final List<SetupAction> setupActions = deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS);
 
         // Resolve the context factory
         WebContextFactory contextFactory = deploymentUnit.getAttachment(WebContextFactory.ATTACHMENT);
@@ -336,12 +335,9 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
     public static String pathNameOfDeployment(final DeploymentUnit deploymentUnit, final JBossWebMetaData metaData) {
         String pathName;
         if (metaData.getContextRoot() == null) {
-
-
             final EEModuleDescription description = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
             if(description != null) {
-                //if there is a EEModuleDescription we need to take into account that the module name
-                //may have been overridden
+                //if there is a EEModuleDescription we need to take into account that the module name may have been overridden
                 pathName = "/" + description.getModuleName();
             } else {
                 pathName = "/" + deploymentUnit.getName().substring(0, deploymentUnit.getName().length() - 4);
