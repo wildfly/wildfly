@@ -22,8 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -51,20 +49,6 @@ import org.jboss.msc.service.ServiceRegistry;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ConnectorServiceAdd extends AbstractAddStepHandler implements DescriptionProvider {
-
-    /**
-     * Create an "add" operation using the existing model
-     */
-    public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
-
-        final ModelNode operation = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address);
-        for (AttributeDefinition attr : CommonAttributes.CONNECTOR_SERVICE_ATTRIBUTES) {
-            if (subModel.hasDefined(attr.getName())) {
-                operation.get(attr.getName()).set(subModel.get(attr.getName()));
-            }
-        }
-        return operation;
-    }
 
     public static final ConnectorServiceAdd INSTANCE = new ConnectorServiceAdd();
 

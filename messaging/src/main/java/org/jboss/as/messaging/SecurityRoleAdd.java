@@ -110,18 +110,6 @@ class SecurityRoleAdd implements OperationStepHandler, DescriptionProvider {
         return MessagingDescriptions.getSecurityRoleAdd(locale);
     }
 
-    static ModelNode createAddOperation(final ModelNode address, final ModelNode subModel) {
-        final ModelNode operation = new ModelNode();
-        operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
-        for(final AttributeDefinition def : ROLE_ATTRIBUTES) {
-            if(subModel.hasDefined(def.getName())) {
-                operation.get(def.getName()).set(subModel.get(def.getName()));
-            }
-        }
-        return operation;
-    }
-
     static Role transform(final OperationContext context, final String name, final ModelNode node) throws OperationFailedException {
         final boolean send = SEND.resolveModelAttribute(context, node).asBoolean();
         final boolean consume = CONSUME.resolveModelAttribute(context, node).asBoolean();

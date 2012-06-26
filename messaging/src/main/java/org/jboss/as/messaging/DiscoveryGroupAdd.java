@@ -22,10 +22,8 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-import static org.jboss.as.controller.operations.common.Util.getOperation;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -61,13 +59,6 @@ import org.jboss.msc.value.ImmediateValue;
 public class DiscoveryGroupAdd extends AbstractAddStepHandler {
 
     private static final OperationValidator VALIDATOR = new OperationValidator.AttributeDefinitionOperationValidator(DiscoveryGroupDefinition.ATTRIBUTES);
-
-    /**
-     * Create an "add" operation using the existing model
-     */
-    public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
-        return getOperation(ADD, address, subModel);
-    }
 
     public static final DiscoveryGroupAdd INSTANCE = new DiscoveryGroupAdd();
 
