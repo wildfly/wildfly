@@ -33,6 +33,7 @@ import static org.jboss.dmr.ModelType.STRING;
 import java.util.Locale;
 
 import org.hornetq.jms.bridge.QualityOfServiceMode;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -158,7 +159,7 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
     };
 
     public JMSBridgeDefinition() {
-        super(MessagingExtension.JMS_BRIDGE_PATH,
+        super(PathElement.pathElement(CommonAttributes.JMS_BRIDGE),
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.JMS_BRIDGE),
                 JMSBridgeAdd.INSTANCE,
                 JMSBridgeRemove.INSTANCE);
