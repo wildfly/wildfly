@@ -61,6 +61,7 @@ import org.jboss.metadata.web.spec.Web30MetaData;
 import org.jboss.metadata.web.spec.WebCommonMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
+import org.jboss.osgi.spi.BundleInfo;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -321,6 +322,13 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         JBossWebMetaDataMerger.merge(mergedMetaData, metaData, specMetaData);
         // FIXME: Incorporate any ear level overrides
 
+        // Use the OSGi Web-ContextPath if not given otherwise
+        String contextRoot = mergedMetaData.getContextRoot();
+        BundleInfo bundleInfo = deploymentUnit.getAttachment(Attachments.BUNDLE_INFO_KEY);
+        if (contextRoot == null && bundleInfo != null) {
+            contextRoot = bundleInfo.getOSGiMetadata().getHeader("Web-ContextPath");
+            mergedMetaData.setContextRoot(contextRoot);
+        }
         warMetaData.setMergedJBossWebMetaData(mergedMetaData);
 
         if (mergedMetaData.isMetadataComplete()) {

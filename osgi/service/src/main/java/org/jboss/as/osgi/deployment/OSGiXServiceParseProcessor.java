@@ -52,7 +52,7 @@ public class OSGiXServiceParseProcessor implements DeploymentUnitProcessor {
 
         // Check if we already have an OSGi deployment
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (depUnit.hasAttachment(OSGiConstants.BUNDLE_INFO_KEY) || depUnit.hasAttachment(OSGiConstants.OSGI_METADATA_KEY))
+        if (depUnit.hasAttachment(Attachments.BUNDLE_INFO_KEY) || depUnit.hasAttachment(OSGiConstants.OSGI_METADATA_KEY))
             return;
 
         // Get the OSGi XService properties
