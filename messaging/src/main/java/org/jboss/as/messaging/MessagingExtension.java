@@ -115,12 +115,10 @@ public class MessagingExtension implements Extension {
         // HQ servers
         final ManagementResourceRegistration serverRegistration = rootRegistration.registerSubModel(new HornetQServerResourceDefinition(registerRuntimeOnly));
 
-        // TODO convert the remaining resources to ResourceDefinition
         // Runtime addresses
         if (registerRuntimeOnly) {
-            final ManagementResourceRegistration coreAddress = serverRegistration.registerSubModel(CORE_ADDRESS_PATH, MessagingSubsystemProviders.CORE_ADDRESS);
+            final ManagementResourceRegistration coreAddress = serverRegistration.registerSubModel(new CoreAddressDefinition());
             coreAddress.setRuntimeOnly(true);
-            AddressControlHandler.INSTANCE.register(coreAddress);
         }
 
         // Address settings
@@ -219,7 +217,7 @@ public class MessagingExtension implements Extension {
         }
         // getJNDIBindings (no -- same as "entries")
 
-        serverRegistration.registerSubModel(new SecuritySettingDefinition());
+        serverRegistration.registerSubModel(new SecuritySettingDefinition(registerRuntimeOnly));
 
         if (context.isRuntimeOnlyRegistrationValid()) {
 

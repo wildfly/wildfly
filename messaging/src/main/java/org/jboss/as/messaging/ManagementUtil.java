@@ -65,7 +65,7 @@ public class ManagementUtil {
     /**
      *  Utility for converting camel case based HQ formats to AS standards.
      */
-    private static ModelNode convertSecurityRole(final ModelNode camelCase) {
+    static ModelNode convertSecurityRole(final ModelNode camelCase) {
         final ModelNode result = new ModelNode();
         result.setEmptyList();
         if (camelCase.isDefined()) {

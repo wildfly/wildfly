@@ -22,11 +22,17 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.CommonAttributes.NAME;
+import static org.jboss.as.messaging.CommonAttributes.SECURITY_ROLE;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
+import org.hornetq.api.core.management.AddressControl;
+import org.hornetq.api.core.management.ResourceNames;
+import org.hornetq.core.server.management.ManagementService;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
@@ -39,9 +45,12 @@ import org.jboss.dmr.ModelNode;
  */
 public class CoreAddressResource implements Resource {
 
-    public static CoreAddressResource INSTANCE = new CoreAddressResource();
+    private final String name;
+    private final ManagementService managementService;
 
-    private CoreAddressResource() {
+    public CoreAddressResource(final String name, final ManagementService managementService) {
+        this.name = name;
+        this.managementService = managementService;
     }
 
     @Override
@@ -61,12 +70,15 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public boolean hasChild(PathElement element) {
+        if (CommonAttributes.SECURITY_ROLE.equals(element.getKey())) {
+            return hasSecurityRole(element);
+        }
         return false;
     }
 
     @Override
     public Resource getChild(PathElement element) {
-        return null;
+        return hasSecurityRole(element) ? SecurityRoleResource.INSTANCE : null;
     }
 
     @Override
@@ -86,16 +98,28 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public Set<String> getChildTypes() {
-        return Collections.emptySet();
+        Set<String> result = new HashSet<String>();
+        result.add(SECURITY_ROLE);
+        return result;
     }
 
     @Override
     public Set<String> getChildrenNames(String childType) {
+        if (SECURITY_ROLE.equals(childType)) {
+            return getSecurityRoles();
+        }
         return Collections.emptySet();
     }
 
     @Override
     public Set<ResourceEntry> getChildren(String childType) {
+        if (SECURITY_ROLE.equals(childType)) {
+            Set<ResourceEntry> result = new HashSet<ResourceEntry>();
+            for (String name : getSecurityRoles()) {
+                result.add(new SecurityRoleResource.SecuriyRoleResourceEntry(name));
+            }
+            return result;
+        }
         return Collections.emptySet();
     }
 
@@ -106,7 +130,7 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public Resource removeChild(PathElement address) {
-        return null;
+        throw MESSAGES.immutableResource();
     }
 
     @Override
@@ -121,14 +145,51 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public Resource clone() {
-        return new CoreAddressResource();
+        return new CoreAddressResource(name, managementService);
+    }
+
+    private Set<String> getSecurityRoles() {
+        AddressControl addressControl = getAddressControl();
+        if (addressControl == null) {
+            return Collections.emptySet();
+        } else {
+            Set<String> names = new HashSet<String>();
+            try {
+                ModelNode res = ModelNode.fromJSONString(addressControl.getRolesAsJSON());
+                ModelNode converted = ManagementUtil.convertSecurityRole(res);
+                for (ModelNode role : converted.asList()) {
+                    names.add(role.get(NAME).asString());
+                }
+                return names;
+            } catch (Exception e) {
+                return Collections.emptySet();
+            }
+        }
+    }
+
+    private AddressControl getAddressControl() {
+        if (managementService == null) {
+            return null;
+        }
+        Object obj = managementService.getResource(ResourceNames.CORE_ADDRESS + name);
+        AddressControl control = AddressControl.class.cast(obj);
+        return control;
+    }
+
+    private boolean hasSecurityRole(PathElement element) {
+        String role = element.getValue();
+        return getSecurityRoles().contains(role);
     }
 
     public static class CoreAddressResourceEntry extends CoreAddressResource implements ResourceEntry {
 
         final PathElement path;
+        // we keep a ref on the management service to be able to clone it... is there a more elegant way?
+        private final ManagementService managementService2;
 
-        public CoreAddressResourceEntry(final String name) {
+        public CoreAddressResourceEntry(final String name, final ManagementService managementService) {
+            super(name, managementService);
+            managementService2 = managementService;
             path = PathElement.pathElement(CommonAttributes.CORE_ADDRESS, name);
         }
 
@@ -144,7 +205,7 @@ public class CoreAddressResource implements Resource {
 
         @Override
         public CoreAddressResourceEntry clone() {
-            return new CoreAddressResourceEntry(path.getValue());
+            return new CoreAddressResourceEntry(path.getValue(), managementService2);
         }
     }
 }
