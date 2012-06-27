@@ -1,0 +1,43 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+         version="3.1">
+    <enterprise-beans>
+        <session>
+            <ejb-name>HelloBeanDD</ejb-name>
+            <local-bean/>
+            <ejb-class>org.jboss.as.test.integration.security.jacc.HelloBeanDD</ejb-class>
+            <session-type>Stateless</session-type>
+            <security-role-ref>
+                <role-name>DDRole1</role-name>
+            </security-role-ref>
+            <security-role-ref>
+                <role-name>DDRole2</role-name>
+            </security-role-ref>
+            <security-role-ref>
+                <role-name>DDRole3</role-name>
+            </security-role-ref>
+            <security-identity>
+                <use-caller-identity/>
+            </security-identity>
+        </session>
+    </enterprise-beans>
+
+    <assembly-descriptor>
+        <method-permission>
+            <role-name>TestRole</role-name>
+            <method>
+                <ejb-name>HelloBeanDD</ejb-name>
+                <method-name>sayHello</method-name>
+            </method>
+        </method-permission>
+        <exclude-list>
+            <method>
+                <ejb-name>HelloBeanDD</ejb-name>
+                <method-name>echo</method-name>
+            </method>
+        </exclude-list>
+    </assembly-descriptor>
+</ejb-jar>
+
