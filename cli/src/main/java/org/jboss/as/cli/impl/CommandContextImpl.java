@@ -109,6 +109,9 @@ import org.jboss.as.cli.handlers.batch.BatchListHandler;
 import org.jboss.as.cli.handlers.batch.BatchMoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRemoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRunHandler;
+import org.jboss.as.cli.handlers.ifelse.ElseHandler;
+import org.jboss.as.cli.handlers.ifelse.EndIfHandler;
+import org.jboss.as.cli.handlers.ifelse.IfHandler;
 import org.jboss.as.cli.handlers.jca.JDBCDriverNameProvider;
 import org.jboss.as.cli.handlers.jca.JDBCDriverInfoHandler;
 import org.jboss.as.cli.handlers.jca.XADataSourceAddCompositeHandler;
@@ -349,6 +352,11 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new CatchHandler(), "catch");
         cmdRegistry.registerHandler(new FinallyHandler(), "finally");
         cmdRegistry.registerHandler(new EndTryHandler(), "end-try");
+
+        // if else
+        cmdRegistry.registerHandler(new IfHandler(), "if");
+        cmdRegistry.registerHandler(new ElseHandler(), "else");
+        cmdRegistry.registerHandler(new EndIfHandler(), "end-if");
 
         // data-source
         GenericTypeOperationHandler dsHandler = new GenericTypeOperationHandler(this, "/subsystem=datasources/data-source", null);
