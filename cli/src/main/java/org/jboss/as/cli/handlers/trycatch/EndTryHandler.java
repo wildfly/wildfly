@@ -62,7 +62,11 @@ public class EndTryHandler extends CommandHandlerWithHelp {
 
         final BatchManager batchManager = ctx.getBatchManager();
         if(!batchManager.isBatchActive()) {
-            throw new CommandLineException("catch block did not activate batch mode.");
+            if(tryBlock.isInCatch()) {
+                throw new CommandLineException("catch block did not activate batch mode.");
+            } else {
+                throw new CommandLineException("finally block did not activate batch mode.");
+            }
         }
 
         final Batch batch = batchManager.getActiveBatch();
