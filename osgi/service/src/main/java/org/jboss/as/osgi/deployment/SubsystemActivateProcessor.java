@@ -22,57 +22,42 @@
 
 package org.jboss.as.osgi.deployment;
 
-import java.io.IOException;
-import java.util.Properties;
-
 import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
-import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.osgi.framework.IntegrationServices;
+import org.jboss.osgi.framework.Services;
 
 /**
- * Processes deployments that contain META-INF/jbosgi-xservice.properties
+ * Activates the OSGi subsystem if an OSGi deployment is detected.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 20-Sep-2010
+ * @since 20-Jun-2012
  */
-public class OSGiXServiceParseProcessor implements DeploymentUnitProcessor {
-
-    public static final String XSERVICE_PROPERTIES_NAME = "META-INF/jbosgi-xservice.properties";
+public class SubsystemActivateProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        // Check if we already have an OSGi deployment
+        // Always make the system context & the environment available
+        phaseContext.addDeploymentDependency(Services.SYSTEM_CONTEXT, Attachments.SYSTEM_CONTEXT_KEY);
+        phaseContext.addDeploymentDependency(Services.ENVIRONMENT, OSGiConstants.ENVIRONMENT_KEY);
+
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (depUnit.hasAttachment(Attachments.BUNDLE_INFO_KEY) || depUnit.hasAttachment(OSGiConstants.OSGI_METADATA_KEY))
-            return;
-
-        // Get the OSGi XService properties
-        VirtualFile virtualFile = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        VirtualFile xserviceFile = virtualFile.getChild(XSERVICE_PROPERTIES_NAME);
-        if (xserviceFile.exists() == false)
-            return;
-
-        try {
-            Properties props = new Properties();
-            props.load(xserviceFile.openStream());
-            OSGiMetaData metadata = OSGiMetaDataBuilder.load(props);
-            depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
-        } catch (IOException ex) {
-            throw MESSAGES.cannotParseOSGiMetadata(ex, xserviceFile);
+        if (depUnit.hasAttachment(OSGiConstants.DEPLOYMENT_KEY)) {
+            phaseContext.getServiceRegistry().getRequiredService(Services.FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
+            phaseContext.addDependency(IntegrationServices.AUTOINSTALL_COMPLETE, AttachmentKey.create(Object.class));
+            phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
+            phaseContext.addDeploymentDependency(Services.RESOLVER, OSGiConstants.RESOLVER_KEY);
         }
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        depUnit.removeAttachment(OSGiConstants.OSGI_METADATA_KEY);
     }
 }

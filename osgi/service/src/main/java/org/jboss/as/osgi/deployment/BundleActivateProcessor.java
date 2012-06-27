@@ -20,37 +20,52 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.web.deployment;
+package org.jboss.as.osgi.deployment;
 
-import java.util.Locale;
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 
-import org.jboss.as.ee.structure.DeploymentType;
-import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.resolver.XBundle;
+import org.osgi.framework.BundleException;
 
 /**
- * Processor that marks a war deployment.
+ * Attempt to activate the OSGi deployment.
  *
- * @author John Bailey
+ * @author Thomas.Diesler@jboss.com
+ * @since 20-Jun-2012
  */
-public class WarDeploymentInitializingProcessor implements DeploymentUnitProcessor {
-
-    static final String WAR_EXTENSION = ".war";
-    static final String WAB_EXTENSION = ".wab";
+public class BundleActivateProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        String deploymentName = deploymentUnit.getName().toLowerCase(Locale.ENGLISH);
-        if(deploymentName.endsWith(WAR_EXTENSION) || deploymentName.endsWith(WAB_EXTENSION)) {
-            DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
+        DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
+        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
+        if (bundle != null && deployment.isAutoStart() && bundle.isResolved()) {
+            try {
+                bundle.start();
+            } catch (BundleException ex) {
+                LOGGER.errorCannotStartBundle(ex, bundle);
+            }
         }
     }
 
     @Override
-    public void undeploy(final DeploymentUnit context) {
+    public void undeploy(final DeploymentUnit depUnit) {
+        Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
+        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
+        if (bundle != null && deployment.isAutoStart()) {
+            try {
+                bundle.stop();
+            } catch (BundleException ex) {
+                LOGGER.debugf(ex, "Cannot stop bundle: %s", bundle);
+            }
+        }
     }
 }

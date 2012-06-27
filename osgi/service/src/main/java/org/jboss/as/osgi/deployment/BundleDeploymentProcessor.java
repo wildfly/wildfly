@@ -24,9 +24,9 @@ package org.jboss.as.osgi.deployment;
 
 import java.util.List;
 
+import org.jboss.as.osgi.DeploymentMarker;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.BundleInstallIntegration;
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -35,11 +35,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
-import org.jboss.osgi.framework.IntegrationServices;
-import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.spi.BundleInfo;
 
 /**
@@ -65,23 +62,32 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         // Check for attached BundleInfo
-        BundleInfo info = depUnit.getAttachment(OSGiConstants.BUNDLE_INFO_KEY);
+        BundleInfo info = depUnit.getAttachment(Attachments.BUNDLE_INFO_KEY);
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
+            deployment.setAutoStart(true);
+
+            // Prevent autostart for marked deployments
+            CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+            DotName markerName = DotName.createSimple(DeploymentMarker.class.getName());
+            for (AnnotationInstance marker : compositeIndex.getAnnotations(markerName)) {
+                if (marker.value("autoStart").asBoolean() == false) {
+                    deployment.setAutoStart(false);
+                    break;
+                }
+            }
 
             // Prevent autostart of ARQ deployments
-            DotName runWithName = DotName.createSimple("org.junit.runner.RunWith");
-            CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-            List<AnnotationInstance> runWithList = compositeIndex.getAnnotations(runWithName);
-            deployment.setAutoStart(runWithList.isEmpty());
+            if (deployment.isAutoStart()) {
+                DotName runWithName = DotName.createSimple("org.junit.runner.RunWith");
+                List<AnnotationInstance> runWithList = compositeIndex.getAnnotations(runWithName);
+                deployment.setAutoStart(runWithList.isEmpty());
+            }
         }
 
-        // Attach the deployment and activate the framework
+        // Attach the deployment
         if (deployment != null) {
-            phaseContext.getServiceRegistry().getRequiredService(Services.FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
-            phaseContext.addDependency(IntegrationServices.AUTOINSTALL_COMPLETE, AttachmentKey.create(Object.class));
-            phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
             depUnit.putAttachment(OSGiConstants.DEPLOYMENT_KEY, deployment);
         }
     }
