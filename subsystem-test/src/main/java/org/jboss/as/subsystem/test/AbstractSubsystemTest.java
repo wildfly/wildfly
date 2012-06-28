@@ -354,14 +354,14 @@ public abstract class AbstractSubsystemTest {
 
         //sharedState = svc.state;
         svc.latch.await();
+        if (svc.error != null) {
+            throw svc.error;
+        }
         ModelController controller = svc.getValue();
         processState.setRunning();
 
         KernelServices kernelServices = new KernelServices(container, controller, persister, new OperationValidator(svc.rootRegistration),mainSubsystemName);
         this.kernelServices.add(kernelServices);
-        if (svc.error != null) {
-            throw svc.error;
-        }
 
         validateDescriptionProviders(additionalInit, kernelServices);
         ManagementResourceRegistration subsystemReg =  svc.rootRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM,mainSubsystemName)));
@@ -806,16 +806,14 @@ public abstract class AbstractSubsystemTest {
             rootRegistration.registerOperationHandler(RootResourceHack.NAME, RootResourceHack.INSTANCE, RootResourceHack.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
             extensionRegistry.setSubsystemParentResourceRegistrations(rootRegistration, deployments);
-
             controllerInitializer.initializeModel(rootResource, rootRegistration);
-
             additionalInit.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration);
-            mainExtension.initialize(extensionRegistry.getExtensionContext("Test"));
         }
 
         @Override
         protected boolean boot(List<ModelNode> bootOperations, boolean rollbackOnRuntimeFailure) throws ConfigurationPersistenceException {
             try {
+                mainExtension.initialize(extensionRegistry.getExtensionContext("Test"));
                 if (validateOps) {
                     new OperationValidator(rootRegistration).validateOperations(bootOperations);
                 }
@@ -828,13 +826,22 @@ public abstract class AbstractSubsystemTest {
                 DeployerChainAddHandler.INSTANCE.clearDeployerMap();
                 latch.countDown();
             }
-
             return false;
         }
 
         @Override
         public void start(StartContext context) throws StartException {
-            super.start(context);
+            try {
+                super.start(context);
+            } catch (StartException e) {
+                error = e;
+                latch.countDown();
+                throw e;
+            } catch (Exception e) {
+                error = e;
+                latch.countDown();
+                throw new StartException(e);
+            }
         }
     }
 
