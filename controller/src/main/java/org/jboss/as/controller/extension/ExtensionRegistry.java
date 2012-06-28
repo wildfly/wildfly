@@ -51,7 +51,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformer;
@@ -602,9 +601,9 @@ public class ExtensionRegistry {
         public TransformersSubRegistration registerModelTransformers(final ModelVersionRange range, final ResourceTransformer subsystemTransformer) {
             final PathAddress subsystemAddress = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(SUBSYSTEM, name));
             for(final ModelVersion version : range.getVersions()) {
-                transformerRegistry.getSubsystemOperationTransformers().createChildRegistry(subsystemAddress, version, subsystemTransformer, true);
+                transformerRegistry.getSubsystemTransformers().createChildRegistry(subsystemAddress, version, subsystemTransformer, true);
             }
-            return new TransformersSubRegistration.TransformersSubRegistrationImpl(range, transformerRegistry.getSubsystemOperationTransformers(), subsystemAddress);
+            return new TransformersSubRegistration.TransformersSubRegistrationImpl(range, transformerRegistry.getSubsystemTransformers(), subsystemAddress);
         }
 
         private ManagementResourceRegistration getDummyRegistration() {

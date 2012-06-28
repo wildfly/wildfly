@@ -32,7 +32,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.GlobalOperationTransformerRegistry;
+import org.jboss.as.controller.registry.GlobalTransformerRegistry;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationTransformerRegistry;
@@ -58,7 +58,7 @@ public class OperationTransformationTestCase {
     private static final PathAddress TEST_NORMAL = PathAddress.pathAddress(PathElement.pathElement("test", "normal"));
     private static final ModelNode AS_7_1_1_SUBSYSTEM_VERSIONS = TransformerRegistry.AS_7_1_1_SUBSYSTEM_VERSIONS;
 
-    private final GlobalOperationTransformerRegistry registry = new GlobalOperationTransformerRegistry();
+    private final GlobalTransformerRegistry registry = new GlobalTransformerRegistry();
     private final ManagementResourceRegistration resourceRegistration = ManagementResourceRegistration.Factory.create(ROOT);
     private final OperationTransformer NOOP_TRANSFORMER = new OperationTransformer() {
         @Override
@@ -119,13 +119,13 @@ public class OperationTransformationTestCase {
         final PathAddress address = PathAddress.pathAddress(PathElement.pathElement("subsystem", "test"));
         final OperationTransformerRegistry localRegistry = registry.resolve(ModelVersion.create(1, 0, 0), subsystems.setEmptyList());
 
-        OperationTransformerRegistry.OperationTransformerEntry entry = localRegistry.resolveTransformer(address, "testing");
+        OperationTransformerRegistry.OperationTransformerEntry entry = localRegistry.resolveOperationTransformer(address, "testing");
         Assert.assertEquals(OperationTransformerRegistry.TransformationPolicy.FORWARD, entry.getPolicy());
 
         registry.registerTransformer(address, 1, 0, "testing", NOOP_TRANSFORMER);
         localRegistry.mergeSubsystem(registry, "test", ModelVersion.create(1, 0));
 
-        entry = localRegistry.resolveTransformer(address, "testing");
+        entry = localRegistry.resolveOperationTransformer(address, "testing");
         Assert.assertEquals(OperationTransformerRegistry.TransformationPolicy.TRANSFORM, entry.getPolicy());
 
     }
@@ -136,8 +136,8 @@ public class OperationTransformationTestCase {
 
     protected ModelNode transform(final PathAddress address, final ModelNode operation, int major, int minor) {
         final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
-        final OperationTransformerRegistry transformerRegistry = registry.resolve(major, minor, AS_7_1_1_SUBSYSTEM_VERSIONS);
-        final OperationTransformerRegistry.OperationTransformerEntry entry = transformerRegistry.resolveTransformer(address, operationName);
+        final OperationTransformerRegistry transformerRegistry = registry.resolve(ModelVersion.create(major, minor), AS_7_1_1_SUBSYSTEM_VERSIONS);
+        final OperationTransformerRegistry.OperationTransformerEntry entry = transformerRegistry.resolveOperationTransformer(address, operationName);
         if(entry.getPolicy() == OperationTransformerRegistry.TransformationPolicy.DISCARD) {
             return null;
         } else {
