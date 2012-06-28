@@ -5,7 +5,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.registry.GlobalOperationTransformerRegistry;
+import org.jboss.as.controller.registry.GlobalTransformerRegistry;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.LegacyResourceDefinition;
 import org.jboss.as.controller.registry.Resource;
@@ -28,7 +28,7 @@ public final class TransformerRegistry {
     private static TransformerRegistry INSTANCE;
     private final SimpleFullModelTransformer modelTransformer;
     private final ExtensionRegistry extensionRegistry;
-    private final GlobalOperationTransformerRegistry subsystemOperationTransformers = new GlobalOperationTransformerRegistry();
+    private final GlobalTransformerRegistry transformerRegistry = new GlobalTransformerRegistry();
 
     private TransformerRegistry(final ExtensionRegistry extensionRegistry) {
         this.modelTransformer = new SimpleFullModelTransformer(extensionRegistry);
@@ -40,8 +40,8 @@ public final class TransformerRegistry {
         return INSTANCE;
     }
 
-    public GlobalOperationTransformerRegistry getSubsystemOperationTransformers() {
-        return subsystemOperationTransformers;
+    public GlobalTransformerRegistry getSubsystemTransformers() {
+        return transformerRegistry;
     }
 
     private static ModelNode getSubsystemDefinitionForVersion(final String subsystemName, int majorVersion, int minorVersion) {

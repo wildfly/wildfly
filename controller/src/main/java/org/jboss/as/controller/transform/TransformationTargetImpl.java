@@ -18,50 +18,31 @@ import java.util.Map;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class TransformationTargetImpl implements TransformationTarget {
-    private final int major;
-    private final int minor;
-    private final int micro;
+
+    private final ModelVersion version;
     private final ExtensionRegistry extensionRegistry;
     private final TransformerRegistry transformerRegistry;
     private final Map<String, String> subsystemVersions = Collections.synchronizedMap(new HashMap<String, String>());
     private final OperationTransformerRegistry operationTransformers;
 
-    private TransformationTargetImpl(final int majorManagementVersion, final int minorManagementVersion,
-                                     final int microManagementVersion, final ModelNode subsystemVersions) {
-        this.major = majorManagementVersion;
-        this.minor = minorManagementVersion;
-        this.micro = microManagementVersion;
+    private TransformationTargetImpl(final ModelVersion version, final ModelNode subsystemVersions) {
+        this.version = version;
         this.transformerRegistry = TransformerRegistry.getInstance();
         this.extensionRegistry = transformerRegistry.getExtensionRegistry();
         for (Property p : subsystemVersions.asPropertyList()) {
             this.subsystemVersions.put(p.getName(), p.getValue().asString());
         }
-        this.operationTransformers = transformerRegistry.getSubsystemOperationTransformers().resolve(major, minor, subsystemVersions);
+        this.operationTransformers = transformerRegistry.getSubsystemTransformers().resolve(version, subsystemVersions);
     }
 
     public static TransformationTargetImpl create(final int majorManagementVersion, final int minorManagementVersion,
                                                   int microManagementVersion, final ModelNode subsystemVersions) {
-        return new TransformationTargetImpl(majorManagementVersion, minorManagementVersion, microManagementVersion, subsystemVersions);
+        return new TransformationTargetImpl(ModelVersion.create(majorManagementVersion, minorManagementVersion, microManagementVersion), subsystemVersions);
     }
 
     @Override
-    public String getManagementVersion() {
-        return major + "." + minor + "." + micro;
-    }
-
-    @Override
-    public int getMajorManagementVersion() {
-        return major;
-    }
-
-    @Override
-    public int getMinorManagementVersion() {
-        return minor;
-    }
-
-    @Override
-    public int getMicroManagementVersion() {
-        return micro;
+    public ModelVersion getVersion() {
+        return version;
     }
 
     @Override
@@ -82,11 +63,11 @@ public class TransformationTargetImpl implements TransformationTarget {
             }
         } else if (address.size() > 1) {
             if(ModelDescriptionConstants.PROFILE.equals(address.getElement(0).getKey())) {
-                final OperationTransformerRegistry.OperationTransformerEntry entry = operationTransformers.resolveTransformer(address.subAddress(1), operationName);
+                final OperationTransformerRegistry.OperationTransformerEntry entry = operationTransformers.resolveOperationTransformer(address.subAddress(1), operationName);
                 return entry.getTransformer();
             }
         }
-        final OperationTransformerRegistry.OperationTransformerEntry entry = operationTransformers.resolveTransformer(address, operationName);
+        final OperationTransformerRegistry.OperationTransformerEntry entry = operationTransformers.resolveOperationTransformer(address, operationName);
         return entry.getTransformer();
     }
 
@@ -115,6 +96,8 @@ public class TransformationTargetImpl implements TransformationTarget {
 
     public boolean isTransformationNeeded() {
         //return  !(major==org.jboss.as.version.Version.MANAGEMENT_MAJOR_VERSION&& minor == org.jboss.as.version.Version.MANAGEMENT_MINOR_VERSION); //todo dependencies issue
+        final int major = version.getMajor();
+        final int minor = version.getMinor();
         return !(major == 1 && minor == 2);
     }
 
@@ -123,6 +106,6 @@ public class TransformationTargetImpl implements TransformationTarget {
         StringBuilder sb = new StringBuilder(String.valueOf(majorVersion)).append('.').append(minorVersion);
         this.subsystemVersions.put(subsystemName, sb.toString());
         // Merge a new subsystem
-        operationTransformers.mergeSubsystem(transformerRegistry.getSubsystemOperationTransformers(), subsystemName, ModelVersion.create(majorVersion, minorVersion));
+        operationTransformers.mergeSubsystem(transformerRegistry.getSubsystemTransformers(), subsystemName, ModelVersion.create(majorVersion, minorVersion));
     }
 }

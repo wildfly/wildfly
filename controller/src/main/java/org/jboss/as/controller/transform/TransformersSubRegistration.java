@@ -28,9 +28,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import org.jboss.as.controller.registry.GlobalOperationTransformerRegistry;
-import org.jboss.as.controller.registry.OperationTransformerRegistry;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.controller.registry.GlobalTransformerRegistry;
 
 /**
  * Registration for subsystem specific operation transformers.
@@ -68,7 +66,7 @@ public interface TransformersSubRegistration {
     TransformersSubRegistration registerSubResource(PathElement element, OperationTransformer operationTransformer);
 
     /**
-     * Discard an operation.
+     * Don't forward and just discard the operation.
      *
      * @param operationNames the operation names
      */
@@ -86,9 +84,9 @@ public interface TransformersSubRegistration {
 
         private final PathAddress current;
         private final ModelVersionRange range;
-        private final GlobalOperationTransformerRegistry registry;
+        private final GlobalTransformerRegistry registry;
 
-        public TransformersSubRegistrationImpl(ModelVersionRange range, GlobalOperationTransformerRegistry registry, PathAddress parent) {
+        public TransformersSubRegistrationImpl(ModelVersionRange range, GlobalTransformerRegistry registry, PathAddress parent) {
             this.range = range;
             this.registry = registry;
             this.current = parent;

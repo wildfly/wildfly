@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.extension.SubsystemInformation;
 
@@ -33,32 +34,11 @@ import org.jboss.as.controller.extension.SubsystemInformation;
 public interface TransformationTarget {
 
     /**
-     * Get the overall management version string.
+     * Get the version of this target.
      *
-     * @return the management version
+     * @return the model version
      */
-    String getManagementVersion();
-
-    /**
-     * Get the model management major version.
-     *
-     * @return the management major version
-     */
-    int getMajorManagementVersion();
-
-    /**
-     * Get the model management minor version.
-     *
-     * @return the management minor version
-     */
-    int getMinorManagementVersion();
-
-    /**
-     * Get the model management micro version.
-     *
-     * @return the management micro version
-     */
-    int getMicroManagementVersion();
+    ModelVersion getVersion();
 
     /**
      * Get the subsystem version.
@@ -103,5 +83,13 @@ public interface TransformationTarget {
      * @param minorVersion the minor version of the subsystem's management API
      */
     void addSubsystemVersion(String subsystemName, int majorVersion, int minorVersion);
+
+    public enum TransformationTargetType {
+
+        DOMAIN,
+        HOST,
+        SERVER,
+        ;
+    }
 
 }
