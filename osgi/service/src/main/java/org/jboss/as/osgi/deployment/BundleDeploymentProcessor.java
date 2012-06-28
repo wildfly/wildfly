@@ -22,10 +22,12 @@
 
 package org.jboss.as.osgi.deployment;
 
-import java.util.List;
+import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL;
+import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_METADATA_START_POLICY;
 
+import java.util.List;
 import org.jboss.as.controller.client.DeploymentMetadata;
-import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.as.controller.client.helpers.ClientConstants.StartPolicy;
 import org.jboss.as.osgi.DeploymentMarker;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.BundleInstallIntegration;
@@ -68,7 +70,9 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
-            deployment.setAutoStart(true);
+
+            // Initialize autostart from the {@link StartPolicy}
+            deployment.setAutoStart(getStartPolicy(depUnit) == StartPolicy.AUTO);
 
             // Prevent autostart for marked deployments
             CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
@@ -82,7 +86,7 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
 
             // Optionally set the start level specified by the client of the deployment API
             DeploymentMetadata metadata = depUnit.getAttachment(Attachments.DEPLOYMENT_METADATA);
-            Integer startLevel = (Integer) metadata.getValue(ClientConstants.DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL);
+            Integer startLevel = (Integer) metadata.getValue(DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL);
             if (startLevel != null) {
                 deployment.setStartLevel(startLevel);
             }
@@ -104,5 +108,10 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
         depUnit.removeAttachment(OSGiConstants.DEPLOYMENT_KEY);
+    }
+
+    private StartPolicy getStartPolicy(final DeploymentUnit depUnit) {
+        DeploymentMetadata metadata = depUnit.getAttachment(Attachments.DEPLOYMENT_METADATA);
+        return StartPolicy.parse((String) metadata.getUserdata().get(DEPLOYMENT_METADATA_START_POLICY));
     }
 }

@@ -34,6 +34,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.StartException;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.vfs.VirtualFile;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 
 /**
@@ -87,4 +88,7 @@ public interface OSGiMessages {
 
     @Message(id = 11962, value = "Illegal repository base location: %s")
     IllegalStateException illegalStateArtifactBaseLocation(File dir);
+
+    @Message(id = 11900, value = "Cannot start bundle: %s")
+    DeploymentUnitProcessingException cannotStartBundle(@Cause Throwable cause, Bundle bundle);
 }

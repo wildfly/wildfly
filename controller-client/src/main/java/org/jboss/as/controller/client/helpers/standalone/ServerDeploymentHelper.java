@@ -45,12 +45,23 @@ public class ServerDeploymentHelper {
     }
 
     public String deploy(String name, InputStream input, Map<String, Object> userdata) throws ServerDeploymentException {
+        return this.deploy(name, input, userdata, true);
+    }
+
+    public String deploy(String name, InputStream input, boolean start) throws ServerDeploymentException {
+        return this.deploy(name, input, null, start);
+    }
+
+    public String deploy(String name, InputStream input, Map<String, Object> userdata, boolean start) throws ServerDeploymentException {
         String runtimeName;
         ServerDeploymentActionResult actionResult;
         try {
             DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            AddDeploymentPlanBuilder addBuilder = builder.add(name, input);
-            builder = addBuilder.addMetadata(userdata).andDeploy();
+            AddDeploymentPlanBuilder addBuilder = builder.add(name, input).addMetadata(userdata);
+            if (start == false) {
+                addBuilder = addBuilder.andNoStart();
+            }
+            builder = addBuilder.andDeploy();
             DeploymentPlan plan = builder.build();
             DeploymentAction action = builder.getLastAction();
             runtimeName = action.getDeploymentUnitUniqueName();
