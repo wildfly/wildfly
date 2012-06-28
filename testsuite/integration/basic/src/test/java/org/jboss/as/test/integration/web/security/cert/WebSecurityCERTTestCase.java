@@ -48,7 +48,9 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebCERTTestsSecurityDomainSetup;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
@@ -60,7 +62,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Unit test for CLIENT-CERT authentication.
- *
+ * 
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
 @RunWith(Arquillian.class)
@@ -68,7 +70,8 @@ import org.junit.runner.RunWith;
 @ServerSetup(WebCERTTestsSecurityDomainSetup.class)
 public class WebSecurityCERTTestCase {
 
-    private static final String URL = "https://localhost:8380/web-secure-client-cert/secured/";
+    @ArquillianResource
+    private ManagementClient mgmtClient;
 
     @Deployment
     public static WebArchive deployment() {
@@ -100,7 +103,7 @@ public class WebSecurityCERTTestCase {
         HttpClient httpclient = new DefaultHttpClient();
         httpclient = wrapClient(httpclient, alias);
         try {
-            HttpGet httpget = new HttpGet(URL);
+            HttpGet httpget = new HttpGet("https://" + mgmtClient.getMgmtAddress() + ":8380/web-secure-client-cert/secured/");
             HttpResponse response = httpclient.execute(httpget);
 
             StatusLine statusLine = response.getStatusLine();
