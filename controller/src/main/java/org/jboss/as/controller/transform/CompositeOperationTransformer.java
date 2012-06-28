@@ -54,7 +54,7 @@ class CompositeOperationTransformer implements OperationTransformer {
             final PathAddress stepAddress = step.hasDefined(OP_ADDR) ? PathAddress.pathAddress(step.require(OP_ADDR)) : PathAddress.EMPTY_ADDRESS;
             final TransformedOperation result;
             if(stepAddress.size() == 0 && COMPOSITE.equals(operationName)) {
-                // Process a nested step
+                // Process nested steps directly
                 result = transformOperation(context, PathAddress.EMPTY_ADDRESS, step, false);
             } else {
                 final OperationTransformer transformer = target.resolveTransformer(stepAddress, operationName);
@@ -79,7 +79,7 @@ class CompositeOperationTransformer implements OperationTransformer {
             final ModelNode response = original.clone();
             final ModelNode result = response.get(RESULT).setEmptyObject();
             for(final Step step : steps) {
-                final String id = "step-" + step.getStep();
+                final String id = "step-" + step.getStepCount();
                 final ModelNode stepResult = original.get(RESULT, id);
                 final OperationResultTransformer transformer = step.getResult();
                 result.get(id).set(transformer.transformResult(stepResult));
@@ -90,16 +90,16 @@ class CompositeOperationTransformer implements OperationTransformer {
 
     private static class Step {
 
-        private final int step;
+        private final int stepCount;
         private final TransformedOperation result;
 
         private Step(int step, TransformedOperation result) {
-            this.step = step;
+            this.stepCount = step;
             this.result = result;
         }
 
-        public int getStep() {
-            return step;
+        public int getStepCount() {
+            return stepCount;
         }
 
         public TransformedOperation getResult() {
@@ -109,7 +109,7 @@ class CompositeOperationTransformer implements OperationTransformer {
         @Override
         public String toString() {
             return "Step{" +
-                    "step=" + step +
+                    "step=" + stepCount +
                     ", operation=" + result.getTransformedOperation() +
                     '}';
         }

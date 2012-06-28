@@ -42,15 +42,15 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  *
  * @author Emanuel Muckenhuber
  */
-public class GlobalOperationTransformerRegistry {
+public class GlobalTransformerRegistry {
 
     private volatile Map<String, SubRegistry> subRegistries;
     private volatile Map<ModelVersion, OperationTransformerRegistry> versionedRegistries;
 
-    private static final AtomicMapFieldUpdater<GlobalOperationTransformerRegistry, String, SubRegistry> subRegistriesUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(GlobalOperationTransformerRegistry.class, Map.class, "subRegistries"));
-    private static final AtomicMapFieldUpdater<GlobalOperationTransformerRegistry, ModelVersion, OperationTransformerRegistry> registryUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(GlobalOperationTransformerRegistry.class, Map.class, "versionedRegistries"));
+    private static final AtomicMapFieldUpdater<GlobalTransformerRegistry, String, SubRegistry> subRegistriesUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(GlobalTransformerRegistry.class, Map.class, "subRegistries"));
+    private static final AtomicMapFieldUpdater<GlobalTransformerRegistry, ModelVersion, OperationTransformerRegistry> registryUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(GlobalTransformerRegistry.class, Map.class, "versionedRegistries"));
 
-    public GlobalOperationTransformerRegistry() {
+    public GlobalTransformerRegistry() {
         registryUpdater.clear(this);
         subRegistriesUpdater.clear(this);
     }
@@ -91,11 +91,11 @@ public class GlobalOperationTransformerRegistry {
         registerTransformer(address.iterator(), ModelVersion.create(major, minor), operationName, new OperationTransformerRegistry.OperationTransformerEntry(transformer, OperationTransformerRegistry.TransformationPolicy.TRANSFORM));
     }
 
-    public void createChildRegistry(final PathAddress address, ModelVersion version, OperationTransformer transformer) {
+    public void createChildRegistry(final PathAddress address, final ModelVersion version, OperationTransformer transformer) {
         createChildRegistry(address.iterator(), version, RESOURCE_TRANSFORMER, new OperationTransformerRegistry.OperationTransformerEntry(transformer, OperationTransformerRegistry.TransformationPolicy.TRANSFORM));
     }
 
-    public void createChildRegistry(final PathAddress address, ModelVersion version, ResourceTransformer resourceTransformer, boolean inherited) {
+    public void createChildRegistry(final PathAddress address, final ModelVersion version, ResourceTransformer resourceTransformer, boolean inherited) {
         createChildRegistry(address.iterator(), version, new OperationTransformerRegistry.ResourceTransformerEntry(resourceTransformer, inherited), OperationTransformerRegistry.FORWARD);
     }
 
@@ -109,18 +109,6 @@ public class GlobalOperationTransformerRegistry {
      */
     public void registerTransformer(final PathAddress address, final ModelVersion version, String operationName, OperationTransformer transformer) {
         registerTransformer(address.iterator(), version, operationName, new OperationTransformerRegistry.OperationTransformerEntry(transformer, OperationTransformerRegistry.TransformationPolicy.TRANSFORM));
-    }
-
-    /**
-     * Resolve the operation transformers for a given version.
-     *
-     * @param major the major version
-     * @param minor the minor version
-     * @param subsystems the subsystem versions
-     * @return the resolved operation registry
-     */
-    public OperationTransformerRegistry resolve(final int major, final int minor, final ModelNode subsystems) {
-        return resolve(ModelVersion.create(major, minor), subsystems);
     }
 
     /**
@@ -142,7 +130,7 @@ public class GlobalOperationTransformerRegistry {
     }
 
     protected void mergeSubtree(final OperationTransformerRegistry targetRegistry, final PathAddress address, final ModelVersion version) {
-        final GlobalOperationTransformerRegistry child = navigate(address.iterator());
+        final GlobalTransformerRegistry child = navigate(address.iterator());
         child.process(targetRegistry, address, version, Collections.<PathAddress, ModelVersion>emptyMap());
     }
 
@@ -169,11 +157,11 @@ public class GlobalOperationTransformerRegistry {
                 //
                 final String key = registryEntry.getKey();
                 final SubRegistry subRegistry = registryEntry.getValue();
-                final Map<String, GlobalOperationTransformerRegistry> children = SubRegistry.childrenUpdater.get(subRegistry);
-                for(final Map.Entry<String, GlobalOperationTransformerRegistry> childEntry : children.entrySet()) {
+                final Map<String, GlobalTransformerRegistry> children = SubRegistry.childrenUpdater.get(subRegistry);
+                for(final Map.Entry<String, GlobalTransformerRegistry> childEntry : children.entrySet()) {
                     //
                     final String value = childEntry.getKey();
-                    final GlobalOperationTransformerRegistry child = childEntry.getValue();
+                    final GlobalTransformerRegistry child = childEntry.getValue();
                     final PathAddress childAddress = address.append(PathElement.pathElement(key, value));
                     final ModelVersion childVersion = versions.containsKey(childAddress) ? versions.get(childAddress) : version;
                     child.process(registry, childAddress, childVersion, versions);
@@ -208,7 +196,7 @@ public class GlobalOperationTransformerRegistry {
             if(registry == null) {
                 return null;
             }
-            return registry.resolveTransformer(PathAddress.EMPTY_ADDRESS, operationName);
+            return registry.resolveOperationTransformer(PathAddress.EMPTY_ADDRESS, operationName);
         } else {
             final PathElement element = iterator.next();
             final SubRegistry registry = subRegistriesUpdater.get(this, element.getKey());
@@ -219,7 +207,7 @@ public class GlobalOperationTransformerRegistry {
         }
     }
 
-    GlobalOperationTransformerRegistry navigate(final Iterator<PathElement> iterator) {
+    GlobalTransformerRegistry navigate(final Iterator<PathElement> iterator) {
         if(! iterator.hasNext()) {
             return this;
         } else {
@@ -228,7 +216,7 @@ public class GlobalOperationTransformerRegistry {
             if(registry == null) {
                 return null;
             }
-            GlobalOperationTransformerRegistry other = SubRegistry.childrenUpdater.get(registry, element.getValue());
+            GlobalTransformerRegistry other = SubRegistry.childrenUpdater.get(registry, element.getValue());
             if(other != null) {
                 return other.navigate(iterator);
             }
@@ -272,22 +260,22 @@ public class GlobalOperationTransformerRegistry {
 
     static class SubRegistry {
 
-        private static final AtomicMapFieldUpdater<SubRegistry, String, GlobalOperationTransformerRegistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(SubRegistry.class, Map.class, "children"));
-        private volatile Map<String, GlobalOperationTransformerRegistry> children;
+        private static final AtomicMapFieldUpdater<SubRegistry, String, GlobalTransformerRegistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(SubRegistry.class, Map.class, "children"));
+        private volatile Map<String, GlobalTransformerRegistry> children;
 
         SubRegistry() {
             childrenUpdater.clear(this);
         }
 
-        GlobalOperationTransformerRegistry getOrCreate(final String value) {
+        GlobalTransformerRegistry getOrCreate(final String value) {
             for(;;) {
-                final Map<String, GlobalOperationTransformerRegistry> entries = childrenUpdater.get(this);
-                GlobalOperationTransformerRegistry entry = entries.get(value);
+                final Map<String, GlobalTransformerRegistry> entries = childrenUpdater.get(this);
+                GlobalTransformerRegistry entry = entries.get(value);
                 if(entry != null) {
                     return entry;
                 } else {
-                    entry = new GlobalOperationTransformerRegistry();
-                    final GlobalOperationTransformerRegistry existing = childrenUpdater.putAtomic(this, value, entry, entries);
+                    entry = new GlobalTransformerRegistry();
+                    final GlobalTransformerRegistry existing = childrenUpdater.putAtomic(this, value, entry, entries);
                     if(existing == null) {
                         return entry;
                     } else if(existing != entry) {
@@ -298,7 +286,7 @@ public class GlobalOperationTransformerRegistry {
         }
 
         public OperationTransformerRegistry.OperationTransformerEntry resolveTransformer(Iterator<PathElement> iterator, String value, ModelVersion version, String operationName) {
-            final GlobalOperationTransformerRegistry registry = childrenUpdater.get(this, value);
+            final GlobalTransformerRegistry registry = childrenUpdater.get(this, value);
             if(registry == null) {
                 return null;
             }

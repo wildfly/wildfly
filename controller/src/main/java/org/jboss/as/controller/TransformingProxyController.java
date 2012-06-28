@@ -36,6 +36,8 @@ import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * A {@link ProxyController} with transformation capabilities.
+ *
  * @author Emanuel Muckenhuber
  */
 public interface TransformingProxyController extends ProxyController {

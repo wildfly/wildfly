@@ -62,13 +62,23 @@ public class OperationTransformerRegistry {
     }
 
     /**
+     * Resolve a resource transformer for a given address.
+     *
+     * @param address the address
+     * @return the resource transformer
+     */
+    public ResourceTransformerEntry resolveResourceTransformer(final PathAddress address) {
+        return resolveResourceTransformer(address.iterator(), null);
+    }
+
+    /**
      * Resolve an operation transformer entry.
      *
      * @param address the address
      * @param operationName the operation name
      * @return the transformer entry
      */
-    public OperationTransformerEntry resolveTransformer(final PathAddress address, final String operationName) {
+    public OperationTransformerEntry resolveOperationTransformer(final PathAddress address, final String operationName) {
         final Iterator<PathElement> iterator = address.iterator();
         final OperationTransformerEntry entry = resolveTransformer(iterator, operationName);
         if(entry != null) {
@@ -85,7 +95,7 @@ public class OperationTransformerRegistry {
      * @param subsystemName the subsystem name
      * @param version the subsystem version
      */
-    public void mergeSubsystem(final GlobalOperationTransformerRegistry registry, String subsystemName, ModelVersion version) {
+    public void mergeSubsystem(final GlobalTransformerRegistry registry, String subsystemName, ModelVersion version) {
         final PathElement element = PathElement.pathElement(SUBSYSTEM, subsystemName);
         registry.mergeSubtree(this, PathAddress.EMPTY_ADDRESS.append(element), version);
     }
@@ -124,6 +134,24 @@ public class OperationTransformerRegistry {
         } else {
             final PathElement element = iterator.next();
             getOrCreate(element.getKey()).registerTransformer(iterator, element.getValue(), operationName, entry);
+        }
+    }
+
+    protected ResourceTransformerEntry resolveResourceTransformer(final Iterator<PathElement> iterator, final ResourceTransformerEntry inherited) {
+        if(! iterator.hasNext()) {
+            if(resourceTransformer == null) {
+                return inherited;
+            }
+            return resourceTransformer;
+        } else {
+            final ResourceTransformerEntry inheritedEntry = resourceTransformer.inherited ? resourceTransformer : inherited;
+            final PathElement element = iterator.next();
+            final String key = element.getKey();
+            SubRegistry registry = subRegistriesUpdater.get(this, key);
+            if(registry == null) {
+                return inherited;
+            }
+            return registry.resolveResourceTransformer(iterator, element.getValue(), inheritedEntry);
         }
     }
 
@@ -172,6 +200,22 @@ public class OperationTransformerRegistry {
         }
 
         public OperationTransformerEntry resolveTransformer(Iterator<PathElement> iterator, String value, String operationName) {
+            return get(value).resolveTransformer(iterator, operationName);
+        }
+
+        public void createChild(Iterator<PathElement> iterator, String value, ResourceTransformerEntry resourceTransformer, OperationTransformerEntry defaultTransformer) {
+            if(! iterator.hasNext()) {
+                create(value, resourceTransformer, defaultTransformer);
+            } else {
+                get(value).createChildRegistry(iterator, resourceTransformer, defaultTransformer);
+            }
+        }
+
+        public void registerTransformer(Iterator<PathElement> iterator, String value, String operationName,  OperationTransformerEntry entry) {
+            get(value).registerTransformer(iterator, operationName, entry);
+        }
+
+        OperationTransformerRegistry get(final String value) {
             OperationTransformerRegistry entry = childrenUpdater.get(this, value);
             if(entry == null) {
                 entry = childrenUpdater.get(this, "*");
@@ -179,22 +223,10 @@ public class OperationTransformerRegistry {
                     return null;
                 }
             }
-            return entry.resolveTransformer(iterator, operationName);
+            return entry;
         }
 
-        public void createChild(Iterator<PathElement> iterator, String value, ResourceTransformerEntry resourceTransformer, OperationTransformerEntry defaultTransformer) {
-            if(! iterator.hasNext()) {
-                getOrCreate(value, resourceTransformer, defaultTransformer);
-            } else {
-                getOrCreate(value, null, null).createChildRegistry(iterator, resourceTransformer, defaultTransformer);
-            }
-        }
-
-        public void registerTransformer(Iterator<PathElement> iterator, String value, String operationName,  OperationTransformerEntry entry) {
-            getOrCreate(value, null, null).registerTransformer(iterator, operationName, entry);
-        }
-
-        OperationTransformerRegistry getOrCreate(final String value, final ResourceTransformerEntry resourceTransformer,final OperationTransformerEntry defaultTransformer) {
+        OperationTransformerRegistry create(final String value, final ResourceTransformerEntry resourceTransformer,final OperationTransformerEntry defaultTransformer) {
             for(;;) {
                 final Map<String, OperationTransformerRegistry> entries = childrenUpdater.get(this);
                 OperationTransformerRegistry entry = entries.get(value);
@@ -212,6 +244,9 @@ public class OperationTransformerRegistry {
             }
         }
 
+        public ResourceTransformerEntry resolveResourceTransformer(Iterator<PathElement> iterator, String value, ResourceTransformerEntry inheritedEntry) {
+            return get(value).resolveResourceTransformer(iterator, inheritedEntry);
+        }
     }
 
     public static enum TransformationPolicy {
