@@ -23,6 +23,7 @@
 package org.jboss.as.controller.client.helpers.standalone.impl;
 
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_METADATA_START_POLICY;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,11 +33,13 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.client.DeploymentMetadata;
+import org.jboss.as.controller.client.helpers.ClientConstants.StartPolicy;
 import org.jboss.as.controller.client.helpers.standalone.AddDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction.Type;
@@ -234,6 +237,12 @@ class DeploymentPlanBuilderImpl
     }
 
     @Override
+    public AddDeploymentPlanBuilder andNoStart() {
+        Map<String, Object> userdata = Collections.singletonMap(DEPLOYMENT_METADATA_START_POLICY, (Object)StartPolicy.DEFERRED.toString());
+        return new DeploymentPlanBuilderImpl(this, appendUserdata(userdata));
+    }
+
+    @Override
     public UndeployDeploymentPlanBuilder undeploy(String key) {
         DeploymentActionImpl mod = DeploymentActionImpl.getUndeployAction(key);
         return new DeploymentPlanBuilderImpl(this, mod);
@@ -411,6 +420,15 @@ class DeploymentPlanBuilderImpl
         }
 
         return path.substring(idx + 1);
+    }
+
+    private Map<String, Object> appendUserdata(Map<String, Object> userdata) {
+        Map<String, Object> result = null;
+        if (userdata != null) {
+            result = (metadata != null ? metadata : new HashMap<String, Object>());
+            result.putAll(userdata);
+        }
+        return result;
     }
 
     protected void cleanup() {

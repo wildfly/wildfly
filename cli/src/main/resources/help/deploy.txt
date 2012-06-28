@@ -1,7 +1,7 @@
 SYNOPSIS
 
     deploy (file_path [--script=script_name] [--name=deployment_name] [--runtime-name=deployment_runtime_name]
-                      [--force | --disabled] [--unmanaged])
+                      [--force | --disabled] [--unmanaged] [--no-start])
            | --name=deployment_name
            [--server-groups=group_name (,group_name)* | --all-server-groups]
            [--headers={operation_header (;operation_header)*}]
@@ -40,6 +40,12 @@ ARGUMENTS
                        at and be deployed directly from its original location specified
                        with the file_path.
                        NOTE: exploded deployments are supported only as unmanaged.
+
+ --no-start          - if this argument is present, the deployment will be processed
+                       up until but not including deployment phase ACTIVATE. The result is
+                       that the deployment will not be started automatically. 
+                       If the argument is not present (the default), the deployment will be processed 
+                       by all deployment phases, which also starts the deployment.
 
  --server-groups     - comma separated list of server group names the deploy command should apply to.
                        Either server-groups or all-server-groups is required in the domain mode.

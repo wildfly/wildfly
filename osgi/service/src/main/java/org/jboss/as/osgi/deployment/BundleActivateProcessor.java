@@ -23,6 +23,7 @@
 package org.jboss.as.osgi.deployment;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.Attachments;
@@ -32,10 +33,19 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.resolver.XBundle;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 
 /**
- * Attempt to activate the OSGi deployment.
+ * Activates a bundle deployment
+ *
+ * There are various cases to consider:
+ *
+ * #1 PersistentBundle:     autostart=false
+ * #2 Context.install:      autostart=false
+ * #3 Arquillian test:      autostart=false
+ * #4 Management deploy:    autostart=true
+ * #5 Hot deploy:           autostart=true
  *
  * @author Thomas.Diesler@jboss.com
  * @since 20-Jun-2012
@@ -47,11 +57,11 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
         XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
-        if (bundle != null && deployment.isAutoStart() && bundle.isResolved()) {
+        if (bundle != null && bundle.isResolved() && deployment.isAutoStart()) {
             try {
-                bundle.start();
+                bundle.start(Bundle.START_ACTIVATION_POLICY);
             } catch (BundleException ex) {
-                LOGGER.errorCannotStartBundle(ex, bundle);
+                throw MESSAGES.cannotStartBundle(ex, bundle);
             }
         }
     }
@@ -62,7 +72,7 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
         XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
         if (bundle != null && deployment.isAutoStart()) {
             try {
-                bundle.stop();
+                bundle.stop(Bundle.STOP_TRANSIENT);
             } catch (BundleException ex) {
                 LOGGER.debugf(ex, "Cannot stop bundle: %s", bundle);
             }

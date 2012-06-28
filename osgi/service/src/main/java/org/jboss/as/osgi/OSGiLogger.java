@@ -31,8 +31,6 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.osgi.framework.Bundle;
-
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -50,9 +48,9 @@ public interface OSGiLogger extends BasicLogger {
 
     OSGiLogger LOGGER = Logger.getMessageLogger(OSGiLogger.class, OSGiLogger.class.getPackage().getName());
 
-    @LogMessage(level = ERROR)
-    @Message(id = 11900, value = "Cannot start bundle: %s")
-    void errorCannotStartBundle(@Cause Throwable cause, Bundle bundle);
+    //@LogMessage(level = ERROR)
+    //@Message(id = 11900, value = "Cannot start bundle: %s")
+    //void errorCannotStartBundle(@Cause Throwable cause, Bundle bundle);
 
     //@LogMessage(level = ERROR)
     //@Message(id = 11901, value = "Problem adding module: %s")

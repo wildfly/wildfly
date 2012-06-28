@@ -23,9 +23,11 @@
 package org.jboss.as.controller.client;
 
 import static org.jboss.as.controller.client.ControllerClientLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -56,16 +58,16 @@ import org.jboss.dmr.Property;
  */
 public class DeploymentMetadata {
 
-    private final Map<String, Object> userdata;
+    private final Map<String, Object> userdata = new HashMap<String, Object>();
     private final ModelNode metadata;
 
     public static DeploymentMetadata UNDEFINED = new DeploymentMetadata(new ModelNode());
 
-    public DeploymentMetadata(Map<String, Object> userdata) {
-        this.userdata = userdata;
-        this.metadata = new ModelNode();
-        if (userdata != null) {
-            for (Entry<String, Object> entry : userdata.entrySet()) {
+    public DeploymentMetadata(Map<String, Object> usermap) {
+        metadata = new ModelNode();
+        if (usermap != null) {
+            userdata.putAll(usermap);
+            for (Entry<String, Object> entry : usermap.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
                 if (value instanceof BigDecimal) {
@@ -90,9 +92,9 @@ public class DeploymentMetadata {
     }
 
     public DeploymentMetadata(ModelNode metadata) {
-        assert metadata != null : "Null metadata";
+        if (metadata == null)
+            throw MESSAGES.nullVar("metadata");
         this.metadata = metadata;
-        this.userdata = metadata.isDefined() ? new HashMap<String, Object>() : null;
         if (metadata.isDefined()) {
             for (Property entry : metadata.asPropertyList()) {
                 String key = entry.getName();
@@ -137,10 +139,10 @@ public class DeploymentMetadata {
 
     /**
      * Get the user defined metadata map.
-     * @return The metadata map or <code>null</code>
+     * @return The metadata map or an empty map.
      */
     public Map<String, Object> getUserdata() {
-        return userdata;
+        return Collections.unmodifiableMap(userdata);
     }
 
     /**
@@ -149,6 +151,13 @@ public class DeploymentMetadata {
      */
     public ModelNode getModelNode() {
         return metadata;
+    }
+
+    /**
+     * Return true if undefined
+     */
+    public boolean isDefined() {
+        return metadata.isDefined();
     }
 
     @Override
