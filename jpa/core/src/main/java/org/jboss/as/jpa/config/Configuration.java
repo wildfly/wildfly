@@ -121,6 +121,11 @@ public class Configuration {
     public static final String JPA_CONTAINER_MANAGED = "jboss.as.jpa.managed";
 
     /**
+     * defaults to true, if false, persistence unit will not support javax.persistence.spi.ClassTransformer Interface
+     * which means no application class rewriting
+     */
+    public static final String JPA_CONTAINER_CLASS_TRANSFORMER = "jboss.as.jpa.classtransformer";
+    /**
      * name of the persistence provider adapter class
      */
     public static final String ADAPTER_CLASS = "jboss.as.jpa.adapterClass";

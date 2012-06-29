@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -75,7 +75,6 @@ import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -101,38 +100,30 @@ import org.jboss.msc.value.ImmediateValue;
  *
  * @author Scott Marlow
  */
-public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcessor {
+public class PersistenceUnitServiceHandler {
 
     public static final String JNDI_PROPERTY = "jboss.entity.manager.factory.jndi.name";
 
     private static final AttachmentKey<Map<String,PersistenceProviderAdaptor>> providerAdaptorMapKey = AttachmentKey.create(Map.class);
     private static final String SCOPED_UNIT_NAME = "scoped-unit-name";
 
-    private final PersistenceUnitRegistryImpl persistenceUnitRegistry;
-
-    public PersistenceUnitDeploymentProcessor(final PersistenceUnitRegistryImpl persistenceUnitRegistry) {
-        this.persistenceUnitRegistry = persistenceUnitRegistry;
+    public static void deploy(DeploymentPhaseContext phaseContext, boolean startEarly) throws DeploymentUnitProcessingException {
+        handleWarDeployment(phaseContext, startEarly);
+        handleEarDeployment(phaseContext, startEarly);
+        handleJarDeployment(phaseContext, startEarly);
     }
 
-
-    @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        handleWarDeployment(phaseContext);
-        handleEarDeployment(phaseContext);
-        handleJarDeployment(phaseContext);
-    }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
+    public static void undeploy(DeploymentUnit context) {
         List<PersistenceAdaptorRemoval> removals = context.getAttachmentList(REMOVAL_KEY);
         if (removals != null) {
             for (PersistenceAdaptorRemoval removal : removals) {
                 removal.cleanup();
             }
+            context.removeAttachment(REMOVAL_KEY);
         }
     }
 
-    private void handleJarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    private static void handleJarDeployment(DeploymentPhaseContext phaseContext, boolean startEarly) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!isEarDeployment(deploymentUnit) && !isWarDeployment(deploymentUnit) && JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
@@ -144,12 +135,12 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                 puList.add(holder);
                 JPA_LOGGER.tracef("install persistence unit definition for jar %s", deploymentRoot.getRootName());
                 // assemble and install the PU service
-                addPuService(phaseContext, puList);
+                addPuService(phaseContext, puList, startEarly);
             }
         }
     }
 
-    private void handleWarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    private static void handleWarDeployment(DeploymentPhaseContext phaseContext, boolean startEarly) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isWarDeployment(deploymentUnit) && JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
@@ -190,13 +181,12 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                 valve.setValveClass("org.jboss.as.jpa.interceptor.WebNonTxEmCloserValve");
                 valves.add(valve);
             }
-
             JPA_LOGGER.tracef("install persistence unit definitions for war %s", deploymentRoot.getRootName());
-            addPuService(phaseContext, puList);
+            addPuService(phaseContext, puList, startEarly);
         }
     }
 
-    private void handleEarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    private static void handleEarDeployment(DeploymentPhaseContext phaseContext, boolean startEarly) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isEarDeployment(deploymentUnit) && JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
             // handle META-INF/persistence.xml
@@ -214,7 +204,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                     }
 
                     JPA_LOGGER.tracef("install persistence unit definitions for ear %s", root.getRootName());
-                    addPuService(phaseContext, puList);
+                    addPuService(phaseContext, puList, startEarly);
                 }
             }
         }
@@ -223,13 +213,15 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
     /**
      * Add one PU service per top level deployment that represents
      *
+     *
      * @param phaseContext
      * @param puList
+     * @param startEarly
      * @throws DeploymentUnitProcessingException
      *
      */
-    private void addPuService(DeploymentPhaseContext phaseContext, ArrayList<PersistenceUnitMetadataHolder> puList
-    )
+    private static void addPuService(DeploymentPhaseContext phaseContext, ArrayList<PersistenceUnitMetadataHolder> puList,
+                                     boolean startEarly)
         throws DeploymentUnitProcessingException {
 
         if (puList.size() > 0) {
@@ -242,10 +234,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
             final ModuleClassLoader classLoader = module.getClassLoader();
-            PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder = deploymentUnit.getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
-            if (persistenceProviderDeploymentHolder == null && deploymentUnit.getParent() != null) {
-                persistenceProviderDeploymentHolder = deploymentUnit.getParent().getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
-            }
+            PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder = getPersistenceProviderDeploymentHolder(deploymentUnit);
 
             for (PersistenceUnitMetadataHolder holder : puList) {
                 setAnnotationIndexes(holder, deploymentUnit);
@@ -254,9 +243,32 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                     // only start the persistence unit if JPA_CONTAINER_MANAGED is true
                     String jpaContainerManaged = pu.getProperties().getProperty(Configuration.JPA_CONTAINER_MANAGED);
                     boolean deployPU = (jpaContainerManaged == null? true : Boolean.parseBoolean(jpaContainerManaged));
-
+                    boolean allowClassTransformer = true;
+                    if (pu.getProperties().containsKey(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER)) {
+                        allowClassTransformer = Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER));
+                    }
+                    boolean startThisPu = false;
                     if (deployPU) {
-                        deployPersistenceUnit(phaseContext, deploymentUnit, eeModuleDescription, components, serviceTarget, classLoader, persistenceProviderDeploymentHolder, pu);
+                        if (startEarly) {
+                            if (false == allowClassTransformer) {
+                                // will start later when startEarly == false
+                                JPA_LOGGER.tracef("persistence unit %s in deployment %s is configured to not allow class transformer to be set, no class rewriting will be allowed",
+                                    pu.getPersistenceUnitName(), deploymentUnit.getName());
+                            }
+                            else {
+                                startThisPu = true;
+                            }
+                        }
+                        else { // !startEarly
+                            // PUs that have Configuration.JPA_CONTAINER_CLASS_TRANSFORMER = false will start during INSTALL phase
+                            if (false == allowClassTransformer) {
+                                startThisPu = true;
+                            }
+                        }
+
+                        if (startThisPu) {
+                            deployPersistenceUnit(phaseContext, deploymentUnit, eeModuleDescription, components, serviceTarget, classLoader, persistenceProviderDeploymentHolder, pu, startEarly);
+                        }
                     }
                     else {
                         JPA_LOGGER.tracef("persistence unit %s in deployment %s is not container managed (%s is set to false)",
@@ -267,7 +279,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         }
     }
 
-    private void deployPersistenceUnit(DeploymentPhaseContext phaseContext, DeploymentUnit deploymentUnit, EEModuleDescription eeModuleDescription, Collection<ComponentDescription> components, ServiceTarget serviceTarget, ModuleClassLoader classLoader, PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder, PersistenceUnitMetadata pu) throws DeploymentUnitProcessingException {
+    private static void deployPersistenceUnit(DeploymentPhaseContext phaseContext, DeploymentUnit deploymentUnit, EEModuleDescription eeModuleDescription, Collection<ComponentDescription> components, ServiceTarget serviceTarget, ModuleClassLoader classLoader, PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder, PersistenceUnitMetadata pu, boolean startEarly) throws DeploymentUnitProcessingException {
         pu.setClassLoader(classLoader);
         try {
             final HashMap properties = new HashMap();
@@ -306,7 +318,11 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
             final ServiceName puServiceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
             // add the PU service as a dependency to all EE components in this scope
-            this.addPUServiceDependencyToComponents(components, puServiceName);
+            addPUServiceDependencyToComponents(components, puServiceName);
+
+            if (startEarly) {   // require that the pu service start before the next deployment phase starts
+                phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, puServiceName);
+            }
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
 
@@ -373,7 +389,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             }
 
             builder.setInitialMode(ServiceController.Mode.ACTIVE)
-                .addInjection(service.getPropertiesInjector(), properties);
+                .addInjection(service.getPropertiesInjector(), properties)
+                .addInjection(PersistenceUnitRegistryImpl.INSTANCE.getInjector());
 
             // get async executor from Services.addServerExecutorDependency
             addServerExecutorDependency(builder, service.getExecutorInjector(), false);
@@ -394,7 +411,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
      * @param puHolder
      * @param deploymentUnit
      */
-    private void setAnnotationIndexes(
+    private static void setAnnotationIndexes(
             final PersistenceUnitMetadataHolder puHolder,
             DeploymentUnit deploymentUnit ) {
 
@@ -421,7 +438,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         }
     }
 
-    private String adjustJndi(String dataSourceName) {
+    private static String adjustJndi(String dataSourceName) {
         if (dataSourceName != null && dataSourceName.length() > 0 && !dataSourceName.startsWith("java:")) {
             if (dataSourceName.startsWith("jboss/")) {
                 return "java:" + dataSourceName;
@@ -442,7 +459,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
      * @throws DeploymentUnitProcessingException
      *
      */
-    private PersistenceProviderAdaptor getPersistenceProviderAdaptor(
+    private static PersistenceProviderAdaptor getPersistenceProviderAdaptor(
         final PersistenceUnitMetadata pu,
         final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder,
         final DeploymentUnit deploymentUnit
@@ -490,7 +507,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
      * @param adaptor
      * @return the application level shared PersistenceProviderAdaptor (which may of been set by a different thread)
      */
-    private PersistenceProviderAdaptor savePerDeploymentSharedPersistenceProviderAdaptor(DeploymentUnit deploymentUnit, String adaptorModule, PersistenceProviderAdaptor adaptor) {
+    private static PersistenceProviderAdaptor savePerDeploymentSharedPersistenceProviderAdaptor(DeploymentUnit deploymentUnit, String adaptorModule, PersistenceProviderAdaptor adaptor) {
         if (deploymentUnit.getParent() != null) {
             deploymentUnit = deploymentUnit.getParent();
         }
@@ -506,7 +523,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         }
     }
 
-    private PersistenceProviderAdaptor getPerDeploymentSharedPersistenceProviderAdaptor(DeploymentUnit deploymentUnit, String adaptorModule) {
+    private static PersistenceProviderAdaptor getPerDeploymentSharedPersistenceProviderAdaptor(DeploymentUnit deploymentUnit, String adaptorModule) {
         if (deploymentUnit.getParent() != null) {
             deploymentUnit = deploymentUnit.getParent();
         }
@@ -526,7 +543,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
      * @param pu
      * @return
      */
-    private PersistenceProvider lookupProvider(PersistenceUnitMetadata pu) throws DeploymentUnitProcessingException {
+    private static PersistenceProvider lookupProvider(PersistenceUnitMetadata pu) throws DeploymentUnitProcessingException {
 
         // ensure that the persistence provider module is loaded
         String persistenceProviderModule = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
@@ -560,7 +577,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         return provider;
     }
 
-    private PersistenceProvider getProviderByName(PersistenceUnitMetadata pu, String persistenceProviderModule) {
+    private static PersistenceProvider getProviderByName(PersistenceUnitMetadata pu, String persistenceProviderModule) {
         String providerName = pu.getPersistenceProviderClassName();
         List<PersistenceProvider> providers =
             PersistenceProviderResolverHolder.getPersistenceProviderResolver().getPersistenceProviders();
@@ -584,7 +601,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
     }
 
 
-    private boolean isHibernate3(PersistenceProvider provider) {
+    private static boolean isHibernate3(PersistenceProvider provider) {
         boolean result = false;
         // invoke org.hibernate.Version.getVersionString()
         try {
@@ -642,7 +659,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
      * @param components    The components to which the PU service is added as a dependency
      * @param puServiceName The persistence unit service name
      */
-    private void addPUServiceDependencyToComponents(final Collection<ComponentDescription> components, final ServiceName puServiceName) {
+    private static void addPUServiceDependencyToComponents(final Collection<ComponentDescription> components, final ServiceName puServiceName) {
         if (components == null || components.isEmpty()) {
             return;
         }
@@ -668,7 +685,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
      * @param pu
      * @param adaptor
      */
-    private void addManagementConsole(final DeploymentUnit deploymentUnit, final PersistenceUnitMetadata pu,
+    private static void addManagementConsole(final DeploymentUnit deploymentUnit, final PersistenceUnitMetadata pu,
                                       final PersistenceProviderAdaptor adaptor) {
         ManagementAdaptor managementAdaptor = adaptor.getManagementAdaptor();
         // workaround for AS7-4441, if a custom hibernate.cache.region_prefix is specified, don't show the persistence
@@ -707,6 +724,11 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                 return resource;
             }
         }
+    }
+
+    private static PersistenceProviderDeploymentHolder getPersistenceProviderDeploymentHolder(DeploymentUnit deploymentUnit) {
+        deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
+        return deploymentUnit.getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
     }
 
     private static class PersistenceAdaptorRemoval {

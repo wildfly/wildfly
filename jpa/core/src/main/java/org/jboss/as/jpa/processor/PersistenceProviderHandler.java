@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -41,7 +41,6 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.ServicesAttachment;
 import org.jboss.modules.Module;
@@ -52,13 +51,11 @@ import org.jboss.modules.ModuleClassLoader;
  *
  * @author Scott Marlow
  */
-public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
+public class PersistenceProviderHandler {
 
     private static final String PERSISTENCE_PROVIDER_CLASSNAME = PersistenceProvider.class.getName();
-    /**
-     * {@inheritDoc}
-     */
-    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
+    public static void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
 
@@ -76,18 +73,12 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
                     final Class<? extends PersistenceProvider> providerClass = deploymentModuleClassLoader.loadClass(providerName).asSubclass(PersistenceProvider.class);
                     final Constructor<? extends PersistenceProvider> constructor = providerClass.getConstructor();
                     provider = constructor.newInstance();
-                    Set<ClassLoader> deploymentClassLoaders = allDeploymentModuleClassLoaders(deploymentUnit);
-                    ROOT_LOGGER.debugf("Deployment has its own persistence provider %s associated with classloaders %s", providerClass, deploymentClassLoaders.toString());
-
-                    // register persistence provider so javax.persistence.Persistence.createEntityManagerFactory can find it
-                    PersistenceProviderResolverImpl.getInstance().addDeploymentSpecificPersistenceProvider(provider, deploymentClassLoaders);
                     providerList.add(provider);
 
                 } catch (Exception e) {
                     throw MESSAGES.cannotDeployApp(e, providerName);
                 }
             }
-
 
             if (providerList.size() > 0) {
                 final String adapterClass = deploymentUnit.getAttachment(JpaAttachments.ADAPTOR_CLASS_NAME);
@@ -96,7 +87,7 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
                     try {
                         adaptor = (PersistenceProviderAdaptor) deploymentModuleClassLoader.loadClass(adapterClass).newInstance();
                         adaptor.injectJtaManager(JtaManagerImpl.getInstance());
-                        deploymentUnit.putAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER, new PersistenceProviderDeploymentHolder(providerList, adaptor));
+                        savePersistenceProviderInDeploymentUnit(deploymentUnit, new PersistenceProviderDeploymentHolder(providerList, adaptor));
                     } catch (InstantiationException e) {
                         throw MESSAGES.cannotCreateAdapter(e, adapterClass);
                     } catch (IllegalAccessException e) {
@@ -106,16 +97,35 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
                     }
                 } else {
                     // register the provider (no adapter specified)
-                    deploymentUnit.putAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER, new PersistenceProviderDeploymentHolder(providerList));
+                    savePersistenceProviderInDeploymentUnit(deploymentUnit, new PersistenceProviderDeploymentHolder(providerList));
                 }
             }
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void undeploy(final DeploymentUnit deploymentUnit) {
+    public static void finishDeploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder  = getPersistenceProviderDeploymentHolder(deploymentUnit);
+        if (persistenceProviderDeploymentHolder != null && persistenceProviderDeploymentHolder.getProvider() != null) {
+            Set<ClassLoader> deploymentClassLoaders = allDeploymentModuleClassLoaders(deploymentUnit);
+            for (PersistenceProvider provider:persistenceProviderDeploymentHolder.getProvider()) {
+                PersistenceProviderResolverImpl.getInstance().addDeploymentSpecificPersistenceProvider(provider, deploymentClassLoaders);
+            }
+        }
+    }
+
+    private static PersistenceProviderDeploymentHolder getPersistenceProviderDeploymentHolder(DeploymentUnit deploymentUnit) {
+        deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
+        return deploymentUnit.getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
+    }
+
+    private static void savePersistenceProviderInDeploymentUnit(
+            DeploymentUnit deploymentUnit, PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder) {
+        deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
+        deploymentUnit.putAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER, persistenceProviderDeploymentHolder);
+    }
+
+    public static void undeploy(final DeploymentUnit deploymentUnit) {
         Set<ClassLoader> deploymentClassLoaders = allDeploymentModuleClassLoaders(deploymentUnit);
         PersistenceProviderResolverImpl.getInstance().clearCachedDeploymentSpecificProviders(deploymentClassLoaders);
     }
@@ -126,7 +136,7 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
      * @param deploymentUnit
      * @return
      */
-    private Set<ClassLoader> allDeploymentModuleClassLoaders(DeploymentUnit deploymentUnit) {
+    private static Set<ClassLoader> allDeploymentModuleClassLoaders(DeploymentUnit deploymentUnit) {
         Set<ClassLoader> deploymentClassLoaders = new HashSet<ClassLoader>();
         final DeploymentUnit topDeploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
         final Module toplevelModule = topDeploymentUnit.getAttachment(Attachments.MODULE);

@@ -69,7 +69,7 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Scott Marlow (based on ResourceInjectionAnnotationParsingProcessor)
  */
-public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
+public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
 
 
     private static final DotName PERSISTENCE_CONTEXT_ANNOTATION_NAME = DotName.createSimple(PersistenceContext.class.getName());
