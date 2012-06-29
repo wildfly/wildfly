@@ -79,6 +79,10 @@ public class IfElseBlock {
             throw new CommandFormatException("The request in the if condition can't be null.");
         }
 
+        if(condition.charAt(0) == '(' && condition.charAt(condition.length() - 1) == ')') {
+            condition = condition.substring(1, condition.length() - 1);
+        }
+
         int i = condition.indexOf(EQ);
         if(i < 0) {
             throw new CommandFormatException("Failed to locate " + EQ + " in the if condition: " + condition);

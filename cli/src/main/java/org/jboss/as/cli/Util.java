@@ -691,6 +691,7 @@ public class Util {
         wrappingPairs.put('[', ']');
         wrappingPairs.put('\"', '\"');
     }
+
     public static List<String> splitCommands(String line) {
 
         List<String> commands = null;
