@@ -76,7 +76,10 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
     private boolean needClassFileTransformer(PersistenceUnitMetadata pu) {
         boolean result = true;
         String provider = pu.getPersistenceProviderClassName();
-        if (provider == null
+        if (pu.getProperties().containsKey(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER)) {
+            result = Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER));
+        }
+        else if (provider == null
             || provider.equals(Configuration.PROVIDER_CLASS_HIBERNATE)) {
             String useHibernateClassEnhancer = pu.getProperties().getProperty("hibernate.ejb.use_class_enhancer");
             result = "true".equals(useHibernateClassEnhancer);

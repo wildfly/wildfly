@@ -141,6 +141,32 @@ public enum Phase {
      */
     DEPENDENCIES(null),
     CONFIGURE_MODULE(null),
+    /**
+     * Processors that need to start/complete before the deployment classloader is used to load application classes, belong here.
+     *
+     * Upon entry, this phase performs the following actions:
+     * <ul>
+     * <li></li>
+     * </ul>
+     * <p>
+     * Processors in this phase have access to the following phase attachments:
+     * <ul>
+     * <li>{@link Attachments#BLAH} - description here</li>
+     * </ul>
+     * <p>
+     * Processors in this phase have access to the following deployment unit attachments, in addition to those defined
+     * for the previous phase:
+     * <ul>
+     * <li>{@link Attachments#BLAH} - description here</li>
+     * </ul>
+     * <p>
+     * In this phase, these phase attachments may be modified:
+     * <ul>
+     * <li>{@link Attachments#BLAH} - description here</li>
+     * </ul>
+     * <p>
+     */
+    FIRST_MODULE_USE(null),
     POST_MODULE(null),
     INSTALL(null),
     CLEANUP(null),
@@ -330,10 +356,19 @@ public enum Phase {
     public static final int CONFIGURE_MODULE_SPEC                       = 0x0200;
     public static final int CONFIGURE_RESOLVE_SUB_BUNDLE                = 0x0300;
 
+    // FIRST_MODULE_USE
+    public static final int FIRST_MODULE_USE_PERSISTENCE_CLASS_FILE_TRANSFORMER = 0x050; // need to be before POST_MODULE_REFLECTION_INDEX
+                                                                                         // and anything that could load class definitions
+    public static final int FIRST_MODULE_USE_INTERCEPTORS               = 0x0110;
+    public static final int FIRST_MODULE_USE_PERSISTENCE_PREPARE        = 0x0115;
+    public static final int FIRST_MODULE_USE_DSXML_DEPLOYMENT           = 0x0120;
+    public static final int FIRST_MODULE_USE_TRANSFORMER                = 0x0130;
+
+
     // POST_MODULE
     public static final int POST_MODULE_INJECTION_ANNOTATION            = 0x0100;
     public static final int POST_MODULE_REFLECTION_INDEX                = 0x0200;
-    public static final int POST_MODULE_TRANSFORMER                     = 0x0201;
+
     public static final int POST_MODULE_JSF_MANAGED_BEANS               = 0x0300;
     public static final int POST_MODULE_INTERCEPTOR_ANNOTATIONS         = 0x0301;
     public static final int POST_MODULE_EJB_BUSINESS_VIEW_ANNOTATION    = 0x0400;
@@ -379,7 +414,6 @@ public enum Phase {
     public static final int POST_MODULE_ENV_ENTRY                       = 0x1400;
     public static final int POST_MODULE_EJB_REF                         = 0x1500;
     public static final int POST_MODULE_PERSISTENCE_REF                 = 0x1600;
-    public static final int POST_MODULE_PERSISTENCE_CLASS_FILE_TRANSFORMER = 0x1620;
     public static final int POST_MODULE_DATASOURCE_REF                  = 0x1700;
     public static final int POST_MODULE_WS_REF_DESCRIPTOR               = 0x1800;
     public static final int POST_MODULE_WS_REF_ANNOTATION               = 0x1801;
@@ -403,7 +437,6 @@ public enum Phase {
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
-    public static final int INSTALL_JPA_INTERCEPTORS                    = 0x0200;
     public static final int INSTALL_JACC_POLICY                         = 0x0350;
     public static final int INSTALL_COMPONENT_AGGREGATION               = 0x0400;
     public static final int INSTALL_RESOLVE_MESSAGE_DESTINATIONS        = 0x0403;
@@ -419,7 +452,7 @@ public enum Phase {
     public static final int INSTALL_EE_MODULE_CONFIG                    = 0x1101;
     public static final int INSTALL_MODULE_JNDI_BINDINGS                = 0x1200;
     public static final int INSTALL_DEPENDS_ON_ANNOTATION               = 0x1210;
-    public static final int INSTALL_PERSISTENCE_PROVIDER                = 0x1215;   // before INSTALL_PERSISTENTUNIT
+
     public static final int INSTALL_PERSISTENTUNIT                      = 0x1220;
     public static final int INSTALL_EE_COMPONENT                        = 0x1230;
     public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1300;
@@ -439,7 +472,6 @@ public enum Phase {
     public static final int INSTALL_DEPLOYMENT_REPOSITORY               = 0x1F00;
     public static final int INSTALL_EJB_MANAGEMENT_RESOURCES            = 0x2000;
     public static final int INSTALL_APPLICATION_CLIENT                  = 0x2010;
-    public static final int INSTALL_DSXML_DEPLOYMENT                    = 0x2020;
     public static final int INSTALL_MESSAGING_XML_RESOURCES             = 0x2030;
     public static final int INSTALL_BUNDLE_ACTIVATE                     = 0x2040;
 
