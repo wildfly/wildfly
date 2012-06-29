@@ -26,27 +26,35 @@ import java.util.Locale;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.osgi.metadata.OSGiMetaData;
 
 /**
  * Processor that marks a war deployment.
  *
  * @author John Bailey
+ * @author Thomas.Diesler@jboss.com
  */
 public class WarDeploymentInitializingProcessor implements DeploymentUnitProcessor {
-
-    static final String WAR_EXTENSION = ".war";
-    static final String WAB_EXTENSION = ".wab";
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         String deploymentName = deploymentUnit.getName().toLowerCase(Locale.ENGLISH);
-        if(deploymentName.endsWith(WAR_EXTENSION) || deploymentName.endsWith(WAB_EXTENSION)) {
+        if (deploymentName.endsWith(".war") || deploymentName.endsWith(".wab")) {
             DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
+        }
+        // JAR deployments may contain OSGi metadata with a "Web-ContextPath" header
+        // This qualifies them as OSGi Web Application Bundle (WAB)
+        else if (deploymentName.endsWith(".jar")) {
+            OSGiMetaData metadata = deploymentUnit.getAttachment(Attachments.OSGI_METADATA_KEY);
+            if (metadata != null && metadata.getHeader("Web-ContextPath") != null) {
+                DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
+            }
         }
     }
 
