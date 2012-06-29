@@ -1,0 +1,21 @@
+SYNOPSIS
+
+    else [--help]   
+
+DESCRIPTION
+
+    Ends the preceding if block and starts the else block of the
+    if-else control flow.
+
+    Simple example of if-else control flow which changes
+    system property's value named test to the opposite boolean
+    value every time it is executed:
+    
+    if result.value==true of /system-property=test:read-resource
+        /system-property=test:write-attribute(name=value,value=false)
+    else
+        /system-property=test:write-attribute(name=value,value=true)
+
+ARGUMENTS
+
+    --help        - prints this description.

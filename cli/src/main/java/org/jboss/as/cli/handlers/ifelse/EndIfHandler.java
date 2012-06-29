@@ -132,7 +132,7 @@ public class EndIfHandler extends CommandHandlerWithHelp {
             try {
                 final ModelNode response = client.execute(batch.toRequest());
                 if(!Util.isSuccess(response)) {
-                    new CommandLineException("else request failed: " + Util.getFailureDescription(response));
+                    throw new CommandLineException("else request failed: " + Util.getFailureDescription(response));
                 }
             } catch (IOException e) {
                 throw new CommandLineException("else request failed", e);
