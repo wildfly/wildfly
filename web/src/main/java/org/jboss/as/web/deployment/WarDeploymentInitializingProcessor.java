@@ -26,7 +26,6 @@ import java.util.Locale;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -40,17 +39,18 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 public class WarDeploymentInitializingProcessor implements DeploymentUnitProcessor {
 
     static final String WAR_EXTENSION = ".war";
+    static final String WAB_EXTENSION = ".wab";
 
+    @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if(deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
-            return;
-        }
-        if(deploymentUnit.getName().toLowerCase(Locale.ENGLISH).endsWith(WAR_EXTENSION)) {
+        String deploymentName = deploymentUnit.getName().toLowerCase(Locale.ENGLISH);
+        if(deploymentName.endsWith(WAR_EXTENSION) || deploymentName.endsWith(WAB_EXTENSION)) {
             DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
         }
     }
 
+    @Override
     public void undeploy(final DeploymentUnit context) {
     }
 }

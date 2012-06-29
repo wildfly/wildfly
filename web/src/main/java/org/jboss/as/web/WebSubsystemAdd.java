@@ -45,12 +45,14 @@ import org.jboss.as.web.deployment.EarContextRootProcessor;
 import org.jboss.as.web.deployment.JBossWebParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.ServletContainerInitializerDeploymentProcessor;
 import org.jboss.as.web.deployment.TldParsingDeploymentProcessor;
+import org.jboss.as.web.deployment.WebContextActivationProcessor;
 import org.jboss.as.web.deployment.WarAnnotationDeploymentProcessor;
 import org.jboss.as.web.deployment.WarClassloadingDependencyProcessor;
 import org.jboss.as.web.deployment.WarDeploymentInitializingProcessor;
 import org.jboss.as.web.deployment.WarDeploymentProcessor;
 import org.jboss.as.web.deployment.WarMetaDataProcessor;
 import org.jboss.as.web.deployment.WarStructureDeploymentProcessor;
+import org.jboss.as.web.deployment.WebContextActivationProcessor.WebContextLifecycleInterceptor;
 import org.jboss.as.web.deployment.WebFragmentParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.WebInitializeInOrderProcessor;
 import org.jboss.as.web.deployment.WebParsingDeploymentProcessor;
@@ -71,6 +73,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Emanuel Muckenhuber
  * @author Tomaz Cerar
+ * @author Thomas.Diesler@jboss.com
  */
 class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
@@ -128,6 +131,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JSF_ANNOTATIONS, new JsfAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new WarDeploymentProcessor(defaultVirtualServer));
+                processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAB_DEPLOYMENT, new WebContextActivationProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
 
@@ -148,6 +152,9 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
                     .install());
             newControllers.addAll(factory.installServices(target));
         }
+
+        // Add the OSGi {@link WebContextLifecycleInterceptor}
+        WebContextLifecycleInterceptor.addService(target);
     }
 
     @Override

@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.jboss.as.controller.client.DeploymentMetadata;
+
 /**
  * Encapsulates a related set of actions a {@link DomainDeploymentManager} should
  * take to change the content deployed in the servers associated with one or
@@ -67,6 +69,13 @@ public interface DeploymentSetPlan {
      *         <code>false</code> otherwise
      */
     boolean isShutdown();
+
+    /**
+     * Get the metadata associated with this deployment plan.
+     *
+     * @return The meta data.
+     */
+    DeploymentMetadata getMetadata();
 
     /**
      * Gets whether the deployment set plan is organized around

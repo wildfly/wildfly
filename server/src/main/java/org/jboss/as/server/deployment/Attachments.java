@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.jar.Manifest;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.client.DeploymentMetadata;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.AdditionalModuleSpecification;
@@ -44,7 +45,10 @@ import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.spi.BundleInfo;
 import org.jboss.vfs.VirtualFile;
+import org.osgi.framework.BundleContext;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -86,6 +90,11 @@ public final class Attachments {
      * The deployment contents
      */
     public static final AttachmentKey<VirtualFile> DEPLOYMENT_CONTENTS = AttachmentKey.create(VirtualFile.class);
+
+    /**
+     * The deployment metadata
+     */
+    public static final AttachmentKey<DeploymentMetadata> DEPLOYMENT_METADATA = AttachmentKey.create(DeploymentMetadata.class);
 
     /**
      * The deployment hash
@@ -207,6 +216,23 @@ public final class Attachments {
     //
 
     public static final AttachmentKey<AbstractVaultReader> VAULT_READER_ATTACHMENT_KEY = AttachmentKey.create(AbstractVaultReader.class);
+    /**
+     * Attachment key for the {@link BundleInfo} when an OSGi bundle deployment is detected.
+     */
+    public static final AttachmentKey<BundleInfo> BUNDLE_INFO_KEY = AttachmentKey.create(BundleInfo.class);
+    /**
+     * Attachment key for the OSGi system context.
+     */
+    public static final AttachmentKey<BundleContext> SYSTEM_CONTEXT_KEY = AttachmentKey.create(BundleContext.class);
+
+    //
+    // REGISTER
+    //
+
+    /**
+     * Attachment key for the installed {@link XBundle}.
+     */
+    public static final AttachmentKey<XBundle> INSTALLED_BUNDLE_KEY = AttachmentKey.create(XBundle.class);
 
     //
     // DEPENDENCIES

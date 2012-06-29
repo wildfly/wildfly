@@ -22,11 +22,15 @@
 
 package org.jboss.as.osgi.deployment;
 
-import java.util.List;
+import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL;
+import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_METADATA_START_POLICY;
 
+import java.util.List;
+import org.jboss.as.controller.client.DeploymentMetadata;
+import org.jboss.as.controller.client.helpers.ClientConstants.StartPolicy;
+import org.jboss.as.osgi.DeploymentMarker;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.BundleInstallIntegration;
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -35,11 +39,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
-import org.jboss.osgi.framework.IntegrationServices;
-import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.spi.BundleInfo;
 
 /**
@@ -65,23 +66,41 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         // Check for attached BundleInfo
-        BundleInfo info = depUnit.getAttachment(OSGiConstants.BUNDLE_INFO_KEY);
+        BundleInfo info = depUnit.getAttachment(Attachments.BUNDLE_INFO_KEY);
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
 
-            // Prevent autostart of ARQ deployments
-            DotName runWithName = DotName.createSimple("org.junit.runner.RunWith");
+            // Initialize autostart from the {@link StartPolicy}
+            deployment.setAutoStart(getStartPolicy(depUnit) == StartPolicy.AUTO);
+
+            // Prevent autostart for marked deployments
             CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-            List<AnnotationInstance> runWithList = compositeIndex.getAnnotations(runWithName);
-            deployment.setAutoStart(runWithList.isEmpty());
+            DotName markerName = DotName.createSimple(DeploymentMarker.class.getName());
+            for (AnnotationInstance marker : compositeIndex.getAnnotations(markerName)) {
+                if (marker.value("autoStart").asBoolean() == false) {
+                    deployment.setAutoStart(false);
+                    break;
+                }
+            }
+
+            // Optionally set the start level specified by the client of the deployment API
+            DeploymentMetadata metadata = depUnit.getAttachment(Attachments.DEPLOYMENT_METADATA);
+            Integer startLevel = (Integer) metadata.getValue(DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL);
+            if (startLevel != null) {
+                deployment.setStartLevel(startLevel);
+            }
+
+            // Prevent autostart of ARQ deployments
+            if (deployment.isAutoStart()) {
+                DotName runWithName = DotName.createSimple("org.junit.runner.RunWith");
+                List<AnnotationInstance> runWithList = compositeIndex.getAnnotations(runWithName);
+                deployment.setAutoStart(runWithList.isEmpty());
+            }
         }
 
-        // Attach the deployment and activate the framework
+        // Attach the deployment
         if (deployment != null) {
-            phaseContext.getServiceRegistry().getRequiredService(Services.FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
-            phaseContext.addDependency(IntegrationServices.AUTOINSTALL_COMPLETE, AttachmentKey.create(Object.class));
-            phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
             depUnit.putAttachment(OSGiConstants.DEPLOYMENT_KEY, deployment);
         }
     }
@@ -89,5 +108,10 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
         depUnit.removeAttachment(OSGiConstants.DEPLOYMENT_KEY);
+    }
+
+    private StartPolicy getStartPolicy(final DeploymentUnit depUnit) {
+        DeploymentMetadata metadata = depUnit.getAttachment(Attachments.DEPLOYMENT_METADATA);
+        return StartPolicy.parse((String) metadata.getUserdata().get(DEPLOYMENT_METADATA_START_POLICY));
     }
 }

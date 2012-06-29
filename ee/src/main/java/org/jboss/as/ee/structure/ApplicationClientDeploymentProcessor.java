@@ -54,10 +54,7 @@ public class ApplicationClientDeploymentProcessor implements DeploymentUnitProce
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
-            List<ResourceRoot> potentialSubDeployments = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-            if (potentialSubDeployments == null) {
-                return;
-            }
+            List<ResourceRoot> potentialSubDeployments = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
             for (ResourceRoot resourceRoot : potentialSubDeployments) {
                 if (ModuleRootMarker.isModuleRoot(resourceRoot)) {
                     // module roots cannot be ejb jars

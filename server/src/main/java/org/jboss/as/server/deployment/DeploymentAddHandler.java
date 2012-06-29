@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.client.DeploymentMetadata;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
@@ -162,7 +163,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         subModel.get(PERSISTENT).set(!operation.hasDefined(PERSISTENT) || operation.get(PERSISTENT).asBoolean());
 
         if (subModel.get(ENABLED).asBoolean() && context.isNormalServer()) {
-            DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contentItem);
+            DeploymentHandlerUtil.deploy(context, runtimeName, name, DeploymentMetadata.UNDEFINED, vaultReader, contentItem);
         }
 
         context.completeStep();
