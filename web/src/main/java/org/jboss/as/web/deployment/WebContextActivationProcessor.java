@@ -23,23 +23,33 @@
 package org.jboss.as.web.deployment;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
+import static org.jboss.as.web.WebSubsystemServices.JBOSS_WEB;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.deployment.WebDeploymentService.ContextActivator;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.interceptor.AbstractLifecycleInterceptor;
 import org.jboss.osgi.deployment.interceptor.InvocationContext;
 import org.jboss.osgi.deployment.interceptor.LifecycleInterceptor;
 import org.jboss.osgi.deployment.interceptor.LifecycleInterceptorException;
 import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XBundleRevision;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -52,8 +62,6 @@ import org.osgi.framework.ServiceRegistration;
  */
 public class WebContextActivationProcessor implements DeploymentUnitProcessor {
 
-    static final AttachmentKey<ServiceRegistration> REGISTRATION_KEY = AttachmentKey.create(ServiceRegistration.class);
-
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
@@ -62,57 +70,84 @@ public class WebContextActivationProcessor implements DeploymentUnitProcessor {
         if (activator != null && bundle != null) {
 
             // Start the context when the bundle will get started automatically
-            Deployment dep = bundle.adapt(Deployment.class);
-            if (dep.isAutoStart()) {
+            Deployment deployment = bundle.adapt(Deployment.class);
+            if (deployment.isAutoStart()) {
                 activator.startAsync();
             }
 
-            // Register the bundle lifecycle interceptor
-            BundleContext context = depUnit.getAttachment(Attachments.SYSTEM_CONTEXT_KEY);
-            LifecycleInterceptor interceptor = new WebContextLifecycleInterceptor(bundle, activator);
-            ServiceRegistration registration = context.registerService(LifecycleInterceptor.class.getName(), interceptor, null);
-            depUnit.putAttachment(REGISTRATION_KEY, registration);
+            // Add the {@link ContextActivator} to the {@link XBundleRevision}
+            XBundleRevision brev = bundle.getBundleRevision();
+            brev.addAttachment(ContextActivator.class, activator);
         }
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        ServiceRegistration registration = depUnit.getAttachment(REGISTRATION_KEY);
-        if (registration != null) {
-            registration.unregister();
+        ContextActivator activator = depUnit.getAttachment(ContextActivator.ATTACHMENT_KEY);
+        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
+        if (activator != null && bundle != null) {
+            bundle.adapt(Deployment.class).removeAttachment(ContextActivator.class);
         }
     }
 
-    static class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor {
+    public static class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implements Service<LifecycleInterceptor> {
 
-        private final ContextActivator activator;
-        private final XBundle bundle;
+        // [TODO] move these to a better integration point
+        static final ServiceName SYSTEM_CONTEXT = ServiceName.of("jbosgi", "SystemContext");
+        static final ServiceName FRAMEWORK_ACTIVE = ServiceName.of("jbosgi", "framework", "ACTIVE");
 
-        WebContextLifecycleInterceptor(XBundle bundle, ContextActivator activator) {
-            this.activator = activator;
-            this.bundle = bundle;
+        static final ServiceName JBOSS_WEB_LIFECYCLE_INTERCEPTOR = JBOSS_WEB.append("lifecycle-interceptor");
+
+        private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
+        private ServiceRegistration registration;
+
+        public static void addService(ServiceTarget serviceTarget) {
+            WebContextLifecycleInterceptor service = new WebContextLifecycleInterceptor();
+            ServiceBuilder<LifecycleInterceptor> builder = serviceTarget.addService(JBOSS_WEB_LIFECYCLE_INTERCEPTOR, service);
+            builder.addDependency(SYSTEM_CONTEXT, BundleContext.class, service.injectedSystemContext);
+            builder.addDependency(FRAMEWORK_ACTIVE);
+            builder.setInitialMode(Mode.PASSIVE);
+            builder.install();
+        }
+
+        @Override
+        public void start(StartContext context) throws StartException {
+            BundleContext syscontext = injectedSystemContext.getValue();
+            registration = syscontext.registerService(LifecycleInterceptor.class.getName(), this, null);
+        }
+
+        @Override
+        public void stop(StopContext context) {
+            if (registration != null)
+                registration.unregister();
         }
 
         @Override
         public void invoke(int state, InvocationContext context) {
-
-            if (bundle != context.getBundle())
-                return;
-
-            switch (state) {
-                case Bundle.ACTIVE:
-                    try {
-                        if (!activator.start(4, TimeUnit.SECONDS)) {
-                            throw new LifecycleInterceptorException(MESSAGES.startContextFailed());
+            XBundle bundle = (XBundle) context.getBundle();
+            XBundleRevision brev = bundle.getBundleRevision();
+            ContextActivator activator = brev.getAttachment(ContextActivator.class);
+            if (activator != null) {
+                switch (state) {
+                    case Bundle.ACTIVE:
+                        try {
+                            if (!activator.start(4, TimeUnit.SECONDS)) {
+                                throw new LifecycleInterceptorException(MESSAGES.startContextFailed());
+                            }
+                        } catch (TimeoutException ex) {
+                            throw new LifecycleInterceptorException(ex.getMessage(), ex);
                         }
-                    } catch (TimeoutException ex) {
-                        throw new LifecycleInterceptorException(ex.getMessage(), ex);
-                    }
-                    break;
-                case Bundle.RESOLVED:
-                    activator.stop(4, TimeUnit.SECONDS);
-                    break;
+                        break;
+                    case Bundle.RESOLVED:
+                        activator.stop(4, TimeUnit.SECONDS);
+                        break;
+                }
             }
+        }
+
+        @Override
+        public LifecycleInterceptor getValue() throws IllegalStateException, IllegalArgumentException {
+            return this;
         }
     }
 }
