@@ -29,11 +29,10 @@ import java.util.jar.JarFile;
 
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.DomainDeploymentHelper;
-import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
 import org.jboss.as.controller.client.helpers.domain.DomainDeploymentHelper.DomainDeploymentException;
+import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
-import org.jboss.as.test.integration.domain.osgi.webapp.FeedbackService;
 import org.jboss.as.test.integration.domain.osgi.webapp.FeedbackServlet;
 import org.jboss.osgi.spi.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -77,7 +76,7 @@ public abstract class AbstractOSGiTestCase {
 
     private static WebArchive getWebArchive() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, "test-webapp.war");
-        archive.addClasses(FeedbackServlet.class, FeedbackService.class);
+        archive.addClasses(FeedbackServlet.class);
         // [SHRINKWRAP-278] WebArchive.setManifest() results in WEB-INF/classes/META-INF/MANIFEST.MF
         archive.add(new Asset() {
             @Override

@@ -61,4 +61,11 @@ public interface AddDeploymentPlanBuilder extends DeploymentActionsCompleteBuild
      * @return a builder that can continue building the overall deployment plan
      */
     AddDeploymentPlanBuilder addMetadata(Map<String, Object> userdata);
+
+    /**
+     * Indicates that the specified deployment content should be deployed but not started.
+     *
+     * @return a builder that can continue building the overall deployment plan
+     */
+    AddDeploymentPlanBuilder andNoStart();
 }

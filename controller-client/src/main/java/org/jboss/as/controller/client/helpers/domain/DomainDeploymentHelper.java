@@ -43,17 +43,29 @@ public class DomainDeploymentHelper {
     }
 
     public String deploy(String name, InputStream input, List<String> serverGroups) throws DomainDeploymentException {
-        return this.deploy(name, input, null, serverGroups);
+        return this.deploy(name, input, null, true, serverGroups);
     }
 
     public String deploy(String name, InputStream input, Map<String, Object> userdata, List<String> serverGroups) throws DomainDeploymentException {
+        return this.deploy(name, input, userdata, true, serverGroups);
+    }
+
+    public String deploy(String name, InputStream input, boolean start, List<String> serverGroups) throws DomainDeploymentException {
+        return this.deploy(name, input, null, start, serverGroups);
+    }
+
+    public String deploy(String name, InputStream input, Map<String, Object> userdata, boolean start, List<String> serverGroups) throws DomainDeploymentException {
         String runtimeName;
         DeploymentPlanResult planResult;
         try {
             DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
             AddDeploymentPlanBuilder addBuilder = builder.add(name, input);
             for (String group : serverGroups) {
-                DeploymentActionsCompleteBuilder completeBuilder = addBuilder.addMetadata(userdata).andDeploy();
+                addBuilder = addBuilder.addMetadata(userdata);
+                if (start == false) {
+                    addBuilder = addBuilder.andNoStart();
+                }
+                DeploymentActionsCompleteBuilder completeBuilder = addBuilder.andDeploy();
                 builder = completeBuilder.toServerGroup(group);
             }
             DeploymentPlan plan = builder.build();

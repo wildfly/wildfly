@@ -32,7 +32,6 @@ import org.jboss.as.controller.client.helpers.domain.DomainDeploymentHelper;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.domain.osgi.bundle.FeedbackActivator;
-import org.jboss.as.test.integration.domain.osgi.webapp.FeedbackService;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -81,7 +80,7 @@ public class OSGiBundleLifecyleTestCase extends AbstractOSGiTestCase {
         JavaArchive archive = getGoodBundleArchive();
         InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
         DomainDeploymentHelper domainDeployer = getDomainDeployer(testSupport);
-        String runtimeName = domainDeployer.deploy(archive.getName(), input, SERVER_GROUPS);
+        String runtimeName = domainDeployer.deploy(archive.getName(), input, false, SERVER_GROUPS);
         try {
             response = HttpRequest.get(getHttpEndpointURL() + "?bnd=good-bundle", 10, TimeUnit.SECONDS);
             Assert.assertEquals("good-bundle:0.0.0: state==" + Bundle.INSTALLED, response);
@@ -120,7 +119,7 @@ public class OSGiBundleLifecyleTestCase extends AbstractOSGiTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivator(FeedbackActivator.class);
-                builder.addImportPackages(BundleActivator.class, FeedbackService.class);
+                builder.addImportPackages(BundleActivator.class);
                 return builder.openStream();
             }
         });
@@ -130,6 +129,7 @@ public class OSGiBundleLifecyleTestCase extends AbstractOSGiTestCase {
     private JavaArchive getBadBundleArchive() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bad-bundle");
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleManifestVersion(2);

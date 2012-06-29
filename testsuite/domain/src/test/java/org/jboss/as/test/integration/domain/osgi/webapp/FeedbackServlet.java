@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.domain.osgi.webapp;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -55,7 +56,7 @@ public class FeedbackServlet extends HttpServlet {
     @Resource
     private BundleContext context;
 
-    private FeedbackService service;
+    private BufferedReader service;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -64,12 +65,12 @@ public class FeedbackServlet extends HttpServlet {
         final FeedbackServlet servlet = this;
 
         // Track {@link PaymentService} implementations
-        ServiceTracker tracker = new ServiceTracker(context, FeedbackService.class.getName(), null) {
+        ServiceTracker tracker = new ServiceTracker(context, BufferedReader.class.getName(), null) {
 
             @Override
             public Object addingService(ServiceReference sref) {
                 log.infof("Adding service: %s to %s", sref, servlet);
-                service = (FeedbackService) super.addingService(sref);
+                service = (BufferedReader) super.addingService(sref);
                 return service;
             }
 
@@ -91,7 +92,7 @@ public class FeedbackServlet extends HttpServlet {
         out.close();
     }
 
-    private String process(String bnd, String cmd) {
+    private String process(String bnd, String cmd) throws IOException {
         String response = "Invalid parameters [bnd=" + bnd + ",cmd=" + cmd + "]";
         if (bnd != null) {
             Bundle[] bundles = getPackageAdmin().getBundles(bnd, null);
@@ -110,7 +111,7 @@ public class FeedbackServlet extends HttpServlet {
                     response = bundle + ": state==" + bundle.getState();
                 } else {
                     if (service != null)
-                        response = service.process(cmd);
+                        response = service.readLine() + ": " + cmd;
                     else
                         response = bundle + ": state==" + bundle.getState();
                 }

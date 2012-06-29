@@ -21,8 +21,9 @@
  */
 package org.jboss.as.test.integration.domain.osgi.bundle;
 
-import org.jboss.as.test.integration.domain.osgi.webapp.FeedbackService;
-import org.osgi.framework.Bundle;
+import java.io.BufferedReader;
+import java.io.StringReader;
+
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -35,13 +36,8 @@ public class FeedbackActivator implements BundleActivator {
 
     @Override
     public void start(final BundleContext context) throws Exception {
-        FeedbackService service = new FeedbackService() {
-            public String process(String msg) {
-                Bundle bundle = context.getBundle();
-                return bundle.toString() + ": " + msg;
-            }
-        };
-        context.registerService(FeedbackService.class.getName(), service, null);
+        StringReader sr = new StringReader(context.getBundle().toString());
+        context.registerService(BufferedReader.class.getName(), new BufferedReader(sr), null);
     }
 
     @Override
