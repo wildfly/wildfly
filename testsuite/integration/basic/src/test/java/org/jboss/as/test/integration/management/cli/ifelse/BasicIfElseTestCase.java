@@ -22,14 +22,12 @@
 package org.jboss.as.test.integration.management.cli.ifelse;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.junit.AfterClass;
 import org.junit.Assert;
