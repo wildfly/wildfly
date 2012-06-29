@@ -200,7 +200,11 @@ public class OperationTransformerRegistry {
         }
 
         public OperationTransformerEntry resolveTransformer(Iterator<PathElement> iterator, String value, String operationName) {
-            return get(value).resolveTransformer(iterator, operationName);
+            final OperationTransformerRegistry reg = get(value);
+            if(reg == null) {
+                return null;
+            }
+            return reg.resolveTransformer(iterator, operationName);
         }
 
         public void createChild(Iterator<PathElement> iterator, String value, ResourceTransformerEntry resourceTransformer, OperationTransformerEntry defaultTransformer) {
