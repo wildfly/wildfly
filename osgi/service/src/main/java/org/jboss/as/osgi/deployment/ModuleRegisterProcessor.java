@@ -70,7 +70,7 @@ public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
                         return new AbstractBundleRevisionAdaptor(context, module);
                     }
                 };
-                OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
+                OSGiMetaData metadata = depUnit.getAttachment(Attachments.OSGI_METADATA_KEY);
                 XEnvironment env = depUnit.getAttachment(OSGiConstants.ENVIRONMENT_KEY);
                 XResourceBuilder builder = XBundleRevisionBuilderFactory.create(factory);
                 if (metadata != null) {

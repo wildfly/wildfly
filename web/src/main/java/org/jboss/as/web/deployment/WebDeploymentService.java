@@ -91,6 +91,7 @@ class WebDeploymentService implements Service<StandardContext> {
         actions.addAll(setupActions);
         context.setInstanceManager(injectionContainer);
         context.setThreadBindingListener(new ThreadSetupBindingListener(actions));
+        WEB_LOGGER.registerWebapp(context.getName());
         try {
             try {
                 context.create();
@@ -105,7 +106,6 @@ class WebDeploymentService implements Service<StandardContext> {
             if (context.getState() != 1) {
                 throw new StartException(MESSAGES.startContextFailed());
             }
-            WEB_LOGGER.registerWebapp(context.getName());
         } finally {
             JsfInjectionProvider.getInjectionContainer().set(null);
         }
@@ -113,6 +113,7 @@ class WebDeploymentService implements Service<StandardContext> {
 
     @Override
     public synchronized void stop(StopContext stopContext) {
+        WEB_LOGGER.unregisterWebapp(context.getName());
         try {
             context.stop();
         } catch (LifecycleException e) {
@@ -133,6 +134,10 @@ class WebDeploymentService implements Service<StandardContext> {
         return context;
     }
 
+    /**
+     * Provides an API to start/stop the {@link WebDeploymentService}.
+     * This should register/deregister the web context.
+     */
     static class ContextActivator {
 
         static final AttachmentKey<ContextActivator> ATTACHMENT_KEY = AttachmentKey.create(ContextActivator.class);
@@ -143,10 +148,19 @@ class WebDeploymentService implements Service<StandardContext> {
             this.controller = controller;
         }
 
+        /**
+         * Start the web context asynchronously.
+         * This would happen during normal WAR deployment
+         */
         synchronized void startAsync() {
             controller.setMode(Mode.ACTIVE);
         }
 
+        /**
+         * Start the web context synchronously.
+         * This would happen when an OSGi Web Application Bundle (WAB) transitions to {@link Bundle#ACTIVE}
+         * i.e. the WAB starts
+         */
         synchronized boolean start(long timeout, TimeUnit unit) throws TimeoutException {
             boolean result = true;
             if (controller.getMode() == Mode.NEVER) {
@@ -156,6 +170,11 @@ class WebDeploymentService implements Service<StandardContext> {
             return result;
         }
 
+        /**
+         * Stop the web context synchronously.
+         * This would happen when an OSGi Web Application Bundle (WAB) transitions to {@link Bundle#RESOLVED}
+         * i.e. the WAB stops
+         */
         synchronized boolean stop(long timeout, TimeUnit unit) {
             boolean result = true;
             if (controller.getMode() == Mode.ACTIVE) {

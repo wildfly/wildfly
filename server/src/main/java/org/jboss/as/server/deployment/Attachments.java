@@ -44,6 +44,7 @@ import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.spi.BundleInfo;
 import org.jboss.vfs.VirtualFile;
@@ -134,6 +135,9 @@ public final class Attachments {
      * Available when the deployment contains a valid OSGi manifest
      */
     public static final AttachmentKey<Manifest> OSGI_MANIFEST = AttachmentKey.create(Manifest.class);
+
+    /** Attachment key for {@link OSGiMetaData} */
+    public static final AttachmentKey<OSGiMetaData> OSGI_METADATA_KEY = AttachmentKey.create(OSGiMetaData.class);
 
     /**
      * Module identifiers for Class-Path information

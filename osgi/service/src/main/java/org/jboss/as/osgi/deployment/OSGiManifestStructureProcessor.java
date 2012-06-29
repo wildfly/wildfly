@@ -30,6 +30,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.osgi.metadata.OSGiMetaData;
+import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 
 /**
@@ -50,25 +52,23 @@ public class OSGiManifestStructureProcessor implements DeploymentUnitProcessor {
         if (deploymentRoot == null)
             return;
 
-        // Check if we already have an OSGiManifestAttachment
-        Manifest manifest = deploymentUnit.getAttachment(Attachments.OSGI_MANIFEST);
-        if (manifest != null)
-            return;
-
         // Skip ignored deployments
         Boolean ignore = deploymentUnit.getAttachment(Attachments.IGNORE_OSGI);
         if (ignore != null && ignore.booleanValue())
             return;
 
         // Check whether this is an OSGi manifest
-        manifest = deploymentRoot.getAttachment(Attachments.MANIFEST);
+        Manifest manifest = deploymentRoot.getAttachment(Attachments.MANIFEST);
         if (OSGiManifestBuilder.isValidBundleManifest(manifest)) {
             deploymentUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
+            OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
+            deploymentUnit.putAttachment(Attachments.OSGI_METADATA_KEY, metadata);
         }
     }
 
     @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
         deploymentUnit.removeAttachment(Attachments.OSGI_MANIFEST);
+        deploymentUnit.removeAttachment(Attachments.OSGI_METADATA_KEY);
     }
 }
