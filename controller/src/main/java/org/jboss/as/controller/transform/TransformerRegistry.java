@@ -1,5 +1,13 @@
 package org.jboss.as.controller.transform;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -11,20 +19,11 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public final class TransformerRegistry {
     private final ConcurrentHashMap<String, List<SubsystemTransformer>> subsystemTransformers = new ConcurrentHashMap<String, List<SubsystemTransformer>>();
-    private static TransformerRegistry INSTANCE;
     private final SimpleFullModelTransformer modelTransformer;
     private final ExtensionRegistry extensionRegistry;
     private final DomainModelTransformers transformerRegistry = new DomainModelTransformers();
@@ -32,11 +31,6 @@ public final class TransformerRegistry {
     private TransformerRegistry(final ExtensionRegistry extensionRegistry) {
         this.modelTransformer = new SimpleFullModelTransformer(extensionRegistry);
         this.extensionRegistry = extensionRegistry;
-        INSTANCE = this;
-    }
-
-    public static TransformerRegistry getInstance() { //todo this is ugly!
-        return INSTANCE;
     }
 
     public DomainModelTransformers getDomainTransformers() {
@@ -90,6 +84,9 @@ public final class TransformerRegistry {
                     value.get(name).set(model.get(name));
                 }
             }
+        }
+        if (!value.isDefined() && model.isDefined() && reg.getChildAddresses(PathAddress.EMPTY_ADDRESS).size() == 0) {
+            value.setEmptyObject();
         }
         res.writeModel(value);
 
