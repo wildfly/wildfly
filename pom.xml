@@ -114,7 +114,9 @@
         <version.org.apache.juddi.scout>1.2.6</version.org.apache.juddi.scout>
         <version.org.apache.httpcomponents.httpclient>4.1.2</version.org.apache.httpcomponents.httpclient>
         <version.org.apache.httpcomponents.httpcore>4.1.4</version.org.apache.httpcomponents.httpcore>
+        <version.org.apache.maven>3.0.3</version.org.apache.maven>
         <version.org.apache.maven.wagon>1.0-beta-7</version.org.apache.maven.wagon>
+        <version.org.apache.maven.wagon.http-lightweight>1.0</version.org.apache.maven.wagon.http-lightweight>
         <version.org.apache.neethi>3.0.2</version.org.apache.neethi>
         <version.org.apache.openjpa>2.1.1</version.org.apache.openjpa>
         <version.org.apache.santuario>1.5.2</version.org.apache.santuario>
@@ -244,6 +246,7 @@
         <version.org.rhq.helpers>3.0.4</version.org.rhq.helpers>
         <version.org.scannotation>1.0.2</version.org.scannotation>
         <version.org.slf4j>1.6.1</version.org.slf4j>
+        <version.org.sonatype.aether>1.13.1</version.org.sonatype.aether>
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.yaml.snakeyaml>1.8</version.org.yaml.snakeyaml>
         <version.osgi>4.2.0</version.osgi>
@@ -2797,6 +2800,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-http-lightweight</artifactId>
+                <version>${version.org.apache.maven.wagon.http-lightweight}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.maven.wagon</groupId>
+                        <artifactId>wagon-http-shared</artifactId>
+                   </exclusion>
+                </exclusions>
+		      </dependency>      
+
+            <dependency>
                 <groupId>org.apache.neethi</groupId>
                 <artifactId>neethi</artifactId>
                 <version>${version.org.apache.neethi}</version>
@@ -2931,6 +2946,12 @@
                   </exclusion>
               </exclusions>
             </dependency>
+
+           <dependency>
+              <groupId>org.apache.maven</groupId>
+              <artifactId>maven-aether-provider</artifactId>
+              <version>${version.org.apache.maven}</version>
+           </dependency>
 
             <dependency>
                 <groupId>org.apache.ws.xmlschema</groupId>
@@ -5769,6 +5790,48 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
                 <version>${version.org.slf4j}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.sonatype.aether</groupId>
+                <artifactId>aether-api</artifactId>
+                <version>${version.org.sonatype.aether}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.sonatype.aether</groupId>
+                <artifactId>aether-spi</artifactId>
+                <version>${version.org.sonatype.aether}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.sonatype.aether</groupId>
+                <artifactId>aether-util</artifactId>
+                <version>${version.org.sonatype.aether}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.sonatype.aether</groupId>
+                <artifactId>aether-impl</artifactId>
+                <version>${version.org.sonatype.aether}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.sonatype.aether</groupId>
+                <artifactId>aether-connector-file</artifactId>
+                <version>${version.org.sonatype.aether}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.sonatype.aether</groupId>
+                <artifactId>aether-connector-asynchttpclient</artifactId>
+                <version>${version.org.sonatype.aether}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.sonatype.aether</groupId>
+                <artifactId>aether-connector-wagon</artifactId>
+                <version>${version.org.sonatype.aether}</version>
             </dependency>
 
             <dependency>

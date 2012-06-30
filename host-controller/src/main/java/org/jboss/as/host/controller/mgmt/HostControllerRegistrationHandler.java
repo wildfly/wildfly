@@ -22,6 +22,24 @@
 
 package org.jboss.as.host.controller.mgmt;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
+import static org.jboss.as.host.controller.HostControllerLogger.DOMAIN_LOGGER;
+import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
+
+import java.io.DataInput;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
@@ -32,26 +50,15 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformationTargetImpl;
+import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerMessages;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
-import static org.jboss.as.host.controller.HostControllerLogger.DOMAIN_LOGGER;
-import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
-
 import org.jboss.as.host.controller.HostControllerMessages;
 import org.jboss.as.host.controller.RemoteDomainConnectionService;
 import org.jboss.as.protocol.ProtocolLogger;
@@ -70,13 +77,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.threads.AsyncFutureTask;
-
-import java.io.DataInput;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Handler responsible for the host-controller registration process. This may involve assembling the correct
@@ -113,7 +113,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 // Start the registration process
                 final RegistrationContext context = new RegistrationContext();
                 context.activeOperation = handlers.registerActiveOperation(header.getBatchId(), context, context);
-                return new InitiateRegistrationHandler();
+                return new InitiateRegistrationHandler(domainController.getExtensionRegistry().getTransformerRegistry());
             case DomainControllerProtocol.REQUEST_SUBSYSTEM_VERSIONS:
                 // register the subsystem versions
                 return new RegisterSubsystemVersionsHandler();
@@ -145,6 +145,13 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
     }
 
     class InitiateRegistrationHandler implements ManagementRequestHandler<Void, RegistrationContext> {
+
+        private final TransformerRegistry transformerRegistry;
+
+        public InitiateRegistrationHandler(final TransformerRegistry transformerRegistry) {
+            this.transformerRegistry = transformerRegistry;
+        }
+
 
         @Override
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<RegistrationContext> context) throws IOException {
@@ -194,7 +201,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                     final Channel channel = context.getChannel();
                     try {
                         // The domain model is going to be sent as part of the prepared notification
-                        final OperationStepHandler handler = new HostRegistrationStepHandler(registration);
+                        final OperationStepHandler handler = new HostRegistrationStepHandler(transformerRegistry, registration);
                         operationExecutor.execute(READ_DOMAIN_MODEL, OperationMessageHandler.logging, registration, OperationAttachments.EMPTY, handler);
                     } catch (Exception e) {
                         registration.failed(e);
@@ -254,10 +261,11 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
     }
 
     class HostRegistrationStepHandler implements OperationStepHandler {
-
-        private RegistrationContext registrationContext;
-        protected HostRegistrationStepHandler(final RegistrationContext registrationContext) {
+        private final TransformerRegistry transformerRegistry;
+        private final RegistrationContext registrationContext;
+        protected HostRegistrationStepHandler(final TransformerRegistry transformerRegistry, final RegistrationContext registrationContext) {
             this.registrationContext = registrationContext;
+            this.transformerRegistry = transformerRegistry;
         }
 
         @Override
@@ -291,7 +299,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                     extensions.add(entry.getName());
                 }
                 // Remotely resolve the subsystem versions and create the transformation
-                transformers = registrationContext.createTransfomers(extensions);
+                transformers = registrationContext.createTransfomers(transformerRegistry, extensions);
             }
             // Now run the read-domain model operation
             final ReadMasterDomainModelHandler handler = new ReadMasterDomainModelHandler(transformers);
@@ -359,7 +367,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
          * @return the transformers
          * @throws OperationFailedException
          */
-        protected Transformers createTransfomers(final ModelNode extensions) throws OperationFailedException {
+        private Transformers createTransfomers(final TransformerRegistry transformerRegistry, final ModelNode extensions) throws OperationFailedException {
             final ModelNode subsystems = executeBlocking(new IOTask<ModelNode>() {
                 @Override
                 void sendMessage(FlushableDataOutput output) throws IOException {
@@ -373,7 +381,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             final int major = hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt();
             final int minor = hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt();
             final int micro = hostInfo.hasDefined(MANAGEMENT_MICRO_VERSION) ? hostInfo.get(MANAGEMENT_MICRO_VERSION).asInt() : 0;
-            final TransformationTarget target = TransformationTargetImpl.create(ModelVersion.create(major, minor, micro), subsystems, TransformationTarget.TransformationTargetType.HOST);
+            final TransformationTarget target = TransformationTargetImpl.create(transformerRegistry, ModelVersion.create(major, minor, micro), subsystems, TransformationTarget.TransformationTargetType.HOST);
             final Transformers transformers = Transformers.Factory.create(target);
             this.transformers = transformers;
             return transformers;

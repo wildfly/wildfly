@@ -21,13 +21,14 @@
 */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
-import org.junit.Test;
-
 import java.io.IOException;
+
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.dmr.ModelNode;
+import org.junit.Test;
 
 /**
  * @author <a href="tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -46,25 +47,10 @@ public class InfinispanSubsystemTransformerTestCase extends AbstractSubsystemBas
     }
 
     @Test
-    public void testConverter() throws Exception {
-        String dmr = readResource("infinispan-1.3.dmr");
+    public void testTransformer_1_3_0() throws Exception {
+        String dmr = readResource("infinispan-1.3.0.dmr");
         ModelNode expected = ModelNode.fromString(dmr);
-
-        testConverter(expected, 1, 3);
-    }
-
-    private static ModelNode cleanUndefined(ModelNode model) {
-        if (model.isDefined()) {
-            for (Property p : model.asPropertyList()) {
-                if (p.getValue().getType() == ModelType.OBJECT) {
-                    model.get(p.getName()).set(cleanUndefined(p.getValue()));
-                } else {
-                    if (!p.getValue().isDefined()) {
-                        model.remove(p.getName());
-                    }
-                }
-            }
-        }
-        return model;
+        KernelServices services = super.installInController(AdditionalInitialization.MANAGEMENT, getSubsystemXml());
+        checkSubsystemTransformer(services, expected, ModelVersion.create(1, 3));
     }
 }

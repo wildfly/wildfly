@@ -60,6 +60,16 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-aether-provider</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-http-lightweight</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
         </dependency>
@@ -73,6 +83,53 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-server</artifactId>
         </dependency>
+        
+        <dependency>
+            <groupId>org.jboss.shrinkwrap</groupId>
+            <artifactId>shrinkwrap-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.jboss.shrinkwrap</groupId>
+            <artifactId>shrinkwrap-impl-base</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+	    <dependency>
+	      <groupId>org.sonatype.aether</groupId>
+	      <artifactId>aether-api</artifactId>
+	    </dependency>
+
+	    <dependency>
+	      <groupId>org.sonatype.aether</groupId>
+	      <artifactId>aether-spi</artifactId>
+	    </dependency>
+
+	    <dependency>
+	      <groupId>org.sonatype.aether</groupId>
+	      <artifactId>aether-util</artifactId>
+	    </dependency>
+
+	    <dependency>
+	      <groupId>org.sonatype.aether</groupId>
+	      <artifactId>aether-impl</artifactId>
+	    </dependency>
+
+	    <dependency>
+	      <groupId>org.sonatype.aether</groupId>
+	      <artifactId>aether-connector-file</artifactId>
+	    </dependency>
+
+	    <dependency>
+	      <groupId>org.sonatype.aether</groupId>
+	      <artifactId>aether-connector-asynchttpclient</artifactId>
+	    </dependency>
+
+	    <dependency>
+	      <groupId>org.sonatype.aether</groupId>
+	      <artifactId>aether-connector-wagon</artifactId>
+	    </dependency>
 
     </dependencies>
 </project>

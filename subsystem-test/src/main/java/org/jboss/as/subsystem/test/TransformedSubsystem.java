@@ -19,41 +19,23 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.web.test;
+package org.jboss.as.subsystem.test;
 
-import java.io.IOException;
-
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.web.WebExtension;
+import org.jboss.as.controller.Extension;
 
 /**
  *
- * @author Jean-Frederic Clere
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class TransformedSubsystem extends AbstractSubsystemTest {
 
-    public WebSubsystemTestCase() {
-        super(WebExtension.SUBSYSTEM_NAME, new WebExtension());
+    protected TransformedSubsystem(String mainSubsystemName, Extension mainExtension) {
+        super(mainSubsystemName, mainExtension);
     }
 
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem.xml");
-
-    }
-    @Override
-    protected String getSubsystemXml(String configId) throws IOException {
-        return readResource(configId);
+    public static TransformedSubsystem create(String mainSubsystemName, Extension mainExtension) {
+        return new TransformedSubsystem(mainSubsystemName, mainExtension);
     }
 
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.MANAGEMENT;
-    }
 
-    @Override
-    protected void compareXml(String configId, String original, String marshalled) throws Exception {
-        super.compareXml(configId, original, marshalled, true);
-    }
 }

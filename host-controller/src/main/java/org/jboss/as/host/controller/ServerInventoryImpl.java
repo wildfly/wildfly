@@ -25,7 +25,6 @@ package org.jboss.as.host.controller;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ProxyController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformationTargetImpl;
@@ -483,7 +482,7 @@ public class ServerInventoryImpl implements ServerInventory {
         final ModelCombiner combiner = new ModelCombiner(serverName, domainModel, hostModel, domainController, environment);
         final ManagedServer.ManagedServerBootConfiguration configuration = combiner.createConfiguration();
         final ModelNode subsystems = resolveSubsystems(extensionRegistry);
-        final TransformationTarget target = TransformationTargetImpl.create(ModelVersion.create(Version.MANAGEMENT_MAJOR_VERSION, Version.MANAGEMENT_MINOR_VERSION, Version.MANAGEMENT_MICRO_VERSION), subsystems, TransformationTarget.TransformationTargetType.SERVER);
+        final TransformationTarget target = TransformationTargetImpl.create(extensionRegistry.getTransformerRegistry(), ModelVersion.create(Version.MANAGEMENT_MAJOR_VERSION, Version.MANAGEMENT_MINOR_VERSION, Version.MANAGEMENT_MICRO_VERSION), subsystems, TransformationTarget.TransformationTargetType.SERVER);
         return new ManagedServer(hostControllerName, serverName, processControllerClient, managementAddress, configuration, target);
     }
 

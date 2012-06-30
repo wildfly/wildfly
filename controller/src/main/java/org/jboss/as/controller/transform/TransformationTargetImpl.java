@@ -1,5 +1,9 @@
 package org.jboss.as.controller.transform;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -9,10 +13,6 @@ import org.jboss.as.controller.extension.SubsystemInformation;
 import org.jboss.as.controller.registry.OperationTransformerRegistry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -25,9 +25,9 @@ public class TransformationTargetImpl implements TransformationTarget {
     private final Map<String, String> subsystemVersions = Collections.synchronizedMap(new HashMap<String, String>());
     private final OperationTransformerRegistry operationTransformers;
 
-    private TransformationTargetImpl(final ModelVersion version, final ModelNode subsystemVersions, final OperationTransformerRegistry transformers) {
+    private TransformationTargetImpl(final TransformerRegistry transformerRegistry, final ModelVersion version, final ModelNode subsystemVersions, final OperationTransformerRegistry transformers) {
         this.version = version;
-        this.transformerRegistry = TransformerRegistry.getInstance();
+        this.transformerRegistry = transformerRegistry;
         this.extensionRegistry = transformerRegistry.getExtensionRegistry();
         for (Property p : subsystemVersions.asPropertyList()) {
             this.subsystemVersions.put(p.getName(), p.getValue().asString());
@@ -35,22 +35,22 @@ public class TransformationTargetImpl implements TransformationTarget {
         this.operationTransformers = transformers;
     }
 
-    public static TransformationTargetImpl create(final ModelVersion version, final ModelNode subsystems, final TransformationTargetType type) {
+    public static TransformationTargetImpl create(final TransformerRegistry transformerRegistry, final ModelVersion version, final ModelNode subsystems, final TransformationTargetType type) {
         final OperationTransformerRegistry registry;
         switch (type) {
             case SERVER:
-                registry = TransformerRegistry.getInstance().getDomainTransformers().resolveServer(version, subsystems);
+                registry = transformerRegistry.getDomainTransformers().resolveServer(version, subsystems);
                 break;
             default:
-                registry = TransformerRegistry.getInstance().getDomainTransformers().resolveHost(version, subsystems);
+                registry = transformerRegistry.getDomainTransformers().resolveHost(version, subsystems);
         }
-        return new TransformationTargetImpl(version, subsystems, registry);
+        return new TransformationTargetImpl(transformerRegistry, version, subsystems, registry);
     }
 
     @Deprecated
-    public static TransformationTargetImpl create(final int majorManagementVersion, final int minorManagementVersion,
+    public static TransformationTargetImpl create(final TransformerRegistry transformerRegistry, final int majorManagementVersion, final int minorManagementVersion,
                                                   int microManagementVersion, final ModelNode subsystemVersions) {
-        return create(ModelVersion.create(majorManagementVersion, minorManagementVersion, microManagementVersion), subsystemVersions, TransformationTargetType.HOST);
+        return create(transformerRegistry, ModelVersion.create(majorManagementVersion, minorManagementVersion, microManagementVersion), subsystemVersions, TransformationTargetType.HOST);
     }
 
     @Override
