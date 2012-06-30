@@ -2,41 +2,32 @@ package org.jboss.as.subsystem.test;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_TRANSFORMED_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -45,26 +36,20 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
-import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CompositeOperationHandler;
-import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -78,12 +63,8 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.SubsystemInformation;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.operations.validation.OperationValidator;
-import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -91,8 +72,6 @@ import org.jboss.as.controller.parsing.ProfileParsingCompletionHandler;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
-import org.jboss.as.controller.persistence.ModelMarshallingContext;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -100,26 +79,13 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.controller.transform.ReadTransformedResourceOperation;
-import org.jboss.as.server.DeployerChainAddHandler;
-import org.jboss.as.server.Services;
-import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
-import org.jboss.as.server.operations.RootResourceHack;
+import org.jboss.as.controller.transform.SubsystemDescriptionDump;
+import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationFailure;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.After;
 import org.junit.Before;
@@ -129,6 +95,7 @@ import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSParser;
 import org.w3c.dom.ls.LSSerializer;
+import org.xnio.IoUtils;
 
 /**
  * The base class for parsing tests which does the work of setting up the environment for parsing
@@ -153,7 +120,6 @@ public abstract class AbstractSubsystemTest {
      * instantiations in the same test without having to re-initialize the parsers.
      */
     private ExtensionRegistry extensionParsingRegistry;
-    protected ExtensionRegistry controllerExtensionRegistry;
     private TestParser testParser;
     private boolean addedExtraParsers;
     private XMLMapper xmlMapper;
@@ -172,7 +138,7 @@ public abstract class AbstractSubsystemTest {
         //Initialize the parser
         xmlMapper = XMLMapper.Factory.create();
         extensionParsingRegistry = new ExtensionRegistry(getProcessType(), new RunningModeControl(RunningMode.NORMAL));
-        testParser = new TestParser(extensionParsingRegistry);
+        testParser = new TestParser(mainSubsystemName, extensionParsingRegistry);
         xmlMapper.registerRootElement(new QName(TEST_NAMESPACE, "test"), testParser);
         mainExtension.initializeParsers(extensionParsingRegistry.getExtensionParsingContext("Test", xmlMapper));
         addedExtraParsers = false;
@@ -201,7 +167,8 @@ public abstract class AbstractSubsystemTest {
 
     /**
      * Read the classpath resource with the given name and return its contents as a string. Hook to
-     * for reading in classpath resources for subsequent parsing.
+     * for reading in classpath resources for subsequent parsing. The resource is loaded using similar
+     * semantics to {@link Class#getResource(String)}
      *
      * @param name the name of the resource
      * @return the contents of the resource as a string
@@ -210,7 +177,7 @@ public abstract class AbstractSubsystemTest {
     protected String readResource(final String name) throws IOException {
 
         URL configURL = getClass().getResource(name);
-        org.junit.Assert.assertNotNull(name + " url is null", configURL);
+        Assert.assertNotNull(name + " url is null", configURL);
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(configURL.openStream()));
         StringWriter writer = new StringWriter();
@@ -286,9 +253,13 @@ public abstract class AbstractSubsystemTest {
      *
      * @param subsystemXml the subsystem xml to be parsed
      * @return the kernel services allowing access to the controller and service container
+     * @deprecated Use {@link #createKernelServicesBuilder()} instead
      */
+    @Deprecated
     protected KernelServices installInController(String subsystemXml) throws Exception {
-        return installInController(null, subsystemXml);
+        return createKernelServicesBuilder(null)
+                .setSubsystemXml(subsystemXml)
+                .build();
     }
 
     /**
@@ -296,24 +267,26 @@ public abstract class AbstractSubsystemTest {
      *
      * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension
      * @param subsystemXml the subsystem xml to be parsed
-     * @return the kernel services allowing access to the controller and service container
+     * @deprecated Use {@link #createKernelServicesBuilder()} instead
      */
+    @Deprecated
     protected KernelServices installInController(AdditionalInitialization additionalInit, String subsystemXml) throws Exception {
-        if (additionalInit == null) {
-            additionalInit = new AdditionalInitialization();
-        }
-        List<ModelNode> operations = parse(additionalInit, subsystemXml);
-        KernelServices services = installInController(additionalInit, operations);
-        return services;
+        return createKernelServicesBuilder(additionalInit)
+                .setSubsystemXml(subsystemXml)
+                .build();
     }
 
     /**
      * Create a new controller with the passed in operations.
      *
      * @param bootOperations the operations
+     * @deprecated Use {@link #createKernelServicesBuilder()} instead
      */
+    @Deprecated
     protected KernelServices installInController(List<ModelNode> bootOperations) throws Exception {
-        return installInController(null, bootOperations);
+        return createKernelServicesBuilder(null)
+                .setBootOperations(bootOperations)
+                .build();
     }
 
     /**
@@ -321,57 +294,22 @@ public abstract class AbstractSubsystemTest {
      *
      * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension
      * @param bootOperations the operations
+     * @deprecated Use {@link #createKernelServicesBuilder()} instead
      */
+    @Deprecated
     protected KernelServices installInController(AdditionalInitialization additionalInit, List<ModelNode> bootOperations) throws Exception {
-        if (additionalInit == null) {
-            additionalInit = new AdditionalInitialization();
-        }
-        ControllerInitializer controllerInitializer = additionalInit.createControllerInitializer();
+        return createKernelServicesBuilder(additionalInit)
+                .setBootOperations(bootOperations)
+                .build();
+    }
 
-        PathManagerService pathManager = new PathManagerService() {
-        };
-        controllerInitializer.setPathManger(pathManager);
-
-        additionalInit.setupController(controllerInitializer);
-
-        //Initialize the controller
-        ServiceContainer container = ServiceContainer.Factory.create("test" + counter.incrementAndGet());
-        ServiceTarget target = container.subTarget();
-        ControlledProcessState processState = new ControlledProcessState(true);
-        List<ModelNode> extraOps = controllerInitializer.initializeBootOperations();
-        List<ModelNode> allOps = new ArrayList<ModelNode>();
-        if (extraOps != null) {
-            allOps.addAll(extraOps);
-        }
-        allOps.addAll(bootOperations);
-        StringConfigurationPersister persister = new StringConfigurationPersister(allOps, testParser);
-        controllerExtensionRegistry = cloneExtensionRegistry();
-        controllerExtensionRegistry.setWriterRegistry(persister);
-        controllerExtensionRegistry.setPathManager(pathManager);
-        ModelControllerService svc = new ModelControllerService(mainExtension, controllerInitializer, additionalInit, controllerExtensionRegistry,
-                processState, persister, additionalInit.isValidateOperations());
-        ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
-        builder.install();
-        target.addService(PathManagerService.SERVICE_NAME, pathManager).install();
-
-        additionalInit.addExtraServices(target);
-
-        //sharedState = svc.state;
-        svc.latch.await();
-        if (svc.error != null) {
-            throw svc.error;
-        }
-        ModelController controller = svc.getValue();
-        processState.setRunning();
-
-        KernelServices kernelServices = new KernelServices(container, controller, persister, new OperationValidator(svc.rootRegistration),mainSubsystemName);
-        this.kernelServices.add(kernelServices);
-
-        validateDescriptionProviders(additionalInit, kernelServices);
-        ManagementResourceRegistration subsystemReg =  svc.rootRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM,mainSubsystemName)));
-        validateModelDescriptions(PathAddress.EMPTY_ADDRESS, subsystemReg);
-
-        return kernelServices;
+   /**
+    * Creates a new kernel services builder used to create a new controller containing the subsystem being tested
+    *
+    * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension
+    */
+    protected KernelServicesBuilder createKernelServicesBuilder(AdditionalInitialization additionalInit) {
+        return new KernelServicesBuilderImpl(additionalInit);
     }
 
     /**
@@ -489,28 +427,105 @@ public abstract class AbstractSubsystemTest {
     }
 
     /**
+     * Dumps the target subsystem resource description to DMR format, needed by TransformerRegistry for non-standard subsystems
+     *
+     * @param kernelServices the kernel services for the started controller
+     * @param modelVersion the target subsystem model version
+     * @deprecated this might no longer be needed following refactoring of TransformerRegistry
+     */
+    @Deprecated
+    protected void generateLegacySubsystemResourceRegistrationDmr(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
+        KernelServices legacy = kernelServices.getLegacyServices(modelVersion);
+
+        //Generate the org.jboss.as.controller.transform.subsystem-version.dmr file - just use the format used by TransformerRegistry for now
+        PathAddress pathAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName));
+        ModelNode desc = SubsystemDescriptionDump.readFullModelDescription(pathAddress, legacy.getRootRegistration().getSubModel(pathAddress));
+        File file = new File("target/classes").getAbsoluteFile();
+        Assert.assertTrue(file.exists());
+        for (String part : TransformerRegistry.class.getPackage().getName().split("\\.")) {
+            file = new File(file, part);
+            if (!file.exists()) {
+                file.mkdir();
+            }
+        }
+        PrintWriter pw = new PrintWriter(new File(file, mainSubsystemName + "-" + modelVersion.getMajor() + "." + modelVersion.getMinor() + ".dmr"));
+        try {
+            desc.writeString(pw, false);
+        } finally {
+            IoUtils.safeClose(pw);
+        }
+    }
+
+    /**
+     * Checks that the subsystem can be transformed into the expected target DMR
+     *
+     * @param kernelServices the kernel services for the started controller
+     * @param modelVersion the target subsystem model version
+     * @throws IOException if
+     */
+    protected void checkSubsystemTransformer(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
+        KernelServices legacy = kernelServices.getLegacyServices(modelVersion);
+        ModelNode legacyModel = legacy.readWholeModel();
+        legacyModel = legacyModel.require(SUBSYSTEM);
+        legacyModel = legacyModel.require(mainSubsystemName);
+
+
+        ModelNode transformed = kernelServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName);
+        compare(legacyModel, transformed, true);
+    }
+
+    /**
+     * Checks that the subsystem can be transformed into the expected target DMR
+     *
+     * @param kernelServices the kernel services for the started controller
+     * @param legacyModel the dmr model for the target subsystem version
+     * @param modelVersion the model version
+     */
+    protected void checkSubsystemTransformer(KernelServices kernelServices, final ModelNode legacyModel, ModelVersion modelVersion) {
+        compare(legacyModel, kernelServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName), true);
+    }
+
+
+    /**
      * Compares two models to make sure that they are the same
      * @param node1 the first model
      * @param node2 the second model
      * @throws AssertionFailedError if the models were not the same
      */
     protected void compare(ModelNode node1, ModelNode node2) {
+        compare(node1, node2, false);
+    }
+    /**
+     * Compares two models to make sure that they are the same
+     * @param node1 the first model
+     * @param node2 the second model
+     * @param ignoreUndefined {@code true} if keys containing undefined nodes should be ignored
+     * @throws AssertionFailedError if the models were not the same
+     */
+    protected void compare(ModelNode node1, ModelNode node2, boolean ignoreUndefined) {
         Assert.assertEquals(getCompareStackAsString() + " types", node1.getType(), node2.getType());
         if (node1.getType() == ModelType.OBJECT) {
-            final Set<String> keys1 = node1.keys();
-            final Set<String> keys2 = node2.keys();
+            ModelNode model1 = ignoreUndefined ? trimUndefinedChildren(node1) : node1;
+            ModelNode model2 = ignoreUndefined ? trimUndefinedChildren(node2) : node2;
+            final Set<String> keys1 = model1.keys();
+            final Set<String> keys2 = model2.keys();
+
             Assert.assertEquals(node1 + "\n" + node2, keys1.size(), keys2.size());
+            Assert.assertTrue(keys1.containsAll(keys2));
 
             for (String key : keys1) {
-                final ModelNode child1 = node1.get(key);
-                Assert.assertTrue("Missing: " + key + "\n" + node1 + "\n" + node2, node2.has(key));
-                final ModelNode child2 = node2.get(key);
+                final ModelNode child1 = model1.get(key);
+                Assert.assertTrue("Missing: " + key + "\n" + node1 + "\n" + node2, model2.has(key));
+                final ModelNode child2 = model2.get(key);
+
                 if (child1.isDefined()) {
-                    Assert.assertTrue("key="+ key + "\n with child1 \n" + child1.toString() + "\n has child2 not defined\n node2 is:\n" + node2.toString(), child2.isDefined());
+                    if (!ignoreUndefined) {
+                        Assert.assertTrue("key="+ key + "\n with child1 \n" + child1.toString() + "\n has child2 not defined\n node2 is:\n" + node2.toString(), child2.isDefined());
+                    }
                     stack.get().push(key + "/");
-                    compare(child1, child2);
+                    compare(child1, child2, ignoreUndefined);
                     stack.get().pop();
-                } else {
+                } else if (!ignoreUndefined){
                     Assert.assertFalse(child2.asString(), child2.isDefined());
                 }
             }
@@ -521,7 +536,7 @@ public abstract class AbstractSubsystemTest {
 
             for (int i = 0; i < list1.size(); i++) {
                 stack.get().push(i + "/");
-                compare(list1.get(i), list2.get(i));
+                compare(list1.get(i), list2.get(i), ignoreUndefined);
                 stack.get().pop();
             }
 
@@ -530,7 +545,7 @@ public abstract class AbstractSubsystemTest {
             Property prop2 = node2.asProperty();
             Assert.assertEquals(prop1 + "\n" + prop2, prop1.getName(), prop2.getName());
             stack.get().push(prop1.getName() + "/");
-            compare(prop1.getValue(), prop2.getValue());
+            compare(prop1.getValue(), prop2.getValue(), ignoreUndefined);
             stack.get().pop();
 
         } else {
@@ -541,6 +556,16 @@ public abstract class AbstractSubsystemTest {
                 throw error;
             }
         }
+    }
+
+    private ModelNode trimUndefinedChildren(ModelNode model) {
+        ModelNode copy = model.clone();
+        for (String key : new HashSet<String>(copy.keys())) {
+            if (!copy.hasDefined(key)) {
+                copy.remove(key);
+            }
+        }
+        return copy;
     }
 
     /**
@@ -715,163 +740,37 @@ public abstract class AbstractSubsystemTest {
         Assert.assertEquals(normalizeXML(xmlOriginal), normalizeXML(xmlMarshalled));
     }
 
+    private ClassLoader createChildFirstClassLoader(String...resources) throws MalformedURLException {
+        URL[] urls = new URL[resources.length];
+        int i = 0;
+        for (String resource : resources) {
+            URL url = this.getClass().getResource(resource);
+            if (url == null) {
+                ClassLoader cl = this.getClass().getClassLoader();
+                if (cl == null) {
+                    cl = ClassLoader.getSystemClassLoader();
+                }
+                url = cl.getResource(resource);
+                if (url == null) {
+                    File file = new File(resource);
+                    if (file.exists()) {
+                        url = file.toURI().toURL();
+                    }
+                }
+            }
+            if (url == null) {
+                throw new IllegalArgumentException("Could not find resource " + resource);
+            }
+            urls[i++] = url;
+        }
+        return new ChildFirstClassLoader(this.getClass().getClassLoader(), urls);
+    }
+
     private String removeNamespace(String xml) {
         return xml.replaceFirst(" xmlns=\".*\"", "");
     }
 
-    private final class TestParser implements  XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelMarshallingContext> {
-        private final ExtensionRegistry extensionRegistry;
-
-        private TestParser(ExtensionRegistry extensionRegistry) {
-            this.extensionRegistry = extensionRegistry;
-        }
-
-        @Override
-        public void writeContent(XMLExtendedStreamWriter writer, ModelMarshallingContext context) throws XMLStreamException {
-
-            String defaultNamespace = writer.getNamespaceContext().getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
-            try {
-                ModelNode subsystem = context.getModelNode().get(SUBSYSTEM, mainSubsystemName);
-                if (subsystem.isDefined()) {
-                    //We might have been removed
-                    XMLElementWriter<SubsystemMarshallingContext> subsystemWriter = context.getSubsystemWriter(mainSubsystemName);
-                    if (subsystemWriter != null) {
-                        subsystemWriter.writeContent(writer, new SubsystemMarshallingContext(subsystem, writer));
-                    }
-                }
-            }catch (Throwable t){
-                Assert.fail("could not marshal subsystem xml "+t);
-            } finally {
-                writer.setDefaultNamespace(defaultNamespace);
-            }
-            writer.writeEndDocument();
-        }
-
-        @Override
-        public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
-
-            ParseUtils.requireNoAttributes(reader);
-            final Map<String, List<ModelNode>> profileOps = new LinkedHashMap<String, List<ModelNode>>();
-            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.UNKNOWN) {
-                    throw unexpectedElement(reader);
-                }
-                if (Element.forName(reader.getLocalName()) != Element.SUBSYSTEM) {
-                    throw unexpectedElement(reader);
-                }
-                String namespace = reader.getNamespaceURI();
-                if (profileOps.containsKey(namespace)) {
-                    throw MESSAGES.duplicateDeclaration("subsystem", reader.getLocation());
-                }
-                // parse subsystem
-                final List<ModelNode> subsystems = new ArrayList<ModelNode>();
-                reader.handleAny(subsystems);
-
-                profileOps.put(namespace, subsystems);
-            }
-
-            // Let extensions modify the profile
-            Set<ProfileParsingCompletionHandler> completionHandlers = extensionRegistry.getProfileParsingCompletionHandlers();
-            for (ProfileParsingCompletionHandler completionHandler : completionHandlers) {
-                completionHandler.handleProfileParsingCompletion(profileOps, operations);
-            }
-
-            for (List<ModelNode> subsystems : profileOps.values()) {
-                operations.addAll(subsystems);
-            }
-        }
-    }
-
-    private static class ModelControllerService extends AbstractControllerService {
-
-        final CountDownLatch latch = new CountDownLatch(1);
-        final StringConfigurationPersister persister;
-        final AdditionalInitialization additionalInit;
-        final ControllerInitializer controllerInitializer;
-        final ExtensionRegistry extensionRegistry;
-        final Extension mainExtension;
-        final boolean validateOps;
-        volatile ManagementResourceRegistration rootRegistration;
-        volatile Exception error;
-
-        ModelControllerService(final Extension mainExtension, final ControllerInitializer controllerInitializer,
-                               final AdditionalInitialization additionalPreStep, final ExtensionRegistry extensionRegistry,
-                               final ControlledProcessState processState, final StringConfigurationPersister persister, boolean validateOps) {
-            super(additionalPreStep.getProcessType(), new RunningModeControl(additionalPreStep.getRunningMode()), persister,
-                    processState, DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
-            this.persister = persister;
-            this.additionalInit = additionalPreStep;
-            this.extensionRegistry = extensionRegistry;
-            this.mainExtension = mainExtension;
-            this.controllerInitializer = controllerInitializer;
-            this.validateOps = validateOps;
-        }
-
-        @Override
-        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-            this.rootRegistration = rootRegistration;
-            rootResource.getModel().get(SUBSYSTEM);
-            rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_TRANSFORMED_RESOURCE_OPERATION, new ReadTransformedResourceOperation(), ReadTransformedResourceOperation.DESCRIPTION, true);
-            rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
-            rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
-            rootRegistration.registerOperationHandler(CompositeOperationHandler.NAME, CompositeOperationHandler.INSTANCE, CompositeOperationHandler.INSTANCE, false, EntryType.PRIVATE);
-
-            //Handler to be able to get hold of the root resource
-            rootRegistration.registerOperationHandler(RootResourceGrabber.NAME, RootResourceGrabber.INSTANCE, RootResourceGrabber.INSTANCE, false);
-
-            ManagementResourceRegistration deployments = rootRegistration.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
-
-            //Hack to be able to access the registry for the jmx facade
-            rootRegistration.registerOperationHandler(RootResourceHack.NAME, RootResourceHack.INSTANCE, RootResourceHack.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-
-            extensionRegistry.setSubsystemParentResourceRegistrations(rootRegistration, deployments);
-            controllerInitializer.initializeModel(rootResource, rootRegistration);
-            additionalInit.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration);
-        }
-
-        @Override
-        protected boolean boot(List<ModelNode> bootOperations, boolean rollbackOnRuntimeFailure) throws ConfigurationPersistenceException {
-            try {
-                mainExtension.initialize(extensionRegistry.getExtensionContext("Test"));
-                if (validateOps) {
-                    new OperationValidator(rootRegistration).validateOperations(bootOperations);
-                }
-                return super.boot(persister.bootOperations, rollbackOnRuntimeFailure);
-            } catch (Exception e) {
-                error = e;
-            } catch (Throwable t) {
-                error = new Exception(t);
-            } finally {
-                DeployerChainAddHandler.INSTANCE.clearDeployerMap();
-                latch.countDown();
-            }
-            return false;
-        }
-
-        @Override
-        public void start(StartContext context) throws StartException {
-            try {
-                super.start(context);
-            } catch (StartException e) {
-                error = e;
-                latch.countDown();
-                throw e;
-            } catch (Exception e) {
-                error = e;
-                latch.countDown();
-                throw new StartException(e);
-            }
-        }
-    }
-
-    private static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {
+    static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             ModelNode model = new ModelNode();
@@ -880,59 +779,171 @@ public abstract class AbstractSubsystemTest {
         }
     };
 
-    static class StringConfigurationPersister extends AbstractConfigurationPersister {
+    private class KernelServicesBuilderImpl implements KernelServicesBuilder {
+        private final AdditionalInitialization additionalInit;
+        private List<ModelNode> bootOperations = Collections.emptyList();
+        private String subsystemXml;
+        private String subsystemXmlResource;
+        private boolean built;
+        private Map<ModelVersion, LegacyKernelServiceInitializerImpl> legacyControllerInitializers = new HashMap<ModelVersion, AbstractSubsystemTest.LegacyKernelServiceInitializerImpl>();
 
-        private final List<ModelNode> bootOperations;
-        volatile String marshalled;
+        public KernelServicesBuilderImpl(AdditionalInitialization additionalInit) {
+            this.additionalInit = additionalInit == null ? new AdditionalInitialization() : additionalInit;
+        }
 
-        public StringConfigurationPersister(List<ModelNode> bootOperations, XMLElementWriter<ModelMarshallingContext> rootDeparser) {
-            super(rootDeparser);
+        @Override
+        public KernelServicesBuilder setSubsystemXmlResource(String resource) throws IOException, XMLStreamException {
+            validateNotAlreadyBuilt();
+            validateSubsystemConfig();
+            this.subsystemXmlResource = resource;
+            internalSetSubsystemXml(readResource(resource));
+            return this;
+        }
+
+        @Override
+        public KernelServicesBuilder setSubsystemXml(String subsystemXml) throws XMLStreamException {
+            validateNotAlreadyBuilt();
+            validateSubsystemConfig();
+            this.subsystemXml = subsystemXml;
+            internalParseSubsystemXml(subsystemXml);
+            return this;
+        }
+
+        @Override
+        public KernelServicesBuilder setBootOperations(List<ModelNode> bootOperations) {
+            validateNotAlreadyBuilt();
+            validateSubsystemConfig();
             this.bootOperations = bootOperations;
+            return this;
         }
 
-        @Override
-        public PersistenceResource store(ModelNode model, Set<PathAddress> affectedAddresses)
-                throws ConfigurationPersistenceException {
-            return new StringPersistenceResource(model, this);
-        }
-
-        @Override
-        public List<ModelNode> load() throws ConfigurationPersistenceException {
-            return bootOperations;
-        }
-
-        private class StringPersistenceResource implements PersistenceResource {
-
-            private byte[] bytes;
-            private final AbstractConfigurationPersister persister;
-
-            StringPersistenceResource(final ModelNode model, final AbstractConfigurationPersister persister) throws ConfigurationPersistenceException {
-                this.persister = persister;
-                ByteArrayOutputStream output = new ByteArrayOutputStream(1024 * 8);
-                try {
-                    try {
-                        persister.marshallAsXml(model, output);
-                    } finally {
-                        try {
-                            output.close();
-                        } catch (Exception ignore) {
-                        }
-                        bytes = output.toByteArray();
-                    }
-                } catch (Exception e) {
-                    throw new ConfigurationPersistenceException("Failed to marshal configuration", e);
+        public LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(AdditionalInitialization additionalInit, ModelVersion modelVersion) {
+            validateNotAlreadyBuilt();
+            if (legacyControllerInitializers.containsKey(modelVersion)) {
+                throw new IllegalArgumentException("There is already a legacy controller for " + modelVersion);
+            }
+            if (additionalInit != null) {
+                if (additionalInit.getRunningMode() != RunningMode.ADMIN_ONLY) {
+                    throw new IllegalArgumentException("The additional initialization must have a running mode of ADMIN_ONLY, it was " + additionalInit.getRunningMode());
                 }
             }
 
-            @Override
-            public void commit() {
-                StringConfigurationPersister.this.marshalled = new String(bytes);
+            LegacyKernelServiceInitializerImpl initializer = new LegacyKernelServiceInitializerImpl(additionalInit, modelVersion);
+            legacyControllerInitializers.put(modelVersion, initializer);
+            return initializer;
+        }
+
+        public KernelServices build() throws Exception {
+            validateNotAlreadyBuilt();
+            built = true;
+            KernelServices kernelServices = KernelServices.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(), bootOperations, testParser, mainExtension, null);
+            AbstractSubsystemTest.this.kernelServices.add(kernelServices);
+
+            validateDescriptionProviders(additionalInit, kernelServices);
+            ManagementResourceRegistration subsystemReg =  kernelServices.getRootRegistration().getSubModel(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM,mainSubsystemName)));
+            validateModelDescriptions(PathAddress.EMPTY_ADDRESS, subsystemReg);
+
+            for (Map.Entry<ModelVersion, LegacyKernelServiceInitializerImpl> entry : legacyControllerInitializers.entrySet()) {
+                LegacyKernelServiceInitializerImpl legacyInitializer = entry.getValue();
+
+                List<ModelNode> transformedBootOperations = new ArrayList<ModelNode>();
+                for (ModelNode op : bootOperations) {
+                    ModelNode transformed = kernelServices.transformOperation(entry.getKey(), op);
+                    if (transformed != null) {
+                        transformedBootOperations.add(transformed);
+                    }
+                }
+
+                KernelServices legacyServices = legacyInitializer.install(transformedBootOperations);
+                kernelServices.addLegacyKernelService(entry.getKey(), legacyServices);
             }
 
-            @Override
-            public void rollback() {
-                marshalled = null;
+            return kernelServices;
+        }
+
+        private void internalSetSubsystemXml(String subsystemXml) throws XMLStreamException {
+            this.subsystemXml = subsystemXml;
+            this.internalParseSubsystemXml(subsystemXml);
+        }
+
+        private void internalParseSubsystemXml(String subsystemXml) throws XMLStreamException {
+            bootOperations = parse(additionalInit, subsystemXml);
+        }
+
+        private void validateSubsystemConfig() {
+            if (subsystemXmlResource != null) {
+                throw new IllegalArgumentException("Xml resource is already set");
             }
+            if (subsystemXml != null) {
+                throw new IllegalArgumentException("Xml string is already set");
+            }
+            if (bootOperations != Collections.EMPTY_LIST) {
+                throw new IllegalArgumentException("Boot operations are already set");
+            }
+        }
+
+        private void validateNotAlreadyBuilt() {
+            if (built) {
+                throw new IllegalStateException("Already built");
+            }
+        }
+    }
+
+    private class LegacyKernelServiceInitializerImpl implements LegacyKernelServicesInitializer {
+
+        private final AdditionalInitialization additionalInit;
+        private String extensionClassName;
+        private ModelVersion modelVersion;
+        private List<URL> classloaderURLs = new ArrayList<URL>();
+
+        public LegacyKernelServiceInitializerImpl(AdditionalInitialization additionalInit, ModelVersion modelVersion) {
+            this.additionalInit = additionalInit == null ? AdditionalInitialization.MANAGEMENT : additionalInit;
+            this.modelVersion = modelVersion;
+        }
+
+        @Override
+        public LegacyKernelServicesInitializer setExtensionClassName(String extensionClassName) {
+            this.extensionClassName = extensionClassName;
+            return this;
+        }
+
+
+        @Override
+        public LegacyKernelServicesInitializer addURL(URL url) {
+            classloaderURLs.add(url);
+            return this;
+        }
+
+        @Override
+        public LegacyKernelServicesInitializer addSimpleResourceURL(String resource) throws MalformedURLException {
+            classloaderURLs.add(ChildFirstClassLoader.createSimpleResourceURL(resource));
+            return this;
+        }
+
+        @Override
+        public LegacyKernelServicesInitializer addMavenResourceURL(String artifactGav) throws MalformedURLException {
+            ChildFirstClassLoader.createMavenGavURL(artifactGav);
+            return this;
+        }
+
+        private KernelServices install(List<ModelNode> bootOperations) throws Exception {
+            ClassLoader parent = this.getClass().getClassLoader() != null ? this.getClass().getClassLoader() : null;
+            ClassLoader legacyCl = new ChildFirstClassLoader(parent, classloaderURLs.toArray(new URL[classloaderURLs.size()]));
+
+            Class<?> clazz = legacyCl.loadClass(extensionClassName != null ? extensionClassName : mainExtension.getClass().getName());
+            Assert.assertEquals(legacyCl, clazz.getClassLoader());
+            Assert.assertTrue(Extension.class.isAssignableFrom(clazz));
+            Extension extension = (Extension)clazz.newInstance();
+
+            //Initialize the parsers for the legacy subsystem (copied from the @Before method)
+            XMLMapper xmlMapper = XMLMapper.Factory.create();
+            TestParser testParser = new TestParser(mainSubsystemName, extensionParsingRegistry);
+            ExtensionRegistry extensionParsingRegistry = new ExtensionRegistry(getProcessType(), new RunningModeControl(RunningMode.NORMAL));
+            xmlMapper.registerRootElement(new QName(TEST_NAMESPACE, "test"), testParser);
+            extension.initializeParsers(extensionParsingRegistry.getExtensionParsingContext("Test", xmlMapper));
+
+            //TODO extra parsers from additionalInit
+            return KernelServices.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(), bootOperations, testParser, extension, modelVersion);
         }
     }
 
@@ -1147,7 +1158,7 @@ public abstract class AbstractSubsystemTest {
 
     };
 
-    private static class RootResourceGrabber implements OperationStepHandler, DescriptionProvider {
+    static class RootResourceGrabber implements OperationStepHandler, DescriptionProvider {
         static String NAME = "grab-root-resource";
         static RootResourceGrabber INSTANCE = new RootResourceGrabber();
         volatile Resource resource;
@@ -1166,7 +1177,5 @@ public abstract class AbstractSubsystemTest {
             node.get(REPLY_PROPERTIES).setEmptyObject();
             return node;
         }
-
-
     }
 }

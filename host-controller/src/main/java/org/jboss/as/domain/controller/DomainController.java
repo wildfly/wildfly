@@ -24,6 +24,7 @@ package org.jboss.as.domain.controller;
 
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.repository.HostFileRepository;
@@ -147,4 +148,6 @@ public interface DomainController {
      * @param exitCode the exit code passed to the ProcessController
      */
     void stopLocalHost(int exitCode);
+
+    ExtensionRegistry getExtensionRegistry();
 }

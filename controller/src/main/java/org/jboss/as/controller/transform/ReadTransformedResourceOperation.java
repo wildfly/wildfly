@@ -1,5 +1,13 @@
 package org.jboss.as.controller.transform;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.Locale;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -13,14 +21,6 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import java.util.Locale;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -36,16 +36,18 @@ public class ReadTransformedResourceOperation implements OperationStepHandler {
         }
     };
 
+    private final TransformerRegistry transformerRegistry;
 
-    public ReadTransformedResourceOperation() {
+    public ReadTransformedResourceOperation(final TransformerRegistry transformerRegistry) {
         validator.registerValidator(SUBSYSTEM, new ModelTypeValidator(ModelType.STRING, false));
+        this.transformerRegistry = transformerRegistry;
     }
 
     private ModelNode transformReadResourceResult(final ImmutableManagementResourceRegistration managementResourceRegistration, ModelNode original, String subsystem, int major, int minor, int micro) {
         ModelNode rootData = original.get(ModelDescriptionConstants.RESULT);
 
-        Resource root = TransformerRegistry.modelToResource(managementResourceRegistration, rootData);
-        Resource transformed = TransformerRegistry.getInstance().getTransformedSubsystemResource(root, managementResourceRegistration, subsystem, major, minor, micro);
+        Resource root = TransformerRegistry.modelToResource(managementResourceRegistration, rootData, true);
+        Resource transformed = transformerRegistry.getTransformedSubsystemResource(root, managementResourceRegistration, subsystem, major, minor, micro);
 
         return Resource.Tools.readModel(transformed);
     }
