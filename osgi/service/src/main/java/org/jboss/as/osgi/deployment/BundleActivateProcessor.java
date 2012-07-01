@@ -46,7 +46,7 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
-        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
+        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
         if (bundle != null && deployment.isAutoStart() && bundle.isResolved()) {
             try {
                 bundle.start();
@@ -59,7 +59,7 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
         Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
-        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
+        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
         if (bundle != null && deployment.isAutoStart()) {
             try {
                 bundle.stop();

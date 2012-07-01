@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.modules.Module;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
@@ -45,32 +46,35 @@ import org.osgi.resource.Wiring;
 import org.osgi.service.resolver.ResolutionException;
 
 /**
- * Attempt to resolve an OSGi deployment.
- *
- * If successful attach the resulting {@link BundleWiring}.
+ * Attach the {@link Module} for a resolved OSGi bundle.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 20-Jun-2012
+ * @since 01-Jul-2012
  */
 public class BundleResolveProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
-        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
-        if (bundle != null && deployment.isAutoStart()) {
-            XBundleRevision brev = bundle.getBundleRevision();
-            XEnvironment env = depUnit.getAttachment(OSGiConstants.ENVIRONMENT_KEY);
-            XResolver resolver = depUnit.getAttachment(OSGiConstants.RESOLVER_KEY);
-            XResolveContext context = resolver.createResolveContext(env, Collections.singleton(brev), null);
-            try {
-                Map<Resource, Wiring> wiremap = resolver.resolveAndApply(context);
-                BundleWiring wiring = (BundleWiring) wiremap.get(brev);
-                depUnit.putAttachment(OSGiConstants.BUNDLE_WIRING_KEY, wiring);
-            } catch (ResolutionException ex) {
-                LOGGER.debugf("Cannot resolve requirements: %s", ex.getUnresolvedRequirements());
-            }
+        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
+        if (bundle == null || deployment.isAutoStart() == false)
+            return;
+
+        if (depUnit.hasAttachment(Attachments.MODULE))
+            return;
+
+        XBundleRevision brev = bundle.getBundleRevision();
+        XEnvironment env = depUnit.getAttachment(OSGiConstants.ENVIRONMENT_KEY);
+        XResolver resolver = depUnit.getAttachment(OSGiConstants.RESOLVER_KEY);
+        XResolveContext context = resolver.createResolveContext(env, Collections.singleton(brev), null);
+        try {
+            Map<Resource, Wiring> wiremap = resolver.resolveAndApply(context);
+            BundleWiring wiring = (BundleWiring) wiremap.get(brev);
+            depUnit.putAttachment(OSGiConstants.BUNDLE_WIRING_KEY, wiring);
+        } catch (ResolutionException ex) {
+            LOGGER.debugf("Cannot resolve requirements: %s", ex.getUnresolvedRequirements());
         }
     }
 

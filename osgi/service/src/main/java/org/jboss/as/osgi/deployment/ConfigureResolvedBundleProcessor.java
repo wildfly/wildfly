@@ -22,39 +22,44 @@
 
 package org.jboss.as.osgi.deployment;
 
-import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.osgi.framework.IntegrationServices;
-import org.jboss.osgi.framework.Services;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.modules.Module;
+import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XBundleRevision;
+import org.osgi.framework.wiring.BundleWiring;
 
 /**
- * Activates the OSGi subsystem if an OSGi deployment is detected.
+ * Attempt to resolve an OSGi deployment.
+ *
+ * If successful attach the resulting {@link BundleWiring}.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 20-Jun-2012
  */
-public class SubsystemActivateProcessor implements DeploymentUnitProcessor {
+public class ConfigureResolvedBundleProcessor implements DeploymentUnitProcessor {
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-
-        // Always make the system context & the environment available
-        phaseContext.addDeploymentDependency(Services.SYSTEM_CONTEXT, Attachments.SYSTEM_CONTEXT);
-        phaseContext.addDeploymentDependency(Services.ENVIRONMENT, OSGiConstants.ENVIRONMENT_KEY);
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (depUnit.hasAttachment(OSGiConstants.DEPLOYMENT_KEY)) {
-            phaseContext.getServiceRegistry().getRequiredService(Services.FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
-            phaseContext.addDependency(IntegrationServices.AUTOINSTALL_COMPLETE, AttachmentKey.create(Object.class));
-            phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
-            phaseContext.addDeploymentDependency(Services.RESOLVER, OSGiConstants.RESOLVER_KEY);
-        }
+        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
+        if (bundle == null || bundle.isResolved() == false)
+            return;
+
+        // No {@link Module} attachment for OSGi deployments that use content delegation
+        ModuleSpecification moduleSpec = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        if (moduleSpec.getResourceRootDelegation() != null)
+            return;
+
+        XBundleRevision brev = bundle.getBundleRevision();
+        Module module = brev.getModuleClassLoader().getModule();
+        depUnit.putAttachment(Attachments.MODULE_IDENTIFIER, module.getIdentifier());
+        depUnit.putAttachment(Attachments.MODULE, module);
     }
 
     @Override

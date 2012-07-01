@@ -325,7 +325,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
         // Use the OSGi Web-ContextPath if not given otherwise
         String contextRoot = mergedMetaData.getContextRoot();
-        BundleInfo bundleInfo = deploymentUnit.getAttachment(Attachments.BUNDLE_INFO_KEY);
+        BundleInfo bundleInfo = deploymentUnit.getAttachment(Attachments.BUNDLE_INFO);
         if (contextRoot == null && bundleInfo != null) {
             contextRoot = bundleInfo.getOSGiMetadata().getHeader("Web-ContextPath");
             mergedMetaData.setContextRoot(contextRoot);

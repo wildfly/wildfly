@@ -66,7 +66,7 @@ public class WebContextActivationProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         ContextActivator activator = depUnit.getAttachment(ContextActivator.ATTACHMENT_KEY);
-        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
+        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
         if (activator != null && bundle != null) {
 
             // Start the context when the bundle will get started automatically
@@ -84,7 +84,7 @@ public class WebContextActivationProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
         ContextActivator activator = depUnit.getAttachment(ContextActivator.ATTACHMENT_KEY);
-        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
+        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
         if (activator != null && bundle != null) {
             bundle.adapt(Deployment.class).removeAttachment(ContextActivator.class);
         }

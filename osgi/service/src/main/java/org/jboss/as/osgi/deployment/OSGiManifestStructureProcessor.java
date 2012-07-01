@@ -47,28 +47,26 @@ public class OSGiManifestStructureProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        if (deploymentRoot == null)
+        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        if (depUnit.hasAttachment(Attachments.OSGI_MANIFEST) || depUnit.hasAttachment(Attachments.OSGI_METADATA))
             return;
 
-        // Skip ignored deployments
-        Boolean ignore = deploymentUnit.getAttachment(Attachments.IGNORE_OSGI);
-        if (ignore != null && ignore.booleanValue())
+        final ResourceRoot deploymentRoot = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        if (deploymentRoot == null)
             return;
 
         // Check whether this is an OSGi manifest
         Manifest manifest = deploymentRoot.getAttachment(Attachments.MANIFEST);
         if (OSGiManifestBuilder.isValidBundleManifest(manifest)) {
-            deploymentUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
+            depUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
             OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
-            deploymentUnit.putAttachment(Attachments.OSGI_METADATA_KEY, metadata);
+            depUnit.putAttachment(Attachments.OSGI_METADATA, metadata);
         }
     }
 
     @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
         deploymentUnit.removeAttachment(Attachments.OSGI_MANIFEST);
-        deploymentUnit.removeAttachment(Attachments.OSGI_METADATA_KEY);
+        deploymentUnit.removeAttachment(Attachments.OSGI_METADATA);
     }
 }

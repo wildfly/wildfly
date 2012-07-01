@@ -62,7 +62,7 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         // Check for attached BundleInfo
-        BundleInfo info = depUnit.getAttachment(Attachments.BUNDLE_INFO_KEY);
+        BundleInfo info = depUnit.getAttachment(Attachments.BUNDLE_INFO);
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
