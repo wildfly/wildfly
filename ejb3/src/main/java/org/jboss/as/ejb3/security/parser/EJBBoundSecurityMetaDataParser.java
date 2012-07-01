@@ -36,6 +36,15 @@ import org.jboss.metadata.property.PropertyReplacer;
  */
 public class EJBBoundSecurityMetaDataParser extends AbstractEJBBoundMetaDataParser<EJBBoundSecurityMetaData> {
 
+    public static final String LEGACY_NAMESPACE_URI = "urn:security";
+    public static final String NAMESPACE_URI = "urn:security:1.0";
+
+    public static final EJBBoundSecurityMetaDataParser INSTANCE = new EJBBoundSecurityMetaDataParser();
+
+    private EJBBoundSecurityMetaDataParser() {
+
+    }
+
     @Override
     public EJBBoundSecurityMetaData parse(XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
         EJBBoundSecurityMetaData metaData = new EJBBoundSecurityMetaData();
@@ -45,7 +54,8 @@ public class EJBBoundSecurityMetaDataParser extends AbstractEJBBoundMetaDataPars
 
     @Override
     protected void processElement(EJBBoundSecurityMetaData metaData, XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
-        if (reader.getNamespaceURI().equals("urn:security")) {
+        if (reader.getNamespaceURI().equals(LEGACY_NAMESPACE_URI) ||
+                reader.getNamespaceURI().equals(NAMESPACE_URI)) {
             final String localName = reader.getLocalName();
             if (localName.equals("security-domain"))
                 metaData.setSecurityDomain(getElementText(reader, propertyReplacer));
@@ -53,8 +63,9 @@ public class EJBBoundSecurityMetaDataParser extends AbstractEJBBoundMetaDataPars
                 metaData.setRunAsPrincipal(getElementText(reader, propertyReplacer));
             else
                 throw unexpectedElement(reader);
-        } else
+        } else {
             super.processElement(metaData, reader, propertyReplacer);
+        }
     }
 
 }
