@@ -224,6 +224,7 @@ public enum Phase {
     public static final int PARSE_WEB_DEPLOYMENT                        = 0x0B00;
     public static final int PARSE_WEB_DEPLOYMENT_FRAGMENT               = 0x0C00;
     public static final int PARSE_JSF_VERSION                           = 0x0C50;
+    public static final int PARSE_JSF_SHARED_TLDS                       = 0x0C51;
     public static final int PARSE_ANNOTATION_WAR                        = 0x0D00;
     public static final int PARSE_ANNOTATION_EJB                        = 0x0D10;
     public static final int PARSE_JBOSS_WEB_DEPLOYMENT                  = 0x0E00;

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2012, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.web;
+package org.jboss.as.jsf.deployment;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,10 +28,12 @@ import java.util.List;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
-import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.web.SharedTldsMetaDataBuilder;
 import org.jboss.metadata.parser.jsp.TldMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.TldMetaData;
@@ -41,36 +43,28 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 
 /**
- * Internal helper creating a shared TLD metadata list based on the domain configuration.
+ * Cache the TLDs for JSF and add them to deployments as needed.
  *
- * @author Emanuel Muckenhuber
  * @author Stan Silvert
  */
-public class SharedTldsMetaDataBuilder {
+public class JSFSharedTldsProcessor implements DeploymentUnitProcessor {
 
-    public static final AttachmentKey<List<TldMetaData>> ATTACHMENT_KEY = AttachmentKey.create(List.class);
+    private static final String[] JSF_TAGLIBS = { "html_basic.tld", "jsf_core.tld", "mojarra_ext.tld" };
 
-    private static final String[] JSTL_TAGLIBS = { "c-1_0-rt.tld", "c-1_0.tld", "c.tld", "fmt-1_0-rt.tld", "fmt-1_0.tld", "fmt.tld", "fn.tld", "permittedTaglibs.tld", "scriptfree.tld", "sql-1_0-rt.tld", "sql-1_0.tld", "sql.tld", "x-1_0-rt.tld", "x-1_0.tld", "x.tld" };
+    private final ArrayList<TldMetaData> jsfTlds = new ArrayList<TldMetaData>();
 
-    private final ArrayList<TldMetaData> jstlTlds = new ArrayList<TldMetaData>();
-
-    // Not used right now due to hardcoding
-    /** The common container config. */
-    //private final ModelNode containerConfig;
-
-    SharedTldsMetaDataBuilder(final ModelNode containerConfig) {
-        //this.containerConfig = containerConfig;
+    public JSFSharedTldsProcessor() {
         init();
     }
 
     private void init() {
         try {
-            ModuleClassLoader jstl = Module.getModuleFromCallerModuleLoader(ModuleIdentifier.create("javax.servlet.jstl.api")).getClassLoader();
-            for (String tld : JSTL_TAGLIBS) {
-                InputStream is = jstl.getResourceAsStream("META-INF/" + tld);
+            ModuleClassLoader jsf = Module.getModuleFromCallerModuleLoader(ModuleIdentifier.create("com.sun.jsf-impl")).getClassLoader();
+            for (String tld : JSF_TAGLIBS) {
+                InputStream is = jsf.getResourceAsStream("META-INF/" + tld);
                 if (is != null) {
-                    TldMetaData tldMetaData = parseTLD(tld, is);
-                    jstlTlds.add(tldMetaData);
+                    TldMetaData tldMetaData = parseTLD(is);
+                    jsfTlds.add(tldMetaData);
                 }
             }
         } catch (ModuleLoadException e) {
@@ -80,19 +74,7 @@ public class SharedTldsMetaDataBuilder {
         }
     }
 
-    public List<TldMetaData> getSharedTlds(DeploymentUnit deploymentUnit) {
-        final List<TldMetaData> metadata = new ArrayList<TldMetaData>();
-        metadata.addAll(jstlTlds);
-
-        List<TldMetaData> additionalSharedTlds = deploymentUnit.getAttachment(ATTACHMENT_KEY);
-        if (additionalSharedTlds != null) {
-            metadata.addAll(additionalSharedTlds);
-        }
-
-        return metadata;
-    }
-
-    private TldMetaData parseTLD(String tld, InputStream is)
+    private TldMetaData parseTLD(InputStream is)
     throws Exception {
         try {
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
@@ -108,6 +90,24 @@ public class SharedTldsMetaDataBuilder {
                 // Ignore
             }
         }
+    }
+
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+        if (JsfVersionMarker.getVersion(topLevelDeployment).equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) {
+            return;
+        }
+
+        // Add the shared TLDs metadata
+        List<TldMetaData> tldsMetaData = deploymentUnit.getAttachment(SharedTldsMetaDataBuilder.ATTACHMENT_KEY);
+        if (tldsMetaData == null) tldsMetaData = new ArrayList<TldMetaData>();
+
+        tldsMetaData.addAll(jsfTlds);
+        deploymentUnit.putAttachment(SharedTldsMetaDataBuilder.ATTACHMENT_KEY, tldsMetaData);
+    }
+
+    public void undeploy(DeploymentUnit context) {
     }
 
 }

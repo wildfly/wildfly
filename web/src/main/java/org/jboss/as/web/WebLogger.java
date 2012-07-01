@@ -99,10 +99,6 @@ public interface WebLogger extends BasicLogger {
     @Message(id = 18206, value = "Webapp [%s] is unavailable due to startup errors")
     void unavailable(String webappPath);
 
-    @LogMessage(level = WARN)
-    @Message(id = 18207, value = "Unknown JSF version %s %s will be used instead")
-    void unknownJSFVersion(String version, String referenceVersion);
-
     @LogMessage(level = ERROR)
     @Message(id = 18208, value = "Failed to start context")
     void stopContextFailed(@Cause Throwable cause);
