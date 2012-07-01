@@ -20,13 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.web.deployment.jsf;
+package org.jboss.as.jsf.deployment;
 
 import com.sun.faces.spi.AnnotationProvider;
+
+import javax.servlet.ServletContext;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
-import javax.servlet.ServletContext;
 
 /**
  * {@link }AnnotationProvider} implementation which provides the JSF annotations which we parsed from from a

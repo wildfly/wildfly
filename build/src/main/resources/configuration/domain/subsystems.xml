@@ -14,6 +14,7 @@
       <subsystem>configuration/subsystems/jdr.xml</subsystem>
       <subsystem supplement="domain">configuration/subsystems/jmx.xml</subsystem>
       <subsystem>configuration/subsystems/jpa.xml</subsystem>
+      <subsystem>configuration/subsystems/jsf.xml</subsystem>
       <subsystem>configuration/subsystems/mail.xml</subsystem>
       <subsystem>configuration/subsystems/naming.xml</subsystem>
       <subsystem>configuration/subsystems/osgi.xml</subsystem>
@@ -27,7 +28,7 @@
       <subsystem>configuration/subsystems/web.xml</subsystem>
       <subsystem>configuration/subsystems/webservices.xml</subsystem>
       <subsystem>configuration/subsystems/weld.xml</subsystem>
-   </subsystems>  
+   </subsystems>
    <subsystems name="ha">
       <!-- Each subsystem to be included relative to the src/main/resources directory -->
       <subsystem>configuration/subsystems/logging.xml</subsystem>
@@ -42,6 +43,7 @@
       <subsystem>configuration/subsystems/jgroups.xml</subsystem>
       <subsystem supplement="domain">configuration/subsystems/jmx.xml</subsystem>
       <subsystem>configuration/subsystems/jpa.xml</subsystem>
+      <subsystem>configuration/subsystems/jsf.xml</subsystem>
       <subsystem>configuration/subsystems/mail.xml</subsystem>
       <subsystem>configuration/subsystems/modcluster.xml</subsystem>
       <subsystem>configuration/subsystems/naming.xml</subsystem>
@@ -56,7 +58,7 @@
       <subsystem supplement="ha">configuration/subsystems/web.xml</subsystem>
       <subsystem>configuration/subsystems/webservices.xml</subsystem>
       <subsystem>configuration/subsystems/weld.xml</subsystem>
-   </subsystems>  
+   </subsystems>
    <subsystems name="full">
       <!-- Each subsystem to be included relative to the src/main/resources directory -->
       <subsystem>configuration/subsystems/logging.xml</subsystem>
@@ -73,6 +75,7 @@
       <subsystem>configuration/subsystems/jdr.xml</subsystem>
       <subsystem supplement="domain">configuration/subsystems/jmx.xml</subsystem>
       <subsystem>configuration/subsystems/jpa.xml</subsystem>
+      <subsystem>configuration/subsystems/jsf.xml</subsystem>
       <subsystem>configuration/subsystems/jsr77.xml</subsystem>
       <subsystem>configuration/subsystems/mail.xml</subsystem>
       <subsystem>configuration/subsystems/messaging.xml</subsystem>
@@ -88,7 +91,7 @@
       <subsystem>configuration/subsystems/web.xml</subsystem>
       <subsystem>configuration/subsystems/webservices.xml</subsystem>
       <subsystem>configuration/subsystems/weld.xml</subsystem>
-   </subsystems>  
+   </subsystems>
    <subsystems name="full-ha">
       <!-- Each subsystem to be included relative to the src/main/resources directory -->
       <subsystem>configuration/subsystems/logging.xml</subsystem>
@@ -106,6 +109,7 @@
       <subsystem>configuration/subsystems/jgroups.xml</subsystem>
       <subsystem supplement="domain">configuration/subsystems/jmx.xml</subsystem>
       <subsystem>configuration/subsystems/jpa.xml</subsystem>
+      <subsystem>configuration/subsystems/jsf.xml</subsystem>
       <subsystem>configuration/subsystems/jsr77.xml</subsystem>
       <subsystem>configuration/subsystems/mail.xml</subsystem>
       <subsystem supplement="ha">configuration/subsystems/messaging.xml</subsystem>
@@ -122,5 +126,5 @@
       <subsystem supplement="ha">configuration/subsystems/web.xml</subsystem>
       <subsystem>configuration/subsystems/webservices.xml</subsystem>
       <subsystem>configuration/subsystems/weld.xml</subsystem>
-   </subsystems>  
+   </subsystems>
 </config>
