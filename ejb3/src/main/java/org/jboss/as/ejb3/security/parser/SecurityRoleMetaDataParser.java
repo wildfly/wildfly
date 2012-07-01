@@ -40,6 +40,14 @@ import org.jboss.metadata.property.PropertyReplacer;
  */
 public class SecurityRoleMetaDataParser extends AbstractMetaDataParser<SecurityRoleMetaData> {
 
+    public static final String LEGACY_NAMESPACE_URI = "urn:security-role";
+    public static final String NAMESPACE_URI = "urn:security-role:1.0";
+    public static final SecurityRoleMetaDataParser INSTANCE = new SecurityRoleMetaDataParser();
+
+    private SecurityRoleMetaDataParser() {
+
+    }
+
     @Override
     public SecurityRoleMetaData parse(XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
         SecurityRoleMetaData metaData = new SecurityRoleMetaData();
@@ -49,7 +57,8 @@ public class SecurityRoleMetaDataParser extends AbstractMetaDataParser<SecurityR
 
     @Override
     protected void processElement(SecurityRoleMetaData metaData, XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
-        if (reader.getNamespaceURI().equals("urn:security-role")) {
+        if (reader.getNamespaceURI().equals(LEGACY_NAMESPACE_URI) ||
+                reader.getNamespaceURI().equals(NAMESPACE_URI)) {
             final String localName = reader.getLocalName();
             if (localName.equals(Element.ROLE_NAME.getLocalName()))
                 metaData.setRoleName(getElementText(reader, propertyReplacer));
@@ -63,8 +72,9 @@ public class SecurityRoleMetaDataParser extends AbstractMetaDataParser<SecurityR
             }
             else
                 throw unexpectedElement(reader);
-        } else
+        } else {
             super.processElement(metaData, reader, propertyReplacer);
+        }
     }
 
 }

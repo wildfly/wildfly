@@ -268,17 +268,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         InputStream stream = open(descriptor);
         try {
             XMLStreamReader reader = getXMLStreamReader(stream, descriptor, dtdInfo);
-
-            Map<String, AbstractMetaDataParser<?>> parsers = new HashMap<String, AbstractMetaDataParser<?>>();
-            parsers.put(EJBBoundClusteringMetaDataParser.NAMESPACE_URI, new EJBBoundClusteringMetaDataParser());
-            parsers.put("urn:security", new EJBBoundSecurityMetaDataParser());
-            parsers.put("urn:security-role", new SecurityRoleMetaDataParser());
-            parsers.put("urn:resource-adapter-binding", new EJBBoundResourceAdapterBindingMetaDataParser());
-            parsers.put("urn:iiop", new IIOPMetaDataParser());
-            parsers.put("urn:trans-timeout", new TransactionTimeoutMetaDataParser());
-            parsers.put(EJBBoundPoolParser.NAMESPACE_URI, new EJBBoundPoolParser());
-            parsers.put(EJBBoundCacheParser.NAMESPACE_URI, new EJBBoundCacheParser());
-            final JBossEjb3MetaDataParser parser = new JBossEjb3MetaDataParser(parsers);
+            final JBossEjb3MetaDataParser parser = new JBossEjb3MetaDataParser(createJbossEjbJarParsers());
 
             final EjbJarMetaData ejbJarMetaData = parser.parse(reader, dtdInfo, JBossDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
             return ejbJarMetaData;
@@ -291,5 +281,23 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
                 EjbLogger.ROOT_LOGGER.failToCloseFile(ioe);
             }
         }
+    }
+
+    static Map<String, AbstractMetaDataParser<?>> createJbossEjbJarParsers() {
+        Map<String, AbstractMetaDataParser<?>> parsers = new HashMap<String, AbstractMetaDataParser<?>>();
+        parsers.put(EJBBoundClusteringMetaDataParser.NAMESPACE_URI, new EJBBoundClusteringMetaDataParser());
+        parsers.put(EJBBoundSecurityMetaDataParser.LEGACY_NAMESPACE_URI, EJBBoundSecurityMetaDataParser.INSTANCE);
+        parsers.put(EJBBoundSecurityMetaDataParser.NAMESPACE_URI, EJBBoundSecurityMetaDataParser.INSTANCE);
+        parsers.put(SecurityRoleMetaDataParser.LEGACY_NAMESPACE_URI, SecurityRoleMetaDataParser.INSTANCE);
+        parsers.put(SecurityRoleMetaDataParser.NAMESPACE_URI, SecurityRoleMetaDataParser.INSTANCE);
+        parsers.put(EJBBoundResourceAdapterBindingMetaDataParser.LEGACY_NAMESPACE_URI, EJBBoundResourceAdapterBindingMetaDataParser.INSTANCE);
+        parsers.put(EJBBoundResourceAdapterBindingMetaDataParser.NAMESPACE_URI, EJBBoundResourceAdapterBindingMetaDataParser.INSTANCE);
+        parsers.put("urn:iiop", new IIOPMetaDataParser());
+        parsers.put("urn:iiop:1.0", new IIOPMetaDataParser());
+        parsers.put("urn:trans-timeout", new TransactionTimeoutMetaDataParser());
+        parsers.put("urn:trans-timeout:1.0", new TransactionTimeoutMetaDataParser());
+        parsers.put(EJBBoundPoolParser.NAMESPACE_URI, new EJBBoundPoolParser());
+        parsers.put(EJBBoundCacheParser.NAMESPACE_URI, new EJBBoundCacheParser());
+        return parsers;
     }
 }
