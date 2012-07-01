@@ -55,13 +55,13 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
             return;
 
         // Get the manifest from the deployment's virtual file
-        OSGiMetaData metadata = depUnit.getAttachment(Attachments.OSGI_METADATA_KEY);
+        OSGiMetaData metadata = depUnit.getAttachment(Attachments.OSGI_METADATA);
         if (metadata != null) {
             try {
                 // Construct and attach the {@link BundleInfo} from {@link OSGiMetaData}
                 VirtualFile virtualFile = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
                 BundleInfo info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), contextName, metadata);
-                depUnit.putAttachment(Attachments.BUNDLE_INFO_KEY, info);
+                depUnit.putAttachment(Attachments.BUNDLE_INFO, info);
             } catch (BundleException ex) {
                 throw MESSAGES.cannotCreateBundleDeployment(ex, depUnit);
             }
@@ -70,6 +70,6 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        depUnit.removeAttachment(Attachments.BUNDLE_INFO_KEY);
+        depUnit.removeAttachment(Attachments.BUNDLE_INFO);
     }
 }

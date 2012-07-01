@@ -128,16 +128,12 @@ public final class Attachments {
     public static final AttachmentKey<Manifest> MANIFEST = AttachmentKey.create(Manifest.class);
 
     /**
-     *  A flag indicating whether the presence of a bundle manifest attributes should be ignored and a bundle not created
-     */
-    public static final AttachmentKey<Boolean> IGNORE_OSGI = AttachmentKey.create(Boolean.class);
-    /**
      * Available when the deployment contains a valid OSGi manifest
      */
     public static final AttachmentKey<Manifest> OSGI_MANIFEST = AttachmentKey.create(Manifest.class);
 
     /** Attachment key for {@link OSGiMetaData} */
-    public static final AttachmentKey<OSGiMetaData> OSGI_METADATA_KEY = AttachmentKey.create(OSGiMetaData.class);
+    public static final AttachmentKey<OSGiMetaData> OSGI_METADATA = AttachmentKey.create(OSGiMetaData.class);
 
     /**
      * Module identifiers for Class-Path information
@@ -217,11 +213,11 @@ public final class Attachments {
     /**
      * Attachment key for the {@link BundleInfo} when an OSGi bundle deployment is detected.
      */
-    public static final AttachmentKey<BundleInfo> BUNDLE_INFO_KEY = AttachmentKey.create(BundleInfo.class);
+    public static final AttachmentKey<BundleInfo> BUNDLE_INFO = AttachmentKey.create(BundleInfo.class);
     /**
      * Attachment key for the OSGi system context.
      */
-    public static final AttachmentKey<BundleContext> SYSTEM_CONTEXT_KEY = AttachmentKey.create(BundleContext.class);
+    public static final AttachmentKey<BundleContext> SYSTEM_CONTEXT = AttachmentKey.create(BundleContext.class);
 
     //
     // REGISTER
@@ -230,7 +226,7 @@ public final class Attachments {
     /**
      * Attachment key for the installed {@link XBundle}.
      */
-    public static final AttachmentKey<XBundle> INSTALLED_BUNDLE_KEY = AttachmentKey.create(XBundle.class);
+    public static final AttachmentKey<XBundle> INSTALLED_BUNDLE = AttachmentKey.create(XBundle.class);
 
     //
     // DEPENDENCIES

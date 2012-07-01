@@ -322,7 +322,8 @@ public enum Phase {
 
 
     // CONFIGURE_MODULE
-    public static final int CONFIGURE_MODULE_SPEC                       = 0x0100;
+    public static final int CONFIGURE_RESOLVED_BUNDLE                   = 0x0100;
+    public static final int CONFIGURE_MODULE_SPEC                       = 0x0200;
 
 
     // POST_MODULE
@@ -405,7 +406,7 @@ public enum Phase {
     public static final int INSTALL_EJB_CLIENT_CONTEXT                  = 0x0404;
     public static final int INSTALL_EJB_JACC_PROCESSING                 = 0x0405;
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;
-    public static final int INSTALL_OSGI_MODULE                         = 0x0650;
+    public static final int INSTALL_RESOLVER_MODULE                     = 0x0600;
     public static final int INSTALL_RA_NATIVE                           = 0x0800;
     public static final int INSTALL_RA_DEPLOYMENT                       = 0x0801;
     public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0900;

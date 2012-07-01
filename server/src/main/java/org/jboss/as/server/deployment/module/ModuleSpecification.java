@@ -115,7 +115,7 @@ public class ModuleSpecification extends SimpleAttachable {
      * The ordinary WAR module and the module that results from resovling the OSGi Bundle. The WAR
      * module no resource loaders. Instead it has an additionl dependency on the OSGi Bundle.
      */
-    private ModuleDependency bundleContentDependency;
+    private ModuleDependency resourceRootDelegation;
 
     public void addSystemDependency(final ModuleDependency dependency) {
         if (!exclusions.contains(dependency.getIdentifier()) && !systemDependenciesSet.contains(dependency.getIdentifier())) {
@@ -281,11 +281,11 @@ public class ModuleSpecification extends SimpleAttachable {
         return Collections.unmodifiableList(moduleSystemDependencies);
     }
 
-    public ModuleDependency getOSGiContentDependency() {
-        return bundleContentDependency;
+    public ModuleDependency getResourceRootDelegation() {
+        return resourceRootDelegation;
     }
 
-    public void addOSGiContentDependency(ModuleDependency bundleDependency) {
-        this.bundleContentDependency = bundleDependency;
+    public void addResourceRootDelegation(ModuleDependency bundleDependency) {
+        this.resourceRootDelegation = bundleDependency;
     }
 }
