@@ -19,12 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.web.deployment.jsf;
-
-import static org.jboss.as.web.WebMessages.MESSAGES;
+package org.jboss.as.jsf.deployment;
 
 import com.sun.faces.spi.DiscoverableInjectionProvider;
 import com.sun.faces.spi.InjectionProviderException;
+import org.jboss.as.jsf.JSFMessages;
 import org.jboss.as.web.deployment.WebInjectionContainer;
 
 import javax.naming.NamingException;
@@ -33,17 +32,14 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * @author Stuart Douglas
  */
-public class JsfInjectionProvider extends DiscoverableInjectionProvider {
-
-
-    private static final ThreadLocal<WebInjectionContainer> injectionContainer = new ThreadLocal<WebInjectionContainer>();
+public class JSFInjectionProvider extends DiscoverableInjectionProvider {
 
     private final WebInjectionContainer container;
 
-    public JsfInjectionProvider() {
-        this.container = injectionContainer.get();
+    public JSFInjectionProvider() {
+        this.container = WebInjectionContainer.getCurrentInjectionContainer();
         if (this.container == null) {
-            throw MESSAGES.noThreadLocalInjectionContainer();
+            throw JSFMessages.MESSAGES.noThreadLocalInjectionContainer();
         }
     }
 
@@ -57,9 +53,9 @@ public class JsfInjectionProvider extends DiscoverableInjectionProvider {
         try {
             container.destroyInstance(managedBean);
         } catch (IllegalAccessException e) {
-            throw MESSAGES.instanceDestructionFailed(e);
+            throw JSFMessages.MESSAGES.instanceDestructionFailed(e);
         } catch (InvocationTargetException e) {
-            throw MESSAGES.instanceDestructionFailed(e);
+            throw JSFMessages.MESSAGES.instanceDestructionFailed(e);
         }
     }
 
@@ -68,15 +64,11 @@ public class JsfInjectionProvider extends DiscoverableInjectionProvider {
         try {
             container.newInstance(managedBean);
         } catch (IllegalAccessException e) {
-            throw MESSAGES.instanceCreationFailed(e);
+            throw JSFMessages.MESSAGES.instanceCreationFailed(e);
         } catch (InvocationTargetException e) {
-            throw MESSAGES.instanceCreationFailed(e);
+            throw JSFMessages.MESSAGES.instanceCreationFailed(e);
         } catch (NamingException e) {
-            throw MESSAGES.instanceCreationFailed(e);
+            throw JSFMessages.MESSAGES.instanceCreationFailed(e);
         }
-    }
-
-    public static ThreadLocal<WebInjectionContainer> getInjectionContainer() {
-        return injectionContainer;
     }
 }

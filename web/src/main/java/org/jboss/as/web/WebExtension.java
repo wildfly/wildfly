@@ -26,7 +26,6 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.alias.ResourceAliasDefinition;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -124,6 +123,7 @@ public class WebExtension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEB_1_2.getUriString(), WebSubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEB_1_1.getUriString(), WebSubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEB_1_0.getUriString(), WebSubsystemParser.getInstance());
     }
