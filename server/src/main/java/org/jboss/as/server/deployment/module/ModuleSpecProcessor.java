@@ -67,29 +67,32 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
-        if (deploymentUnit.hasAttachment(MARKER)) {
+        if (deploymentUnit.hasAttachment(Attachments.MODULE))
             return;
-        }
-        deploymentUnit.putAttachment(MARKER, true);
-
-        // No {@link ModuleSpec} creation for OSGi deployments that don't use content delegation
-        final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        final XBundle bundle = deploymentUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
-        if (bundle != null && moduleSpec.getOSGiContentDependency() == null) {
-            return;
-        }
 
         final ResourceRoot mainRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        if (mainRoot == null) {
+        if (mainRoot == null)
+            return;
+
+        // No {@link ModuleSpec} creation for OSGi deployments that don't use resource root delegation
+        // This would be the case when a Bundle deployment is marked with deferred start policy
+        final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        final XBundle bundle = deploymentUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
+        final ModuleDependency resourceRootDelegation = moduleSpec.getResourceRootDelegation();
+        if (bundle != null && resourceRootDelegation == null) {
             return;
         }
 
+        if (deploymentUnit.hasAttachment(MARKER))
+            return;
+
+        deploymentUnit.putAttachment(MARKER, true);
+
         // Add internal resource roots
-        final ModuleDependency osgiContentDependency = moduleSpec.getOSGiContentDependency();
         final List<ResourceRoot> resourceRoots = new ArrayList<ResourceRoot>();
-        if (osgiContentDependency == null) {
+        if (moduleSpec.getResourceRootDelegation() == null) {
             if (ModuleRootMarker.isModuleRoot(mainRoot)) {
                 resourceRoots.add(mainRoot);
             }
@@ -100,7 +103,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                 }
             }
         } else {
-            moduleSpec.addUserDependency(osgiContentDependency);
+            moduleSpec.addUserDependency(resourceRootDelegation);
         }
 
         final ModuleIdentifier moduleIdentifier = deploymentUnit.getAttachment(Attachments.MODULE_IDENTIFIER);

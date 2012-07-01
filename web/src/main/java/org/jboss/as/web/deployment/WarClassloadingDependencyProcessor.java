@@ -90,12 +90,12 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, true, false));
 
         // Setup the content delegation in case this webapp is deployed as OSGi Bundle.
-        XBundle bundle = deploymentUnit.getAttachment(Attachments.INSTALLED_BUNDLE_KEY);
+        XBundle bundle = deploymentUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
         if (bundle != null && bundle.isResolved()) {
             XBundleRevision brev = bundle.getBundleRevision();
             Module module = brev.getModuleClassLoader().getModule();
             ModuleDependency moddep = new ModuleDependency(module.getModuleLoader(), module.getIdentifier(), false, false, false, false);
-            moduleSpecification.addOSGiContentDependency(moddep);
+            moduleSpecification.addResourceRootDelegation(moddep);
         }
     }
 

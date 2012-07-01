@@ -75,7 +75,7 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
             } catch (BundleException ex) {
                 throw new DeploymentUnitProcessingException(ex);
             }
-            phaseContext.addDeploymentDependency(serviceName, Attachments.INSTALLED_BUNDLE_KEY);
+            phaseContext.addDeploymentDependency(serviceName, Attachments.INSTALLED_BUNDLE);
             depUnit.putAttachment(BUNDLE_INSTALL_SERVICE, serviceName);
         }
     }

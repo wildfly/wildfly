@@ -51,7 +51,7 @@ public class WarDeploymentInitializingProcessor implements DeploymentUnitProcess
         // JAR deployments may contain OSGi metadata with a "Web-ContextPath" header
         // This qualifies them as OSGi Web Application Bundle (WAB)
         else if (deploymentName.endsWith(".jar")) {
-            OSGiMetaData metadata = deploymentUnit.getAttachment(Attachments.OSGI_METADATA_KEY);
+            OSGiMetaData metadata = deploymentUnit.getAttachment(Attachments.OSGI_METADATA);
             if (metadata != null && metadata.getHeader("Web-ContextPath") != null) {
                 DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
             }

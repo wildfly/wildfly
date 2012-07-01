@@ -51,7 +51,7 @@ public class OSGiXServiceParseProcessor implements DeploymentUnitProcessor {
 
         // Check if we already have an OSGi deployment
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (depUnit.hasAttachment(Attachments.OSGI_METADATA_KEY))
+        if (depUnit.hasAttachment(Attachments.OSGI_METADATA))
             return;
 
         // Get the OSGi XService properties
@@ -64,7 +64,7 @@ public class OSGiXServiceParseProcessor implements DeploymentUnitProcessor {
             Properties props = new Properties();
             props.load(xserviceFile.openStream());
             OSGiMetaData metadata = OSGiMetaDataBuilder.load(props);
-            depUnit.putAttachment(Attachments.OSGI_METADATA_KEY, metadata);
+            depUnit.putAttachment(Attachments.OSGI_METADATA, metadata);
         } catch (IOException ex) {
             throw MESSAGES.cannotParseOSGiMetadata(ex, xserviceFile);
         }
@@ -72,6 +72,6 @@ public class OSGiXServiceParseProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        depUnit.removeAttachment(Attachments.OSGI_METADATA_KEY);
+        depUnit.removeAttachment(Attachments.OSGI_METADATA);
     }
 }
