@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -30,6 +30,7 @@ import org.jboss.logging.MessageLogger;
 import org.jboss.vfs.VirtualFile;
 
 import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 05.11.2011
@@ -58,4 +59,8 @@ public interface JSFLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 12602, value = "Failed to parse %s, managed beans defined in this file will not be available")
     void managedBeansConfigParseFailed(VirtualFile facesConfig);
+
+    @LogMessage(level = WARN)
+    @Message(id = 12603, value = "Unknown JSF version %s %s will be used instead")
+    void unknownJSFVersion(String version, String referenceVersion);
 }
