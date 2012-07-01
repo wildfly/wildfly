@@ -68,10 +68,7 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
             webFragments = new HashMap<String, WebFragmentMetaData>();
             warMetaData.setWebFragmentsMetaData(webFragments);
         }
-        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-        if(resourceRoots == null) {
-            return;
-        }
+        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
         for (ResourceRoot resourceRoot : resourceRoots) {
             if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
                 VirtualFile webFragment = resourceRoot.getRoot().getChild(WEB_FRAGMENT_XML);

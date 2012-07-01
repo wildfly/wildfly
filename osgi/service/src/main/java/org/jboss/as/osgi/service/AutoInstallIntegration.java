@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -60,6 +61,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
+import org.jboss.osgi.framework.AbstractBundleRevisionAdaptor;
 import org.jboss.osgi.framework.AutoInstallComplete;
 import org.jboss.osgi.framework.AutoInstallHandler;
 import org.jboss.osgi.framework.BundleManager;
@@ -73,11 +75,12 @@ import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.repository.XRequirementBuilder;
 import org.jboss.osgi.resolver.MavenCoordinates;
+import org.jboss.osgi.resolver.XBundleRevision;
+import org.jboss.osgi.resolver.XBundleRevisionBuilderFactory;
 import org.jboss.osgi.resolver.XCapability;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResource;
 import org.jboss.osgi.resolver.XResourceBuilder;
-import org.jboss.osgi.resolver.XResourceBuilderFactory;
 import org.jboss.osgi.spi.BundleInfo;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.osgi.vfs.AbstractVFS;
@@ -201,7 +204,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
                 LOGGER.tracef("Installing initial module capability: %s", identifier);
 
                 // Attempt to load the module from the modules hierarchy
-                Module module = null;
+                final Module module;
                 try {
                     ModuleLoader moduleLoader = Module.getBootModuleLoader();
                     module = moduleLoader.loadModule(moduleId);
@@ -209,16 +212,22 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
                     throw MESSAGES.startFailedCannotResolveInitialCapability(ex, identifier);
                 }
                 if (module != null) {
-                    OSGiMetaData metadata = getModuleMetadata(module);
-                    XResourceBuilder builder = XResourceBuilderFactory.create();
+                    final OSGiMetaData metadata = getModuleMetadata(module);
+                    final BundleContext syscontext = injectedSystemContext.getValue();
+                    XBundleRevisionBuilderFactory factory = new XBundleRevisionBuilderFactory() {
+                        @Override
+                        public XBundleRevision createResource() {
+                            return new AbstractBundleRevisionAdaptor(syscontext, module);
+                        }
+                    };
+                    XResourceBuilder builder = XBundleRevisionBuilderFactory.create(factory);
                     if (metadata != null) {
                         builder.loadFrom(metadata);
                     } else {
                         builder.loadFrom(module);
                     }
-                    XResource res = builder.getResource();
-                    res.addAttachment(Module.class, module);
-                    injectedEnvironment.getValue().installResources(res);
+                    XResource resource = builder.getResource();
+                    injectedEnvironment.getValue().installResources(resource);
                     return true;
                 }
             }
@@ -307,7 +316,6 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
     }
 
     private OSGiMetaData getModuleMetadata(Module module) throws IOException {
-
         URL manifestURL = module.getClassLoader().getResource(JarFile.MANIFEST_NAME);
         if (manifestURL != null) {
             InputStream input = manifestURL.openStream();
@@ -329,7 +337,9 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
         if (entryFile.exists()) {
             FileInputStream input = new FileInputStream(entryFile);
             try {
-                return OSGiMetaDataBuilder.load(input);
+                Properties props = new Properties();
+                props.load(input);
+                return OSGiMetaDataBuilder.load(props);
             } finally {
                 input.close();
             }

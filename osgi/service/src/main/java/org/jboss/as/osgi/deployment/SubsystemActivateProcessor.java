@@ -22,53 +22,42 @@
 
 package org.jboss.as.osgi.deployment;
 
-import java.util.jar.Manifest;
-
+import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.osgi.framework.IntegrationServices;
+import org.jboss.osgi.framework.Services;
 
 /**
- * Processes deployments that contain a valid OSGi manifest.
- *
- * If so it attaches the {@link Manifest} under key {@link Attachments#OSGI_MANIFEST}
+ * Activates the OSGi subsystem if an OSGi deployment is detected.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 02-Dec-2010
+ * @since 20-Jun-2012
  */
-public class OSGiManifestStructureProcessor implements DeploymentUnitProcessor {
+public class SubsystemActivateProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        if (deploymentRoot == null)
-            return;
+        // Always make the system context & the environment available
+        phaseContext.addDeploymentDependency(Services.SYSTEM_CONTEXT, Attachments.SYSTEM_CONTEXT_KEY);
+        phaseContext.addDeploymentDependency(Services.ENVIRONMENT, OSGiConstants.ENVIRONMENT_KEY);
 
-        // Skip ignored deployments
-        Boolean ignore = deploymentUnit.getAttachment(Attachments.IGNORE_OSGI);
-        if (ignore != null && ignore.booleanValue())
-            return;
-
-        // Check whether this is an OSGi manifest
-        Manifest manifest = deploymentRoot.getAttachment(Attachments.MANIFEST);
-        if (OSGiManifestBuilder.isValidBundleManifest(manifest)) {
-            deploymentUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
-            OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
-            deploymentUnit.putAttachment(Attachments.OSGI_METADATA_KEY, metadata);
+        DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        if (depUnit.hasAttachment(OSGiConstants.DEPLOYMENT_KEY)) {
+            phaseContext.getServiceRegistry().getRequiredService(Services.FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
+            phaseContext.addDependency(IntegrationServices.AUTOINSTALL_COMPLETE, AttachmentKey.create(Object.class));
+            phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
+            phaseContext.addDeploymentDependency(Services.RESOLVER, OSGiConstants.RESOLVER_KEY);
         }
     }
 
     @Override
-    public void undeploy(DeploymentUnit deploymentUnit) {
-        deploymentUnit.removeAttachment(Attachments.OSGI_MANIFEST);
-        deploymentUnit.removeAttachment(Attachments.OSGI_METADATA_KEY);
+    public void undeploy(final DeploymentUnit depUnit) {
     }
 }

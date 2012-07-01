@@ -126,6 +126,14 @@
             <artifactId>jboss-msc</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.osgi.resolver</groupId>
+            <artifactId>jbosgi-resolver-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.osgi.spi</groupId>
+            <artifactId>jbosgi-spi</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.remoting3</groupId>
             <artifactId>jboss-remoting</artifactId>
         </dependency>
@@ -144,6 +152,10 @@
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-vfs</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
         </dependency>
         <!--
         <dependency>
