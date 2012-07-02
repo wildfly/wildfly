@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2005, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,24 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.osgi.bundle;
+package org.jboss.as.test.smoke.osgi.bundleB;
 
 
+public class Echo {
 
-/**
- * A SimpleService
- *
- * @author thomas.diesler@jboss.com
- * @since 24-Apr-2009
- */
-public class SimpleService
-{
-   public Integer sum(Integer... values)
-   {
-      int result = 0;
-      for (int val : values)
-         result += val;
+    private final String message;
 
-      return result;
-   }
+    public Echo(String message) {
+        this.message = message;
+    }
+
+    public String echo(String param) {
+        return message + param;
+    }
 }

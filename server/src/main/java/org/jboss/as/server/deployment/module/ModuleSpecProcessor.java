@@ -150,7 +150,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
     private ServiceName createModuleService(final DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit,
                                             final List<ResourceRoot> resourceRoots, final ModuleSpecification moduleSpecification,
                                             final ModuleIdentifier moduleIdentifier) throws DeploymentUnitProcessingException {
-        logger.debug("Creating module" + moduleIdentifier);
+        logger.debug("Creating module: " + moduleIdentifier);
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
         for (final DependencySpec dep : moduleSpecification.getModuleSystemDependencies()) {
             specBuilder.addDependency(dep);

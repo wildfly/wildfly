@@ -71,9 +71,6 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         this.sharedTldsMetaData = sharedTldsMetaData;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -82,7 +79,6 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         }
 
         final ResourceRoot deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-
         final VirtualFile deploymentRoot = deploymentResourceRoot.getRoot();
         if (deploymentRoot == null) {
             return;

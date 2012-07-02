@@ -58,103 +58,133 @@ public final class AttachmentList<T> implements List<T>, RandomAccess {
         return valueClass;
     }
 
+    @Override
     public int size() {
         return delegate.size();
     }
 
+    @Override
     public boolean isEmpty() {
         return delegate.isEmpty();
     }
 
+    @Override
     public boolean contains(final Object o) {
         return delegate.contains(o);
     }
 
+    @Override
     public Iterator<T> iterator() {
         return delegate.iterator();
     }
 
+    @Override
     public Object[] toArray() {
         return delegate.toArray();
     }
 
-    public <T> T[] toArray(final T[] a) {
+    @Override
+    public <A> A[] toArray(final A[] a) {
         return delegate.toArray(a);
     }
 
+    @Override
     public boolean add(final T t) {
         return delegate.add(t);
     }
 
+    @Override
     public boolean remove(final Object o) {
         return delegate.remove(o);
     }
 
+    @Override
     public boolean containsAll(final Collection<?> c) {
         return delegate.containsAll(c);
     }
 
+    @Override
     public boolean addAll(final Collection<? extends T> c) {
         return delegate.addAll(c);
     }
 
+    @Override
     public boolean addAll(final int index, final Collection<? extends T> c) {
         return delegate.addAll(index, c);
     }
 
+    @Override
     public boolean removeAll(final Collection<?> c) {
         return delegate.removeAll(c);
     }
 
+    @Override
     public boolean retainAll(final Collection<?> c) {
         return delegate.retainAll(c);
     }
 
+    @Override
     public void clear() {
         delegate.clear();
     }
 
-    public boolean equals(final Object o) {
-        return delegate.equals(o);
-    }
-
-    public int hashCode() {
-        return delegate.hashCode();
-    }
-
+    @Override
     public T get(final int index) {
         return delegate.get(index);
     }
 
+    @Override
     public T set(final int index, final T element) {
         return delegate.set(index, element);
     }
 
+    @Override
     public void add(final int index, final T element) {
         delegate.add(index, element);
     }
 
+    @Override
     public T remove(final int index) {
         return delegate.remove(index);
     }
 
+    @Override
     public int indexOf(final Object o) {
         return delegate.indexOf(o);
     }
 
+    @Override
     public int lastIndexOf(final Object o) {
         return delegate.lastIndexOf(o);
     }
 
+    @Override
     public ListIterator<T> listIterator() {
         return delegate.listIterator();
     }
 
+    @Override
     public ListIterator<T> listIterator(final int index) {
         return delegate.listIterator(index);
     }
 
+    @Override
     public List<T> subList(final int fromIndex, final int toIndex) {
         return delegate.subList(fromIndex, toIndex);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        return delegate.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return delegate.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "AttachmentList" + delegate;
     }
 }

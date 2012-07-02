@@ -178,14 +178,13 @@ public enum Phase {
     }
 
     // STRUCTURE
-    public static final int STRUCTURE_EXPLODED_MOUNT                    = 0x0200;
-    public static final int STRUCTURE_MOUNT                             = 0x0300;
-    public static final int STRUCTURE_MANIFEST                          = 0x0400;
-    public static final int STRUCTURE_EE_SPEC_DESC_PROPERTY_REPLACEMENT = 0x0450;
-    public static final int STRUCTURE_EE_JBOSS_DESC_PROPERTY_REPLACEMENT= 0x0451;
-    // must be before osgi
-    public static final int STRUCTURE_JDBC_DRIVER                       = 0x0500;
-    public static final int STRUCTURE_OSGI_MANIFEST                     = 0x0600;
+    public static final int STRUCTURE_EXPLODED_MOUNT                    = 0x0100;
+    public static final int STRUCTURE_MOUNT                             = 0x0200;
+    public static final int STRUCTURE_MANIFEST                          = 0x0300;
+    public static final int STRUCTURE_OSGI_MANIFEST                     = 0x0400;
+    public static final int STRUCTURE_EE_SPEC_DESC_PROPERTY_REPLACEMENT = 0x0500;
+    public static final int STRUCTURE_EE_JBOSS_DESC_PROPERTY_REPLACEMENT= 0x0550;
+    public static final int STRUCTURE_JDBC_DRIVER                       = 0x0600;
     public static final int STRUCTURE_RAR                               = 0x0700;
     public static final int STRUCTURE_WAR_DEPLOYMENT_INIT               = 0x0800;
     public static final int STRUCTURE_WAR                               = 0x0900;
@@ -200,10 +199,11 @@ public enum Phase {
     public static final int STRUCTURE_EJB_JAR_IN_EAR                    = 0x1200;
     public static final int STRUCTURE_APPLICATION_CLIENT_IN_EAR         = 0x1300;
     public static final int STRUCTURE_MANAGED_BEAN_JAR_IN_EAR           = 0x1400;
+    public static final int STRUCTURE_BUNDLE_JAR_IN_EAR                 = 0x1450;
     public static final int STRUCTURE_SAR_SUB_DEPLOY_CHECK              = 0x1500;
     public static final int STRUCTURE_ADDITIONAL_MANIFEST               = 0x1600;
     public static final int STRUCTURE_SUB_DEPLOYMENT                    = 0x1700;
-    public static final int STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE_DESCRIPTOR = 0x1800;
+    public static final int STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE        = 0x1800;
     public static final int STRUCTURE_CLASS_PATH                        = 0x1900;
     public static final int STRUCTURE_MODULE_IDENTIFIERS                = 0x1A00;
     public static final int STRUCTURE_EE_MODULE_INIT                    = 0x1B00;
@@ -278,7 +278,7 @@ public enum Phase {
     public static final int PARSE_EJB_ASSEMBLY_DESC_DD                  = 0x3600;
     public static final int PARSE_DISTINCT_NAME                         = 0x3601;
     public static final int PARSE_OSGI_DEPLOYMENT                       = 0x3700;
-    public static final int PARSE_OSGI_ACTIVATOR                        = 0x3800;
+    public static final int PARSE_OSGI_SUBSYSTEM_ACTIVATOR              = 0x3800;
     // should be after all components are known
     public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x4000;
     public static final int PARSE_JACORB                                = 0x4100;

@@ -19,13 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.osgi.bundle;
+package org.jboss.as.test.smoke.osgi.bundleA;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.jboss.as.test.smoke.osgi.bundleB.Echo;
+
 import java.io.IOException;
 import java.io.Writer;
 
@@ -33,17 +36,17 @@ import java.io.Writer;
 @WebServlet(name = "SimpleServlet", urlPatterns = { "/simple" })
 public class SimpleServlet extends HttpServlet {
 
-    private volatile String message;
+    private volatile Echo echo;
 
     @PostConstruct
     public void messageSetup() {
-        message = "Simple Servlet called with input=";
+        echo = new Echo("Simple Servlet called with input=");
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String msg = req.getParameter("input");
+        String param = req.getParameter("input");
         Writer writer = resp.getWriter();
-        writer.write(message + msg);
+        writer.write(echo.echo(param));
     }
 }

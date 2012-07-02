@@ -29,7 +29,7 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.smoke.osgi.bundle.SimpleService;
+import org.jboss.as.test.smoke.osgi.bundleA.SimpleService;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.framework.Services;

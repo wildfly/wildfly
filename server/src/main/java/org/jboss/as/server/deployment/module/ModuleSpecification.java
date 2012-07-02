@@ -85,6 +85,11 @@ public class ModuleSpecification extends SimpleAttachable {
     private boolean privateModule;
 
     /**
+     * Flag that indicates that this is an OSGi bundle deployment.
+     */
+    private boolean bundleDeployment;
+
+    /**
      * If set to true this indicates that a dependency on this module requires a dependency on all it's transitive
      * dependencies.
      */
@@ -279,6 +284,14 @@ public class ModuleSpecification extends SimpleAttachable {
 
     public List<DependencySpec> getModuleSystemDependencies() {
         return Collections.unmodifiableList(moduleSystemDependencies);
+    }
+
+    public boolean isBundleDeployment() {
+        return bundleDeployment;
+    }
+
+    public void setBundleDeployment(boolean bundleDeployment) {
+        this.bundleDeployment = bundleDeployment;
     }
 
     public ModuleDependency getResourceRootDelegation() {

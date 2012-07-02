@@ -42,15 +42,16 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class SubDeploymentProcessor implements DeploymentUnitProcessor {
 
+    @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ResourceRoot deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final ServiceVerificationHandler serviceVerificationHandler = deploymentUnit.getAttachment(Attachments.SERVICE_VERIFICATION_HANDLER);
 
-        ServiceName previous = null;
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         final List<ResourceRoot> childRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
         for (final ResourceRoot childRoot : childRoots) {
-            if (!SubDeploymentMarker.isSubDeployment(childRoot)) {
+            if (childRoot == deploymentResourceRoot || !SubDeploymentMarker.isSubDeployment(childRoot)) {
                 continue;
             }
             final Resource resource = DeploymentModelUtils.createSubDeployment(childRoot.getRootName(), deploymentUnit);
@@ -70,10 +71,10 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
             phaseContext.addDeploymentDependency(serviceName, Attachments.SUB_DEPLOYMENTS);
             //we also need a dep on the first phase of the sub deployments
             phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, serviceName.append(ServiceName.of(Phase.STRUCTURE.name())));
-            previous = serviceName;
         }
     }
 
+    @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
         final ServiceRegistry serviceRegistry = deploymentUnit.getServiceRegistry();
         final List<ResourceRoot> childRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);

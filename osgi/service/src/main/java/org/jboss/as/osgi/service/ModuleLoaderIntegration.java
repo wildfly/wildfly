@@ -48,9 +48,11 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.ModuleLoaderProvider;
+import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XIdentityCapability;
 
@@ -111,13 +113,19 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
      */
     @Override
     public ModuleIdentifier getModuleIdentifier(XBundleRevision brev) {
-        XIdentityCapability icap = brev.getIdentityCapability();
-        List<XBundleRevision> allrevs = brev.getBundle().getAllBundleRevisions();
-        String name = icap.getSymbolicName();
-        if (allrevs.size() > 1) {
-            name += "-rev" + (allrevs.size() - 1);
+        XBundle bundle = brev.getBundle();
+        Deployment dep = bundle.adapt(Deployment.class);
+        ModuleIdentifier identifier = dep.getAttachment(ModuleIdentifier.class);
+        if (identifier == null) {
+            XIdentityCapability icap = brev.getIdentityCapability();
+            List<XBundleRevision> allrevs = brev.getBundle().getAllBundleRevisions();
+            String name = icap.getSymbolicName();
+            if (allrevs.size() > 1) {
+                name += "-rev" + (allrevs.size() - 1);
+            }
+            identifier = ModuleIdentifier.create(MODULE_PREFIX + name, "" + icap.getVersion());
         }
-        return ModuleIdentifier.create(MODULE_PREFIX + name, "" + icap.getVersion());
+        return identifier;
     }
 
     /**

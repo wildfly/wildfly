@@ -24,6 +24,8 @@ package org.jboss.as.osgi.deployment;
 
 import java.util.List;
 
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.osgi.DeploymentMarker;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.BundleInstallIntegration;
@@ -35,6 +37,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
 import org.jboss.osgi.spi.BundleInfo;
@@ -88,6 +91,12 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
 
         // Attach the deployment
         if (deployment != null) {
+            // For non WAR deployments we attach the {@link ModuleIdentifier} so that
+            // the Framework uses the same moduleId that AS7 uses in it's dependencies
+            if (!DeploymentTypeMarker.isType(DeploymentType.WAR, depUnit)) {
+                ModuleIdentifier identifier = depUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
+                deployment.addAttachment(ModuleIdentifier.class, identifier);
+            }
             depUnit.putAttachment(OSGiConstants.DEPLOYMENT_KEY, deployment);
         }
     }

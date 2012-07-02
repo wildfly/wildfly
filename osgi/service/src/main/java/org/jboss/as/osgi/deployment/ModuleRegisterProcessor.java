@@ -25,6 +25,8 @@ package org.jboss.as.osgi.deployment;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -35,7 +37,6 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.osgi.framework.AbstractBundleRevisionAdaptor;
 import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XBundleRevisionBuilderFactory;
 import org.jboss.osgi.resolver.XEnvironment;
@@ -55,35 +56,43 @@ public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        // Create the {@link ModuleRegisterService}
+        // Don't register EAR deployments
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        final XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, depUnit))
+            return;
+
+        // Don't register Bundle deployments
+        if (depUnit.hasAttachment(Attachments.INSTALLED_BUNDLE))
+            return;
+
+        // Don't register private module deployments
         final Module module = depUnit.getAttachment(Attachments.MODULE);
         final ModuleSpecification moduleSpecification = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        if (bundle == null && module != null && moduleSpecification.isPrivateModule() == false) {
-            LOGGER.infoRegisterModule(module.getIdentifier());
-            try {
-                final BundleContext context = depUnit.getAttachment(Attachments.SYSTEM_CONTEXT);
-                XBundleRevisionBuilderFactory factory = new XBundleRevisionBuilderFactory() {
-                    @Override
-                    public XBundleRevision createResource() {
-                        return new AbstractBundleRevisionAdaptor(context, module);
-                    }
-                };
-                OSGiMetaData metadata = depUnit.getAttachment(Attachments.OSGI_METADATA);
-                XEnvironment env = depUnit.getAttachment(OSGiConstants.ENVIRONMENT_KEY);
-                XResourceBuilder builder = XBundleRevisionBuilderFactory.create(factory);
-                if (metadata != null) {
-                    builder.loadFrom(metadata);
-                } else {
-                    builder.loadFrom(module);
+        if (module == null || moduleSpecification.isPrivateModule())
+            return;
+
+        LOGGER.infoRegisterModule(module.getIdentifier());
+        try {
+            final BundleContext context = depUnit.getAttachment(Attachments.SYSTEM_CONTEXT);
+            XBundleRevisionBuilderFactory factory = new XBundleRevisionBuilderFactory() {
+                @Override
+                public XBundleRevision createResource() {
+                    return new AbstractBundleRevisionAdaptor(context, module);
                 }
-                XBundleRevision brev = (XBundleRevision) builder.getResource();
-                env.installResources(brev);
-                depUnit.putAttachment(OSGiConstants.REGISTERED_MODULE_KEY, brev);
-            } catch (Throwable th) {
-                throw MESSAGES.deploymentFailedToRegisterModule(th, module);
+            };
+            OSGiMetaData metadata = depUnit.getAttachment(Attachments.OSGI_METADATA);
+            XEnvironment env = depUnit.getAttachment(OSGiConstants.ENVIRONMENT_KEY);
+            XResourceBuilder builder = XBundleRevisionBuilderFactory.create(factory);
+            if (metadata != null) {
+                builder.loadFrom(metadata);
+            } else {
+                builder.loadFrom(module);
             }
+            XBundleRevision brev = (XBundleRevision) builder.getResource();
+            env.installResources(brev);
+            depUnit.putAttachment(OSGiConstants.REGISTERED_MODULE_KEY, brev);
+        } catch (Throwable th) {
+            throw MESSAGES.deploymentFailedToRegisterModule(th, module);
         }
     }
 

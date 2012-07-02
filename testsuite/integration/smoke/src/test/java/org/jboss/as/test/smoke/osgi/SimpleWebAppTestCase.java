@@ -47,7 +47,8 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.smoke.osgi.bundle.SimpleServlet;
+import org.jboss.as.test.smoke.osgi.bundleA.SimpleServlet;
+import org.jboss.as.test.smoke.osgi.bundleB.Echo;
 import org.jboss.dmr.ModelNode;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
@@ -68,7 +69,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class SimpleWebAppTestCase {
 
-    private static final String SIMPLE_WAR = "war-example.war";
+    private static final String SIMPLE_WAR = "simple.war";
     private static final String WAR_STRUCTURE_BUNDLE = "war-structure-bundle.war";
     private static final String OSGI_STRUCTURE_BUNDLE = "osgi-structure-bundle.war";
     private static final String WEB_APPLICATION_BUNDLE_A = "osgi-webapp-a.wab";
@@ -83,14 +84,14 @@ public class SimpleWebAppTestCase {
     @Deployment(name = SIMPLE_WAR, testable = false)
     public static Archive<?> getWarDeployment() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, SIMPLE_WAR);
-        archive.addClasses(SimpleServlet.class);
+        archive.addClasses(SimpleServlet.class, Echo.class);
         return archive;
     }
 
     @Deployment(name = WAR_STRUCTURE_BUNDLE, testable = false)
     public static Archive<?> getWarStructureDeployment() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, WAR_STRUCTURE_BUNDLE);
-        archive.addClasses(SimpleServlet.class);
+        archive.addClasses(SimpleServlet.class, Echo.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -109,7 +110,7 @@ public class SimpleWebAppTestCase {
     @Deployment(name = OSGI_STRUCTURE_BUNDLE, testable = false)
     public static Archive<?> getOSGiStructureDeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, OSGI_STRUCTURE_BUNDLE);
-        archive.addClasses(SimpleServlet.class);
+        archive.addClasses(SimpleServlet.class, Echo.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -127,7 +128,7 @@ public class SimpleWebAppTestCase {
     @Deployment(name = WEB_APPLICATION_BUNDLE_A, testable = false)
     public static Archive<?> getWebAppBundleDeploymentA() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, WEB_APPLICATION_BUNDLE_A);
-        archive.addClasses(SimpleServlet.class);
+        archive.addClasses(SimpleServlet.class, Echo.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -145,7 +146,7 @@ public class SimpleWebAppTestCase {
     @Deployment(name = WEB_APPLICATION_BUNDLE_B, testable = false)
     public static Archive<?> getWebAppBundleDeploymentB() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, WEB_APPLICATION_BUNDLE_B);
-        archive.addClasses(SimpleServlet.class);
+        archive.addClasses(SimpleServlet.class, Echo.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {

@@ -22,55 +22,51 @@
 
 package org.jboss.as.osgi.deployment;
 
+import java.util.List;
 import java.util.jar.Manifest;
 
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
+import org.jboss.as.server.deployment.module.IgnoreMetaInfMarker;
+import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 
 /**
- * Processes deployments that contain a valid OSGi manifest.
+ * Processor that marks bundle sub deployments in ear deployments.
  *
- * If so it attaches the {@link Manifest} under key {@link Attachments#OSGI_MANIFEST}
- *
- * @author Thomas.Diesler@jboss.com
- * @since 02-Dec-2010
+ * @author Thomas.Diesler
+ * @since 02-Jul-2012
  */
-public class OSGiManifestStructureProcessor implements DeploymentUnitProcessor {
+public class BundleSubDeploymentMarkingProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-
-        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (depUnit.hasAttachment(Attachments.OSGI_MANIFEST) || depUnit.hasAttachment(Attachments.OSGI_METADATA))
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
+        }
+        List<ResourceRoot> potentialSubDeployments = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
+        for (ResourceRoot resourceRoot : potentialSubDeployments) {
+            if (IgnoreMetaInfMarker.isIgnoreMetaInf(resourceRoot)) {
+                continue;
+            }
 
-        final ResourceRoot deploymentRoot = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        if (deploymentRoot == null)
-            return;
-
-        // Check whether this is an OSGi manifest
-        Manifest manifest = deploymentRoot.getAttachment(Attachments.MANIFEST);
-        if (OSGiManifestBuilder.isValidBundleManifest(manifest)) {
-            depUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
-            OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
-            depUnit.putAttachment(Attachments.OSGI_METADATA, metadata);
-            // Mark the module spec as bundle deployment
-            ModuleSpecification moduleSpec = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-            moduleSpec.setBundleDeployment(true);
+            Manifest manifest = ManifestAttachmentProcessor.getManifest(resourceRoot);
+            if (OSGiManifestBuilder.isValidBundleManifest(manifest)) {
+                SubDeploymentMarker.mark(resourceRoot);
+            }
         }
     }
 
     @Override
-    public void undeploy(DeploymentUnit deploymentUnit) {
-        deploymentUnit.removeAttachment(Attachments.OSGI_MANIFEST);
-        deploymentUnit.removeAttachment(Attachments.OSGI_METADATA);
+    public void undeploy(DeploymentUnit context) {
+
     }
 }
