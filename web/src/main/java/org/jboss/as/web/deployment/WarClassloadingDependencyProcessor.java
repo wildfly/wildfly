@@ -49,6 +49,7 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
 
     private static final ModuleIdentifier JSF_IMPL = ModuleIdentifier.create("com.sun.jsf-impl");
     private static final ModuleIdentifier JSF_API = ModuleIdentifier.create("javax.faces.api");
+    private static final ModuleIdentifier JSF_INTEGRATION = ModuleIdentifier.create("org.jboss.as.jsf");
     private static final ModuleIdentifier JSF_1_2_IMPL = ModuleIdentifier.create("com.sun.jsf-impl", "1.2");
     private static final ModuleIdentifier JSF_1_2_API = ModuleIdentifier.create("javax.faces.api", "1.2");
     private static final ModuleIdentifier BEAN_VALIDATION = ModuleIdentifier.create("org.hibernate.validator");
@@ -94,9 +95,13 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
     private void addJSFAPI(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
 
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSF_INTEGRATION, false, false, true, false));
+
         ModuleIdentifier jsfModule = JSF_API;
         if (jsfVersion.equals(JsfVersionMarker.JSF_1_2)) jsfModule = JSF_1_2_API;
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, jsfModule, false, false, false, false));
+
+
     }
 
     private void addJSFImpl(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {

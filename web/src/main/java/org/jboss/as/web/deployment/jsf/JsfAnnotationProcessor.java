@@ -22,14 +22,13 @@
 
 package org.jboss.as.web.deployment.jsf;
 
-import static org.jboss.as.web.WebMessages.MESSAGES;
-
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.faces.bean.ManagedBean;
 import javax.faces.component.FacesComponent;
 import javax.faces.component.behavior.FacesBehavior;
@@ -38,6 +37,7 @@ import javax.faces.event.NamedEvent;
 import javax.faces.render.FacesBehaviorRenderer;
 import javax.faces.render.FacesRenderer;
 import javax.faces.validator.FacesValidator;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -51,6 +51,8 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 /**
  * {@link DeploymentUnitProcessor} implementation responsible for extracting JSF annotations from a deployment and attaching them
  * to the deployment unit to eventually be added to the {@link javax.servlet.ServletContext}.
@@ -58,6 +60,8 @@ import org.jboss.modules.Module;
  * @author John Bailey
  */
 public class JsfAnnotationProcessor implements DeploymentUnitProcessor {
+
+    public static final String FACES_ANNOTATIONS = "org.jboss.as.jsf.FACES_ANNOTATIONS";
 
     private enum FacesAnnotation {
         FACES_COMPONENT(FacesComponent.class),
@@ -118,7 +122,7 @@ public class JsfAnnotationProcessor implements DeploymentUnitProcessor {
                 }
             }
         }
-        deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(JandexAnnotationProvider.FACES_ANNOTATIONS, instances));
+        deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(FACES_ANNOTATIONS, instances));
     }
 
     public void undeploy(DeploymentUnit context) {

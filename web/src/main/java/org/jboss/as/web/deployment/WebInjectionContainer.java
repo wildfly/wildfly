@@ -21,13 +21,6 @@
  */
 package org.jboss.as.web.deployment;
 
-import org.apache.tomcat.InstanceManager;
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.web.deployment.ConcurrentReferenceHashMap.Option;
-import org.jboss.as.web.deployment.component.ComponentInstantiator;
-import org.jboss.msc.service.ServiceName;
-
-import javax.naming.NamingException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -35,6 +28,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import javax.naming.NamingException;
+
+import org.apache.tomcat.InstanceManager;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.web.deployment.ConcurrentReferenceHashMap.Option;
+import org.jboss.as.web.deployment.component.ComponentInstantiator;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * The web injection container.
@@ -47,6 +48,8 @@ public class WebInjectionContainer implements InstanceManager {
     private final Map<String, ComponentInstantiator> webComponentInstantiatorMap = new HashMap<String, ComponentInstantiator>();
     private final Set<ServiceName> serviceNames = new HashSet<ServiceName>();
     private final Map<Object, ManagedReference> instanceMap;
+
+    private static final ThreadLocal<WebInjectionContainer> CURRENT_INJECTION_CONTAINER = new ThreadLocal<WebInjectionContainer>();
 
     public WebInjectionContainer(ClassLoader classloader) {
         this.classloader = classloader;
@@ -103,5 +106,17 @@ public class WebInjectionContainer implements InstanceManager {
 
     public Set<ServiceName> getServiceNames() {
         return Collections.unmodifiableSet(serviceNames);
+    }
+
+    static void setWebInjectionContainer(WebInjectionContainer webInjectionContainer) {
+        CURRENT_INJECTION_CONTAINER.set(webInjectionContainer);
+    }
+
+    static void clearCurrentInjectionContainer() {
+        CURRENT_INJECTION_CONTAINER.remove();
+    }
+
+    public static WebInjectionContainer currentWebInjectionContainer() {
+        return CURRENT_INJECTION_CONTAINER.get();
     }
 }
