@@ -19,7 +19,12 @@ import java.lang.annotation.Target;
 public @interface DeploymentMarker {
 
     /**
-     * Defines the start level for this bundle deployment.
+     * Defines the auto start behaviour for this bundle deployment.
      */
     boolean autoStart() default true;
+
+    /**
+     * Defines the start level for this bundle deployment.
+     */
+    int startLevel() default 1;
 }

@@ -28,7 +28,11 @@ import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SERVI
 import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SPEC_SERVICE_PREFIX;
 
 import java.util.List;
+import java.util.Map;
 
+import org.jboss.as.server.deployment.module.FilterSpecification;
+import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
@@ -36,6 +40,10 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
+import org.jboss.modules.ModuleSpec.Builder;
+import org.jboss.modules.filter.MultiplePathFilterBuilder;
+import org.jboss.modules.filter.PathFilter;
+import org.jboss.modules.filter.PathFilters;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -48,9 +56,11 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.IntegrationServices;
-import org.jboss.osgi.framework.ModuleLoaderProvider;
+import org.jboss.osgi.framework.ModuleLoaderPlugin;
+import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XIdentityCapability;
 
@@ -64,7 +74,7 @@ import org.jboss.osgi.resolver.XIdentityCapability;
  * @author thomas.diesler@jboss.com
  * @since 20-Apr-2011
  */
-final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoaderProvider {
+final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoaderPlugin {
 
     private final InjectedValue<ServiceModuleLoader> injectedModuleLoader = new InjectedValue<ServiceModuleLoader>();
     private ServiceContainer serviceContainer;
@@ -72,7 +82,7 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
 
     static ServiceController<?> addService(final ServiceTarget target) {
         ModuleLoaderIntegration service = new ModuleLoaderIntegration();
-        ServiceBuilder<?> builder = target.addService(IntegrationServices.MODULE_LOADER_PROVIDER, service);
+        ServiceBuilder<?> builder = target.addService(IntegrationServices.MODULE_LOADER_PLUGIN, service);
         builder.addDependency(JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.injectedModuleLoader);
         builder.setInitialMode(Mode.ON_DEMAND);
         return builder.install();
@@ -96,7 +106,7 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
     }
 
     @Override
-    public ModuleLoaderProvider getValue() throws IllegalStateException {
+    public ModuleLoaderPlugin getValue() throws IllegalStateException {
         return this;
     }
 
@@ -111,13 +121,56 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
      */
     @Override
     public ModuleIdentifier getModuleIdentifier(XBundleRevision brev) {
-        XIdentityCapability icap = brev.getIdentityCapability();
-        List<XBundleRevision> allrevs = brev.getBundle().getAllBundleRevisions();
-        String name = icap.getSymbolicName();
-        if (allrevs.size() > 1) {
-            name += "-rev" + (allrevs.size() - 1);
+        XBundle bundle = brev.getBundle();
+        Deployment deployment = bundle.adapt(Deployment.class);
+        ModuleIdentifier identifier = deployment.getAttachment(ModuleIdentifier.class);
+        if (identifier == null) {
+            XIdentityCapability icap = brev.getIdentityCapability();
+            List<XBundleRevision> allrevs = bundle.getAllBundleRevisions();
+            String name = icap.getSymbolicName();
+            if (allrevs.size() > 1) {
+                name += "-rev" + (allrevs.size() - 1);
+            }
+            identifier = ModuleIdentifier.create(MODULE_PREFIX + name, "" + icap.getVersion());
         }
-        return ModuleIdentifier.create(MODULE_PREFIX + name, "" + icap.getVersion());
+        return identifier;
+    }
+
+    @Override
+    public void addIntegrationDependencies(ModuleSpecBuilderContext context) {
+        Builder builder = context.getModuleSpecBuilder();
+        XBundleRevision brev = context.getBundleRevision();
+        Map<ModuleIdentifier, DependencySpec> moduleDependencies = context.getModuleDependencies();
+        Deployment deployment = brev.getBundle().adapt(Deployment.class);
+        ModuleSpecification moduleSpecification = deployment.getAttachment(ModuleSpecification.class);
+        if (moduleSpecification != null) {
+            List<ModuleDependency> dependencies = moduleSpecification.getAllDependencies();
+            LOGGER.debugf("Adding integration dependencies: %d", dependencies.size());
+            for (ModuleDependency moduleDep : dependencies) {
+                ModuleIdentifier moduleId = moduleDep.getIdentifier();
+                if (moduleDependencies.get(moduleId) != null) {
+                    LOGGER.debugf("  Skipping already defined dependency on module: %s", moduleId);
+                    continue;
+                }
+                // Build import filter
+                MultiplePathFilterBuilder importBuilder = PathFilters.multiplePathFilterBuilder(true);
+                for (FilterSpecification filter : moduleDep.getImportFilters()) {
+                    importBuilder.addFilter(filter.getPathFilter(), filter.isInclude());
+                }
+                PathFilter importFilter = importBuilder.create();
+                // Build export filter
+                MultiplePathFilterBuilder exportBuilder = PathFilters.multiplePathFilterBuilder(true);
+                for (FilterSpecification filter : moduleDep.getExportFilters()) {
+                    importBuilder.addFilter(filter.getPathFilter(), filter.isInclude());
+                }
+                PathFilter exportFilter = exportBuilder.create();
+                ModuleLoader moduleLoader = moduleDep.getModuleLoader();
+                boolean optional = moduleDep.isOptional();
+                DependencySpec depSpec = DependencySpec.createModuleDependencySpec(importFilter, exportFilter, moduleLoader, moduleId, optional);
+                LOGGER.debugf("  %s", depSpec);
+                builder.addDependency(depSpec);
+            }
+        }
     }
 
     /**
@@ -128,8 +181,8 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
         ModuleIdentifier identifier = moduleSpec.getModuleIdentifier();
         LOGGER.tracef("Add module spec to loader: %s", identifier);
         ServiceName moduleSpecName = ServiceModuleLoader.moduleSpecServiceName(identifier);
-        serviceTarget.addService(moduleSpecName, new ValueService<ModuleSpec>(new ImmediateValue<ModuleSpec>(moduleSpec)))
-                .install();
+        ImmediateValue<ModuleSpec> value = new ImmediateValue<ModuleSpec>(moduleSpec);
+        serviceTarget.addService(moduleSpecName, new ValueService<ModuleSpec>(value)).install();
     }
 
     /**
