@@ -110,7 +110,7 @@ public class EarDeploymentTestCase extends ContainerResourceMgmtTestBase {
     @Test
     @Ignore
     public void testConfiguration() throws Throwable {
-        assertNotNull("Deployment metadata for ear not found", managementClient.getProtocolMetaData(deploymentName));
+        assertNotNull("Protocol metadata for ear not found", managementClient.getProtocolMetaData(deploymentName));
 
         final ModelNode address = new ModelNode();
         address.add("deployment", deploymentName).add("subdeployment", subdeploymentName).add("subsystem", "resource-adapters");

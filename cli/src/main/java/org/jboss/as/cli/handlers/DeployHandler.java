@@ -70,6 +70,7 @@ public class DeployHandler extends BatchModeCommandHandler {
     private final ArgumentWithoutValue allServerGroups;
     private final ArgumentWithoutValue disabled;
     private final ArgumentWithoutValue unmanaged;
+    private final ArgumentWithoutValue nostart;
     private final ArgumentWithValue script;
 
     private static final String CLI_ARCHIVE_SUFFIX = ".cli";
@@ -235,6 +236,9 @@ public class DeployHandler extends BatchModeCommandHandler {
         unmanaged = new ArgumentWithoutValue(this, "--unmanaged");
         unmanaged.addRequiredPreceding(path);
 
+        nostart = new ArgumentWithoutValue(this, "--no-start");
+        nostart.addRequiredPreceding(path);
+
         script = new ArgumentWithValue(this, "--script");
         script.addRequiredPreceding(path);
     }
@@ -388,6 +392,13 @@ public class DeployHandler extends BatchModeCommandHandler {
             deployRequest = new ModelNode();
             deployRequest.get(Util.OPERATION).set(Util.DEPLOY);
             deployRequest.get(Util.ADDRESS, Util.DEPLOYMENT).set(name);
+
+            // If the --no-start flag is given we set the start policy to 'deferred'
+            if (nostart.isPresent(args)) {
+                ModelNode metadata = new ModelNode();
+                metadata.get(Util.START_POLICY).set(Util.START_POLICY_DEFERRED);
+                deployRequest.get(Util.METADATA).set(metadata);
+            }
         }
 
         if(f != null) {

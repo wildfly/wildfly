@@ -18,6 +18,7 @@
  */
 package org.jboss.as.server.deployment;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.METADATA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
@@ -26,11 +27,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
 
 import java.util.Locale;
+import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.DeploymentMetadata;
+import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
@@ -69,8 +73,9 @@ public class DeploymentDeployHandler implements OperationStepHandler, Descriptio
         PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
         final String runtimeName = model.require(RUNTIME_NAME).asString();
+        final DeploymentMetadata userdata = new DeploymentMetadata(operation.get(METADATA));
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
-        DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contents);
+        DeploymentHandlerUtil.deploy(context, runtimeName, name, userdata, vaultReader, contents);
 
         context.completeStep();
     }

@@ -21,6 +21,10 @@
  */
 package org.jboss.as.controller.client.helpers.standalone;
 
+import java.util.Map;
+
+import org.jboss.as.controller.client.DeploymentMetadata;
+
 /**
  * Extension of {@link DeploymentPlanBuilder} that exposes
  * directives that are only applicable following an <code>add</code> directive.
@@ -48,4 +52,18 @@ public interface AddDeploymentPlanBuilder extends DeploymentPlanBuilder {
      */
     ReplaceDeploymentPlanBuilder andReplace(String toReplace);
 
+    /**
+     * Add some user defined metadata to the {@link DeploymentPlan}.
+     * See {@link DeploymentMetadata} for the set of supported types.
+     *
+     * @return a builder that can continue building the overall deployment plan
+     */
+    AddDeploymentPlanBuilder addMetadata(Map<String, Object> userdata);
+
+    /**
+     * Indicates that the specified deployment content should be deployed but not started.
+     *
+     * @return a builder that can continue building the overall deployment plan
+     */
+    AddDeploymentPlanBuilder andNoStart();
 }

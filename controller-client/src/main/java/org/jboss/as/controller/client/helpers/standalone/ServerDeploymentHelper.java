@@ -17,6 +17,7 @@
 package org.jboss.as.controller.client.helpers.standalone;
 
 import java.io.InputStream;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -40,11 +41,27 @@ public class ServerDeploymentHelper {
     }
 
     public String deploy(String name, InputStream input) throws ServerDeploymentException {
+        return this.deploy(name, input, null);
+    }
+
+    public String deploy(String name, InputStream input, Map<String, Object> userdata) throws ServerDeploymentException {
+        return this.deploy(name, input, userdata, true);
+    }
+
+    public String deploy(String name, InputStream input, boolean start) throws ServerDeploymentException {
+        return this.deploy(name, input, null, start);
+    }
+
+    public String deploy(String name, InputStream input, Map<String, Object> userdata, boolean start) throws ServerDeploymentException {
         String runtimeName;
         ServerDeploymentActionResult actionResult;
         try {
             DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            builder = builder.add(name, input).andDeploy();
+            AddDeploymentPlanBuilder addBuilder = builder.add(name, input).addMetadata(userdata);
+            if (start == false) {
+                addBuilder = addBuilder.andNoStart();
+            }
+            builder = addBuilder.andDeploy();
             DeploymentPlan plan = builder.build();
             DeploymentAction action = builder.getLastAction();
             runtimeName = action.getDeploymentUnitUniqueName();

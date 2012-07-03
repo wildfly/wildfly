@@ -26,9 +26,10 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
-import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.spi.BundleInfo;
-import org.osgi.framework.Bundle;
+import org.jboss.osgi.resolver.XBundleRevision;
+import org.jboss.osgi.resolver.XEnvironment;
+import org.jboss.osgi.resolver.XResolver;
+import org.osgi.framework.wiring.BundleWiring;
 
 /**
  * OSGi Subsystem constants
@@ -41,17 +42,20 @@ public interface OSGiConstants {
     ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("osgi", "as");
 
     /** Attachment key for the {@link BundleManager}. */
-    AttachmentKey<BundleInfo> BUNDLE_INFO_KEY = AttachmentKey.create(BundleInfo.class);
-
-    /** Attachment key for the {@link BundleManager}. */
     AttachmentKey<BundleManager> BUNDLE_MANAGER_KEY = AttachmentKey.create(BundleManager.class);
+
+    /** Attachment key for the {@link XEnvironment}. */
+    AttachmentKey<XEnvironment> ENVIRONMENT_KEY = AttachmentKey.create(XEnvironment.class);
+
+    /** Attachment key for the {@link XResolver}. */
+    AttachmentKey<XResolver> RESOLVER_KEY = AttachmentKey.create(XResolver.class);
 
     /** Attachment key for a bundle deployment. */
     AttachmentKey<Deployment> DEPLOYMENT_KEY = AttachmentKey.create(Deployment.class);
 
-    /** Attachment key for the installed bundle. */
-    AttachmentKey<Bundle> INSTALLED_BUNDLE_KEY = AttachmentKey.create(Bundle.class);
+    /** Attachment key for the {@link BundleWiring} of a resolved bundle. */
+    AttachmentKey<BundleWiring> BUNDLE_WIRING_KEY = AttachmentKey.create(BundleWiring.class);
 
-    /** Attachment key for {@link OSGiMetaData}. */
-    AttachmentKey<OSGiMetaData> OSGI_METADATA_KEY = AttachmentKey.create(OSGiMetaData.class);
+    /** Attachment key for a registered {@link XBundleRevision}. */
+    AttachmentKey<XBundleRevision> REGISTERED_MODULE_KEY = AttachmentKey.create(XBundleRevision.class);
 }
