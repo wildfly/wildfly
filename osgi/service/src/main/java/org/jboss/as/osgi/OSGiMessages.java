@@ -23,7 +23,6 @@
 package org.jboss.as.osgi;
 
 import java.io.File;
-
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.Cause;

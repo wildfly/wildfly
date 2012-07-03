@@ -96,7 +96,7 @@ public class RestEasyIntegrationTestCase {
         archive.add(new Asset() {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.osgi.core,deployment.jaxrs-osgi-target:0.0.0");
+                builder.addManifestHeader("Dependencies", "org.osgi.core,deployment.jaxrs-osgi-target");
                 return builder.openStream();
             }
         }, JarFile.MANIFEST_NAME);

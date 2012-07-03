@@ -22,60 +22,35 @@
 
 package org.jboss.as.osgi.deployment;
 
-import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-
-import java.util.Collections;
-import java.util.Map;
-
-import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
-import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
-import org.jboss.osgi.resolver.XEnvironment;
-import org.jboss.osgi.resolver.XResolveContext;
-import org.jboss.osgi.resolver.XResolver;
-import org.osgi.framework.wiring.BundleWiring;
-import org.osgi.resource.Resource;
-import org.osgi.resource.Wiring;
-import org.osgi.service.resolver.ResolutionException;
+import org.osgi.framework.Bundle;
 
 /**
- * Attach the {@link Module} for a resolved OSGi bundle.
+ * Attach the {@link Module} resulting from a successfully resolved {@link Bundle}
  *
  * @author Thomas.Diesler@jboss.com
- * @since 01-Jul-2012
+ * @since 20-Jun-2012
  */
-public class BundleResolveProcessor implements DeploymentUnitProcessor {
+public class ResolvedModuleAttachmentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
         XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
-        if (bundle == null || deployment.isAutoStart() == false)
-            return;
-
-        if (depUnit.hasAttachment(Attachments.MODULE))
+        if (bundle == null || bundle.isResolved() == false)
             return;
 
         XBundleRevision brev = bundle.getBundleRevision();
-        XEnvironment env = depUnit.getAttachment(OSGiConstants.ENVIRONMENT_KEY);
-        XResolver resolver = depUnit.getAttachment(OSGiConstants.RESOLVER_KEY);
-        XResolveContext context = resolver.createResolveContext(env, Collections.singleton(brev), null);
-        try {
-            Map<Resource, Wiring> wiremap = resolver.resolveAndApply(context);
-            BundleWiring wiring = (BundleWiring) wiremap.get(brev);
-            depUnit.putAttachment(OSGiConstants.BUNDLE_WIRING_KEY, wiring);
-        } catch (ResolutionException ex) {
-            LOGGER.warnCannotResolve(ex.getUnresolvedRequirements());
-        }
+        Module module = brev.getModuleClassLoader().getModule();
+        depUnit.putAttachment(Attachments.MODULE, module);
     }
 
     @Override

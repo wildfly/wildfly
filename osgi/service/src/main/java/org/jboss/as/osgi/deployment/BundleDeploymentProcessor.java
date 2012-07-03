@@ -22,8 +22,6 @@
 
 package org.jboss.as.osgi.deployment;
 
-import java.util.List;
-
 import org.jboss.as.osgi.DeploymentMarker;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.BundleInstallIntegration;
@@ -33,8 +31,10 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
 import org.jboss.osgi.spi.BundleInfo;
@@ -62,7 +62,7 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         // Check for attached BundleInfo
-        BundleInfo info = depUnit.getAttachment(OSGiConstants.BUNDLE_INFO_KEY);
+        BundleInfo info = depUnit.getAttachment(Attachments.BUNDLE_INFO);
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
@@ -77,19 +77,26 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
                     break;
                 }
             }
-
-            // Prevent autostart of ARQ deployments
-            if (deployment.isAutoStart()) {
-                DotName runWithName = DotName.createSimple("org.junit.runner.RunWith");
-                List<AnnotationInstance> runWithList = compositeIndex.getAnnotations(runWithName);
-                deployment.setAutoStart(runWithList.isEmpty());
-            }
         }
 
         // Attach the deployment
         if (deployment != null) {
+            // Make sure the framework uses the same module id as the server
+            ModuleIdentifier identifier = depUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
+            deployment.addAttachment(ModuleIdentifier.class, identifier);
+            // Allow additional dependencies for the set of supported deployemnt types
+            if (allowAdditionalModuleDependencies(depUnit)) {
+                ModuleSpecification moduleSpec = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+                deployment.addAttachment(ModuleSpecification.class, moduleSpec);
+            }
             depUnit.putAttachment(OSGiConstants.DEPLOYMENT_KEY, deployment);
         }
+    }
+
+    private boolean allowAdditionalModuleDependencies(final DeploymentUnit depUnit) {
+        //boolean isWar = DeploymentTypeMarker.isType(DeploymentType.WAR, depUnit);
+        //boolean isEjb = EjbDeploymentMarker.isEjbDeployment(depUnit);
+        return false;
     }
 
     @Override

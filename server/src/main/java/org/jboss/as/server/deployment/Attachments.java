@@ -44,7 +44,11 @@ import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.osgi.metadata.OSGiMetaData;
+import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.spi.BundleInfo;
 import org.jboss.vfs.VirtualFile;
+import org.osgi.framework.BundleContext;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -132,6 +136,9 @@ public final class Attachments {
      */
     public static final AttachmentKey<Manifest> OSGI_MANIFEST = AttachmentKey.create(Manifest.class);
 
+    /** Attachment key for {@link OSGiMetaData} */
+    public static final AttachmentKey<OSGiMetaData> OSGI_METADATA = AttachmentKey.create(OSGiMetaData.class);
+
     /**
      * Module identifiers for Class-Path information
      */
@@ -207,6 +214,23 @@ public final class Attachments {
     //
 
     public static final AttachmentKey<AbstractVaultReader> VAULT_READER_ATTACHMENT_KEY = AttachmentKey.create(AbstractVaultReader.class);
+    /**
+     * Attachment key for the {@link BundleInfo} when an OSGi bundle deployment is detected.
+     */
+    public static final AttachmentKey<BundleInfo> BUNDLE_INFO = AttachmentKey.create(BundleInfo.class);
+    /**
+     * Attachment key for the OSGi system context.
+     */
+    public static final AttachmentKey<BundleContext> SYSTEM_CONTEXT = AttachmentKey.create(BundleContext.class);
+
+    //
+    // REGISTER
+    //
+
+    /**
+     * Attachment key for the installed {@link XBundle}.
+     */
+    public static final AttachmentKey<XBundle> INSTALLED_BUNDLE = AttachmentKey.create(XBundle.class);
 
     //
     // DEPENDENCIES
