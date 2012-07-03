@@ -19,29 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.web.deployment.jsf;
+package org.jboss.as.jsf.deployment;
 
-import static org.jboss.as.web.WebMessages.MESSAGES;
+
+import java.lang.reflect.InvocationTargetException;
+
+import javax.naming.NamingException;
 
 import com.sun.faces.spi.DiscoverableInjectionProvider;
 import com.sun.faces.spi.InjectionProviderException;
 import org.jboss.as.web.deployment.WebInjectionContainer;
 
-import javax.naming.NamingException;
-import java.lang.reflect.InvocationTargetException;
+import static org.jboss.as.web.WebMessages.MESSAGES;
 
 /**
  * @author Stuart Douglas
  */
 public class JsfInjectionProvider extends DiscoverableInjectionProvider {
 
-
-    private static final ThreadLocal<WebInjectionContainer> injectionContainer = new ThreadLocal<WebInjectionContainer>();
-
     private final WebInjectionContainer container;
 
     public JsfInjectionProvider() {
-        this.container = injectionContainer.get();
+        this.container = WebInjectionContainer.currentWebInjectionContainer();
         if (this.container == null) {
             throw MESSAGES.noThreadLocalInjectionContainer();
         }
@@ -76,7 +75,4 @@ public class JsfInjectionProvider extends DiscoverableInjectionProvider {
         }
     }
 
-    public static ThreadLocal<WebInjectionContainer> getInjectionContainer() {
-        return injectionContainer;
-    }
 }

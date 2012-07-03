@@ -214,7 +214,7 @@
         <module-def name="org.jboss.common-beans">
             <maven-resource group="org.jboss.common" artifact="jboss-common-beans"/>
         </module-def>
-    	
+
         <module-def name="org.jboss.common-core">
             <maven-resource group="org.jboss" artifact="jboss-common-core"/>
         </module-def>
@@ -782,6 +782,10 @@
 
         <module-def name="org.jboss.as.host-controller">
             <maven-resource group="org.jboss.as" artifact="jboss-as-host-controller"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.jsf">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jsf"/>
         </module-def>
 
         <module-def name="org.jboss.as.jsr77">

@@ -21,8 +21,6 @@
  */
 package org.jboss.as.web.deployment;
 
-import static org.jboss.as.web.WebMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,12 +33,13 @@ import org.apache.catalina.core.StandardContext;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.ThreadSetupBindingListener;
 import org.jboss.as.web.WebLogger;
-import org.jboss.as.web.deployment.jsf.JsfInjectionProvider;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import static org.jboss.as.web.WebMessages.MESSAGES;
 
 /**
  * A service starting a web deployment.
@@ -75,7 +74,7 @@ class WebDeploymentService implements Service<Context> {
 
         context.setRealm(realm.getValue());
 
-        JsfInjectionProvider.getInjectionContainer().set(injectionContainer);
+        WebInjectionContainer.setWebInjectionContainer(injectionContainer);
         final List<SetupAction> actions = new ArrayList<SetupAction>();
         actions.addAll(setupActions);
         context.setInstanceManager(injectionContainer);
@@ -96,7 +95,7 @@ class WebDeploymentService implements Service<Context> {
             }
             WebLogger.WEB_LOGGER.registerWebapp(context.getName());
         } finally {
-            JsfInjectionProvider.getInjectionContainer().set(null);
+            WebInjectionContainer.clearCurrentInjectionContainer();
         }
     }
 

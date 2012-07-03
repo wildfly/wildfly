@@ -977,6 +977,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-jsf</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-logging</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -5906,6 +5912,7 @@
                 <module>jaxrs</module>
                 <module>jdr</module>
                 <module>jpa</module>
+                <module>jsf</module>
                 <module>jsr77</module>
                 <module>logging</module>
                 <module>mail</module>
