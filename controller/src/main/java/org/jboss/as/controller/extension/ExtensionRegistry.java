@@ -26,7 +26,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ModelVersionRange;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
@@ -599,11 +598,7 @@ public class ExtensionRegistry {
 
         @Override
         public TransformersSubRegistration registerModelTransformers(final ModelVersionRange range, final ResourceTransformer subsystemTransformer) {
-            final PathAddress subsystemAddress = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(SUBSYSTEM, name));
-            for(final ModelVersion version : range.getVersions()) {
-                transformerRegistry.getSubsystemTransformers().createChildRegistry(subsystemAddress, version, subsystemTransformer, true);
-            }
-            return new TransformersSubRegistration.TransformersSubRegistrationImpl(range, transformerRegistry.getSubsystemTransformers(), subsystemAddress);
+            return transformerRegistry.getDomainTransformers().registerSubsystemTransformers(name, range, subsystemTransformer);
         }
 
         private ManagementResourceRegistration getDummyRegistration() {

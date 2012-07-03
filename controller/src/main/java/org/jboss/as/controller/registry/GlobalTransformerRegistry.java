@@ -111,30 +111,32 @@ public class GlobalTransformerRegistry {
         registerTransformer(address.iterator(), version, operationName, new OperationTransformerRegistry.OperationTransformerEntry(transformer, OperationTransformerRegistry.TransformationPolicy.TRANSFORM));
     }
 
+    public OperationTransformerRegistry mergeSubtree(final OperationTransformerRegistry parent, final PathAddress address, final Map<PathAddress, ModelVersion> subTree) {
+        final OperationTransformerRegistry target = parent.createChildRegistry(address.iterator(), RESOURCE_TRANSFORMER, OperationTransformerRegistry.FORWARD);
+        mergeSubtree(target, subTree);
+        return target;
+    }
+
     /**
-     * Resolve the operation transformers for a given version.
+     * Merge a subtree.
      *
-     * @param version the model version
-     * @param subsystems the subsystems
-     * @return the resolved operation registry
+     * @param targetRegistry the target registry
+     * @param subTree the subtree
      */
-    public OperationTransformerRegistry resolve(final ModelVersion version, final ModelNode subsystems) {
-        final PathAddress base = PathAddress.EMPTY_ADDRESS;
-        final Map<PathAddress, ModelVersion> versions = new HashMap<PathAddress, ModelVersion>();
-        for(final Property property : subsystems.asPropertyList()) {
-            final String name = property.getName();
-            final PathAddress address = base.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name));
-            versions.put(address, convert(property.getValue().asString()));
+    public void mergeSubtree(final OperationTransformerRegistry targetRegistry, final Map<PathAddress, ModelVersion> subTree) {
+        for(Map.Entry<PathAddress, ModelVersion> entry: subTree.entrySet()) {
+            mergeSubtree(targetRegistry, entry.getKey(), entry.getValue());
         }
-        return create(version, versions);
     }
 
     protected void mergeSubtree(final OperationTransformerRegistry targetRegistry, final PathAddress address, final ModelVersion version) {
         final GlobalTransformerRegistry child = navigate(address.iterator());
-        child.process(targetRegistry, address, version, Collections.<PathAddress, ModelVersion>emptyMap());
+        if(child != null) {
+            child.process(targetRegistry, address, version, Collections.<PathAddress, ModelVersion>emptyMap());
+        }
     }
 
-    protected OperationTransformerRegistry create(final ModelVersion version, final Map<PathAddress, ModelVersion> versions) {
+    public OperationTransformerRegistry create(final ModelVersion version, final Map<PathAddress, ModelVersion> versions) {
         final OperationTransformerRegistry registry = new OperationTransformerRegistry(RESOURCE_TRANSFORMER, null);
         process(registry, PathAddress.EMPTY_ADDRESS, version, versions);
         return registry;
@@ -296,18 +298,6 @@ public class GlobalTransformerRegistry {
         public void registerTransformer(Iterator<PathElement> iterator, String value, ModelVersion version, String operationName, OperationTransformerRegistry.OperationTransformerEntry entry) {
             getOrCreate(value).registerTransformer(iterator, version, operationName, entry);
         }
-    }
-
-    static ModelVersion convert(final String version) {
-        final String[] s = version.split("\\.");
-        final int length = s.length;
-        if(length > 3) {
-            throw new IllegalStateException();
-        }
-        int major = Integer.valueOf(s[0]);
-        int minor = length > 1 ? Integer.valueOf(s[1]) : 0;
-        int micro = length == 3 ? Integer.valueOf(s[2]) : 0;
-        return ModelVersion.create(major, minor, micro);
     }
 
     static OperationTransformerRegistry.ResourceTransformerEntry RESOURCE_TRANSFORMER = new OperationTransformerRegistry.ResourceTransformerEntry(ResourceTransformer.ORIGINAL, false);
