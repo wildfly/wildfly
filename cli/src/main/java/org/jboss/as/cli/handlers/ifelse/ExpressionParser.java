@@ -21,8 +21,14 @@
  */
 package org.jboss.as.cli.handlers.ifelse;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Test;
 
 /**
  *
@@ -33,11 +39,33 @@ public class ExpressionParser {
     private static final String AND = "&&";
     private static final String OR = "||";
 
+    private static final String EQ = "==";
+    private static final String NOT_EQ = "!=";
+    private static final String GT = ">";
+    private static final String LT = "<";
+    private static final String NLT = ">=";
+    private static final String NGT = "<=";
+
+    private static final char[] OPERATION_STARTS = new char[]{'&', '|', '=', '!', '>', '<'};
+
+    private static boolean isEndWord(char ch) {
+        if(Character.isWhitespace(ch)) {
+            return true;
+        }
+        for(int i = 0; i < OPERATION_STARTS.length; ++i) {
+            if(ch == OPERATION_STARTS[i]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private String input;
     private int pos;
+    private BaseOperation lookedAheadOp;
 
-    protected Operation parseExpression(String input) {
-        System.out.println("parsing: '" + input + "'");
+    public Operation parseExpression(String input) {
+//        System.out.println("parsing: '" + input + "'");
         final String prevInput = this.input;
         final int prevPos = this.pos;
 
@@ -54,11 +82,15 @@ public class ExpressionParser {
             this.pos += prevPos + 2;
         }
 
-        System.out.println("parsed: " + op);
+//        System.out.println("parsed: " + op);
         return op;
     }
 
-    private BaseOperation lookedAheadOp;
+    public void reset() {
+        input = null;
+        pos = 0;
+        lookedAheadOp = null;
+    }
 
     public Operation getNextOperationFor(Operand firstOperand) {
         if(firstOperand == null) {
@@ -75,12 +107,8 @@ public class ExpressionParser {
         if(lookedAheadOp != null) {
             op = lookedAheadOp;
             lookedAheadOp = null;
-        } else if(input.startsWith(AND, pos)) {
-            op = new AndOperation();
-        } else if(input.startsWith(OR, pos)) {
-            op = new OrOperation();
         } else {
-            throw new IllegalStateException("Unrecognized operation at " + pos + ": " + input);
+            op = getOperationForPosition();
         }
 
         op.addOperand(firstOperand);
@@ -93,13 +121,7 @@ public class ExpressionParser {
             }
 
             if(!isEOL()) {
-                if (input.startsWith(AND, pos)) {
-                    lookedAheadOp = new AndOperation();
-                } else if (input.startsWith(OR, pos)) {
-                    lookedAheadOp = new OrOperation();
-                } else {
-                    throw new IllegalStateException("Unrecognized operation at " + pos + ": " + input);
-                }
+                lookedAheadOp = getOperationForPosition();
                 if (lookedAheadOp.getPriority() > op.getPriority()) {
                     operand = getNextOperationFor(operand);
                 }
@@ -129,55 +151,131 @@ public class ExpressionParser {
                     ++depthCount;
                 } else if(input.charAt(endIndex) == ')') {
                     if(depthCount == 0) {
-                        return parseExpression(input.substring(pos + 1, endIndex));
+                        final Operation expr = parseExpression(input.substring(pos + 1, endIndex));
+                        skipWhitespaces();
+                        return expr;
                     } else {
                         --depthCount;
                     }
                 }
             }
+            throw new IllegalStateException("Failed to locate closing ')' for '(' at " + pos + " in '" + input + "'");
         }
 
-        int start = pos;
-        for(;pos < input.length() && !Character.isWhitespace(input.charAt(pos)); ++pos);
+        final int start = pos;
+        for(;pos < input.length() && !isEndWord(input.charAt(pos)); ++pos);
+
         final String op = input.substring(start, pos);
         skipWhitespaces();
 
-        return new Operand() {
+        Operand operand = new Operand() {
             public String toString() {
                 return '\'' + op + '\'';
             }
         };
-    }
 
-    protected String nextWord() {
-        skipWhitespaces();
-        if(pos == input.length()) {
-            return null;
+        if(!isEOL()) {
+            ComparisonOperation comparison = null;
+            if(input.startsWith(EQ, pos)) {
+                comparison = new ComparisonOperation(EQ);
+                pos += 2;
+            } else if(input.startsWith(NOT_EQ, pos)) {
+                comparison = new ComparisonOperation(NOT_EQ);
+                pos += 2;
+            } else if(input.charAt(pos) == '>') {
+                if(input.length() > pos + 1 && input.charAt(pos + 1) == '=') {
+                    comparison = new ComparisonOperation(NLT);
+                    pos += 2;
+                } else {
+                    comparison = new ComparisonOperation(GT);
+                    ++pos;
+                }
+            } else if(input.charAt(pos) == '<') {
+                if(input.length() > pos + 1 && input.charAt(pos + 1) == '=') {
+                    comparison = new ComparisonOperation(NGT);
+                    pos += 2;
+                } else {
+                    comparison = new ComparisonOperation(LT);
+                    ++pos;
+                }
+            }
+
+            if(comparison != null) {
+                comparison.addOperand(operand);
+                operand = comparison;
+                comparison.addOperand(parseOperand());
+            }
         }
-        int start = pos;
-        for(;pos < input.length() && !Character.isWhitespace(input.charAt(pos)); ++pos);
-        final String op = input.substring(start, pos);
-        skipWhitespaces();
-        return op;
+        return operand;
     }
 
     protected void skipWhitespaces() {
         for(;pos < input.length() && Character.isWhitespace(input.charAt(pos)); ++pos);
     }
 
-    class AndOperation extends BaseOperation {
+    protected BaseOperation getOperationForPosition() {
+        if(input.startsWith(AND, pos)) {
+            return new AndOperation();
+        } else if(input.startsWith(OR, pos)) {
+            return new OrOperation();
+        } else if(input.startsWith(EQ, pos)) {
+            return new ComparisonOperation(EQ);
+        } else if (input.startsWith(NOT_EQ, pos)) {
+            return new ComparisonOperation(NOT_EQ);
+        } else if (input.charAt(pos) == '>') {
+            if (input.length() > pos + 1 && input.charAt(pos + 1) == '=') {
+                return new ComparisonOperation(NLT);
+            }
+            return new ComparisonOperation(GT);
+        } else if (input.charAt(pos) == '<') {
+            if (input.length() > pos + 1 && input.charAt(pos + 1) == '=') {
+                return new ComparisonOperation(NGT);
+            }
+            return new ComparisonOperation(LT);
+        } else {
+            throw new IllegalStateException("Unrecognized operation at " + pos + " in '" + input + "'");
+        }
+    }
+
+    protected BaseOperation getComparisonForPosition() {
+        if(input.startsWith(EQ, pos)) {
+            return new ComparisonOperation(EQ);
+        } else if(input.startsWith(NOT_EQ, pos)) {
+            return new ComparisonOperation(NOT_EQ);
+        } else if(input.charAt(pos) == '>') {
+            if(input.length() > pos + 1 && input.charAt(pos + 1) == '=') {
+                return new ComparisonOperation(NLT);
+            }
+            return new ComparisonOperation(GT);
+        } else if(input.charAt(pos) == '<') {
+            if(input.length() > pos + 1 && input.charAt(pos + 1) == '=') {
+                return new ComparisonOperation(NGT);
+            }
+            return new ComparisonOperation(LT);
+        } else {
+            throw new IllegalStateException("Unrecognized comparison at " + pos + " in '" + input + "'");
+        }
+    }
+
+    static class ComparisonOperation extends BaseOperation {
+        ComparisonOperation(String name) {
+            super(name, 8);
+        }
+    }
+
+    static class AndOperation extends BaseOperation {
         AndOperation() {
             super("&&", 4);
         }
     }
 
-    class OrOperation extends BaseOperation {
+    static class OrOperation extends BaseOperation {
         OrOperation() {
             super("||", 2);
         }
     }
 
-    abstract class BaseOperation implements Operation, Comparable<Operation> {
+    static abstract class BaseOperation implements Operation, Comparable<Operation> {
         private final String name;
         private final int priority;
         private final List<Operand> operands;
@@ -205,7 +303,7 @@ public class ExpressionParser {
             return operands;
         }
 
-        void addOperand(Operand operand) {
+        protected void addOperand(Operand operand) {
             if(operand == null) {
                 throw new IllegalArgumentException("operand can't be null.");
             }
@@ -226,14 +324,124 @@ public class ExpressionParser {
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        testExpression("a && b && c");
-        testExpression("a || b || c");
-        testExpression("  a && b && c ||  d && e || f");
-        testExpression("  a && (b || c )&&  d ");
+    @Test
+    public void testParenthesesMixed() {
+        reset();
+        Operation op = parseExpression("((a==b || c<=d && e>f) && g!=h || i>=j) && (k<l && m>n || o==p)");
+        assertOperation(op, AND, 2);
+        final List<Operand> topOperands = op.getOperands();
+
+        Operand operand = topOperands.get(0);
+        assertOperation(operand, OR, 2);
+
+        Operation or = (Operation) operand;
+        operand = or.getOperands().get(0);
+        assertOperation(operand, AND, 2);
+
+        Operation and = (Operation) operand;
+        operand = and.getOperands().get(0);
+        assertOperation(operand, OR, 2);
+        assertComparison(((Operation)operand).getOperands().get(0), EQ, "a", "b");
+        Operand cdAndEf = ((Operation)operand).getOperands().get(1);
+        assertOperation(cdAndEf, AND, 2);
+        assertComparison(((Operation)cdAndEf).getOperands().get(0), NGT, "c", "d");
+        assertComparison(((Operation)cdAndEf).getOperands().get(1), GT, "e", "f");
+
+        operand = and.getOperands().get(1);
+        assertComparison(operand, NOT_EQ, "g", "h");
+
+        operand = or.getOperands().get(1);
+        assertComparison(operand, NLT, "i", "j");
+
+        operand = topOperands.get(1);
+        assertOperation(operand, OR, 2);
+        or = (Operation) operand;
+        operand = or.getOperands().get(0);
+
+        assertOperation(operand, AND, 2);
+        assertComparison(((Operation)operand).getOperands().get(0), LT, "k", "l");
+        assertComparison(((Operation)operand).getOperands().get(1), GT, "m", "n");
+
+        assertComparison(or.getOperands().get(1), EQ, "o", "p");
     }
 
-    protected static void testExpression(final String input) {
-        new ExpressionParser().parseExpression(input);
+    @Test
+    public void testSimpleParentheses() {
+        reset();
+        Operation op = parseExpression("  a >=b && (c<d || e> f )&&  g  !=  h ");
+        assertOperation(op, AND, 3);
+        final List<Operand> operands = op.getOperands();
+
+        Operand operand = operands.get(0);
+        assertComparison(operand, NLT, "a", "b");
+
+        operand = operands.get(1);
+        assertOperation(operand, OR, 2);
+        assertComparison(((Operation)operand).getOperands().get(0), LT, "c", "d");
+        assertComparison(((Operation)operand).getOperands().get(1), GT, "e", "f");
+
+        operand = operands.get(2);
+        assertComparison(operand, NOT_EQ, "g", "h");
+    }
+
+    @Test
+    public void testMixNoParentheses() {
+        reset();
+        Operation op = parseExpression("  a>b && c>=d && e<f ||  g <= h && i==j || k != l");
+        assertOperation(op, OR, 3);
+        final List<Operand> operands = op.getOperands();
+
+        Operand operand = operands.get(0);
+        assertOperation(operand, AND, 3);
+        assertComparison(((Operation)operand).getOperands().get(0), GT, "a", "b");
+        assertComparison(((Operation)operand).getOperands().get(1), NLT, "c", "d");
+        assertComparison(((Operation)operand).getOperands().get(2), LT, "e", "f");
+
+        operand = operands.get(1);
+        assertOperation(operand, AND, 2);
+        assertComparison(((Operation)operand).getOperands().get(0), NGT, "g", "h");
+        assertComparison(((Operation)operand).getOperands().get(1), EQ, "i", "j");
+
+        operand = operands.get(2);
+        assertComparison(operand, NOT_EQ, "k", "l");
+    }
+
+    @Test
+    public void testOrSequence() {
+        reset();
+        Operation op = parseExpression("a == b || c== d||e==f");
+        assertOperation(op, OR, 3);
+        final List<Operand> operands = op.getOperands();
+        assertComparison(operands.get(0), EQ, "a", "b");
+        assertComparison(operands.get(1), EQ, "c", "d");
+        assertComparison(operands.get(2), EQ, "e", "f");
+    }
+
+    @Test
+    public void testAndSequence() {
+        reset();
+        Operation op = parseExpression("a==b && c == d && e == f");
+        assertOperation(op, AND, 3);
+        final List<Operand> operands = op.getOperands();
+        assertComparison(operands.get(0), EQ, "a", "b");
+        assertComparison(operands.get(1), EQ, "c", "d");
+        assertComparison(operands.get(2), EQ, "e", "f");
+    }
+
+    protected void assertOperation(Operand operand, String opName, int operandsTotal) {
+        assertTrue(operand instanceof BaseOperation);
+        assertEquals(opName, ((BaseOperation)operand).getName());
+        assertEquals(operandsTotal, ((BaseOperation)operand).getOperands().size());
+    }
+
+    protected void assertComparison(Operand operand, String opName, String left, String right) {
+        assertNotNull(operand);
+        assertTrue(operand instanceof ComparisonOperation);
+        BaseOperation op = (BaseOperation) operand;
+        assertEquals(opName, op.getName());
+        assertNotNull(op.getOperands());
+        assertEquals(2, op.getOperands().size());
+        assertEquals('\'' + left + '\'', op.getOperands().get(0).toString());
+        assertEquals('\'' + right + '\'', op.getOperands().get(1).toString());
     }
 }
