@@ -106,9 +106,9 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         if (testClasses.contains(className) == false)
             throw new ClassNotFoundException("Class '" + className + "' not found in: " + testClasses);
 
-        Module module = depUnit.getAttachment(Attachments.MODULE);
         XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
-        if (module == null && bundle == null)
+        Module module = depUnit.getAttachment(Attachments.MODULE);
+        if (bundle == null && module == null)
             throw new IllegalStateException("Cannot determine deployment type: " + depUnit);
 
         Class<?> testClass;

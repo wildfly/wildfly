@@ -36,6 +36,7 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.osgi.DeploymentMarker;
 import org.jboss.as.test.integration.osgi.xservice.bundle.ConfiguredService;
 import org.jboss.as.test.osgi.OSGiFrameworkUtils;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
@@ -59,11 +60,21 @@ import org.osgi.service.startlevel.StartLevel;
 /**
  * A test that shows how an OSGi {@link ManagedService} can be configured through the {@link ConfigurationAdmin}.
  *
+ * This test needs to run against an AS instance that contains the following config
+ *
+     <subsystem xmlns="urn:jboss:domain:configadmin:1.0">
+       <configuration pid="a.test.pid">
+         <property name="testkey" value="test value"/>
+         <property name="test.key.2" value="nothing"/>
+       </configuration>
+     </subsystem>
+ *
  * @author Thomas.Diesler@jboss.com
  * @author David Bosschaert
  * @since 11-Dec-2010
  */
 @RunWith(Arquillian.class)
+@DeploymentMarker(autoStart = false)
 public class ConfigurationAdminTestCase {
 
     @Inject
@@ -77,6 +88,7 @@ public class ConfigurationAdminTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-configadmin");
         archive.addClasses(OSGiFrameworkUtils.class, ConfiguredService.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());

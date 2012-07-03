@@ -51,8 +51,8 @@ import org.jboss.as.arquillian.service.InContainerManagementClientExtension;
 import org.jboss.as.arquillian.service.JMXProtocolEndpointExtension;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.osgi.spi.BundleInfo;
 import org.jboss.osgi.spi.ManifestBuilder;
+import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
@@ -141,6 +141,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
 
         // Generate the manifest with it's dependencies
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
                 StringBuffer dependencies = new StringBuffer();
@@ -170,6 +171,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
 
         // Add resource capabilities for registration with the Environment
         archive.addAsResource(new Asset() {
+            @Override
             public InputStream openStream() {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 try {
@@ -178,6 +180,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
                     StringBuilder builder = new StringBuilder();
                     builder.append("org.jboss.arquillian.container.test.api,org.jboss.arquillian.junit,");
                     builder.append("org.jboss.arquillian.osgi,org.jboss.arquillian.test.api,");
+                    builder.append("org.jboss.as.osgi,");
                     builder.append("org.jboss.shrinkwrap.api,org.jboss.shrinkwrap.api.asset,org.jboss.shrinkwrap.api.spec,");
                     builder.append("org.junit,org.junit.runner");
                     props.setProperty(Constants.EXPORT_PACKAGE, builder.toString());
@@ -222,7 +225,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         final Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
 
         // Don't enrich with Modules Dependencies if this is a OSGi bundle
-        if (BundleInfo.isValidBundleManifest(manifest)) {
+        if (OSGiManifestBuilder.isValidBundleManifest(manifest)) {
             return;
         }
         Attributes attributes = manifest.getMainAttributes();
@@ -243,6 +246,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         ArchivePath manifestPath = ArchivePaths.create(JarFile.MANIFEST_NAME);
         appArchive.delete(manifestPath);
         appArchive.add(new Asset() {
+            @Override
             public InputStream openStream() {
                 try {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();

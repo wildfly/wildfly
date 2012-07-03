@@ -22,8 +22,6 @@
 
 package org.jboss.as.osgi.deployment;
 
-import java.util.List;
-
 import org.jboss.as.osgi.DeploymentMarker;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.BundleInstallIntegration;
@@ -76,13 +74,6 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
                     deployment.setAutoStart(false);
                     break;
                 }
-            }
-
-            // Prevent autostart of ARQ deployments
-            if (deployment.isAutoStart()) {
-                DotName runWithName = DotName.createSimple("org.junit.runner.RunWith");
-                List<AnnotationInstance> runWithList = compositeIndex.getAnnotations(runWithName);
-                deployment.setAutoStart(runWithList.isEmpty());
             }
         }
 
