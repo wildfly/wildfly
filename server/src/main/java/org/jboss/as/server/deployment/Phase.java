@@ -296,7 +296,6 @@ public enum Phase {
     public static final int REGISTER_BUNDLE_INSTALL                     = 0x0100;
 
     // DEPENDENCIES
-    public static final int DEPENDENCIES_BUNDLE_RESOLVE                 = 0x0100;
     public static final int DEPENDENCIES_EJB                            = 0x0200;
     public static final int DEPENDENCIES_MODULE                         = 0x0300;
     public static final int DEPENDENCIES_RAR_CONFIG                     = 0x0400;
@@ -311,8 +310,8 @@ public enum Phase {
     public static final int DEPENDENCIES_SECURITY                       = 0x0C50;
     public static final int DEPENDENCIES_JAXRS                          = 0x0D00;
     public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0x0E00;
-    public static final int DEPENDENCIES_PERSISTENCE_ANNOTATION         = 0x1000;
-    public static final int DEPENDENCIES_JPA                            = 0x1005;
+    public static final int DEPENDENCIES_PERSISTENCE_ANNOTATION         = 0x0F00;
+    public static final int DEPENDENCIES_JPA                            = 0x1000;
     public static final int DEPENDENCIES_GLOBAL_MODULES                 = 0x1100;
     public static final int DEPENDENCIES_JDK                            = 0x1200;
     public static final int DEPENDENCIES_JACORB                         = 0x1300;
@@ -320,6 +319,7 @@ public enum Phase {
     public static final int DEPENDENCIES_JAXR                           = 0x1600;
     public static final int DEPENDENCIES_DRIVERS                        = 0x1700;
     public static final int DEPENDENCIES_JSF                            = 0x1800;
+    public static final int DEPENDENCIES_BUNDLE_RESOLVE                 = 0x1900;
     //these must be last, and in this specific order
     public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x2000;
     public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x2100;
@@ -327,7 +327,8 @@ public enum Phase {
 
 
     // CONFIGURE_MODULE
-    public static final int CONFIGURE_MODULE_SPEC                       = 0x0100;
+    public static final int CONFIGURE_RESOLVED_BUNDLE                   = 0x0100;
+    public static final int CONFIGURE_MODULE_SPEC                       = 0x0200;
 
 
     // POST_MODULE
@@ -410,7 +411,7 @@ public enum Phase {
     public static final int INSTALL_EJB_CLIENT_CONTEXT                  = 0x0404;
     public static final int INSTALL_EJB_JACC_PROCESSING                 = 0x0405;
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;
-    public static final int INSTALL_OSGI_MODULE                         = 0x0650;
+    public static final int INSTALL_RESOLVER_MODULE                     = 0x0600;
     public static final int INSTALL_RA_NATIVE                           = 0x0800;
     public static final int INSTALL_RA_DEPLOYMENT                       = 0x0801;
     public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0900;
@@ -436,12 +437,13 @@ public enum Phase {
     // IMPORTANT: WS integration installs deployment aspects dynamically
     // so consider INSTALL 0x1C10 - 0x1CFF reserved for WS subsystem!
     public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1D00;
-    public static final int INSTALL_DEPLOYMENT_REPOSITORY               = 0x1E00;
-    public static final int INSTALL_EJB_MANAGEMENT_RESOURCES            = 0x1F00;
-    public static final int INSTALL_APPLICATION_CLIENT                  = 0x2000;
-    public static final int INSTALL_DSXML_DEPLOYMENT                    = 0x2010;
-    public static final int INSTALL_MESSAGING_XML_RESOURCES             = 0x2011;
-    public static final int INSTALL_BUNDLE_ACTIVATE                     = 0x2100;
+    public static final int INSTALL_WAB_DEPLOYMENT                      = 0x1E00;
+    public static final int INSTALL_DEPLOYMENT_REPOSITORY               = 0x1F00;
+    public static final int INSTALL_EJB_MANAGEMENT_RESOURCES            = 0x2000;
+    public static final int INSTALL_APPLICATION_CLIENT                  = 0x2010;
+    public static final int INSTALL_DSXML_DEPLOYMENT                    = 0x2020;
+    public static final int INSTALL_MESSAGING_XML_RESOURCES             = 0x2030;
+    public static final int INSTALL_BUNDLE_ACTIVATE                     = 0x2040;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x0100;

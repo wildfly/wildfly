@@ -22,6 +22,8 @@
 
 package org.jboss.as.osgi;
 
+import java.util.Collection;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -32,6 +34,7 @@ import org.jboss.logging.MessageLogger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.osgi.framework.Bundle;
+import org.osgi.resource.Requirement;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
@@ -89,4 +92,8 @@ public interface OSGiLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 11909, value = "Management operation '%s' failed")
     void errorInOperationHandler(@Cause Throwable cause, String opname);
+
+    @LogMessage(level = WARN)
+    @Message(id = 11910, value = "Cannot resolve requirements: %s")
+    void warnCannotResolve(Collection<Requirement> requirements);
 }

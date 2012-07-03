@@ -25,8 +25,8 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.smoke.osgi.bundle.SimpleActivator;
-import org.jboss.as.test.smoke.osgi.bundle.SimpleService;
+import org.jboss.as.test.smoke.osgi.bundleA.SimpleActivator;
+import org.jboss.as.test.smoke.osgi.bundleA.SimpleService;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -77,9 +77,11 @@ public class SimpleBundleTestCase {
         assertEquals("example-bundle", bundle.getSymbolicName());
         assertEquals(Version.emptyVersion, bundle.getVersion());
 
-        // Assert that the bundle is in state RESOLVED
-        // Note when the test bundle contains the test case it
-        // must be resolved already when this test method is called
+        // Assert that the bundle is in state ACTIVE
+        Assert.assertEquals(Bundle.ACTIVE, bundle.getState());
+
+        // Stop the bundle
+        bundle.stop();
         Assert.assertEquals(Bundle.RESOLVED, bundle.getState());
 
         // Start the bundle
@@ -98,9 +100,5 @@ public class SimpleBundleTestCase {
         // Invoke the service
         int sum = service.sum(1, 2, 3);
         assertEquals(6, sum);
-
-        // Stop the bundle
-        bundle.stop();
-        Assert.assertEquals(Bundle.RESOLVED, bundle.getState());
     }
 }

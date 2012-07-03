@@ -86,11 +86,11 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.BundleManager;
-import org.jboss.osgi.framework.FrameworkModuleProvider;
+import org.jboss.osgi.framework.FrameworkModulePlugin;
 import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.Services;
-import org.jboss.osgi.framework.SystemPathsProvider;
-import org.jboss.osgi.framework.SystemServicesProvider;
+import org.jboss.osgi.framework.SystemPathsPlugin;
+import org.jboss.osgi.framework.SystemServicesPlugin;
 import org.jboss.osgi.framework.internal.FrameworkBuilder;
 import org.jboss.osgi.repository.RepositoryStorage;
 import org.jboss.osgi.repository.RepositoryStorageException;
@@ -233,8 +233,8 @@ public class FrameworkBootstrapService implements Service<Void> {
         String syspackages = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_PACKAGES);
         if (syspackages == null) {
             Set<String> sysPackages = new LinkedHashSet<String>();
-            sysPackages.addAll(Arrays.asList(SystemPathsProvider.DEFAULT_SYSTEM_PACKAGES));
-            sysPackages.addAll(Arrays.asList(SystemPathsProvider.DEFAULT_FRAMEWORK_PACKAGES));
+            sysPackages.addAll(Arrays.asList(SystemPathsPlugin.DEFAULT_SYSTEM_PACKAGES));
+            sysPackages.addAll(Arrays.asList(SystemPathsPlugin.DEFAULT_FRAMEWORK_PACKAGES));
             sysPackages.add("javax.inject");
             sysPackages.add("org.apache.xerces.jaxp");
             sysPackages.add("org.jboss.as.configadmin.service");
@@ -258,7 +258,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         props.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, syspackages);
     }
 
-    private static final class SystemServicesIntegration implements Service<SystemServicesProvider>, SystemServicesProvider {
+    private static final class SystemServicesIntegration implements Service<SystemServicesPlugin>, SystemServicesPlugin {
 
         private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
         private final InjectedValue<ModelController> injectedModelController = new InjectedValue<ModelController>();
@@ -272,7 +272,7 @@ public class FrameworkBootstrapService implements Service<Void> {
 
         public static ServiceController<?> addService(final ServiceTarget target, OSGiRuntimeResource resource) {
             SystemServicesIntegration service = new SystemServicesIntegration(resource);
-            ServiceBuilder<SystemServicesProvider> builder = target.addService(IntegrationServices.SYSTEM_SERVICES_PROVIDER,
+            ServiceBuilder<SystemServicesPlugin> builder = target.addService(IntegrationServices.SYSTEM_SERVICES_PLUGIN,
                     service);
             builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, service.injectedModelController);
             builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class,
@@ -317,7 +317,7 @@ public class FrameworkBootstrapService implements Service<Void> {
                     socketBindingNames.add(JBOSS_BINDING_NAME.append(suffix));
                 }
                 ServiceTarget serviceTarget = context.getChildTarget();
-                ServiceName serviceName = IntegrationServices.SYSTEM_SERVICES_PROVIDER.append("BINDINGS");
+                ServiceName serviceName = IntegrationServices.SYSTEM_SERVICES_PLUGIN.append("BINDINGS");
                 ServiceBuilder<Void> builder = serviceTarget.addService(serviceName, new AbstractService<Void>() {
                     @Override
                     public void start(StartContext context) throws StartException {
@@ -386,7 +386,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         }
 
         @Override
-        public SystemServicesProvider getValue() {
+        public SystemServicesPlugin getValue() {
             return this;
         }
 
@@ -402,14 +402,14 @@ public class FrameworkBootstrapService implements Service<Void> {
         }
     }
 
-    private static final class FrameworkModuleIntegration implements FrameworkModuleProvider {
+    private static final class FrameworkModuleIntegration implements FrameworkModulePlugin {
 
         private final Map<String, Object> props;
         private Module frameworkModule;
 
         private static ServiceController<?> addService(final ServiceTarget target, Map<String, Object> props) {
             FrameworkModuleIntegration service = new FrameworkModuleIntegration(props);
-            ServiceBuilder<?> builder = target.addService(IntegrationServices.FRAMEWORK_MODULE_PROVIDER, service);
+            ServiceBuilder<?> builder = target.addService(IntegrationServices.FRAMEWORK_MODULE_PLUGIN, service);
             builder.setInitialMode(Mode.ON_DEMAND);
             return builder.install();
         }
@@ -432,7 +432,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         }
 
         @Override
-        public FrameworkModuleProvider getValue() throws IllegalStateException {
+        public FrameworkModulePlugin getValue() throws IllegalStateException {
             return this;
         }
 

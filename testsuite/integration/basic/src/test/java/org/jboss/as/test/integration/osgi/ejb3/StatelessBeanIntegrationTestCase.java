@@ -115,7 +115,7 @@ public class StatelessBeanIntegrationTestCase {
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.osgi.core,deployment.ejb3-osgi-target:0.0.0");
+                builder.addManifestHeader("Dependencies", "org.osgi.core,deployment.ejb3-osgi-target");
                 return builder.openStream();
             }
         });
