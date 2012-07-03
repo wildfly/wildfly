@@ -61,7 +61,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -76,6 +79,7 @@ import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.ExtensionXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.parsing.ProfileParsingCompletionHandler;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
@@ -99,10 +103,12 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
     private final ExtensionXml extensionXml;
+    private final ExtensionRegistry extensionRegistry;
 
     public StandaloneXml(final ModuleLoader loader, final ExecutorService executorService, final ExtensionRegistry extensionRegistry) {
         super();
         extensionXml = new ExtensionXml(loader, executorService, extensionRegistry);
+        this.extensionRegistry = extensionRegistry;
     }
 
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operationList)
@@ -892,19 +898,29 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         requireNoAttributes(reader);
 
         // Content
-        final Set<String> configuredSubsystemTypes = new HashSet<String>();
+        final Map<String, List<ModelNode>> profileOps = new LinkedHashMap<String, List<ModelNode>>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             if (Element.forName(reader.getLocalName()) != Element.SUBSYSTEM) {
                 throw unexpectedElement(reader);
             }
-            if (!configuredSubsystemTypes.add(reader.getNamespaceURI())) {
+            String namespace = reader.getNamespaceURI();
+            if (profileOps.containsKey(namespace)) {
                 throw MESSAGES.duplicateDeclaration("subsystem", reader.getLocation());
             }
             // parse subsystem
             final List<ModelNode> subsystems = new ArrayList<ModelNode>();
             reader.handleAny(subsystems);
 
-            // Process subsystems
+            profileOps.put(namespace, subsystems);
+        }
+
+        // Let extensions modify the profile
+        Set<ProfileParsingCompletionHandler> completionHandlers = extensionRegistry.getProfileParsingCompletionHandlers();
+        for (ProfileParsingCompletionHandler completionHandler : completionHandlers) {
+            completionHandler.handleProfileParsingCompletion(profileOps, list);
+        }
+
+        for (List<ModelNode> subsystems : profileOps.values()) {
             for (final ModelNode update : subsystems) {
                 // Process relative subsystem path address
                 final ModelNode subsystemAddress = address.clone();

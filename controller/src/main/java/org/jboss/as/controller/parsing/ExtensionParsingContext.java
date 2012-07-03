@@ -100,4 +100,12 @@ public interface ExtensionParsingContext {
     @Deprecated
     void setDeploymentXmlMapping(String subsystemName, String namespaceUri, XMLElementReader<ModelNode> reader);
 
+    /**
+     * Registers a {@link ProfileParsingCompletionHandler} to receive a callback upon completion of parsing of a
+     * profile.
+     *
+     * @param handler the handler. Cannot be {@code null}
+     */
+    void setProfileParsingCompletionHandler(ProfileParsingCompletionHandler handler);
+
 }

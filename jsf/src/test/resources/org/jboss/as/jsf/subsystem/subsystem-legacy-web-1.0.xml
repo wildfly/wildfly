@@ -1,0 +1,7 @@
+<subsystem xmlns="urn:jboss:domain:web:1.0" default-virtual-server="default-host">
+    <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
+    <virtual-server name="default-host" enable-welcome-root="false">
+        <alias name="localhost"/>
+        <alias name="example.com"/>
+    </virtual-server>
+</subsystem>
