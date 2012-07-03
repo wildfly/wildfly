@@ -52,7 +52,6 @@ public class ActivateOperationHandler extends AbstractRuntimeOnlyHandler  {
         ServiceVerificationHandler svh = new ServiceVerificationHandler();
         svc.addListener(svh);
         context.addStep(svh, Stage.VERIFY);
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
-
 }

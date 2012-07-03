@@ -37,6 +37,6 @@ class ConfigAdminDescribeHandler extends GenericSubsystemDescribeHandler {
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         super.execute(context, operation);
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 }
