@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.osgi.parser.SubsystemState.OSGiCapability;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -42,11 +43,22 @@ public class OSGiCapabilityRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CAPABILITY).asString();
-        SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
-        if (subsystemState != null && context.completeStep() == OperationContext.ResultAction.KEEP) {
-            subsystemState.removeCapability(identifier);
+        final String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CAPABILITY).asString();
+        final SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
+        if (subsystemState == null) {
+            // cannot complete
+            context.setRollbackOnly();
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            return;
         }
+
+        final OSGiCapability oldVal = subsystemState.removeCapability(identifier);
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                subsystemState.addCapability(oldVal);
+            }
+        });
     }
 
     static DescriptionProvider DESCRIPTION = new DescriptionProvider() {

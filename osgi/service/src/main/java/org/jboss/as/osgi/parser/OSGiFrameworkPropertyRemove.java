@@ -42,11 +42,22 @@ public class OSGiFrameworkPropertyRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.PROPERTY).asString();
-        SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
-        if (subsystemState != null && context.completeStep() == OperationContext.ResultAction.KEEP) {
-            subsystemState.setProperty(propName, null);
+        final String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.PROPERTY).asString();
+        final SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
+        if (subsystemState == null) {
+            // cannot complete
+            context.setRollbackOnly();
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            return;
         }
+
+        final Object oldVal = subsystemState.setProperty(propName, null);
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                subsystemState.setProperty(propName, oldVal);
+            }
+        });
     }
 
     static DescriptionProvider DESCRIPTION = new DescriptionProvider() {

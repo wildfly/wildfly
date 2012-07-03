@@ -72,11 +72,11 @@ public class ConfigurationUpdate implements OperationStepHandler {
                     configAdmin.putConfigurationFromDMR(pid, dictionary);
                 }
 
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     static DescriptionProvider DESCRIPTION = new DescriptionProvider() {

@@ -95,7 +95,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 newControllers.add(PersistentBundlesIntegration.addService(serviceTarget, deploymentTracker));
                 newControllers.add(FrameworkBootstrapService.addService(serviceTarget, resource, verificationHandler));
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
 

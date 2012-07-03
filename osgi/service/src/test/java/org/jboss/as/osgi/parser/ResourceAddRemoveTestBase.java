@@ -59,7 +59,6 @@ class ResourceAddRemoveTestBase {
         Resource resource = Mockito.mock(Resource.class);
         Mockito.when(resource.getModel()).thenReturn(result);
         Mockito.when(context.getServiceRegistry(true)).thenReturn(serviceRegistry);
-        Mockito.when(context.completeStep()).thenReturn(stepResult);
         Mockito.when(context.createResource(PathAddress.EMPTY_ADDRESS)).thenReturn(resource);
         Mockito.when(context.readResource(PathAddress.EMPTY_ADDRESS)).thenReturn(resource);
         Mockito.when(context.getProcessType()).thenReturn(ProcessType.STANDALONE_SERVER);
@@ -102,7 +101,6 @@ class ResourceAddRemoveTestBase {
                 return null;
             }
         }).when(context).completeStep(Mockito.any(OperationContext.RollbackHandler.class));
-        Mockito.when(context.completeStep()).thenReturn(OperationContext.ResultAction.ROLLBACK);
     }
 
     protected void configureForSuccess(final OperationContext context) {
@@ -112,6 +110,5 @@ class ResourceAddRemoveTestBase {
                 return null;
             }
         }).when(context).completeStep(Mockito.any(OperationContext.RollbackHandler.class));
-        Mockito.when(context.completeStep()).thenReturn(OperationContext.ResultAction.KEEP);
     }
 }
