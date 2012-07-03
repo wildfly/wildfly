@@ -23,6 +23,7 @@
 package org.jboss.as.host.controller.mgmt;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -372,7 +373,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             final int major = hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt();
             final int minor = hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt();
             final int micro = hostInfo.hasDefined(MANAGEMENT_MICRO_VERSION) ? hostInfo.get(MANAGEMENT_MICRO_VERSION).asInt() : 0;
-            final TransformationTarget target = TransformationTargetImpl.create(major, minor, micro, subsystems);
+            final TransformationTarget target = TransformationTargetImpl.create(ModelVersion.create(major, minor, micro), subsystems, TransformationTarget.TransformationTargetType.HOST);
             final Transformers transformers = Transformers.Factory.create(target);
             this.transformers = transformers;
             return transformers;

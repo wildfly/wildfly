@@ -5,7 +5,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.registry.GlobalTransformerRegistry;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.LegacyResourceDefinition;
 import org.jboss.as.controller.registry.Resource;
@@ -25,46 +24,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class TransformerRegistry {
     private final ConcurrentHashMap<String, List<SubsystemTransformer>> subsystemTransformers = new ConcurrentHashMap<String, List<SubsystemTransformer>>();
-    public static final ModelNode AS_7_1_1_SUBSYSTEM_VERSIONS = new ModelNode();
     private static TransformerRegistry INSTANCE;
     private final SimpleFullModelTransformer modelTransformer;
     private final ExtensionRegistry extensionRegistry;
-    private final GlobalTransformerRegistry transformerRegistry = new GlobalTransformerRegistry();
-
-    static {
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("cmp", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("configadmin", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("datasources", "1.1");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("deployment-scanner", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("ee", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("ejb3", "1.1");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("infinispan", "1.2");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jacorb", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jaxr", "1.1");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jaxrs", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jca", "1.1");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jdr", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jgroups", "1.1");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jmx", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jpa", "1.1");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("jsr77", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("logging", "1.1");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("mail", "1.1");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("messaging", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("modcluster", "1.1");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("naming", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("osgi", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("pojo", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("remoting", "1.1");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("resource-adapters", "1.1");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("sar", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("security", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("threads", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("transactions", "1.0");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("web", "1.1");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("webservices", "1.1");
-        AS_7_1_1_SUBSYSTEM_VERSIONS.add("weld", "1.0");
-    }
+    private final DomainModelTransformers transformerRegistry = new DomainModelTransformers();
 
     private TransformerRegistry(final ExtensionRegistry extensionRegistry) {
         this.modelTransformer = new SimpleFullModelTransformer(extensionRegistry);
@@ -76,7 +39,7 @@ public final class TransformerRegistry {
         return INSTANCE;
     }
 
-    public GlobalTransformerRegistry getSubsystemTransformers() {
+    public DomainModelTransformers getDomainTransformers() {
         return transformerRegistry;
     }
 
@@ -156,7 +119,8 @@ public final class TransformerRegistry {
         subsystemTransformers.putIfAbsent(subsystemName, new LinkedList<SubsystemTransformer>());
         List<SubsystemTransformer> transformers = subsystemTransformers.get(subsystemName);
         transformers.add(subsystemModelTransformer);
-
+//        final ModelVersion version = ModelVersion.create(subsystemModelTransformer.getMajorManagementVersion(), subsystemModelTransformer.getMinorManagementVersion(), subsystemModelTransformer.getMicroManagementVersion());
+//        transformerRegistry.registerSubsystemTransformers(subsystemName, version, subsystemModelTransformer);
     }
 
     public Resource getTransformedResource(Resource resource, final ImmutableManagementResourceRegistration resourceRegistration, Map<String, String> subsystemVersions) {

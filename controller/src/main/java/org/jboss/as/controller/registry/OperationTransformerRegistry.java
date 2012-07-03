@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
- * Resolved operation transformer registry.
+ * Resolved/unversioned operation transformer registry.
  *
  * @author Emanuel Muckenhuber
  */
@@ -100,6 +100,25 @@ public class OperationTransformerRegistry {
         registry.mergeSubtree(this, PathAddress.EMPTY_ADDRESS.append(element), version);
     }
 
+    public OperationTransformerRegistry getChild(final PathAddress address) {
+        final Iterator<PathElement> iterator = address.iterator();
+        return resolveChild(iterator);
+    }
+
+    protected OperationTransformerRegistry resolveChild(final Iterator<PathElement> iterator) {
+
+        if(! iterator.hasNext()) {
+            return this;
+        } else {
+            final PathElement element = iterator.next();
+            SubRegistry sub = subRegistriesUpdater.get(this, element.getKey());
+            if(sub == null) {
+                return null;
+            }
+            return sub.get(element.getValue());
+        }
+    }
+
     protected void registerTransformer(final PathAddress address, final String operationName, final OperationTransformer transformer) {
         registerTransformer(address.iterator(), operationName, new OperationTransformerEntry(transformer, TransformationPolicy.TRANSFORM));
     }
@@ -116,12 +135,12 @@ public class OperationTransformerRegistry {
         return entriesUpdater.get(this);
     }
 
-    protected void createChildRegistry(final Iterator<PathElement> iterator,  ResourceTransformerEntry resourceTransformer, OperationTransformerEntry defaultTransformer) {
+    protected OperationTransformerRegistry createChildRegistry(final Iterator<PathElement> iterator,  ResourceTransformerEntry resourceTransformer, OperationTransformerEntry defaultTransformer) {
         if(!iterator.hasNext()) {
-            throw new IllegalStateException();
+            return this;
         } else {
             final PathElement element = iterator.next();
-            getOrCreate(element.getKey()).createChild(iterator, element.getValue(), resourceTransformer, defaultTransformer);
+            return getOrCreate(element.getKey()).createChild(iterator, element.getValue(), resourceTransformer, defaultTransformer);
         }
     }
 
@@ -207,11 +226,15 @@ public class OperationTransformerRegistry {
             return reg.resolveTransformer(iterator, operationName);
         }
 
-        public void createChild(Iterator<PathElement> iterator, String value, ResourceTransformerEntry resourceTransformer, OperationTransformerEntry defaultTransformer) {
+        public OperationTransformerRegistry createChild(Iterator<PathElement> iterator, String value, ResourceTransformerEntry resourceTransformer, OperationTransformerEntry defaultTransformer) {
             if(! iterator.hasNext()) {
-                create(value, resourceTransformer, defaultTransformer);
+                return create(value, resourceTransformer, defaultTransformer);
             } else {
-                get(value).createChildRegistry(iterator, resourceTransformer, defaultTransformer);
+                OperationTransformerRegistry entry = get(value);
+                if(entry == null) {
+                    entry = create(value, GlobalTransformerRegistry.RESOURCE_TRANSFORMER, FORWARD);
+                }
+                return entry.createChildRegistry(iterator, resourceTransformer, defaultTransformer);
             }
         }
 
