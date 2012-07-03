@@ -21,6 +21,16 @@
  */
 package org.jboss.as.configadmin.parser;
 
+import static org.jboss.as.configadmin.ConfigAdminLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -32,16 +42,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import static org.jboss.as.configadmin.ConfigAdminLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
  * ConfigAdmin subsystem operation handler.
@@ -76,7 +76,7 @@ class ConfigAdminAdd extends AbstractBoottimeAddStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 ServiceTarget serviceTarget = context.getServiceTarget();
                 newControllers.add(ConfigAdminServiceImpl.addService(serviceTarget, verificationHandler));
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
 

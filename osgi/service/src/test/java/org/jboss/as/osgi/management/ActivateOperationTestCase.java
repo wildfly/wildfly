@@ -57,6 +57,6 @@ public class ActivateOperationTestCase {
         ActivateOperationHandler.INSTANCE.executeRuntimeStep(context, activateOp);
 
         Mockito.verify(sc).setMode(Mode.ACTIVE);
-        Mockito.verify(context).completeStep();
+        Mockito.verify(context).completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 }
