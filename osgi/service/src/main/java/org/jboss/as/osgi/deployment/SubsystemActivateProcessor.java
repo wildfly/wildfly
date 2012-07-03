@@ -22,54 +22,42 @@
 
 package org.jboss.as.osgi.deployment;
 
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
-
-import org.jboss.as.osgi.service.BundleInstallIntegration;
+import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.spi.BundleInfo;
-import org.jboss.osgi.vfs.AbstractVFS;
-import org.jboss.vfs.VirtualFile;
-import org.osgi.framework.BundleException;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.osgi.framework.IntegrationServices;
+import org.jboss.osgi.framework.Services;
 
 /**
- * Processes deployments that contain a valid OSGi manifest.
+ * Activates the OSGi subsystem if an OSGi deployment is detected.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 20-Sep-2010
+ * @since 20-Jun-2012
  */
-public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
+public class SubsystemActivateProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        final String contextName = depUnit.getName();
+        // Always make the system context & the environment available
+        phaseContext.addDeploymentDependency(Services.SYSTEM_CONTEXT, Attachments.SYSTEM_CONTEXT);
+        phaseContext.addDeploymentDependency(Services.ENVIRONMENT, OSGiConstants.ENVIRONMENT_KEY);
 
-        // Check if we already have a bundle {@link Deployment}
-        if (BundleInstallIntegration.getDeployment(contextName) != null)
-            return;
-
-        // Get the manifest from the deployment's virtual file
-        OSGiMetaData metadata = depUnit.getAttachment(Attachments.OSGI_METADATA);
-        if (metadata != null) {
-            try {
-                // Construct and attach the {@link BundleInfo} from {@link OSGiMetaData}
-                VirtualFile virtualFile = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-                BundleInfo info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), contextName, metadata);
-                depUnit.putAttachment(Attachments.BUNDLE_INFO, info);
-            } catch (BundleException ex) {
-                throw MESSAGES.cannotCreateBundleDeployment(ex, depUnit);
-            }
+        DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        if (depUnit.hasAttachment(OSGiConstants.DEPLOYMENT_KEY)) {
+            phaseContext.getServiceRegistry().getRequiredService(Services.FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
+            phaseContext.addDependency(IntegrationServices.AUTOINSTALL_COMPLETE, AttachmentKey.create(Object.class));
+            phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
+            phaseContext.addDeploymentDependency(Services.RESOLVER, OSGiConstants.RESOLVER_KEY);
         }
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        depUnit.removeAttachment(Attachments.BUNDLE_INFO);
     }
 }

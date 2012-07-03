@@ -34,14 +34,15 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
  */
 public final class EEModuleInitialProcessor implements DeploymentUnitProcessor {
 
+    @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final String deploymentUnitName = deploymentUnit.getName();
+        final String unitName = deploymentUnit.getName();
         final String moduleName;
-        if (deploymentUnitName.endsWith(".war") || deploymentUnitName.endsWith(".jar") || deploymentUnitName.endsWith(".ear") || deploymentUnitName.endsWith(".rar")) {
-            moduleName = deploymentUnitName.substring(0, deploymentUnitName.length() - 4);
+        if (unitName.endsWith(".war") || unitName.endsWith(".wab") || unitName.endsWith(".jar") || unitName.endsWith(".ear") || unitName.endsWith(".rar")) {
+            moduleName = unitName.substring(0, unitName.length() - 4);
         } else {
-            moduleName = deploymentUnitName;
+            moduleName = unitName;
         }
         final String appName;
         final String earApplicationName = deploymentUnit.getAttachment(Attachments.EAR_APPLICATION_NAME);
@@ -56,6 +57,7 @@ public final class EEModuleInitialProcessor implements DeploymentUnitProcessor {
         deploymentUnit.putAttachment(Attachments.EE_MODULE_DESCRIPTION, new EEModuleDescription(appName, moduleName, earApplicationName));
     }
 
+    @Override
     public void undeploy(final DeploymentUnit context) {
     }
 }

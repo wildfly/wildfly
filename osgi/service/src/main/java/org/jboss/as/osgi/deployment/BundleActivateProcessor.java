@@ -22,54 +22,50 @@
 
 package org.jboss.as.osgi.deployment;
 
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 
-import org.jboss.as.osgi.service.BundleInstallIntegration;
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.spi.BundleInfo;
-import org.jboss.osgi.vfs.AbstractVFS;
-import org.jboss.vfs.VirtualFile;
+import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.resolver.XBundle;
 import org.osgi.framework.BundleException;
 
 /**
- * Processes deployments that contain a valid OSGi manifest.
+ * Attempt to activate the OSGi deployment.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 20-Sep-2010
+ * @since 20-Jun-2012
  */
-public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
+public class BundleActivateProcessor implements DeploymentUnitProcessor {
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-
-        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        final String contextName = depUnit.getName();
-
-        // Check if we already have a bundle {@link Deployment}
-        if (BundleInstallIntegration.getDeployment(contextName) != null)
-            return;
-
-        // Get the manifest from the deployment's virtual file
-        OSGiMetaData metadata = depUnit.getAttachment(Attachments.OSGI_METADATA);
-        if (metadata != null) {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
+        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
+        if (bundle != null && deployment.isAutoStart() && bundle.isResolved()) {
             try {
-                // Construct and attach the {@link BundleInfo} from {@link OSGiMetaData}
-                VirtualFile virtualFile = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-                BundleInfo info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), contextName, metadata);
-                depUnit.putAttachment(Attachments.BUNDLE_INFO, info);
+                bundle.start();
             } catch (BundleException ex) {
-                throw MESSAGES.cannotCreateBundleDeployment(ex, depUnit);
+                LOGGER.errorCannotStartBundle(ex, bundle);
             }
         }
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        depUnit.removeAttachment(Attachments.BUNDLE_INFO);
+        Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
+        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
+        if (bundle != null && deployment.isAutoStart()) {
+            try {
+                bundle.stop();
+            } catch (BundleException ex) {
+                LOGGER.debugf(ex, "Cannot stop bundle: %s", bundle);
+            }
+        }
     }
 }
