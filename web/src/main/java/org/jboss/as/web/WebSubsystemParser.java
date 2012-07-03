@@ -40,7 +40,6 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -89,8 +88,6 @@ import static org.jboss.as.web.WebExtension.SSO_PATH;
 class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
     private static final WebSubsystemParser INSTANCE = new WebSubsystemParser();
-
-    private static final String JSF_SUBSYSTEM = "jsf";
 
     static WebSubsystemParser getInstance() {
         return INSTANCE;
@@ -369,23 +366,6 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         }
         if (!containerConfigDefined) {
             addDefaultContainerConfig(address, list);
-        }
-        if(namespace == Namespace.WEB_1_0 ||
-                namespace == Namespace.WEB_1_1) {
-            //if the 1.0 or 1.1 schema is used we have to also add the JSF subsystem,
-            //which was split into its own subsystem in the 1.2 schema
-
-            final ModelNode jsfExtension = new ModelNode();
-            jsfExtension.get(OP).set(ADD);
-            PathAddress jsfExtensionAddress = PathAddress.pathAddress(PathElement.pathElement(EXTENSION, JSF_SUBSYSTEM));
-            jsfExtension.get(OP_ADDR).set(jsfExtensionAddress.toModelNode());
-            list.add(jsfExtension);
-
-            final ModelNode jsf = new ModelNode();
-            jsf.get(OP).set(ADD);
-            PathAddress jsfAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JSF_SUBSYSTEM));
-            jsf.get(OP_ADDR).set(jsfAddress.toModelNode());
-            list.add(jsf);
         }
 
     }

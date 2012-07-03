@@ -22,15 +22,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.Map;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -73,6 +69,7 @@ public class ExtensionAddHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final String moduleName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
         ExtensionResource resource = new ExtensionResource(moduleName, extensionRegistry);
+
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
 
         if (!parallelBoot || !context.isBooting()) {
@@ -86,6 +83,7 @@ public class ExtensionAddHandler implements OperationStepHandler {
 
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
+
     void initializeExtension(String module) throws OperationFailedException {
         try {
             for (Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {

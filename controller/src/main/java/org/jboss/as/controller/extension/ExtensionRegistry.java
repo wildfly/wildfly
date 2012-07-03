@@ -41,6 +41,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ProfileParsingCompletionHandler;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemXmlWriterRegistry;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -212,8 +213,6 @@ public class ExtensionRegistry {
      *
      * @return  the {@link ExtensionContext}.  Will not return {@code null}
      *
-     * @param moduleName the name of the extension's module. Cannot be {@code null}
-     * @return the {@link ExtensionContext}.  Will not return {@code null}
      * @throws IllegalStateException if no {@link #setSubsystemParentResourceRegistrations(ManagementResourceRegistration, ManagementResourceRegistration)} profile resource registration has been set}
      */
     public ExtensionContext getExtensionContext(final String moduleName) {
@@ -243,6 +242,19 @@ public class ExtensionRegistry {
         }
 
         return result;
+    }
+
+    public Set<ProfileParsingCompletionHandler> getProfileParsingCompletionHandlers() {
+        Set<ProfileParsingCompletionHandler> result = new HashSet<ProfileParsingCompletionHandler>();
+
+        for (ExtensionInfo extensionInfo : extensions.values()) {
+            synchronized (extensionInfo) {
+                if (extensionInfo.parsingCompletionHandler != null) {
+                    result.add(extensionInfo.parsingCompletionHandler);
+                }
+            }
+        }
+        return Collections.unmodifiableSet(result);
     }
 
     /**
@@ -419,13 +431,20 @@ public class ExtensionRegistry {
         public void setDeploymentXmlMapping(String subsystemName, String namespaceUri, XMLElementReader<ModelNode> reader) {
             // ignored
         }
+
+        @Override
+        public void setProfileParsingCompletionHandler(ProfileParsingCompletionHandler handler) {
+            assert handler != null : "handler is null";
+            synchronized (extension) {
+                extension.parsingCompletionHandler = handler;
+            }
+        }
     }
 
     public class ExtensionContextImpl implements ExtensionContext {
 
         private final ExtensionInfo extension;
         private final PathManager pathManager;
-        private String subsystemName;
 
         private ExtensionContextImpl(String extensionName, PathManager pathManager) {
             assert pathManager != null || !processType.isServer() : "pathManager is null";
@@ -442,7 +461,6 @@ public class ExtensionRegistry {
         @Override
         public SubsystemRegistration registerSubsystem(String name, int majorVersion, int minorVersion, int microVersion) {
             assert name != null : "name is null";
-            this.subsystemName = name;
             checkNewSubystem(extension.extensionModuleName, name);
             SubsystemInformationImpl info = extension.getSubsystemInfo(name);
             info.setMajorVersion(majorVersion);
@@ -592,6 +610,7 @@ public class ExtensionRegistry {
         private final Set<String> unnamedParsers = new HashSet<String>();
         private final String extensionModuleName;
         private XMLMapper xmlMapper;
+        private ProfileParsingCompletionHandler parsingCompletionHandler;
 
         public ExtensionInfo(String extensionModuleName) {
             this.extensionModuleName = extensionModuleName;
@@ -710,6 +729,7 @@ public class ExtensionRegistry {
             return deployments.getSubModel(address);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public ManagementResourceRegistration registerSubModel(PathElement address, DescriptionProvider descriptionProvider) {
             ManagementResourceRegistration depl = deployments.registerSubModel(address, descriptionProvider);
@@ -801,12 +821,14 @@ public class ExtensionRegistry {
             subdeployments.unregisterOperationHandler(operationName);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
             deployments.registerReadWriteAttribute(attributeName, readHandler, writeHandler, storage);
             subdeployments.registerReadWriteAttribute(attributeName, readHandler, writeHandler, storage);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
             deployments.registerReadWriteAttribute(attributeName, readHandler, writeHandler, flags);
@@ -819,12 +841,14 @@ public class ExtensionRegistry {
             subdeployments.registerReadWriteAttribute(definition, readHandler, writeHandler);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, AttributeAccess.Storage storage) {
             deployments.registerReadOnlyAttribute(attributeName, readHandler, storage);
             subdeployments.registerReadOnlyAttribute(attributeName, readHandler, storage);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
             deployments.registerReadOnlyAttribute(attributeName, readHandler, flags);
@@ -837,6 +861,7 @@ public class ExtensionRegistry {
             subdeployments.registerReadOnlyAttribute(definition, readHandler);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
             deployments.registerMetric(attributeName, metricHandler);
@@ -849,6 +874,7 @@ public class ExtensionRegistry {
             subdeployments.registerMetric(definition, metricHandler);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
             deployments.registerMetric(attributeName, metricHandler, flags);

@@ -34,10 +34,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIORITY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
@@ -274,7 +276,8 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void test700StandaloneXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-0.xml"));
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-0.xml"));
+        validateJsfSubsystem(model);
     }
 
     @Test
@@ -289,7 +292,8 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void test700StandaloneHAXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-0-ha.xml"));
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-0-ha.xml"));
+        validateJsfSubsystem(model);
     }
 
     @Test
@@ -424,17 +428,20 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void test712StandaloneXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2.xml"));
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2.xml"));
+        validateJsfSubsystem(model);
     }
 
     @Test
     public void test712StandaloneFullHaXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-full-ha.xml"));
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-full-ha.xml"));
+        validateJsfSubsystem(model);
     }
 
     @Test
     public void test712StandaloneFullXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-full.xml"));
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-full.xml"));
+        validateJsfSubsystem(model);
     }
 
     @Test
@@ -462,7 +469,7 @@ public class ParseAndMarshalModelsTestCase {
         standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-xts.xml"));
     }
 
-    private void standaloneXmlTest(File original) throws Exception {
+    private ModelNode standaloneXmlTest(File original) throws Exception {
 
         File file = new File("target/standalone-copy.xml");
         if (file.exists()) {
@@ -470,12 +477,15 @@ public class ParseAndMarshalModelsTestCase {
         }
         FileUtils.copyFile(original, file);
         ModelNode originalModel = loadServerModel(file);
+
         ModelNode reparsedModel = loadServerModel(file);
 
         fixupOSGiStandalone(originalModel);
         fixupOSGiStandalone(reparsedModel);
 
         compare(originalModel, reparsedModel);
+
+        return reparsedModel;
     }
 
     @Test
@@ -573,7 +583,8 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test @TargetsContainer("class-jbossas")
     public void test710DomainXml() throws Exception {
-        domainXmlTest(getLegacyConfigFile("domain", "7-1-0.xml"));
+        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "7-1-0.xml"));
+        validateJsfProfiles(model);
     }
 
     @Test @TargetsContainer("class-jbossas")
@@ -583,12 +594,13 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test @TargetsContainer("class-jbossas")
     public void test712DomainXml() throws Exception {
-        domainXmlTest(getLegacyConfigFile("domain", "7-1-2.xml"));
+        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "7-1-2.xml"));
+        validateJsfProfiles(model);
     }
 
 
 
-    private void domainXmlTest(File original) throws Exception {
+    private ModelNode domainXmlTest(File original) throws Exception {
         File file = new File("target/domain-copy.xml");
         if (file.exists()) {
             file.delete();
@@ -600,6 +612,8 @@ public class ParseAndMarshalModelsTestCase {
         fixupOSGiDomain(originalModel);
         fixupOSGiDomain(reparsedModel);
         compare(originalModel, reparsedModel);
+
+        return reparsedModel;
     }
 
     private static void fixupOSGiStandalone(ModelNode node) {
@@ -674,6 +688,18 @@ public class ParseAndMarshalModelsTestCase {
                 throw error;
             }
         }
+    }
+
+    private static void validateJsfProfiles(ModelNode model) {
+        Assert.assertTrue(model.hasDefined(PROFILE));
+        for (Property prop : model.get(PROFILE).asPropertyList()) {
+            validateJsfSubsystem(prop.getValue());
+        }
+    }
+
+    private static void validateJsfSubsystem(ModelNode model) {
+        Assert.assertTrue(model.hasDefined(SUBSYSTEM));
+        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined("jsf"));
     }
 
     private ModelNode loadServerModel(final File file) throws Exception {

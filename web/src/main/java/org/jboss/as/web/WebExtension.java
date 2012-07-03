@@ -126,6 +126,8 @@ public class WebExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEB_1_2.getUriString(), WebSubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEB_1_1.getUriString(), WebSubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEB_1_0.getUriString(), WebSubsystemParser.getInstance());
+
+        context.setProfileParsingCompletionHandler(new DefaultJsfProfileCompletionHandler());
     }
 
 }

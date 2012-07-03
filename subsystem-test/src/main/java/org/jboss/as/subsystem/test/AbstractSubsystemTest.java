@@ -1,5 +1,6 @@
 package org.jboss.as.subsystem.test;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -37,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
@@ -85,6 +87,7 @@ import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.parsing.ProfileParsingCompletionHandler;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -168,8 +171,8 @@ public abstract class AbstractSubsystemTest {
     public void initializeParser() throws Exception {
         //Initialize the parser
         xmlMapper = XMLMapper.Factory.create();
-        testParser = new TestParser();
         extensionParsingRegistry = new ExtensionRegistry(getProcessType(), new RunningModeControl(RunningMode.NORMAL));
+        testParser = new TestParser(extensionParsingRegistry);
         xmlMapper.registerRootElement(new QName(TEST_NAMESPACE, "test"), testParser);
         mainExtension.initializeParsers(extensionParsingRegistry.getExtensionParsingContext("Test", xmlMapper));
         addedExtraParsers = false;
@@ -717,9 +720,10 @@ public abstract class AbstractSubsystemTest {
     }
 
     private final class TestParser implements  XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelMarshallingContext> {
+        private final ExtensionRegistry extensionRegistry;
 
-        private TestParser() {
-
+        private TestParser(ExtensionRegistry extensionRegistry) {
+            this.extensionRegistry = extensionRegistry;
         }
 
         @Override
@@ -747,6 +751,7 @@ public abstract class AbstractSubsystemTest {
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
 
             ParseUtils.requireNoAttributes(reader);
+            final Map<String, List<ModelNode>> profileOps = new LinkedHashMap<String, List<ModelNode>>();
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.UNKNOWN) {
                     throw unexpectedElement(reader);
@@ -754,7 +759,25 @@ public abstract class AbstractSubsystemTest {
                 if (Element.forName(reader.getLocalName()) != Element.SUBSYSTEM) {
                     throw unexpectedElement(reader);
                 }
-                reader.handleAny(operations);
+                String namespace = reader.getNamespaceURI();
+                if (profileOps.containsKey(namespace)) {
+                    throw MESSAGES.duplicateDeclaration("subsystem", reader.getLocation());
+                }
+                // parse subsystem
+                final List<ModelNode> subsystems = new ArrayList<ModelNode>();
+                reader.handleAny(subsystems);
+
+                profileOps.put(namespace, subsystems);
+            }
+
+            // Let extensions modify the profile
+            Set<ProfileParsingCompletionHandler> completionHandlers = extensionRegistry.getProfileParsingCompletionHandlers();
+            for (ProfileParsingCompletionHandler completionHandler : completionHandlers) {
+                completionHandler.handleProfileParsingCompletion(profileOps, operations);
+            }
+
+            for (List<ModelNode> subsystems : profileOps.values()) {
+                operations.addAll(subsystems);
             }
         }
     }
