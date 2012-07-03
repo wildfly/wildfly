@@ -68,7 +68,8 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
             final List<ModuleDependency> accessibleModules = new ArrayList<ModuleDependency>();
             for (DeploymentUnit subDeployment : subDeployments) {
                 final ModuleSpecification subModule = subDeployment.getAttachment(Attachments.MODULE_SPECIFICATION);
-                if (!subModule.isPrivateModule()) {
+                // Ignore private modules and OSGi sub deployments
+                if (!subModule.isPrivateModule() && !subModule.isBundleDeployment()) {
                     ModuleIdentifier identifier = subDeployment.getAttachment(Attachments.MODULE_IDENTIFIER);
                     ModuleDependency dependency = new ModuleDependency(moduleLoader, identifier, false, false, true, false);
                     dependency.addImportFilter(PathFilters.acceptAll(), true);

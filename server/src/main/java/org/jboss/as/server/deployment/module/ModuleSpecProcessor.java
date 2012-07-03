@@ -49,6 +49,7 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
+import org.jboss.osgi.resolver.XBundle;
 
 /**
  * Processor responsible for creating the module spec service for this deployment. Once the module spec service is created the
@@ -64,37 +65,46 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
     private static final ServerLogger logger = ServerLogger.DEPLOYMENT_LOGGER;
 
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
-
-        if (deploymentUnit.getAttachment(MARKER) != null) {
+        if (deploymentUnit.hasAttachment(Attachments.MODULE))
             return;
-        }
-        deploymentUnit.putAttachment(MARKER, true);
-
-        // Don't create a ModuleSpec for OSGi deployments
-        if (deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
-            return;
-        }
 
         final ResourceRoot mainRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final List<ResourceRoot> additionalRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
-        if (mainRoot == null) {
+        if (mainRoot == null)
+            return;
+
+        // No {@link ModuleSpec} creation for OSGi deployments that don't use resource root delegation
+        // This would be the case when a Bundle deployment is marked with deferred start policy
+        final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        final XBundle bundle = deploymentUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
+        final ModuleDependency resourceRootDelegation = moduleSpec.getResourceRootDelegation();
+        if (bundle != null && resourceRootDelegation == null) {
             return;
         }
-        final List<ResourceRoot> resourceRoots = new ArrayList<ResourceRoot>();
-        // Add internal resource roots
-        if (ModuleRootMarker.isModuleRoot(mainRoot)) {
-            resourceRoots.add(mainRoot);
-        }
-        for (final ResourceRoot additionalRoot : additionalRoots) {
-            if (ModuleRootMarker.isModuleRoot(additionalRoot) && !SubDeploymentMarker.isSubDeployment(additionalRoot)) {
-                resourceRoots.add(additionalRoot);
-            }
-        }
 
-        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        if (deploymentUnit.hasAttachment(MARKER))
+            return;
+
+        deploymentUnit.putAttachment(MARKER, true);
+
+        // Add internal resource roots
+        final List<ResourceRoot> resourceRoots = new ArrayList<ResourceRoot>();
+        if (moduleSpec.getResourceRootDelegation() == null) {
+            if (ModuleRootMarker.isModuleRoot(mainRoot)) {
+                resourceRoots.add(mainRoot);
+            }
+            final List<ResourceRoot> additionalRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
+            for (final ResourceRoot additionalRoot : additionalRoots) {
+                if (ModuleRootMarker.isModuleRoot(additionalRoot) && !SubDeploymentMarker.isSubDeployment(additionalRoot)) {
+                    resourceRoots.add(additionalRoot);
+                }
+            }
+        } else {
+            moduleSpec.addUserDependency(resourceRootDelegation);
+        }
 
         final ModuleIdentifier moduleIdentifier = deploymentUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
         if (moduleIdentifier == null) {
@@ -102,8 +112,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         }
 
         // create the module service and set it to attach to the deployment in the next phase
-        final ServiceName moduleServiceName = createModuleService(phaseContext, deploymentUnit, resourceRoots, moduleSpecification,
-                moduleIdentifier);
+        final ServiceName moduleServiceName = createModuleService(phaseContext, deploymentUnit, resourceRoots, moduleSpec, moduleIdentifier);
         phaseContext.addDeploymentDependency(moduleServiceName, Attachments.MODULE);
 
         for (final DeploymentUnit subDeployment : deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS)) {
@@ -118,12 +127,10 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             return;
         }
         for (final AdditionalModuleSpecification module : additionalModules) {
-
-            addSystemDependencies(moduleSpecification, module);
-
-            final ServiceName additionalModuleServiceName = createModuleService(phaseContext, deploymentUnit, module
-                    .getResourceRoots(), module, module.getModuleIdentifier());
-            phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, additionalModuleServiceName);
+            addSystemDependencies(moduleSpec, module);
+            List<ResourceRoot> roots = module.getResourceRoots();
+            ServiceName serviceName = createModuleService(phaseContext, deploymentUnit, roots, module, module.getModuleIdentifier());
+            phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, serviceName);
         }
     }
 
@@ -143,7 +150,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
     private ServiceName createModuleService(final DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit,
                                             final List<ResourceRoot> resourceRoots, final ModuleSpecification moduleSpecification,
                                             final ModuleIdentifier moduleIdentifier) throws DeploymentUnitProcessingException {
-        logger.debug("Creating module" + moduleIdentifier);
+        logger.debug("Creating module: " + moduleIdentifier);
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
         for (final DependencySpec dep : moduleSpecification.getModuleSystemDependencies()) {
             specBuilder.addDependency(dep);
@@ -265,6 +272,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         }
     }
 
+    @Override
     public void undeploy(DeploymentUnit context) {
         context.removeAttachment(MARKER);
     }

@@ -28,7 +28,6 @@ import java.util.Set;
 
 import org.jboss.arquillian.testenricher.msc.ServiceTargetAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
-import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -43,9 +42,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.Services;
-import org.osgi.framework.Bundle;
+import org.jboss.osgi.resolver.XBundle;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -109,15 +107,12 @@ class ArquillianConfig implements Service<ArquillianConfig> {
             throw new ClassNotFoundException("Class '" + className + "' not found in: " + testClasses);
 
         Module module = depUnit.getAttachment(Attachments.MODULE);
-        Deployment osgiDep = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
-        if (module == null && osgiDep == null)
+        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
+        if (module == null && bundle == null)
             throw new IllegalStateException("Cannot determine deployment type: " + depUnit);
-        if (module != null && osgiDep != null)
-            throw new IllegalStateException("Found MODULE attachment for Bundle deployment: " + depUnit);
 
         Class<?> testClass;
-        if (osgiDep != null) {
-            Bundle bundle = osgiDep.getAttachment(Bundle.class);
+        if (bundle != null) {
             testClass = bundle.loadClass(className);
             BundleAssociation.setBundle(bundle);
         } else {

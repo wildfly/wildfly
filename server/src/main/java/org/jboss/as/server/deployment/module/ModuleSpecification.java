@@ -85,6 +85,11 @@ public class ModuleSpecification extends SimpleAttachable {
     private boolean privateModule;
 
     /**
+     * Flag that indicates that this is an OSGi bundle deployment.
+     */
+    private boolean bundleDeployment;
+
+    /**
      * If set to true this indicates that a dependency on this module requires a dependency on all it's transitive
      * dependencies.
      */
@@ -108,6 +113,14 @@ public class ModuleSpecification extends SimpleAttachable {
      *
      */
     private final List<DependencySpec> moduleSystemDependencies = new ArrayList<DependencySpec>();
+
+    /**
+     * Deployments may delegate their content to an OSGi Bundle. It is for example possible
+     * to deploy an OSGi Bundle as JBossWeb Application (WAR) in which case two modules are created.
+     * The ordinary WAR module and the module that results from resovling the OSGi Bundle. The WAR
+     * module no resource loaders. Instead it has an additionl dependency on the OSGi Bundle.
+     */
+    private ModuleDependency resourceRootDelegation;
 
     public void addSystemDependency(final ModuleDependency dependency) {
         if (!exclusions.contains(dependency.getIdentifier()) && !systemDependenciesSet.contains(dependency.getIdentifier())) {
@@ -271,5 +284,21 @@ public class ModuleSpecification extends SimpleAttachable {
 
     public List<DependencySpec> getModuleSystemDependencies() {
         return Collections.unmodifiableList(moduleSystemDependencies);
+    }
+
+    public boolean isBundleDeployment() {
+        return bundleDeployment;
+    }
+
+    public void setBundleDeployment(boolean bundleDeployment) {
+        this.bundleDeployment = bundleDeployment;
+    }
+
+    public ModuleDependency getResourceRootDelegation() {
+        return resourceRootDelegation;
+    }
+
+    public void addResourceRootDelegation(ModuleDependency bundleDependency) {
+        this.resourceRootDelegation = bundleDependency;
     }
 }

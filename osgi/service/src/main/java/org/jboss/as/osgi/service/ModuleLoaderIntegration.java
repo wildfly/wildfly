@@ -48,11 +48,13 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.ModuleLoaderProvider;
+import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XIdentityCapability;
-import org.jboss.osgi.resolver.XResource;
 
 /**
  * This is the single {@link ModuleLoader} that the OSGi layer uses for the modules that are associated with the bundles that
@@ -106,15 +108,24 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
     }
 
     /**
-     * Get the module identifier for the given {@link XModule} The returned identifier must be such that it can be used by the
-     * {@link ServiceModuleLoader}
+     * Get the module identifier for the given {@link XBundleRevision}. The returned identifier must be such that it can be used
+     * by the {@link ServiceModuleLoader}
      */
     @Override
-    public ModuleIdentifier getModuleIdentifier(XResource resource, int rev) {
-        XIdentityCapability icap = resource.getIdentityCapability();
-        String name = icap.getSymbolicName();
-        String slot = icap.getVersion() + (rev > 0 ? "-rev" + rev : "");
-        return ModuleIdentifier.create(MODULE_PREFIX + name, slot);
+    public ModuleIdentifier getModuleIdentifier(XBundleRevision brev) {
+        XBundle bundle = brev.getBundle();
+        Deployment dep = bundle.adapt(Deployment.class);
+        ModuleIdentifier identifier = dep.getAttachment(ModuleIdentifier.class);
+        if (identifier == null) {
+            XIdentityCapability icap = brev.getIdentityCapability();
+            List<XBundleRevision> allrevs = brev.getBundle().getAllBundleRevisions();
+            String name = icap.getSymbolicName();
+            if (allrevs.size() > 1) {
+                name += "-rev" + (allrevs.size() - 1);
+            }
+            identifier = ModuleIdentifier.create(MODULE_PREFIX + name, "" + icap.getVersion());
+        }
+        return identifier;
     }
 
     /**
@@ -125,7 +136,8 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
         ModuleIdentifier identifier = moduleSpec.getModuleIdentifier();
         LOGGER.tracef("Add module spec to loader: %s", identifier);
         ServiceName moduleSpecName = ServiceModuleLoader.moduleSpecServiceName(identifier);
-        serviceTarget.addService(moduleSpecName, new ValueService<ModuleSpec>(new ImmediateValue<ModuleSpec>(moduleSpec))).install();
+        serviceTarget.addService(moduleSpecName, new ValueService<ModuleSpec>(new ImmediateValue<ModuleSpec>(moduleSpec)))
+                .install();
     }
 
     /**
@@ -178,6 +190,17 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
         Module module = ModuleLoader.preloadModule(identifier, injectedModuleLoader.getValue());
         if (module == null)
             LOGGER.debugf("Cannot obtain module for: %s", identifier);
+        return module;
+    }
+
+    @Override
+    public Module getModule(ModuleIdentifier identifier) {
+        Module module = null;
+        try {
+            module = ModuleLoader.preloadModule(identifier, injectedModuleLoader.getValue());
+        } catch (ModuleLoadException e) {
+            LOGGER.debugf("Cannot obtain module for: %s", identifier);
+        }
         return module;
     }
 
