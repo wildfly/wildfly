@@ -29,6 +29,8 @@ import java.util.List;
  */
 public interface Operation extends Operand {
 
+    String getName();
+
     int getPriority();
 
     List<Operand> getOperands();
