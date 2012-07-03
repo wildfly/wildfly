@@ -73,7 +73,7 @@ public class ConfigurationUpdateTestCase {
         ArgumentCaptor<OperationStepHandler> addedStep = ArgumentCaptor.forClass(OperationStepHandler.class);
         inOrder.verify(mockOperationContext).addStep(
                 addedStep.capture(), Mockito.eq(OperationContext.Stage.RUNTIME));
-        inOrder.verify(mockOperationContext).completeStep();
+        inOrder.verify(mockOperationContext).completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
 
         ModelNode expectedModel = new ModelNode();
         ModelNode subModel = new ModelNode();
@@ -98,7 +98,7 @@ public class ConfigurationUpdateTestCase {
         step.execute(mockContext2, operation);
 
         Mockito.verify(mockCAS).putConfigurationFromDMR("mypid", dict);
-        Mockito.verify(mockContext2).completeStep();
+        Mockito.verify(mockContext2).completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     private ModelNode getOperationModelNode(String pid, Map<String, String> props) {

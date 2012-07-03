@@ -63,7 +63,7 @@ public abstract class StartLevelHandler implements OperationStepHandler {
             // non-metric read-attribute handlers should not fail
             context.getResult().set(new ModelNode());
         }
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     abstract void invokeOperation(StartLevel sls, OperationContext context, ModelNode operation);

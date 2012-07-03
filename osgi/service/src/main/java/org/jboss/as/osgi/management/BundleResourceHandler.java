@@ -135,7 +135,7 @@ public class BundleResourceHandler extends AbstractRuntimeOnlyHandler {
             Bundle bundle = getTargetBundle(context, operation);
             context.getResult().set(bundle.getVersion().toString());
         }
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     private void handleOperation(String operationName, OperationContext context, ModelNode operation) {
@@ -153,7 +153,7 @@ public class BundleResourceHandler extends AbstractRuntimeOnlyHandler {
             LOGGER.errorInOperationHandler(ex, operationName);
             context.getFailureDescription().set(ex.getLocalizedMessage());
         }
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     private Bundle getTargetBundle(OperationContext context, ModelNode operation) {
