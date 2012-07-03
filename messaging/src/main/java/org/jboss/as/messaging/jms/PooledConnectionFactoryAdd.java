@@ -22,8 +22,6 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
@@ -63,25 +61,6 @@ import org.jboss.msc.service.ServiceTarget;
  *         Time: 1:42 PM
  */
 public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
-
-    /**
-     * Create an "add" operation using the existing model
-     */
-    public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
-
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(ADD);
-        operation.get(OP_ADDR).set(address);
-
-        for(final AttributeDefinition attribute : getDefinitions(JMSServices.POOLED_CONNECTION_FACTORY_ATTRS)) {
-            final String attrName = attribute.getName();
-            if(subModel.has(attrName)) {
-                operation.get(attrName).set(subModel.get(attrName));
-            }
-        }
-
-        return operation;
-    }
 
     public static final PooledConnectionFactoryAdd INSTANCE = new PooledConnectionFactoryAdd();
 

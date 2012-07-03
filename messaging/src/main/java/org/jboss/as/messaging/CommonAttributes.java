@@ -35,10 +35,12 @@ import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_MEMORY_WARN
 import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
+import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PERCENTAGE;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
+import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.OBJECT;
@@ -95,17 +97,6 @@ public interface CommonAttributes {
     SimpleAttributeDefinition BLOCK_ON_NON_DURABLE_SEND = new SimpleAttributeDefinition("block-on-non-durable-send",
             new ModelNode().set(HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND), ModelType.BOOLEAN, true);
 
-    SimpleAttributeDefinition BRIDGE_FORWARDING_ADDRESS = new SimpleAttributeDefinition("forwarding-address", ModelType.STRING, true);
-
-    SimpleAttributeDefinition BRIDGE_RECONNECT_ATTEMPTS = new SimpleAttributeDefinition("reconnect-attempts",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_BRIDGE_RECONNECT_ATTEMPTS), ModelType.INT, true, MeasurementUnit.NONE);
-
-    SimpleAttributeDefinition BRIDGE_USE_DUPLICATE_DETECTION = new SimpleAttributeDefinition("use-duplicate-detection",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_BRIDGE_DUPLICATE_DETECTION), ModelType.BOOLEAN,  true);
-
-    SimpleAttributeDefinition BROADCAST_PERIOD = new SimpleAttributeDefinition("broadcast-period",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_BROADCAST_PERIOD), ModelType.LONG, true, MeasurementUnit.MILLISECONDS);
-
     SimpleAttributeDefinition CACHE_LARGE_MESSAGE_CLIENT = new SimpleAttributeDefinition("cache-large-message-client",
             new ModelNode().set(HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT), ModelType.BOOLEAN, true);
 
@@ -119,10 +110,11 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .build();
 
-    SimpleAttributeDefinition CHECK_PERIOD = new SimpleAttributeDefinitionBuilder("check-period", LONG)
+    SimpleAttributeDefinition CHECK_PERIOD = create("check-period", LONG)
             .setDefaultValue(new ModelNode().set(DEFAULT_CLIENT_FAILURE_CHECK_PERIOD))
             .setAllowNull(true)
             .setMeasurementUnit(MILLISECONDS)
+            .setFlags(RESTART_ALL_SERVICES)
             .build();
 
     SimpleAttributeDefinition CLIENT_FAILURE_CHECK_PERIOD = new SimpleAttributeDefinition("client-failure-check-period",
@@ -186,8 +178,12 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CONFIRMATION_WINDOW_SIZE = new SimpleAttributeDefinition("confirmation-window-size",
             new ModelNode().set(HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE), ModelType.INT,  true, MeasurementUnit.BYTES);
 
-    SimpleAttributeDefinition BRIDGE_CONFIRMATION_WINDOW_SIZE = new SimpleAttributeDefinition("confirmation-window-size",
-            new ModelNode().set(FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE), ModelType.INT,  true, MeasurementUnit.BYTES);
+    SimpleAttributeDefinition BRIDGE_CONFIRMATION_WINDOW_SIZE = create("confirmation-window-size", INT)
+            .setDefaultValue(new ModelNode().set(FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE))
+            .setMeasurementUnit(BYTES)
+            .setAllowNull(true)
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     JndiEntriesAttribute CONNECTION_ENTRIES = JndiEntriesAttribute.CONNECTION_FACTORY;
 
@@ -210,6 +206,7 @@ public interface CommonAttributes {
             .setDefaultValue(new ModelNode().set(DEFAULT_CONNECTION_TTL))
             .setAllowNull(true)
             .setMeasurementUnit(MILLISECONDS)
+            .setFlags(RESTART_ALL_SERVICES)
             .build();
 
     SimpleAttributeDefinition CONNECTION_TTL_OVERRIDE = new SimpleAttributeDefinition("connection-ttl-override",
@@ -232,13 +229,12 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition DEAD_LETTER_ADDRESS = new SimpleAttributeDefinition("dead-letter-address", ModelType.STRING, true);
 
-    SimpleAttributeDefinition DISCOVERY_GROUP_NAME = new SimpleAttributeDefinition("discovery-group-name", ModelType.STRING, true);
+    SimpleAttributeDefinition DISCOVERY_GROUP_NAME = create("discovery-group-name", ModelType.STRING)
+            .setAllowNull(true)
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition DISCOVERY_INITIAL_WAIT_TIMEOUT = new SimpleAttributeDefinition("discovery-initial-wait-timeout", ModelType.LONG, true, MeasurementUnit.MILLISECONDS);
-
-    SimpleAttributeDefinition DIVERT_ADDRESS = new SimpleAttributeDefinition("divert-address", "address", null, ModelType.STRING, false, false, MeasurementUnit.NONE);
-
-    SimpleAttributeDefinition DIVERT_FORWARDING_ADDRESS = new SimpleAttributeDefinition("forwarding-address", ModelType.STRING, false);
 
     SimpleAttributeDefinition DUPS_OK_BATCH_SIZE = new SimpleAttributeDefinition("dups-ok-batch-size",
             new ModelNode().set(HornetQClient.DEFAULT_ACK_BATCH_SIZE), ModelType.INT, true, MeasurementUnit.NONE);
@@ -246,9 +242,6 @@ public interface CommonAttributes {
     SimpleAttributeDefinition DURABLE = new SimpleAttributeDefinition("durable", new ModelNode().set(true), ModelType.BOOLEAN,  true);
 
     JndiEntriesAttribute ENTRIES = JndiEntriesAttribute.DESTINATION;
-
-    SimpleAttributeDefinition EXCLUSIVE = new SimpleAttributeDefinition("exclusive",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_DIVERT_EXCLUSIVE), ModelType.BOOLEAN,  true);
 
     SimpleAttributeDefinition FACTORY_CLASS = new SimpleAttributeDefinition("factory-class", ModelType.STRING, false);
 
@@ -261,12 +254,17 @@ public interface CommonAttributes {
     SimpleAttributeDefinition FAILOVER_ON_INITIAL_CONNECTION =  new SimpleAttributeDefinition("failover-on-initial-connection",
             new ModelNode().set(HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION), ModelType.BOOLEAN, true);
 
-    SimpleAttributeDefinition FAILOVER_ON_SERVER_SHUTDOWN = new SimpleAttributeDefinition("failover-on-server-shutdown", ModelType.BOOLEAN, true);
+    SimpleAttributeDefinition FAILOVER_ON_SERVER_SHUTDOWN = create("failover-on-server-shutdown", ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .build();
 
     SimpleAttributeDefinition FAILOVER_ON_SHUTDOWN = new SimpleAttributeDefinition("failover-on-shutdown",
             new ModelNode().set(false /*TODO should be ConfigurationImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN but field is private*/), ModelType.BOOLEAN,  true);
 
-    SimpleAttributeDefinition FILTER = new SimpleAttributeDefinition("filter", ModelType.STRING, true);
+    SimpleAttributeDefinition FILTER = create("filter", ModelType.STRING)
+            .setAllowNull(true)
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition FORWARD_WHEN_NO_CONSUMERS = new SimpleAttributeDefinition("forward-when-no-consumers",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS), ModelType.BOOLEAN, true);
@@ -274,22 +272,31 @@ public interface CommonAttributes {
     SimpleAttributeDefinition GROUPING_HANDLER_ADDRESS = new SimpleAttributeDefinition("grouping-handler-address", "address",
             null, ModelType.STRING, false, false, MeasurementUnit.NONE);
 
-    SimpleAttributeDefinition GROUP_ADDRESS = new SimpleAttributeDefinition("group-address", null, ModelType.STRING, false,
-            new String[] {"socket-binding"});
+    SimpleAttributeDefinition GROUP_ADDRESS = create("group-address", ModelType.STRING)
+            .setDefaultValue(null)
+            .setAllowNull(false)
+            .setAlternatives("socket-binding")
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition GROUP_ID = new SimpleAttributeDefinition("group-id", ModelType.STRING, true);
 
-    SimpleAttributeDefinition GROUP_PORT = new SimpleAttributeDefinition("group-port", null, ModelType.INT, false,
-            new String[] {"socket-binding"});
+    SimpleAttributeDefinition GROUP_PORT = create("group-port", INT)
+            .setDefaultValue(null)
+            .setAllowNull(false)
+            .setAlternatives("socket-binding")
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
-    SimpleAttributeDefinition HA = new SimpleAttributeDefinition("ha", new ModelNode().set(HornetQClient.DEFAULT_HA),  ModelType.BOOLEAN, true);
+    SimpleAttributeDefinition HA = create("ha", BOOLEAN)
+            .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_HA))
+            .setAllowNull(true)
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition ID_CACHE_SIZE = new SimpleAttributeDefinition("id-cache-size",
             new ModelNode().set(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE), ModelType.INT,  true,
             MeasurementUnit.NONE, AttributeAccess.Flag.RESTART_ALL_SERVICES);
-
-    SimpleAttributeDefinition INITIAL_WAIT_TIMEOUT = new SimpleAttributeDefinition("initial-wait-timeout",
-            new ModelNode().set(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
     SimpleAttributeDefinition JMX_DOMAIN = new SimpleAttributeDefinition("jmx-domain",
             new ModelNode().set(ConfigurationImpl.DEFAULT_JMX_DOMAIN), ModelType.STRING, true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
@@ -341,11 +348,19 @@ public interface CommonAttributes {
     SimpleAttributeDefinition LOAD_BALANCING_CLASS_NAME = new SimpleAttributeDefinition("connection-load-balancing-policy-class-name",
             new ModelNode().set(HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME), ModelType.STRING, true);
 
-    SimpleAttributeDefinition LOCAL_BIND_ADDRESS = new SimpleAttributeDefinition("local-bind-address", null, ModelType.STRING, true,
-            new String[] {"socket-binding"});
+    SimpleAttributeDefinition LOCAL_BIND_ADDRESS = create("local-bind-address", ModelType.STRING)
+            .setDefaultValue(null)
+            .setAllowNull(true)
+            .setAlternatives("socket-binding")
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
-    SimpleAttributeDefinition LOCAL_BIND_PORT = new SimpleAttributeDefinition("local-bind-port", new ModelNode().set(-1), ModelType.INT, true,
-            new String[] {"socket-binding"});
+    SimpleAttributeDefinition LOCAL_BIND_PORT = create("local-bind-port", INT)
+            .setDefaultValue(new ModelNode().set(-1))
+            .setAllowNull(true)
+            .setAlternatives("socket-binding")
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition LOG_JOURNAL_WRITE_RATE = new SimpleAttributeDefinition("log-journal-write-rate",
             new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE), ModelType.BOOLEAN,  true,
@@ -374,10 +389,11 @@ public interface CommonAttributes {
             .setAllowExpression(true)
             .build();
 
-    SimpleAttributeDefinition MAX_RETRY_INTERVAL = new SimpleAttributeDefinitionBuilder("max-retry-interval", LONG)
+    SimpleAttributeDefinition MAX_RETRY_INTERVAL = create("max-retry-interval", LONG)
             .setDefaultValue(new ModelNode().set(DEFAULT_MAX_RETRY_INTERVAL))
             .setAllowNull(true)
             .setMeasurementUnit(MILLISECONDS)
+            .setFlags(RESTART_ALL_SERVICES)
             .build();
 
     SimpleAttributeDefinition MAX_SIZE_BYTES = new SimpleAttributeDefinitionBuilder("max-size-bytes", LONG)
@@ -421,17 +437,18 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY), ModelType.INT,  true,
             MeasurementUnit.NONE, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    SimpleAttributeDefinition MIN_LARGE_MESSAGE_SIZE = new SimpleAttributeDefinition("min-large-message-size",
-            new ModelNode().set(HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE), ModelType.INT,  true, MeasurementUnit.BYTES);
+    SimpleAttributeDefinition MIN_LARGE_MESSAGE_SIZE = create("min-large-message-size", INT)
+            .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE))
+            .setMeasurementUnit(BYTES)
+            .setAllowNull(true)
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition MIN_POOL_SIZE = new SimpleAttributeDefinitionBuilder("min-pool-size", INT)
             .setDefaultValue(new ModelNode().set(-1))
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
-
-    SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinition("password", "password",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD), ModelType.STRING, true, true, null);
 
     SimpleAttributeDefinition PAGE_MAX_CACHE_SIZE = new SimpleAttributeDefinition("page-max-cache-size",
             new ModelNode(AddressSettings.DEFAULT_PAGE_MAX_CACHE), ModelType.INT, true);
@@ -487,15 +504,10 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition QUEUE_ADDRESS = new SimpleAttributeDefinition("queue-address", "address", null, ModelType.STRING, false, false, MeasurementUnit.NONE);
 
-    SimpleAttributeDefinition QUEUE_NAME = new SimpleAttributeDefinition("queue-name", ModelType.STRING, false);
-
     SimpleAttributeDefinition RECONNECT_ATTEMPTS = new SimpleAttributeDefinitionBuilder("reconnect-attempts", INT)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RECONNECT_ATTEMPTS))
             .setAllowNull(true)
             .build();
-
-    SimpleAttributeDefinition REFRESH_TIMEOUT = new SimpleAttributeDefinition("refresh-timeout",
-            new ModelNode().set(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
     SimpleAttributeDefinition REDELIVERY_DELAY = new SimpleAttributeDefinition("redelivery-delay",
             new ModelNode().set(AddressSettings.DEFAULT_REDELIVER_DELAY), ModelType.LONG, true);
@@ -507,13 +519,18 @@ public interface CommonAttributes {
 
     RemotingInterceptorsAttribute REMOTING_INTERCEPTORS = RemotingInterceptorsAttribute.INSTANCE;
 
-    SimpleAttributeDefinition RETRY_INTERVAL = new SimpleAttributeDefinition("retry-interval",
-            new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL), ModelType.LONG, true, MeasurementUnit.MILLISECONDS);
+    SimpleAttributeDefinition RETRY_INTERVAL = create("retry-interval", LONG)
+            .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
-    SimpleAttributeDefinition RETRY_INTERVAL_MULTIPLIER = new SimpleAttributeDefinition("retry-interval-multiplier",
-            new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER), ModelType.BIG_DECIMAL, true, MeasurementUnit.NONE);
-
-    SimpleAttributeDefinition ROUTING_NAME = new SimpleAttributeDefinition("routing-name", ModelType.STRING, true);
+    SimpleAttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", BIG_DECIMAL)
+            .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER))
+            .setAllowNull(true)
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition RUN_SYNC_SPEED_TEST = new SimpleAttributeDefinition("run-sync-speed-test",
             new ModelNode().set(ConfigurationImpl.DEFAULT_RUN_SYNC_SPEED_TEST), ModelType.BOOLEAN,  true,
@@ -558,8 +575,12 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition SOCKET_BINDING_OPTIONAL = new SimpleAttributeDefinition("socket-binding", ModelType.STRING, true);
 
-    SimpleAttributeDefinition SOCKET_BINDING_ALTERNATIVE = new SimpleAttributeDefinition("socket-binding", null, ModelType.STRING, false,
-            new String[] {"group-address", "group-port", "local-bind-address", "local-bind-port"});
+    SimpleAttributeDefinition SOCKET_BINDING_ALTERNATIVE = create("socket-binding", ModelType.STRING)
+            .setDefaultValue(null)
+            .setAllowNull(false)
+            .setAlternatives("group-address", "group-port", "local-bind-address", "local-bind-port")
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinitionBuilder("thread-pool-max-size", INT)
             .setDefaultValue(new ModelNode().set(DEFAULT_THREAD_POOL_MAX_SIZE))
@@ -586,7 +607,10 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD), ModelType.LONG,  true,
             MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    SimpleAttributeDefinition TRANSFORMER_CLASS_NAME = new SimpleAttributeDefinition("transformer-class-name", ModelType.STRING, true);
+    SimpleAttributeDefinition TRANSFORMER_CLASS_NAME = create("transformer-class-name", ModelType.STRING)
+            .setAllowNull(true)
+            .setFlags(RESTART_ALL_SERVICES)
+            .build();
 
     SimpleAttributeDefinition TYPE = new SimpleAttributeDefinition("type", "type",
             null, ModelType.STRING,  true, false, MeasurementUnit.NONE, GroupingHandlerTypeValidator.INSTANCE);
@@ -695,6 +719,7 @@ public interface CommonAttributes {
     String PERMISSION_ELEMENT_NAME ="permission";
     String POOLED_CONNECTION_FACTORY = "pooled-connection-factory";
     String QUEUE ="queue";
+    String QUEUE_NAME ="queue-name";
     String QUEUE_NAMES ="queue-names";
     String  REMOTING_INTERCEPTORS_STRING ="remoting-interceptors";
     String REMOTE_ACCEPTOR = "remote-acceptor";
@@ -744,29 +769,9 @@ public interface CommonAttributes {
         FAILOVER_ON_SHUTDOWN, MESSAGE_COUNTER_ENABLED, MESSAGE_COUNTER_MAX_DAY_HISTORY, MESSAGE_COUNTER_SAMPLE_PERIOD
     };
 
-    AttributeDefinition[] DIVERT_ATTRIBUTES = {
-        ROUTING_NAME, DIVERT_ADDRESS, DIVERT_FORWARDING_ADDRESS, FILTER, TRANSFORMER_CLASS_NAME, EXCLUSIVE
-    };
-
-    AttributeDefinition[] BROADCAST_GROUP_ATTRIBUTES = { SOCKET_BINDING_ALTERNATIVE, LOCAL_BIND_ADDRESS, LOCAL_BIND_PORT, GROUP_ADDRESS, GROUP_PORT,
-            BROADCAST_PERIOD, ConnectorRefsAttribute.BROADCAST_GROUP
-    };
-
-    AttributeDefinition[] DISCOVERY_GROUP_ATTRIBUTES = { SOCKET_BINDING_ALTERNATIVE, LOCAL_BIND_ADDRESS, GROUP_ADDRESS, GROUP_PORT,
-            REFRESH_TIMEOUT, INITIAL_WAIT_TIMEOUT,
-    };
-
     AttributeDefinition[] GROUPING_HANDLER_ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT};
 
     AttributeDefinition[] CORE_QUEUE_ATTRIBUTES = { QUEUE_ADDRESS, FILTER, DURABLE };
-
-    AttributeDefinition[] BRIDGE_ATTRIBUTES = {
-            QUEUE_NAME, BRIDGE_FORWARDING_ADDRESS, HA, FILTER, TRANSFORMER_CLASS_NAME, MIN_LARGE_MESSAGE_SIZE, CONNECTION_TTL,
-            RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER, MAX_RETRY_INTERVAL, CHECK_PERIOD,
-            BRIDGE_RECONNECT_ATTEMPTS, FAILOVER_ON_SERVER_SHUTDOWN,
-            BRIDGE_USE_DUPLICATE_DETECTION, BRIDGE_CONFIRMATION_WINDOW_SIZE, USER, PASSWORD, ConnectorRefsAttribute.BRIDGE_CONNECTORS,
-            DISCOVERY_GROUP_NAME
-    };
 
     AttributeDefinition[] CLUSTER_CONNECTION_ATTRIBUTES = {
         CLUSTER_CONNECTION_ADDRESS, CONNECTOR_REF, MIN_LARGE_MESSAGE_SIZE, CLUSTER_CONNECTION_CONNECTION_TTL,

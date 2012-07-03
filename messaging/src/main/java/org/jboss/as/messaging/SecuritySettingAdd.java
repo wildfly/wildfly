@@ -69,13 +69,6 @@ class SecuritySettingAdd extends AbstractAddStepHandler implements DescriptionPr
         return MessagingDescriptions.getSecuritySettingAdd(locale);
     }
 
-    static ModelNode createAddOperation(final ModelNode address, final ModelNode subModel) {
-        final ModelNode operation = new ModelNode();
-        operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
-        return operation;
-    }
-
     static HornetQServer getServer(final OperationContext context, ModelNode operation) {
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         final ServiceController<?> controller = context.getServiceRegistry(true).getService(hqServiceName);

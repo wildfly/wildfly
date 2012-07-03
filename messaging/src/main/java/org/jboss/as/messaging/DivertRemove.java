@@ -22,15 +22,12 @@
 
 package org.jboss.as.messaging;
 
-import java.util.Locale;
-
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -42,7 +39,7 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DivertRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class DivertRemove extends AbstractRemoveStepHandler {
 
     public static final DivertRemove INSTANCE = new DivertRemove();
 
@@ -85,10 +82,5 @@ public class DivertRemove extends AbstractRemoveStepHandler implements Descripti
             HornetQServer server = HornetQServer.class.cast(hqService.getValue());
             DivertAdd.createDivert(name, divertConfiguration, server.getHornetQServerControl());
         }
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getDivertRemove(locale);
     }
 }

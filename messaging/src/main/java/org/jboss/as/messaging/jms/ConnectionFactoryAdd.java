@@ -195,25 +195,6 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         return config;
     }
 
-    public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
-
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(ADD);
-        operation.get(OP_ADDR).set(address);
-
-        AttributeDefinition[] attributes = new AttributeDefinition[CONNECTION_FACTORY_ATTRS.length + 1];
-        System.arraycopy(CONNECTION_FACTORY_ATTRS, 0, attributes, 0, CONNECTION_FACTORY_ATTRS.length);
-        attributes[attributes.length - 1] = CONNECTION_FACTORY_TYPE;
-        for (final AttributeDefinition attribute : attributes) {
-            final String attrName = attribute.getName();
-            if (subModel.hasDefined(attrName)) {
-                operation.get(attrName).set(subModel.get(attrName));
-            }
-        }
-
-        return operation;
-    }
-
     private static JMSFactoryType getFactoryType(String factoryType) {
         if(factoryType == null || factoryType.equals(CommonAttributes.GENERIC_FACTORY)) {
             return JMSFactoryType.CF;

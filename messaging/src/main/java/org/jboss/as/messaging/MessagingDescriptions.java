@@ -48,7 +48,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.BINDING_NAMES;
-import static org.jboss.as.messaging.CommonAttributes.BRIDGE;
 import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_CONNECTION;
@@ -61,7 +60,6 @@ import static org.jboss.as.messaging.CommonAttributes.CORE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DELIVERING_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
-import static org.jboss.as.messaging.CommonAttributes.DIVERT;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE_MESSAGE_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE_SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
@@ -694,7 +692,7 @@ public class MessagingDescriptions {
         result.get(OPERATION_NAME).set(operationName);
         result.get(DESCRIPTION).set(bundle.getString("jms-topic." + operationName));
 
-        final ModelNode nameProp = result.get(REQUEST_PROPERTIES, QUEUE_NAME.getName());
+        final ModelNode nameProp = result.get(REQUEST_PROPERTIES, QUEUE_NAME);
         nameProp.get(DESCRIPTION).set(bundle.getString("jms-topic.list-messages-for-subscription.queue-name"));
         nameProp.get(TYPE).set(ModelType.STRING);
         nameProp.get(REQUIRED).set(true);
@@ -856,99 +854,8 @@ public class MessagingDescriptions {
         }
     }
 
-    static ModelNode getDivertResource(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("divert"));
-        for (AttributeDefinition attr : CommonAttributes.DIVERT_ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle, "divert", root);
-        }
-
-        root.get(OPERATIONS); // placeholder
-
-        root.get(CHILDREN).setEmptyObject();
-        return root;
-    }
-
-    static ModelNode getDivertAdd(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("divert.add"));
-        for (AttributeDefinition attr : CommonAttributes.DIVERT_ATTRIBUTES) {
-            attr.addOperationParameterDescription(bundle, "divert", op);
-        }
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
-    static ModelNode getDivertRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, DIVERT);
-    }
-
-
-    static ModelNode getBroadcastGroupResource(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("broadcast-group"));
-        for (AttributeDefinition attr : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle, "broadcast-group", root);
-        }
-        addResourceAttributeDescription(bundle, BROADCAST_GROUP, root.get(ATTRIBUTES), STARTED, ModelType.BOOLEAN, false, null);
-        root.get(OPERATIONS); // placeholder
-
-        root.get(CHILDREN).setEmptyObject();
-        return root;
-    }
-
-
-    static ModelNode getBroadcastGroupAdd(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("broadcast-group.add"));
-        for (AttributeDefinition attr : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
-            attr.addOperationParameterDescription(bundle, "broadcast-group", op);
-        }
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
     static ModelNode getBroadcastGroupRemove(final Locale locale) {
         return getDescriptionOnlyOperation(locale, REMOVE, BROADCAST_GROUP);
-    }
-
-    static ModelNode getDiscoveryGroupResource(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("discovery-group"));
-        for (AttributeDefinition attr : CommonAttributes.DISCOVERY_GROUP_ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle, "discovery-group", root);
-        }
-
-        root.get(OPERATIONS); // placeholder
-
-        root.get(CHILDREN).setEmptyObject();
-        return root;
-    }
-
-
-    static ModelNode getDiscoveryGroupAdd(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("discovery-group.add"));
-        for (AttributeDefinition attr : CommonAttributes.DISCOVERY_GROUP_ATTRIBUTES) {
-            attr.addOperationParameterDescription(bundle, "discovery-group", op);
-        }
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
     }
 
     static ModelNode getDiscoveryGroupRemove(final Locale locale) {
@@ -985,40 +892,6 @@ public class MessagingDescriptions {
 
     static ModelNode getGroupingHandlerRemove(final Locale locale) {
         return getDescriptionOnlyOperation(locale, REMOVE, GROUPING_HANDLER);
-    }
-
-    static ModelNode getBridgeResource(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("bridge"));
-        for (AttributeDefinition attr : CommonAttributes.BRIDGE_ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle, "bridge", root);
-        }
-
-        addResourceAttributeDescription(bundle, BRIDGE, root.get(ATTRIBUTES), STARTED, ModelType.BOOLEAN, false, null);
-
-        root.get(OPERATIONS); // placeholder
-
-        root.get(CHILDREN).setEmptyObject();
-        return root;
-    }
-
-    public static ModelNode getBridgeAdd(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("bridge.add"));
-        for (AttributeDefinition attr : CommonAttributes.BRIDGE_ATTRIBUTES) {
-            attr.addOperationParameterDescription(bundle, "bridge", op);
-        }
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
-    static ModelNode getBridgeRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, BRIDGE);
     }
 
     static ModelNode getClusterConnectionResource(Locale locale) {

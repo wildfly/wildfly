@@ -43,6 +43,7 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -101,9 +102,9 @@ public class MessagingExtension implements Extension {
     private static final PathElement JMS_QUEUE_PATH = PathElement.pathElement(CommonAttributes.JMS_QUEUE);
     private static final PathElement TOPIC_PATH = PathElement.pathElement(CommonAttributes.JMS_TOPIC);
     private static final PathElement RA_PATH = PathElement.pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
-    private static final PathElement BROADCAST_GROUP_PATH = PathElement.pathElement(CommonAttributes.BROADCAST_GROUP);
-    private static final PathElement DISCOVERY_GROUP_PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
-    private static final PathElement DIVERT_PATH = PathElement.pathElement(CommonAttributes.DIVERT);
+    static final PathElement BROADCAST_GROUP_PATH = PathElement.pathElement(CommonAttributes.BROADCAST_GROUP);
+    static final PathElement DISCOVERY_GROUP_PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
+    static final PathElement DIVERT_PATH = PathElement.pathElement(CommonAttributes.DIVERT);
     private static final PathElement GROUPING_HANDLER_PATH = PathElement.pathElement(CommonAttributes.GROUPING_HANDLER);
     public static final PathElement JMS_BRIDGE_PATH = PathElement.pathElement(CommonAttributes.JMS_BRIDGE);
 
@@ -127,7 +128,8 @@ public class MessagingExtension implements Extension {
 
         // Root resource
         final ManagementResourceRegistration rootRegistration = subsystem.registerSubsystemModel(MessagingSubsystemRootResourceDefinition.INSTANCE);
-        rootRegistration.registerOperationHandler(DESCRIBE, MessagingSubsystemDescribeHandler.INSTANCE, MessagingSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        rootRegistration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+
         // HQ servers
         final ManagementResourceRegistration serverRegistration = rootRegistration.registerSubModel(new HornetQServerResourceDefinition(registerRuntimeOnly));
 
@@ -146,26 +148,14 @@ public class MessagingExtension implements Extension {
         AddressSettingsWriteHandler.INSTANCE.registerAttributes(addressSetting, registerRuntimeOnly);
 
         // Broadcast groups
-        final ManagementResourceRegistration broadcastGroups = serverRegistration.registerSubModel(BROADCAST_GROUP_PATH, MessagingSubsystemProviders.BROADCAST_GROUP_RESOURCE);
-        broadcastGroups.registerOperationHandler(ADD, BroadcastGroupAdd.INSTANCE, BroadcastGroupAdd.INSTANCE);
-        broadcastGroups.registerOperationHandler(REMOVE, BroadcastGroupRemove.INSTANCE, BroadcastGroupRemove.INSTANCE);
-        BroadcastGroupWriteAttributeHandler.INSTANCE.registerAttributes(broadcastGroups, registerRuntimeOnly);
-        if (registerRuntimeOnly) {
-            BroadcastGroupControlHandler.INSTANCE.register(broadcastGroups);
-        }
+        serverRegistration.registerSubModel(new BroadcastGroupDefinition(registerRuntimeOnly));
         // getConnectorPairs, -- no, this is just the same as attribute connector-refs
 
         // Discovery groups
-        final ManagementResourceRegistration discoveryGroups = serverRegistration.registerSubModel(DISCOVERY_GROUP_PATH, MessagingSubsystemProviders.DISCOVERY_GROUP_RESOURCE);
-        discoveryGroups.registerOperationHandler(ADD, DiscoveryGroupAdd.INSTANCE, DiscoveryGroupAdd.INSTANCE);
-        discoveryGroups.registerOperationHandler(REMOVE, DiscoveryGroupRemove.INSTANCE, DiscoveryGroupRemove.INSTANCE);
-        DiscoveryGroupWriteAttributeHandler.INSTANCE.registerAttributes(discoveryGroups, registerRuntimeOnly);
+        serverRegistration.registerSubModel(new DiscoveryGroupDefinition(registerRuntimeOnly));
 
         // Diverts
-        final ManagementResourceRegistration diverts = serverRegistration.registerSubModel(DIVERT_PATH, MessagingSubsystemProviders.DIVERT_RESOURCE);
-        diverts.registerOperationHandler(ADD, DivertAdd.INSTANCE, DivertAdd.INSTANCE);
-        diverts.registerOperationHandler(REMOVE, DivertRemove.INSTANCE, DivertRemove.INSTANCE);
-        DivertConfigurationWriteHandler.INSTANCE.registerAttributes(diverts, registerRuntimeOnly);
+        serverRegistration.registerSubModel(new DivertDefinition(registerRuntimeOnly));
 
         // Core queues
         final ManagementResourceRegistration queue = serverRegistration.registerSubModel(PathElement.pathElement(QUEUE), MessagingSubsystemProviders.QUEUE_RESOURCE);
@@ -230,13 +220,7 @@ public class MessagingExtension implements Extension {
         createParamRegistration(inVMConnector);
 
         // Bridges
-        final ManagementResourceRegistration bridge = serverRegistration.registerSubModel(PathElement.pathElement(CommonAttributes.BRIDGE), MessagingSubsystemProviders.BRIDGE_RESOURCE);
-        bridge.registerOperationHandler(ADD, BridgeAdd.INSTANCE, BridgeAdd.INSTANCE, false);
-        bridge.registerOperationHandler(REMOVE, BridgeRemove.INSTANCE, BridgeRemove.INSTANCE, false);
-        BridgeWriteAttributeHandler.INSTANCE.registerAttributes(bridge, registerRuntimeOnly);
-        if (registerRuntimeOnly) {
-            BridgeControlHandler.INSTANCE.register(bridge);
-        }
+        serverRegistration.registerSubModel(new BridgeDefinition(registerRuntimeOnly));
 
         // Cluster connections
         final ManagementResourceRegistration cluster = serverRegistration.registerSubModel(PathElement.pathElement(CommonAttributes.CLUSTER_CONNECTION),

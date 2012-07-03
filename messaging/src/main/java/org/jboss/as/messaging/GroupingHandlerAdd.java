@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
@@ -51,16 +50,6 @@ import org.jboss.msc.service.ServiceRegistry;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class GroupingHandlerAdd implements OperationStepHandler, DescriptionProvider {
-
-    /**
-     * Create an "add" operation using the existing model
-     */
-    public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
-
-        final ModelNode operation = org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, subModel);
-
-        return operation;
-    }
 
     public static final GroupingHandlerAdd INSTANCE = new GroupingHandlerAdd();
 

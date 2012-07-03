@@ -22,8 +22,7 @@
 
 package org.jboss.as.messaging;
 
-import java.util.EnumSet;
-import java.util.Locale;
+import static org.jboss.as.messaging.BroadcastGroupDefinition.GET_CONNECTOR_PAIRS_AS_JSON;
 
 import org.hornetq.api.core.management.BroadcastGroupControl;
 import org.hornetq.api.core.management.ResourceNames;
@@ -31,11 +30,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Handler for runtime operations that interact with a HornetQ {@link BroadcastGroupControl}.
@@ -46,22 +41,7 @@ public class BroadcastGroupControlHandler extends AbstractHornetQComponentContro
 
     public static final BroadcastGroupControlHandler INSTANCE = new BroadcastGroupControlHandler();
 
-    public static final String GET_CONNECTOR_PAIRS_AS_JSON = "get-connector-pairs-as-json";
-
     private BroadcastGroupControlHandler() {
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registry) {
-        super.register(registry);
-
-        registry.registerOperationHandler(GET_CONNECTOR_PAIRS_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, GET_CONNECTOR_PAIRS_AS_JSON,
-                        CommonAttributes.BROADCAST_GROUP, ModelType.STRING, false);
-            }
-        }, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY));
     }
 
     @Override

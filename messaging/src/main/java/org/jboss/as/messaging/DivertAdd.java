@@ -22,11 +22,9 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.core.config.Configuration;
@@ -38,7 +36,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -51,17 +48,7 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DivertAdd extends AbstractAddStepHandler implements DescriptionProvider {
-
-    /**
-     * Create an "add" operation using the existing model
-     */
-    public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
-
-        final ModelNode operation = org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, subModel);
-
-        return operation;
-    }
+public class DivertAdd extends AbstractAddStepHandler {
 
     public static final DivertAdd INSTANCE = new DivertAdd();
 
@@ -72,7 +59,7 @@ public class DivertAdd extends AbstractAddStepHandler implements DescriptionProv
 
         model.setEmptyObject();
 
-        for (final AttributeDefinition attributeDefinition : CommonAttributes.DIVERT_ATTRIBUTES) {
+        for (final AttributeDefinition attributeDefinition : DivertDefinition.ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);
         }
     }
@@ -102,11 +89,6 @@ public class DivertAdd extends AbstractAddStepHandler implements DescriptionProv
         // handler that calls addDivertConfigs
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getDivertAdd(locale);
-    }
-
     static void addDivertConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
         if (model.hasDefined(CommonAttributes.DIVERT)) {
             final List<DivertConfiguration> configs = configuration.getDivertConfigurations();
@@ -118,11 +100,11 @@ public class DivertAdd extends AbstractAddStepHandler implements DescriptionProv
     }
 
     static DivertConfiguration createDivertConfiguration(final OperationContext context, String name, ModelNode model) throws OperationFailedException {
-        final ModelNode routingNode = CommonAttributes.ROUTING_NAME.resolveModelAttribute(context, model);
+        final ModelNode routingNode = DivertDefinition.ROUTING_NAME.resolveModelAttribute(context, model);
         final String routingName = routingNode.isDefined() ? routingNode.asString() : null;
-        final String address = CommonAttributes.DIVERT_ADDRESS.resolveModelAttribute(context, model).asString();
-        final String forwardingAddress = CommonAttributes.DIVERT_FORWARDING_ADDRESS.resolveModelAttribute(context, model).asString();
-        final boolean exclusive = CommonAttributes.EXCLUSIVE.resolveModelAttribute(context, model).asBoolean();
+        final String address = DivertDefinition.ADDRESS.resolveModelAttribute(context, model).asString();
+        final String forwardingAddress = DivertDefinition.FORWARDING_ADDRESS.resolveModelAttribute(context, model).asString();
+        final boolean exclusive = DivertDefinition.EXCLUSIVE.resolveModelAttribute(context, model).asBoolean();
         final ModelNode filterNode = CommonAttributes.FILTER.resolveModelAttribute(context, model);
         final String filter = filterNode.isDefined() ? filterNode.asString() : null;
         final ModelNode transformerNode =  CommonAttributes.TRANSFORMER_CLASS_NAME.resolveModelAttribute(context, model);

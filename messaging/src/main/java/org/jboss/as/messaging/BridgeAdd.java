@@ -22,14 +22,11 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -40,7 +37,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -53,17 +49,7 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProvider {
-
-    /**
-     * Create an "add" operation using the existing model
-     */
-    public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
-
-        final ModelNode operation = org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, subModel);
-
-        return operation;
-    }
+public class BridgeAdd extends AbstractAddStepHandler {
 
     public static final BridgeAdd INSTANCE = new BridgeAdd();
 
@@ -84,7 +70,7 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
                     ConnectorRefsAttribute.BRIDGE_CONNECTORS.getName(), CommonAttributes.DISCOVERY_GROUP_NAME.getName())));
         }
 
-        for (final AttributeDefinition attributeDefinition : CommonAttributes.BRIDGE_ATTRIBUTES) {
+        for (final AttributeDefinition attributeDefinition : BridgeDefinition.ATTRIBUTES) {
             if (hasDiscGroup && attributeDefinition == ConnectorRefsAttribute.BRIDGE_CONNECTORS) {
                 continue;
             } else if (hasStatic && attributeDefinition == CommonAttributes.DISCOVERY_GROUP_NAME) {
@@ -119,11 +105,6 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
         // handler that calls addBridgeConfigs
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getBridgeAdd(locale);
-    }
-
     static void addBridgeConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
         if (model.hasDefined(CommonAttributes.BRIDGE)) {
             final List<BridgeConfiguration> configs = configuration.getBridgeConfigurations();
@@ -136,8 +117,8 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
 
     static BridgeConfiguration createBridgeConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
-        final String queueName = CommonAttributes.QUEUE_NAME.resolveModelAttribute(context, model).asString();
-        final ModelNode forwardingNode = CommonAttributes.BRIDGE_FORWARDING_ADDRESS.resolveModelAttribute(context, model);
+        final String queueName = BridgeDefinition.QUEUE_NAME.resolveModelAttribute(context, model).asString();
+        final ModelNode forwardingNode = BridgeDefinition.FORWARDING_ADDRESS.resolveModelAttribute(context, model);
         final String forwardingAddress = forwardingNode.isDefined() ? forwardingNode.asString() : null;
         final ModelNode filterNode = CommonAttributes.FILTER.resolveModelAttribute(context, model);
         final String filterString = filterNode.isDefined() ? filterNode.asString() : null;
@@ -147,8 +128,8 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
         final long retryInterval = CommonAttributes.RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
         final double retryIntervalMultiplier = CommonAttributes.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, model).asDouble();
         final long maxRetryInterval = CommonAttributes.MAX_RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
-        final int reconnectAttempts = CommonAttributes.BRIDGE_RECONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt();
-        final boolean useDuplicateDetection = CommonAttributes.BRIDGE_USE_DUPLICATE_DETECTION.resolveModelAttribute(context, model).asBoolean();
+        final int reconnectAttempts = BridgeDefinition.RECONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt();
+        final boolean useDuplicateDetection = BridgeDefinition.USE_DUPLICATE_DETECTION.resolveModelAttribute(context, model).asBoolean();
         final int confirmationWindowSize = CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
         final long clientFailureCheckPeriod = CommonAttributes.CHECK_PERIOD.resolveModelAttribute(context, model).asLong();
         final long connectionTTL = CommonAttributes.CONNECTION_TTL.resolveModelAttribute(context, model).asLong();
@@ -156,8 +137,8 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
         final String discoveryGroupName = discoveryNode.isDefined() ? discoveryNode.asString() : null;
         List<String> staticConnectors = discoveryGroupName == null ? getStaticConnectors(model) : null;
         final boolean ha = CommonAttributes.HA.resolveModelAttribute(context, model).asBoolean();
-        final String user = CommonAttributes.USER.resolveModelAttribute(context, model).asString();
-        final String password = CommonAttributes.PASSWORD.resolveModelAttribute(context, model).asString();
+        final String user = BridgeDefinition.USER.resolveModelAttribute(context, model).asString();
+        final String password = BridgeDefinition.PASSWORD.resolveModelAttribute(context, model).asString();
 
         if (discoveryGroupName != null) {
             return new BridgeConfiguration(name, queueName, forwardingAddress, filterString, transformerClassName,

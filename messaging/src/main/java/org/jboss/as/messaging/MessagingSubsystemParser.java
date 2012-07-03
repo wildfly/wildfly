@@ -513,7 +513,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case HA:
                 case TRANSFORMER_CLASS_NAME:
                 case RETRY_INTERVAL_MULTIPLIER:
-                case FAILOVER_ON_SERVER_SHUTDOWN:
                 case CONFIRMATION_WINDOW_SIZE:
                 case USER:
                 case PASSWORD:
@@ -541,6 +540,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     checkOtherElementIsNotAlreadyDefined(reader, seen, Element.DISCOVERY_GROUP_REF, Element.STATIC_CONNECTORS);
                     final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
                     DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, bridgeAdd, reader);
+                    break;
+                }
+                case FAILOVER_ON_SERVER_SHUTDOWN: {
+                    MessagingLogger.ROOT_LOGGER.deprecatedXMLElement(element.toString());
+                    skipElementText(reader);
                     break;
                 }
                 default: {
@@ -1274,7 +1278,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 }
                 case ADDRESS: {
-                    handleElementText(reader, element, CommonAttributes.DIVERT_ADDRESS.getName(), divertAdd);
+                    handleElementText(reader, element, DivertDefinition.ADDRESS.getName(), divertAdd);
                     break;
                 }
                 case FORWARDING_ADDRESS: {
@@ -1542,7 +1546,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 writer.writeStartElement(Element.BRIDGE.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                 final ModelNode bridge = property.getValue();
-                for (AttributeDefinition attribute : CommonAttributes.BRIDGE_ATTRIBUTES) {
+                for (AttributeDefinition attribute : BridgeDefinition.ATTRIBUTES) {
                     if (CommonAttributes.FILTER == attribute) {
                         writeFilter(writer, property.getValue());
                     } else if (attribute == CommonAttributes.DISCOVERY_GROUP_NAME) {
@@ -1836,7 +1840,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             for(final Property property : properties) {
                 writer.writeStartElement(Element.BROADCAST_GROUP.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                for (AttributeDefinition attribute : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
+                for (AttributeDefinition attribute : BroadcastGroupDefinition.ATTRIBUTES) {
                     attribute.marshallAsElement(property.getValue(), writer);
                 }
                 writer.writeEndElement();
@@ -1853,7 +1857,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             for(final Property property : properties) {
                 writer.writeStartElement(Element.DISCOVERY_GROUP.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                for (AttributeDefinition attribute : CommonAttributes.DISCOVERY_GROUP_ATTRIBUTES) {
+                for (AttributeDefinition attribute : DiscoveryGroupDefinition.ATTRIBUTES) {
                     attribute.marshallAsElement(property.getValue(), writer);
                 }
                 writer.writeEndElement();
@@ -1870,7 +1874,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             for(final Property property : properties) {
                 writer.writeStartElement(Element.DIVERT.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                for (AttributeDefinition attribute : CommonAttributes.DIVERT_ATTRIBUTES) {
+                for (AttributeDefinition attribute : DivertDefinition.ATTRIBUTES) {
                     if (CommonAttributes.FILTER == attribute) {
                         writeFilter(writer, property.getValue());
                     } else {

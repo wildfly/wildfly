@@ -43,7 +43,7 @@ public enum Element {
    UNKNOWN((String) null),
    // Messaging 1.0 elements in alpha order
    ACCEPTORS(CommonAttributes.ACCEPTORS),
-   ADDRESS(getAttributeDefinitions(CommonAttributes.QUEUE_ADDRESS, CommonAttributes.DIVERT_ADDRESS,
+   ADDRESS(getAttributeDefinitions(CommonAttributes.QUEUE_ADDRESS, DivertDefinition.ADDRESS,
            CommonAttributes.GROUPING_HANDLER_ADDRESS, CommonAttributes.CLUSTER_CONNECTION_ADDRESS)),
    ADDRESS_SETTINGS(CommonAttributes.ADDRESS_SETTINGS),
    ALLOW_FAILBACK(CommonAttributes.ALLOW_FAILBACK),
@@ -54,7 +54,7 @@ public enum Element {
    BRIDGES(CommonAttributes.BRIDGES),
    BROADCAST_GROUP(CommonAttributes.BROADCAST_GROUP),
    BROADCAST_GROUPS(CommonAttributes.BROADCAST_GROUPS),
-   BROADCAST_PERIOD(CommonAttributes.BROADCAST_PERIOD),
+   BROADCAST_PERIOD(BroadcastGroupDefinition.BROADCAST_PERIOD),
    CLASS_NAME(CommonAttributes.CLASS_NAME),
    CLUSTERED(CommonAttributes.CLUSTERED),
    CLUSTER_CONNECTION(CommonAttributes.CLUSTER_CONNECTION),
@@ -73,7 +73,7 @@ public enum Element {
    DIVERT(CommonAttributes.DIVERT),
    DIVERTS(CommonAttributes.DIVERTS),
    DURABLE(CommonAttributes.DURABLE),
-   EXCLUSIVE(CommonAttributes.EXCLUSIVE),
+   EXCLUSIVE(DivertDefinition.EXCLUSIVE),
    FAILBACK_DELAY(CommonAttributes.FAILBACK_DELAY),
    FAILOVER_ON_SHUTDOWN(CommonAttributes.FAILOVER_ON_SHUTDOWN),
    FILE_DEPLOYMENT_ENABLED(CommonAttributes.FILE_DEPLOYMENT_ENABLED),
@@ -84,7 +84,7 @@ public enum Element {
    GROUPING_HANDLER(CommonAttributes.GROUPING_HANDLER),
    HORNETQ_SERVER(CommonAttributes.HORNETQ_SERVER),
    ID_CACHE_SIZE(CommonAttributes.ID_CACHE_SIZE),
-   INITIAL_WAIT_TIMEOUT(CommonAttributes.INITIAL_WAIT_TIMEOUT),
+   INITIAL_WAIT_TIMEOUT(DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT),
    IN_VM_ACCEPTOR(CommonAttributes.IN_VM_ACCEPTOR),
    IN_VM_CONNECTOR(CommonAttributes.IN_VM_CONNECTOR),
    JMX_DOMAIN(CommonAttributes.JMX_DOMAIN),
@@ -125,9 +125,9 @@ public enum Element {
    PERSIST_ID_CACHE(CommonAttributes.PERSIST_ID_CACHE),
    PERSISTENCE_ENABLED(CommonAttributes.PERSISTENCE_ENABLED),
    QUEUE(CommonAttributes.QUEUE),
-   REFRESH_TIMEOUT(CommonAttributes.REFRESH_TIMEOUT),
+   REFRESH_TIMEOUT(DiscoveryGroupDefinition.REFRESH_TIMEOUT),
    REMOTING_INTERCEPTORS(CommonAttributes.REMOTING_INTERCEPTORS),
-   ROUTING_NAME(CommonAttributes.ROUTING_NAME),
+   ROUTING_NAME(DivertDefinition.ROUTING_NAME),
    RUN_SYNC_SPEED_TEST(CommonAttributes.RUN_SYNC_SPEED_TEST),
    SECURITY_DOMAIN(CommonAttributes.SECURITY_DOMAIN),
    SECURITY_ENABLED(CommonAttributes.SECURITY_ENABLED),
@@ -202,7 +202,7 @@ public enum Element {
    PRE_ACK(CommonAttributes.PRE_ACK),
    PRODUCER_WINDOW_SIZE(CommonAttributes.PRODUCER_WINDOW_SIZE),
    PRODUCER_MAX_RATE(CommonAttributes.PRODUCER_MAX_RATE),
-   QUEUE_NAME(CommonAttributes.QUEUE_NAME),
+   QUEUE_NAME(BridgeDefinition.QUEUE_NAME),
    RECONNECT_ATTEMPTS(getReconnectAttemptsDefinitions()),
    RETRY_INTERVAL(getRetryIntervalDefinitions()),
    RETRY_INTERVAL_MULTIPLIER(getRetryIntervalMultiplierDefinitions()),
@@ -356,7 +356,7 @@ public enum Element {
     private static Map<String, AttributeDefinition> getReconnectAttemptsDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("connection", CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS);
-        result.put("bridge", CommonAttributes.BRIDGE_RECONNECT_ATTEMPTS);
+        result.put("bridge", BridgeDefinition.RECONNECT_ATTEMPTS);
         result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_RECONNECT_ATTEMPTS);
         return result;
 
@@ -364,8 +364,8 @@ public enum Element {
 
     private static Map<String, AttributeDefinition> getForwardingAddressDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("divert", CommonAttributes.DIVERT_FORWARDING_ADDRESS);
-        result.put("bridge", CommonAttributes.BRIDGE_FORWARDING_ADDRESS);
+        result.put("divert", DivertDefinition.FORWARDING_ADDRESS);
+        result.put("bridge", BridgeDefinition.FORWARDING_ADDRESS);
         return result;
 
     }
@@ -373,7 +373,7 @@ public enum Element {
     private static Map<String, AttributeDefinition> getDuplicateDetectionDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_USE_DUPLICATE_DETECTION);
-        result.put("bridge", CommonAttributes.BRIDGE_USE_DUPLICATE_DETECTION);
+        result.put("bridge", BridgeDefinition.USE_DUPLICATE_DETECTION);
         return result;
 
     }
@@ -417,7 +417,7 @@ public enum Element {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("source", JMSBridgeDefinition.SOURCE_USER);
         result.put("target", JMSBridgeDefinition.TARGET_USER);
-        result.put("default", CommonAttributes.USER);
+        result.put("default", BridgeDefinition.USER);
         return result;
     }
 
@@ -425,7 +425,7 @@ public enum Element {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("source", JMSBridgeDefinition.SOURCE_PASSWORD);
         result.put("target", JMSBridgeDefinition.TARGET_PASSWORD);
-        result.put("default", CommonAttributes.PASSWORD);
+        result.put("default", BridgeDefinition.PASSWORD);
         return result;
     }
 

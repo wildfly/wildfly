@@ -279,38 +279,10 @@ class MessagingSubsystemProviders {
         }
     };
 
-    public static final DescriptionProvider DIVERT_RESOURCE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getDivertResource(locale);
-        }
-    };
-
-    public static final DescriptionProvider BROADCAST_GROUP_RESOURCE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getBroadcastGroupResource(locale);
-        }
-    };
-
-    public static final DescriptionProvider DISCOVERY_GROUP_RESOURCE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getDiscoveryGroupResource(locale);
-        }
-    };
-
     public static final DescriptionProvider GROUPING_HANDLER_RESOURCE = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return MessagingDescriptions.getGroupingHandlerResource(locale);
-        }
-    };
-
-    public static final DescriptionProvider BRIDGE_RESOURCE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getBridgeResource(locale);
         }
     };
 
