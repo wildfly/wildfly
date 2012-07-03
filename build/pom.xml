@@ -1787,7 +1787,7 @@
         <profile>
             <id>javadocDist</id>
             <properties>
-                <javadoc.branding>JBoss Application Server public API - ${version}</javadoc.branding>
+                <javadoc.branding>JBoss Application Server public API - ${project.version}</javadoc.branding>
             </properties>
             <build>
                 <plugins>
