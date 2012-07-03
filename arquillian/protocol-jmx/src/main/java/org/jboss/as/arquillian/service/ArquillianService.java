@@ -53,6 +53,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.resolver.XBundle;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -87,6 +88,7 @@ public class ArquillianService implements Service<ArquillianService> {
         return serviceContainer;
     }
 
+    @Override
     public synchronized void start(StartContext context) throws StartException {
         log.debugf("Starting Arquillian Test Runner");
 
@@ -129,6 +131,7 @@ public class ArquillianService implements Service<ArquillianService> {
         serviceContainer.addListener(listener);
     }
 
+    @Override
     public synchronized void stop(StopContext context) {
         log.debugf("Stopping Arquillian Test Runner");
         try {
@@ -209,12 +212,13 @@ public class ArquillianService implements Service<ArquillianService> {
 
         private ContextManager initializeContextManager(final ArquillianConfig config, final Map<String, Object> properties) {
             final ContextManagerBuilder builder = new ContextManagerBuilder();
-            final DeploymentUnit deployment = config.getDeploymentUnit();
-            final Module module = deployment.getAttachment(Attachments.MODULE);
-            if (module != null) {
+            final DeploymentUnit depUnit = config.getDeploymentUnit();
+            final XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
+            final Module module = depUnit.getAttachment(Attachments.MODULE);
+            if (bundle == null && module != null) {
                 builder.add(new TCCLSetupAction(module.getClassLoader()));
             }
-            builder.addAll(deployment);
+            builder.addAll(depUnit);
             ContextManager contextManager = builder.build();
             contextManager.setup(properties);
             return contextManager;

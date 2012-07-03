@@ -22,56 +22,47 @@
 
 package org.jboss.as.osgi.deployment;
 
-import java.io.IOException;
-import java.util.Properties;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
-import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.modules.Module;
+import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XBundleRevision;
+import org.osgi.framework.wiring.BundleWiring;
 
 /**
- * Processes deployments that contain META-INF/jbosgi-xservice.properties
+ * Attempt to resolve an OSGi deployment.
+ *
+ * If successful attach the resulting {@link BundleWiring}.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 20-Sep-2010
+ * @since 20-Jun-2012
  */
-public class OSGiXServiceParseProcessor implements DeploymentUnitProcessor {
-
-    public static final String XSERVICE_PROPERTIES_NAME = "META-INF/jbosgi-xservice.properties";
+public class ConfigureResolvedBundleProcessor implements DeploymentUnitProcessor {
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        // Check if we already have an OSGi deployment
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (depUnit.hasAttachment(Attachments.OSGI_METADATA))
+        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
+        if (bundle == null || bundle.isResolved() == false)
             return;
 
-        // Get the OSGi XService properties
-        VirtualFile virtualFile = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        VirtualFile xserviceFile = virtualFile.getChild(XSERVICE_PROPERTIES_NAME);
-        if (xserviceFile.exists() == false)
+        // No {@link Module} attachment for OSGi deployments that use content delegation
+        ModuleSpecification moduleSpec = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        if (moduleSpec.getResourceRootDelegation() != null)
             return;
 
-        try {
-            Properties props = new Properties();
-            props.load(xserviceFile.openStream());
-            OSGiMetaData metadata = OSGiMetaDataBuilder.load(props);
-            depUnit.putAttachment(Attachments.OSGI_METADATA, metadata);
-        } catch (IOException ex) {
-            throw MESSAGES.cannotParseOSGiMetadata(ex, xserviceFile);
-        }
+        XBundleRevision brev = bundle.getBundleRevision();
+        Module module = brev.getModuleClassLoader().getModule();
+        depUnit.putAttachment(Attachments.MODULE_IDENTIFIER, module.getIdentifier());
+        depUnit.putAttachment(Attachments.MODULE, module);
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        depUnit.removeAttachment(Attachments.OSGI_METADATA);
     }
 }
