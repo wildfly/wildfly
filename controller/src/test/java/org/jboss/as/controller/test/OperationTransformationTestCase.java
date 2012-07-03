@@ -38,15 +38,19 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationTransformerRegistry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
+import org.jboss.as.controller.transform.DomainModelTransformers;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformerRegistry;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.Locale;
 
 /**
@@ -56,7 +60,18 @@ public class OperationTransformationTestCase {
 
     private static final PathAddress TEST_DISCARD = PathAddress.pathAddress(PathElement.pathElement("test", "discard"));
     private static final PathAddress TEST_NORMAL = PathAddress.pathAddress(PathElement.pathElement("test", "normal"));
-    private static final ModelNode AS_7_1_1_SUBSYSTEM_VERSIONS = TransformerRegistry.AS_7_1_1_SUBSYSTEM_VERSIONS;
+    private static final ModelNode subsystems = new ModelNode();
+
+    static {
+        // Same subsystem response
+        subsystems.add("test", "1.0.0");
+        subsystems.add("modcluster", "1.1");
+        subsystems.add("naming", "1.0");
+        subsystems.add("osgi", "1.0");
+        subsystems.add("pojo", "1.0");
+        subsystems.add("remoting", "1.1");
+        subsystems.add("resource-adapters", "1.1");
+    }
 
     private final GlobalTransformerRegistry registry = new GlobalTransformerRegistry();
     private final ManagementResourceRegistration resourceRegistration = ManagementResourceRegistration.Factory.create(ROOT);
@@ -115,9 +130,8 @@ public class OperationTransformationTestCase {
 
     @Test
     public void testMergeSubTree() {
-        final ModelNode subsystems = new ModelNode();
         final PathAddress address = PathAddress.pathAddress(PathElement.pathElement("subsystem", "test"));
-        final OperationTransformerRegistry localRegistry = registry.resolve(ModelVersion.create(1, 0, 0), subsystems.setEmptyList());
+        final OperationTransformerRegistry localRegistry = registry.create(ModelVersion.create(1, 0, 0), Collections.<PathAddress, ModelVersion>emptyMap());
 
         OperationTransformerRegistry.OperationTransformerEntry entry = localRegistry.resolveOperationTransformer(address, "testing");
         Assert.assertEquals(OperationTransformerRegistry.TransformationPolicy.FORWARD, entry.getPolicy());
@@ -130,13 +144,38 @@ public class OperationTransformationTestCase {
 
     }
 
+    @Test
+    public void testGetSubRegistry() {
+        final PathAddress profile = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.PROFILE));
+        final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "test"));
+
+        final OperationTransformer transformer = new AbstractOperationTransformer() {
+            @Override
+            protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
+                return operation;
+            }
+        };
+        final DomainModelTransformers transformers = new DomainModelTransformers();
+
+        final TransformersSubRegistration subsystem = transformers.registerSubsystemTransformers("test", ModelVersion.create(1), ResourceTransformer.ORIGINAL);
+        subsystem.registerOperationTransformer("test", transformer);
+
+        final OperationTransformerRegistry server = transformers.resolveServer(ModelVersion.create(1, 2, 3), subsystems);
+        Assert.assertNotNull(server);
+        Assert.assertEquals(transformer, server.resolveOperationTransformer(address, "test").getTransformer());
+        final OperationTransformerRegistry host = transformers.resolveHost(ModelVersion.create(1, 2, 3), subsystems);
+        Assert.assertNotNull(host);
+        Assert.assertNotSame(transformer, host.resolveOperationTransformer(address, "test").getTransformer());
+        Assert.assertEquals(transformer, host.resolveOperationTransformer(profile.append(address), "test").getTransformer());
+    }
+
     protected ModelNode transform(final ModelNode operation, int major, int minor) {
         return transform(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)), operation, major, minor);
     }
 
     protected ModelNode transform(final PathAddress address, final ModelNode operation, int major, int minor) {
         final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
-        final OperationTransformerRegistry transformerRegistry = registry.resolve(ModelVersion.create(major, minor), AS_7_1_1_SUBSYSTEM_VERSIONS);
+        final OperationTransformerRegistry transformerRegistry = registry.create(ModelVersion.create(major, minor), Collections.<PathAddress, ModelVersion>emptyMap());
         final OperationTransformerRegistry.OperationTransformerEntry entry = transformerRegistry.resolveOperationTransformer(address, operationName);
         if(entry.getPolicy() == OperationTransformerRegistry.TransformationPolicy.DISCARD) {
             return null;

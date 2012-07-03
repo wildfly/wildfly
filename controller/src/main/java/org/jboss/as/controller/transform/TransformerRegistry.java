@@ -5,7 +5,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.registry.GlobalTransformerRegistry;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.LegacyResourceDefinition;
 import org.jboss.as.controller.registry.Resource;
@@ -28,7 +27,7 @@ public final class TransformerRegistry {
     private static TransformerRegistry INSTANCE;
     private final SimpleFullModelTransformer modelTransformer;
     private final ExtensionRegistry extensionRegistry;
-    private final GlobalTransformerRegistry transformerRegistry = new GlobalTransformerRegistry();
+    private final DomainModelTransformers transformerRegistry = new DomainModelTransformers();
 
     private TransformerRegistry(final ExtensionRegistry extensionRegistry) {
         this.modelTransformer = new SimpleFullModelTransformer(extensionRegistry);
@@ -40,7 +39,7 @@ public final class TransformerRegistry {
         return INSTANCE;
     }
 
-    public GlobalTransformerRegistry getSubsystemTransformers() {
+    public DomainModelTransformers getDomainTransformers() {
         return transformerRegistry;
     }
 
@@ -120,7 +119,8 @@ public final class TransformerRegistry {
         subsystemTransformers.putIfAbsent(subsystemName, new LinkedList<SubsystemTransformer>());
         List<SubsystemTransformer> transformers = subsystemTransformers.get(subsystemName);
         transformers.add(subsystemModelTransformer);
-
+//        final ModelVersion version = ModelVersion.create(subsystemModelTransformer.getMajorManagementVersion(), subsystemModelTransformer.getMinorManagementVersion(), subsystemModelTransformer.getMicroManagementVersion());
+//        transformerRegistry.registerSubsystemTransformers(subsystemName, version, subsystemModelTransformer);
     }
 
     public Resource getTransformedResource(Resource resource, final ImmutableManagementResourceRegistration resourceRegistration, Map<String, String> subsystemVersions) {

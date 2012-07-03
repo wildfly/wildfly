@@ -25,19 +25,32 @@ public class TransformationTargetImpl implements TransformationTarget {
     private final Map<String, String> subsystemVersions = Collections.synchronizedMap(new HashMap<String, String>());
     private final OperationTransformerRegistry operationTransformers;
 
-    private TransformationTargetImpl(final ModelVersion version, final ModelNode subsystemVersions) {
+    private TransformationTargetImpl(final ModelVersion version, final ModelNode subsystemVersions, final OperationTransformerRegistry transformers) {
         this.version = version;
         this.transformerRegistry = TransformerRegistry.getInstance();
         this.extensionRegistry = transformerRegistry.getExtensionRegistry();
         for (Property p : subsystemVersions.asPropertyList()) {
             this.subsystemVersions.put(p.getName(), p.getValue().asString());
         }
-        this.operationTransformers = transformerRegistry.getSubsystemTransformers().resolve(version, subsystemVersions);
+        this.operationTransformers = transformers;
     }
 
+    public static TransformationTargetImpl create(final ModelVersion version, final ModelNode subsystems, final TransformationTargetType type) {
+        final OperationTransformerRegistry registry;
+        switch (type) {
+            case SERVER:
+                registry = TransformerRegistry.getInstance().getDomainTransformers().resolveServer(version, subsystems);
+                break;
+            default:
+                registry = TransformerRegistry.getInstance().getDomainTransformers().resolveHost(version, subsystems);
+        }
+        return new TransformationTargetImpl(version, subsystems, registry);
+    }
+
+    @Deprecated
     public static TransformationTargetImpl create(final int majorManagementVersion, final int minorManagementVersion,
                                                   int microManagementVersion, final ModelNode subsystemVersions) {
-        return new TransformationTargetImpl(ModelVersion.create(majorManagementVersion, minorManagementVersion, microManagementVersion), subsystemVersions);
+        return create(ModelVersion.create(majorManagementVersion, minorManagementVersion, microManagementVersion), subsystemVersions, TransformationTargetType.HOST);
     }
 
     @Override
@@ -58,13 +71,9 @@ public class TransformationTargetImpl implements TransformationTarget {
     @Override
     public OperationTransformer resolveTransformer(final PathAddress address, final String operationName) {
         if(address.size() == 0) {
+            // TODO use operationTransformers registry to register this operations.
             if(ModelDescriptionConstants.COMPOSITE.equals(operationName)) {
                 return new CompositeOperationTransformer();
-            }
-        } else if (address.size() > 1) {
-            if(ModelDescriptionConstants.PROFILE.equals(address.getElement(0).getKey())) {
-                final OperationTransformerRegistry.OperationTransformerEntry entry = operationTransformers.resolveOperationTransformer(address.subAddress(1), operationName);
-                return entry.getTransformer();
             }
         }
         final OperationTransformerRegistry.OperationTransformerEntry entry = operationTransformers.resolveOperationTransformer(address, operationName);
@@ -105,7 +114,6 @@ public class TransformationTargetImpl implements TransformationTarget {
     public void addSubsystemVersion(String subsystemName, int majorVersion, int minorVersion) {
         StringBuilder sb = new StringBuilder(String.valueOf(majorVersion)).append('.').append(minorVersion);
         this.subsystemVersions.put(subsystemName, sb.toString());
-        // Merge a new subsystem
-        operationTransformers.mergeSubsystem(transformerRegistry.getSubsystemTransformers(), subsystemName, ModelVersion.create(majorVersion, minorVersion));
+        transformerRegistry.getDomainTransformers().addSubsystem(operationTransformers, subsystemName, ModelVersion.create(majorVersion, minorVersion));
     }
 }

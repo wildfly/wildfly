@@ -22,13 +22,9 @@
 
 package org.jboss.as.controller.transform;
 
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.ModelVersionRange;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import org.jboss.as.controller.registry.GlobalTransformerRegistry;
 
 /**
  * Registration for subsystem specific operation transformers.
@@ -79,53 +75,5 @@ public interface TransformersSubRegistration {
      * @param transformer the operation transformer
      */
     void registerOperationTransformer(String operationName, OperationTransformer transformer);
-
-    public class TransformersSubRegistrationImpl implements TransformersSubRegistration {
-
-        private final PathAddress current;
-        private final ModelVersionRange range;
-        private final GlobalTransformerRegistry registry;
-
-        public TransformersSubRegistrationImpl(ModelVersionRange range, GlobalTransformerRegistry registry, PathAddress parent) {
-            this.range = range;
-            this.registry = registry;
-            this.current = parent;
-        }
-
-        @Override
-        public TransformersSubRegistration registerSubResource(PathElement element) {
-            return registerSubResource(element, false);
-        }
-
-        @Override
-        public TransformersSubRegistration registerSubResource(PathElement element, boolean discard) {
-            return registerSubResource(element, null);
-        }
-
-        @Override
-        public TransformersSubRegistration registerSubResource(PathElement element, OperationTransformer operationTransformer) {
-            final PathAddress address = current.append(element);
-            for(final ModelVersion version : range.getVersions()) {
-                registry.createChildRegistry(address, version, operationTransformer);
-            }
-            return new TransformersSubRegistrationImpl(range, registry, address);
-        }
-
-        @Override
-        public void discardOperations(String... operationNames) {
-            for(final ModelVersion version : range.getVersions()) {
-                for(final String operationName : operationNames) {
-                    registry.discardOperation(current, version, operationName);
-                }
-            }
-        }
-
-        @Override
-        public void registerOperationTransformer(String operationName, OperationTransformer transformer) {
-            for(final ModelVersion version : range.getVersions()) {
-                registry.registerTransformer(current, version, operationName, transformer);
-            }
-        }
-    }
 
 }
