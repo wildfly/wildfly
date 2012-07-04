@@ -53,7 +53,8 @@ if [ "x$JAVA" = "x" ]; then
     if [ "x$JAVA_HOME" != "x" ]; then
         JAVA="$JAVA_HOME/bin/java"
     else
-        JAVA="java"
+        echo "JAVA_HOME is not set. Unable to locate the jars needed to run jconsole."
+        exit 2
     fi
 fi
 
