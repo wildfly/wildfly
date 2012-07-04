@@ -31,6 +31,7 @@
         <system export="true">
             <paths>
                 <path name="com/sun/script/javascript"/>
+                <path name="com/sun/image/codec/jpeg"/>
                 <path name="com/sun/jndi/dns"/>
                 <path name="com/sun/jndi/ldap"/>
                 <path name="com/sun/jndi/url"/>
