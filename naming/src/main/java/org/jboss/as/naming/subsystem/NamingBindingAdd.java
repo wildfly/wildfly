@@ -21,7 +21,17 @@
  */
 package org.jboss.as.naming.subsystem;
 
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CLASS;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.LOOKUP;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
+
 import java.util.Arrays;
+import java.util.Hashtable;
 import java.util.List;
 
 import javax.naming.InitialContext;
@@ -42,6 +52,7 @@ import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -50,19 +61,11 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CLASS;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.LOOKUP;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
-
 /**
  * A {@link org.jboss.as.controller.AbstractAddStepHandler} to handle the add operation for simple JNDI bindings
  *
  * @author Stuart Douglas
+ * @author Eduardo Martins
  */
 public class NamingBindingAdd extends AbstractAddStepHandler {
 
@@ -170,12 +173,14 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
+        final Hashtable<String, String> environment = getObjectFactoryEnvironment(context,model);
+
         final BinderService binderService = new BinderService(name, objectFactoryClassInstance);
         binderService.getManagedObjectInjector().inject(new ManagedReferenceFactory() {
             @Override
             public ManagedReference getReference() {
                 try {
-                    final Object value = objectFactoryClassInstance.getObjectInstance(name, null, null, null);
+                    final Object value = objectFactoryClassInstance.getObjectInstance(name, null, null, environment);
                     return new ValueManagedReference(new ImmediateValue<Object>(value));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -198,6 +203,19 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         }
     }
 
+    private Hashtable<String, String> getObjectFactoryEnvironment(OperationContext context, ModelNode model)
+            throws OperationFailedException {
+        Hashtable<String, String> environment = null;
+        ModelNode resolvedModelAttribute = NamingBindingResourceDefinition.OBJECT_FACTORY_ENV.resolveModelAttribute(context,
+                model);
+        if (resolvedModelAttribute.isDefined()) {
+            environment = new Hashtable<String, String>();
+            for (Property property : resolvedModelAttribute.asPropertyList()) {
+                environment.put(property.getName(), property.getValue().asString());
+            }
+        }
+        return environment;
+    }
 
     void installLookup(final OperationContext context, final String name, final ModelNode model, ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
@@ -271,6 +289,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         } else if (type.equals(OBJECT_FACTORY)) {
             model.get(MODULE).set(operation.require(MODULE).asString());
             model.get(CLASS).set(operation.require(CLASS).asString());
+            NamingBindingResourceDefinition.OBJECT_FACTORY_ENV.validateAndSet(operation, model);
         } else if (type.equals(LOOKUP)) {
             model.get(LOOKUP).set(operation.require(LOOKUP).asString());
         } else {

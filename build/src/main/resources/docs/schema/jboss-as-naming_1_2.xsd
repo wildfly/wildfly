@@ -84,6 +84,9 @@
     </xs:complexType>
 
     <xs:complexType name="objectFactoryType">
+        <xs:sequence>
+        	<xs:element name="environment" type="environmentType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence> 
         <xs:attribute name="name" type="xs:token" use="required">
             <xs:annotation>
                 <xs:documentation>
@@ -103,12 +106,40 @@
                 <xs:documentation>
                     The javax.naming.spi.ObjectFactory that provides the value.
                     Note that when getObjectInstance is invoked the first Object parameter
-                    will be equal to the JNDI name of this binding. All other parameters will
-                    be null.
+                    will be equal to the JNDI name of this binding. The second and third 
+                    parameters will always be null, while the last one, the environment, may 
+                    be populated using the environment type child element.
                 </xs:documentation>
             </xs:annotation>
-        </xs:attribute>
+        </xs:attribute>               
     </xs:complexType>
+
+	<xs:complexType name="environmentType">
+		<xs:annotation>
+			<xs:documentation>
+                <![CDATA[
+               Enclosing element for a list of environment properties.
+             ]]>
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="property" minOccurs="0" maxOccurs="unbounded"
+				type="propertyType" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="propertyType">
+		<xs:annotation>
+			<xs:documentation>
+                <![CDATA[
+               The property element allows for the specification of name/value environment properties, 
+               provided to the javax.naming.spi.ObjectFactory, when retrieving object instances.
+             ]]>
+			</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="name" type="xs:string" use="required" />
+		<xs:attribute name="value" type="xs:string" use="required" />
+	</xs:complexType>
 
     <xs:complexType name="lookupType">
         <xs:attribute name="name" type="xs:token" use="required">
