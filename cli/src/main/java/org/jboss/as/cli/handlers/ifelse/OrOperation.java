@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,14 +22,30 @@
 package org.jboss.as.cli.handlers.ifelse;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.dmr.ModelNode;
 
 /**
- *
- * @author Alexey Loubyansky
- */
-public interface Operand {
+*
+* @author Alexey Loubyansky
+*/
+class OrOperation extends BaseOperation {
+    OrOperation() {
+        super("||", 2);
+    }
 
-    Object resolveValue(CommandContext ctx, ModelNode response) throws CommandLineException;
+    @Override
+    public Object resolveValue(CommandContext ctx, ModelNode response) throws CommandLineException {
+        for(Operand operand : getOperands()) {
+            final Object value = operand.resolveValue(ctx, response);
+            if(!(value instanceof Boolean)) {
+                throw new CommandFormatException("Expected boolean value from " + operand + " but received " + value);
+            }
+            if(((Boolean)value)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

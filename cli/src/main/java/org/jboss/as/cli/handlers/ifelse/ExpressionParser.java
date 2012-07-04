@@ -22,8 +22,7 @@
 package org.jboss.as.cli.handlers.ifelse;
 
 
-import java.util.ArrayList;
-import java.util.List;
+import org.jboss.as.cli.CommandLineException;
 
 
 /**
@@ -46,8 +45,8 @@ public class ExpressionParser {
     private int pos;
     private BaseOperation lookedAheadOp;
 
-    public Operation parseExpression(String input) {
-//        System.out.println("parsing: '" + input + "'");
+    public Operation parseExpression(String input) throws CommandLineException {
+        //System.out.println("parsing: '" + input + "'");
         final String prevInput = this.input;
         final int prevPos = this.pos;
 
@@ -64,7 +63,7 @@ public class ExpressionParser {
             this.pos += prevPos + 2;
         }
 
-//        System.out.println("parsed: " + op);
+        //System.out.println("parsed: " + op);
         return op;
     }
 
@@ -74,7 +73,7 @@ public class ExpressionParser {
         lookedAheadOp = null;
     }
 
-    public Operation getNextOperationFor(Operand firstOperand) {
+    public Operation getNextOperationFor(Operand firstOperand) throws CommandLineException {
         if(firstOperand == null) {
             firstOperand = parseOperand();
             if(firstOperand == null) {
@@ -82,7 +81,7 @@ public class ExpressionParser {
             }
         }
         if(isEOL()) {
-            return null;
+            return (Operation) firstOperand;
         }
 
         final BaseOperation op;
@@ -118,7 +117,7 @@ public class ExpressionParser {
         return pos >= input.length();
     }
 
-    protected Operand parseOperand() {
+    protected Operand parseOperand() throws CommandLineException {
 
         skipWhitespaces();
         if(pos == input.length()) {
@@ -169,17 +168,14 @@ public class ExpressionParser {
         }
 
         final String op = input.substring(start, end);
-
-        Operand operand = new Operand() {
-            public String toString() {
-                return '\'' + op + '\'';
-            }
-        };
-
+        Operand operand;
         if(comparison != null) {
-            comparison.addOperand(operand);
+            // TODO this assumes the left one is always a path
+            comparison.addOperand(new ModelNodePathOperand(op));
             operand = comparison;
             comparison.addOperand(parseOperand());
+        } else {
+            operand = new StringValueOperand(op);
         }
 
         return operand;
@@ -191,25 +187,25 @@ public class ExpressionParser {
         }
         if(input.startsWith(EQ, pos)) {
             pos += 2;
-            return new ComparisonOperation(EQ);
+            return new EqualsOperation();
         } else if(input.startsWith(NOT_EQ, pos)) {
             pos += 2;
-            return new ComparisonOperation(NOT_EQ);
+            return new NotEqualsOperation();
         } else if(input.charAt(pos) == '>') {
             if(input.length() > pos + 1 && input.charAt(pos + 1) == '=') {
                 pos += 2;
-                return new ComparisonOperation(NLT);
+                return new NotLesserThanOperation();
             } else {
                 ++pos;
-                return new ComparisonOperation(GT);
+                return new GreaterThanOperation();
             }
         } else if(input.charAt(pos) == '<') {
             if(input.length() > pos + 1 && input.charAt(pos + 1) == '=') {
                 pos += 2;
-                return new ComparisonOperation(NGT);
+                return new NotGreaterThanOperation();
             } else {
                 ++pos;
-                return new ComparisonOperation(LT);
+                return new LesserThanOperation();
             }
         }
         return null;
@@ -224,7 +220,7 @@ public class ExpressionParser {
             return new AndOperation();
         } else if(input.startsWith(OR, pos)) {
             return new OrOperation();
-        } else if(input.startsWith(EQ, pos)) {
+/*        } else if(input.startsWith(EQ, pos)) {
             return new ComparisonOperation(EQ);
         } else if (input.startsWith(NOT_EQ, pos)) {
             return new ComparisonOperation(NOT_EQ);
@@ -238,96 +234,8 @@ public class ExpressionParser {
                 return new ComparisonOperation(NGT);
             }
             return new ComparisonOperation(LT);
-        } else {
-            throw new IllegalStateException("Unrecognized operation at " + pos + " in '" + input + "'");
-        }
-    }
-
-    protected BaseOperation getComparisonForPosition() {
-        if(input.startsWith(EQ, pos)) {
-            return new ComparisonOperation(EQ);
-        } else if(input.startsWith(NOT_EQ, pos)) {
-            return new ComparisonOperation(NOT_EQ);
-        } else if(input.charAt(pos) == '>') {
-            if(input.length() > pos + 1 && input.charAt(pos + 1) == '=') {
-                return new ComparisonOperation(NLT);
-            }
-            return new ComparisonOperation(GT);
-        } else if(input.charAt(pos) == '<') {
-            if(input.length() > pos + 1 && input.charAt(pos + 1) == '=') {
-                return new ComparisonOperation(NGT);
-            }
-            return new ComparisonOperation(LT);
-        } else {
-            throw new IllegalStateException("Unrecognized comparison at " + pos + " in '" + input + "'");
-        }
-    }
-
-    static class ComparisonOperation extends BaseOperation {
-        ComparisonOperation(String name) {
-            super(name, 8);
-        }
-    }
-
-    static class AndOperation extends BaseOperation {
-        AndOperation() {
-            super("&&", 4);
-        }
-    }
-
-    static class OrOperation extends BaseOperation {
-        OrOperation() {
-            super("||", 2);
-        }
-    }
-
-    abstract static class BaseOperation implements Operation, Comparable<Operation> {
-        private final String name;
-        private final int priority;
-        private final List<Operand> operands;
-
-        BaseOperation(String name, int priority) {
-            if(name == null) {
-                throw new IllegalArgumentException("name is null.");
-            }
-            this.name = name;
-            this.priority = priority;
-            operands = new ArrayList<Operand>();
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public int getPriority() {
-            return priority;
-        }
-
-        @Override
-        public List<Operand> getOperands() {
-            return operands;
-        }
-
-        protected void addOperand(Operand operand) {
-            if(operand == null) {
-                throw new IllegalArgumentException("operand can't be null.");
-            }
-            operands.add(operand);
-        }
-
-        @Override
-        public int compareTo(Operation o) {
-            if(o == null) {
-                throw new IllegalArgumentException("can't compare to null.");
-            }
-            return priority < o.getPriority() ? -1 : (priority > o.getPriority() ? 1 : 0);
-        }
-
-        @Override
-        public String toString() {
-            return '(' + name + ' ' + operands + ')';
+*/        } else {
+            throw new IllegalStateException("Unexpected operation at " + pos + " in '" + input + "'");
         }
     }
 }

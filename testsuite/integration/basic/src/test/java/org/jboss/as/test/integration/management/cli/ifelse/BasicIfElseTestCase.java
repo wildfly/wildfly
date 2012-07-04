@@ -75,7 +75,7 @@ public class BasicIfElseTestCase {
         }
     }
     protected String runIf(CommandContext ctx) throws Exception {
-        ctx.handle("if result.value==true of " + this.getReadPropertyReq());
+        ctx.handle("if result.value==\"true\" of " + this.getReadPropertyReq());
         ctx.handle(this.getWritePropertyReq("\"false\""));
         ctx.handle("else");
         ctx.handle(this.getWritePropertyReq("\"true\""));

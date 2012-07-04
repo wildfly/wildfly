@@ -21,15 +21,22 @@
  */
 package org.jboss.as.cli.handlers.ifelse;
 
-import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandLineException;
-import org.jboss.dmr.ModelNode;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface Operand {
+public class EqualsOperation extends ComparisonOperation {
 
-    Object resolveValue(CommandContext ctx, ModelNode response) throws CommandLineException;
+    EqualsOperation() {
+        super(ExpressionParser.EQ);
+    }
+
+    @Override
+    protected boolean compare(Object left, Object right) {
+        if(left == null) {
+            return right == null;
+        }
+        return left.equals(right);
+    }
 }

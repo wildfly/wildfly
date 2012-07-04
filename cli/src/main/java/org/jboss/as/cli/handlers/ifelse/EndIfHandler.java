@@ -82,14 +82,9 @@ public class EndIfHandler extends CommandHandlerWithHelp {
             throw new CommandLineException("The condition request is not available.");
         }
 
-        final String[] path = ifBlock.getConditionPath();
-        if(path == null || path.length == 0) {
-            throw new CommandLineException("The condition path is empty.");
-        }
-
-        final String value = ifBlock.getConditionValue();
-        if(value == null) {
-            throw new CommandLineException("The condition value is not specified.");
+        final Operation expression = ifBlock.getConditionExpression();
+        if(expression == null) {
+            throw new CommandLineException("The if expression is not available.");
         }
 
         ModelNode targetValue;
@@ -99,17 +94,12 @@ public class EndIfHandler extends CommandHandlerWithHelp {
             throw new CommandLineException("condition request failed", e);
         }
 
-        boolean pathExists = true;
-        for(String name : path) {
-            if(!targetValue.hasDefined(name)) {
-                pathExists = false;
-                break;
-            } else {
-                targetValue = targetValue.get(name);
-            }
+        final Object value = expression.resolveValue(ctx, targetValue);
+        if(value == null) {
+            throw new CommandLineException("if expression resolved to a null");
         }
 
-        if(pathExists && value.equals(targetValue.asString())) {
+        if(Boolean.TRUE.equals(value)) {
             ModelNode ifRequest = ifBlock.getIfRequest();
             if(ifRequest == null) {
                 if(batch.size() == 0) {
