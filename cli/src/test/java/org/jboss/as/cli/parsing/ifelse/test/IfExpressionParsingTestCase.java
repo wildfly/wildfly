@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.parsing.test;
+package org.jboss.as.cli.parsing.ifelse.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -50,7 +50,7 @@ public class IfExpressionParsingTestCase {
     private ExpressionParser parser = new ExpressionParser();
 
     @Test
-    public void testParenthesesMixed() {
+    public void testParenthesesMixed() throws Exception {
         parser.reset();
         Operation op = parser.parseExpression("((a==b || c<=d && e>f) && g!=h || i>=j) && (k<l && m>n || o==p)");
         assertOperation(op, AND, 2);
@@ -91,7 +91,7 @@ public class IfExpressionParsingTestCase {
     }
 
     @Test
-    public void testSimpleParentheses() {
+    public void testSimpleParentheses() throws Exception {
         parser.reset();
         Operation op = parser.parseExpression("  a >=b && (c<d || e> f )&&  g  !=  h ");
         assertOperation(op, AND, 3);
@@ -110,7 +110,7 @@ public class IfExpressionParsingTestCase {
     }
 
     @Test
-    public void testMixNoParentheses() {
+    public void testMixNoParentheses() throws Exception {
         parser.reset();
         Operation op = parser.parseExpression("  a>b && c>=d && e<f ||  g <= h && i==j || k != l");
         assertOperation(op, OR, 3);
@@ -132,7 +132,7 @@ public class IfExpressionParsingTestCase {
     }
 
     @Test
-    public void testOrSequence() {
+    public void testOrSequence() throws Exception {
         parser.reset();
         Operation op = parser.parseExpression("a == b || c== d||e==f");
         assertOperation(op, OR, 3);
@@ -143,7 +143,7 @@ public class IfExpressionParsingTestCase {
     }
 
     @Test
-    public void testAndSequence() {
+    public void testAndSequence() throws Exception {
         parser.reset();
         Operation op = parser.parseExpression("a==b && c == d && e == f");
         assertOperation(op, AND, 3);
@@ -166,7 +166,7 @@ public class IfExpressionParsingTestCase {
         assertEquals(opName, op.getName());
         assertNotNull(op.getOperands());
         assertEquals(2, op.getOperands().size());
-        assertEquals('\'' + left + '\'', op.getOperands().get(0).toString());
-        assertEquals('\'' + right + '\'', op.getOperands().get(1).toString());
+        assertEquals(left, op.getOperands().get(0).toString());
+        assertEquals(right, op.getOperands().get(1).toString());
     }
 }

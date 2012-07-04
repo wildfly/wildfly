@@ -62,16 +62,13 @@ public class IfElseBlock {
     private static final byte IN_IF = 0;
     private static final byte IN_ELSE = 1;
 
-    private static final String EQ = "==";
-
     private byte state;
 
-    private String[] path;
-    private String value;
+    private Operation conditionExpression;
     private ModelNode conditionRequest;
     private ModelNode ifRequest;
 
-    public void setCondition(String condition, ModelNode request) throws CommandFormatException {
+    public void setCondition(String condition, ModelNode request) throws CommandLineException {
         if(condition == null) {
             throw new CommandFormatException("The path of the if condition can't be null.");
         }
@@ -79,29 +76,7 @@ public class IfElseBlock {
             throw new CommandFormatException("The request in the if condition can't be null.");
         }
 
-        if(condition.charAt(0) == '(' && condition.charAt(condition.length() - 1) == ')') {
-            condition = condition.substring(1, condition.length() - 1);
-        }
-
-        int i = condition.indexOf(EQ);
-        if(i < 0) {
-            throw new CommandFormatException("Failed to locate " + EQ + " in the if condition: " + condition);
-        }
-        final String pathStr = condition.substring(0, i).trim();
-        if(pathStr.isEmpty()) {
-            throw new CommandFormatException("The path in the if condition is empty: " + condition);
-        }
-        final String[] path = pathStr.split("\\.");
-        if(path.length == 0) {
-            throw new CommandFormatException("The path in the if condition is empty: '" + pathStr + "'");
-        }
-        final String value = condition.substring(i + EQ.length()).trim();
-        if(value.isEmpty()) {
-            throw new CommandFormatException("The value in the if condition is empty: " + condition);
-        }
-
-        this.path = path;
-        this.value = value;
+        conditionExpression = new ExpressionParser().parseExpression(condition);
         this.conditionRequest = request;
         state = IN_IF;
     }
@@ -110,12 +85,8 @@ public class IfElseBlock {
         return this.conditionRequest;
     }
 
-    public String[] getConditionPath() {
-        return path;
-    }
-
-    public String getConditionValue() {
-        return value;
+    public Operation getConditionExpression() {
+        return conditionExpression;
     }
 
     public void setIfRequest(ModelNode request) throws CommandLineException {
