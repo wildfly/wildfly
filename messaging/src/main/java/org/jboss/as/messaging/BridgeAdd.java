@@ -78,6 +78,11 @@ public class BridgeAdd extends AbstractAddStepHandler {
             }
             attributeDefinition.validateAndSet(operation, model);
         }
+
+        if (operation.hasDefined(CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN.getName())) {
+            PathAddress pa = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+            MessagingLogger.MESSAGING_LOGGER.deprecatedAttribute(CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN.getName(), pa);
+        }
     }
 
     @Override

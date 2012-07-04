@@ -179,4 +179,14 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 11611, value = "Stopped %s %s")
     void stoppedService(String type, String name);
 
+    /**
+     * Logs a warning message indicating the management attribute with the given {@code name}
+     * is deprecated and will not be used anymore.
+     *
+     * @param name the name of the deprecated XML attribute
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11612, value = "Attribute %s of the resource at %s is deprecated and setting its value will not be taken into account")
+    void deprecatedAttribute(String name, PathAddress address);
+
 }
