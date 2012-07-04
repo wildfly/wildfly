@@ -1210,6 +1210,8 @@
 
         <module-def name="sun.jdk"/>
 
+        <module-def name="ibm.jdk"/>
+
     </target>
 
     <target name="bundles">
