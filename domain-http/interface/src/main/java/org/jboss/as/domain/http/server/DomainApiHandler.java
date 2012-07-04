@@ -48,11 +48,11 @@ import static org.jboss.as.domain.http.server.Constants.US_ASCII;
 import static org.jboss.as.domain.http.server.Constants.UTF_8;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
+import static org.jboss.as.domain.http.server.DomainUtil.safeClose;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -349,51 +349,6 @@ class DomainApiHandler implements ManagementHttpHandler {
         }
     }
 
-     private void writeResponse(final HttpExchange http, boolean isGet, boolean pretty, ModelNode response, int status,
-            boolean encode) throws IOException {
-         String contentType = encode ? APPLICATION_DMR_ENCODED : APPLICATION_JSON;
-         writeResponse(http, isGet, pretty, response, status, encode, contentType);
-     }
-
-    /**
-     * Writes the HTTP response to the output stream.
-     *
-     * @param http The HttpExchange object that allows access to the request and response.
-     * @param isGet Flag indicating whether or not the request was a GET request or POST request.
-     * @param pretty Flag indicating whether or not the output, if JSON, should be pretty printed or not.
-     * @param response The DMR response from the operation.
-     * @param status The HTTP status code to be included in the response.
-     * @param encode Flag indicating whether or not to Base64 encode the response payload.
-     * @throws IOException if an error occurs while attempting to generate the HTTP response.
-     */
-    private void writeResponse(final HttpExchange http, boolean isGet, boolean pretty, ModelNode response, int status,
-            boolean encode, String contentType) throws IOException {
-        final Headers responseHeaders = http.getResponseHeaders();
-        responseHeaders.add(CONTENT_TYPE, contentType);
-        http.sendResponseHeaders(status, 0);
-
-        final OutputStream out = http.getResponseBody();
-        final PrintWriter print = new PrintWriter(out);
-
-        // GET (read) operations will never have a compensating update, and the status is already
-        // available via the http response status code, so unwrap them.
-        if (isGet && status == OK)
-            response = response.get("result");
-
-        try {
-            if (encode) {
-                response.writeBase64(out);
-            } else {
-                response.writeJSONString(print, !pretty);
-            }
-        } finally {
-            print.flush();
-            out.flush();
-            safeClose(print);
-            safeClose(out);
-        }
-    }
-
     private static final class SeekResult {
         BoundaryDelimitedInputStream stream;
     }
@@ -452,13 +407,6 @@ class DomainApiHandler implements ManagementHttpHandler {
         try {
             byte[] ignore = new byte[1024];
             while (stream.read(ignore) != -1) {}
-        } catch (Throwable eat) {
-        }
-    }
-
-    private void safeClose(Closeable close) {
-        try {
-            close.close();
         } catch (Throwable eat) {
         }
     }
@@ -576,7 +524,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             context.setAuthenticator(authenticator);
             List<Filter> filters = context.getFilters();
             if (securityRealm.getSupportedAuthenticationMechanisms().contains(AuthenticationMechanism.CLIENT_CERT) == false) {
-                filters.add(new RealmReadinessFilter(securityRealm, ErrorHandler.getRealmRedirect()));
+                filters.add(new DmrFailureReadinessFilter(securityRealm, ErrorHandler.getRealmRedirect()));
             }
         }
     }

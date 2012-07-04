@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,44 +22,44 @@
 
 package org.jboss.as.domain.http.server;
 
+import static org.jboss.as.domain.http.server.Constants.LOCATION;
+import static org.jboss.as.domain.http.server.Constants.TEMPORARY_REDIRECT;
+import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+
 import java.io.IOException;
 
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.com.sun.net.httpserver.Filter;
+import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 
 /**
- * Filter to redirect to the error context while the security realm is not ready.
+ * A readiness filter to redirect users to an error page if the realm is not ready to handle authentication requests.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-abstract class RealmReadinessFilter extends Filter {
+public class RedirectReadinessFilter extends RealmReadinessFilter {
 
-    private final SecurityRealm securityRealm;
+    private final String redirectTo;
 
-    RealmReadinessFilter(final SecurityRealm securityRealm) {
-        this.securityRealm = securityRealm;
-    }
-
-    @Override
-    public void doFilter(HttpExchange exchange, Chain chain) throws IOException {
-        if (securityRealm.isReady()) {
-            chain.doFilter(exchange);
-        } else {
-            rejectRequest(exchange);
-        }
+    RedirectReadinessFilter(final SecurityRealm securityRealm, final String redirectTo) {
+        super(securityRealm);
+        this.redirectTo = redirectTo;
     }
 
     /**
-     * Method to be implemented by sub classes to handle the rejection process due to the realm not being ready to authenticate
-     * clients.
-     *
-     * Possible examples are sending a redirect to a page to inform the user that it is not possible due to no users being
-     * defined or sending a DMR response indicating a failure.
-     *
-     * @param exchange
-     * @throws IOException
+     * @see org.jboss.as.domain.http.server.RealmReadinessFilter#rejectRequest(org.jboss.com.sun.net.httpserver.HttpExchange)
      */
-    abstract void rejectRequest(HttpExchange exchange) throws IOException;
+    @Override
+    void rejectRequest(HttpExchange exchange) throws IOException {
+        Headers responseHeaders = exchange.getResponseHeaders();
+        responseHeaders.add(LOCATION, redirectTo);
+        exchange.sendResponseHeaders(TEMPORARY_REDIRECT, 0);
+        exchange.close();
+    }
+
+    @Override
+    public String description() {
+        return MESSAGES.redirectReadinessFilter();
+    }
 
 }

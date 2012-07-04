@@ -168,11 +168,29 @@ public interface HttpServerMessages {
     String trailingSlashFilterDescription();
 
     /**
-     * The description for the {@link RealmReadinessFilter}.
+     * The description for the {@link RedirectReadinessFilter}.
      *
      * @return the description.
      */
     @Message(id = 15133, value = "Redirect request to instructional page if the realm is not ready.")
-    String realmReadinessFilter();
+    String redirectReadinessFilter();
+
+    /**
+     * The description for the {@link DmrFailureReadinessFilter}.
+     *
+     * @return the description.
+     */
+    @Message(id = 15134, value = "Returns a DMR failure if the security realm is not ready to handle authentication requests.")
+    String dmrFailureReadinessFilter();
+
+    /**
+     * An error message indicating that the security realm is not ready to process requests and a URL that can be viewed for
+     * additional information.
+     *
+     * @param url - the url clients should visit for further information.
+     * @return the error message.
+     */
+    @Message(id = 15135, value = "The security realm is not ready to process requests, see %s")
+    String realmNotReadyMessage(final String url);
 
 }
