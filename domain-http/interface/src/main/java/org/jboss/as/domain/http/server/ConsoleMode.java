@@ -137,7 +137,7 @@ public enum ConsoleMode {
             HttpContext httpContext = httpServer.createContext(getContext(), this);
             if (securityRealm != null
                     && securityRealm.getSupportedAuthenticationMechanisms().contains(AuthenticationMechanism.CLIENT_CERT) == false) {
-                httpContext.getFilters().add(new RealmReadinessFilter(securityRealm, ErrorHandler.getRealmRedirect()));
+                httpContext.getFilters().add(new RedirectReadinessFilter(securityRealm, ErrorHandler.getRealmRedirect()));
             }
         }
     }
