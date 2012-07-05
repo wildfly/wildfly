@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2012, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -19,15 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.web.deployment.jsf;
-
-import static org.jboss.as.web.WebMessages.MESSAGES;
+package org.jboss.as.jsf.deployment;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.jsf.JSFLogger;
+import org.jboss.as.jsf.JSFMessages;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -36,7 +36,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.web.deployment.WebAttachments;
 import org.jboss.as.web.deployment.component.WebComponentDescription;
@@ -45,7 +44,6 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.WebMetaData;
@@ -66,14 +64,11 @@ import java.util.Set;
  *
  * @author Stuart Douglas
  */
-public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
+public class JSFManagedBeanProcessor implements DeploymentUnitProcessor {
 
     public static final DotName MANAGED_BEAN_ANNOTATION = DotName.createSimple("javax.faces.bean.ManagedBean");
 
     private static final String WEB_INF_FACES_CONFIG = "WEB-INF/faces-config.xml";
-
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.web.jsf");
 
     private static final String MANAGED_BEAN = "managed-bean";
     private static final String MANAGED_BEAN_CLASS = "managed-bean-class";
@@ -107,10 +102,10 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
                 final Class<?> componentClass = module.getClassLoader().loadClass(managedBean);
                 componentClass.getConstructor();
             } catch (ClassNotFoundException e) {
-                WebLogger.WEB_LOGGER.managedBeanLoadFail(managedBean);
+                JSFLogger.ROOT_LOGGER.managedBeanLoadFail(managedBean);
                 continue;
             } catch (NoSuchMethodException e) {
-                WebLogger.WEB_LOGGER.managedBeanNoDefaultConstructor(managedBean);
+                JSFLogger.ROOT_LOGGER.managedBeanNoDefaultConstructor(managedBean);
                 continue;
             }
             installManagedBeanComponent(managedBean, moduleDescription, deploymentUnit, applicationClassesDescription);
@@ -168,7 +163,7 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
                     }
                 }
             } catch (Exception e) {
-                WebLogger.WEB_LOGGER.managedBeansConfigParseFailed(facesConfig);
+                JSFLogger.ROOT_LOGGER.managedBeansConfigParseFailed(facesConfig);
             } finally {
                 try {
                     if (is != null) {
@@ -241,7 +236,7 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
                     final String className = ((ClassInfo) target).name().toString();
                     managedBeanClasses.add(className);
                 } else {
-                    throw new DeploymentUnitProcessingException(MESSAGES.invalidManagedBeanAnnotation(target));
+                    throw new DeploymentUnitProcessingException(JSFMessages.MESSAGES.invalidManagedBeanAnnotation(target));
                 }
             }
         }

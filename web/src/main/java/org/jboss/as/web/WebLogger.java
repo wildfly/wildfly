@@ -22,17 +22,14 @@
 
 package org.jboss.as.web;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
-import org.jboss.vfs.VirtualFile;
+
+import static org.jboss.logging.Logger.Level.*;
 
 /**
  * This module is using message IDs in the range 18000-18099 and 18200-18399.
@@ -102,10 +99,6 @@ public interface WebLogger extends BasicLogger {
     @Message(id = 18206, value = "Webapp [%s] is unavailable due to startup errors")
     void unavailable(String webappPath);
 
-    @LogMessage(level = WARN)
-    @Message(id = 18207, value = "Unknown JSF version %s %s will be used instead")
-    void unknownJSFVersion(String version, String referenceVersion);
-
     @LogMessage(level = ERROR)
     @Message(id = 18208, value = "Failed to start context")
     void stopContextFailed(@Cause Throwable cause);
@@ -117,18 +110,6 @@ public interface WebLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 18210, value = "Registering web context: %s")
     void registerWebapp(String webappPath);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 18211, value = "Could not load JSF managed bean class: %s")
-    void managedBeanLoadFail(String managedBean);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 18212, value = "JSF managed bean class %s has no default constructor")
-    void managedBeanNoDefaultConstructor(String managedBean);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 18213, value = "Failed to parse %s, managed beans defined in this file will not be available")
-    void managedBeansConfigParseFailed(VirtualFile facesConfig);
 
     @LogMessage(level = ERROR)
     @Message(id = 18214, value = "Error during login/password authenticate")

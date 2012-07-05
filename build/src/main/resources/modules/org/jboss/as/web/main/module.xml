@@ -33,10 +33,8 @@
 
     <dependencies>
         <module name="sun.jdk"/>
-        <module name="com.sun.jsf-impl"/>
         <module name="javax.annotation.api"/>
         <module name="javax.api"/>
-        <module name="javax.faces.api"/>
         <module name="javax.security.auth.message.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.servlet.jsp.api"/>

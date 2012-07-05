@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.web.deployment.jsf;
+package org.jboss.as.jsf.deployment;
 
-import static org.jboss.as.web.WebMessages.MESSAGES;
-
-import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.faces.bean.ManagedBean;
-import javax.faces.component.FacesComponent;
-import javax.faces.component.behavior.FacesBehavior;
-import javax.faces.convert.FacesConverter;
-import javax.faces.event.NamedEvent;
-import javax.faces.render.FacesBehaviorRenderer;
-import javax.faces.render.FacesRenderer;
-import javax.faces.validator.FacesValidator;
+import org.jboss.as.jsf.JSFMessages;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -51,13 +36,28 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
 
+import javax.faces.bean.ManagedBean;
+import javax.faces.component.FacesComponent;
+import javax.faces.component.behavior.FacesBehavior;
+import javax.faces.convert.FacesConverter;
+import javax.faces.event.NamedEvent;
+import javax.faces.render.FacesBehaviorRenderer;
+import javax.faces.render.FacesRenderer;
+import javax.faces.validator.FacesValidator;
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * {@link DeploymentUnitProcessor} implementation responsible for extracting JSF annotations from a deployment and attaching them
  * to the deployment unit to eventually be added to the {@link javax.servlet.ServletContext}.
  *
  * @author John Bailey
  */
-public class JsfAnnotationProcessor implements DeploymentUnitProcessor {
+public class JSFAnnotationProcessor implements DeploymentUnitProcessor {
 
     private enum FacesAnnotation {
         FACES_COMPONENT(FacesComponent.class),
@@ -110,11 +110,11 @@ public class JsfAnnotationProcessor implements DeploymentUnitProcessor {
                     try {
                         annotatedClass = classLoader.loadClass(className.toString());
                     } catch (ClassNotFoundException e) {
-                        throw new DeploymentUnitProcessingException(MESSAGES.classLoadingFailed(className));
+                        throw new DeploymentUnitProcessingException(JSFMessages.MESSAGES.classLoadingFailed(className));
                     }
                     discoveredClasses.add(annotatedClass);
                 } else {
-                    throw new DeploymentUnitProcessingException(MESSAGES.invalidAnnotationLocation(annotation, target));
+                    throw new DeploymentUnitProcessingException(JSFMessages.MESSAGES.invalidAnnotationLocation(annotation, target));
                 }
             }
         }

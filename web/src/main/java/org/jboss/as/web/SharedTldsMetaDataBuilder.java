@@ -28,8 +28,8 @@ import java.util.List;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.web.deployment.JsfVersionMarker;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.parser.jsp.TldMetaDataParser;
@@ -48,10 +48,10 @@ import org.jboss.modules.ModuleLoadException;
  */
 public class SharedTldsMetaDataBuilder {
 
-    private static final String[] JSF_TAGLIBS = { "html_basic.tld", "jsf_core.tld", "mojarra_ext.tld" };
+    public static final AttachmentKey<List<TldMetaData>> ATTACHMENT_KEY = AttachmentKey.create(List.class);
+
     private static final String[] JSTL_TAGLIBS = { "c-1_0-rt.tld", "c-1_0.tld", "c.tld", "fmt-1_0-rt.tld", "fmt-1_0.tld", "fmt.tld", "fn.tld", "permittedTaglibs.tld", "scriptfree.tld", "sql-1_0-rt.tld", "sql-1_0.tld", "sql.tld", "x-1_0-rt.tld", "x-1_0.tld", "x.tld" };
 
-    private final ArrayList<TldMetaData> jsfTlds = new ArrayList<TldMetaData>();
     private final ArrayList<TldMetaData> jstlTlds = new ArrayList<TldMetaData>();
 
     // Not used right now due to hardcoding
@@ -64,20 +64,6 @@ public class SharedTldsMetaDataBuilder {
     }
 
     private void init() {
-        try {
-            ModuleClassLoader jsf = Module.getModuleFromCallerModuleLoader(ModuleIdentifier.create("com.sun.jsf-impl")).getClassLoader();
-            for (String tld : JSF_TAGLIBS) {
-                InputStream is = jsf.getResourceAsStream("META-INF/" + tld);
-                if (is != null) {
-                    TldMetaData tldMetaData = parseTLD(tld, is);
-                    jsfTlds.add(tldMetaData);
-                }
-            }
-        } catch (ModuleLoadException e) {
-            // Ignore
-        } catch (Exception e) {
-            // Ignore
-        }
         try {
             ModuleClassLoader jstl = Module.getModuleFromCallerModuleLoader(ModuleIdentifier.create("javax.servlet.jstl.api")).getClassLoader();
             for (String tld : JSTL_TAGLIBS) {
@@ -96,13 +82,13 @@ public class SharedTldsMetaDataBuilder {
 
     public List<TldMetaData> getSharedTlds(DeploymentUnit deploymentUnit) {
         final List<TldMetaData> metadata = new ArrayList<TldMetaData>();
-        final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+        metadata.addAll(jstlTlds);
 
-        if (!JsfVersionMarker.getVersion(topLevelDeployment).equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) {
-            metadata.addAll(jsfTlds);
+        List<TldMetaData> additionalSharedTlds = deploymentUnit.getAttachment(ATTACHMENT_KEY);
+        if (additionalSharedTlds != null) {
+            metadata.addAll(additionalSharedTlds);
         }
 
-        metadata.addAll(jstlTlds);
         return metadata;
     }
 
