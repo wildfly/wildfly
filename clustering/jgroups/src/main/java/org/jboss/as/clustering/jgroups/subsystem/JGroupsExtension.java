@@ -24,9 +24,12 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.jboss.as.clustering.jgroups.LogFactory;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
@@ -39,6 +42,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
+import org.jgroups.Global;
 
 /**
  * Registers the JGroups subsystem.
@@ -58,6 +62,21 @@ public class JGroupsExtension implements Extension {
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+
+    // Temporary workaround for JGRP-1475
+    // Configure JGroups to use jboss-logging.
+    static {
+        PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
+            @Override
+            public Void run() {
+                if (System.getProperty(Global.CUSTOM_LOG_FACTORY) == null) {
+                    System.setProperty(Global.CUSTOM_LOG_FACTORY, LogFactory.class.getName());
+                }
+                return null;
+            }
+        };
+        AccessController.doPrivileged(action);
+    }
 
     /**
      * {@inheritDoc}
