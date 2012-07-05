@@ -8,13 +8,13 @@ Usage
 
 To use the BOM, import into your dependency management. For example, if you wanted "Java EE with Tools recommended by JBoss", use:
 
-    <dependencyManagement>
+    <dependencyManagement>    
         <dependencies>
-	    <dependency>
-	       <groupId>org.jboss.spec</groupId>
-               <artifactId>jboss-javaee-web-6.0-with-tools-</artifactId>
-               <version>1.0.1-SNAPSHOT</version>
-               <scope>import</scope>
+            <dependency>
+                <groupId>org.jboss.spec</groupId>
+                <artifactId>jboss-javaee-web-6.0-with-tools-</artifactId>
+                <version>1.0.1-SNAPSHOT</version>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement> 
