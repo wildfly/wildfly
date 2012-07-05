@@ -93,7 +93,7 @@ public class AddPropertiesUser {
 
         // Silent modes still need to be able to output an error on failure.
         theConsole = console;
-        if (theConsole.getConsole() == null) {
+        if (theConsole.getConsole() == null && !howInteractive.equals(Interactiveness.SILENT)) {
             throw MESSAGES.noConsoleAvailable();
         }
         // Username should not be null or empty.

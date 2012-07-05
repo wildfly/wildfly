@@ -51,26 +51,32 @@ public class ErrorState implements State {
         this.nextState = nextState;
         this.stateValues = stateValues;
         this.theConsole = theConsole;
-        if ((stateValues != null && stateValues.isSilent() == false) && theConsole.getConsole() == null) {
-            throw MESSAGES.noConsoleAvailable();
-        }
     }
 
     public State execute() {
+        boolean direct = theConsole.getConsole() == null;
         // Errors should be output in all modes.
-        theConsole.printf(NEW_LINE);
-        theConsole.printf(" * ");
-        theConsole.printf(MESSAGES.errorHeader());
-        theConsole.printf(" * ");
-        theConsole.printf(NEW_LINE);
-        theConsole.printf(errorMessage);
-        theConsole.printf(NEW_LINE);
-        theConsole.printf(NEW_LINE);
+        printf(NEW_LINE, direct);
+        printf(" * ", direct);
+        printf(MESSAGES.errorHeader(), direct);
+        printf(" * ", direct);
+        printf(NEW_LINE, direct);
+        printf(errorMessage, direct);
+        printf(NEW_LINE, direct);
+        printf(NEW_LINE, direct);
         // Throw an exception if the mode is non-interactive and there's no next state.
         if ((stateValues != null && !stateValues.isInteractive()) && nextState == null) {
             throw new RuntimeException(errorMessage);
         }
         return nextState;
+    }
+
+    private void printf(final String message, final boolean direct) {
+        if (direct) {
+            System.err.print(message);
+        } else {
+            theConsole.printf(message);
+        }
     }
 
 }
