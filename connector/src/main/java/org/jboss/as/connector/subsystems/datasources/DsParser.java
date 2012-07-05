@@ -549,7 +549,7 @@ public class DsParser extends AbstractParser {
         operation.get(OP).set(ADD);
         boolean enabled = Defaults.ENABLED.booleanValue();
         // Don't persist the enabled flag unless the user set it
-        boolean persistEnabled = false;
+        boolean persistEnabled = true;
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
             switch (attribute) {
                 case ENABLED: {

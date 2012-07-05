@@ -43,7 +43,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         //TODO: This is copied from standalone.xml you may want to try more combinations
         return  "<subsystem xmlns=\"urn:jboss:domain:datasources:1.1\">" +
                 "    <datasources>" +
-                "        <datasource jndi-name=\"java:jboss/datasources/ExampleDS\" use-java-context=\"true\" pool-name=\"H2DS\">" +
+                "        <datasource jndi-name=\"java:jboss/datasources/ExampleDS\" enabled=\"true\" use-java-context=\"true\" pool-name=\"H2DS\">" +
                 "            <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>" +
                 "            <driver>h2</driver>" +
                 "            <security>" +
