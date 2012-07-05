@@ -55,7 +55,7 @@ public class ChannelService implements Service<Channel> {
         Address localAddress = this.channel.getAddress();
         for (Address address: this.channel.getView()) {
             String name = this.channel.getName(address);
-            if (name.equals(localName) && !address.equals(localAddress)) {
+            if ((name != null) && name.equals(localName) && !address.equals(localAddress)) {
                 this.channel.close();
                 throw JGroupsMessages.MESSAGES.duplicateNodeName(factory.getProtocolStackConfiguration().getEnvironment().getNodeName());
             }
