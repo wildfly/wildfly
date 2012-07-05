@@ -44,8 +44,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.messaging.MessagingServices;
-import org.jboss.as.messaging.jms.JMSServices;
 import org.jboss.as.messaging.jms.SelectorAttribute;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -100,26 +100,33 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                         .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
                         .setInitialMode(Mode.ACTIVE);
                 addServerExecutorDependency(jmsBridgeServiceBuilder, bridgeService.getExecutorInjector(), false);
-                if (dependsOnHornetQServer(context, model)) {
-                    // add a dependency to the JMS Manager instead of HornetQ service since it is this service
-                    // that effectively start HornetQ
-                    jmsBridgeServiceBuilder.addDependency((JMSServices.getJmsManagerBaseServiceName(MessagingServices.getHornetQServiceName("default"))));
+                if (dependsOnLocalResources(model, JMSBridgeDefinition.SOURCE_CONTEXT)) {
+                    addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.SOURCE_CONNECTION_FACTORY);
+                    addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.SOURCE_DESTINATION);
+                }
+                if (dependsOnLocalResources(model, JMSBridgeDefinition.TARGET_CONTEXT)) {
+                    addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.TARGET_CONNECTION_FACTORY);
+                    addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.TARGET_DESTINATION);
                 }
 
                 newControllers.add(jmsBridgeServiceBuilder.install());
 
                 context.completeStep();
             }
+
         }, OperationContext.Stage.RUNTIME);
     }
 
-    private boolean dependsOnHornetQServer(OperationContext context, ModelNode model) throws OperationFailedException {
-        final Properties sourceContextProperties = resolveContextProperties(JMSBridgeDefinition.SOURCE_CONTEXT, context, model);
-        final Properties targetContextProperties = resolveContextProperties(JMSBridgeDefinition.TARGET_CONTEXT, context, model);
-
-        // if either the source or target context properties are null, this means that the JMS resources will be looked up
+    private boolean dependsOnLocalResources(ModelNode model, AttributeDefinition attr) throws OperationFailedException {
+        // if either the source or target context attribute is not defined, this means that the JMS resources will be looked up
         // from the local HornetQ server.
-        return (sourceContextProperties == null || targetContextProperties == null);
+        return !(model.hasDefined(attr.getName()));
+    }
+
+    private void addDependencyForJNDIResource(final ServiceBuilder<JMSBridge> builder, final ModelNode model, final OperationContext context,
+            final AttributeDefinition attribute) throws OperationFailedException {
+        String jndiName = attribute.resolveModelAttribute(context, model).asString();
+        builder.addDependency(ContextNames.bindInfoFor(jndiName).getBinderServiceName());
     }
 
     private JMSBridge createJMSBridge(OperationContext context, ModelNode model) throws OperationFailedException {
