@@ -147,7 +147,10 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         if (view == null) {
             throw EjbLogger.EJB3_LOGGER.viewNotFound(viewClass.getName(), ejb.getEjbName());
         }
-
+        // make sure it's a remote view
+        if (!ejb.isRemoteView(viewClass.getName())) {
+            throw EjbLogger.EJB3_LOGGER.viewNotFound(viewClass.getName(), ejb.getEjbName());
+        }
         final ClonerConfiguration paramConfig = new ClonerConfiguration();
         paramConfig.setClassCloner(new ClassLoaderClassCloner(ejb.getDeploymentClassLoader()));
         final ObjectCloner parameterCloner = ObjectCloners.getSerializingObjectClonerFactory().createCloner(paramConfig);
