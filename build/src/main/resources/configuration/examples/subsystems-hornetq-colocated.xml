@@ -14,6 +14,7 @@
       <subsystem>configuration/subsystems/jca.xml</subsystem>
       <subsystem>configuration/subsystems/jmx.xml</subsystem>
       <subsystem>configuration/subsystems/jpa.xml</subsystem>
+      <subsystem>configuration/subsystems/jsf.xml</subsystem>
       <subsystem>configuration/subsystems/mail.xml</subsystem>
       <subsystem>configuration/examples/subsystems/messaging-hornetq-colocated.xml</subsystem>
       <subsystem>configuration/subsystems/naming.xml</subsystem>
@@ -26,5 +27,5 @@
       <subsystem>configuration/subsystems/web.xml</subsystem>
       <subsystem>configuration/subsystems/webservices.xml</subsystem>
       <subsystem>configuration/subsystems/weld.xml</subsystem>
-   </subsystems>  
+   </subsystems>
 </config>
