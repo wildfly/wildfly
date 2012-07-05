@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An enumeration of the supported EJB3 subsystem namespaces
+ * An enumeration of the supported Naming subsystem namespaces
  *
  * @author Jaikiran Pai
  */
@@ -37,6 +37,7 @@ public enum NamingSubsystemNamespace {
     NAMING_1_0("urn:jboss:domain:naming:1.0"),
     NAMING_1_1("urn:jboss:domain:naming:1.1"),
     NAMING_1_2("urn:jboss:domain:naming:1.2"),
+    NAMING_1_3("urn:jboss:domain:naming:1.3"),
     ;
 
 
