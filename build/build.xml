@@ -266,9 +266,7 @@
             <maven-resource group="org.jboss.remoting3" artifact="jboss-remoting"/>
         </module-def>
 
-        <module-def name="org.jboss.remoting3.remoting-jmx">
-            <maven-resource group="org.jboss.remotingjmx" artifact="remoting-jmx"/>
-        </module-def>
+        <module-def name="org.jboss.remoting3.remoting-jmx" />
 
         <module-def name="org.jboss.sasl">
             <maven-resource group="org.jboss.sasl" artifact="jboss-sasl" />
@@ -1008,6 +1006,10 @@
         <module-def name="org.jboss.remote-naming">
             <maven-resource group="org.jboss" artifact="jboss-remote-naming"/>
         </module-def>
+
+        <module-def name="org.jboss.remoting-jmx">
+            <maven-resource group="org.jboss.remotingjmx" artifact="remoting-jmx"/>
+        </module-def>    	
 
         <module-def name="org.jboss.resteasy.resteasy-atom-provider">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-atom-provider"  jandex="true"/>

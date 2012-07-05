@@ -65,7 +65,7 @@ rem Setup The Classpath
 set CLASSPATH=%JAVA_HOME%\lib\jconsole.jar
 set CLASSPATH=%CLASSPATH%;%JAVA_HOME%\lib\tools.jar
 
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\remoting3\remoting-jmx\main
+call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\remoting-jmx\main
 call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\remoting3\main
 call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\logging\main
 call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\xnio\main
