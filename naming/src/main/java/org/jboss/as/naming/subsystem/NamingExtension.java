@@ -86,7 +86,7 @@ public class NamingExtension implements Extension {
             registration.registerOperationHandler(JndiViewOperation.OPERATION_NAME, JndiViewOperation.INSTANCE, NamingSubsystemRootResourceDefinition.JNDI_VIEW, false, EnumSet.of(Flag.RUNTIME_ONLY));
         }
 
-        subsystem.registerXMLElementWriter(NamingSubsystem12Parser.INSTANCE);
+        subsystem.registerXMLElementWriter(NamingSubsystem13Parser.INSTANCE);
     }
 
     /**
