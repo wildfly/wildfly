@@ -72,17 +72,36 @@ public class JsfVersionProcessor implements DeploymentUnitProcessor {
         //if the user does have an ear with two wars with two different
         //JSF versions they are going to need to use deployment descriptors
         //to manually sort out the dependencies
+
+        boolean valueSet = false;
+
         for (final ParamValueMetaData param : contextParams) {
             if ((param.getParamName().equals(WAR_BUNDLES_JSF_IMPL_PARAM) &&
                     (param.getParamValue() != null) &&
                     (param.getParamValue().toLowerCase(Locale.ENGLISH).equals("true")))) {
                 JsfVersionMarker.setVersion(topLevelDeployment, JsfVersionMarker.WAR_BUNDLES_JSF_IMPL);
+                valueSet = true;
                 break; // WAR_BUNDLES_JSF_IMPL always wins
             }
 
             if (param.getParamName().equals(JSF_CONFIG_NAME_PARAM)) {
+                valueSet = true;
                 JsfVersionMarker.setVersion(topLevelDeployment, param.getParamValue());
             }
+        }
+
+        //we also support setting this by system property
+        //although when we add the JSF subsystem this will probably go away, and be replaced
+        //by a real management API feature
+        if(!valueSet) {
+            final String warBundles = SecurityActions.getSystemProperty(WAR_BUNDLES_JSF_IMPL_PARAM);
+            final String version = SecurityActions.getSystemProperty(JSF_CONFIG_NAME_PARAM);
+            if("true".equals(warBundles)) {
+                JsfVersionMarker.setVersion(topLevelDeployment, JsfVersionMarker.WAR_BUNDLES_JSF_IMPL);
+            } else if(version != null) {
+                JsfVersionMarker.setVersion(topLevelDeployment, version);
+            }
+
         }
     }
 
