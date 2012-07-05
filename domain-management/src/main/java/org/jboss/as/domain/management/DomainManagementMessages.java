@@ -389,7 +389,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = Message.NONE, value = "Is this new user going to be used for one AS process to connect to another AS process e.g. slave domain controller?")
+    @Message(id = Message.NONE, value = "Is this new user going to be used for one AS process to connect to another AS process? %ne.g. for a slave host controller connecting to the master or for a Remoting connection for server to server EJB calls.")
     String serverUser();
 
     /**
