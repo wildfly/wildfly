@@ -95,7 +95,8 @@ public class InetAddressMatchInterfaceCriteria extends AbstractInterfaceCriteria
 
         if (pruned.size() > 1 || (pruned.size() == 1 && pruned.values().iterator().next().size() > 1)) {
             logMultipleValidInterfaces(pruned);
-            result = Collections.emptyMap();
+            Map.Entry<NetworkInterface, Set<InetAddress>> next = pruned.entrySet().iterator().next();
+            result = Collections.singletonMap(next.getKey(), next.getValue());
         }
         return result;
     }
