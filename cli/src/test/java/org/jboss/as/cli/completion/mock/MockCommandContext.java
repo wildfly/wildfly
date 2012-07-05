@@ -65,6 +65,7 @@ public class MockCommandContext implements CommandContext {
     private int exitCode;
 
     private File curDir = new File("");
+    private boolean resolveParameterValues;
 
     public void parseCommandLine(String buffer) throws CommandFormatException {
         try {
@@ -333,5 +334,14 @@ public class MockCommandContext implements CommandContext {
     public Object remove(String key) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public boolean isResolveParameterValues() {
+        return resolveParameterValues;
+    }
+
+    @Override
+    public void setResolveParameterValues(boolean resolve) {
+        resolveParameterValues = resolve;
     }
 }

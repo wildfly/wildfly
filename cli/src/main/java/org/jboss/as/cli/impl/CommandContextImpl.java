@@ -206,6 +206,9 @@ class CommandContextImpl implements CommandContext {
 
     private File currentDir = new File("");
 
+    /** whether to resolve system properties passed in as values of operation parameters*/
+    private boolean resolveParameterValues;
+
     /**
      * Version mode - only used when --version is called from the command line.
      *
@@ -220,6 +223,7 @@ class CommandContextImpl implements CommandContext {
         config = CliConfigImpl.load(this);
         defaultControllerHost = config.getDefaultControllerHost();
         defaultControllerPort = config.getDefaultControllerPort();
+        resolveParameterValues = config.isResolveParameterValues();
         initSSLContext();
     }
 
@@ -250,6 +254,7 @@ class CommandContextImpl implements CommandContext {
         } else {
             this.defaultControllerPort = config.getDefaultControllerPort();
         }
+        resolveParameterValues = config.isResolveParameterValues();
         initCommands();
 
         initSSLContext();
@@ -286,6 +291,7 @@ class CommandContextImpl implements CommandContext {
         } else {
             this.defaultControllerPort = config.getDefaultControllerPort();
         }
+        resolveParameterValues = config.isResolveParameterValues();
         initCommands();
 
         initSSLContext();
@@ -374,7 +380,7 @@ class CommandContextImpl implements CommandContext {
 
         // rollout plan
         final GenericTypeOperationHandler rolloutPlan = new GenericTypeOperationHandler(this, "/management-client-content=rollout-plans/rollout-plan", null);
-        rolloutPlan.addValueConverter("content", new HeadersArgumentValueConverter(this));
+        rolloutPlan.addValueConverter("content", HeadersArgumentValueConverter.INSTANCE);
         rolloutPlan.addValueCompleter("content", RolloutPlanCompleter.INSTANCE);
         cmdRegistry.registerHandler(rolloutPlan, "rollout-plan");
 
@@ -1144,6 +1150,16 @@ class CommandContextImpl implements CommandContext {
         } catch (Throwable t) {
             t.printStackTrace();
         }
+    }
+
+    @Override
+    public boolean isResolveParameterValues() {
+        return resolveParameterValues;
+    }
+
+    @Override
+    public void setResolveParameterValues(boolean resolve) {
+        this.resolveParameterValues = resolve;
     }
 
     private enum ConnectStatus {

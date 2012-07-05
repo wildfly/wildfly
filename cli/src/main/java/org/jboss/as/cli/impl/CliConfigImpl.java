@@ -49,6 +49,8 @@ import org.jboss.staxmapper.XMLMapper;
  */
 class CliConfigImpl implements CliConfig {
 
+    private static final String JBOSS_XML_CONFIG = "jboss.cli.config";
+
     private static final String DEFAULT_CONTROLLER = "default-controller";
     private static final String ENABLED = "enabled";
     private static final String FILE_DIR = "file-dir";
@@ -58,15 +60,23 @@ class CliConfigImpl implements CliConfig {
     private static final String HOST = "host";
     private static final String MAX_SIZE = "max-size";
     private static final String PORT = "port";
+    private static final String RESOLVE_PARAMETER_VALUES = "resolve-parameter-values";
     private static final String VALIDATE_OPERATION_REQUESTS = "validate-operation-requests";
 
     static CliConfig load(final CommandContext ctx) throws CliInitializationException {
-        final String jbossHome = SecurityActions.getEnvironmentVariable("JBOSS_HOME");
-        if(jbossHome == null) {
-            System.err.println("WARN: can't load the config file because JBOSS_HOME environment variable is not set.");
-            return new CliConfigImpl();
+        final String jbossCliConfig = SecurityActions.getSystemProperty(JBOSS_XML_CONFIG);
+        final File jbossCliFile;
+        if(jbossCliConfig == null) {
+            final String jbossHome = SecurityActions.getEnvironmentVariable("JBOSS_HOME");
+            if(jbossHome == null) {
+                System.err.println("WARN: can't load the config file because JBOSS_HOME environment variable is not set.");
+                return new CliConfigImpl();
+            }
+            jbossCliFile = new File(jbossHome + File.separatorChar + "bin", "jboss-cli.xml");
+        } else {
+            jbossCliFile = new File(jbossCliConfig);
         }
-        return parse(ctx, new File(jbossHome + File.separatorChar + "bin", "jboss-cli.xml"));
+        return parse(ctx, jbossCliFile);
     }
 
     static CliConfig parse(final CommandContext ctx, File f) throws CliInitializationException {
@@ -115,6 +125,10 @@ class CliConfigImpl implements CliConfig {
         return str;
     }
 
+    private static boolean resolveBoolean(String str) throws XMLStreamException {
+        return Boolean.parseBoolean(resolveString(str));
+    }
+
     private CliConfigImpl() {
         defaultControllerHost = "localhost";
         defaultControllerPort = 9999;
@@ -134,6 +148,7 @@ class CliConfigImpl implements CliConfig {
     private int historyMaxSize;
 
     private boolean validateOperationRequests = true;
+    private boolean resolveParameterValues = false;
 
     private SSLConfig sslConfig;
 
@@ -170,6 +185,11 @@ class CliConfigImpl implements CliConfig {
     @Override
     public boolean isValidateOperationRequests() {
         return validateOperationRequests;
+    }
+
+    @Override
+    public boolean isResolveParameterValues() {
+        return resolveParameterValues;
     }
 
     @Override
@@ -285,8 +305,9 @@ class CliConfigImpl implements CliConfig {
                         }
                         config.sslConfig = sslConfig;
                     } else if(localName.equals(VALIDATE_OPERATION_REQUESTS)) {
-                        final String resolved = resolveString(reader.getElementText());
-                        config.validateOperationRequests = Boolean.parseBoolean(resolved);
+                        config.validateOperationRequests = resolveBoolean(reader.getElementText());
+                    } else if(localName.equals(RESOLVE_PARAMETER_VALUES)) {
+                        config.resolveParameterValues = resolveBoolean(reader.getElementText());
                     } else {
                         throw new XMLStreamException("Unexpected element: " + localName);
                     }

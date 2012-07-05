@@ -198,7 +198,7 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
 
                 final String valueString = arg.getValue(parsedArgs);
                 if(valueString != null) {
-                    ModelNode nodeValue = arg.getValueConverter().fromString(valueString);
+                    ModelNode nodeValue = arg.getValueConverter().fromString(ctx, valueString);
                     req.get(propName).set(nodeValue);
                 }
             }
@@ -324,8 +324,6 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
                             } else {
                                 valueConverter = ArgumentValueConverter.LIST;
                             }
-                        } else if(ModelType.OBJECT == type) {
-                            valueConverter = ArgumentValueConverter.OBJECT;
                         }
                     }
                 }

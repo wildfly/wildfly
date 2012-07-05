@@ -1030,7 +1030,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
     @Test
     public void testArgumentValueConverter() throws Exception {
 
-        final ModelNode node = new HeadersArgumentValueConverter(new MockCommandContext()).fromString("{ rollout " +
+        final ModelNode node = HeadersArgumentValueConverter.INSTANCE.fromString(ctx, "{ rollout " +
                 "groupA(rolling-to-servers=true,max-failure-percentage=20) ^ groupB, groupC," +
                 "groupD(rolling-to-servers=true,max-failed-servers=1) ^ groupE rollback-across-groups}");
 

@@ -738,4 +738,8 @@ public class Util {
         }
         return commands;
     }
+
+    public static String resolveProperties(String s) {
+        return StringPropertyReplacer.replaceProperties(s);
+    }
 }

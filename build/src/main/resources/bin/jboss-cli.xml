@@ -13,6 +13,10 @@
     
     <validate-operation-requests>true</validate-operation-requests>
     
+    <!-- whether to resolve system properties specified as command argument or operation parameter values
+         in the CLI VM before sending the operation requests to the controller -->
+    <resolve-parameter-values>false</resolve-parameter-values>
+    
     <!-- Command and operation history log configuration -->
     <history>
         <enabled>true</enabled>

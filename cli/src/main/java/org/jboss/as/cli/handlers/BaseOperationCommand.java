@@ -61,12 +61,12 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
     private Boolean addressAvailable;
     private String requiredType;
 
-    protected ArgumentWithValue headers;
+    protected final ArgumentWithValue headers;
 
     public BaseOperationCommand(CommandContext ctx, String command, boolean connectionRequired) {
         super(command, connectionRequired);
         ctx.addEventListener(this);
-        headers = new ArgumentWithValue(this, HeadersCompleter.INSTANCE, new HeadersArgumentValueConverter(ctx), "--headers");
+        headers = new ArgumentWithValue(this, HeadersCompleter.INSTANCE, HeadersArgumentValueConverter.INSTANCE, "--headers");
     }
 
     /**
@@ -233,7 +233,7 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
             return;
         }
         final String headersValue = headers.getValue(ctx.getParsedCommandLine());
-        final ModelNode headersNode = headers.getValueConverter().fromString(headersValue);
+        final ModelNode headersNode = headers.getValueConverter().fromString(ctx, headersValue);
         final ModelNode opHeaders = request.get(Util.OPERATION_HEADERS);
         opHeaders.set(headersNode);
     }

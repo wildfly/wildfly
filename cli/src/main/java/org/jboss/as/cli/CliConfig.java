@@ -86,4 +86,17 @@ public interface CliConfig {
      * @return  true is the operation requests should be validated, false - otherwise.
      */
     boolean isValidateOperationRequests();
+
+    /**
+     * Whether to resolve system properties specified as command argument
+     * (or operation parameter) values before sending the operation request
+     * to the controller or let the resolution happen on the server side.
+     * If the method returns true, the resolution should be performed by the CLI,
+     * otherwise - on the server side.
+     *
+     * @return  true if the system properties specified as operation parameter
+     * values should be resolved by the CLI, false if the resolution
+     * of the parameter values should happen on the server side.
+     */
+    boolean isResolveParameterValues();
 }

@@ -40,32 +40,36 @@ public interface ArgumentValueConverter {
 
     abstract class DMRWithFallbackConverter implements ArgumentValueConverter {
         @Override
-        public ModelNode fromString(String value) throws CommandFormatException {
+        public ModelNode fromString(CommandContext ctx, String value) throws CommandFormatException {
             if(value == null) {
                 return new ModelNode();
+            }
+            if(ctx.isResolveParameterValues()) {
+                value = Util.resolveProperties(value);
             }
             try {
                 return ModelNode.fromString(value);
             } catch(Exception e) {
-                return fromNonDMRString(value);
+                return fromNonDMRString(ctx, value);
             }
         }
 
-        protected abstract ModelNode fromNonDMRString(String value) throws CommandFormatException;
+        protected abstract ModelNode fromNonDMRString(CommandContext ctx, String value) throws CommandFormatException;
     }
 
     ArgumentValueConverter DEFAULT = new ArgumentValueConverter() {
         @Override
-        public ModelNode fromString(String value) throws CommandFormatException {
+        public ModelNode fromString(CommandContext ctx, String value) throws CommandFormatException {
             if (value == null) {
                 return new ModelNode();
+            }
+            if(ctx.isResolveParameterValues()) {
+                value = Util.resolveProperties(value);
             }
             ModelNode toSet = null;
             try {
                 toSet = ModelNode.fromString(value);
             } catch (Exception e) {
-                // just use the string
-                //toSet = new ModelNode().set(value);
                 final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
                 StateParser.parse(value, handler, ArgumentValueInitialState.INSTANCE);
                 toSet = handler.getResult();
@@ -81,7 +85,7 @@ public interface ArgumentValueConverter {
             }
         };
         @Override
-        protected ModelNode fromNonDMRString(String value) throws CommandFormatException {
+        protected ModelNode fromNonDMRString(CommandContext ctx, String value) throws CommandFormatException {
             final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
             StateParser.parse(value, handler, initialState);
             return handler.getResult();
@@ -95,21 +99,12 @@ public interface ArgumentValueConverter {
             }
         };
         @Override
-        protected ModelNode fromNonDMRString(String value) throws CommandFormatException {
+        protected ModelNode fromNonDMRString(CommandContext ctx, String value) throws CommandFormatException {
             final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
             StateParser.parse(value, handler, initialState);
             return handler.getResult();
         }
     };
 
-    ArgumentValueConverter OBJECT = new DMRWithFallbackConverter() {
-        @Override
-        protected ModelNode fromNonDMRString(String value) throws CommandFormatException {
-            final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
-            StateParser.parse(value, handler, ArgumentValueInitialState.INSTANCE);
-            return handler.getResult();
-        }
-    };
-
-    ModelNode fromString(String value) throws CommandFormatException;
+    ModelNode fromString(CommandContext ctx, String value) throws CommandFormatException;
 }
