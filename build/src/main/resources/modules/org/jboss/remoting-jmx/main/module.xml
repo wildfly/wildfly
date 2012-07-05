@@ -22,17 +22,14 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.remoting3.remoting-jmx">
-    <!-- This module is deprecated and subject to being removed in a subsequent release.      -->
-    
-    <!-- Any use of the Remoting JMX library should now reference the org.jboss.remoting-jmx  -->
-    <!-- module instead.                                                                      -->
-    
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.remoting-jmx">
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="org.jboss.remoting-jmx" export="true" />
+        <module name="javax.api"/>
+        <module name="org.jboss.remoting3"/>
+        <module name="org.jboss.logging"/>
     </dependencies>
 </module>
