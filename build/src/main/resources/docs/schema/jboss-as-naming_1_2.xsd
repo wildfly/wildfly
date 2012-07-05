@@ -103,12 +103,11 @@
                 <xs:documentation>
                     The javax.naming.spi.ObjectFactory that provides the value.
                     Note that when getObjectInstance is invoked the first Object parameter
-                    will be equal to the JNDI name of this binding. The second and third 
-                    parameters will always be null, while the last one, the environment, may 
-                    be populated using the environment type child element.
+                    will be equal to the JNDI name of this binding. All other parameters will
+                    be null.
                 </xs:documentation>
             </xs:annotation>
-        </xs:attribute>               
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="lookupType">

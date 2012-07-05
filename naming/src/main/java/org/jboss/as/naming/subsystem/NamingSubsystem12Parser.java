@@ -124,8 +124,7 @@ public class NamingSubsystem12Parser implements XMLElementReader<List<ModelNode>
         writer.writeEndElement();
     }
 
-    private void writeObjectFactoryBinding(final Property binding, final XMLExtendedStreamWriter writer)
-            throws XMLStreamException {
+    private void writeObjectFactoryBinding(final Property binding, final XMLExtendedStreamWriter writer) throws XMLStreamException {
 
         writer.writeStartElement(NamingSubsystemXMLElement.OBJECT_FACTORY.getLocalName());
         writer.writeAttribute(NamingSubsystemXMLAttribute.NAME.getLocalName(), binding.getName());
@@ -311,6 +310,7 @@ public class NamingSubsystem12Parser implements XMLElementReader<List<ModelNode>
         bindingAdd.get(CLASS).set(factory);
         operations.add(bindingAdd);
     }
+
 
     private void parseLookupBinding(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
 
