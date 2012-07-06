@@ -44,7 +44,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  *
  * @author Stuart Douglas
  */
-public class EjbJarBossAllParser implements JBossAllXMLParser<EjbJarMetaData> {
+public class EjbJarJBossAllParser implements JBossAllXMLParser<EjbJarMetaData> {
 
     public static final AttachmentKey<EjbJarMetaData> ATTACHMENT_KEY = AttachmentKey.create(EjbJarMetaData.class);
 

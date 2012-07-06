@@ -266,7 +266,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         if (descriptor == null) {
             // no descriptor found
             //but there may have been an ejb-jar element in jboss-all.xml
-            return deploymentUnit.getAttachment(EjbJarBossAllParser.ATTACHMENT_KEY);
+            return deploymentUnit.getAttachment(EjbJarJBossAllParser.ATTACHMENT_KEY);
         }
 
         // get the XMLStreamReader and parse the descriptor
