@@ -364,11 +364,14 @@ public class OperationRequestCompleter implements CommandLineCompleter {
     }
 
     protected CommandLineCompleter getValueCompleter(CommandContext ctx, Iterable<CommandArgument> allArgs, int index) {
+        CommandLineCompleter maxIndex = null;
         for (CommandArgument arg : allArgs) {
-            if (arg.getIndex() == index || arg.getIndex() == Integer.MAX_VALUE) {
+            if (arg.getIndex() == index) {
                 return arg.getValueCompleter();
+            } else if(arg.getIndex() == Integer.MAX_VALUE) {
+                maxIndex = arg.getValueCompleter();
             }
         }
-        return null;
+        return maxIndex;
     }
 }
