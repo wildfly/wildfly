@@ -19,6 +19,31 @@ public interface OperationTransformer {
      * @param operation the operation
      * @return the transformed operation
      */
-    ModelNode transformOperation(TransformationContext context, PathAddress address, ModelNode operation);
+    TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation);
+
+    public class TransformedOperation implements OperationResultTransformer {
+
+        private final ModelNode transformedOperation;
+        private final OperationResultTransformer resultTransformer;
+
+        public TransformedOperation(ModelNode transformedOperation, OperationResultTransformer resultTransformer) {
+            this.transformedOperation = transformedOperation;
+            this.resultTransformer = resultTransformer;
+        }
+
+        public ModelNode getTransformedOperation() {
+            return transformedOperation;
+        }
+
+        public OperationResultTransformer getResultTransformer() {
+            return resultTransformer;
+        }
+
+        @Override
+        public ModelNode transformResult(final ModelNode result) {
+            return resultTransformer.transformResult(result);
+        }
+
+    }
 
 }

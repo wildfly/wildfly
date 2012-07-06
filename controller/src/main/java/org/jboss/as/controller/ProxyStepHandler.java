@@ -38,6 +38,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -78,8 +80,45 @@ public class ProxyStepHandler implements OperationStepHandler {
                 finalResultRef.set(response);
             }
         };
+        // Transform the operation if needed
+        if(proxyController instanceof TransformingProxyController) {
+            final TransformingProxyController transformingProxyController = (TransformingProxyController) proxyController;
+            final OperationTransformer.TransformedOperation result = transformingProxyController.transformOperation(context, operation);
+            final ModelNode transformedOperation = result.getTransformedOperation();
+            final OperationResultTransformer resultTransformer = result.getResultTransformer();
+            if(transformedOperation != null) {
+                final ProxyController.ProxyOperationControl transformingProxyControl = new ProxyController.ProxyOperationControl() {
+                    @Override
+                    public void operationFailed(ModelNode response) {
+                        final ModelNode result = resultTransformer.transformResult(response);
+                        proxyControl.operationFailed(result);
+                    }
 
-        proxyController.execute(operation, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
+                    @Override
+                    public void operationCompleted(ModelNode response) {
+                        final ModelNode result = resultTransformer.transformResult(response);
+                        proxyControl.operationCompleted(result);
+                    }
+
+                    @Override
+                    public void operationPrepared(ModelController.OperationTransaction transaction, ModelNode response) {
+                        // final ModelNode result = resultTransformer.transformResult(response);
+                        proxyControl.operationPrepared(transaction, response);
+                    }
+                };
+                proxyController.execute(transformedOperation, messageHandler, transformingProxyControl, new DelegatingOperationAttachments(context));
+            } else {
+                // discard the operation
+                final ModelNode transformedResult = resultTransformer.transformResult(new ModelNode());
+                if(transformedResult != null) {
+                    context.getResult().set(transformedResult);
+                }
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                return;
+            }
+        } else {
+            proxyController.execute(operation, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
+        }
         ModelNode finalResult = finalResultRef.get();
         if (finalResult != null) {
             // operation failed before it could commit

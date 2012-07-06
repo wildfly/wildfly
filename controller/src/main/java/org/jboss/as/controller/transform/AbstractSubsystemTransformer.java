@@ -33,7 +33,6 @@ public abstract class AbstractSubsystemTransformer implements SubsystemTransform
         return microManagementVersion;
     }
 
-    @Override
     public ModelNode transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
         return operation;
     }

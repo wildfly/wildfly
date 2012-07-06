@@ -22,10 +22,28 @@
 
 package org.jboss.as.controller.extension;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import javax.xml.namespace.QName;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersionRange;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -47,29 +65,15 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.SubsystemTransformer;
 import org.jboss.as.controller.transform.TransformerRegistry;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
-
-import javax.xml.namespace.QName;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
  * A registry for information about {@link Extension}s to the core application server.
@@ -572,7 +576,11 @@ public class ExtensionRegistry {
         @Override
         public void registerSubsystemTransformer(SubsystemTransformer subsystemTransformer) {
             transformerRegistry.registerSubsystemTransformer(name, subsystemTransformer);
+        }
 
+        @Override
+        public TransformersSubRegistration registerModelTransformers(final ModelVersionRange range, final ResourceTransformer subsystemTransformer) {
+            return transformerRegistry.getDomainTransformers().registerSubsystemTransformers(name, range, subsystemTransformer);
         }
 
         private ManagementResourceRegistration getDummyRegistration() {

@@ -1,62 +1,61 @@
 package org.jboss.as.controller.transform;
 
-import org.jboss.as.controller.ControllerLogger;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.extension.SubsystemInformation;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.extension.SubsystemInformation;
+import org.jboss.as.controller.registry.OperationTransformerRegistry;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class TransformationTargetImpl implements TransformationTarget {
-    private final int major;
-    private final int minor;
-    private final int micro;
+
+    private final ModelVersion version;
     private final ExtensionRegistry extensionRegistry;
     private final TransformerRegistry transformerRegistry;
     private final Map<String, String> subsystemVersions = Collections.synchronizedMap(new HashMap<String, String>());
+    private final OperationTransformerRegistry operationTransformers;
 
-    private TransformationTargetImpl(final int majorManagementVersion, final int minorManagementVersion,
-                                     final int microManagementVersion, final ModelNode subsystemVersions) {
-        this.major = majorManagementVersion;
-        this.minor = minorManagementVersion;
-        this.micro = microManagementVersion;
-        this.transformerRegistry = TransformerRegistry.getInstance();
+    private TransformationTargetImpl(final TransformerRegistry transformerRegistry, final ModelVersion version, final ModelNode subsystemVersions, final OperationTransformerRegistry transformers) {
+        this.version = version;
+        this.transformerRegistry = transformerRegistry;
         this.extensionRegistry = transformerRegistry.getExtensionRegistry();
         for (Property p : subsystemVersions.asPropertyList()) {
             this.subsystemVersions.put(p.getName(), p.getValue().asString());
         }
+        this.operationTransformers = transformers;
     }
 
-    public static TransformationTargetImpl create(final int majorManagementVersion, final int minorManagementVersion,
+    public static TransformationTargetImpl create(final TransformerRegistry transformerRegistry, final ModelVersion version, final ModelNode subsystems, final TransformationTargetType type) {
+        final OperationTransformerRegistry registry;
+        switch (type) {
+            case SERVER:
+                registry = transformerRegistry.getDomainTransformers().resolveServer(version, subsystems);
+                break;
+            default:
+                registry = transformerRegistry.getDomainTransformers().resolveHost(version, subsystems);
+        }
+        return new TransformationTargetImpl(transformerRegistry, version, subsystems, registry);
+    }
+
+    @Deprecated
+    public static TransformationTargetImpl create(final TransformerRegistry transformerRegistry, final int majorManagementVersion, final int minorManagementVersion,
                                                   int microManagementVersion, final ModelNode subsystemVersions) {
-        return new TransformationTargetImpl(majorManagementVersion, minorManagementVersion, microManagementVersion, subsystemVersions);
+        return create(transformerRegistry, ModelVersion.create(majorManagementVersion, minorManagementVersion, microManagementVersion), subsystemVersions, TransformationTargetType.HOST);
     }
 
     @Override
-    public String getManagementVersion() {
-        return major + "." + minor + "." + micro;
-    }
-
-    @Override
-    public int getMajorManagementVersion() {
-        return major;
-    }
-
-    @Override
-    public int getMinorManagementVersion() {
-        return minor;
-    }
-
-    @Override
-    public int getMicroManagementVersion() {
-        return micro;
+    public ModelVersion getVersion() {
+        return version;
     }
 
     @Override
@@ -70,8 +69,15 @@ public class TransformationTargetImpl implements TransformationTarget {
     }
 
     @Override
-    public OperationTransformer resolveTransformer(PathAddress address, String operationName) {
-        return null;
+    public OperationTransformer resolveTransformer(final PathAddress address, final String operationName) {
+        if(address.size() == 0) {
+            // TODO use operationTransformers registry to register this operations.
+            if(ModelDescriptionConstants.COMPOSITE.equals(operationName)) {
+                return new CompositeOperationTransformer();
+            }
+        }
+        final OperationTransformerRegistry.OperationTransformerEntry entry = operationTransformers.resolveOperationTransformer(address, operationName);
+        return entry.getTransformer();
     }
 
     @Override
@@ -99,6 +105,8 @@ public class TransformationTargetImpl implements TransformationTarget {
 
     public boolean isTransformationNeeded() {
         //return  !(major==org.jboss.as.version.Version.MANAGEMENT_MAJOR_VERSION&& minor == org.jboss.as.version.Version.MANAGEMENT_MINOR_VERSION); //todo dependencies issue
+        final int major = version.getMajor();
+        final int minor = version.getMinor();
         return !(major == 1 && minor == 2);
     }
 
@@ -106,5 +114,6 @@ public class TransformationTargetImpl implements TransformationTarget {
     public void addSubsystemVersion(String subsystemName, int majorVersion, int minorVersion) {
         StringBuilder sb = new StringBuilder(String.valueOf(majorVersion)).append('.').append(minorVersion);
         this.subsystemVersions.put(subsystemName, sb.toString());
+        transformerRegistry.getDomainTransformers().addSubsystem(operationTransformers, subsystemName, ModelVersion.create(majorVersion, minorVersion));
     }
 }

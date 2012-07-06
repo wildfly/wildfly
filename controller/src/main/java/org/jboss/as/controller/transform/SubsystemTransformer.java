@@ -13,7 +13,7 @@ package org.jboss.as.controller.transform;
  * @deprecated experimental interface; may be removed or change without warning. Should not be used outside the main JBoss AS codebase
  */
 @Deprecated
-public interface SubsystemTransformer extends ResourceTransformer, OperationTransformer {
+public interface SubsystemTransformer extends ResourceTransformer {
     int getMajorManagementVersion();
 
     int getMinorManagementVersion();

@@ -22,10 +22,6 @@
 
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.ProxyOperationAddressTranslator;
-import org.jboss.as.controller.client.OperationAttachments;
-import org.jboss.as.controller.client.OperationMessageHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -63,11 +59,16 @@ import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.TransformingProxyController;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -90,7 +91,6 @@ import org.jboss.as.host.controller.mgmt.HostControllerRegistrationHandler;
 import org.jboss.as.host.controller.mgmt.MasterDomainControllerOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
 import org.jboss.as.host.controller.mgmt.SlaveHostPinger;
-import org.jboss.as.host.controller.mgmt.TransformingProxyController;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.StartServersHandler;
 import org.jboss.as.process.CommandLineConstants;
@@ -294,7 +294,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    public void registerRunningServer(ProxyController serverControllerClient) {
+    public void registerRunningServer(final ProxyController serverControllerClient) {
         PathAddress pa = serverControllerClient.getProxyNodeAddress();
         PathElement pe = pa.getElement(1);
         if (modelNodeRegistration.getProxyController(pa) != null) {
@@ -390,7 +390,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
                 // Now we know our management interface configuration. Install the server inventory
                 Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, runningModeControl, environment,
-                        hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
+                        extensionRegistry, hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
 
                 if (!hostControllerInfo.isMasterDomainController() && !environment.isUseCachedDc()) {
                     serverInventory = getFuture(inventoryFuture);
@@ -714,5 +714,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
         if (it.hasNext())
             return it.next();
         return null;
+    }
+
+    @Override
+    public ExtensionRegistry getExtensionRegistry() {
+        return extensionRegistry;
     }
 }

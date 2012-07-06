@@ -58,10 +58,10 @@ public class TransformersImpl implements Transformers {
     }
 
     @Override
-    public ModelNode transformOperation(final TransformationContext context, final ModelNode operation) {
-        if (!target.isTransformationNeeded()) {
-            return operation;
-        }
+    public OperationTransformer.TransformedOperation transformOperation(final TransformationContext context, final ModelNode operation) {
+//        if (!target.isTransformationNeeded()) {
+//            return operation;
+//        }
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String operationName = operation.require(OP).asString();
@@ -69,7 +69,7 @@ public class TransformersImpl implements Transformers {
         final OperationTransformer transformer = target.resolveTransformer(address, operationName);
         if (transformer == null) {
             ControllerLogger.ROOT_LOGGER.tracef("operation %s does not need transformation", operation);
-            return operation;
+            return new OperationTransformer.TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
         }
         return transformer.transformOperation(context, address, operation);
     }
@@ -130,10 +130,17 @@ public class TransformersImpl implements Transformers {
 
     static class DelegateTransformContext implements TransformationContext {
 
+        private final TransformationTarget target;
         private final OperationContext context;
 
-        DelegateTransformContext(OperationContext context) {
+        DelegateTransformContext(final OperationContext context, final TransformationTarget target) {
             this.context = context;
+            this.target = target;
+        }
+
+        @Override
+        public TransformationTarget getTarget() {
+            return target;
         }
 
         @Override

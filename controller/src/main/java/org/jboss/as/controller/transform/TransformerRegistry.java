@@ -1,7 +1,14 @@
 package org.jboss.as.controller.transform;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.jboss.as.controller.ControllerLogger;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
@@ -11,33 +18,23 @@ import org.jboss.as.controller.registry.LegacyResourceDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public final class TransformerRegistry {
     private final ConcurrentHashMap<String, List<SubsystemTransformer>> subsystemTransformers = new ConcurrentHashMap<String, List<SubsystemTransformer>>();
-    private static TransformerRegistry INSTANCE;
     private final SimpleFullModelTransformer modelTransformer;
     private final ExtensionRegistry extensionRegistry;
+    private final DomainModelTransformers transformerRegistry = new DomainModelTransformers();
 
     private TransformerRegistry(final ExtensionRegistry extensionRegistry) {
         this.modelTransformer = new SimpleFullModelTransformer(extensionRegistry);
         this.extensionRegistry = extensionRegistry;
-        INSTANCE = this;
     }
 
-    public static TransformerRegistry getInstance() { //todo this is ugly!
-        return INSTANCE;
+    public DomainModelTransformers getDomainTransformers() {
+        return transformerRegistry;
     }
 
     private static ModelNode getSubsystemDefinitionForVersion(final String subsystemName, int majorVersion, int minorVersion) {
@@ -88,6 +85,9 @@ public final class TransformerRegistry {
                 }
             }
         }
+        if (!value.isDefined() && model.isDefined() && reg.getChildAddresses(PathAddress.EMPTY_ADDRESS).size() == 0) {
+            value.setEmptyObject();
+        }
         res.writeModel(value);
 
         for (PathElement path : reg.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
@@ -116,7 +116,8 @@ public final class TransformerRegistry {
         subsystemTransformers.putIfAbsent(subsystemName, new LinkedList<SubsystemTransformer>());
         List<SubsystemTransformer> transformers = subsystemTransformers.get(subsystemName);
         transformers.add(subsystemModelTransformer);
-
+//        final ModelVersion version = ModelVersion.create(subsystemModelTransformer.getMajorManagementVersion(), subsystemModelTransformer.getMinorManagementVersion(), subsystemModelTransformer.getMicroManagementVersion());
+//        transformerRegistry.registerSubsystemTransformers(subsystemName, version, subsystemModelTransformer);
     }
 
     public Resource getTransformedResource(Resource resource, final ImmutableManagementResourceRegistration resourceRegistration, Map<String, String> subsystemVersions) {

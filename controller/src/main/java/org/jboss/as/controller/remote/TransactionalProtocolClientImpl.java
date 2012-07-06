@@ -67,7 +67,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Emanuel Muckenhuber
  */
-public class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory, TransactionalProtocolClient {
+class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory, TransactionalProtocolClient {
 
     private final ManagementChannelAssociation channelAssociation;
     public TransactionalProtocolClientImpl(final ManagementChannelAssociation channelAssociation) {

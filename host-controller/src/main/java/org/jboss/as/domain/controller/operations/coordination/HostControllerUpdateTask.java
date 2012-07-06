@@ -32,11 +32,13 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.BlockingQueueOperationListener;
 import org.jboss.as.controller.remote.TransactionalOperationImpl;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.Transformers;
-import org.jboss.as.host.controller.mgmt.TransformingProxyController;
+import org.jboss.as.controller.TransformingProxyController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.threads.AsyncFuture;
@@ -46,6 +48,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * @author Emanuel Muckenhuber
@@ -55,35 +58,38 @@ class HostControllerUpdateTask {
     private final String name;
     private final ModelNode operation;
     private final OperationContext context;
-    private final TransactionalProtocolClient client;
     private final PathAddress address;
-    private final Transformers transformers;
+    private final TransformingProxyController proxyController;
 
     public HostControllerUpdateTask(final String name, final ModelNode operation, final OperationContext context,
                                     final TransformingProxyController proxyController) {
         this.name = name;
-        this.client = proxyController.getProtocolClient();
         this.context = context;
         this.operation = operation;
-        this.transformers = proxyController.getTransformers();
+        this.proxyController = proxyController;
         this.address = proxyController.getProxyNodeAddress();
     }
 
-    public AsyncFuture<ModelNode> execute(final ProxyOperationListener listener) {
+    public ExecutedHostRequest execute(final ProxyOperationListener listener) {
         boolean trace = HOST_CONTROLLER_LOGGER.isTraceEnabled();
         if (trace) {
             HOST_CONTROLLER_LOGGER.tracef("Sending %s to %s", operation, name);
         }
+        final TransactionalProtocolClient client = proxyController.getProtocolClient();
         final OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
         final OperationAttachments operationAttachments = new DelegatingOperationAttachments(context);
-        final ProxyOperation proxyOperation = new ProxyOperation(name, operation, messageHandler, operationAttachments);
-        final SubsystemInfoOperationListener subsystemListener = new SubsystemInfoOperationListener(listener, transformers);
+        final OperationTransformer.TransformedOperation transformationResult = proxyController.transformOperation(context, operation);
+        final ModelNode transformedOperation = transformationResult.getTransformedOperation();
+        final OperationResultTransformer resultTransformer = transformationResult.getResultTransformer();
+        final ProxyOperation proxyOperation = new ProxyOperation(name, transformedOperation, messageHandler, operationAttachments);
+        final SubsystemInfoOperationListener subsystemListener = new SubsystemInfoOperationListener(listener, proxyController.getTransformers());
         try {
-            return client.execute(subsystemListener, proxyOperation);
+            final AsyncFuture<ModelNode> result = client.execute(subsystemListener, proxyOperation);
+            return new ExecutedHostRequest(result, resultTransformer);
         } catch (IOException e) {
             final TransactionalProtocolClient.PreparedOperation<ProxyOperation> result = BlockingQueueOperationListener.FailedOperation.create(proxyOperation, e);
             subsystemListener.operationPrepared(result);
-            return result.getFinalResult();
+            return new ExecutedHostRequest(result.getFinalResult(), resultTransformer);
         }
     }
 
@@ -97,6 +103,30 @@ class HostControllerUpdateTask {
 
         public String getName() {
             return name;
+        }
+    }
+
+    static class ExecutedHostRequest implements OperationResultTransformer {
+
+        final AsyncFuture<ModelNode> futureResult;
+        final OperationResultTransformer resultTransformer;
+
+        ExecutedHostRequest(AsyncFuture<ModelNode> futureResult, OperationResultTransformer resultTransformer) {
+            this.futureResult = futureResult;
+            this.resultTransformer = resultTransformer;
+        }
+
+        public Future<ModelNode> getFinalResult() {
+            return futureResult;
+        }
+
+        @Override
+        public ModelNode transformResult(ModelNode result) {
+            return resultTransformer.transformResult(result);
+        }
+
+        public void asyncCancel() {
+            futureResult.asyncCancel(false);
         }
     }
 

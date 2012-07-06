@@ -1123,6 +1123,11 @@ public class ParseAndMarshalModelsTestCase {
         public void stopLocalHost(int exitCode) {
             //
         }
+
+        @Override
+        public ExtensionRegistry getExtensionRegistry() {
+            return null;
+        }
     }
 
     private static class MockVaultReader extends RuntimeVaultReader {

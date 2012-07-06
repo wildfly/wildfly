@@ -22,21 +22,33 @@
 
 package org.jboss.as.test.integration.domain.management.util;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -69,7 +81,7 @@ public class DomainTestUtils {
      */
     public static ModelNode getRunningServerAddress(final String hostName, final String serverName) {
         final ModelNode address = getHostAddress(hostName);
-        address.add(SERVER_CONFIG, serverName);
+        address.add(RUNNING_SERVER, serverName);
         return address;
     }
 
@@ -87,6 +99,45 @@ public class DomainTestUtils {
     }
 
     /**
+     * Create a composite operation.
+     *
+     * @param steps the individual steps
+     * @return the composite operation
+     */
+    public static ModelNode createCompositeOperation(ModelNode... steps) {
+        final ModelNode composite = new ModelNode();
+        composite.get(OP).set(COMPOSITE);
+        composite.get(OP_ADDR).setEmptyList();
+        composite.get(STEPS).setEmptyList();
+        for(final ModelNode step : steps) {
+            composite.get(STEPS).add(step);
+        }
+        return composite;
+    }
+
+    /**
+     * Execute multiple steps and check the result.
+     *
+     * @param client the controller client
+     * @param steps the individual steps
+     * @return the operation result
+     * @throws IOException
+     * @throws MgmtOperationException
+     */
+    public static List<ModelNode> executeStepsForResult(final ModelControllerClient client, final ModelNode... steps) throws IOException, MgmtOperationException {
+        final ModelNode operationResult = executeForResult(createCompositeOperation(steps), client);
+        if(! operationResult.hasDefined(RESULT)) {
+            return Collections.singletonList(operationResult);
+        }
+        final List<ModelNode> result = new ArrayList<ModelNode>();
+        final int size = operationResult.get(RESULT).asPropertyList().size();
+        for(int i = 0; i < size; i++) {
+            result.add(operationResult.get(RESULT).require("steps-" + (i+1)));
+        }
+        return result;
+    }
+
+    /**
      * Execute for result.
      *
      * @param op the operation to execute
@@ -99,6 +150,7 @@ public class DomainTestUtils {
        final ModelNode ret = modelControllerClient.execute(op);
 
        if (! SUCCESS.equals(ret.get(OUTCOME).asString())) {
+           System.out.println(ret);
            throw new MgmtOperationException("Management operation failed.", op, ret);
        }
        return ret.get(RESULT);
@@ -127,6 +179,56 @@ public class DomainTestUtils {
      */
     public static void waitUntilState(final ModelControllerClient client, final ModelNode serverAddress, final String state) throws IOException {
         waitUntilState(client, serverAddress, state, 30, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Check if a path address exists.
+     *
+     * @param address the child address
+     * @param client the controller client
+     * @return whether the child exists or not
+     * @throws IOException
+     * @throws MgmtOperationException
+     */
+    public static boolean exists(ModelNode address, ModelControllerClient client) throws IOException, MgmtOperationException {
+        return exists(PathAddress.pathAddress(address), client);
+    }
+
+    /**
+     * Check if a path address exists.
+     *
+     * @param address the path address
+     * @param client the controller client
+     * @return whether the child exists or not
+     * @throws IOException
+     * @throws MgmtOperationException
+     */
+    public static boolean exists(PathAddress address, ModelControllerClient client) throws IOException, MgmtOperationException {
+        final PathElement element = address.getLastElement();
+        final PathAddress subAddress = address.subAddress(0, address.size() -1);
+        final boolean checkType = element.isWildcard();
+        final ModelNode e;
+        final ModelNode operation;
+        if(checkType) {
+            e = new ModelNode().set(element.getKey());
+            operation = createOperation(READ_CHILDREN_TYPES_OPERATION, subAddress);
+        } else {
+            e = new ModelNode().set(element.getValue());
+            operation = createOperation(READ_CHILDREN_NAMES_OPERATION, subAddress);
+            operation.get(CHILD_TYPE).set(element.getKey());
+        }
+        try {
+            final ModelNode result = executeForResult(operation, client);
+            return result.asList().contains(e);
+        } catch (MgmtOperationException ex) {
+            if(! checkType) {
+                final String failureDescription = ex.getResult().get(FAILURE_DESCRIPTION).asString();
+                if(failureDescription.contains("JBAS014793") && failureDescription.contains(element.getKey())) {
+                    return false;
+                }
+            }
+            throw ex;
+        }
     }
 
     /**
@@ -190,6 +292,17 @@ public class DomainTestUtils {
     public static boolean checkState(final ModelControllerClient client, final ModelNode serverAddress, final String state) throws IOException {
         final String serverState = getServerState(client, serverAddress);
         return state.equals(serverState);
+    }
+
+    public static ModelNode createOperation(String op, ModelNode address) {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(op);
+        operation.get(OP_ADDR).set(address);
+        return operation;
+    }
+
+    public static ModelNode createOperation(String op, PathAddress address) {
+        return createOperation(op, address.toModelNode());
     }
 
 }

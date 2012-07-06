@@ -22,16 +22,10 @@
 package org.jboss.as.web.test;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.web.WebExtension;
-import org.junit.Test;
 
 /**
  *
@@ -57,8 +51,6 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.MANAGEMENT;
     }
-
-
 
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
