@@ -20,37 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.deployment.jbossallxml;
+package org.jboss.as.ee.structure;
 
 import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.jbossallxml.JBossAllXMLParser;
+import org.jboss.metadata.ear.jboss.JBossAppMetaData;
+import org.jboss.metadata.parser.jboss.JBossAppMetaDataParser;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * DUP that registers a {@link JBossAllXMLParserDescription} with the DU. These should all be registered in the
- * {@link org.jboss.as.server.deployment.Phase#STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER} phase.
+ * The app client handler for jboss-all.xml
  *
  * @author Stuart Douglas
  */
-public class JBossAllXmlParserRegisteringProcessor<T> implements DeploymentUnitProcessor {
+public class AppJBossAllParser implements JBossAllXMLParser<JBossAppMetaData> {
 
-    private final JBossAllXMLParserDescription<T> description;
+    public static final AttachmentKey<JBossAppMetaData> ATTACHMENT_KEY = AttachmentKey.create(JBossAppMetaData.class);
 
-    public JBossAllXmlParserRegisteringProcessor(final QName rootElement, final AttachmentKey<T> attachmentKey, final JBossAllXMLParser<T> parser) {
-        description = new JBossAllXMLParserDescription<T>(attachmentKey, parser, rootElement);
-    }
+    public static final QName ROOT_ELEMENT = new QName("http://www.jboss.com/xml/ns/javaee", "jboss-app");
 
     @Override
-    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        phaseContext.getDeploymentUnit().addToAttachmentList(JBossAllXMLParserDescription.ATTACHMENT_KEY, description);
+    public JBossAppMetaData parse(final XMLExtendedStreamReader reader, final DeploymentUnit deploymentUnit) throws XMLStreamException {
+        return JBossAppMetaDataParser.INSTANCE.parse(reader, JBossDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }
