@@ -53,7 +53,7 @@ import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
-import org.jboss.as.server.deployment.jbossallxml.JBossXmlParserRegisteringProcessor;
+import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.as.server.deployment.module.AdditionalModuleSpecification;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
@@ -90,9 +90,9 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
     private static final AttachmentKey<ParseResult> RESULT_ATTACHMENT_KEY = AttachmentKey.create(ParseResult.class);
 
     public static void registerJBossXMLParsers() {
-        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_XML_PARSER, new JBossXmlParserRegisteringProcessor<ParseResult>(ROOT_1_0, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser10.JBOSS_ALL_XML_PARSER));
-        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_XML_PARSER, new JBossXmlParserRegisteringProcessor<ParseResult>(ROOT_1_1, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser11.JBOSS_ALL_XML_PARSER));
-        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_XML_PARSER, new JBossXmlParserRegisteringProcessor<ParseResult>(ROOT_1_2, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser12.JBOSS_ALL_XML_PARSER));
+        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<ParseResult>(ROOT_1_0, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser10.JBOSS_ALL_XML_PARSER));
+        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<ParseResult>(ROOT_1_1, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser11.JBOSS_ALL_XML_PARSER));
+        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<ParseResult>(ROOT_1_2, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser12.JBOSS_ALL_XML_PARSER));
     }
 
 
