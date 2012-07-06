@@ -619,6 +619,12 @@ public interface ServerMessages {
     @Message(id = 18771, value = "Can't use both --server-config and --initial-server-config")
     IllegalArgumentException cannotHaveBothInitialServerConfigAndServerConfig();
 
+    @Message(id = 18772, value = "Duplicate namespace %s in jboss.xml")
+    XMLStreamException duplicateJBossXmlNamespace(String namespace, @Param Location location);
 
+    @Message(id = 18773, value = "Two different versions of the same namespaces are present in jboss.xml, %s and %s are both present")
+    DeploymentUnitProcessingException equivilentNamespacesInJBossXml(String key, String s);
 
+    @Message(id = 18774, value = "Error loading jboss.xml from %s")
+    DeploymentUnitProcessingException errorLoadingJBossXmlFile(String path, @Cause XMLStreamException e);
 }

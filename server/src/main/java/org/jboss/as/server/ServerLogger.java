@@ -22,10 +22,6 @@
 
 package org.jboss.as.server;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
 import java.net.URISyntaxException;
 import java.util.jar.Attributes;
 
@@ -42,6 +38,10 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.modules.ModuleIdentifier;
+
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * This module is using message IDs in the range 15700-15999 and 18700-18799.
@@ -376,6 +376,10 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 15964, value= "Http management interface is not enabled")
     void logNoHttpManagement();
+
+    @LogMessage(level = WARN)
+    @Message(id = 15965, value = "urn:jboss:deployment-structure namespace found in jboss.xml for a sub deployment %s. This is only valid in a top level deployment.")
+    void jbossDeploymentStructureNamespaceIgnored(String deploymentUnitName);
 
     // NOTE
 }
