@@ -36,11 +36,11 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
  *
  * @author Stuart Douglas
  */
-public class JBossXmlParserRegisteringProcessor<T> implements DeploymentUnitProcessor {
+public class JBossAllXmlParserRegisteringProcessor<T> implements DeploymentUnitProcessor {
 
     private final JBossAllXMLParserDescription<T> description;
 
-    public JBossXmlParserRegisteringProcessor(final QName rootElement, final AttachmentKey<T> attachmentKey, final JBossAllXMLParser<T> parser) {
+    public JBossAllXmlParserRegisteringProcessor(final QName rootElement, final AttachmentKey<T> attachmentKey, final JBossAllXMLParser<T> parser) {
         description = new JBossAllXMLParserDescription<T>(attachmentKey, parser, rootElement);
     }
 

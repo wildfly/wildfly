@@ -605,12 +605,12 @@ public interface ServerMessages {
     @Message(id = 18770, value = "Cannot add more than one socket binding group. Add of '%s' attempted, but '%s' already exists")
     OperationFailedException cannotAddMoreThanOneSocketBindingGroupForServer(PathAddress wanted, PathAddress existing);
 
-    @Message(id = 18771, value = "Duplicate namespace %s in jboss.xml")
+    @Message(id = 18771, value = "Duplicate namespace %s in jboss-all.xml")
     XMLStreamException duplicateJBossXmlNamespace(String namespace, @Param Location location);
 
-    @Message(id = 18772, value = "Two different versions of the same namespaces are present in jboss.xml, %s and %s are both present")
+    @Message(id = 18772, value = "Two different versions of the same namespaces are present in jboss-all.xml, %s and %s are both present")
     DeploymentUnitProcessingException equivilentNamespacesInJBossXml(String key, String s);
 
-    @Message(id = 18773, value = "Error loading jboss.xml from %s")
+    @Message(id = 18773, value = "Error loading jboss-all.xml from %s")
     DeploymentUnitProcessingException errorLoadingJBossXmlFile(String path, @Cause XMLStreamException e);
 }
