@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.deployment.jbossallxml;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
@@ -46,7 +47,8 @@ class JBossAllXMLElementReader implements XMLElementReader<JBossAllXmlParseConte
     @Override
     public void readElement(final XMLExtendedStreamReader xmlExtendedStreamReader, final JBossAllXmlParseContext jBossXmlParseContext) throws XMLStreamException {
         final Location nsLocation = xmlExtendedStreamReader.getLocation();
+        final QName elementName = xmlExtendedStreamReader.getName();
         final Object result = parserDescription.getParser().parse(xmlExtendedStreamReader, jBossXmlParseContext.getDeploymentUnit());
-        jBossXmlParseContext.addResult(xmlExtendedStreamReader.getNamespaceURI(), result, nsLocation);
+        jBossXmlParseContext.addResult(elementName, result, nsLocation);
     }
 }
